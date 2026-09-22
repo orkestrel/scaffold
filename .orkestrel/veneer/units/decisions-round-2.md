@@ -143,3 +143,10 @@ The cascade ledger is part of `guides/veneer.md`. The vendored policy sweep that
 `guides/ledger.md` states this law; a nested path that escapes its glob is refused. Carrier:
 L1 LEDGER-HOME reverts the move; every live unit writes its ledger rows into `guides/veneer.md`
 § Tokens › § Departures and § Additions from its integration onward.
+
+## D15 — a shared declaration block that records an external value is a coincidence (2026-09-22)
+
+Orchestrator ruling from the B-SWEEP design round (`b-sweep-design-verdict.md`): both copies stay
+inline; the sweep reports duplication through `findDuplicates` beside an unchanged `scanStyleBlocks`
+under `(shared >= 2 && shared * 2 > min(left, right)) || shared >= 6`; the styles rule states the
+coincidence line; `list-reset` is the one accepted mixin because it is Bootstrap's own.

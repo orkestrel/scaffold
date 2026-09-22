@@ -43,6 +43,9 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
   literal color may appear in is `_tokens.scss`, where the token itself is declared.
 - Never repeat per-color/per-variant blocks; drive shared structure with one `@each` over a shared list.
 - If a pattern appears in at least two partials, move it to `_mixins.scss`.
+- Treat a declaration block two partials share because each records an external value as a
+  coincidence, never a pattern: keep both copies inline, and move a block only where its callers
+  share one decision whose divergence is a defect.
 - A one-partial pattern stays inline; do not create a mixin for one caller.
 - Never `@extend` across partials; share through tokens/mixins.
 - Never declare a `transition:` without `prefers-reduced-motion: reduce`. Use the project transition mixin, which emits both.

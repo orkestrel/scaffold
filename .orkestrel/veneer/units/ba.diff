@@ -1,0 +1,1979 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index a75430c..0afe3dc 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -2,7 +2,10 @@ import type { ColorModeInterface } from '@src/browser'
+ import type { SectionInterface, ShowcaseInterface } from './types.js'
+ import { ColorMode } from '@src/browser'
+ import { SHOWCASE_CONTROL, SHOWCASE_COPY } from './constants.js'
++import { BadgeSection } from './sections/BadgeSection.js'
++import { BreadcrumbSection } from './sections/BreadcrumbSection.js'
+ import { ButtonSection } from './sections/ButtonSection.js'
++import { CloseSection } from './sections/CloseSection.js'
+ import { ContentSection } from './sections/ContentSection.js'
+ import { LayoutSection } from './sections/LayoutSection.js'
+ import { LinkSection } from './sections/LinkSection.js'
+@@ -78,6 +81,9 @@ export class Showcase implements ShowcaseInterface {
+ 			new LinkSection(this.#main),
+ 			new LayoutSection(this.#main),
+ 			new TableSection(this.#main),
++			new BadgeSection(this.#main),
++			new BreadcrumbSection(this.#main),
++			new CloseSection(this.#main),
+ 		]
+ 	}
+ 
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 6ad6321..d282c3b 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -620,3 +620,103 @@ export const TABLE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 		}),
+ 	),
+ )
++
++/** Holds the Badge section's visible copy and accessible name. */
++export const BADGE_COPY = Object.freeze({
++	region: 'Badge',
++	paragraph:
++		'Compare the badge box against the text around it. The badge paints its label and declares no fill of its own, so each specimen sits on a dark table surface until a contextual fill class ships.',
++})
++
++/** Lists the badge specimens in their rendering order. */
++export const BADGE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
++	[
++		{ name: 'Badge counter', label: 'Unread shipments', content: '4', scale: '' },
++		{ name: 'Badge word', label: 'Oak delivery', content: 'New', scale: '' },
++		{ name: 'Badge at heading scale', label: 'Materials', content: '12', scale: 'h3' },
++		{ name: 'Badge collapsed', label: 'No unread shipments', content: '', scale: '' },
++	].map(({ name, label, content, scale }) => {
++		const line = `${label} <span class="badge">${content}</span>`
++		return Object.freeze({
++			name,
++			markup: `<table class="table table-dark"><tbody><tr><td>${
++				scale === '' ? line : `<span class="${scale}">${line}</span>`
++			}</td></tr></tbody></table>`,
++		})
++	}),
++)
++
++/** Holds the Breadcrumb section's visible copy and accessible name. */
++export const BREADCRUMB_COPY = Object.freeze({
++	region: 'Breadcrumb',
++	paragraph:
++		'Follow the trail through its divider, its item spacing, and the current page. The divider is the second and later items own leading content, so the first item carries none.',
++})
++
++/** Lists the breadcrumb specimens in their rendering order. */
++export const BREADCRUMB_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
++	[
++		{ name: 'Breadcrumb trail', steps: ['Home', 'Materials', 'Hardwood'], current: 'Oak' },
++		{ name: 'Breadcrumb single step', steps: [], current: 'Home' },
++	].map(({ name, steps, current }) =>
++		Object.freeze({
++			name,
++			markup: `<nav aria-label="${name}"><ol class="breadcrumb">${steps
++				.map(
++					(step) => `<li class="breadcrumb-item"><a href="#${step.toLowerCase()}">${step}</a></li>`,
++				)
++				.join(
++					'',
++				)}<li class="breadcrumb-item active" aria-current="page">${current}</li></ol></nav>`,
++		}),
++	),
++)
++
++/** Holds the Close section's visible copy and accessible name. */
++export const CLOSE_COPY = Object.freeze({
++	region: 'Close',
++	paragraph:
++		'Compare the close control at rest, refused through the attribute, refused through the class, and inverted over a dark surface. Hover or focus the resting control to compare its states.',
++})
++
++/** Lists the close control specimens in their rendering order. */
++export const CLOSE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
++	[
++		{
++			name: 'Close control',
++			classes: '',
++			attributes: '',
++			label: 'Dismiss the notice',
++			dark: false,
++		},
++		{
++			name: 'Close refused by attribute',
++			classes: '',
++			attributes: ' disabled=""',
++			label: 'Dismiss the archived notice',
++			dark: false,
++		},
++		{
++			name: 'Close refused by class',
++			classes: ' disabled',
++			attributes: '',
++			label: 'Dismiss the locked notice',
++			dark: false,
++		},
++		{
++			name: 'Close inverted',
++			classes: ' btn-close-white',
++			attributes: '',
++			label: 'Dismiss the inverted notice',
++			dark: true,
++		},
++	].map(({ name, classes, attributes, label, dark }) => {
++		const control = `<button type="button" class="btn-close${classes}" aria-label="${label}"${attributes}></button>`
++		return Object.freeze({
++			name,
++			markup: dark
++				? `<table class="table table-dark"><tbody><tr><td>${label} ${control}</td></tr></tbody></table>`
++				: control,
++		})
++	}),
++)
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index b18ea6e..189e979 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -9,3 +9,6 @@ export * from './sections/MediaSection.js'
+ export * from './sections/SpecimenSection.js'
+ export * from './sections/TypeSection.js'
+ export * from './sections/TableSection.js'
++export * from './sections/BadgeSection.js'
++export * from './sections/BreadcrumbSection.js'
++export * from './sections/CloseSection.js'
+diff --git a/app/browser/sections/BadgeSection.ts b/app/browser/sections/BadgeSection.ts
+new file mode 100644
+index 0000000..840aad8
+--- /dev/null
++++ b/app/browser/sections/BadgeSection.ts
+@@ -0,0 +1,20 @@
++import { BADGE_COPY, BADGE_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared badge specimens into a named region.
++ * @example
++ * ```ts
++ * const section = new BadgeSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class BadgeSection extends SpecimenSection {
++	/**
++	 * Mounts the Badge region and its specimens.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, BADGE_COPY, BADGE_SPECIMENS)
++	}
++}
+diff --git a/app/browser/sections/BreadcrumbSection.ts b/app/browser/sections/BreadcrumbSection.ts
+new file mode 100644
+index 0000000..5404444
+--- /dev/null
++++ b/app/browser/sections/BreadcrumbSection.ts
+@@ -0,0 +1,20 @@
++import { BREADCRUMB_COPY, BREADCRUMB_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared breadcrumb specimens into a named region.
++ * @example
++ * ```ts
++ * const section = new BreadcrumbSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class BreadcrumbSection extends SpecimenSection {
++	/**
++	 * Mounts the Breadcrumb region and its specimens.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, BREADCRUMB_COPY, BREADCRUMB_SPECIMENS)
++	}
++}
+diff --git a/app/browser/sections/CloseSection.ts b/app/browser/sections/CloseSection.ts
+new file mode 100644
+index 0000000..4242ba0
+--- /dev/null
++++ b/app/browser/sections/CloseSection.ts
+@@ -0,0 +1,20 @@
++import { CLOSE_COPY, CLOSE_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared close specimens into a named region.
++ * @example
++ * ```ts
++ * const section = new CloseSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class CloseSection extends SpecimenSection {
++	/**
++	 * Mounts the Close region and its specimens.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, CLOSE_COPY, CLOSE_SPECIMENS)
++	}
++}
+diff --git a/guides/ledger/departures.md b/guides/ledger/departures.md
+index 9411e4f..927670b 100644
+--- a/guides/ledger/departures.md
++++ b/guides/ledger/departures.md
+@@ -29,6 +29,12 @@ at all, and `declared` writes the value in a form or at a value the other member
+ empty value against a recorded one is `declared` rather than `dropped`, because the cascade writes
+ the declaration.
+ 
++#### `badge`
++
++| Component | Selector | Property           | Condition | Bootstrap 5.3.8 | Veneer                         | Departure |
++| --------- | -------- | ------------------ | --------- | --------------- | ------------------------------ | --------- |
++| `badge`   | `.badge` | `--bs-badge-color` | —         | `#fff`          | `var(--vn-palette-white-base)` | tokenized |
++
+ #### `blockquote`
+ 
+ | Component    | Selector             | Property        | Condition | Bootstrap 5.3.8 | Veneer                         | Departure |
+@@ -39,6 +45,13 @@ the declaration.
+ | `blockquote` | `.blockquote-footer` | `margin-bottom` | —         | `1rem`          | `var(--vn-space-8)`            | tokenized |
+ | `blockquote` | `.blockquote-footer` | `color`         | —         | `#6c757d`       | `var(--vn-gray-600)`           | tokenized |
+ 
++#### `breadcrumb`
++
++| Component    | Selector      | Property                         | Condition | Bootstrap 5.3.8 | Veneer              | Departure |
++| ------------ | ------------- | -------------------------------- | --------- | --------------- | ------------------- | --------- |
++| `breadcrumb` | `.breadcrumb` | `--bs-breadcrumb-margin-bottom`  | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
++| `breadcrumb` | `.breadcrumb` | `--bs-breadcrumb-item-padding-x` | —         | `0.5rem`        | `var(--vn-space-4)` | tokenized |
++
+ #### `btn`
+ 
+ | Component | Selector                          | Property                         | Condition | Bootstrap 5.3.8                                                                                                             | Veneer                                                                                                                                                                                                                                                                                                                 | Departure |
+@@ -327,8 +340,12 @@ the declaration.
+ | `btn`     | `.btn-group-sm > .btn`            | `--bs-btn-padding-x`             | —         | `0.5rem`                                                                                                                    | `var(--vn-space-4)`                                                                                                                                                                                                                                                                                                    | tokenized |
+ | `btn`     | `.btn-group-sm > .btn`            | `--bs-btn-font-size`             | —         | `0.875rem`                                                                                                                  | `var(--vn-size-1)`                                                                                                                                                                                                                                                                                                     | tokenized |
+ | `btn`     | `.btn-group-sm > .btn`            | `--bs-btn-border-radius`         | —         | `var(--bs-border-radius-sm)`                                                                                                | `var(--vn-radius-small)`                                                                                                                                                                                                                                                                                               | tokenized |
+-| `btn`     | `:root`                           | `--bs-btn-close-filter`          | —         | `invert(1) grayscale(100%) brightness(200%)`                                                                                | (empty)                                                                                                                                                                                                                                                                                                                | declared  |
+-| `btn`     | `[data-bs-theme=light]`           | `--bs-btn-close-filter`          | —         | `invert(1) grayscale(100%) brightness(200%)`                                                                                | (empty)                                                                                                                                                                                                                                                                                                                | declared  |
++| `btn`     | `.btn-close`                      | `--bs-btn-close-color`           | —         | `#000`                                                                                                                      | `var(--vn-palette-black-base)`                                                                                                                                                                                                                                                                                         | tokenized |
++| `btn`     | `.btn-close`                      | `border-radius`                  | —         | `0.375rem`                                                                                                                  | `var(--vn-radius-base)`                                                                                                                                                                                                                                                                                                | tokenized |
++| `btn`     | `.btn-close:disabled`             | `-webkit-user-select`            | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
++| `btn`     | `.btn-close:disabled`             | `-moz-user-select`               | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
++| `btn`     | `.btn-close.disabled`             | `-webkit-user-select`            | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
++| `btn`     | `.btn-close.disabled`             | `-moz-user-select`               | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
+ 
+ #### `container`
+ 
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 2e3cff7..9f6d910 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -176,68 +176,71 @@ override of the same declaration that leaves the shipped `0.25rem` in place.
+ 
+ The following files carry the axis.
+ 
+-| File                                    | Role                                                                                                                                                                       |
+-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `src/styles/elements/_button.scss`      | The bare button and its same-element states in the elements layer.                                                                                                         |
+-| `src/styles/components/_button.scss`    | The Button class vocabulary and state relationships in the components layer.                                                                                               |
+-| `src/styles/components/_type.scss`      | The heading, display, lead, small, mark, and initialism classes in the components layer.                                                                                   |
+-| `src/styles/components/_list.scss`      | The unstyled and inline list classes in the components layer.                                                                                                              |
+-| `src/styles/components/_quote.scss`     | The quotation class, its last-child rule, and its footer in the components layer.                                                                                          |
+-| `src/styles/components/_link.scss`      | The link color, opacity, offset, and underline classes in the components layer.                                                                                            |
+-| `src/styles/components/_container.scss` | The container family, its breakpoint caps, and navigation combinators in the components layer.                                                                             |
+-| `src/styles/components/_grid.scss`      | The row, column, and offset families and their gutters in the components layer.                                                                                            |
+-| `src/styles/components/_table.scss`     | The table classes, state layers, caption class, and responsive wrappers in the components layer.                                                                           |
+-| `src/styles/components/_image.scss`     | The image and figure classes in the components layer.                                                                                                                      |
+-| `src/styles/components/_icon-link.scss` | The icon link, its icon combinator, and its hover and focus shifts in the components layer.                                                                                |
+-| `src/styles/components/_ratio.scss`     | The aspect-ratio box, its pseudo-element, and the named aspects in the components layer.                                                                                   |
+-| `src/styles/components/_vr.scss`        | The vertical rule in the components layer.                                                                                                                                 |
+-| `src/styles/_reset.scss`                | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.                                                                                 |
+-| `src/styles/elements/_html.scss`        | The document baseline in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_body.scss`        | The body baseline in the elements layer.                                                                                                                                   |
+-| `src/styles/elements/_heading.scss`     | The heading family text treatment in the elements layer.                                                                                                                   |
+-| `src/styles/elements/_p.scss`           | The p text treatment in the elements layer.                                                                                                                                |
+-| `src/styles/elements/_hr.scss`          | The hr text treatment in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_a.scss`           | The a text treatment in the elements layer.                                                                                                                                |
+-| `src/styles/elements/_ul.scss`          | The ul text treatment in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_ol.scss`          | The ol text treatment in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_dl.scss`          | The dl text treatment in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_blockquote.scss`  | The blockquote text treatment in the elements layer.                                                                                                                       |
+-| `src/styles/elements/_address.scss`     | The address text treatment in the elements layer.                                                                                                                          |
+-| `src/styles/elements/_abbr.scss`        | The abbr text treatment in the elements layer.                                                                                                                             |
+-| `src/styles/elements/_strong.scss`      | The strong text treatment in the elements layer.                                                                                                                           |
+-| `src/styles/elements/_small.scss`       | The small text treatment in the elements layer.                                                                                                                            |
+-| `src/styles/elements/_mark.scss`        | The mark text treatment in the elements layer.                                                                                                                             |
+-| `src/styles/elements/_sub.scss`         | The sub text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_sup.scss`         | The sup text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_code.scss`        | The code text treatment in the elements layer.                                                                                                                             |
+-| `src/styles/elements/_pre.scss`         | The pre text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_kbd.scss`         | The kbd text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_samp.scss`        | The samp text treatment in the elements layer.                                                                                                                             |
+-| `src/styles/elements/_var.scss`         | The var text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_b.scss`           | The b family and its mandated pairs in the elements layer.                                                                                                                 |
+-| `src/styles/elements/_figure.scss`      | The figure family and its mandated pairs in the elements layer.                                                                                                            |
+-| `src/styles/elements/_img.scss`         | The img family and its mandated pairs in the elements layer.                                                                                                               |
+-| `src/styles/elements/_svg.scss`         | The svg family and its mandated pairs in the elements layer.                                                                                                               |
+-| `src/styles/elements/_table.scss`       | The table family and its mandated pairs in the elements layer.                                                                                                             |
+-| `src/styles/elements/_tr.scss`          | The tr family and its mandated pairs in the elements layer.                                                                                                                |
+-| `src/styles/elements/_label.scss`       | The label family and its mandated pairs in the elements layer.                                                                                                             |
+-| `src/styles/elements/_input.scss`       | The input family and its mandated pairs in the elements layer.                                                                                                             |
+-| `src/styles/elements/_select.scss`      | The select family and its mandated pairs in the elements layer.                                                                                                            |
+-| `src/styles/elements/_optgroup.scss`    | The optgroup family and its mandated pairs in the elements layer.                                                                                                          |
+-| `src/styles/elements/_textarea.scss`    | The textarea family and its mandated pairs in the elements layer.                                                                                                          |
+-| `src/styles/elements/_fieldset.scss`    | The fieldset family and its mandated pairs in the elements layer.                                                                                                          |
+-| `src/styles/elements/_output.scss`      | The output family and its mandated pairs in the elements layer.                                                                                                            |
+-| `src/styles/elements/_iframe.scss`      | The iframe family and its mandated pairs in the elements layer.                                                                                                            |
+-| `src/styles/elements/_details.scss`     | The details family and its mandated pairs in the elements layer.                                                                                                           |
+-| `src/styles/elements/_progress.scss`    | The progress family and its mandated pairs in the elements layer.                                                                                                          |
+-| `src/styles/utilities/_gap.scss`        | The gutter and row-gap step utilities in the utilities layer.                                                                                                              |
+-| `src/styles/index.scss`                 | The compilation barrel.                                                                                                                                                    |
+-| `src/styles/index.ts`                   | The side-effect entry, and the build's library entry.                                                                                                                      |
+-| `configs/src/vite.styles.config.ts`     | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                 |
+-| `configs/src/tsconfig.styles.json`      | The check-only TypeScript project.                                                                                                                                         |
+-| `tests/setupStyles.ts`                  | The cascade readers, the normalizer, the case tables, and the retained value lists.                                                                                        |
+-| `tests/setupServer.ts`                  | The Node-only readers: the installed and built cascade, the guide's compatibility, deferral, and ledger tables, the cascade comparison, and the elements-layer tag reader. |
+-| `tests/src/styles/`                     | The browser proofs of the shipped cascade.                                                                                                                                 |
++| File                                     | Role                                                                                                                                                                       |
++| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `src/styles/elements/_button.scss`       | The bare button and its same-element states in the elements layer.                                                                                                         |
++| `src/styles/components/_button.scss`     | The Button class vocabulary and state relationships in the components layer.                                                                                               |
++| `src/styles/components/_type.scss`       | The heading, display, lead, small, mark, and initialism classes in the components layer.                                                                                   |
++| `src/styles/components/_list.scss`       | The unstyled and inline list classes in the components layer.                                                                                                              |
++| `src/styles/components/_quote.scss`      | The quotation class, its last-child rule, and its footer in the components layer.                                                                                          |
++| `src/styles/components/_link.scss`       | The link color, opacity, offset, and underline classes in the components layer.                                                                                            |
++| `src/styles/components/_container.scss`  | The container family, its breakpoint caps, and navigation combinators in the components layer.                                                                             |
++| `src/styles/components/_grid.scss`       | The row, column, and offset families and their gutters in the components layer.                                                                                            |
++| `src/styles/components/_table.scss`      | The table classes, state layers, caption class, and responsive wrappers in the components layer.                                                                           |
++| `src/styles/components/_image.scss`      | The image and figure classes in the components layer.                                                                                                                      |
++| `src/styles/components/_icon-link.scss`  | The icon link, its icon combinator, and its hover and focus shifts in the components layer.                                                                                |
++| `src/styles/components/_breadcrumb.scss` | The breadcrumb trail, its item inset, its divider, and the current page in the components layer.                                                                           |
++| `src/styles/components/_badge.scss`      | The badge box, its empty collapse, and its offset inside a button in the components layer.                                                                                 |
++| `src/styles/components/_close.scss`      | The close control, its states, and its opt-in inversion in the components layer.                                                                                           |
++| `src/styles/components/_ratio.scss`      | The aspect-ratio box, its pseudo-element, and the named aspects in the components layer.                                                                                   |
++| `src/styles/components/_vr.scss`         | The vertical rule in the components layer.                                                                                                                                 |
++| `src/styles/_reset.scss`                 | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.                                                                                 |
++| `src/styles/elements/_html.scss`         | The document baseline in the elements layer.                                                                                                                               |
++| `src/styles/elements/_body.scss`         | The body baseline in the elements layer.                                                                                                                                   |
++| `src/styles/elements/_heading.scss`      | The heading family text treatment in the elements layer.                                                                                                                   |
++| `src/styles/elements/_p.scss`            | The p text treatment in the elements layer.                                                                                                                                |
++| `src/styles/elements/_hr.scss`           | The hr text treatment in the elements layer.                                                                                                                               |
++| `src/styles/elements/_a.scss`            | The a text treatment in the elements layer.                                                                                                                                |
++| `src/styles/elements/_ul.scss`           | The ul text treatment in the elements layer.                                                                                                                               |
++| `src/styles/elements/_ol.scss`           | The ol text treatment in the elements layer.                                                                                                                               |
++| `src/styles/elements/_dl.scss`           | The dl text treatment in the elements layer.                                                                                                                               |
++| `src/styles/elements/_blockquote.scss`   | The blockquote text treatment in the elements layer.                                                                                                                       |
++| `src/styles/elements/_address.scss`      | The address text treatment in the elements layer.                                                                                                                          |
++| `src/styles/elements/_abbr.scss`         | The abbr text treatment in the elements layer.                                                                                                                             |
++| `src/styles/elements/_strong.scss`       | The strong text treatment in the elements layer.                                                                                                                           |
++| `src/styles/elements/_small.scss`        | The small text treatment in the elements layer.                                                                                                                            |
++| `src/styles/elements/_mark.scss`         | The mark text treatment in the elements layer.                                                                                                                             |
++| `src/styles/elements/_sub.scss`          | The sub text treatment in the elements layer.                                                                                                                              |
++| `src/styles/elements/_sup.scss`          | The sup text treatment in the elements layer.                                                                                                                              |
++| `src/styles/elements/_code.scss`         | The code text treatment in the elements layer.                                                                                                                             |
++| `src/styles/elements/_pre.scss`          | The pre text treatment in the elements layer.                                                                                                                              |
++| `src/styles/elements/_kbd.scss`          | The kbd text treatment in the elements layer.                                                                                                                              |
++| `src/styles/elements/_samp.scss`         | The samp text treatment in the elements layer.                                                                                                                             |
++| `src/styles/elements/_var.scss`          | The var text treatment in the elements layer.                                                                                                                              |
++| `src/styles/elements/_b.scss`            | The b family and its mandated pairs in the elements layer.                                                                                                                 |
++| `src/styles/elements/_figure.scss`       | The figure family and its mandated pairs in the elements layer.                                                                                                            |
++| `src/styles/elements/_img.scss`          | The img family and its mandated pairs in the elements layer.                                                                                                               |
++| `src/styles/elements/_svg.scss`          | The svg family and its mandated pairs in the elements layer.                                                                                                               |
++| `src/styles/elements/_table.scss`        | The table family and its mandated pairs in the elements layer.                                                                                                             |
++| `src/styles/elements/_tr.scss`           | The tr family and its mandated pairs in the elements layer.                                                                                                                |
++| `src/styles/elements/_label.scss`        | The label family and its mandated pairs in the elements layer.                                                                                                             |
++| `src/styles/elements/_input.scss`        | The input family and its mandated pairs in the elements layer.                                                                                                             |
++| `src/styles/elements/_select.scss`       | The select family and its mandated pairs in the elements layer.                                                                                                            |
++| `src/styles/elements/_optgroup.scss`     | The optgroup family and its mandated pairs in the elements layer.                                                                                                          |
++| `src/styles/elements/_textarea.scss`     | The textarea family and its mandated pairs in the elements layer.                                                                                                          |
++| `src/styles/elements/_fieldset.scss`     | The fieldset family and its mandated pairs in the elements layer.                                                                                                          |
++| `src/styles/elements/_output.scss`       | The output family and its mandated pairs in the elements layer.                                                                                                            |
++| `src/styles/elements/_iframe.scss`       | The iframe family and its mandated pairs in the elements layer.                                                                                                            |
++| `src/styles/elements/_details.scss`      | The details family and its mandated pairs in the elements layer.                                                                                                           |
++| `src/styles/elements/_progress.scss`     | The progress family and its mandated pairs in the elements layer.                                                                                                          |
++| `src/styles/utilities/_gap.scss`         | The gutter and row-gap step utilities in the utilities layer.                                                                                                              |
++| `src/styles/index.scss`                  | The compilation barrel.                                                                                                                                                    |
++| `src/styles/index.ts`                    | The side-effect entry, and the build's library entry.                                                                                                                      |
++| `configs/src/vite.styles.config.ts`      | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                 |
++| `configs/src/tsconfig.styles.json`       | The check-only TypeScript project.                                                                                                                                         |
++| `tests/setupStyles.ts`                   | The cascade readers, the normalizer, the case tables, and the retained value lists.                                                                                        |
++| `tests/setupServer.ts`                   | The Node-only readers: the installed and built cascade, the guide's compatibility, deferral, and ledger tables, the cascade comparison, and the elements-layer tag reader. |
++| `tests/src/styles/`                      | The browser proofs of the shipped cascade.                                                                                                                                 |
+ 
+ The barrel's `@use` rules name the `_tokens.scss` and `_theme.scss` partials and the element
+ partials under the `elements/`, `components/`, and `utilities/` directories; the `_mixins.scss` partial reaches the build through the
+@@ -372,6 +375,83 @@ These are the keys' recorded departures.
+   and Veneer declares that one transform, so the icon shifts the same way whatever the document's
+   writing direction.
+ 
++### Breadcrumb classes
++
++The breadcrumb key ships whole: the trail, the inset between items, the divider each item after the
++first paints before itself, and the current page. The component partial loads after the vertical rule
++in the components layer.
++
++The trail is a wrapping flex row carrying no list marker, so an `ol` element renders as a line of
++steps that wraps at its container's edge. Its bottom margin reads `--vn-space-8` and the inset between
++items reads `--vn-space-4`, so both rescale with `--vn-factor-density`. The trail's own padding is
++zero on each axis, and every remaining length is Bootstrap's own literal.
++
++The divider is the leading content of each item after the first, written as
++`var(--bs-breadcrumb-divider, "/")`. The cascade declares that property nowhere, so the slash is the
++fallback the rule carries, and a consumer replaces the divider by declaring the property on the trail.
++The pseudo-element floats to the physical start, so the divider sits ahead of its item's text whatever
++the document's writing direction.
++
++The fill and the radius are declared with nothing after the colon, which is what Bootstrap writes:
++each property stands so a consumer can set it, and each declaration reading it resolves as unset until
++one does. `--bs-breadcrumb-font-size` is declared nowhere, for the same reason Bootstrap declares it
++nowhere, so the `font-size` declaration reading it leaves the trail at its inherited size.
++
++The divider color and the current page's color both read `--bs-secondary-color`, which each color mode
++declares for itself, so a trail inside a dark island follows the island.
++
++`tests/src/styles/components/breadcrumb.test.ts` reads each resolved treatment in the browser.
++
++### Badge classes
++
++The badge key ships whole: the label box, the empty collapse, and the offset a badge takes inside a
++button. The component partial loads after the breadcrumb in the components layer.
++
++Every length the badge carries is relative. The font size is `0.75em` of the host, and the padding is
++`0.65em` and `0.35em` of the badge's own size, so the two multiply and a badge sizes itself from
++whatever text it sits in. The line height is the unitless `1`, so the label's line box is the badge's
++own font size rather than the body rhythm. The radius reads `--bs-border-radius`, which this cascade
++declares over `--vn-radius-base`, so `--vn-factor-radius` reaches a badge whose own rule names no
++Veneer token.
++
++The label color reads `--vn-palette-white-base`, which holds Bootstrap's own `#fff`. The class
++declares no fill at all, which is Bootstrap's own treatment: a badge paints its label over whatever
++surface carries it, and a contextual fill class supplies the rest. Veneer ships no such class, so the
++showcase paints each badge specimen on a dark table surface.
++
++An empty badge collapses, and a badge inside a button lifts by one pixel. Both are Bootstrap's own
++rules, and the offset selects `.btn .badge` rather than the badge class, so a badge outside a button
++stays in flow.
++
++`tests/src/styles/components/badge.test.ts` reads each resolved treatment in the browser.
++
++### Close classes
++
++The close key ships the control, its hover, focus, and refusal states, and the opt-in inversion. The
++component partial loads after the badge in the components layer. The combinators the alert, toast,
++modal, and offcanvas headers write belong to the overlay components and stay listed under § Deferred
++selectors.
++
++The control is a content-box square one `em` on each side with a `0.25em` inset, so the whole target
++measures one and a half `em` and every part of it scales with the text around it. It paints a mark
++rather than a label, and the mark is a data URI: a data URI cannot read a custom property, which is
++what keeps this one value outside the token set. The text color reads `--vn-palette-black-base` and
++the radius reads `--vn-radius-base`. The opacities, the focus shadow, and the `em` lengths are
++Bootstrap's own literals, because no published Veneer scale resolves to the recorded value.
++
++Each state reads its own opacity variable: `0.5` at rest, `0.75` under the pointer, `1` on focus, and
++`0.25` when refused. Focus removes the outline and paints the recorded shadow, which is what separates
++this control from the focus ring the button class wears. A control is refused by the `disabled`
++attribute and by the `disabled` class alike, and each refusal removes pointer events and text
++selection beside dimming the control.
++
++The mark is inverted by `--bs-btn-close-filter`, which the theme scopes declare: empty in light and
++the recorded inversion in dark, so a control inside a dark island inverts on its own. The
++`.btn-close-white` class declares the same inversion on the control itself, which is the opt-in for a
++control sitting over a dark surface inside a light island.
++
++`tests/src/styles/components/close.test.ts` reads each resolved treatment in the browser.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -435,25 +515,11 @@ name this release declares nowhere is recorded in § Outside the ledger instead.
+ | `.btn-group-vertical > .btn:nth-child(n+3)`                         | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.btn-group-vertical > :not(.btn-check) + .btn`                     | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.btn-group-vertical > .btn-group:not(:first-child) > .btn`         | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+-| `.btn .badge`                                                       | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.alert-dismissible .btn-close`                                     | Overlays   | The owning component supplies this relationship.                                                                                                                                                                |
+-| `.btn-close`                                                        | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+-| `.btn-close:hover`                                                  | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+-| `.btn-close:focus`                                                  | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+-| `.btn-close:disabled`                                               | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+-| `.btn-close.disabled`                                               | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+-| `.btn-close-white`                                                  | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.toast-header .btn-close`                                          | Overlays   | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.modal-header .btn-close`                                          | Overlays   | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.offcanvas-header .btn-close`                                      | Overlays   | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.placeholder.btn::before`                                          | Passive    | The owning component supplies this relationship.                                                                                                                                                                |
+-| `--bs-btn-close-color`                                              | Passive    | Close button supplies this property.                                                                                                                                                                            |
+-| `--bs-btn-close-bg`                                                 | Passive    | Close button supplies this property.                                                                                                                                                                            |
+-| `--bs-btn-close-opacity`                                            | Passive    | Close button supplies this property.                                                                                                                                                                            |
+-| `--bs-btn-close-hover-opacity`                                      | Passive    | Close button supplies this property.                                                                                                                                                                            |
+-| `--bs-btn-close-focus-shadow`                                       | Passive    | Close button supplies this property.                                                                                                                                                                            |
+-| `--bs-btn-close-focus-opacity`                                      | Passive    | Close button supplies this property.                                                                                                                                                                            |
+-| `--bs-btn-close-disabled-opacity`                                   | Passive    | Close button supplies this property.                                                                                                                                                                            |
+ | `.col-form-label`                                                   | Forms      | Form-label typography belongs to Forms; the col inventory key is its only record.                                                                                                                               |
+ | `.col-form-label-lg`                                                | Forms      | Form-label typography belongs to Forms; the col inventory key is its only record.                                                                                                                               |
+ | `.col-form-label-sm`                                                | Forms      | Form-label typography belongs to Forms; the col inventory key is its only record.                                                                                                                               |
+@@ -1091,6 +1157,12 @@ must add a forced-colors axis before this reading closes.
+ | ratio         | selector       | Every official `.ratio` selector ships, the pseudo-element and the named aspects included; resolved boxes and child fill are proved in `tests/src/styles/components/ratio.test.ts`.                                               | —                     | shipped  |
+ | ratio         | variable       | The `--bs-aspect-ratio` property carries each name's own height over its width, and a direct override retunes any box; both are proved in `tests/src/styles/components/ratio.test.ts`.                                            | —                     | shipped  |
+ | vr            | selector       | The `.vr` family ships in the components layer, reading `--bs-border-width` for its width; resolved width, stretch, and paint are proved in `tests/src/styles/components/vr.test.ts`.                                             | —                     | shipped  |
++| badge         | selector       | Every official `.badge` selector ships in the components layer, the empty collapse and the button offset included; resolved geometry and paint are proved in `tests/src/styles/components/badge.test.ts`.                         | —                     | shipped  |
++| badge         | variable       | Every official `--bs-badge-*` custom property is declared on `.badge`, the text color routed through `--vn-palette-white-base`.                                                                                                   | —                     | shipped  |
++| breadcrumb    | selector       | Every official `.breadcrumb` selector ships in the components layer, the item divider and the active item included; resolved geometry and paint are proved in `tests/src/styles/components/breadcrumb.test.ts`.                   | —                     | shipped  |
++| breadcrumb    | variable       | Every official `--bs-breadcrumb-*` custom property is declared on `.breadcrumb`, the empty fill and the empty radius included.                                                                                                    | —                     | shipped  |
++| btn-close     | selector       | Every official `.btn-close` selector the ledger assigns to Passive ships in the components layer; the header combinators are listed under § Styles.                                                                               | —                     | shipped  |
++| btn-close     | variable       | Every official `--bs-btn-close-*` custom property is declared, the filter by the theme scopes and by the opt-in `.btn-close-white` class.                                                                                         | —                     | shipped  |
+ | engine        | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                   | —                     | accepted |
+ | engine        | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                          | —                     | accepted |
+ | engine        | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                     | —                     | accepted |
+@@ -1148,6 +1220,9 @@ the shell's reaches a specimen through the element it happens to be. The regions
+ `main` element the shell carries no id on: a proof reaches it through the host it mounted the
+ showcase into, and each region through its accessible name. The application barrel is a workspace
+ implementation surface and is outside this guide's published API tables.
++A Breadcrumb region carries the trail specimens, a Badge region carries the badge specimens on the
++dark table surface the badge needs to read against, and a Close region carries the close control at
++rest, refused through the attribute, refused through the class, and inverted over a dark surface.
+ 
+ That placement is what the capture registry addresses a frame by: every registered scenario names
+ the specimen or the region that is its subject, and § Tests gives the filename law built on it, so a
+@@ -1214,6 +1289,10 @@ pairs the rows and rules on the alignment.
+ | `primary-hover`    | the `Primary` specimen under the pointer              |
+ | `primary-active`   | the `Primary` specimen held under the pointer         |
+ | `toggle-pressed`   | the `Toggle` specimen driven to its pressed state     |
++| `breadcrumb-trail` | the `Breadcrumb trail` specimen's own trail           |
++| `badge-counter`    | the `Badge counter` specimen's own badge              |
++| `close-control`    | the `Close control` specimen, at rest                 |
++| `close-inverted`   | the `Close inverted` specimen's inverted control      |
+ 
+ An element frame carries its whole specimen and the background that specimen renders against, and
+ the element the scenario is about is the frame's declared region. A crop of that element alone
+@@ -1262,6 +1341,9 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the container classes](../tests/src/styles/components/container.test.ts),
+ [the grid classes](../tests/src/styles/components/grid.test.ts),
+ [the table classes](../tests/src/styles/components/table.test.ts),
++[the breadcrumb classes](../tests/src/styles/components/breadcrumb.test.ts),
++[the badge classes](../tests/src/styles/components/badge.test.ts),
++[the close classes](../tests/src/styles/components/close.test.ts),
+ [the icon link classes](../tests/src/styles/components/icon-link.test.ts),
+ [the ratio classes](../tests/src/styles/components/ratio.test.ts),
+ [the vertical rule](../tests/src/styles/components/vr.test.ts),
+diff --git a/src/styles/components/_badge.scss b/src/styles/components/_badge.scss
+new file mode 100644
+index 0000000..cbc1db2
+--- /dev/null
++++ b/src/styles/components/_badge.scss
+@@ -0,0 +1,38 @@
++@layer components {
++	// The badge ships Bootstrap's recorded geometry and nothing more. Its padding, font size, and
++	// weight are written as the release writes them: each is relative to the badge's own inherited
++	// font size, so no published length scale resolves to the recorded value and a token here would
++	// change what the class measures. The text color is the one value a Veneer token already holds
++	// byte for byte, so it routes through the palette and a consumer retuning white moves the badge
++	// with everything else. The radius reads the compatibility variable the release reads.
++	//
++	// The release declares no fill on this class, and Veneer ships no contextual fill utility yet,
++	// so a badge paints its own text over whatever surface carries it.
++	.badge {
++		--bs-badge-padding-x: 0.65em;
++		--bs-badge-padding-y: 0.35em;
++		--bs-badge-font-size: 0.75em;
++		--bs-badge-font-weight: 700;
++		--bs-badge-color: var(--vn-palette-white-base);
++		--bs-badge-border-radius: var(--bs-border-radius);
++		display: inline-block;
++		padding: var(--bs-badge-padding-y) var(--bs-badge-padding-x);
++		font-size: var(--bs-badge-font-size);
++		font-weight: var(--bs-badge-font-weight);
++		line-height: 1;
++		color: var(--bs-badge-color);
++		text-align: center;
++		white-space: nowrap;
++		vertical-align: baseline;
++		border-radius: var(--bs-badge-border-radius);
++	}
++
++	.badge:empty {
++		display: none;
++	}
++
++	.btn .badge {
++		position: relative;
++		top: -1px;
++	}
++}
+diff --git a/src/styles/components/_breadcrumb.scss b/src/styles/components/_breadcrumb.scss
+new file mode 100644
+index 0000000..01902af
+--- /dev/null
++++ b/src/styles/components/_breadcrumb.scss
+@@ -0,0 +1,46 @@
++@layer components {
++	// The trail ships Bootstrap's recorded surface. Its bottom margin and item inset are the two
++	// lengths a Veneer spacing token already resolves to, so each routes through that token and
++	// rescales with the density factor; the zero insets and the divider fallback stay literal.
++	//
++	// The fill and the radius are declared with nothing after the colon, which is what the release
++	// writes: the property stands so a consumer can set it, and the trail paints nothing until one
++	// does. `--bs-breadcrumb-font-size` is declared nowhere for the same reason the release declares
++	// it nowhere, so the `font-size` declaration reading it leaves the inherited size in place.
++	.breadcrumb {
++		--bs-breadcrumb-padding-x: 0;
++		--bs-breadcrumb-padding-y: 0;
++		--bs-breadcrumb-margin-bottom: var(--vn-space-8);
++		--bs-breadcrumb-bg: #{''};
++		--bs-breadcrumb-border-radius: #{''};
++		--bs-breadcrumb-divider-color: var(--bs-secondary-color);
++		--bs-breadcrumb-item-padding-x: var(--vn-space-4);
++		--bs-breadcrumb-item-active-color: var(--bs-secondary-color);
++		display: flex;
++		flex-wrap: wrap;
++		padding: var(--bs-breadcrumb-padding-y) var(--bs-breadcrumb-padding-x);
++		margin-bottom: var(--bs-breadcrumb-margin-bottom);
++		font-size: var(--bs-breadcrumb-font-size);
++		list-style: none;
++		background-color: var(--bs-breadcrumb-bg);
++		border-radius: var(--bs-breadcrumb-border-radius);
++	}
++
++	.breadcrumb-item + .breadcrumb-item {
++		padding-left: var(--bs-breadcrumb-item-padding-x);
++	}
++
++	// The divider is the item's own leading content, and a consumer replaces it by setting
++	// `--bs-breadcrumb-divider` on the trail. The float is physical, so the divider sits on the
++	// same side whatever the document's writing direction.
++	.breadcrumb-item + .breadcrumb-item::before {
++		float: left;
++		padding-right: var(--bs-breadcrumb-item-padding-x);
++		color: var(--bs-breadcrumb-divider-color);
++		content: var(--bs-breadcrumb-divider, '/');
++	}
++
++	.breadcrumb-item.active {
++		color: var(--bs-breadcrumb-item-active-color);
++	}
++}
+diff --git a/src/styles/components/_close.scss b/src/styles/components/_close.scss
+new file mode 100644
+index 0000000..036c114
+--- /dev/null
++++ b/src/styles/components/_close.scss
+@@ -0,0 +1,56 @@
++@layer components {
++	// The close control ships Bootstrap's recorded surface. Its text color routes through the
++	// palette token that already holds black byte for byte, and its radius through the base radius
++	// token, so a consumer retuning either one moves this control with the rest of the cascade.
++	// The opacities, the focus shadow, and the `em` box stay literal: no published Veneer scale
++	// resolves to the recorded value, and a token that did not would change what the class paints.
++	//
++	// The mark is a background asset rather than a token expression, because a data URI cannot read
++	// a custom property. `--bs-btn-close-filter` is declared by the theme scopes in `_theme.scss`,
++	// which is what inverts the mark inside a dark island; this partial declares it on the opt-in
++	// class alone, the way the release does.
++	.btn-close {
++		--bs-btn-close-color: var(--vn-palette-black-base);
++		--bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414'/%3e%3c/svg%3e");
++		--bs-btn-close-opacity: 0.5;
++		--bs-btn-close-hover-opacity: 0.75;
++		--bs-btn-close-focus-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
++		--bs-btn-close-focus-opacity: 1;
++		--bs-btn-close-disabled-opacity: 0.25;
++		box-sizing: content-box;
++		width: 1em;
++		height: 1em;
++		padding: 0.25em 0.25em;
++		color: var(--bs-btn-close-color);
++		background: transparent var(--bs-btn-close-bg) center / 1em auto no-repeat;
++		filter: var(--bs-btn-close-filter);
++		border: 0;
++		border-radius: var(--vn-radius-base);
++		opacity: var(--bs-btn-close-opacity);
++	}
++
++	.btn-close:hover {
++		color: var(--bs-btn-close-color);
++		text-decoration: none;
++		opacity: var(--bs-btn-close-hover-opacity);
++	}
++
++	.btn-close:focus {
++		outline: 0;
++		box-shadow: var(--bs-btn-close-focus-shadow);
++		opacity: var(--bs-btn-close-focus-opacity);
++	}
++
++	.btn-close:disabled,
++	.btn-close.disabled {
++		pointer-events: none;
++		user-select: none;
++		opacity: var(--bs-btn-close-disabled-opacity);
++	}
++
++	// The opt-in inversion a consumer puts on a control sitting over a dark surface inside a light
++	// island, where the theme scope leaves the filter empty.
++	.btn-close-white {
++		--bs-btn-close-filter: invert(1) grayscale(100%) brightness(200%);
++	}
++}
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index aa5292d..77c7126 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -52,4 +52,7 @@
+ @use 'components/icon-link';
+ @use 'components/ratio';
+ @use 'components/vr';
++@use 'components/breadcrumb';
++@use 'components/badge';
++@use 'components/close';
+ @use 'utilities/gap';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index d645973..20d4c5d 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -1,5 +1,8 @@
+ import {
++	BADGE_SPECIMENS,
++	BREADCRUMB_SPECIMENS,
+ 	BUTTON_SPECIMENS,
++	CLOSE_SPECIMENS,
+ 	CONTENT_SPECIMENS,
+ 	LINK_SPECIMENS,
+ 	LAYOUT_SPECIMENS,
+@@ -74,6 +77,9 @@ describe('Showcase', () => {
+ 				'Links',
+ 				'Layout',
+ 				'Table',
++				'Badge',
++				'Breadcrumb',
++				'Close',
+ 			])
+ 			expect(
+ 				[...host.querySelectorAll('[data-specimen]')].map((element) =>
+@@ -87,6 +93,9 @@ describe('Showcase', () => {
+ 					...LINK_SPECIMENS,
+ 					...LAYOUT_SPECIMENS,
+ 					...TABLE_SPECIMENS,
++					...BADGE_SPECIMENS,
++					...BREADCRUMB_SPECIMENS,
++					...CLOSE_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+ 			expect(readPerception('Showcase')).toBe('Explore the color mode with the Dark mode control.')
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index ba1526d..bfd7f7d 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -7,12 +7,21 @@ describe('app browser entry', () => {
+ 	// what proves they are types.
+ 	it('exports the showcase surface, the specimen table, and the sections family', () => {
+ 		expect(Object.keys(entry).sort()).toStrictEqual([
++			'BADGE_COPY',
++			'BADGE_SPECIMENS',
++			'BREADCRUMB_COPY',
++			'BREADCRUMB_SPECIMENS',
+ 			'BUTTON_COPY',
+ 			'BUTTON_GRID',
+ 			'BUTTON_SPECIMENS',
++			'BadgeSection',
++			'BreadcrumbSection',
+ 			'ButtonSection',
++			'CLOSE_COPY',
++			'CLOSE_SPECIMENS',
+ 			'CONTENT_COPY',
+ 			'CONTENT_SPECIMENS',
++			'CloseSection',
+ 			'ContentSection',
+ 			'LAYOUT_COPY',
+ 			'LAYOUT_SPECIMENS',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 15de464..2d05aef 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -39,7 +39,10 @@ import {
+ import { afterAll, afterEach, beforeEach, describe, expect, inject, it } from 'vitest'
+ import { commands, page } from 'vitest/browser'
+ import {
++	BADGE_SPECIMENS,
++	BREADCRUMB_SPECIMENS,
+ 	BUTTON_SPECIMENS,
++	CLOSE_SPECIMENS,
+ 	CONTENT_SPECIMENS,
+ 	LAYOUT_SPECIMENS,
+ 	LINK_SPECIMENS,
+@@ -673,6 +676,39 @@ describe('journey', () => {
+ 		expect(comparison.driven).toStrictEqual(comparison.recorded)
+ 		ARTIFACT.push(JSON.stringify({ reading: 'oracle', compared: comparison.compared }))
+ 	})
++
++	it('drives the close control to hover and to focus and photographs each state', async () => {
++		await applyTheme(VARIANT)
++		const specimen = readSpecimen(mounted.host, 'Close control')
++		const control = requireValue(
++			specimen.querySelector<HTMLButtonElement>('.btn-close'),
++			'The "Close control" specimen renders no close control',
++		)
++		const name = readName(control)
++		// The bare button element carries an opacity transition, so each reading follows the
++		// animation rather than the moment the state flips.
++		const rest = readStyle(control, 'opacity')
++		await hoverAccessible('button', name)
++		expect(control.matches(':hover')).toBe(true)
++		await waitForAnimations(control)
++		const hovered = readStyle(control, 'opacity')
++		// Each frame is a page frame: the recorded focus treatment paints its shadow outside the
++		// control's border box, and an element frame crops away the state the scenario claims. The
++		// declared region is the control itself, so a reader of the whole document is pointed at it.
++		await FRAMES.page('close-control-hover', control)
++		await releasePointer()
++		control.focus()
++		expect(control.matches(':focus')).toBe(true)
++		await waitForAnimations(control)
++		const focused = readStyle(control, 'opacity')
++		await FRAMES.page('close-control-focus', control)
++		control.blur()
++		await waitForAnimations(control)
++		// Each state reads its own recorded variable, so a state that stopped reading its own one
++		// resolves to the resting opacity and reddens here rather than photographing it silently.
++		expect([rest, hovered, focused]).toStrictEqual(['0.5', '0.75', '1'])
++		ARTIFACT.push(JSON.stringify({ reading: 'close states', rest, hovered, focused }))
++	})
+ })
+ 
+ describe('refusal', () => {
+@@ -780,7 +816,10 @@ describe('portfolio', () => {
+ 	it('names a specimen the showcase declares, or its own region, as every scenario subject', () => {
+ 		const declared = new Set([
+ 			...[
++				BADGE_SPECIMENS,
++				BREADCRUMB_SPECIMENS,
+ 				BUTTON_SPECIMENS,
++				CLOSE_SPECIMENS,
+ 				CONTENT_SPECIMENS,
+ 				LAYOUT_SPECIMENS,
+ 				LINK_SPECIMENS,
+diff --git a/tests/app/browser/sections/BadgeSection.test.ts b/tests/app/browser/sections/BadgeSection.test.ts
+new file mode 100644
+index 0000000..4d209a7
+--- /dev/null
++++ b/tests/app/browser/sections/BadgeSection.test.ts
+@@ -0,0 +1,73 @@
++import type { SectionInterface } from '@app/browser'
++import { BADGE_COPY, BADGE_SPECIMENS, BadgeSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('BadgeSection', () => {
++	it('renders each badge specimen on a painted surface through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new BadgeSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Badge region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Badge')
++			expect(region.querySelector('p')?.textContent).toBe(BADGE_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Badge counter',
++				'Badge word',
++				'Badge at heading scale',
++				'Badge collapsed',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				BADGE_SPECIMENS.map(({ markup }) => markup),
++			)
++			// The class declares no fill, so every specimen paints its label on the dark table
++			// surface it sits in. A specimen moved onto the page background renders white on white.
++			for (const element of rendered) {
++				expect(element.querySelector('table.table.table-dark')).not.toBeNull()
++				expect(element.querySelector('.badge')).not.toBeNull()
++			}
++			const collapsed = requireValue(
++				region.querySelector('[data-specimen="Badge collapsed"] .badge'),
++				'No collapsed badge',
++			)
++			// The specimen renders the badge with nothing inside it, which is the condition the
++			// recorded `:empty` rule selects. The collapse itself is read in the cascade proof,
++			// because this region mounts without the shipped stylesheet.
++			expect(collapsed.textContent).toBe('')
++			expect(collapsed.matches('.badge:empty')).toBe(true)
++			expect(region.querySelector('[data-specimen="Badge at heading scale"] .h3')).not.toBeNull()
++			// A button host in this region would join the Button section's own population, which is
++			// read off the shipped class, so the badge's button offset is proved in the cascade proof.
++			expect(region.querySelector('.btn')).toBeNull()
++			expect(Object.isFrozen(BADGE_COPY)).toBe(true)
++			expect(Object.isFrozen(BADGE_SPECIMENS)).toBe(true)
++			expect(BADGE_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases the region and preserves adjacent content on repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new BadgeSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Badge region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/app/browser/sections/BreadcrumbSection.test.ts b/tests/app/browser/sections/BreadcrumbSection.test.ts
+new file mode 100644
+index 0000000..9b31906
+--- /dev/null
++++ b/tests/app/browser/sections/BreadcrumbSection.test.ts
+@@ -0,0 +1,84 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	BREADCRUMB_COPY,
++	BREADCRUMB_SPECIMENS,
++	BreadcrumbSection,
++	SpecimenSection,
++} from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('BreadcrumbSection', () => {
++	it('renders each trail specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new BreadcrumbSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Breadcrumb region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Breadcrumb')
++			expect(region.querySelector('p')?.textContent).toBe(BREADCRUMB_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Breadcrumb trail',
++				'Breadcrumb single step',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				BREADCRUMB_SPECIMENS.map(({ markup }) => markup),
++			)
++			// Each trail announces itself as a navigation landmark and marks its own current page,
++			// which is what a list of links alone would leave unstated.
++			for (const element of rendered) {
++				const trail = requireValue(element.querySelector('nav > ol.breadcrumb'), 'No trail')
++				expect(element.querySelector('nav')?.getAttribute('aria-label')).toBe(
++					element.getAttribute('data-specimen'),
++				)
++				expect(trail.querySelectorAll('.breadcrumb-item.active')).toHaveLength(1)
++				expect(trail.querySelector('.breadcrumb-item.active')?.getAttribute('aria-current')).toBe(
++					'page',
++				)
++			}
++			// The single-step trail is what separates the divider's recorded combinator from a rule
++			// on the item itself: its one item is preceded by nothing and carries no divider.
++			const single = requireValue(
++				region.querySelector('[data-specimen="Breadcrumb single step"] .breadcrumb'),
++				'No single-step trail',
++			)
++			expect(single.querySelectorAll('.breadcrumb-item')).toHaveLength(1)
++			expect(single.querySelector('.breadcrumb-item + .breadcrumb-item')).toBeNull()
++			// The divider's own paint is read in the cascade proof, because this region mounts
++			// without the shipped stylesheet.
++			const trail = requireValue(
++				region.querySelector('[data-specimen="Breadcrumb trail"] .breadcrumb'),
++				'No divided trail',
++			)
++			expect(trail.querySelector('.breadcrumb-item + .breadcrumb-item')).not.toBeNull()
++			expect(Object.isFrozen(BREADCRUMB_COPY)).toBe(true)
++			expect(Object.isFrozen(BREADCRUMB_SPECIMENS)).toBe(true)
++			expect(BREADCRUMB_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases the region and preserves adjacent content on repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new BreadcrumbSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Breadcrumb region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/app/browser/sections/CloseSection.test.ts b/tests/app/browser/sections/CloseSection.test.ts
+new file mode 100644
+index 0000000..d7edc4a
+--- /dev/null
++++ b/tests/app/browser/sections/CloseSection.test.ts
+@@ -0,0 +1,82 @@
++import type { SectionInterface } from '@app/browser'
++import { CLOSE_COPY, CLOSE_SPECIMENS, CloseSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readName } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('CloseSection', () => {
++	it('renders each close specimen and its refusal through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new CloseSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Close region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Close')
++			expect(region.querySelector('p')?.textContent).toBe(CLOSE_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Close control',
++				'Close refused by attribute',
++				'Close refused by class',
++				'Close inverted',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				CLOSE_SPECIMENS.map(({ markup }) => markup),
++			)
++			// The control paints a mark rather than a label, so each one announces its own name and
++			// a specimen that stopped doing so would render an unnamed button.
++			for (const element of rendered) {
++				const control = requireValue(element.querySelector('.btn-close'), 'No close control')
++				expect(control.tagName).toBe('BUTTON')
++				expect(readName(control).length).toBeGreaterThan(0)
++				expect(control.textContent).toBe('')
++			}
++			const attributed = requireValue(
++				region.querySelector('[data-specimen="Close refused by attribute"] .btn-close'),
++				'No attributed control',
++			)
++			const classed = requireValue(
++				region.querySelector('[data-specimen="Close refused by class"] .btn-close'),
++				'No classed control',
++			)
++			expect(attributed.matches(':disabled')).toBe(true)
++			expect(classed.matches(':disabled')).toBe(false)
++			expect(classed.matches('.disabled')).toBe(true)
++			// The two refusals resolve to one opacity in the cascade proof; this region mounts
++			// without the shipped stylesheet, so what it states is that both conditions render.
++			// The inverted control sits on the dark table surface its own class exists for, so the
++			// mark reads against the fill rather than disappearing into it.
++			const inverted = requireValue(
++				region.querySelector('[data-specimen="Close inverted"] .btn-close-white'),
++				'No inverted control',
++			)
++			expect(inverted.closest('table.table-dark')).not.toBeNull()
++			expect(Object.isFrozen(CLOSE_COPY)).toBe(true)
++			expect(Object.isFrozen(CLOSE_SPECIMENS)).toBe(true)
++			expect(CLOSE_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases the region and preserves adjacent content on repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new CloseSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Close region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index b5fd62e..4244152 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -89,8 +89,11 @@ describe('Bootstrap component oracle', () => {
+ 		const rows = readCompatibility()
+ 		const shipped = collectShippedComponents(rows)
+ 		const listed: readonly string[] = [
++			'badge',
+ 			'blockquote',
++			'breadcrumb',
+ 			'btn',
++			'btn-close',
+ 			'col',
+ 			'container',
+ 			'display',
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 375d53d..61a8a85 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -7,6 +7,7 @@ import {
+ 	CAPTURE_KEYS,
+ 	CAPTURE_SCENARIOS,
+ 	CASCADE_KEYS,
++	CLOSE_KEYS,
+ 	collectTokenNodes,
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+@@ -53,6 +54,7 @@ describe('shared setup', () => {
+ 				'CAPTURE_KEYS',
+ 				'CAPTURE_SCENARIOS',
+ 				'CASCADE_KEYS',
++				'CLOSE_KEYS',
+ 				'CONTRAST_BAR',
+ 				'DISABLED_OPACITY',
+ 				'FOCUS_RING',
+@@ -68,7 +70,12 @@ describe('shared setup', () => {
+ 		)
+ 	})
+ 	it('registers one scenario per photographed frame, each naming the subject it shows', () => {
+-		expect(CAPTURE_KEYS).toStrictEqual([...SHOWCASE_KEYS, ...BUTTON_KEYS, ...CASCADE_KEYS])
++		expect(CAPTURE_KEYS).toStrictEqual([
++			...SHOWCASE_KEYS,
++			...BUTTON_KEYS,
++			...CASCADE_KEYS,
++			...CLOSE_KEYS,
++		])
+ 		expect(CAPTURE_SCENARIOS).toStrictEqual(CAPTURE_KEYS.map((key) => key.scenario))
+ 		expect(new Set(CAPTURE_SCENARIOS).size).toBe(CAPTURE_SCENARIOS.length)
+ 		expect(CAPTURE_KEYS.filter((key) => key.subject.length === 0)).toStrictEqual([])
+diff --git a/tests/setup.ts b/tests/setup.ts
+index f28fa98..763e2e7 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -79,8 +79,14 @@ export type CaptureVariantName = `${CaptureTheme}-${number}`
+  * showcase stops rendering reddens there rather than photographing something else under it.
+  */
+ export type CaptureSubject =
++	| 'Badge counter'
+ 	| 'Base'
++	| 'Breadcrumb trail'
+ 	| 'Capped container'
++	| 'Close control'
++	| 'Close inverted'
++	| 'Close refused by attribute'
++	| 'Close refused by class'
+ 	| 'Numbered columns'
+ 	| 'Primary'
+ 	| 'Role links'
+@@ -281,6 +287,57 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.link-primary',
+ 		property: 'color',
+ 	}),
++	Object.freeze({
++		scenario: 'breadcrumb-trail',
++		subject: 'Breadcrumb trail',
++		selector: '.breadcrumb',
++		property: 'display',
++	}),
++	Object.freeze({
++		scenario: 'badge-counter',
++		subject: 'Badge counter',
++		selector: '.badge',
++		property: 'padding-left',
++	}),
++	Object.freeze({
++		scenario: 'close-control',
++		subject: 'Close control',
++		selector: '.btn-close',
++		property: 'opacity',
++	}),
++	Object.freeze({
++		scenario: 'close-inverted',
++		subject: 'Close inverted',
++		selector: '.btn-close-white',
++		property: 'filter',
++	}),
++	Object.freeze({
++		scenario: 'close-refused-by-attribute',
++		subject: 'Close refused by attribute',
++		selector: '.btn-close:disabled',
++		property: 'opacity',
++	}),
++	Object.freeze({
++		scenario: 'close-refused-by-class',
++		subject: 'Close refused by class',
++		selector: '.btn-close.disabled',
++		property: 'opacity',
++	}),
++])
++
++/**
++ * Lists the close scenarios a journey drives before it photographs them.
++ *
++ * @remarks
++ * The recorded hover and focus treatments move an opacity the resting page never shows, and the
++ * focus treatment paints a shadow outside the control's border box, so each one is a page frame
++ * whose declared region is the control it claims. Neither can sit in {@link CASCADE_KEYS}: that
++ * list carries one row per subject and the journey places every row of it at rest, so a driven
++ * state registered there would photograph the resting control under a name claiming otherwise.
++ */
++export const CLOSE_KEYS: readonly CaptureKey[] = Object.freeze([
++	Object.freeze({ scenario: 'close-control-hover', subject: 'Close control' }),
++	Object.freeze({ scenario: 'close-control-focus', subject: 'Close control' }),
+ ])
+ 
+ /**
+@@ -295,6 +352,7 @@ export const CAPTURE_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	...SHOWCASE_KEYS,
+ 	...BUTTON_KEYS,
+ 	...CASCADE_KEYS,
++	...CLOSE_KEYS,
+ ])
+ 
+ /**
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 884b04d..c484629 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -18,11 +18,21 @@ import {
+ } from './setupServer.js'
+ import * as setup from './setupStyles.js'
+ import {
++	BADGE_GEOMETRY_CASES,
++	BADGE_SELECTORS,
+ 	BOOTSTRAP_DARK_VARIABLES,
+ 	BOOTSTRAP_ROOT_VARIABLES,
+ 	BOOTSTRAP_SCOPE_PATTERNS,
++	BREADCRUMB_ITEM_CASES,
++	BREADCRUMB_MARKUP,
++	BREADCRUMB_SELECTORS,
+ 	BREAKPOINT_CASES,
+ 	CALIBRATED_TIERS,
++	CLOSE_DEFERRED,
++	CLOSE_INVERSION,
++	CLOSE_MARK,
++	CLOSE_SELECTORS,
++	CLOSE_STATE_CASES,
+ 	CONTAINER_CLASS_CASES,
+ 	CONTAINER_WIDTH_CASES,
+ 	CUSTOMIZATION_RECIPE,
+@@ -108,9 +118,14 @@ describe('styles setup', () => {
+ 	it('exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
++				'BADGE_GEOMETRY_CASES',
++				'BADGE_SELECTORS',
+ 				'BOOTSTRAP_DARK_VARIABLES',
+ 				'BOOTSTRAP_ROOT_VARIABLES',
+ 				'BOOTSTRAP_SCOPE_PATTERNS',
++				'BREADCRUMB_ITEM_CASES',
++				'BREADCRUMB_MARKUP',
++				'BREADCRUMB_SELECTORS',
+ 				'BREAKPOINT_CASES',
+ 				'BUTTON_BARE_CASES',
+ 				'BUTTON_BARE_VALUES',
+@@ -121,6 +136,11 @@ describe('styles setup', () => {
+ 				'BUTTON_OUTLINE_CASES',
+ 				'BUTTON_SIZE_CASES',
+ 				'CALIBRATED_TIERS',
++				'CLOSE_DEFERRED',
++				'CLOSE_INVERSION',
++				'CLOSE_MARK',
++				'CLOSE_SELECTORS',
++				'CLOSE_STATE_CASES',
+ 				'CONTAINER_CLASS_CASES',
+ 				'CONTAINER_WIDTH_CASES',
+ 				'CUSTOMIZATION_RECIPE',
+@@ -1423,3 +1443,98 @@ describe('reference map refusals', () => {
+ 		expect(normalizeDeclaration('15%')).not.toBe(normalizeDeclaration('16%'))
+ 	})
+ })
++
++describe('passive component case tables', () => {
++	it('binds the breadcrumb, badge, and close selector tables to the official inventory', () => {
++		expect(new Set(BREADCRUMB_SELECTORS)).toEqual(
++			new Set(oracle.components.breadcrumb.selectors.map(({ selector }) => selector)),
++		)
++		expect(new Set(BADGE_SELECTORS)).toEqual(
++			new Set(oracle.components.badge.selectors.map(({ selector }) => selector)),
++		)
++		// The close key is the one of the three the inventory records more selectors for than this
++		// release ships, so the shipped table and the deferred table are compared as one population
++		// against the record and as two disjoint ones against each other.
++		expect(new Set([...CLOSE_SELECTORS, ...CLOSE_DEFERRED])).toEqual(
++			new Set(oracle.components['btn-close'].selectors.map(({ selector }) => selector)),
++		)
++		expect(CLOSE_SELECTORS.filter((selector) => CLOSE_DEFERRED.includes(selector))).toEqual([])
++		expect(new Set(CLOSE_DEFERRED)).toEqual(
++			new Set(
++				readDeferrals()
++					.filter((row) => row.owner === 'Overlays')
++					.map((row) => row.name),
++			),
++		)
++	})
++	it('derives the badge geometry and the breadcrumb inset from the recorded declarations', () => {
++		const badge = requireValue(
++			oracle.components.badge.selectors.find(({ selector }) => selector === '.badge'),
++			'The inventory records no `.badge` rule',
++		)
++		const read = (property: string): string =>
++			requireValue(
++				badge.declarations.find((declaration) => declaration.property === property),
++				`The inventory records no ${property} on \`.badge\``,
++			).value
++		expect(read('--bs-badge-font-size')).toBe('0.75em')
++		expect(read('--bs-badge-padding-x')).toBe('0.65em')
++		expect(read('--bs-badge-padding-y')).toBe('0.35em')
++		for (const { host, size, insetX, insetY } of BADGE_GEOMETRY_CASES) {
++			expect(size).toBe(host * 0.75)
++			expect(insetX).toBeCloseTo(size * 0.65, 5)
++			expect(insetY).toBeCloseTo(size * 0.35, 5)
++		}
++		const trail = requireValue(
++			oracle.components.breadcrumb.selectors.find(({ selector }) => selector === '.breadcrumb'),
++			'The inventory records no `.breadcrumb` rule',
++		)
++		const inset = requireValue(
++			trail.declarations.find(
++				(declaration) => declaration.property === '--bs-breadcrumb-item-padding-x',
++			),
++			'The inventory records no item inset',
++		).value
++		for (const { inset: pixels, divided } of BREADCRUMB_ITEM_CASES) {
++			expect(pixels).toBe(divided ? Number.parseFloat(inset) * 16 : 0)
++		}
++		expect(BREADCRUMB_ITEM_CASES.filter(({ divided }) => divided).length).toBeGreaterThan(0)
++		expect(BREADCRUMB_MARKUP).toContain('breadcrumb-item active')
++	})
++	it('derives each close state opacity and the recorded mark from the official declarations', () => {
++		const declarations = requireValue(
++			oracle.components['btn-close'].selectors.find(({ selector }) => selector === '.btn-close'),
++			'The inventory records no `.btn-close` rule',
++		).declarations
++		for (const { property, opacity } of CLOSE_STATE_CASES) {
++			expect(declarations.find((declaration) => declaration.property === property)?.value).toBe(
++				opacity,
++			)
++		}
++		expect(
++			declarations.find((declaration) => declaration.property === '--bs-btn-close-bg')?.value,
++		).toBe(CLOSE_MARK)
++		expect(
++			oracle.components['btn-close'].selectors
++				.find(({ selector }) => selector === '.btn-close-white')
++				?.declarations.find((declaration) => declaration.property === '--bs-btn-close-filter')
++				?.value,
++		).toBe(CLOSE_INVERSION)
++	})
++	it('freezes every passive case table and each of its entries', () => {
++		for (const table of [
++			BREADCRUMB_SELECTORS,
++			BREADCRUMB_ITEM_CASES,
++			BADGE_SELECTORS,
++			BADGE_GEOMETRY_CASES,
++			CLOSE_SELECTORS,
++			CLOSE_DEFERRED,
++			CLOSE_STATE_CASES,
++		]) {
++			expect(Object.isFrozen(table)).toBe(true)
++		}
++		for (const table of [BREADCRUMB_ITEM_CASES, BADGE_GEOMETRY_CASES, CLOSE_STATE_CASES]) {
++			expect(table.every((entry) => Object.isFrozen(entry))).toBe(true)
++		}
++	})
++})
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 84a3f65..bab644a 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -2739,3 +2739,87 @@ export const CUSTOMIZATION_RECIPE = `:root {
+ export const FILL_ONLY_RECIPE = `:root {
+ 	--vn-color-primary-base: #2e7d32;
+ }`
++
++/** Lists every official `.breadcrumb` selector the components layer ships. */
++export const BREADCRUMB_SELECTORS = Object.freeze([
++	'.breadcrumb',
++	'.breadcrumb-item + .breadcrumb-item',
++	'.breadcrumb-item + .breadcrumb-item::before',
++	'.breadcrumb-item.active',
++])
++
++/** Supplies the trail markup the resolved breadcrumb readings share. */
++export const BREADCRUMB_MARKUP =
++	'<li class="breadcrumb-item"><a href="#home">Home</a></li><li class="breadcrumb-item"><a href="#materials">Materials</a></li><li class="breadcrumb-item active" aria-current="page">Oak</li>'
++
++/**
++ * Pins each trail item against the inset and the divider the recorded declarations give it.
++ *
++ * @remarks
++ * The leading item carries neither, because both rules select an item preceded by another one. The
++ * inset is `--bs-breadcrumb-item-padding-x` at the density factor's initial value, in CSS pixels.
++ */
++export const BREADCRUMB_ITEM_CASES = Object.freeze([
++	Object.freeze({ name: 'leading item', position: 0, inset: 0, divided: false }),
++	Object.freeze({ name: 'middle item', position: 1, inset: 8, divided: true }),
++	Object.freeze({ name: 'active item', position: 2, inset: 8, divided: true }),
++])
++
++/** Lists every official `.badge` selector the components layer ships. */
++export const BADGE_SELECTORS = Object.freeze(['.badge', '.badge:empty', '.btn .badge'])
++
++/**
++ * Pins the badge's relative geometry against the recorded `em` values at two host sizes.
++ *
++ * @remarks
++ * The recorded font size is `0.75em` of the host, and the recorded padding is `0.65em` and `0.35em`
++ * of the badge's own computed size rather than the host's, so the two multiply. A case reading one
++ * host size alone cannot separate the two references, which is why the table carries a second host.
++ */
++export const BADGE_GEOMETRY_CASES = Object.freeze([
++	Object.freeze({ name: '16px host', host: 16, size: 12, insetX: 7.8, insetY: 4.2 }),
++	Object.freeze({ name: '24px host', host: 24, size: 18, insetX: 11.7, insetY: 6.3 }),
++])
++
++/** Lists every official `.btn-close` selector the components layer ships. */
++export const CLOSE_SELECTORS = Object.freeze([
++	'.btn-close',
++	'.btn-close:hover',
++	'.btn-close:focus',
++	'.btn-close:disabled',
++	'.btn-close.disabled',
++	'.btn-close-white',
++])
++
++/** Lists the official `.btn-close` combinators the overlay components still owe. */
++export const CLOSE_DEFERRED = Object.freeze([
++	'.alert-dismissible .btn-close',
++	'.toast-header .btn-close',
++	'.modal-header .btn-close',
++	'.offcanvas-header .btn-close',
++])
++
++/**
++ * Pins each close-control state against the recorded variable carrying its opacity.
++ *
++ * @remarks
++ * The resting rule reads one variable and each state rule reads another, so a state that stopped
++ * reading its own variable resolves to the resting opacity and reddens the case naming it.
++ */
++export const CLOSE_STATE_CASES = Object.freeze([
++	Object.freeze({ name: 'rest', property: '--bs-btn-close-opacity', opacity: '0.5' }),
++	Object.freeze({ name: 'hover', property: '--bs-btn-close-hover-opacity', opacity: '0.75' }),
++	Object.freeze({ name: 'focus', property: '--bs-btn-close-focus-opacity', opacity: '1' }),
++	Object.freeze({
++		name: 'disabled',
++		property: '--bs-btn-close-disabled-opacity',
++		opacity: '0.25',
++	}),
++])
++
++/** Holds the recorded mark the close control paints, as the background asset writes it. */
++export const CLOSE_MARK =
++	"url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414'/%3e%3c/svg%3e\")"
++
++/** Holds the recorded inversion the opt-in class and the dark theme scope both carry. */
++export const CLOSE_INVERSION = 'invert(1) grayscale(100%) brightness(200%)'
+diff --git a/tests/src/styles/components/badge.test.ts b/tests/src/styles/components/badge.test.ts
+new file mode 100644
+index 0000000..3c48b04
+--- /dev/null
++++ b/tests/src/styles/components/badge.test.ts
+@@ -0,0 +1,138 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import {
++	findRule,
++	matchesColor,
++	readPixels,
++	readRootToken,
++	readStyle,
++	readToken,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene } from '../../../setupBrowser.js'
++import { BADGE_GEOMETRY_CASES, BADGE_SELECTORS, TEXT_MODES } from '../../../setupStyles.js'
++
++afterEach(() => {
++	scene.clear()
++})
++
++/**
++ * Mounts one badge inside a host whose font size the case names.
++ * @param size - The host's font size in CSS pixels.
++ * @returns The mounted badge.
++ */
++function mountBadge(size: number): HTMLElement {
++	const host = scene.mount(
++		`<p style="font-size:${String(size)}px">Inbox <span class="badge">7</span></p>`,
++	)
++	const badge = requireValue(host.querySelector('.badge'), 'No badge')
++	if (!(badge instanceof HTMLElement)) throw new Error('The mounted badge is not an HTML element')
++	return badge
++}
++
++describe('badge geometry', () => {
++	it.each(BADGE_GEOMETRY_CASES)(
++		'resolves the relative box on a $name',
++		({ host, size, insetX, insetY }) => {
++			const badge = mountBadge(host)
++			// The recorded font size is relative to the host and the recorded padding is relative to
++			// the badge's own size, so the two multiply. Padding rewritten against the host resolves
++			// to the same numbers at a 16px host and reddens the 24px case alone.
++			expect(readPixels(badge, 'font-size')).toBeCloseTo(size, 3)
++			expect(readPixels(badge, 'padding-left')).toBeCloseTo(insetX, 3)
++			expect(readPixels(badge, 'padding-right')).toBeCloseTo(insetX, 3)
++			expect(readPixels(badge, 'padding-top')).toBeCloseTo(insetY, 3)
++			expect(readPixels(badge, 'padding-bottom')).toBeCloseTo(insetY, 3)
++			// The recorded line height is the unitless 1, so the line box is the badge's own font
++			// size rather than the body line height its host carries.
++			expect(readPixels(badge, 'line-height')).toBeCloseTo(size, 3)
++		},
++	)
++
++	it('lays the label out as a centered inline box that never wraps', () => {
++		const badge = mountBadge(16)
++		expect(readStyle(badge, 'display')).toBe('inline-block')
++		expect(readStyle(badge, 'text-align')).toBe('center')
++		expect(readStyle(badge, 'white-space')).toBe('nowrap')
++		// The recorded alignment is the baseline, which is what separates a badge from the middle
++		// alignment the button class carries.
++		expect(readStyle(badge, 'vertical-align')).toBe('baseline')
++	})
++
++	it('collapses a badge carrying no content and restores it when content arrives', () => {
++		const host = scene.mount('<span class="badge"></span>')
++		const badge = requireValue(host.querySelector('.badge'), 'No badge')
++		expect(readStyle(badge, 'display')).toBe('none')
++		badge.textContent = '3'
++		expect(readStyle(badge, 'display')).toBe('inline-block')
++	})
++
++	it('lifts a badge inside a button host and leaves a loose badge in flow', () => {
++		const host = scene.mount(
++			'<span><button class="btn" type="button">Inbox <span class="badge">7</span></button><span class="badge">7</span></span>',
++		)
++		const badges = [...host.querySelectorAll('.badge')]
++		const inside = requireValue(badges[0], 'No badge inside the button')
++		const loose = requireValue(badges[1], 'No loose badge')
++		expect(readStyle(inside, 'position')).toBe('relative')
++		expect(readPixels(inside, 'top')).toBe(-1)
++		// The loose badge is what separates the recorded combinator from a rule on the class
++		// itself: a treatment moved onto `.badge` would lift this one too.
++		expect(readStyle(loose, 'position')).toBe('static')
++	})
++
++	it('carries a rule for every recorded badge name in the loaded cascade', () => {
++		// The lookup reads the sheet the browser resolved rather than the source, so a name the
++		// partial stops writing reddens here. It is a containment lookup and proves no
++		// completeness; the conformance ledger is what holds the recorded set whole.
++		expect(BADGE_SELECTORS.filter((selector) => findRule(selector) === undefined)).toEqual([])
++	})
++})
++
++describe('badge paint', () => {
++	it('paints the recorded text color from the palette token', () => {
++		const badge = mountBadge(16)
++		expect(matchesColor(readStyle(badge, 'color'), readRootToken('--vn-palette-white-base'))).toBe(
++			true,
++		)
++		expect(matchesColor(readToken(badge, '--bs-badge-color'), '#fff')).toBe(true)
++	})
++
++	it('repaints the label from a consumer rule setting the published variable', () => {
++		const badge = mountBadge(16)
++		// The class declares the variable on the badge itself, so an ancestor cannot reach it and a
++		// consumer retunes it through a rule of their own, which arrives after the shipped cascade.
++		scene.load('.badge { --bs-badge-color: rgb(10, 20, 30); }')
++		expect(readStyle(badge, 'color')).toBe('rgb(10, 20, 30)')
++	})
++
++	it('rescales the badge corner with the published radius factor and takes a direct override', () => {
++		const badge = mountBadge(16)
++		// The recorded radius reads the compatibility variable, which this cascade declares over the
++		// radius token, so the factor reaches a badge whose own rule names no Veneer token. The
++		// factor is set on the document element because a token's computed value carries its own
++		// references already substituted.
++		expect(readPixels(badge, 'border-top-left-radius')).toBeCloseTo(6, 3)
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.radius, '2')
++		try {
++			expect(readPixels(badge, 'border-top-left-radius')).toBeCloseTo(12, 3)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.radius)
++		}
++		scene.load('.badge { --bs-badge-border-radius: 3px; }')
++		expect(readPixels(badge, 'border-top-left-radius')).toBeCloseTo(3, 3)
++	})
++
++	it.each(TEXT_MODES)('keeps the recorded label color and empty fill in %s mode', (mode) => {
++		const host = scene.mount(`<div data-bs-theme="${mode}"><span class="badge">7</span></div>`)
++		const badge = requireValue(host.querySelector('.badge'), 'No badge')
++		// The release records one color for both modes, so a mode-dependent repaint here would be
++		// this package's own addition rather than the recorded treatment.
++		expect(matchesColor(readStyle(badge, 'color'), readRootToken('--vn-palette-white-base'))).toBe(
++			true,
++		)
++		// The class declares no fill at all, which is what leaves the surrounding surface showing
++		// through and what a contextual fill class would supply.
++		expect(readStyle(badge, 'background-color')).toBe('rgba(0, 0, 0, 0)')
++	})
++})
+diff --git a/tests/src/styles/components/breadcrumb.test.ts b/tests/src/styles/components/breadcrumb.test.ts
+new file mode 100644
+index 0000000..30db08a
+--- /dev/null
++++ b/tests/src/styles/components/breadcrumb.test.ts
+@@ -0,0 +1,146 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { findRule, matchesColor, readPixels, readStyle, readToken } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene } from '../../../setupBrowser.js'
++import {
++	BREADCRUMB_ITEM_CASES,
++	BREADCRUMB_MARKUP,
++	BREADCRUMB_SELECTORS,
++	TEXT_MODES,
++} from '../../../setupStyles.js'
++
++afterEach(() => {
++	scene.clear()
++})
++
++/**
++ * Mounts one trail and returns the list element carrying it.
++ * @param theme - The color mode to mount the trail inside, or undefined for the page's own.
++ * @returns The mounted trail.
++ */
++function mountTrail(theme?: string): HTMLElement {
++	const attribute = theme === undefined ? '' : ` data-bs-theme="${theme}"`
++	const host = scene.mount(
++		`<div${attribute}><ol class="breadcrumb">${BREADCRUMB_MARKUP}</ol></div>`,
++	)
++	const trail = requireValue(host.querySelector('.breadcrumb'), 'No trail')
++	if (!(trail instanceof HTMLElement)) throw new Error('The mounted trail is not an HTML element')
++	return trail
++}
++
++describe('breadcrumb layout', () => {
++	it.each(BREADCRUMB_ITEM_CASES)(
++		'insets and divides the $name as the recorded rules select it',
++		({ position, inset, divided }) => {
++			const trail = mountTrail()
++			const item = requireValue(
++				[...trail.querySelectorAll('.breadcrumb-item')][position],
++				'No item at that position',
++			)
++			// Both recorded rules select an item preceded by another one, so the leading item takes
++			// neither. A rule rewritten onto `.breadcrumb-item` alone insets and divides it and
++			// reddens the leading case alone.
++			expect(readPixels(item, 'padding-left')).toBeCloseTo(inset, 3)
++			expect(readStyle(item, 'content', '::before')).toBe(divided ? '"/"' : 'none')
++			expect(readPixels(item, 'padding-right', '::before')).toBeCloseTo(divided ? inset : 0, 3)
++			// The divider floats to the physical start, so it sits ahead of the item's own text
++			// whatever the document's writing direction. An item with no divider generates no box,
++			// and the float reads as the initial value there.
++			expect(readStyle(item, 'float', '::before')).toBe(divided ? 'left' : 'none')
++		},
++	)
++
++	it('lays the trail out as a wrapping flex row carrying no list marker', () => {
++		const trail = mountTrail()
++		expect(readStyle(trail, 'display')).toBe('flex')
++		expect(readStyle(trail, 'flex-wrap')).toBe('wrap')
++		expect(readStyle(trail, 'list-style-type')).toBe('none')
++		expect(readPixels(trail, 'padding-left')).toBe(0)
++		expect(readPixels(trail, 'padding-top')).toBe(0)
++		expect(readPixels(trail, 'margin-bottom')).toBeCloseTo(16, 3)
++	})
++
++	it('carries a rule for every recorded trail name in the loaded cascade', () => {
++		// The lookup reads the sheet the browser resolved rather than the source, so a name the
++		// partial stops writing reddens here. It is a containment lookup and proves no
++		// completeness; the conformance ledger is what holds the recorded set whole.
++		expect(BREADCRUMB_SELECTORS.filter((selector) => findRule(selector) === undefined)).toEqual([])
++	})
++
++	it('rescales the trail rhythm with the published density factor', () => {
++		const trail = mountTrail()
++		const middle = requireValue(
++			[...trail.querySelectorAll('.breadcrumb-item')][1],
++			'No middle item',
++		)
++		expect(readPixels(trail, 'margin-bottom')).toBeCloseTo(16, 3)
++		expect(readPixels(middle, 'padding-left')).toBeCloseTo(8, 3)
++		// The factor is set on the document element because a token's computed value carries its
++		// own references already substituted, so a factor set on an ancestor moves nothing.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect(readPixels(trail, 'margin-bottom')).toBeCloseTo(32, 3)
++			expect(readPixels(middle, 'padding-left')).toBeCloseTo(16, 3)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++})
++
++describe('breadcrumb overrides', () => {
++	it('replaces the divider through the published variable and keeps the recorded fallback', () => {
++		const trail = mountTrail()
++		const middle = requireValue(
++			[...trail.querySelectorAll('.breadcrumb-item')][1],
++			'No middle item',
++		)
++		// The release declares the divider variable nowhere, so the recorded slash is the `var()`
++		// fallback the rule carries rather than a value the cascade sets.
++		expect(readToken(trail, '--bs-breadcrumb-divider').trim()).toBe('')
++		expect(readStyle(middle, 'content', '::before')).toBe('"/"')
++		trail.style.setProperty('--bs-breadcrumb-divider', '">"')
++		expect(readStyle(middle, 'content', '::before')).toBe('">"')
++	})
++
++	it('declares the fill and the radius with nothing after the colon and paints on demand', () => {
++		const trail = mountTrail()
++		// The declaration stands with no value, which leaves each property to resolve as unset and
++		// is what a consumer's own value replaces. A rule dropping the declaration entirely would
++		// read the same here, so the conformance ledger is what holds the declaration itself.
++		expect(readToken(trail, '--bs-breadcrumb-bg').trim()).toBe('')
++		expect(readToken(trail, '--bs-breadcrumb-border-radius').trim()).toBe('')
++		expect(readStyle(trail, 'background-color')).toBe('rgba(0, 0, 0, 0)')
++		expect(readPixels(trail, 'border-top-left-radius')).toBe(0)
++		trail.style.setProperty('--bs-breadcrumb-bg', 'rgb(10, 20, 30)')
++		trail.style.setProperty('--bs-breadcrumb-border-radius', '4px')
++		expect(readStyle(trail, 'background-color')).toBe('rgb(10, 20, 30)')
++		expect(readPixels(trail, 'border-top-left-radius')).toBeCloseTo(4, 3)
++	})
++
++	it('leaves the trail at the inherited text size because no size variable is declared', () => {
++		const trail = mountTrail()
++		const host = requireValue(trail.parentElement, 'No trail host')
++		host.style.setProperty('font-size', '22px')
++		// The rule reads a variable the release declares nowhere, so the declaration is invalid at
++		// computed-value time and the inherited size stands. A variable declared here would pin the
++		// trail to its own size and break that inheritance.
++		expect(readToken(trail, '--bs-breadcrumb-font-size').trim()).toBe('')
++		expect(readPixels(trail, 'font-size')).toBeCloseTo(22, 3)
++		trail.style.setProperty('--bs-breadcrumb-font-size', '10px')
++		expect(readPixels(trail, 'font-size')).toBeCloseTo(10, 3)
++	})
++
++	it.each(TEXT_MODES)('paints the divider and the active item from the mode in %s', (mode) => {
++		const trail = mountTrail(mode)
++		const items = [...trail.querySelectorAll('.breadcrumb-item')]
++		const middle = requireValue(items[1], 'No middle item')
++		const active = requireValue(items[2], 'No active item')
++		// Both recorded values read the secondary text color, which each mode declares for itself,
++		// so the divider and the active item follow the island rather than the page.
++		const secondary = readToken(trail, '--bs-secondary-color')
++		expect(matchesColor(readStyle(middle, 'color', '::before'), secondary)).toBe(true)
++		expect(matchesColor(readStyle(active, 'color'), secondary)).toBe(true)
++		expect(matchesColor(readStyle(middle, 'color'), secondary)).toBe(false)
++	})
++})
+diff --git a/tests/src/styles/components/close.test.ts b/tests/src/styles/components/close.test.ts
+new file mode 100644
+index 0000000..f403c56
+--- /dev/null
++++ b/tests/src/styles/components/close.test.ts
+@@ -0,0 +1,186 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import {
++	findRule,
++	hoverAccessible,
++	matchesColor,
++	readPixels,
++	readRootToken,
++	readStyle,
++	readToken,
++	releasePointer,
++	waitForAnimations,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene } from '../../../setupBrowser.js'
++import {
++	CLOSE_DEFERRED,
++	CLOSE_INVERSION,
++	CLOSE_MARK,
++	CLOSE_SELECTORS,
++	CLOSE_STATE_CASES,
++	TEXT_MODES,
++} from '../../../setupStyles.js'
++
++afterEach(async () => {
++	await releasePointer()
++	document.documentElement.removeAttribute('data-bs-theme')
++	scene.clear()
++})
++
++/**
++ * Mounts one close control and returns the button carrying it.
++ * @param classes - The classes beyond `btn-close` the control carries, each with its own space.
++ * @returns The mounted control.
++ */
++function mountClose(classes = ''): HTMLButtonElement {
++	const host = scene.mount(
++		`<div><button type="button" class="btn-close${classes}" aria-label="Dismiss"></button></div>`,
++	)
++	const control = requireValue(host.querySelector('button'), 'No close control')
++	if (!(control instanceof HTMLButtonElement))
++		throw new Error('The mounted control is not a button')
++	return control
++}
++
++describe('close control geometry', () => {
++	it('resolves the recorded content box, inset, and mark', () => {
++		const control = mountClose()
++		const em = readPixels(control, 'font-size')
++		// Every recorded length is relative to the control's own text size, and the box is sized in
++		// content-box terms, so the recorded padding sits outside the square rather than inside it.
++		// A border-box control measures the same total width with a smaller mark.
++		expect(readStyle(control, 'box-sizing')).toBe('content-box')
++		expect(readPixels(control, 'width')).toBeCloseTo(em, 3)
++		expect(readPixels(control, 'height')).toBeCloseTo(em, 3)
++		expect(control.getBoundingClientRect().width).toBeCloseTo(em * 1.5, 1)
++		for (const side of ['top', 'right', 'bottom', 'left'])
++			expect(readPixels(control, `padding-${side}`)).toBeCloseTo(em * 0.25, 3)
++		for (const side of ['top', 'right', 'bottom', 'left'])
++			expect(readPixels(control, `border-${side}-width`)).toBe(0)
++		expect(readStyle(control, 'background-image')).toBe(CLOSE_MARK)
++		expect(readStyle(control, 'background-repeat')).toBe('no-repeat')
++		expect(readStyle(control, 'background-position')).toBe('50% 50%')
++		expect(readStyle(control, 'background-size')).toBe(`${String(em)}px`)
++		// The shorthand writes a transparent color beside the mark, which is what keeps the button
++		// element's own fill from painting behind it.
++		expect(readStyle(control, 'background-color')).toBe('rgba(0, 0, 0, 0)')
++	})
++
++	it('paints the recorded text color from the palette token and takes a consumer override', async () => {
++		const control = mountClose()
++		expect(
++			matchesColor(readStyle(control, 'color'), readRootToken('--vn-palette-black-base')),
++		).toBe(true)
++		expect(matchesColor(readToken(control, '--bs-btn-close-color'), '#000')).toBe(true)
++		// The class declares the variable on the control itself, so an ancestor cannot reach it and
++		// a consumer retunes it through a rule of their own, arriving after the shipped cascade.
++		scene.load('.btn-close { --bs-btn-close-color: rgb(10, 20, 30); }')
++		// The bare button element carries a color transition, so the repaint is read after the
++		// animation settles rather than at the moment the variable moves.
++		await waitForAnimations(control)
++		expect(readStyle(control, 'color')).toBe('rgb(10, 20, 30)')
++	})
++
++	it('rescales the control corner with the published radius factor', () => {
++		const control = mountClose()
++		// The factor is set on the document element because a token's computed value carries its own
++		// references already substituted, so a factor set on an ancestor moves nothing.
++		expect(readPixels(control, 'border-top-left-radius')).toBeCloseTo(6, 3)
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.radius, '2')
++		try {
++			expect(readPixels(control, 'border-top-left-radius')).toBeCloseTo(12, 3)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.radius)
++		}
++	})
++
++	it('carries a rule for every shipped close name and none for a deferred combinator', () => {
++		// The lookup reads the sheet the browser resolved rather than the source. It is a
++		// containment lookup and proves no completeness; the conformance ledger holds the recorded
++		// set whole and the guide's deferral rows hold each combinator's absence.
++		expect(CLOSE_SELECTORS.filter((selector) => findRule(selector) === undefined)).toEqual([])
++		expect(CLOSE_DEFERRED.filter((selector) => findRule(selector) !== undefined)).toEqual([])
++	})
++})
++
++describe('close control states', () => {
++	it.each(CLOSE_STATE_CASES)(
++		'reads the $name opacity from the variable the recorded rule names',
++		({ property, opacity }) => {
++			const control = mountClose()
++			expect(Number.parseFloat(readToken(control, property))).toBe(Number.parseFloat(opacity))
++		},
++	)
++
++	it('moves the opacity through rest, hover, and focus', async () => {
++		const control = mountClose()
++		// The bare button element carries an opacity transition, so each reading is taken after the
++		// animation settles rather than at the moment the state flips.
++		expect(readStyle(control, 'opacity')).toBe('0.5')
++		await hoverAccessible('button', 'Dismiss')
++		expect(control.matches(':hover')).toBe(true)
++		await waitForAnimations(control)
++		expect(readStyle(control, 'opacity')).toBe('0.75')
++		expect(readStyle(control, 'text-decoration-line')).toBe('none')
++		await releasePointer()
++		control.focus()
++		expect(control.matches(':focus')).toBe(true)
++		await waitForAnimations(control)
++		expect(readStyle(control, 'opacity')).toBe('1')
++		// The recorded focus treatment removes the outline and paints its own shadow, which is what
++		// separates this control from the focus ring the button class wears.
++		expect(readStyle(control, 'outline-style')).toBe('none')
++		expect(readStyle(control, 'box-shadow')).toBe('rgba(13, 110, 253, 0.25) 0px 0px 0px 4px')
++		control.blur()
++		await waitForAnimations(control)
++		expect(readStyle(control, 'opacity')).toBe('0.5')
++	})
++
++	it('refuses a disabled control through the attribute and through the class alike', async () => {
++		const attributed = mountClose()
++		attributed.disabled = true
++		const classed = mountClose(' disabled')
++		for (const control of [attributed, classed]) {
++			await waitForAnimations(control)
++			expect(readStyle(control, 'opacity')).toBe('0.25')
++			expect(readStyle(control, 'pointer-events')).toBe('none')
++			expect(readStyle(control, 'user-select')).toBe('none')
++		}
++		// The class alone carries no disabled state, so a refusal reading the attribute would leave
++		// the classed control live and reddens here.
++		expect(classed.disabled).toBe(false)
++	})
++
++	it('repaints each state from a consumer rule setting its own variable', async () => {
++		const control = mountClose()
++		scene.load('.btn-close { --bs-btn-close-opacity: 0.4; --bs-btn-close-disabled-opacity: 0.1; }')
++		await waitForAnimations(control)
++		expect(readStyle(control, 'opacity')).toBe('0.4')
++		control.disabled = true
++		await waitForAnimations(control)
++		expect(readStyle(control, 'opacity')).toBe('0.1')
++	})
++})
++
++describe('close control inversion', () => {
++	it.each(TEXT_MODES)('reads the recorded filter the %s theme scope declares', (mode) => {
++		document.documentElement.setAttribute('data-bs-theme', mode)
++		const control = mountClose()
++		expect(readRootToken('--bs-btn-close-filter').trim()).toBe(
++			mode === 'dark' ? CLOSE_INVERSION : '',
++		)
++		// The light scope declares the filter with nothing after the colon, so the `filter`
++		// declaration reading it resolves as unset and the mark paints as authored.
++		expect(readStyle(control, 'filter')).toBe(
++			mode === 'dark' ? 'invert(1) grayscale(1) brightness(2)' : 'none',
++		)
++	})
++
++	it.each(TEXT_MODES)('inverts the mark in %s through the opt-in class', (mode) => {
++		document.documentElement.setAttribute('data-bs-theme', mode)
++		const control = mountClose(' btn-close-white')
++		expect(readToken(control, '--bs-btn-close-filter').trim()).toBe(CLOSE_INVERSION)
++		expect(readStyle(control, 'filter')).toBe('invert(1) grayscale(1) brightness(2)')
++	})
++})
