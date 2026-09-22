@@ -36,7 +36,7 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `a04fb7c` | CL12 landed and pushed; the tracked tree is clean unless a unit is live |
+| Veneer | `a04fb7c` | CL12 landed and pushed. CL13 landed no code by design, so this is the family's tip |
 | Scaffold | confirm with `git log --oneline -1` | every record through CL12's landing retained and pushed |
 
 Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
@@ -88,29 +88,25 @@ table. It moves the family's exit criterion, so it is a rescope rather than a re
 gap-triple question is also still open**: whether to pull the `gap` and `column-gap` keys forward to
 sit with `row-gap`, which CL8b shipped because the `row` key required it.
 
-## What to do first: CL13, the portfolio verdict — the last unit
+## The Content/layout family is CLOSED
 
-**CL12 landed, so CL13 is all that remains of the Content/layout family.**
+**Every CL unit is landed or closed.** CL1 through CL12 each landed with its own verdict file; CL13
+judged what the last four keys render and landed no code, because it owns nothing in the tree. The
+conformance listing admits 31 keys.
 
-CL13 is not an implementation unit. Per `content-layout-design-verdict.md` § Units it runs lanes over
-a portfolio: `reviewer` on Opus 5 for subjective design fit, `analyst` on Astra for objective state
-truth, `checker` for mechanical inventory, under the `orkestrel-polish-surface` skill, with `builder`
-for the Elements and Bootstrap harness. It owns nothing in Veneer — the harness and the verdict record
-are its subject.
+CL13's verdict is `cl13-verdict.md`: accept. Every visual difference from Bootstrap resolves to a
+recorded departure, and every defect that round found is in the portfolio rather than in what ships.
 
-Its design criterion: each portfolio item carries a per-lane verdict with evidence, the second side
-named per key as Elements or the pinned official Bootstrap page, and one terminal line per lane. Frames
-are preflighted for non-blank content, non-empty accessibility trees, step logs, and empty console
-logs, with the capture run taken last.
+**What to do first is the user's call**, not a unit's. Three questions were reported at this family's
+acceptance and are listed under § Open questions for the user. Two of them change what the next family
+does, so read them before planning one.
 
-It carries three things from earlier rounds: the Button-family duplicate frame (a frame byte-comparable
-to the home frame, whose subject no earlier unit owned), the portfolio-layer bound that the pixel guard
-runs only under the capture flag, and CL10's capture ruling.
+**Before any later family's capture work, read CL13's finding 1.** The frame grammar means opposite
+things on the two sides of a comparison, it ships with every family's frames including the Button
+family's, and it corrupts the reading method rather than the subject. Name it at that dispatch.
 
-**Reuse the U7f portfolio shape.** Measure its terrain against the post-CL12 tree before writing its
-brief, and scope-read the brief before dispatching.
+## The six later families
 
-## Then the family closes
 
 Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
 the design row, the planner's criteria (`units/content-layout-design-planner-report.md`), and

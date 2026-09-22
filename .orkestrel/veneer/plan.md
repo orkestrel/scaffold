@@ -2150,3 +2150,41 @@ CL12 landed at Veneer `a04fb7c`: the guide, two audit rounds, and one fix round.
 - **Still with the user, neither blocking:** the cross-cutting reconciliation unit in
   `units/value-accounting-finding.md`, which now also carries the compatibility table's two
   granularities and the departures mechanism's name-only surfacing; and CL8b's gap-triple question.
+
+## Re-baseline after CL13 (2026-09-22) — the Content/layout family closes
+
+CL13's verdict is `cl13-verdict.md`: accept. **Every CL unit is landed or closed.** CL13 landed no
+code by design — it owns nothing in the tree — so Veneer's tip stays at CL12's `a04fb7c`.
+
+- **Satisfied: CL13, and with it the family.** The conformance listing admits 31 keys. Each of CL1
+  through CL12 landed with its own verdict file; CL13 judged what the last four keys render.
+- **The family's exit criterion is met.** Every key the family scoped ships, is accounted for in the
+  record, and renders as a deliberate surface whose every difference from Bootstrap resolves to a
+  recorded departure.
+- **Added, urgent, and family-wide:** the capture frame grammar means opposite things on Veneer's side
+  and a comparison harness's. Veneer carries the rendered mode in the state token and the shooting
+  project after it; a frame named for the dark project renders light. Sorting two directories and
+  matching like to like pairs a light frame against a dark one. It ships with every family's frames,
+  the Button family's included. **Carried to the next family's capture work, named at that dispatch.**
+- **Added:** Veneer's capture registry cannot show a key whose selector matches one element of a
+  multi-element specimen. The link key's frame shows one anchor of nine. Bootstrap's page frame shows
+  all nine, so the gap is one-sided and the carrier is Veneer's registry alone.
+- **Added:** the accessibility artifacts are per-variant whole-page dumps on Veneer's side and
+  per-specimen snapshots on a harness's, so the two cannot be compared. The link names match where
+  comparable; the table's accessible name is unproven rather than failed.
+- **Added, for the guide:** the table caption's position is a recorded decision whose consequence is
+  not — Veneer's base table already captions at top, so the shipped top-caption class has nothing left
+  to change, and no class restores Bootstrap's bottom caption.
+- **A method ruling worth carrying past this family.** Three of six candidates the Orchestrator seeded
+  into the verdict brief were wrong or overstated, and the lanes corrected all three. Seeding
+  observations as confirm-or-refute candidates rather than holding them is what made that correction
+  possible; each wrong candidate died on the record with the evidence that killed it.
+- **A second method ruling.** The harness's first round was correct and unusable, because the brief
+  fixed markup and stylesheet and never fixed capture scope. Eyeballing the portfolio before
+  dispatching the lanes caught it. Three lanes would otherwise have spent a round comparing a viewport
+  screenshot against a fragment and reported scope artifacts as cascade differences.
+- **Unchanged and still with the user**, now reported at the family's acceptance: the cross-cutting
+  reconciliation unit, CL8b's gap-triple question, and U7c's paint calibration readings.
+- **Carried with no owning unit yet:** the "specimen" term collision on the browser setup module's
+  public surface, the mirror instrument's base-name comparison, and the token-table completeness gate
+  with its named trap. Each needs a carrier named at the dispatch that next opens its file.
