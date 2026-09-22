@@ -29,11 +29,11 @@ One workflow runs across all providers. Each engine has one job and never takes 
 | Engine          | Job                                                   | Posture                                      |
 | --------------- | ----------------------------------------------------- | -------------------------------------------- |
 | **Cursor Grok** | Absorption, distillation, scouting, bounded research  | Read-only; returns evidence, never decisions |
-| **Opus 5**      | Subjective design, design-fit review, implementation  | Proposes, audits, implements; never accepts  |
-| **GPT-5.6 Sol** | Objective analysis, correctness audit, implementation | Proposes, audits, implements; never accepts  |
+| **Opus 5.5**    | Subjective design, design-fit review, implementation  | Proposes, audits, implements; never accepts  |
+| **GPT-6 Astra** | Objective analysis, correctness audit, implementation | Proposes, audits, implements; never accepts  |
 
-- Route each nontrivial implementation unit to Opus or Sol. Objective, constraint-heavy,
-  mechanical-precision work goes to Sol. API-shape, naming, and documentation-voice work goes to
+- Route each nontrivial implementation unit to Opus or Astra. Objective, constraint-heavy,
+  mechanical-precision work goes to Astra. API-shape, naming, and documentation-voice work goes to
   Opus. Cursor Composer is not an implementation route, and no `composer` role exists.
 - Design runs the adversarial pass. § Execution loop's audit step fixes which lanes an audit runs.
 
@@ -44,12 +44,12 @@ reasoning effort.
 
 | Harness     | Orchestrator engine |
 | ----------- | ------------------- |
-| Claude Code | Opus 5              |
-| Codex       | GPT-5.6 Sol         |
+| Claude Code | Opus 5.5            |
+| Codex       | GPT-6 Astra         |
 | Cursor      | Cursor Grok         |
 
 - The Orchestrator reconciles. No engine reconciles itself or accepts its own work.
-- The Orchestrator shares its engine with one lane: Opus in Claude Code, Sol in Codex. That lane is
+- The Orchestrator shares its engine with one lane: Opus in Claude Code, Astra in Codex. That lane is
   still dispatched as a separate subagent with a clean context, never run inline.
 - In a fix round the auditor is an engine that did not write it. When the writer's engine is the
   Orchestrator's engine, the auditor is the other lane.
@@ -84,12 +84,12 @@ names nothing else, so never write it of a lane. A verdict file's recorded reaso
 
 ### Engine assignment
 
-By default Opus 5 holds the subjective lane and Sol holds the objective lane.
+By default Opus 5.5 holds the subjective lane and Astra holds the objective lane.
 
 Swap the lanes whenever the round needs an engine that is not the one running that lane. Bench
 darkness is one trigger and the writer's engine is another: § Execution loop's audit step requires
-an auditor that did not write the work, so where Sol wrote the work under audit, give the objective
-lane to Opus 5 and the subjective lane to Sol, and reverse that where Opus 5 wrote it. Both engines
+an auditor that did not write the work, so where Astra wrote the work under audit, give the objective
+lane to Opus 5.5 and the subjective lane to Astra, and reverse that where Opus 5.5 wrote it. Both engines
 still run, so this is a lane swap rather than a substitution. Record which engine held which lane in
 the routing ledger.
 
@@ -97,15 +97,15 @@ When one engine is unavailable, the remaining engine runs **every** lane — sti
 subagents, still clean contexts, still blind to each other, each told which perspective it holds.
 Record the substitution.
 
-| Harness     | Engine unavailable                | Runs every lane |
-| ----------- | --------------------------------- | --------------- |
-| Claude Code | Sol (Codex bench dark)            | Opus 5          |
-| Codex       | Opus 5 (Claude CLI dark)          | GPT-5.6 Sol     |
-| Cursor      | Opus 5 and Sol (MCP servers dark) | Cursor Grok     |
+| Harness     | Engine unavailable                    | Runs every lane |
+| ----------- | ------------------------------------- | --------------- |
+| Claude Code | Astra (Codex bench dark)              | Opus 5.5        |
+| Codex       | Opus 5.5 (Claude CLI dark)            | GPT-6 Astra     |
+| Cursor      | Opus 5.5 and Astra (MCP servers dark) | Cursor Grok     |
 
 - Never assign Grok to either lane in Claude Code or Codex. If the remaining native engine is also
   unavailable there, the pass cannot run: stop and report rather than substituting Grok.
-- Grok takes every lane only in Cursor, and only when Opus 5 and Sol are both unavailable.
+- Grok takes every lane only in Cursor, and only when Opus 5.5 and Astra are both unavailable.
 - Treat a lane that returns no verdicts as a lane that did not run. Re-probe the bench before ruling
   on why, per Bench laws rule "One lane at a time per bench". A bench lane reporting that its driver
   executed and its engine was never reached is a dark bench, not a result. Record the bench dark
@@ -133,7 +133,7 @@ Fall back in this order and record the substitution:
   reading and `researcher` excludes repository-scale absorption, so neither takes that step.
 - Never route absorption to the Orchestrator itself, even when the Orchestrator is Grok. Keep the
   main context at decision level; in Cursor that means a Grok executor session, not this one.
-- Never spend Opus 5 or Sol on it.
+- Never spend Opus 5.5 or Astra on it.
 - Grok is read-only, so a writing unit never routes there. Fully specified mechanical writing goes
   to `builder` or `application` on the harness's cheap native tier.
 - `verifier` runs commands and reports exit codes, so it stays on the native tier too.
@@ -162,11 +162,11 @@ when the role file already pins it.
 | Job                                      | Claude role (`.claude/agents/`) | Codex role (`.codex/agents/`) | Engine                        |
 | ---------------------------------------- | ------------------------------- | ----------------------------- | ----------------------------- |
 | Absorption, distillation, scouting       | `grok`                          | `grok`                        | Cursor Grok (bridge)          |
-| Creative design and alternatives         | `planner`                       | `planner`                     | Opus 5 (native / bridge)      |
-| Design-fit review and audit              | `reviewer`                      | `reviewer`                    | Opus 5 (native / bridge)      |
-| Objective analysis and correctness audit | `analyst`                       | `analyst`                     | GPT-5.6 Sol (bridge / native) |
-| Nontrivial implementation (objective)    | `sol`                           | `sol`                         | GPT-5.6 Sol (bridge / native) |
-| Nontrivial implementation (subjective)   | `opus`                          | `opus`                        | Opus 5 (native / bridge)      |
+| Creative design and alternatives         | `planner`                       | `planner`                     | Opus 5.5 (native / bridge)    |
+| Design-fit review and audit              | `reviewer`                      | `reviewer`                    | Opus 5.5 (native / bridge)    |
+| Objective analysis and correctness audit | `analyst`                       | `analyst`                     | GPT-6 Astra (bridge / native) |
+| Nontrivial implementation (objective)    | `sol`                           | `sol`                         | GPT-6 Astra (bridge / native) |
+| Nontrivial implementation (subjective)   | `opus`                          | `opus`                        | Opus 5.5 (native / bridge)    |
 | Bulk reading and evidence distillation   | `distiller`                     | `distiller`                   | Grok → Luna → Sonnet          |
 | Bounded primary-source research          | `researcher`                    | `researcher`                  | Grok → Luna → Sonnet          |
 | Repository reconnaissance                | `scout`                         | `scout`                       | Grok → Luna → Sonnet          |
@@ -197,18 +197,18 @@ when the role file already pins it.
   job to a bench means shipping that catalog across, which costs more than the bench saves.
 - A transport contract lives in `.agents/transports/`, not in an agents directory. A harness lists
   its dispatchable agents from that directory, so a contract that is never dispatched sits outside
-  it. `.agents/transports/codex.md` is the shared Sol transport contract and
+  it. `.agents/transports/codex.md` is the shared Astra transport contract and
   `.agents/transports/claude.md` the shared Opus transport contract. Neither is a route: `analyst`
-  and `sol` are the named Sol bridges, `planner`, `reviewer`, and `opus` the named Opus bridges, and
+  and `sol` are the named Astra bridges, `planner`, `reviewer`, and `opus` the named Opus bridges, and
   each binds its own contract by reference and pins only its route and sandbox.
   `.agents/transports/cursor.md` is the shared Cursor transport contract, and both harnesses' `grok`
   bridges bind it, because Cursor is native to neither. A contract's home is the provider it carries,
   never the harness that reaches it.
 - Mirroring is by work class, not filename. A transport contract is provider-specific: the Codex
-  contract carries the Sol transport the Claude-side bridges follow, the Claude contract carries the
+  contract carries the Astra transport the Claude-side bridges follow, the Claude contract carries the
   Opus transport the Codex-side bridges follow, and each bridge binds the contract of the provider it
   reaches.
-- Opus and Sol roles use high effort. Native cheap-tier roles use low or medium. Bridge drivers use
+- Opus and Astra roles use high effort. Native cheap-tier roles use low or medium. Bridge drivers use
   the cheapest tier that can run a CLI.
 - Never route orchestration or acceptance across a bridge.
 
@@ -345,7 +345,7 @@ longer holds.
    units, dependencies, ownership, parallel and serial order, acceptance criteria, risks.
    - Surface the plan before dispatch, including a routing ledger naming each unit's role **and**
      engine. Routing a unit to a Claude-native agent when its work class belongs to a bench —
-     reading-heavy to Grok, objective audit or objective implementation to Sol — without a recorded
+     reading-heavy to Grok, objective audit or objective implementation to Astra — without a recorded
      bench-dark deviation is a dispatch deviation.
    - State the goal's exit criterion beside the units: the enumerated capabilities whose closure
      ends the campaign, each to end implemented, repaired, retained, or intentionally excluded on
@@ -605,14 +605,14 @@ filled.
   expensive kind of wrong fact, because the scope read cannot save you: it checks the brief against
   the tree with the brief's framing in hand, so it reproduces the error as often as it catches it.
   The unit reading the record cold is the only reader positioned to refuse, and by then the round is
-  spent. Grep the plan and the retained reports for the subject, not just the tree.
+  spent. Grep the plan and the retained reports for the subject, and not the tree alone.
 - Better, give each measurement one home and keep the brief out of it. Put the measurements in a
   terrain record the brief names and stages beside itself, and write the brief as rulings and
   obligations that point at it. A measurement restated in a brief is a second copy that can drift
   from the first, and the drift is invisible because both artifacts look authoritative. Tell the unit
   which artifact wins when they disagree, and to stop rather than resolve it.
 - Cite a site by its symbol in any artifact meant to outlive a landing, and name a line only as
-  "currently around". A record written before one unit lands and read after another does is the
+  approximate ("around line 40"). A record written before one unit lands and read after another does is the
   normal case, not the exception: a line citation that was exact when measured goes stale the moment
   something is inserted above it, and the reader cannot tell a stale number from a wrong one. Name
   the function, the mixin, the case title, or the surrounding construct, and tell the reader to
@@ -998,8 +998,8 @@ dependency takes the same shape when its consumers' gates read its unpublished t
 ## Acceptance laws
 
 - No writer's and no external engine's self-assessment is authoritative.
-- Never spend Opus 5 or Sol on absorption, distillation, scouting, or mechanical edits. Never route
-  judgment-bearing implementation away from Opus 5 or Sol.
+- Never spend Opus 5.5 or Astra on absorption, distillation, scouting, or mechanical edits. Never route
+  judgment-bearing implementation away from Opus 5.5 or Astra.
 - Substitute an engine only when the same session records the bench dark — CLI missing, auth
   expired, model unavailable. Name the fallback in the plan; never improvise it silently. The
   tedious-work ladder is the only pre-approved substitution, and each step down it is still recorded.

@@ -23,9 +23,9 @@ A Cursor session takes one of these postures. Establish which before acting.
 
 ## Reaching the other engines
 
-- Reach Opus 5 and Sol only through the `codex` and `claude` MCP servers registered in
+- Reach Opus 5.5 and Astra only through the `codex` and `claude` MCP servers registered in
   `.cursor/mcp.json`, which run those CLIs on their own accounts.
-- Never select another provider's model from Cursor's own model list. Cursor offers Opus, Sol, and
+- Never select another provider's model from Cursor's own model list. Cursor offers Opus, Astra, and
   others, but running them here spends Cursor credits for work an MCP server does for free. Cursor
   is the Grok bench and nothing else.
 - Approve both servers once per machine: `agent mcp enable codex` and `agent mcp enable claude`.

@@ -23,8 +23,8 @@ wins over this list. The brief forbids edits, commands, reconciliation, orchestr
 acceptance.
 
 The route holds the subjective lane by default and the objective lane whenever the round
-needs an engine that is not the one running that lane, including when the Sol bench is dark
-and when Sol wrote the work under audit.
+needs an engine that is not the one running that lane, including when the Astra bench is dark
+and when Astra wrote the work under audit.
 
 Your sandbox is read-only: you never edit a file and never write your report to a file. You
 therefore write neither the brief nor the journal. Return the brief text, its intended path,

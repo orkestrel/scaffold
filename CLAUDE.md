@@ -24,14 +24,14 @@ follows it. This file adds only what Claude Code does differently, and cannot we
 - Every Workflow `agent()` node names its model alias explicitly. The Workflow custom-agent path
   does not apply a role file's `model:` pin, so a node that omits the alias runs on the session
   model and the lane reads normal on the wrong engine.
-- Run the main session on `opus` at high effort, set by `/model opus` or `"model": "opus"`. Opus 5
+- Run the main session on `opus` at high effort, set by `/model opus` or `"model": "opus"`. Opus 5.5
   is the Orchestrator in this harness. Its Orchestrator duties are unchanged if it is configured
   otherwise.
-- The Orchestrator shares its engine with `planner`, `reviewer`, and `opus`. Run the Sol `analyst`
+- The Orchestrator shares its engine with `planner`, `reviewer`, and `opus`. Run the Astra `analyst`
   in every design round and every audit round so the judgment is not single-engine, and confirm from
-  its journal that it reached Sol. A bridge driver that answers from its own engine
+  its journal that it reached Astra. A bridge driver that answers from its own engine
   collapses the round to one engine and its ruling still reads as normal.
-- Claude role frontmatter accepts Claude models only. Reach Grok through `grok`, and Sol through
+- Claude role frontmatter accepts Claude models only. Reach Grok through `grok`, and Astra through
   `analyst` and `sol`. Never put an external model in `model:`. Treat
   `.agents/transports/codex.md` as the transport contract for those bridges, never as a
   dispatchable role.
@@ -39,11 +39,11 @@ follows it. This file adds only what Claude Code does differently, and cannot we
 
 ## Bench wiring
 
-- `.mcp.json` registers `codex mcp-server` for short interactive exchanges with Sol. Project MCP
+- `.mcp.json` registers `codex mcp-server` for short interactive exchanges with Astra. Project MCP
   servers are enabled without prompting, so the wiring works headless.
 - `.claude/skills/<name>/SKILL.md` is a bridge that loads the canonical skill from
   `.agents/skills/<name>/SKILL.md`. It adds no independent process.
-- Claude Code exposes `claude mcp serve`, which is how a Codex-primary session reaches Opus 5.
+- Claude Code exposes `claude mcp serve`, which is how a Codex-primary session reaches Opus 5.5.
 
 ## Claude Code Cloud
 

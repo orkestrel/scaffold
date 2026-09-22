@@ -2,7 +2,7 @@
 
 ## Role and engine
 
-`opus` on native Opus 5, the sole writer in the Veneer checkout at `/home/user/veneer`, from the
+`opus` on native Opus 5.5, the sole writer in the Veneer checkout at `/home/user/veneer`, from the
 F5c landing commit on a clean tracked tree (the launch prompt names the commit). Perform the
 assignment directly and spawn nothing. Do not commit, push, install a dependency, or run a
 destructive command. Do not run `git checkout`, `git restore`, `git stash`, `git reset`, or

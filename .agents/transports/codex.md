@@ -1,26 +1,26 @@
 # Codex transport contract
 
 The transport contract every Claude-side driver follows when it carries a brief to the
-GPT-5.6 Sol bench: work class to transport, the exact exec form, journalling, session ids,
+GPT-6 Astra bench: work class to transport, the exact exec form, journalling, session ids,
 and recovery. Reach a route by its own name — `analyst` for audit, `sol` for
 implementation. This file is a contract, not a role: it is never dispatched, and the
 drivers that bind it pin their own tools, model, effort, and permission mode.
 
-You dispatch the external Codex Sol bench.
+You dispatch the external Codex Astra bench.
 
 Read `.agents/orchestration.md` first. It owns the role set, the routing, and the dispatch
 contract.
 
 The dispatch names exactly one route and includes the objective, evidence slice, rules,
 skill, guide or spec, scope, output contract, and acceptance criteria. Spawn no Claude
-agent, never implement directly, and never treat Sol's response as authoritative.
+agent, never implement directly, and never treat Astra's response as authoritative.
 
 ## Models and effort
 
 ```text
-CODEX_ANALYST_MODEL=gpt-5.6-sol
+CODEX_ANALYST_MODEL=gpt-6-astra
 CODEX_ANALYST_EFFORT=high
-CODEX_IMPLEMENTER_MODEL=gpt-5.6-sol
+CODEX_IMPLEMENTER_MODEL=gpt-6-astra
 CODEX_IMPLEMENTER_EFFORT=high
 ```
 
@@ -52,7 +52,7 @@ background command under a hard cap.
 Create `tmp/codex/`, then write the full brief to `tmp/codex/<unit>-brief.md`. Briefs
 never travel as shell arguments. Return the exact resolved command with a pointer prompt:
 
-`timeout <cap> codex exec --json -C <working-directory> --sandbox <route-sandbox> --model gpt-5.6-sol -c "model_reasoning_effort=\"high\"" --output-last-message tmp/codex/<unit>-last.md "Read and execute the brief at tmp/codex/<unit>-brief.md exactly. Your final message must be the report it specifies." < /dev/null > tmp/codex/<unit>.jsonl`
+`timeout <cap> codex exec --json -C <working-directory> --sandbox <route-sandbox> --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message tmp/codex/<unit>-last.md "Read and execute the brief at tmp/codex/<unit>-brief.md exactly. Your final message must be the report it specifies." < /dev/null > tmp/codex/<unit>.jsonl`
 
 - Return the brief path, that resolved command, and the journal path. Leave
   `<cap>` unresolved — the Orchestrator owns it, per **Long-running commands → Launching**
@@ -64,7 +64,7 @@ never travel as shell arguments. Return the exact resolved command with a pointe
   repository, and `--output-schema <file>` when the Orchestrator supplies one.
 - The journal at `tmp/codex/<unit>.jsonl` is the live progress record and its mtime is
   the liveness signal the Orchestrator watches. Never re-print the stream into your report.
-- The Orchestrator reads Sol's answer from the `--output-last-message` file rather than
+- The Orchestrator reads Astra's answer from the `--output-last-message` file rather than
   stdout, and records the session id (`thread_id` in the journal's opening events)
   beside the result; a follow-up on a finished exec is a fresh dispatch.
 
@@ -73,7 +73,7 @@ never travel as shell arguments. Return the exact resolved command with a pointe
 `codex exec` runs with `--unshare-net`. Any unit needing the registry or another remote
 endpoint — lockfile generation, real installs, live fetches — belongs to the
 Orchestrator's own tracked commands or a network-capable native agent. Never put it in a
-brief. A Sol exec hanging on `npm` until its cap fires is this misroute, not a slow bench.
+brief. A Astra exec hanging on `npm` until its cap fires is this misroute, not a slow bench.
 
 The namespace has its own loopback, so a host daemon on `127.0.0.1` is unreachable and a bind can
 fail `EPERM`. It has no IPv6, so `::1` fails `EAFNOSUPPORT`. Any proof that must reach a daemon,
@@ -93,7 +93,7 @@ mutated restores it by rewriting the original text, and proves it with
 
 On any interruption or missing result, in order:
 
-1. Interrupted MCP call with a persisted thread id → `mcp__codex__codex-reply` asking Sol
+1. Interrupted MCP call with a persisted thread id → `mcp__codex__codex-reply` asking Astra
    to re-emit the complete final report. The reasoning may have finished server-side.
 2. No persisted id, or the reply fails → prepare a fresh journaled CLI launch with the
    same brief file and return it.
@@ -112,12 +112,12 @@ correctness and security audit, and constraint review. Capture repository status
 and after. Require evidence for every claim and return unsupported claims as dropped.
 
 An audit brief states its subject as a numbered list of falsifiable claims rather than a
-diff to read, and requires Sol to attempt refutation. The Falsification section of
+diff to read, and requires Astra to attempt refutation. The Falsification section of
 `.claude/rules/quality.md` owns the method and the evidence each verdict carries. The verdict shape
 defaults to `orkestrel-falsify`; a dispatch may name a different skill that fixes another. That
 skill owns the value set and the terminal line. Point the brief at both; restate neither.
 
-## Sol route
+## Astra route
 
 Sandbox `workspace-write`, the checkout the route writes in, its sole serial writer from a clean committed
 baseline, with owned files, off-limits files, and a deviation contract. The brief forbids
@@ -147,7 +147,7 @@ on one unit, at the same point in the work, with nothing written to disk either 
 Route such a unit to `opus` from the start and record the Codex
 bench dark for that unit with this reason. Do not soften or obscure a brief to slip past
 the filter; a bench that declines work is a routing fact, not an obstacle. The exclusion is
-per unit — everything else still routes to Sol, and an audit that merely reads existing
+per unit — everything else still routes to Astra, and an audit that merely reads existing
 negative tests is unaffected.
 
 ## Availability
@@ -162,7 +162,7 @@ negative tests is unaffected.
   output captured to `tmp/codex/login.log`, surfaces the verification URL and one-time code
   from that file, and re-probes `codex login status` on completion.
 - Recovery impossible — device login unavailable, declined, or expired: the Codex bench is
-  dark. Name the fallback explicitly: `planner` and `reviewer` (Opus 5) for judgment, and
+  dark. Name the fallback explicitly: `planner` and `reviewer` (Opus 5.5) for judgment, and
   `builder` for fully specified mechanics.
 - Never authenticate, log out, inspect auth files, or substitute an API key, access token,
   or copied `auth.json`.
