@@ -34,4 +34,14 @@ and R3 (the trailing cascade import compiles: F8b's consumer-profile proof settl
 The fix round runs on `opus` in the same worktree from `units/f8a-brief-2.md`; its auditor is
 `analyst` on Astra.
 
-ROUND-2 OUTCOME: pending
+ROUND-2 OUTCOME: `analyst` on Astra ruled `VERDICT: FAIL 1, 3, 5; outside the claims: F-DISPATCH`
+(`units/f8a-fix-audit-analyst-verdict.md`): the control case reads theme variables across the whole
+sheet, the guide's empty-emission sentence overreaches the bare import (preflight emits `theme` and
+`base` regardless), and the directive reader misses single-quoted directives. F-DISPATCH is the
+Orchestrator's: the launcher named a claims file never staged. Round 3 (`units/f8a-brief-3.md`)
+carries the three findings; its launch stages one claims file. The round-2 chain is green on every
+gate, `test:src:tailwind` included (`units/f8a-fix-gates.log.txt`).
+
+## Round 3
+
+ROUND-3 OUTCOME: pending
