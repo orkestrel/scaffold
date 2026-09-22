@@ -33,5 +33,15 @@ s = s[:start] + ("## Decisions\n\nNo decision is open. D2 to D11 were ruled on 2
                  "`/home/user/scaffold/.orkestrel/veneer/units/decisions-round-2.md` carries the user's words.\n"
                  "A decision that arises later takes a row here, with a recommendation and its waiting units,\n"
                  "and the dispatch carries the recommendation only after the user rules.\n") + s[end:]
+
+# 4. § Carriers: the matchesLooseTagPair row is satisfied by F5a's planted control and its subject is deleted.
+rows = s.split('\n')
+for i, line in enumerate(rows):
+    if line.startswith('| Audit claim 7: `matchesLooseTagPair` accepts `p:not(h1 + p)`'):
+        cells = line.split('|')
+        cells[2] = ' F5a ACCOUNTING-SPLIT landed the rendered proof; its planted control is `p:not(h1 + p)` and the grammar is deleted (closed) '
+        rows[i] = '|'.join(cells)
+s = '\n'.join(rows)
+assert 'the grammar is deleted (closed)' in s, 'carrier row'
 open(p, 'w', encoding='utf-8').write(s)
 print('fold 4 applied')
