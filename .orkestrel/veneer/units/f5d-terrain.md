@@ -124,3 +124,52 @@ The direction sentence near § Deferred selectors (around line 308: "direction n
 replaces, and one byte stream serves either writing direction") and the § Departures image row
 (around line 844: "`max-inline-size` and `block-size`, the logical properties the `img` tag already
 reads"). F6 removes the byte-stream sentence with D5; F5d owns the rest.
+
+## The proofs, re-taken over the returned F5a tree (2026-09-22, working tree over `d93bb85` with F5a's edits)
+
+Same pattern over `tests/**/*.ts`, matching lines per file:
+
+```text
+tests/setupCases.ts:30
+tests/src/styles/components/ratio.test.ts:15
+tests/src/styles/components/image.test.ts:13
+tests/src/styles/components/button.test.ts:12
+tests/src/styles/components/vr.test.ts:10
+tests/src/styles/components/container.test.ts:7
+tests/setupStyles.test.ts:7
+tests/src/styles/mixins.test.ts:6
+tests/src/styles/elements/fieldset.test.ts:5
+tests/src/styles/components/quote.test.ts:5
+tests/distribution.test.ts:5
+tests/src/styles/elements/tr.test.ts:4
+tests/src/styles/elements/img.test.ts:4
+tests/src/styles/elements/button.test.ts:4
+tests/src/styles/components/icon-link.test.ts:3
+tests/src/styles/elements/pre.test.ts:2
+tests/src/styles/elements/kbd.test.ts:2
+tests/src/styles/components/list.test.ts:2
+tests/setupBrowser.test.ts:2
+tests/setup.ts:2
+tests/src/styles/elements/dl.test.ts:1
+tests/src/styles/elements/code.test.ts:1
+tests/app/browser/integration.test.ts:1
+```
+
+Total: 143 lines. The direction machinery stayed in `tests/setupStyles.ts` (F5a kept the direction tables and scanners; F5d removes them):
+
+```text
+79:export const PHYSICAL_LONGHANDS: readonly string[] = Object.freeze([
+109:export const EDGE_SHORTHANDS: readonly string[] = Object.freeze([
+119:export const RADIUS_SHORTHAND = 'border-radius'
+122:export const SIDE_KEYWORD_PROPERTIES: readonly string[] = Object.freeze([
+140:export function splitTopLevelValues(value: string): readonly string[] {
+182:export function matchesEdgeShorthand(values: readonly string[]): boolean {
+201:export function matchesRadiusShorthand(values: readonly string[]): boolean {
+236:export function matchesSideKeyword(values: readonly string[]): boolean {
+249:export function normalizeValueToken(token: string): string {
+264:export function matchesDirectionSensitive(prop: string, value: string): boolean {
+284:export function filterAsymmetricDeclarations(
+313:export function scanPhysicalDeclaration(css: string): string | undefined {
+```
+
+Consumers outside that module and its proof: tests/src/styles/index.test.ts .
