@@ -3,8 +3,8 @@
 ## Role and engine
 
 `opus` on native Opus 5.5, the sole writer in the Veneer checkout at `/home/user/veneer`, from the
-commit that follows the F5a landing (F9 re-pinned `@orkestrel/test` to 0.0.20 on top of it) on a
-clean tracked tree (the launch prompt names the commit). Perform the
+commit that follows the F5e landing and the D12 roadmap fold (F9 re-pinned `@orkestrel/test` to
+0.0.20 before them) on a clean tracked tree (the launch prompt names the commit). Perform the
 assignment directly and spawn nothing. Do not commit, push, install a dependency, or run a
 destructive command. Do not run `git checkout`, `git restore`, `git stash`, `git reset`, or
 `git clean`. The Orchestrator lands the work.
@@ -84,8 +84,7 @@ its logical reads are reported as a patch.
 
 **Owned.** Every file under `src/styles/**` (the declarations only; no token, layer, or selector
 change), `tests/setupStyles.ts` and `tests/setupStyles.test.ts` (the direction machinery and its
-cases removed), `tests/setupStyles.ts` and `tests/setupStyles.test.ts` (case-table property names),
-`tests/setupBrowser.test.ts` and `tests/setup.ts` where the terrain lists a logical read,
+cases removed; the case tables' property names), `tests/setupBrowser.test.ts` and `tests/setup.ts` where the terrain lists a logical read,
 `tests/src/styles/**` (every proof that reads a logical property; `index.test.ts` loses the
 "declares no physical inline-axis property anywhere in the shipped cascade" case), and
 `guides/veneer.md` § Styles and § Deferred selectors sentences that name logical properties or
@@ -98,8 +97,7 @@ patch), `tests/app/browser/integration.test.ts` (one logical read returns as a p
 
 **Off-limits.** `src/browser/**`, `src/core/**`, `app/**`, `configs/**`, `vite.config.ts`,
 `tsconfig.json`, `package.json`, `package-lock.json`, `tests/setupPolicy.ts`, `tests/policy.test.ts`,
-`tests/setup.test.ts`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`,
-`tests/setupServer.ts`, `tests/setupServer.test.ts`, `tests/conformance.test.ts`,
+`tests/setup.test.ts`, `tests/setupServer.ts`, `tests/setupServer.test.ts`, `tests/conformance.test.ts`,
 `tests/src/browser/**`, `tests/src/core/**`, `tests/app/**`, `tests/journey/**`,
 `tests/distribution.test.ts`, `tests/fixtures/**`, `README.md`, `ROADMAP.md`, and every guide
 section this brief does not name.
