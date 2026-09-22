@@ -13,7 +13,7 @@ bridges bind this file.
 ## Model
 
 ```text
-CURSOR_GROK_MODEL=cursor-grok-4.7-high
+CURSOR_GROK_MODEL=grok-4.7-high
 ```
 
 That id was read from `agent models` on 2026-08-13. Resolve the model from the variable at

@@ -316,7 +316,7 @@
 			"storage": "agents/transports/cursor.md",
 			"destination": ".agents/transports/cursor.md",
 			"executable": false,
-			"digest": "18a2ad7a77f9460b0dfdd9106388a8c8ebdc45c0ade89f7bfb04e2926f95f9ca"
+			"digest": "ff7aca3c22844ab80eea137b9a4449f83a93aa90aed8ab6b1561839be66eb591"
 		},
 		{
 			"storage": "claude/agents/analyst.md",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "b1785371b9c05514926a6a7a43e0e9fea363754cf5c2017ea6102f9718924bee"
+	"digest": "6e63fd0db896ab8473efd5167659758dc56c775f917997eff7a80460db15f190"
 }
