@@ -1,0 +1,60 @@
+=== engine additions reverted (three lines)
+=== matrix on the reverted engine (15:18:48)
+
+> @orkestrel/veneer@0.0.1 test:src:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser -t restores original membership and attribute presence
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+---------------------xxxx················-----------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:183:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed=undefined
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:183:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed='true'
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:183:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed='false'
+ FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:183:2 > Button > restores original membership and attribute presence for class=undefined and aria-pressed='mixed'
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Button.test.ts:196:38
+    194|    expect(host.classList.contains('active')).toBe(active)
+    195|    expect(Array.from(host.classList).filter((token) => token !== 'acti…
+    196|    expect(host.hasAttribute('class')).toBe(classes !== undefined)
+       |                                      ^
+    197|    expect(host.hasAttribute('aria-pressed')).toBe(pressed !== undefine…
+    198|    expect(host.getAttribute('aria-pressed')).toBe(pressed ?? null)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed | 5 skipped (6)
+      Tests  4 failed | 16 passed | 44 skipped (64)
+   Start at  15:18:49
+   Duration  13.97s (transform 0ms, setup 405ms, import 95ms, tests 14ms, environment 0ms)
+
+=== reverted exit=1 (15:19:03)
+=== engine restored byte for byte
+=== matrix on the restored engine (15:19:03)
+
+> @orkestrel/veneer@0.0.1 test:src:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser -t restores original membership and attribute presence
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+---------------------····················-----------------------
+
+ Test Files  1 passed | 5 skipped (6)
+      Tests  20 passed | 44 skipped (64)
+   Start at  15:19:04
+   Duration  10.71s (transform 0ms, setup 344ms, import 76ms, tests 9ms, environment 0ms)
+
+=== restored exit=0 (15:19:15)
+=== control done
