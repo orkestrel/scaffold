@@ -96,9 +96,18 @@ module carrying no assertions of their own.
 
 - Read the icon link's layout and its underline treatment, and read the hover and focus behaviour at
   the state each applies to.
-- **Read the reduced-motion behaviour under the preference, not from the rule's text.** The browser
-  setup exposes how to drive a preference; read it and use it. If it cannot, say so and read what you
-  can, naming the limit.
+- **The reduced-motion behaviour cannot be read under the preference in this harness, and that is
+  settled — do not spend the round rediscovering it.** The scope read checked: the browser page
+  interface the setup uses exposes no media emulation, the one preference-style toggle in the setup
+  drives dark mode through a UI control rather than a media query, and no control exists for this
+  preference. A protocol escape hatch exists on that interface but nothing in the setup uses it for
+  any preference, so there is no pattern to follow.
+
+  So read what *is* readable and record the limit precisely. The condition's presence in the cascade
+  is covered by the vocabulary comparison, which carries media conditions. Read the declarations the
+  rule contains from the **built cascade** rather than from a browser under the preference. Then
+  record, as a bound rather than a defect, that the behaviour under the preference is unread in this
+  harness, naming the escape hatch a later unit would need. Do not invent a mechanism for it.
 - Read each named ratio's resolved box against its own aspect, and read the child's fill.
 - Read the vertical rule's resolved width, its stretch, and its paint.
 - Bind the case tables to their sources so a later addition reddens: the ratios against the record,
@@ -114,6 +123,11 @@ module carrying no assertions of their own.
 Add specimens for all three keys to the section the design row names, or to a new section if the tree's
 own grouping calls for one — decide from what the existing sections do and say why. Extend or add the
 proofs for what you ship, including the section's registration if you add one.
+
+**If you add a section, two enumerating assertions on the application side must grow**, and both are
+in your owned set: the barrel proof lists every exported section's name, and the showcase proof lists
+every mounted section's title. Both were verified present at the CL9 landing. Add the new name to each
+rather than discovering them as a red — that class of assertion has cost this campaign a round before.
 
 ## Unknowns
 
