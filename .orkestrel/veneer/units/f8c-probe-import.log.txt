@@ -1,0 +1,3 @@
+A consumer.css verbatim, from=fixture path ok bytes=147675 vn-signature=true btn=true px-8=true layers=properties | theme, reset, base, elements, components, utilities warnings=0
+B cascade import as relative dist path ok bytes=147675 vn-signature=true btn=true px-8=true layers=properties | theme, reset, base, elements, components, utilities warnings=0
+C cascade import as absolute dist path ok bytes=147675 vn-signature=true btn=true px-8=true layers=properties | theme, reset, base, elements, components, utilities warnings=0

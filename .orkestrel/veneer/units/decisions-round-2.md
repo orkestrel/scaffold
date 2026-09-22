@@ -150,7 +150,8 @@ Orchestrator ruling from the B-SWEEP design round (`b-sweep-design-verdict.md`):
 inline; the sweep reports duplication through `findDuplicates` beside an unchanged `scanStyleBlocks`
 under `(shared >= 4 && shared * 2 > min(left, right)) || shared >= 6` (amended after C's
 measurements); the styles rule states the coincidence line; no coincidence mixin lands, `list-reset`
-included.
+included. The exported name is `findDuplication` (`findDuplicates` collides with
+`@orkestrel/reason`'s hosted surface under the policy gate; rename accepted 2026-09-22).
 
 ## D17 — an empty resting paint registers no frame (2026-09-22)
 
@@ -164,3 +165,40 @@ Orchestrator amendment to family ruling 8, from the B-PASSIVE-E audit: `@use '..
 `@use '../mixins'` open a partial only where the partial reads that module; an unread `@use` is a
 dead load, which is the tree's precedent (`_icon-link.scss`, `_type.scss`, `_image.scss` load mixins
 alone; `_vr.scss` and `_ratio.scss` load neither).
+
+## D19 — the Tailwind proofs are a service proof (2026-09-22)
+
+User instruction: Tailwind is treated as a service under the ecosystem's rules. Orchestrator ruling:
+the Tailwind proofs move from the hand-authored `src:tailwind` browser project into the workspace
+convention's `service` project (`tests/service/**`, Node, `tests/setupService.ts` readiness,
+`test:service` from `prepublishOnly`), driving the installed compiler through `postcss` and the pinned
+Chromium through Playwright from Node; the F8 design verdict's ruling 6 and its exit criterion are
+amended by the F8c design round (`units/f8c-design-brief.md`). The probe
+`units/f8c-probe-import.mjs` measured that the plugin resolves `@import '@orkestrel/veneer/styles'`
+verbatim from Node through the manifest's `exports` self-reference, so no alias remains.
+
+## D20 — per-family driven-key lists stay until the family closes (2026-09-22)
+
+From the B-PASSIVE-C reviewer's F4: each family's `<FAMILY>_KEYS` list costs a rewrite of the
+`CAPTURE_KEYS` spread and its assertion per landing. Orchestrator ruling: family ruling 10 stands
+for the units in flight; the spread and the assertion rewrites are the Orchestrator's mechanical
+integration edits at each landing; B-PASSIVE-CLOSE consolidates the lists into one driven table
+appended the way `CASCADE_KEYS` is, so later families append rows.
+
+## D21 — a flat paint is not a blank frame (2026-09-22)
+
+From B-PASSIVE-E-2 § D1: a placeholder bar paints one flat fill, and the portfolio guard refused the
+frame as uniform. Orchestrator ruling: a uniform region whose colour differs from the frame's floor
+is admitted as a paint; a uniform region equal to the floor stays refused; B-PASSIVE-E-3 lands the
+reader and its two-sided proof.
+
+## D22 — a selector the inventory records under several keys belongs to the most specific one (2026-09-22)
+
+From the B-PASSIVE-A reviewer's F4 and R1 and the B-PASSIVE-B analyst's claim 2: `attributeSelector`
+answers by inventory iteration order when several keys record a selector, so `.btn-close` files under
+`btn` and `.btn-group-lg > .btn` under `btn`, where the release writes them under `btn-close` and
+`btn-group`. Orchestrator ruling: the ladder prefers, among the keys that record the selector, the
+one the release authors it under (the most specific key), and the departure ledger regroups the moved
+rows (`#### btn-close`, the size twins under `btn-group`). `tests/setupServer.ts` is off-limits to
+the family units, so B-PASSIVE-CLOSE carries it with the ledger regroup and the `attributeSelector`
+proof; selectors recorded under one key are untouched.

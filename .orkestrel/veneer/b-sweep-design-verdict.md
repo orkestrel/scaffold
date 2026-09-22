@@ -71,3 +71,7 @@ accordingly: a copied four-declaration block reported; the tie of three shared b
 refused beside a twin with four shared reported; a two-of-two whole copy refused as the recorded
 boundary; a six-shared pair inside twelve and fourteen reported by the absolute arm beside a
 five-shared twin refused; the measurement unmoved.
+
+The exported name is `findDuplication`. `findDuplicates` collides with `@orkestrel/reason`'s hosted
+surface under the policy gate (B-SWEEP deviation 1, 2026-09-22), and the Orchestrator accepted the
+rename; every `findDuplicates` in this record reads as `findDuplication`.
