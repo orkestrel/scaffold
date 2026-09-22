@@ -369,6 +369,12 @@ longer holds.
    - State the audit's subject as numbered falsifiable claims and require per-claim verdicts with
      evidence, per the Falsification law in `.claude/rules/quality.md` and the `orkestrel-falsify`
      value set, unless the dispatch names a different skill that fixes another.
+   - Require every lane, before confirming a claim **about a proof**, to name the mutation that would
+     make that proof fail and to say whether its assertions distinguish that mutation from the
+     passing case. Put the answer in the evidence. Describing what a proof does is not ruling on it:
+     a proof that cannot fail reads exactly like one that can, and structural reading confirms both.
+     This is the discipline that separates a lane which runs the disputed thing from one which reads
+     it, and the reading lane is the one that confirms a hole.
    - In a fix round, give the unit to an auditor engine that did not write it.
    - Run the `orkestrel-falsify` skill for multi-round audits. It owns the brief anatomy, the
      successor-brief rule, the verdict shape and its single terminal line, and the reconciliation
