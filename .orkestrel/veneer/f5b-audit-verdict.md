@@ -37,4 +37,15 @@ The fix round runs on `opus` in the same worktree from `units/f5b-brief-2.md`; i
 `units/f5b-report-2.md`, its evidence `units/f5b-fix.diff`, its gate log `units/f5b-fix-gates.log.txt`,
 and its objective auditor `analyst` on Astra (`units/f5b-fix-audit-analyst-verdict.md`).
 
-ROUND-2 OUTCOME: pending
+ROUND-2 OUTCOME: accepted 2026-09-22, landed on the session branch as `3a9202a` (a clean
+cherry-pick of `unit/f5b`). The fix round (brief 2) and the ledger's home (brief 3, `guides/ledger/`
+after the vendored policy sweep refused a top-level guide) were audited together by `analyst` on
+Astra (`units/f5b-fix-audit-analyst-verdict.md`, `VERDICT: FAIL 6, 8, 9`): claim 9's historical
+byte clause the Orchestrator settled by the conformance gate's measurement; claim 8's reason cell and
+claim 6's site claim went to round 4 (`units/f5b-brief-4.md`, `units/f5b-report-4.md`), which found
+the oracle inventory records every `.row-gap-*` utility under `row` and `row-gap`, and round 5
+(`units/f5b-brief-5.md`, `units/f5b-report-5.md`) ruled the identical-recording collision a skip
+(`matchesRecording`) and refreshed the ledger (the duplicate `row-gap` rows left). `analyst` on Astra
+ruled `VERDICT: PASS` on rounds 4 and 5 (`units/f5b-fix-5-audit-analyst-verdict.md`); the worktree
+chain (`units/f5b-fix-5-gates.log.txt`) and the landing chain on the session branch are green on
+every gate.
