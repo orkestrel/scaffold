@@ -24,8 +24,8 @@ instruments and the unminified compile they use, § E the sites the audit named 
 the inventory fixture's shape) and in the retained probe `./tmp/units/value-gap-probe.mjs` (the
 comparison it runs and the logical-property map it applies). Read both first. Where this brief and
 those records disagree, the records and the tree win, and you stop and report the disagreement
-rather than resolving it. The distillate was taken before F4 and F5a landed: guide line numbers
-have moved, `tests/setupStyles.ts` no longer holds the case tables (F5a moved them to
+rather than resolving it. The distillate was taken before F4, F5a, and F5d landed: guide line
+numbers have moved, the cascade and its proofs are physical (D11), `tests/setupStyles.ts` no longer holds the case tables (F5a moved them to
 `tests/setupCases.ts` and the calibration to `tests/setupCalibration.ts`), and the visitor inside
 `extractSpecifiers` is now a module-scope constant. Locate every site by its symbol or its heading,
 never by the distillate's line.
@@ -79,10 +79,12 @@ separator row).
 
 - The exact population of value differences after F4 and F5a landed. You measure it first (see
   **Measurements**) and report the per-component counts; the ledger's row count follows from it.
-- Whether every difference the probe reports is a departure or a reading artefact of the
-  logical-property map. Where the mapped physical property and the emitted logical property carry
-  the same value, record no row and report the count you excluded on that ground; where they
-  differ, record the row. Report both counts.
+- Whether every difference the probe reports is a departure or a formatting artefact of the
+  compile (a colour written in another notation, a shorthand the compile expands). Where the two
+  values resolve to the same computed value, record no row and report the count you excluded on
+  that ground; where they differ, record the row. Report both counts. The cascade is physical after
+  F5d (D11), so no logical-to-physical map applies; a logical property the comparison still meets
+  is a stop.
 
 ## Scope
 
@@ -143,9 +145,9 @@ reads § Deferred selectors (same parsing, same heading discovery by section tit
 a malformed row), and `collectDepartures`, the comparison: given the unminified compiled cascade
 (compile it the way the probe does, through `sass` with `style: 'expanded'`; export the compile
 as `compileExpandedCascade` if no existing export does it) and the oracle inventory, it walks
-every inventory selector of every shipped component, maps a recorded physical property onto the
-logical property the cascade writes exactly as the probe's map does (export that map as a frozen
-constant with an inventory row), and returns every (`component`, `selector`, `property`,
+every inventory selector of every shipped component, compares each recorded property directly
+(the cascade is physical after F5d, so the probe's logical map is retired, not ported), and returns
+every (`component`, `selector`, `property`,
 `condition`, `recorded`, `emitted`) where the emitted value differs, plus every emitted selector,
 custom property, and keyframe name in a shipped component's layer the inventory lacks (the
 additions). Parse with `postcss`; read the enclosing at-rule as the condition. Read nothing from
@@ -226,8 +228,8 @@ cell's wording, the readers' exact signatures within the rulings, case titles, d
 ## Acceptance criteria
 
 1. `npm run format:check`, `npm run lint:check`, and `npm run check` exit 0.
-2. `npm run test:setup` exits 0 with the ledger readers, the comparison, the map constant, and the
-   compile export in the inventory case, and the three plants present.
+2. `npm run test:setup` exits 0 with the ledger readers, the comparison, and the compile export in
+   the inventory case, and the three plants present.
 3. `npm run build:src && npm run test:conformance` exits 0 with the ledger gates present and
    passing over the real guide and the real built cascade.
 4. `npm run test:guides` and `npm run test:policy` exit 0.

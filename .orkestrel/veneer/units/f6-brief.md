@@ -26,9 +26,9 @@ nearest Contract declaration; § E the shell, the caption, and the description l
 `!important` sites and the stripe sentences) and in `./tmp/units/veneer-audit-verdict.md` (claims
 5, 8, 10, 11, 21, 24; reviewer F1, F2). Read both first. Where this brief and those records
 disagree, the records and the tree win, and you stop and report the disagreement rather than
-resolving it. The distillate predates F4, F5a, F5b, and F5c: line numbers have moved, the case
+resolving it. The distillate predates F4, F5a, F5d, F5b, and F5c: line numbers have moved, the case
 tables and calibration live in `tests/setupCases.ts` and `tests/setupCalibration.ts`, the tag-pair
-grammar is gone, the conformance side of D5 (the RTL digest and the inventory `rtl` fields) is
+grammar and the direction machinery are gone, the cascade is physical (D11), the conformance side of D5 (the RTL digest and the inventory `rtl` fields) is
 already removed, and the guide's § Departures is the F5b ledger. Locate every site by symbol or
 heading, never by line.
 
@@ -45,8 +45,8 @@ Skill: none. Guide: `/home/user/veneer/guides/veneer.md` and `/home/user/veneer/
 Bootstrap writes it; a consumer overrides one with its own `!important`; where a class name exists
 in Bootstrap and Tailwind, Bootstrap's declaration wins), D4 (remove the delegate's refusal of
 `disabled`, `.disabled`, and `aria-disabled="true"` hosts; no departure row), D5 (no right-to-left
-support), D7 (no alias, wrapper, or shim), D11 open (logical properties; touch no declaration for
-it).
+support), D7 (no alias, wrapper, or shim), D11 (the cascade is physical; F5d landed it, so touch
+no declaration for it here).
 
 **Installed primitives.** `@orkestrel/contract` (`/home/user/veneer/node_modules/@orkestrel/contract/dist/src/core/index.d.ts`:
 `literalOf`, `instanceOf`, `isInstance`, `isRecord`, `isError`, and the rest the terrain § D
@@ -161,8 +161,7 @@ equals the root. Drive the role list from the registry constant, never from a li
 Delete the `veneer-logical-rtl` plugin from `configs/src/vite.styles.config.ts` and every proof
 that reads `index.rtl.css` (the two `tests/setupStyles.test.ts` cases and the `tokens.test.ts`
 partition case named under **What asserts**), the `?raw` import that feeds it, and every guide
-sentence that names a right-to-left cascade, a direction twin, or flipping. Keep the logical
-declarations as they are (D11 is open). Confirm with `npm run build:src:styles` that `dist/src/styles/`
+sentence that names a right-to-left cascade, a direction twin, or flipping. Confirm with `npm run build:src:styles` that `dist/src/styles/`
 holds no `index.rtl.css` and report the listing.
 
 ### Obligation 4 — the delegate refusal (D4, reviewer F1)

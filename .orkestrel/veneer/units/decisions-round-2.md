@@ -84,3 +84,17 @@ work) and the objective design lane of every design round. F4 round 3, already r
 when the ruling arrived, runs to completion and is audited with `reviewer` on Opus holding the
 objective lane. The roadmap's § Routing and the unit table take this when the Veneer checkout
 frees.
+
+## D11 ruling, 2026-09-22 (later the same day)
+
+> D11 approved, revert to bootstrap
+
+As read: the cascade reverts every logical property to the physical property Bootstrap 5.3.8
+writes (`margin-left` where the cascade wrote `margin-inline-start`, `width` and `height` where it
+wrote `inline-size` and `block-size`, the physical radius corners, `text-align: left`); the
+direction machinery in the styles setup module (the physical-longhand and side-keyword tables and
+their scanners) and the proof that forbade physical inline-axis declarations go with it, because
+D5 removed the writing direction they served; every proof reads the physical property; the guide's
+direction sentences and the image row say physical. The revert is one unit, F5d PHYSICAL, on
+`opus`, sequenced after F5a and before F5b so the ledger measures the reverted cascade and needs no
+logical-to-physical map.
