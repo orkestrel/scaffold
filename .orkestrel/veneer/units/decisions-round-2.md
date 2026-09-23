@@ -229,7 +229,7 @@ Tailwind requirement. Lint's `import/no-dynamic-require` refuses a variable spec
 module's literal import is the only lint-clean form. Carrier: F8c-B MOVE, which owns
 `tests/conformance.test.ts` for the exemption.
 
-## D25 — The import-placement sentence (amended by D25a)
+## D25 — The import-placement sentence (amended by D25a and D25b)
 
 The guide's § Tailwind states the rule a consumer follows as the CSS syntax rule it rests on — an
 `@import` rule is valid only ahead of every rule other than `@charset` and `@layer` statements — with
@@ -365,3 +365,14 @@ guide sections, and the barrel-order case follow the release.
 `querySelector<HTMLSelectElement>(…)` and `querySelectorAll<HTMLElement>(…)` pass the type parameter
 the DOM declarations declare; they are not the `as` assertion `AGENTS.md` bans, and the proofs keep
 them where the selector's element kind is what the case reads. No change to the existing uses.
+
+## D25b — The import-placement paragraph names the plugin's rule
+
+A `@source` rule is unknown to a browser, so the spec's placement rule (CSS Cascading and
+Inheritance Level 5 § Importing Style Sheets, which counts only valid at-rules ahead of an `@import`
+rule) does not by itself drop a cascade import written after one. The operative rule is the
+`postcss-import` plugin's: it refuses an `@import` rule preceded by anything other than `@charset`,
+a comment, an empty `@layer` statement, or another `@import`, and Vite runs that plugin before the
+Tailwind plugin sees the file. The guide's § Tailwind paragraph states the plugin's rule as the
+cause, cites the spec sections as the rule the plugin follows for valid at-rules, and keeps the
+import-first closing clause. Carrier: F8c-B round 5. Amends D25 and D25a.
