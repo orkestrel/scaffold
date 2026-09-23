@@ -1,0 +1,6 @@
+=== build:src exit=0
+=== test:conformance exit=1
+=== test:setup exit=0
+=== test:app exit=0
+=== refresh red; stopping (06:32:00)
+=== verify done
