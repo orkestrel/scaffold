@@ -1,0 +1,14 @@
+Reconcile the J-BINDER round-2 audit and brief round 3
+
+The round-2 audit confirmed the renames, the tables and guards, and the delegate's routing and
+drops, and broke three things: the option resolver reads a prefix where the design requires the
+entity's attribute table (the brief's own instruction), a custom-element reaction during
+restoration can drive a dead engine through the delegate, and the guide's sentences on both.
+The Orchestrator's apply check accepts every report-only patch and its mutation sample re-run
+reproduces every recorded reddening with the sources restored. The lanes' findings on the
+resolvers' parameter order and the shared observer recorder, and their referrals on the
+`selectors` sentence and the inline parameter types, are carried into round 3; the nested
+option paths, the nested class group, the second-route proof, and the contract package's
+`isInstance` narrowing are carried to their owning units. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
