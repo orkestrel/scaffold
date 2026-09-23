@@ -1,0 +1,10 @@
+form-select-base-focus light-1280 box: 0 10961 1279 3 rows=3
+form-select-base-focus light-1280 crop: y0=10953 w=1279 h=55 k=1
+form-select-base-focus dark-390 box: 0 12068 389 3 rows=3
+form-select-base-focus dark-390 crop: y0=12060 w=389 h=55 k=2
+input-group-button-focus light-1280 box: 2 15780 1195 44 rows=4
+input-group-button-focus light-1280 crop: y0=15772 w=1195 h=96 k=1
+input-group-button-focus dark-390 box: 2 17062 305 44 rows=4
+input-group-button-focus dark-390 crop: y0=17054 w=305 h=96 k=2
+
+Orchestrator reading (2026-09-23 07:12 UTC): form-select-base-focus (light-1280, dark-390) shows the "Northworks" select with its caret, the rounded border tinted toward the focus colour, and the ring painted outside the border box in the mode's focus tint; input-group-button-focus (light-1280, dark-390) shows the grouped control "orders@veneer.test" with its text selected, the ring painted around the control and lifted over the neighbouring button's edge, and the next specimen's "@" addon below. The rendered ring the round-5 reviewer could not resolve from the page frames paints on each target control.
