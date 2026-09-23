@@ -1,0 +1,125 @@
+# The Orchestrator's re-run of a sample of J-BINDER round 3's mutations (2026-09-23, Chromium 153.0.8010.12, the unit's instrument j-binder3-mutate.mjs over binder3-sample.json)
+worktree: cea3359 Merge branch 'main' into unit/binder
+--- results
+[
+ {
+  "name": "Button: restores the host before releasing the claim",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 37 passed (38)",
+  "failed": [
+   "Button > releases its host before restoring it, so an engine constructed at the restoration last write keeps its state"
+  ]
+ },
+ {
+  "name": "HostSnapshot: attributes before tokens",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 7 passed (8)",
+  "failed": [
+   "HostSnapshot > restores class tokens, then inline properties, then attributes, whatever the save order"
+  ]
+ },
+ {
+  "name": "HostSnapshot: attributes before tokens (at the Button)",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 37 passed (38)",
+  "failed": [
+   "Button > releases its host before restoring it, so an engine constructed at the restoration last write keeps its state"
+  ]
+ },
+ {
+  "name": "Delegate: a click during restoration driven at once",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 21 passed (22)",
+  "failed": [
+   "Delegate > holds a click a reaction sends before the restoration ends, then drives a fresh engine"
+  ]
+ },
+ {
+  "name": "Delegate: a held click never driven",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "2 failed | 20 passed (22)",
+  "failed": [
+   "Delegate > drives a live engine for a click a restoration reaction sends, never the destroyed one",
+   "Delegate > holds a click a reaction sends before the restoration ends, then drives a fresh engine"
+  ]
+ },
+ {
+  "name": "Delegate: no hold and the old destroy order",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "2 failed | 20 passed (22)",
+  "failed": [
+   "Delegate > drives a live engine for a click a restoration reaction sends, never the destroyed one",
+   "Delegate > holds a click a reaction sends before the restoration ends, then drives a fresh engine"
+  ]
+ },
+ {
+  "name": "Delegate: observing never stops",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 21 passed (22)",
+  "failed": [
+   "Delegate > drops an engine a consumer destroyed at the next delivery or click and stops observing its root"
+  ]
+ },
+ {
+  "name": "resolveOptions: the attribute table ignored",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "2 failed | 24 passed (26)",
+  "failed": [
+   "resolveOptions > reads the attribute the table names for a declared key and not the default one",
+   "resolveOptions > throws the entity code for a declared attribute that fails coercion, an array literal included"
+  ]
+ },
+ {
+  "name": "resolveOptions: an undefined constructor value applied",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 25 passed (26)",
+  "failed": [
+   "resolveOptions > skips a constructor value that is undefined, keeping the attribute or the default"
+  ]
+ },
+ {
+  "name": "resolveVocabulary: an undefined supplied value applied",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "3 failed | 23 passed (26)",
+  "failed": [
+   "resolveVocabulary > returns a frozen copy of the defaults when no group is supplied",
+   "resolveVocabulary > replaces each supplied key, keeps each absent key, and ignores an undeclared key",
+   "resolveVocabulary > throws the entity code naming the key when a supplied value fails the guard"
+  ]
+ },
+ {
+  "name": "recordCalls: the original method not called",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "22 passed (22)",
+  "failed": []
+ },
+ {
+  "name": "recordCalls: no call recorded",
+  "proof": "tests/src/browser/index.test.ts",
+  "tally": "1 failed | 1 passed (2)",
+  "failed": [
+   "src browser entry > records a document listener installed by an imported module"
+  ]
+ }
+]
+--- restore check
+every source restored byte for byte
+--- status after
+ M guides/veneer.md
+ M src/browser/Button.ts
+ M src/browser/ColorMode.ts
+ M src/browser/Delegate.ts
+ R src/browser/Snapshot.ts -> src/browser/HostSnapshot.ts
+ M src/browser/constants.ts
+ M src/browser/helpers.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/setupBrowser.ts
+ M tests/src/browser/Button.test.ts
+ M tests/src/browser/ColorMode.test.ts
+ M tests/src/browser/Delegate.test.ts
+ R tests/src/browser/Snapshot.test.ts -> tests/src/browser/HostSnapshot.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/validators.test.ts
