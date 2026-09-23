@@ -55,7 +55,13 @@ for m in pattern.finditer(text):
         merged = ours + theirs; kind = 'concatenated'
     else:
         base_norm = {norm(l) for l in base}; have = {norm(l) for l in ours}
-        merged = list(ours) + [l for l in theirs if norm(l) not in base_norm and norm(l) not in have]; kind = 'base-union'
+        added = [l for l in theirs if norm(l) not in base_norm and norm(l) not in have]
+        closer = next((i for i, l in enumerate(ours) if l.strip() == '])'), None)
+        if closer is not None and not any(l.strip() == '])' for l in added):
+            # Ours closed an array inside the hunk; theirs' added rows belong before that closer.
+            merged = list(ours[:closer]) + added + list(ours[closer:]); kind = 'base-union-before-closer'
+        else:
+            merged = list(ours) + added; kind = 'base-union'
     print(f'{kind}: ours={len(ours)} base={len(base)} theirs={len(theirs)} -> {len(merged)}')
     res.append(text[pos:m.start()]); res.append('\n'.join(merged) + '\n'); pos = m.end()
 res.append(text[pos:])

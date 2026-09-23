@@ -207,3 +207,14 @@ longest first, and falls back to the first recorded member), with its proof in
 The ledger regroup for the moved rows is the Orchestrator's integration edit at B-PASSIVE-A's
 landing (`#### btn-close`), proved by the conformance gate; selectors recorded under one key are
 untouched.
+
+## D23 — F8c stage and reader names, and the stage's teardown
+
+`StageManager.properties(css)` is `expand(css)`: a method is a verb, and `expand` states that it
+expands each rule's declarations to the longhand names Chromium assigns. `SheetReader.properties`
+is `variables`: that reading is custom properties alone, and `properties` already names any
+property in `SheetDeclaration.property`, `StageRule.properties`, and the `read(selector,
+properties?)` parameter, which keep their names. `StageManager` composes `createTeardown()` from
+`@orkestrel/test` for its release order, so `destroy` after a failed `open` releases what was
+acquired and `destroy` on a never-opened stage is a no-op. Amends F8c rulings 1 and 3. Carrier:
+F8c-A-3 (`units/f8c-a-brief-3.md`); F8c-B consumes the new names.

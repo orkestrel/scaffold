@@ -1,0 +1,60 @@
+
+ RUN  v4.1.11 /home/user/veneer
+
+·····························
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  00:49:56
+   Duration  52.82s (transform 0ms, setup 190ms, import 104ms, tests 42.52s, environment 0ms)
+
+=== capture light-1280 exit=0 (00:50:49) load 1.09
+
+ RUN  v4.1.11 /home/user/veneer
+
+·····························
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  00:50:50
+   Duration  53.70s (transform 0ms, setup 182ms, import 98ms, tests 43.83s, environment 0ms)
+
+=== capture dark-1280 exit=0 (00:51:44) load 1.15
+
+ RUN  v4.1.11 /home/user/veneer
+
+·····························
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  00:51:45
+   Duration  48.51s (transform 0ms, setup 211ms, import 102ms, tests 38.53s, environment 0ms)
+
+=== capture light-390 exit=0 (00:52:34) load 1.14
+
+ RUN  v4.1.11 /home/user/veneer
+
+·····························
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  00:52:35
+   Duration  52.65s (transform 0ms, setup 225ms, import 119ms, tests 40.63s, environment 0ms)
+
+=== capture dark-390 exit=0 (00:53:28) load 1.32
+
+> @orkestrel/veneer@0.0.1 test:journey
+> vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+····················································································································
+
+ Test Files  4 passed (4)
+      Tests  116 passed (116)
+   Start at  00:53:29
+   Duration  50.55s (transform 0ms, setup 1.59s, import 773ms, tests 146.02s, environment 0ms)
+
+=== test:journey exit=0 (00:54:20) load 3.79
+332

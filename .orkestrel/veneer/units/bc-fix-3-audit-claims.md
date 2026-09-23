@@ -24,7 +24,7 @@ distinguish it from the passing case.
    the role retune. Its two rows carry distinct titles. Mutation: `--bs-list-group-active-bg:
    var(--vn-palette-blue)` written as the literal `#0d6efd` in
    `src/styles/components/_list-group.scss` reddens the `background-color` row alone (`1 failed | 32
-   passed (33)`), and the partial is byte-identical after the revert (SHA-256 `6249c8cf…55ff`).
+   passed (33)`), and the partial is byte-identical after the revert (SHA-256 `6249c8cf…55b9`).
 2. **The proofs read what they claim** (round-1 analyst 3, checker 3; fix finding 2). (a) In
    `card.test.ts` the tab guard case compares a resting link inside `.card-header-tabs` against the
    active one; the mutation `.active` dropped from the tab selector reddens it (`1 failed | 23 passed

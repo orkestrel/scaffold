@@ -1,0 +1,30 @@
+<!-- journal /home/user/scaffold/tmp/codex/bc-fix-3-audit-analyst.jsonl, thread 01a0cbbb-4927-7561-a228-51afe93425b0, exit 0 -->
+1. **BROKEN — digest transcription only.** The hash at `/home/user/scaffold/tmp/audit/bc-fix-3-audit-claims.md:27` ends in `55ff`; the actual SHA-256 is `6249c8cf075f871ee33c63e56eb02f00a72eef6cc13a796395225765773855b9`. The saved mutation log records that same value before and after restoration. Correct the claim’s digest; no source repair is needed. The substantive proof holds: `tests/src/styles/components/list-group.test.ts:314` distinguishes literal `#0d6efd` from palette routing, and line 320 checks independence from the primary role. The saved run reports the background case alone failing, then green after restoration. Browser replay: `npm run test:src:styles -- tests/src/styles/components/list-group.test.ts`, with the named plant applied separately.
+
+2. **CONFIRMED.** The assertions distinguish every named mutation, and the saved red/green logs identify the corresponding failures. Applying the recorded replacements in memory reproduces their logged planted hashes.
+   - Dropping `.active` paints the resting tab and fails `tests/src/styles/components/card.test.ts:229`.
+   - Dropping `:not(.active)` changes the driven selected anchor and button readings compared at `tests/src/styles/components/list-group.test.ts:229`.
+   - Removing the non-last top-image selector leaves its facing radius at `5px`, failing the zero expectation at `tests/src/styles/components/card.test.ts:380`. The embedded-list arrangements are independently asserted at line 176.
+   - Hoisting the component declarations exposes the ancestor’s `30px` padding, failing the `16px` expectations at `tests/src/styles/components/card.test.ts:268` and `tests/src/styles/components/list-group.test.ts:334`.
+
+   Browser replay: `npm run test:src:styles -- tests/src/styles/components/card.test.ts tests/src/styles/components/list-group.test.ts`, with each mutation run separately.
+
+3. **CONFIRMED.** The arrangements at `app/browser/constants.ts:668` and line 683 cover the recorded list ends and grouped card children. An independent HTML-tree reading finds each required child arrangement; removing the first footer makes the non-last-footer check fail. This agrees with the saved failure at `tests/app/browser/sections/CardSection.test.ts:66`. The captures show those arrangements. Registration exists at `tests/setup.ts:88` and line 337. Browser replay: `npm run test:app -- tests/app/browser/sections/CardSection.test.ts`.
+
+4. **CONFIRMED.** The anchor markup carries `href="#main"` and distinct names. Removing the named destinations fails the filters at `tests/app/browser/sections/CardSection.test.ts:72` and `tests/app/browser/sections/ListGroupSection.test.ts:85`, as the saved logs show. Every required frame and subject accessibility artifact exists across the registered variants; their tree and focus sections contain the expected controls. See `tmp/capture/states/card-base--light-390-accessibility.txt:7` and `tmp/capture/states/list-group-actions--light-390-accessibility.txt:5`. `Holding lane` correctly remains a button. The saved before/after JSON measurements agree with `/home/user/scaffold/tmp/audit/bc-report-3.md:98`. Capture replay: `CAPTURE=1 npm run test:journey`.
+
+5. **BROKEN.** `guides/veneer.md:384` still says “A card reads two radii.” This tallies the radius slots despite `/home/user/scaffold/AGENTS.md:172` requiring members to be named without the count. Delete that sentence and retain the following explanation naming the outer and inner properties. The repaired barrel sentences, empty-slot wording, class-state formatting, and button-host proof description hold at `guides/veneer.md:381`, line 416, line 434, and line 469.
+
+6. **CONFIRMED.** `tests/setup.ts:445` describes an element frame of the lifted specimen and records the blank in-place-frame reason. The journey moves the original specimen, captures it, checks the driven states, and restores its location at `tests/app/browser/integration.test.ts:678`. The supplied hover and active frames visibly contain the specimen with different driven fills; they agree with the comment.
+
+7. **CONFIRMED.** The comment at `src/styles/components/_card.scss:8` explains the empty declarations. Independent Sass compilation produces identical output when the interpolations become bare empty declarations; replacing them with a nonempty value changes the output. The emitted empty values also match the release stylesheet. The title at `tests/src/styles/components/card.test.ts:340` uses the required wording without key interpolation.
+
+8. **CONFIRMED.** Live porcelain output equals the supplied round-1 status and `/home/user/scaffold/tmp/audit/bc-fix-3-status.txt:1`. The named protected paths have no diff, no vendored path enters the changed set, and `tmp/probe/` is absent. Direct SHA-256 readings match the report’s full digests for the partials and `app/browser/constants.ts`; claim 1’s abbreviated digest is the transcription error.
+
+9. **UNRESOLVED.** I independently ran `npm run check`; it exited 0. The remaining readings at `/home/user/scaffold/tmp/audit/bc-report-3.md:151` await the Orchestrator’s independent chain, as this claim requires. Settle with `format:check`, `lint:check`, `check`, `build:src`, `test:src:styles`, `test:app`, `test:conformance`, `test:guides`, `test:policy`, `test:setup`, and `test:journey`, plus each `CAPTURE=1 npm run test:journey -- --project 'journey:<variant>*'` run. Retain the actual setup failures against this baseline.
+
+Findings outside the claims: none.
+
+Attacked and held: the partial compilation contains the inventory’s recorded selectors and declarations after equivalent media-condition normalization, with the recorded token substitutions. Omitting the grouped top-image selector makes the comparison fail. The shared card/list-group combinators correctly remain emitted by `_card.scss:50`; duplicate emission is unnecessary.
+
+VERDICT: FAIL 1, 5, 9; outside the claims: none
