@@ -2,9 +2,8 @@
 
 Successor to `tmp/units/f8c-b-brief-3.md`. What changed and why: the round-3 checker confirmed the
 three passages and swept the whole `### Tailwind` section of `guides/veneer.md` and the whole
-`tests/setupService.ts` file for the same defect, finding eight more sentences where a code token
-stands as a sentence subject with no noun after it. This round closes exactly those eight, with the
-replacements fixed here. The earlier briefs stay in place unedited and bind where this one is silent.
+`tests/setupService.ts` file for the same defect, finding the sentences listed under § Obligations, where a code token stands as a sentence subject
+with no noun after it. This round closes exactly those, with the replacements fixed here. The earlier briefs stay in place unedited and bind where this one is silent.
 
 ## Role and engine
 

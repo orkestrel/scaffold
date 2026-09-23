@@ -68,7 +68,7 @@ requires naming the attack you tried that failed; a claim you cannot decide is `
    the release's, and by the `dist` grep the report describes.
 2. **The proof reads what it claims** (`tests/src/styles/components/form-check.test.ts`).
    Each row of the report's coverage matrix names a case that reads the selector's treatment; the
-   eight mutation plants each redden the case named for the defect (a wrong URI; a missing dark rule
+   mutation plants each redden the case named for the defect (a wrong URI; a missing dark rule
    reddening the selector check, the dark-switch glyph row, and the dark knobs case; a `0.25rem`
    shadow; swapped checked and indeterminate images; a bare `transition`; a removed disabled
    opacity; a role-token fill; a literal `1.5rem` floor); the negative controls behave as reported

@@ -4,8 +4,7 @@
 
 The F8c-B fix round's uncommitted writes in `/home/user/veneer-f8b` (branch `unit/f8b`, checkpoint
 `b9c0b0a` = F8c-A READERS as accepted after its round-3 audit), written by `opus` from
-`/home/user/veneer-f8b/tmp/units/f8c-b-brief-2.md` (the successor carrying nine findings from the
-round-1 audit: reviewer 4(a), 4(b), § Scripts wording, R1, D25, R4, D27, deviation 3, analyst 2)
+`/home/user/veneer-f8b/tmp/units/f8c-b-brief-2.md` (the successor carrying the round-1 audit's findings: reviewer 4(a), 4(b), § Scripts wording, R1, D25, R4, D27, deviation 3, analyst 2)
 over the round-1 writes ruled in `/home/user/scaffold/.orkestrel/veneer/units/f8c-b-audit-verdict.md`.
 Rounds so far: round 1 (analyst FAIL 1, 2, 11; reviewer FAIL 4, 5, 6, 7, 9, 11), this fix round.
 **Review evidence.** `/home/user/scaffold/.orkestrel/veneer/units/f8c-b-2.diff` (the whole diff against `b9c0b0a`,
