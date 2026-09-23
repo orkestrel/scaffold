@@ -532,3 +532,7 @@ in the Veneer root (the prompt the user pastes into the engine session).
   `D<n>` and `E<n>` decision numbering, the `plugin` rows' shared ownership, and the marker named
   in every report to the user. `plan.md` § Intersession state and the engine brief's
   § Reconciling with the baseline session carry each session's side; `prompt.txt` names it.
+
+## D45 — Proofs assert what the browser computes, never how one build serializes it (2026-09-23)
+
+The engine session's host runs Chromium 153, where a `background-position` written as `right <length>` serializes as `calc(100% - <length>)`, a one-value `background-size` serializes as `<length> auto`, and the `select` and `table` user-agent defaults differ from Chromium 141's (`engine/units/host-chromium-153-reading.md`). Ruling: a style proof reads the resolved geometry (the mark's rendered offset from the control's edges, the mark's rendered width and height) or accepts every serialization of the same computed value, never one build's string; the preflight proof compares each measured move by tag, property, and the value Tailwind's preflight sets, and asserts the standalone value differs from it, so the guide's preflight table keeps its standalone column as the Chromium 141 reading for the reader and the proof no longer equates a user-agent default with it. The guide names the build it measured on and states this rule. Carrier: BROWSER-SERIALIZATION (`bs`), a `builder` unit on Sonnet from `97ac9ab`, verified by `checker` and read green by the engine session on its host at its next landing.
