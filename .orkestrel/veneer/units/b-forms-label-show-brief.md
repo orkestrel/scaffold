@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5 (native Claude subagent), sole writer in `/home/user/veneer-bfw` (a worktree
-detached at `BFF_LANDED_SHA`, the session branch tip after B-FORMS-CLOSE-FORCED landed, with
+detached at `dd855e9`, the session branch tip after B-FORMS-CLOSE-SPECIMENS landed (B-FORMS-CLOSE-FORCED lands beside this unit and touches no file it owns), with
 `node_modules` installed by the Orchestrator). Perform the assignment directly and spawn nothing.
 Use absolute paths under `/home/user/veneer-bfw` for every command and file, and run every npm and
 npx command from `/home/user/veneer-bfw`. Do not commit, push, install, or run `git checkout`,
@@ -64,7 +64,7 @@ fixing the column split, so each label reads on one line there; report the readi
 **Control identifiers.** Rulings E and G, D20, D35 are this brief's labels. Name a test for what
 it proves.
 
-**Standing conditions.** The tree is clean at `BFF_LANDED_SHA`. Without the partial, the label
+**Standing conditions.** The tree is clean at `dd855e9`. Without the partial, the label
 classes carry no rule of their own, so the journey's declared-property comparison for the label
 keys reads the same unstyled value on the showcase and the copy and passes vacuously here; the
 Orchestrator's integrated run is the one that counts. `tests/setup.test.ts` is shared; stop if it
