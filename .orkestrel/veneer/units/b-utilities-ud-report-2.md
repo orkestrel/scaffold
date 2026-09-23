@@ -37,8 +37,8 @@ The owned files, all untracked:
 
 Diffstat of the owned files, measured with `git diff --no-index --numstat /dev/null <path>` per
 file: 1098 insertions, 0 deletions. `git status --porcelain` lists only the owned files as `??`
-(`tmp/units/ud-2-status.txt`); `git diff --stat e4e6a40` over tracked files is empty. The
-concatenated owned diff is `tmp/units/ud-2.diff`.
+(`/home/user/scaffold/.orkestrel/veneer/units/ud-2-status.txt`); `git diff --stat e4e6a40` over tracked files is empty. The
+concatenated owned diff is `/home/user/scaffold/.orkestrel/veneer/units/ud-2.diff`.
 
 The shared patch `/home/user/scaffold/.orkestrel/veneer/units/ud-shared-2.patch` comes from `git diff` in the landing copy's own
 repository, whose base commit holds every tracked file at `e4e6a40` (the base commit's tree equals
@@ -184,7 +184,7 @@ rulings do not name are carried unchanged.
 
 ## Failing-first evidence
 
-The command is `python3 tmp/units/ud-instruments-2/tools/mutate.py STAGE NAME`. It runs
+The command is `python3 /home/user/scaffold/.orkestrel/veneer/units/ud-instruments-2/tools/mutate.py STAGE NAME`. It runs
 `npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser
 tests/app/browser/sections/DisplaySection.test.ts tests/app/browser/sections/FlexSection.test.ts`
 with the named mutation applied. The findings were proofs that could not fail, so the defect reads
