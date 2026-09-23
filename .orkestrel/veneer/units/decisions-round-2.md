@@ -474,3 +474,52 @@ selector, attribute, key, or `{@link}` target takes a noun. For a module-scope f
 term); `method` names a method and `constant` a constant. Carrier: P1 SCAFFOLD-PROPAGATE lands the
 sentence in `.claude/rules/writing.md` § Code tokens beside the CSS-token sentence; the
 B-PASSIVE-PROSE fix round applies it.
+
+## D43 — The engine runs in a parallel session on its own branch (the user, 2026-09-23)
+
+J-ENGINE proceeds in a second Claude Code session in parallel with the baseline's remaining
+families (B-COLLAPSE … B-SCROLLSPY, B-UTILITIES, B-MODAL … B-CAROUSEL, B-CROSS) and the close. D41's
+sequencing is amended: the engine's terrain, design, types, shared mechanisms, and per-plugin units
+run from this date; what still waits on the baseline is the flip of a § Compatibility `plugin` row
+to `shipped` for a key whose cascade has not landed, the showcase wiring of engine behaviour (a
+J-SHOWCASE unit after the baseline closes), and E-VUE. The user grants the engine session the push
+to Veneer `main` after a gated landing and to scaffold `main` after a records commit.
+
+- **Branches.** The engine session works on the branch its harness designates, in both
+  repositories, and records that name in `.orkestrel/veneer/engine/plan.md`. It never pushes the
+  baseline session's branch, and never force-pushes any branch.
+- **Records.** Its campaign artifacts live under `.orkestrel/veneer/engine/` in scaffold (`plan.md`,
+  `units/`, and the design verdicts at that folder's root). It writes nothing else under
+  `.orkestrel/veneer/`; the baseline session writes nothing under `engine/`. Each session prunes its
+  own records per `orkestrel-debrief/references/retention.md`.
+- **Owned in Veneer (engine session).** `src/browser/**`, `src/core/**`, `tests/src/browser/**`
+  (its `fixtures/` included), `tests/src/core/**`; in `guides/veneer.md` the engine sections
+  (`### Button states and bindings` and every section the engine adds) and the Status, Proof, and
+  Obligation cells of the § Compatibility rows of kind `engine` and `plugin`; in `ROADMAP.md` the
+  `### The engine session` subsection under § Protocol and its own carrier rows, appended.
+- **Owned in Veneer (baseline session).** Everything else it owns today: `src/styles/**`,
+  `tests/src/styles/**`, `tests/setupStyles.ts`, `tests/setupServer.ts`, `tests/conformance.test.ts`,
+  `tests/fixtures/**`, `tests/service/**`, `app/**`, `configs/**`, and the rest of the guide and
+  the roadmap. The baseline adds a `plugin` row (status `accepted`, owner J-ENGINE) per landed
+  family and touches no engine-owned file.
+- **Shared, report-only for both.** `tests/setup.ts`, `tests/setupBrowser.ts`, `package.json`
+  (the exports map only; no dependency enters without the user's ruling), `README.md`. The session
+  landing a change to one applies it in its own landing and names it in the commit message.
+- **Off-limits for both.** `tests/setupPolicy.ts` and `tests/policy.test.ts` (vendored; `scaffold
+  repair` restores them), the lockfile except through `npm ci`.
+- **Landing.** Before every landing either session runs `git fetch origin main` and merges
+  `origin/main` into its branch (a merge commit, never a rebase of pushed history), re-runs its gate
+  chain on the merge result, pushes its branch, then fast-forwards `main`. A non-fast-forward push
+  means the other session landed first: merge again, re-run the gates, push again. A merge conflict
+  in `guides/veneer.md` or `ROADMAP.md` is resolved in favour of the session that owns the section
+  or row, and `npm run test:guides` and `npm run test:policy` run on the merge result before the
+  push.
+- **Benches.** Both sessions share the Cursor bench and the Codex bench. One `grok` lane per
+  session at a time; a lane that returns empty is re-probed before it is ruled dark (the bench law).
+  The Codex bench is dark on quota until 2026-09-26 17:53 UTC for both sessions; Opus 5.5 holds
+  every lane until it round-trips, recorded per round.
+
+Carriers: fold 50 (`### The engine session` in ROADMAP § Protocol, the D41 tenet's amendment, the
+J-ENGINE phase row, § Decisions, § Records); `plan.md` (the engine folder and the merge step in the
+landing procedure); `j-engine-session-brief.md` (the engine session's kickoff brief); `prompt.txt`
+in the Veneer root (the prompt the user pastes into the engine session).

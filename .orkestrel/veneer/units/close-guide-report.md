@@ -15,8 +15,8 @@ install, no `git checkout`/`restore`/`stash`/`reset`/`clean`. Deviation state: n
   registered scenario and that key's subject.
 - `tests/src/styles/integration.test.ts` — one case: each palette paint keeps its value under the
   recipe's retune and moves under a `--vn-palette-blue` retune; `afterEach` releases staged media.
-- `tmp/units/cg-sweep.md` — the ruled sweep ledger.
-- `tmp/units/cg-report.md` — this report.
+- `close-guide-sweep.md` (launch path `tmp/units/cg-sweep.md`) — the ruled sweep ledger.
+- `close-guide-report.md` (launch path `tmp/units/cg-report.md`) — this report.
 
 ```text
 $ git diff --stat
@@ -119,7 +119,7 @@ $ git diff --check                                         exit 0
    parity case is `names a registered scenario and the subject it declares in every stem example`.
 5. **§ Styles fragment (R10) — met.** The fragment is gone. The full paragraph names the `[hidden]`
    rule, the calendar-picker indicator rule, and the color swatch rules.
-6. **The sweep (R7) — met.** See `tmp/units/cg-sweep.md`. Every hit at `88684bc` and after the
+6. **The sweep (R7) — met.** See `close-guide-sweep.md` (launch path `tmp/units/cg-sweep.md`). Every hit at `88684bc` and after the
    edits is a row with its ruling. Every row ruled fixed is gone from the edited guide, the rerun
    returns only permitted rows, and no ledger cell, fence, or `Summary` paragraph changed (the
    conformance and parity runs are green). This run fixed the last link hit: the § Styles forms-order

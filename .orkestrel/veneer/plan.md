@@ -26,7 +26,7 @@ prune commit's message is the promotion record for what that commit removed.
   B-MODAL … B-CAROUSEL and B-CROSS design rounds run on their briefs `units/b-modal-design-brief.md`
   and `units/b-cross-design-brief.md` with the terrains `units/b-modal-terrain-report.md` and
   `units/b-cross-terrain-report.md`; `units/j-engine-research-report.md` and
-  `units/j-engine-orkestrel-report.md` are the J-ENGINE phase's absorption records. `units/decisions-round-2.md` carries the user's rulings D2
+  `units/j-engine-orkestrel-report.md` are the J-ENGINE phase's absorption records. `engine/` is the engine session's folder (D43), `j-engine-session-brief.md` its kickoff brief, and `j-engine-session-prompt.txt` the retained copy of the prompt. `units/decisions-round-2.md` carries the user's rulings D2
   to D13 verbatim and the Orchestrator's rulings from D14 on. `units/b-passive-family.md` and
   `units/b-passive-baseline.md` bind every B unit. `units/b-forms-terrain-report.md`,
   `units/b-forms-close-terrain-report.md`, `units/b-forms-label-terrain-report.md`,
@@ -65,7 +65,29 @@ prune commit's message is the promotion record for what that commit removed.
   `<unit>-audit-objective-brief.md` beside the `analyst` brief it substitutes for, until the bench
   round-trips again.
 
+## The engine session (D43)
+
+From 2026-09-23 the J-ENGINE campaign runs in a second Claude Code session on its own
+harness-designated branch in both repositories, per D43 in `units/decisions-round-2.md`. Its
+records live under `engine/` in this folder (`engine/plan.md`, `engine/units/`, and its design
+verdicts at that folder's root); this session writes nothing under `engine/`, and the engine
+session writes nothing else here. Its kickoff brief is `j-engine-session-brief.md` beside this
+file, and the prompt the user pastes into it is `prompt.txt` in the Veneer root (retained here as
+`j-engine-session-prompt.txt`). Ownership: the engine session owns `src/browser/**`, `src/core/**`,
+`tests/src/browser/**`, `tests/src/core/**`, the guide's engine sections and the `engine` and
+`plugin` rows' cells, and `### The engine session` in the roadmap; this session owns the rest and
+adds a `plugin` row (status `accepted`, owner J-ENGINE) per landed family. Both sessions treat
+`tests/setup.ts`, `tests/setupBrowser.ts`, `package.json`, and `README.md` as report-only until a
+landing applies a change.
+
 ## Landing procedure
+
+Before every landing, `git fetch origin main` and merge `origin/main` into the session branch (a
+merge commit, never a rebase of pushed history), because the engine session lands on `main` too;
+re-run the fast gates on the merge result, and resolve a conflict in `guides/veneer.md` or
+`ROADMAP.md` in favour of the session that owns the section or row. A non-fast-forward push of
+`main` means the engine session landed first: merge again, re-run, push again.
+
 
 Run `units/land-unit.sh` (the worktree commits on `unit/<u>` and cherry-picks onto the session
 branch; a conflict takes `git merge-file --diff3` and `units/resolve-diff3.py`), then
