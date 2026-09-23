@@ -1,0 +1,14 @@
+Compute a shared name's importance over the longhands Tailwind's rule declares
+
+F8d IMPORTANCE-LONGHANDS (`opus` on Opus 5, two rounds, and `builder` on Sonnet for the prose
+and guard round) makes the shared-name rule run per longhand: `collectRuleLonghands` reads, for
+each shared class name, the longhands Tailwind's own rule declares as Chromium expands them,
+`collectImportantNames` reports a name only where Veneer declares every one of those longhands
+with `!important` across the rules naming it, `LonghandRule` is the one declaration of the
+expanded rule's shape (the stage in `tests/setupService.ts` returns it through `expand`, which
+fills `important` from `getPropertyPriority`), `SHARED_LONGHANDS` is the frozen fixture the unit
+cases share, and the consumer proof's branch case guards its reading against going vacuous. The
+guide's § Tailwind states the rule once and refers to it from the equality and branch sentences.
+
+Audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker` on Sonnet in each round.
+Records: `.orkestrel/veneer/units/f8d-*` in the scaffold repository.

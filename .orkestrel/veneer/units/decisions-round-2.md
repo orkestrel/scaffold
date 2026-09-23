@@ -426,3 +426,17 @@ conformance case instead: every (selector, property) pair the release's compiled
 (`node_modules/bootstrap/dist/css/bootstrap.css`) and the built cascade both declare carries the
 same priority, read through `SheetReader`, and the case reports each mismatch. The ledger rows keep
 comparing values. Carrier: L2 LEDGER-PRIORITY on `builder`.
+
+## D40a — The D40 mixins take the release's `input` family name
+
+`control-type` becomes `input-text` and `control-border` becomes `input-border`. The `_mixins.scss`
+file's form for a typography run is `-text` (`heading-text`, `mark-text`, `caption-text`,
+`code-text`, `script-text`), and `control-text` is the reboot reset every control element takes
+(`margin: 0` and the inherited family, size, and line height), so `control-type` put a second term
+beside `-text` for one concept and a second `control-` mixin beside the reset for a different one.
+The release derives both runs from its `$input-*` variables, so `input-` is the noun that separates
+them from the reset. The declarations, their order, and the compiled bytes are unchanged; the
+comments name `.form-control`, `.form-select`, and `.input-group-text` as the readers. Carrier:
+B-FORMS-RENAME on `builder`, after CONTROL lands, over `src/styles/_mixins.scss`,
+`src/styles/components/_form-control.scss`, `_form-select.scss`, `_input-group.scss`, and every
+test or guide sentence naming either mixin; the compile before and after is byte-identical.
