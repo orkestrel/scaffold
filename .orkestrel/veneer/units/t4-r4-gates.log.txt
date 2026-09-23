@@ -1,0 +1,63 @@
+applied 2 edits to /home/user/test/guides/test.md
+=== apply exit=0
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1488ms on 1 files using 4 threads.
+=== oxfmt --check guides/test.md exit=0
+
+> @orkestrel/test@0.0.20 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 3156ms on 60 files using 4 threads.
+=== format:check exit=0
+
+> @orkestrel/test@0.0.20 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/test[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m51 passed[39m[22m[90m (51)[39m
+[2m   Start at [22m 21:37:23
+[2m   Duration [22m 1.46s[2m (transform 291ms, setup 46ms, import 979ms, tests 258ms, environment 0ms)[22m
+
+=== test:guides exit=0
+=== status: [ M guides/test.md ]
+=== rewrap of the edited paragraph's tail to 100 columns (21:37:48)
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1615ms on 1 files using 4 threads.
+=== oxfmt --check guides/test.md exit=0
+
+> @orkestrel/test@0.0.20 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 3285ms on 60 files using 4 threads.
+=== format:check exit=0
+
+> @orkestrel/test@0.0.20 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/test[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m51 passed[39m[22m[90m (51)[39m
+[2m   Start at [22m 21:37:55
+[2m   Duration [22m 1.50s[2m (transform 274ms, setup 42ms, import 1.00s, tests 295ms, environment 0ms)[22m
+
+=== test:guides exit=0
+=== status: [ M guides/test.md ]

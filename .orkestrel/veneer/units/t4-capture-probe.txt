@@ -2,3 +2,5 @@
 === worktree at 009b95a with the band; harness 7 clipsOverflow sites from orkestrel-test-0.0.20.tgz
 === build:src exit=0
 === light-1280 exit=0 (21:32:33)  Tests 44 passed (44)
+=== dark-1280 exit=0 (21:36:36)  Tests 44 passed (44)
+=== light-390 exit=0 (21:39:44)  Tests 44 passed (44)
