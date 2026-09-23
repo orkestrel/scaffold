@@ -23,9 +23,10 @@ prune commit's message is the promotion record for what that commit removed.
   to D13 verbatim and the Orchestrator's rulings from D14 on. `units/b-passive-family.md` and
   `units/b-passive-baseline.md` bind every B unit. `units/b-forms-terrain-report.md`,
   `units/b-forms-close-terrain-report.md`, `units/b-forms-label-terrain-report.md`,
-  `units/b-passive-close-terrain-report.md`, `units/f8-terrain-report.md`,
-  `units/f8-terrain-3-report.md`, and the `units/f8-tailwind-intersection.*` measurement are the
-  terrain records the open briefs point at; each design round's lane proposals sit beside its
+  `units/b-passive-close-terrain-report.md`, `units/f8-terrain-report.md`, and
+  `units/f8-terrain-3-report.md` are the terrain records the open briefs point at (the
+  `f8-tailwind-intersection.json` measurement was pruned at `dddc59a` and a brief cites it by its
+  history path, `git -C /home/user/scaffold show dddc59a~1:.orkestrel/veneer/units/f8-tailwind-intersection.json`); each design round's lane proposals sit beside its
   verdict as `units/<round>-design-<lane>-proposal.md` until the round's last unit lands.
 - A live or unlanded unit's brief, report, audit claims, lane briefs, lane verdicts, round verdicts,
   launchers, diffs, status files, plant instruments, and logs sit under `units/` by unit prefix
