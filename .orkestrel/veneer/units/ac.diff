@@ -1,8 +1,8 @@
-diff --git a/home/user/veneer-ac/app/browser/sections/AccordionSection.ts b/home/user/veneer-ac/app/browser/sections/AccordionSection.ts
+diff --git a/app/browser/sections/AccordionSection.ts b/app/browser/sections/AccordionSection.ts
 new file mode 100644
 index 0000000..dfcbb0c
 --- /dev/null
-+++ b/home/user/veneer-ac/app/browser/sections/AccordionSection.ts
++++ b/app/browser/sections/AccordionSection.ts
 @@ -0,0 +1,20 @@
 +import { ACCORDION_COPY, ACCORDION_SPECIMENS } from '../constants.js'
 +import { SpecimenSection } from './SpecimenSection.js'
@@ -24,11 +24,11 @@ index 0000000..dfcbb0c
 +		super(host, ACCORDION_COPY, ACCORDION_SPECIMENS)
 +	}
 +}
-diff --git a/home/user/veneer-ac/src/styles/components/_accordion.scss b/home/user/veneer-ac/src/styles/components/_accordion.scss
+diff --git a/src/styles/components/_accordion.scss b/src/styles/components/_accordion.scss
 new file mode 100644
-index 0000000..528fa22
+index 0000000..5a51191
 --- /dev/null
-+++ b/home/user/veneer-ac/src/styles/components/_accordion.scss
++++ b/src/styles/components/_accordion.scss
 @@ -0,0 +1,177 @@
 +@use 'sass:map';
 +@use '../tokens';
@@ -37,11 +37,11 @@ index 0000000..528fa22
 +@layer components {
 +	// Every value here is Bootstrap 5.3.8's own, apart from the forced-colors focus outline. A block
 +	// padding reads the Veneer space token that already resolves to it, so the density factor reaches
-+	// it; the inline padding and the chevron size keep the release's `1.25rem`, because no space token
-+	// resolves to that length. A color reads the compatibility variable Bootstrap itself names, and
-+	// the focus ring mixes the palette blue that carries the release's literal, because a partial
-+	// declares no literal color of its own. Each chevron is the release's own glyph, read out of the
-+	// icon map because a data URI cannot read a custom property.
++	// it; the inline padding and the chevron size keep the release's `1.25rem` length, because no
++	// space token resolves to that length. A color reads the compatibility variable Bootstrap itself
++	// names, and the focus ring mixes the palette blue that carries the release's literal, because a
++	// partial declares no literal color of its own. Each chevron is the release's own glyph, read out
++	// of the icon map because a data URI cannot read a custom property.
 +	.accordion {
 +		--bs-accordion-color: var(--bs-body-color);
 +		--bs-accordion-bg: var(--bs-body-bg);
@@ -207,12 +207,12 @@ index 0000000..528fa22
 +		--bs-accordion-btn-active-icon: #{map.get(tokens.$dark, 'accordion-active-icon')};
 +	}
 +}
-diff --git a/home/user/veneer-ac/tests/app/browser/sections/AccordionSection.test.ts b/home/user/veneer-ac/tests/app/browser/sections/AccordionSection.test.ts
+diff --git a/tests/app/browser/sections/AccordionSection.test.ts b/tests/app/browser/sections/AccordionSection.test.ts
 new file mode 100644
-index 0000000..7246ef4
+index 0000000..1e641e6
 --- /dev/null
-+++ b/home/user/veneer-ac/tests/app/browser/sections/AccordionSection.test.ts
-@@ -0,0 +1,177 @@
++++ b/tests/app/browser/sections/AccordionSection.test.ts
+@@ -0,0 +1,183 @@
 +import type { SectionInterface } from '@app/browser'
 +import {
 +	ACCORDION_COPY,
@@ -244,7 +244,7 @@ index 0000000..7246ef4
 +			expect(region.querySelector('p')?.textContent).toBe(ACCORDION_COPY.paragraph)
 +			const rendered = [...region.querySelectorAll('[data-specimen]')]
 +			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
-+				'Accordion items',
++				'Accordion base',
 +				'Accordion flush',
 +			])
 +			expect(rendered.map((element) => element.innerHTML)).toEqual(
@@ -280,6 +280,11 @@ index 0000000..7246ef4
 +					rendered: true,
 +				})
 +			expect(region.querySelector('[style]')).toBeNull()
++			// Each header is the release's own `h2` element, the level under the page's `h1` element,
++			// because a region carries no heading of its own.
++			const headers = [...region.querySelectorAll('.accordion-header')]
++			expect(headers).not.toStrictEqual([])
++			expect(new Set(headers.map((element) => element.tagName))).toEqual(new Set(['H2']))
 +			// Each state is a class written in the markup, so no specimen carries a trigger an engine
 +			// would bind: moving an item between the states is the plugin's obligation, not the key's.
 +			expect(
@@ -300,14 +305,15 @@ index 0000000..7246ef4
 +	})
 +
 +	// The mutation this catches is a specimen whose markup disagrees with itself: a button that drops
-+	// the `collapsed` class over a hidden panel, a panel that gains `show` under a collapsed button, or
-+	// a button announcing a state its classes do not set each report here, in either specimen.
++	// the `collapsed` class over a hidden panel, a panel that gains the `show` class under a collapsed
++	// button, or a button announcing a state its classes do not set each report here, in either
++	// specimen.
 +	it('renders each item in the state its button announces, with the panel it names shown or hidden to match', () => {
 +		const host = mount(build('div'))
 +		const section: SectionInterface = new AccordionSection(host)
 +		try {
 +			const region = requireValue(host.querySelector('section'), 'No Accordion region')
-+			const states = ['Accordion items', 'Accordion flush'].map((name) =>
++			const states = ['Accordion base', 'Accordion flush'].map((name) =>
 +				[...readSpecimen(region, name).querySelectorAll('.accordion-item')].map((item) => {
 +					const button = requireValue(item.querySelector('.accordion-button'), 'No button')
 +					const panel = requireValue(item.querySelector('.accordion-collapse'), 'No panel')
@@ -347,7 +353,7 @@ index 0000000..7246ef4
 +		const section: SectionInterface = new AccordionSection(host)
 +		try {
 +			const region = requireValue(host.querySelector('section'), 'No Accordion region')
-+			const corners = ['Accordion items', 'Accordion flush'].map((name) =>
++			const corners = ['Accordion base', 'Accordion flush'].map((name) =>
 +				[...readSpecimen(region, name).querySelectorAll('.accordion-item')].map((item) => [
 +					readPixels(item, 'border-top-left-radius'),
 +					readPixels(item, 'border-bottom-left-radius'),
@@ -390,11 +396,11 @@ index 0000000..7246ef4
 +		}
 +	})
 +})
-diff --git a/home/user/veneer-ac/tests/src/styles/components/accordion.test.ts b/home/user/veneer-ac/tests/src/styles/components/accordion.test.ts
+diff --git a/tests/src/styles/components/accordion.test.ts b/tests/src/styles/components/accordion.test.ts
 new file mode 100644
 index 0000000..8266e35
 --- /dev/null
-+++ b/home/user/veneer-ac/tests/src/styles/components/accordion.test.ts
++++ b/tests/src/styles/components/accordion.test.ts
 @@ -0,0 +1,494 @@
 +import { TOKEN_NAMES } from '@src/core'
 +import { requireValue } from '@orkestrel/test'
