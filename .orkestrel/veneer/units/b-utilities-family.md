@@ -35,9 +35,15 @@ section proof `tests/app/browser/sections/<Name>Section.test.ts` exist per parti
    else; every difference takes a `#### <key>` table row under `### Departures`; every extra name
    takes a `### Additions` row; no negative margin ships (R9); the `rtl: false` wrapper comments
    never ship (D5).
-2. **The mixins (R4).** Every utility partial writes its entries through `utility` and
-   `utility-variable` in the release's map order inside one `breakpoint-each` walk; no partial
-   writes `!important` by hand.
+2. **The mixins (R4, as UTIL-SPACER landed them).** Every utility partial writes its entries
+   through `utility($class, $properties, $values, $infix: '', $responsive: false, $locals: (),
+   $state: ())` and `utility-variable($class, $variable, $values, $state: ())` in the release's map
+   order inside one `breakpoint-each` walk; each pseudo-class in `$state` emits `.NAME-PSEUDO:PSEUDO`
+   directly after the base rule with the same body, and an empty `$class` drops the infix's leading
+   hyphen (`.md-KEY`); a partial writes no utility entry's `!important` by hand. UTIL-TEXT's link
+   entries (`.link-opacity-N-hover:hover` and `.link-underline-opacity-N-hover:hover` through
+   `utility-variable` with `$state`, `.link-offset-N-hover:hover` through `utility` with `$state`)
+   and UTIL-PAINT's `css-var` utilities are the mixins' first shipped consumers after the gap keys.
 3. **Tokens (R2).** Bind only where the ruling names a token; write every release `var(--bs-*)`
    byte for byte; keep every other value a literal; add no token; prove a retune moves the
    consumer and, for the space scale, that density moves it.
@@ -73,6 +79,8 @@ section proof `tests/app/browser/sections/<Name>Section.test.ts` exist per parti
     partial; the compatibility rows; the `#### <key>` tables; the Additions rows; the § Tests
     links; every code token with its noun; a report-only patch while another unit owns the guide.
 12. **Shared and off-limits files.** Report-only for every unit: `src/styles/index.scss`,
+    `tests/setupServer.test.ts` (the dash-proof list's key entries, as every unit's brief grants
+    it; the UTIL-SPACER round-2 audit's R-a settled the record against the brief),
     `src/styles/_mixins.scss` (except UTIL-SPACER), `tests/setup.ts`, `tests/setup.test.ts`,
     `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tests/conformance.test.ts`,
     `tests/app/browser/Showcase.test.ts`, `tests/app/browser/index.test.ts`,
@@ -80,7 +88,7 @@ section proof `tests/app/browser/sections/<Name>Section.test.ts` exist per parti
     `app/browser/index.ts`, `tests/setup.css`, `tests/fixtures/tailwind/*` (except UTIL-SPACER),
     `guides/veneer.md`, `ROADMAP.md`. Off-limits for every unit: every other unit's owned files,
     `tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/fixtures/oracle/**`,
-    `tests/setupServer.ts`, `tests/setupServer.test.ts`, `src/styles/_theme.scss`,
+    `tests/setupServer.ts`, `src/styles/_theme.scss`,
     `src/styles/_tokens.scss`, `src/styles/elements/**`, `src/browser/**`, `src/core/**`,
     `configs/**`, `vite.config.ts`, `tsconfig.json`, `package.json`, `package-lock.json`,
     `README.md`.

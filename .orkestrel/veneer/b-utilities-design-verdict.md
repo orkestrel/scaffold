@@ -54,6 +54,10 @@ patches integrate serially at each landing; no separate integration unit. Family
   $values)` writes `--bs-{variable}` normal; each partial walks `breakpoint-each` once and calls its
   entries in the release's `$utilities` map order; the fixture proof under `mixins.test.ts` proves
   every branch. UTIL-SPACER lands them and is the only unit that edits `_mixins.scss`. (Planner.)
+  Amended 2026-09-23 by the UTIL-SPACER round-1 audit (`units/us-audit-verdict.md` F1 and F2, as
+  round 2 landed them): each mixin takes `$state: ()` last and emits `.NAME-PSEUDO:PSEUDO` after the
+  base rule for each pseudo-class in it, as the release's `state` entries do; an empty `$class`
+  drops the infix's leading hyphen. The family record's ruling 2 carries the landed signatures.
 - **R5 Layer by importance.** A helper the release writes with `!important` sits in the `utilities`
   layer ahead of the utility partials (`_link` relocated by UTIL-TEXT, `_visually-hidden`, and the
   `.text-bg-*` rules at the head of `_color`), because an important declaration in an earlier layer
