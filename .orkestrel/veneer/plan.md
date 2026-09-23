@@ -90,7 +90,7 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Veneer `origin/main` `3985067`, scaffold `origin/main` `1d94e24`, read 2026-09-23.
+**Marker.** Veneer `origin/main` `54db757`, scaffold `origin/main` `c622cb4`, read 2026-09-23.
 The engine session has recorded no landing and no `engine/` record yet; move this marker at every
 boundary the protocol names.
 
