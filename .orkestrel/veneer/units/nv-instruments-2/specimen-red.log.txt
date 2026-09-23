@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 /home/user/veneer-nv/tmp/probe/base
+
+Port 63315 is in use, trying another one...
+x·
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  14:46:52
+   Duration  14.62s (transform 0ms, setup 319ms, import 255ms, tests 13ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/app/browser/sections/NavSection.test.ts:8:2 > NavSection > renders every nav family and every state class in markup through the shared section contract
+AssertionError: expected [ 'nav-item', 'dropdown', 'show' ] to deeply equal [ 'nav-item', 'dropdown' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "nav-item",[22m
+[2m    "dropdown",[22m
+[31m+   "show",[39m
+[2m  ][22m
+
+ ❯ tests/app/browser/sections/NavSection.test.ts:78:33
+     76|     'No tab holding a menu',
+     77|    )
+     78|    expect([...opened.classList]).toEqual(['nav-item', 'dropdown'])
+       |                                 ^
+     79|    const toggle = requireValue(opened.querySelector(':scope > .nav-lin…
+     80|    expect([...toggle.classList]).toEqual(['nav-link', 'dropdown-toggle…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+exit=1

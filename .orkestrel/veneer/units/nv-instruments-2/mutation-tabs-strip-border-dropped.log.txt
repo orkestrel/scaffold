@@ -1,0 +1,13 @@
+mutation: tabs strip border dropped
+src/styles/components/_nav.scss: '\t\tborder-bottom: var(--bs-nav-tabs-border-width) solid var(--bs-nav-tabs-border-color);\n' -> ''
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > reads 'border-bottom-width' from '--bs-nav-tabs-border-width' and moves it only from the declaring '.nav-tabs'",
+  "nav.test.ts > paints 'border-bottom-color' from '--bs-nav-tabs-border-color', the value '--bs-border-color' gives it, and moves it only from the declaring '.nav-tabs'",
+  "nav.test.ts > each tab overlaps the strip's bottom border by one border width, so the active tab's bottom border covers the strip line where the two meet",
+  "nav.test.ts > reads one link and tab paint in light and another in dark"
+ ],
+ "failedCount": 4,
+ "total": 59
+}

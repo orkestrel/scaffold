@@ -1,0 +1,11 @@
+mutation: disabled button left out
+src/styles/components/_nav.scss: '\t.nav-link.disabled,\n\t.nav-link:disabled {' -> '\t.nav-link.disabled {'
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > lays each nav out as an unstyled wrapping row and every shipped selector reaches the components layer",
+  "nav.test.ts > refuses the pointer on a disabled link under either spelling and leaves its neighbour reachable"
+ ],
+ "failedCount": 2,
+ "total": 59
+}

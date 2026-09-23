@@ -1,0 +1,11 @@
+mutation: active pane display dropped
+src/styles/components/_nav.scss: '\t.tab-content > .active {\n\t\tdisplay: block;\n\t}\n' -> ''
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > lays each nav out as an unstyled wrapping row and every shipped selector reaches the components layer",
+  "nav.test.ts > shows the pane carrying active and hides every other pane inside the tab content"
+ ],
+ "failedCount": 2,
+ "total": 59
+}

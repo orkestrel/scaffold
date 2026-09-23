@@ -1,0 +1,15 @@
+mutation: pill slots dropped
+src/styles/components/_nav.scss: '\t\t--bs-nav-pills-border-radius: var(--bs-border-radius);\n\t\t--bs-nav-pills-link-active-color: var(--vn-palette-white-base);\n\t\t--bs-nav-pills-link-active-bg: var(--vn-palette-blue);\n' -> ''
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > lays each nav out as an unstyled wrapping row and every shipped selector reaches the components layer",
+  "nav.test.ts > reads 'border-top-left-radius' from '--bs-nav-pills-border-radius' and moves it only from the declaring '.nav-pills'",
+  "nav.test.ts > paints 'color' from '--bs-nav-pills-link-active-color', the value '--vn-palette-white-base' gives it, and moves it only from the declaring '.nav-pills'",
+  "nav.test.ts > paints 'background-color' from '--bs-nav-pills-link-active-bg', the value '--vn-palette-blue' gives it, and moves it only from the declaring '.nav-pills'",
+  "nav.test.ts > repaints the links and the active tab in light and holds the pills on the palette",
+  "nav.test.ts > repaints the links and the active tab in dark and holds the pills on the palette"
+ ],
+ "failedCount": 6,
+ "total": 59
+}

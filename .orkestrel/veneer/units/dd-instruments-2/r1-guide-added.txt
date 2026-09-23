@@ -1,0 +1,104 @@
+| `src/styles/components/_dropdown.scss`      | The dropdown wrappers, the caret in each direction, the menu with its placements and alignment ramp, the item states, header, divider, item text, and dark menu in the components layer, read by `tests/src/styles/components/dropdown.test.ts`.   |
+### Dropdown classes
+
+The dropdown key ships in its own partial in the components layer: the direction and centered
+wrappers, the toggle and its caret in each direction, the menu and its placement in each direction,
+the start and end alignments with their breakpoint ramp, the items and their states, the header, the
+divider, the item text, and the legacy dark menu. The input-group and button-group relationships the
+key records ship from the partials that write them, and the split-toggle and navigation menu names
+are withheld under § Deferred selectors.
+
+Every class is set in markup. A menu shows while it carries the `.show` class, and it takes the
+placement its wrapper names while it carries the `data-bs-popper` attribute, which is what a
+placement engine writes when it leaves a menu to the stylesheet. No rule opens, closes, or places a
+menu on its own. The Dropdown `plugin` row in § Compatibility records the behavior the engine owns.
+
+Every value the partial paints is Bootstrap 5.3.8's own. A length reads the Veneer scale token that
+already resolves to it, so the menu padding, the item and header insets, the divider margin, and the
+spacer between the toggle and the menu answer to the `--vn-factor-density` factor. The stacking
+level reads the `--vn-stack-dropdown` tier, so a retune of that tier moves every menu. A color reads
+the compatibility variable Bootstrap names, or the palette or gray token that carries Bootstrap's
+literal: the selected item holds the `--vn-palette-blue` fill behind the `--vn-palette-white-base`
+text in both color modes, and the header reads the `--vn-gray-600` token. Each slot is declared on
+the `.dropdown-menu` class, so a consumer's override lands when it is set on the menu, and the same
+override on an ancestor is shadowed.
+
+The caret is drawn from borders on an empty inline box, in one direction per wrapper: down on a
+plain toggle, up under the `.dropup` wrapper, towards the end under the `.dropend` wrapper, and
+towards the start under the `.dropstart` wrapper, where it moves to the `::before` pseudo-element
+and the `::after` caret is hidden, so a toggle paints one caret. Its margin and the sides that draw
+it are physical, because this cascade carries no right-to-left twin, and a toggle with no content
+drops the margin. The ledger's `declared` rows on the end and start caret sites are the release's
+own pairs: Bootstrap writes each of those selectors twice, and the comparison reads the value the
+second rule leaves.
+
+The menu opens one `--bs-dropdown-spacer` gap away from its toggle: under it by default, over it
+under the `.dropup` wrapper, and beside it under the `.dropend` and `.dropstart` wrappers. The
+`.dropdown-menu-end` class aligns the menu to its wrapper's end and the `.dropdown-menu-start` class
+to its start, and each breakpoint name switches that alignment at its boundary. No Veneer rule reads
+`--bs-position`; a dropdown engine reads it to choose the menu's placement, as Bootstrap's script
+does. The `.dropdown-center` and `.dropup-center` wrappers paint the menu at their start, as the
+cascade places it, because centering the menu on its toggle is placement a dropdown engine performs.
+
+The `.dropdown-menu-dark` class is the release's legacy dark menu. It retunes the menu's own slots
+on the class rather than under the theme attribute, so a dark menu holds one paint in both color
+modes, and it empties the shadow slot the way the release does.
+
+The `tests/src/styles/components/dropdown.test.ts` proof reads each resolved treatment in the
+browser: the resting and the shown menu, the placement in each direction against the toggle's box
+with the spacer gap, the caret sides on each pseudo-element, the empty toggle, the end alignment and
+every step of the ramp at its boundary and one pixel below it, the published side, the hover, focus,
+selected, pressed, and disabled item paints, the density factor, the stacking tier, a consumer's
+override, the dark menu's slots, and the plain menu retuning in a dark island while the dark menu
+holds.
+
+| `.dropdown-toggle-split`                                                         | Disclosure | The owning component supplies this relationship.                                                                                                                                                                |
+| `.dropdown-toggle-split::after`                                                  | Disclosure | The owning component supplies this relationship.                                                                                                                                                                |
+| `.dropup .dropdown-toggle-split::after`                                          | Disclosure | The owning component supplies this relationship.                                                                                                                                                                |
+| `.dropend .dropdown-toggle-split::after`                                         | Disclosure | The owning component supplies this relationship.                                                                                                                                                                |
+| `.dropstart .dropdown-toggle-split::before`                                      | Disclosure | The owning component supplies this relationship.                                                                                                                                                                |
+| `.nav-tabs .dropdown-menu`                                                       | Nav        | The owning component supplies this relationship.                                                                                                                                                                |
+| `.navbar-nav .dropdown-menu`                                                     | Navbar     | The owning component supplies this relationship.                                                                                                                                                                |
+| `.navbar-expand-sm .navbar-nav .dropdown-menu`                                   | Navbar     | The owning component supplies this relationship.                                                                                                                                                                |
+| `.navbar-expand-md .navbar-nav .dropdown-menu`                                   | Navbar     | The owning component supplies this relationship.                                                                                                                                                                |
+| `.navbar-expand-lg .navbar-nav .dropdown-menu`                                   | Navbar     | The owning component supplies this relationship.                                                                                                                                                                |
+| `.navbar-expand-xl .navbar-nav .dropdown-menu`                                   | Navbar     | The owning component supplies this relationship.                                                                                                                                                                |
+| `.navbar-expand-xxl .navbar-nav .dropdown-menu`                                  | Navbar     | The owning component supplies this relationship.                                                                                                                                                                |
+| `.navbar-expand .navbar-nav .dropdown-menu`                                      | Navbar     | The owning component supplies this relationship.                                                                                                                                                                |
+#### `dropdown`
+
+| Component  | Selector                              | Property                            | Condition | Bootstrap 5.3.8             | Veneer                                                              | Departure |
+| ---------- | ------------------------------------- | ----------------------------------- | --------- | --------------------------- | ------------------------------------------------------------------- | --------- |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-zindex`              | —         | `1000`                      | `var(--vn-stack-dropdown)`                                          | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-padding-y`           | —         | `0.5rem`                    | `var(--vn-space-4)`                                                 | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-spacer`              | —         | `0.125rem`                  | `var(--vn-space-1)`                                                 | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-font-size`           | —         | `1rem`                      | `var(--vn-size-3)`                                                  | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-divider-margin-y`    | —         | `0.5rem`                    | `var(--vn-space-4)`                                                 | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-link-active-color`   | —         | `#fff`                      | `var(--vn-palette-white-base)`                                      | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-link-active-bg`      | —         | `#0d6efd`                   | `var(--vn-palette-blue)`                                            | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-item-padding-x`      | —         | `1rem`                      | `var(--vn-space-8)`                                                 | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-item-padding-y`      | —         | `0.25rem`                   | `var(--vn-space-2)`                                                 | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-header-color`        | —         | `#6c757d`                   | `var(--vn-gray-600)`                                                | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-header-padding-x`    | —         | `1rem`                      | `var(--vn-space-8)`                                                 | tokenized |
+| `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-header-padding-y`    | —         | `0.5rem`                    | `var(--vn-space-4)`                                                 | tokenized |
+| `dropdown` | `.dropend .dropdown-toggle::after`    | `vertical-align`                    | —         | `0.255em`                   | `0`                                                                 | declared  |
+| `dropdown` | `.dropstart .dropdown-toggle::after`  | `display`                           | —         | `inline-block`              | `none`                                                              | declared  |
+| `dropdown` | `.dropstart .dropdown-toggle::before` | `vertical-align`                    | —         | `0.255em`                   | `0`                                                                 | declared  |
+| `dropdown` | `.dropdown-item`                      | `font-weight`                       | —         | `400`                       | `var(--vn-weight-body)`                                             | tokenized |
+| `dropdown` | `.dropdown-header`                    | `font-size`                         | —         | `0.875rem`                  | `var(--vn-size-2)`                                                  | tokenized |
+| `dropdown` | `.dropdown-menu-dark`                 | `--bs-dropdown-color`               | —         | `#dee2e6`                   | `var(--vn-gray-300)`                                                | tokenized |
+| `dropdown` | `.dropdown-menu-dark`                 | `--bs-dropdown-bg`                  | —         | `#343a40`                   | `var(--vn-gray-800)`                                                | tokenized |
+| `dropdown` | `.dropdown-menu-dark`                 | `--bs-dropdown-link-color`          | —         | `#dee2e6`                   | `var(--vn-gray-300)`                                                | tokenized |
+| `dropdown` | `.dropdown-menu-dark`                 | `--bs-dropdown-link-hover-color`    | —         | `#fff`                      | `var(--vn-palette-white-base)`                                      | tokenized |
+| `dropdown` | `.dropdown-menu-dark`                 | `--bs-dropdown-link-hover-bg`       | —         | `rgba(255, 255, 255, 0.15)` | `color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent)` | tokenized |
+| `dropdown` | `.dropdown-menu-dark`                 | `--bs-dropdown-link-active-color`   | —         | `#fff`                      | `var(--vn-palette-white-base)`                                      | tokenized |
+| `dropdown` | `.dropdown-menu-dark`                 | `--bs-dropdown-link-active-bg`      | —         | `#0d6efd`                   | `var(--vn-palette-blue)`                                            | tokenized |
+| `dropdown` | `.dropdown-menu-dark`                 | `--bs-dropdown-link-disabled-color` | —         | `#adb5bd`                   | `var(--vn-gray-500)`                                                | tokenized |
+| `dropdown` | `.dropdown-menu-dark`                 | `--bs-dropdown-header-color`        | —         | `#adb5bd`                   | `var(--vn-gray-500)`                                                | tokenized |
+
+| dropdown         | selector       | Every official `.dropdown-menu`, `.dropdown-item`, `.dropdown-toggle`, and direction wrapper selector ships in the components layer, the caret in each direction, the placement of each direction, the alignment ramp, the item states, and the legacy dark menu included, less the split-toggle and navigation names recorded under § Styles; resolved placement, caret, alignment, and paint are proved in `tests/src/styles/components/dropdown.test.ts`.     | —                     | shipped  |
+| dropdown         | variable       | Every official `--bs-dropdown-*` custom property is declared on `.dropdown-menu` and retuned by `.dropdown-menu-dark`, and every alignment class declares `--bs-position`; each slot is read beside the property it drives in `tests/src/styles/components/dropdown.test.ts`.                                                                                                                                                                                    | —                     | shipped  |
+| engine           | plugin         | Dropdown: the `[data-bs-toggle="dropdown"]` data API; the `autoClose`, `boundary`, `display`, `offset`, `popperConfig`, and `reference` options; the `toggle`, `show`, `hide`, `dispose`, and `update` methods; the paired `.bs.dropdown` events, the `show` and `hide` events cancelable; the `aria-expanded` attribute; arrow and `Escape` key focus; placement from the `--bs-position` property and the wrappers, centering included. J-ENGINE owns it.      | —                     | accepted |
+
+A `plugin` row records behavior the engine owns, while the classes it sets ship and render in
+markup.

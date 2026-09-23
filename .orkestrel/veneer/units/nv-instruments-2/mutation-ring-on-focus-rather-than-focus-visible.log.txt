@@ -1,0 +1,11 @@
+mutation: ring on focus rather than focus-visible
+src/styles/components/_nav.scss: '\t.nav-link:focus-visible {\n\t\toutline: 0;' -> '\t.nav-link:focus {\n\t\toutline: 0;'
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > lays each nav out as an unstyled wrapping row and every shipped selector reaches the components layer",
+  "nav.test.ts > rings a keyboard-focused link and leaves a pointer-held link to the hover color alone"
+ ],
+ "failedCount": 2,
+ "total": 59
+}

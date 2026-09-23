@@ -1,0 +1,10 @@
+mutation: link color read past its slot
+src/styles/components/_nav.scss: '\t\tcolor: var(--bs-nav-link-color);\n\t\ttext-decoration: none;' -> '\t\tcolor: var(--bs-link-color);\n\t\ttext-decoration: none;'
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > paints 'color' from '--bs-nav-link-color', the value '--bs-link-color' gives it, and moves it only from the declaring '.nav'"
+ ],
+ "failedCount": 1,
+ "total": 59
+}

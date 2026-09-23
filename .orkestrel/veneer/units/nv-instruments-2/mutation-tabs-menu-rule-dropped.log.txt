@@ -1,0 +1,11 @@
+mutation: tabs menu rule dropped
+src/styles/components/_nav.scss: '\t.nav-tabs .dropdown-menu {\n\t\tmargin-top: calc(-1 * var(--bs-nav-tabs-border-width));\n\t\tborder-top-left-radius: 0;\n\t\tborder-top-right-radius: 0;\n\t}\n' -> ''
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > lays each nav out as an unstyled wrapping row and every shipped selector reaches the components layer",
+  "nav.test.ts > pulls a menu hanging from a tab up by the border width and squares only its top corners"
+ ],
+ "failedCount": 2,
+ "total": 59
+}

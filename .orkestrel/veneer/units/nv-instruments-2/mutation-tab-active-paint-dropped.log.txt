@@ -1,0 +1,14 @@
+mutation: tab active paint dropped
+src/styles/components/_nav.scss: '\t\tbackground-color: var(--bs-nav-tabs-link-active-bg);\n' -> ''
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > paints 'background-color' from '--bs-nav-tabs-link-active-bg', the value '--bs-body-bg' gives it, and moves it only from the declaring '.nav-tabs'",
+  "nav.test.ts > each tab overlaps the strip's bottom border by one border width, so the active tab's bottom border covers the strip line where the two meet",
+  "nav.test.ts > repaints the links and the active tab in light and holds the pills on the palette",
+  "nav.test.ts > repaints the links and the active tab in dark and holds the pills on the palette",
+  "nav.test.ts > reads one link and tab paint in light and another in dark"
+ ],
+ "failedCount": 5,
+ "total": 59
+}

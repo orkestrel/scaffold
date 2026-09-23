@@ -1,0 +1,13 @@
+mutation: link color fixed to the palette
+src/styles/components/_nav.scss: '--bs-nav-link-color: var(--bs-link-color);' -> '--bs-nav-link-color: var(--vn-palette-blue);'
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > paints 'color' from '--bs-nav-link-color', the value '--bs-link-color' gives it, and moves it only from the declaring '.nav'",
+  "nav.test.ts > repaints the links and the active tab in light and holds the pills on the palette",
+  "nav.test.ts > repaints the links and the active tab in dark and holds the pills on the palette",
+  "nav.test.ts > reads one link and tab paint in light and another in dark"
+ ],
+ "failedCount": 4,
+ "total": 59
+}

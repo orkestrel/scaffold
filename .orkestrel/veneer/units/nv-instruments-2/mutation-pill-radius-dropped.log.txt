@@ -1,0 +1,11 @@
+mutation: pill radius dropped
+src/styles/components/_nav.scss: '\t.nav-pills .nav-link {\n\t\tborder-radius: var(--bs-nav-pills-border-radius);\n\t}\n' -> ''
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > lays each nav out as an unstyled wrapping row and every shipped selector reaches the components layer",
+  "nav.test.ts > reads 'border-top-left-radius' from '--bs-nav-pills-border-radius' and moves it only from the declaring '.nav-pills'"
+ ],
+ "failedCount": 2,
+ "total": 59
+}

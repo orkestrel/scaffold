@@ -1,0 +1,12 @@
+mutation: link padding read past its slots
+src/styles/components/_nav.scss: '\t\tpadding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);' -> '\t\tpadding: 0.5rem 1rem;'
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > reads 'padding-left' from '--bs-nav-link-padding-x' and moves it only from the declaring '.nav'",
+  "nav.test.ts > reads 'padding-top' from '--bs-nav-link-padding-y' and moves it only from the declaring '.nav'",
+  "nav.test.ts > drives the link padding and the underline gap from the density factor and leaves the underline stroke fixed"
+ ],
+ "failedCount": 3,
+ "total": 59
+}

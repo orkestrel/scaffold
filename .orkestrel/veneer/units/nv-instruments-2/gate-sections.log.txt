@@ -1,0 +1,12 @@
+=== npx vitest run --config configs/app/vite.browser.config.ts --no-cache --reporter=dot tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/CardSection.test.ts (15:10:08)
+
+ RUN  v4.1.11 /home/user/veneer-nv/tmp/probe/base
+
+····
+
+ Test Files  2 passed (2)
+      Tests  4 passed (4)
+   Start at  15:10:10
+   Duration  12.64s (transform 0ms, setup 563ms, import 517ms, tests 22ms, environment 0ms)
+
+exit=0

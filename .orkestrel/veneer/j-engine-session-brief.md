@@ -158,9 +158,9 @@ through it, `npm ci --ignore-scripts` first with the lockfile digest written to
 `node_modules/.orkestrel-lock.sha256`; Playwright's Chromium is `/opt/pw-browsers/chromium-1194`
 (Chromium 141.0.7390.37) with downloads disabled, and every receipt names that build; outbound
 HTTPS goes through the proxy the environment configures; `codex` is installed and not
-authenticated (the user runs `codex login --device-auth` at session start; the bench is dark on
-quota until 2026-09-26 17:53 UTC regardless, so record the substitution per round and re-probe
-after that time); the Cursor `agent` CLI reads `CURSOR_API_KEY` from the environment, its shell is
+authenticated (the user runs `codex login --device-auth` at session start; the bench's quota
+state is Veneer's `ROADMAP.md` § Standing conditions, live again from 2026-09-23 15:18 UTC, so
+probe it at each dispatch and record any substitution per round); the Cursor `agent` CLI reads `CURSOR_API_KEY` from the environment, its shell is
 allowlisted to `ls`, and one lane at a time per session. Foreground Bash is capped at 10 minutes;
 launch anything longer as a tracked background command with a cap you sized.
 

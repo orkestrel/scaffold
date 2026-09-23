@@ -1,0 +1,10 @@
+mutation: forced-ring omitted
+src/styles/components/_nav.scss: '\t\t@include forced-ring;\n' -> ''
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > outlines the keyboard-focused link at the focus width under forced colors, where its shadow ring is not painted"
+ ],
+ "failedCount": 1,
+ "total": 59
+}

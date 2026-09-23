@@ -1,0 +1,10 @@
+mutation: tab margin dropped
+src/styles/components/_nav.scss: '\t\tmargin-bottom: calc(-1 * var(--bs-nav-tabs-border-width));\n\t\tborder: var(--bs-nav-tabs-border-width) solid transparent;' -> '\t\tborder: var(--bs-nav-tabs-border-width) solid transparent;'
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > each tab overlaps the strip's bottom border by one border width, so the active tab's bottom border covers the strip line where the two meet"
+ ],
+ "failedCount": 1,
+ "total": 59
+}

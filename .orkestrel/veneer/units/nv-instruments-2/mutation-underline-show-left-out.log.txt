@@ -1,0 +1,11 @@
+mutation: underline show left out
+src/styles/components/_nav.scss: '\t.nav-underline .nav-link.active,\n\t.nav-underline .show > .nav-link {' -> '\t.nav-underline .nav-link.active {'
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > lays each nav out as an unstyled wrapping row and every shipped selector reaches the components layer",
+  "nav.test.ts > paints the link whose item carries show as the active link in tabs, pills, and underline"
+ ],
+ "failedCount": 2,
+ "total": 59
+}

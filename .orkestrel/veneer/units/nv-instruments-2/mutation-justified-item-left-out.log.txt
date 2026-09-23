@@ -1,0 +1,11 @@
+mutation: justified item left out
+src/styles/components/_nav.scss: '\t.nav-justified > .nav-link,\n\t.nav-justified .nav-item {' -> '\t.nav-justified > .nav-link {'
+{
+ "exit": 1,
+ "failed": [
+  "nav.test.ts > lays each nav out as an unstyled wrapping row and every shipped selector reaches the components layer",
+  "nav.test.ts > grows every 'nav-justified' item across the row, sharing it equally only when justified"
+ ],
+ "failedCount": 2,
+ "total": 59
+}
