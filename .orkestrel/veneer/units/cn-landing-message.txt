@@ -1,0 +1,14 @@
+Rewrite each width feature of a compound media condition
+
+normalizeMediaCondition anchored its min-width and max-width rewrites over the whole condition
+text, so a compound condition such as (max-width: 575.98px) and (prefers-reduced-motion: reduce)
+returned raw and the range notation the proofs compare never matched it. The width rewrite moves
+to a module-scope normalizeMediaFeature helper, and the exported function splits the condition on
+"and", maps every feature through the helper, and rejoins in written order. The normalizer case
+gains the compound condition and its reversed twin, each proved red first against the anchored
+body (1 failed | 96 passed) and green after (97 passed); the conformance gate reports no ledger row
+changed. The unit CONDITIONS (M4 of the B-MODAL design verdict) ran on builder in
+/home/user/veneer-cn from c3ac297.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

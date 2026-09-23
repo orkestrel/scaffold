@@ -40,12 +40,16 @@ prune commit's message is the promotion record for what that commit removed.
   (`b-forms-<key>-*` for the writing unit and `bf<letter>-*` for its audit rounds, the close's
   units as `b-forms-close-<unit>-*` with `bfs-*`, `bft-*`, and `bff-*` for their rounds, the label
   units as `b-forms-label-<unit>-*` with `bfw-*` and `bfl-*`, the family close's units as
-  `close-<unit>-*` with `cr-*`, `cm-*`, `cg-*`, and `ci-*`, and the caption unit as
+  `close-<unit>-*` with `cr-*`, `cm-*`, `cg-*`, and `ci-*` (pruned after their landings, with
+  the passive carrier units `bpo-*`, `bpp-*`, and `bpog-*` and the landed folds `fold-43.py` to
+  `fold-51.py`; the close's design verdict, proposals, and terrain stay while the disclosure and
+  utilities briefs cite them), and the caption unit as
   `f7b-*`; the disclosure family's units as `b-collapse-<unit>-*` with `co-*`, `dd-*`, `nv-*`,
   `ac-*`, `tg-*`, and `nb-*`, the utilities family's as `b-utilities-<unit>-*` with `us-*`, `up-*`,
   `ut-*`, `uf-*`, `usp-*`, `ud-*`, `upl-*`, `ufl-*`, and `ue-*`, and the passive carrier units as
   `b-passive-order-*` with `bpo-*`, `b-passive-prose-*` with `bpp-*`, and
-  `b-passive-order-guide-*` with `bpog-*`) until the unit lands on Veneer `main`, and
+  `b-passive-order-guide-*` with `bpog-*`, and the overlay family's units as `b-modal-<unit>-*`
+  with `cn-*`, `al-*`, and `ca-*`) until the unit lands on Veneer `main`, and
   the prune commit that follows the landing removes them. A landing's integration edit is retained
   as `units/<unit>-probe-<unit>-integration*.py` with its `units/<unit>-integration.diff` and the
   landing checker's brief and verdict, in the same set.

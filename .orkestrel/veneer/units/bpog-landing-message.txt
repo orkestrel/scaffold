@@ -1,9 +1,0 @@
-Move the guide's passive sections and tables into the barrel's order
-
-B-PASSIVE-ORDER-GUIDE (`builder` on Sonnet, one round) moves the passive block's `### <Key>
-classes` sections and `### Helper classes` into one run after the forms sections, and the passive
-and helper `#### <key>` tables into one run after the forms tables, in the order the barrel loads
-the partials (B-PASSIVE-ORDER); no sentence changes, and the diff carries moved lines only.
-
-Verified by `checker` on Sonnet; the recorded gates are this landing's own runs. Records:
-`.orkestrel/veneer/units/bpog-*` and `b-passive-order-guide-*` in the scaffold repository.
