@@ -462,3 +462,15 @@ J-ENGINE, because the adapter wraps the engine. Exit criterion item 4 stays and 
 J-ENGINE. Carriers: the roadmap fold 47 re-sequences the phase table, the family queue, and the
 three engine carrier rows; the `B-COLLAPSE … B-SCROLLSPY` design brief carries the ruling to its
 lanes.
+
+## D42 — A literal value token is its own noun (the Orchestrator, 2026-09-23)
+
+The noun rule's scope (the CONTROL round-3 ruling carried by P1 SCAFFOLD-PROPAGATE) names a CSS
+property, value, function, custom property, or `!important` token as its own noun. A literal value
+token of the host language is the same case: `undefined`, `null`, `true`, `false`, a number, and a
+quoted string stand as their own nouns, while an identifier for a symbol, field, file, class name,
+selector, attribute, key, or `{@link}` target takes a noun. For a module-scope function the noun is
+`helper` in a file that already writes `helper`, never `function` beside it (one concept, one
+term); `method` names a method and `constant` a constant. Carrier: P1 SCAFFOLD-PROPAGATE lands the
+sentence in `.claude/rules/writing.md` § Code tokens beside the CSS-token sentence; the
+B-PASSIVE-PROSE fix round applies it.
