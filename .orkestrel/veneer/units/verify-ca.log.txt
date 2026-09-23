@@ -1,0 +1,44 @@
+=== HEAD 2071f8f base 4977d09 (17:36:48)
+=== oxfmt exit=0 changed: 0
+=== format:check exit=0 (17:37:06)
+=== lint:check exit=0 (17:37:08)
+=== check exit=0 (17:37:32)
+=== test:policy exit=0 (17:37:37)
+=== test:guides exit=0 (17:37:40)
+=== test:setup exit=0 (17:38:01)
+=== build:src exit=0 (17:38:13)
+=== scoped styles (carousel, close) exit=0 (17:38:31)
+=== test:service exit=0 (17:38:47)
+=== test:conformance exit=0 (17:39:05)
+=== section proofs (Carousel, Alert, Showcase, entry) exit=0 (17:39:22)
+=== ca fast gates done (17:39:22)
+=== build:src exit=0
+=== test:conformance exit=0
+=== test:setup exit=0
+=== test:app exit=0
+=== capture light-1280 exit=0 (17:44:09) load 3.89
+=== capture dark-1280 exit=0 (17:47:11) load 4.50
+=== capture light-390 exit=0 (17:49:38) load 4.60
+=== capture dark-390 exit=0 (17:52:12) load 3.94
+=== test:journey exit=0 (17:55:10) load 17.05
+1320
+=== npm install exit=0 (17:55:12)
+=== format:check exit=0 (17:55:23)
+=== lint:check exit=0 (17:55:26)
+=== check exit=0 (17:55:52)
+=== build exit=0 (17:56:08)
+=== test:src:core exit=0 (17:56:10)
+=== test:src:browser exit=0 (17:56:27)
+=== test:src:styles exit=0 (17:58:19)
+=== test:app exit=0 (17:58:47)
+=== test:journey exit=0 (18:02:07)
+=== test:policy exit=0 (18:02:12)
+=== test:config exit=1 (18:02:22)
+=== test:setup exit=0 (18:02:44)
+=== test:setup:browser exit=0 (18:03:05)
+=== test:conformance exit=0 (18:03:25)
+=== test:guides exit=0 (18:03:29)
+=== test:distribution exit=0 (18:04:01)
+=== test:service exit=0 (18:04:17)
+=== gates done (18:04:17)
+=== verify done (18:04:17)

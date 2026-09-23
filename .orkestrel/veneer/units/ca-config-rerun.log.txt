@@ -1,0 +1,10 @@
+=== before: 0 scratch dirs; load 11.69; 18:03:30
+
+·
+
+ Test Files  1 passed (1)
+      Tests  173 passed | 1 skipped (174)
+   Start at  18:03:32
+   Duration  10.98s (transform 936ms, setup 145ms, import 2.93s, tests 7.59s, environment 0ms)
+
+=== test:config re-run exit=0 (18:03:43); after: 0 scratch dirs
