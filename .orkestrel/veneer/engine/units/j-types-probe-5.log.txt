@@ -1,0 +1,8 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+j-types-probe-5.ts
+j-types-probe-5.ts(16,2): error TS2322: Type '"show.bs.collapse"' is not assignable to type '"show.vn.collapse"'.
+j-types-probe-5.ts(22,2): error TS2322: Type '"show.vn.modal"' is not assignable to type '"show.vn.collapse"'.
+j-types-probe-5.ts(27,50): error TS2561: Object literal may only specify known properties, but 'sanitize' does not exist in type 'TooltipOptions'. Did you mean to write 'sanitizer'?
+j-types-probe-5.ts(28,49): error TS2353: Object literal may only specify known properties, and 'toggle' does not exist in type 'CollapseOptions'.
+j-types-probe-5.ts(29,51): error TS2353: Object literal may only specify known properties, and 'hidePrevented' does not exist in type 'EventHooks<ModalEventMap>'.
+probe exit=2

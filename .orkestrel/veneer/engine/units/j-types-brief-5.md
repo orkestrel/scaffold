@@ -4,7 +4,7 @@ This brief supersedes `j-types-brief-4.md` for the unit's fifth round. What chan
 
 ## Role and engine
 
-`opus` on Opus 5.5, reached as a native Claude subagent with `Read`, `Grep`, `Glob`, `Edit`, `Write`, and `Bash`. The executor that opens this brief is that subagent, the sole writer in the worktree `C:/Users/mikes/WebstormProjects/veneer-types` (branch `unit/types`, base BASE_COMMIT_5 of Veneer `main`, installed from the lockfile), which is clean at dispatch.
+`opus` on Opus 5.5, reached as a native Claude subagent with `Read`, `Grep`, `Glob`, `Edit`, `Write`, and `Bash`. The executor that opens this brief is that subagent, the sole writer in the worktree `C:/Users/mikes/WebstormProjects/veneer-types` (branch `unit/types`, base `55ca0cd` of Veneer `main`, installed from the lockfile), which is clean at dispatch.
 
 ## Objective
 
