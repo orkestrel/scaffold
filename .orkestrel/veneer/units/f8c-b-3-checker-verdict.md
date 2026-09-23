@@ -12,4 +12,3 @@ Findings outside the claims, the same class in the swept population (BROKEN): `t
 
 VERDICT: FAIL 9; outside the claims: the eight sites above
 
-Orchestrator: claim 5 settled by `git diff --stat` in the worktree after round 3 (the two files, the three hunks); the eight sites carry to `f8c-b-brief-4.md` on `builder` with the replacements fixed; the guide-wide token-noun sweep beyond § Tailwind is B-PASSIVE-CLOSE's carrier row.

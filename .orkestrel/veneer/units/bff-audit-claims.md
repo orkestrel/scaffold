@@ -33,8 +33,7 @@ not re-report the density split; rule the rest.
 Verified by the Orchestrator directly: the worktree base `2c10329`; `src/styles/index.scss:62` is
 `@use 'components/form-floating';` directly after `@use 'components/form-range';` at 61 (the
 release's order: floating labels after the range); `tests/conformance.test.ts:104` lists
-`'form-floating'`; `ls tmp/capture/states | grep -c '^form-floating'` returns 52 (7 scenarios × 4
-variants as frames plus 6 subjects × 4 variants as accessibility artifacts); `guides/veneer.md` has
+`'form-floating'`; `ls tmp/capture/states | grep -c '^form-floating'` returns 52 (a frame per scenario and variant, an accessibility artifact per resting subject and variant); `guides/veneer.md` has
 `### Form floating classes` at 780 after `### Form range classes` at 723, `#### \`form-floating\``
 at 2683 after `#### \`btn-close\`` at 2672; the partial (132 lines) opens `@use '../mixins' as *;`
 with no tokens load and writes its transition through `@include transition(...)` at line 48; the

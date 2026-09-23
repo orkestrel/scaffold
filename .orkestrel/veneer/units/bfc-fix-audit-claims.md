@@ -4,8 +4,7 @@
 
 The B-FORMS-CHECK fix round's uncommitted writes in `/home/user/veneer-bfc` (detached at `2c10329`),
 written by `opus` from `/home/user/veneer-bfc/tmp/units/b-forms-check-brief-3.md` (the successor
-carrying ten findings from the round-1 audit: claim 2's proof gap, claim 8's `@each`, claim 5's three
-prose defects, F1 to F3, D28, and the swap-plant note) over the round-1 writes ruled in
+carrying the round-1 audit's findings: claim 2's proof gap, claim 8's `@each`, claim 5's prose defects, F1 to F3, D28, and the swap-plant note) over the round-1 writes ruled in
 `/home/user/scaffold/.orkestrel/veneer/units/bfc-audit-verdict.md`. Rounds so far: round 1 (analyst
 FAIL 2, 8, 10; reviewer FAIL 1, 2, 5, 10; checker FAIL 8), this fix round. Review evidence:
 `/home/user/scaffold/.orkestrel/veneer/units/bfc-3.diff` (the whole diff against `2c10329`, the new owned files
