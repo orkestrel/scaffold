@@ -1,0 +1,23 @@
+Land the floating label classes as a Bootstrap 5.3.8 baseline
+
+B-FORMS-FLOATING ships the `form-floating` key: every inventory selector opening on `.form-floating`
+(the container, the text and plaintext controls, the select, the floated label, the textarea
+backdrop, the disabled and plaintext labels, the autofill rules, and the reduced-motion twin) from
+`src/styles/components/_form-floating.scss`, with the browser proof, the Node binding case, the
+`Form floating` showcase section and its proof, the capture scenarios, the § Compatibility row, the
+`listed` entry, and the `#### form-floating` ledger table. Round 1 was audited by `analyst` on
+Astra, `reviewer` on Opus 5, and `checker`; the fix round (D34: the height and the floated top inset
+scale with density; D35: the barrel loads the forms partials in the release's order, validation
+last, pinned by a conformance case; the `--bs-secondary-bg` override; the bounded autofill
+sentence) by the same lanes; the prose and proof round on `builder` (the line-box assertion, the
+frozen density table, the autofill title, D38's stated range) by the Orchestrator's reading.
+B-FORMS-FLOOR lands with it (D32: `findDuplication`'s relative floor moves to five declarations).
+
+Integration edits: the shipped-key Set literal gains `form-floating`; the barrel's forms block reads
+`form-check`, `form-range`, `form-floating`, `input-group`, `validation`; the § Validation classes
+sentence names the forms partials; the ROADMAP rows carry the select line-height reading and the
+`form-floating-select` recapture to B-FORMS-SELECT, the text-control recaptures and the
+bare-controls sentence to B-FORMS-CONTROL, and the reduced-motion literal to B-PASSIVE-CLOSE.
+
+Records: `.orkestrel/veneer/units/b-forms-floating-*`, `bff-*`, and `b-forms-floor-*` in the
+scaffold repository.
