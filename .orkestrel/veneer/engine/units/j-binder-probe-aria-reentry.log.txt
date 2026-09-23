@@ -1,0 +1,17 @@
+# The Orchestrator's probe of the aria-pressed re-entry on the round-6 source (2026-09-23, Chromium 153.0.8010.12; the probe file is retained beside this log as j-binder-probe-aria-reentry.test.ts and was removed from the worktree after the run)
+cea3359 Merge branch 'main' into unit/binder
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/j-binder-probe-aria-reentry.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer-binder
+
+stdout | tests/src/browser/j-binder-probe-aria-reentry.test.ts:13:2 > probe: aria-pressed re-entry > records the details the outer and inner toggles dispatch when a reaction to the aria-pressed write toggles again
+probe: outer=false inner=[[false]] active=false aria=false details=[false,true]
+·
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  18:30:51
+   Duration  3.90s (transform 0ms, setup 175ms, import 7ms, tests 5ms, environment 0ms)
+
+probe exit=0
