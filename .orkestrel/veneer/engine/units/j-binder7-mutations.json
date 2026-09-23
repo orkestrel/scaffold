@@ -1,0 +1,352 @@
+[
+ {
+  "name": "Button: aria-pressed and the event detail from the stale token-write result",
+  "proof": "tests/src/browser/Button.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Button.ts",
+    "find": "\t\tthis.#host.classList.toggle(this.#classes.pressed)\n",
+    "replace": "\t\tconst stale = this.#host.classList.toggle(this.#classes.pressed)\n"
+   },
+   {
+    "file": "src/browser/Button.ts",
+    "find": "String(this.pressed)",
+    "replace": "String(stale)"
+   },
+   {
+    "file": "src/browser/Button.ts",
+    "find": "{ pressed: this.pressed }",
+    "replace": "{ pressed: stale }"
+   }
+  ]
+ },
+ {
+  "name": "Button: the return from the value read before the dispatch",
+  "proof": "tests/src/browser/Button.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Button.ts",
+    "find": "\t\temitEvent(this.#host, BUTTON_EVENTS.toggle, { pressed: this.pressed }, false)\n\t\treturn this.pressed\n",
+    "replace": "\t\tconst detail = this.pressed\n\t\temitEvent(this.#host, BUTTON_EVENTS.toggle, { pressed: detail }, false)\n\t\treturn detail\n"
+   }
+  ]
+ },
+ {
+  "name": "ColorMode: storage written from the stale mode",
+  "proof": "tests/src/browser/ColorMode.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/ColorMode.ts",
+    "find": "this.#storage?.setItem(COLOR_MODE_KEY, this.mode)",
+    "replace": "this.#storage?.setItem(COLOR_MODE_KEY, mode)"
+   }
+  ]
+ },
+ {
+  "name": "Button: the event detail from the read before the aria-pressed write",
+  "proof": "tests/src/browser/Button.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Button.ts",
+    "find": "\t\tthis.#host.setAttribute('aria-pressed', String(this.pressed))\n",
+    "replace": "\t\tconst before = this.pressed\n\t\tthis.#host.setAttribute('aria-pressed', String(this.pressed))\n"
+   },
+   {
+    "file": "src/browser/Button.ts",
+    "find": "{ pressed: this.pressed }",
+    "replace": "{ pressed: before }"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: #withdraw compares presence instead of the owner",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "if (pending?.get(key)?.owner !== owner) return",
+    "replace": "if (pending?.has(key) !== true) return"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: #writeBack compares presence instead of the owner",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "if (HostSnapshot.#pending.get(element)?.get(key)?.owner !== owner) return",
+    "replace": "if (HostSnapshot.#pending.get(element)?.has(key) !== true) return"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: a publish replaces an entry another restoration owns",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "if (!pending.has(key)) pending.set(key, { owner, value, priority })",
+    "replace": "pending.set(key, { owner, value, priority })"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: the owner comparison removed from the write back",
+  "proof": "tests/src/browser/HostSnapshot.test.ts tests/src/browser/Button.test.ts tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "if (HostSnapshot.#pending.get(element)?.get(key)?.owner !== owner) return\n\t\twrite()",
+    "replace": "write()"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: the finally block withdraws nothing, the exception still propagating",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\t\tfor (const { target } of records) {\n\t\t\t\tHostSnapshot.#withdraw(\n\t\t\t\t\ttarget.element,\n\t\t\t\t\tHostSnapshot.#key(target.category, target.name),\n\t\t\t\t\tthis,\n\t\t\t\t)\n\t\t\t}\n\t\t\tfor (const element of classes.keys()) {\n\t\t\t\tHostSnapshot.#withdraw(element, HostSnapshot.#classed, this)\n\t\t\t}\n",
+    "replace": ""
+   }
+  ]
+ },
+ {
+  "name": "Button: no lifetime re-check after the token write",
+  "proof": "tests/src/browser/Button.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Button.ts",
+    "find": "\t\tthis.#host.classList.toggle(this.#classes.pressed)\n\t\tif (this.#controller.signal.aborted) return this.pressed\n",
+    "replace": "\t\tthis.#host.classList.toggle(this.#classes.pressed)\n"
+   }
+  ]
+ },
+ {
+  "name": "Button: no lifetime re-check after the aria-pressed write",
+  "proof": "tests/src/browser/Button.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Button.ts",
+    "find": "\t\tthis.#host.setAttribute('aria-pressed', String(this.pressed))\n\t\tif (this.#controller.signal.aborted) return this.pressed\n",
+    "replace": "\t\tthis.#host.setAttribute('aria-pressed', String(this.pressed))\n"
+   }
+  ]
+ },
+ {
+  "name": "ColorMode: no lifetime re-check after the attribute write",
+  "proof": "tests/src/browser/ColorMode.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/ColorMode.ts",
+    "find": "\t\tif (this.#original === undefined) return\n\t\tthis.#storage?.setItem(COLOR_MODE_KEY, this.mode)",
+    "replace": "\t\tthis.#storage?.setItem(COLOR_MODE_KEY, this.mode)"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: a nested restore withdraws every entry on the element",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\t\tfor (const { target } of records) {\n\t\t\t\tHostSnapshot.#withdraw(\n\t\t\t\t\ttarget.element,\n\t\t\t\t\tHostSnapshot.#key(target.category, target.name),\n\t\t\t\t\tthis,\n\t\t\t\t)\n\t\t\t}\n",
+    "replace": "\t\t\tfor (const { target } of records) HostSnapshot.#pending.delete(target.element)\n"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: a written target not withdrawn until the end",
+  "proof": "tests/src/browser/HostSnapshot.test.ts tests/src/browser/Button.test.ts tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\twrite()\n\t\tHostSnapshot.#withdraw(element, key, owner)\n",
+    "replace": "\t\twrite()\n"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: a snapshot never takes its own pending entry",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "const taken = HostSnapshot.#take(element, HostSnapshot.#key(category, name))",
+    "replace": "const taken = HostSnapshot.#pending.get(element)?.get(HostSnapshot.#key(category, name))?.owner === this ? undefined : HostSnapshot.#take(element, HostSnapshot.#key(category, name))"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: a pending original not taken",
+  "proof": "tests/src/browser/HostSnapshot.test.ts tests/src/browser/Button.test.ts tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "if (entry === undefined) return undefined",
+    "replace": "if (entry !== null) return undefined"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: the class-attribute record not handed over",
+  "proof": "tests/src/browser/HostSnapshot.test.ts tests/src/browser/Button.test.ts tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "const classed = HostSnapshot.#take(element, HostSnapshot.#classed)",
+    "replace": "const classed = undefined"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: attributes before tokens",
+  "proof": "tests/src/browser/HostSnapshot.test.ts tests/src/browser/Button.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\t\tfor (const { target, value } of records) {\n\t\t\t\tif (target.category !== 'attribute') continue\n",
+    "replace": "\t\t\tfor (const { target, value } of []) {\n\t\t\t\tif (target.category !== 'attribute') continue\n"
+   },
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\t\tfor (const { target, value } of records) {\n\t\t\t\tif (target.category !== 'token') continue\n",
+    "replace": "\t\t\tfor (const { target, value } of records) {\n\t\t\t\tif (target.category !== 'attribute') continue\n\t\t\t\tif (value === undefined) target.element.removeAttribute(target.name)\n\t\t\t\telse target.element.setAttribute(target.name, value)\n\t\t\t}\n\t\t\tfor (const { target, value } of records) {\n\t\t\t\tif (target.category !== 'token') continue\n"
+   }
+  ]
+ },
+ {
+  "name": "Button: restore before releasing the claim",
+  "proof": "tests/src/browser/Button.test.ts tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Button.ts",
+    "find": "\t\tButton.#registry.release(this.#host, this)\n\t\tthis.#snapshot.restore()\n",
+    "replace": "\t\tthis.#snapshot.restore()\n\t\tButton.#registry.release(this.#host, this)\n"
+   }
+  ]
+ },
+ {
+  "name": "Delegate: no drop of destroyed engines at a click",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Delegate.ts",
+    "find": "\t\tthis.#discard()\n\t\tthis.#unobserve(size)\n\t\tif (!(event.target instanceof Element)) return",
+    "replace": "\t\tthis.#unobserve(size)\n\t\tif (!(event.target instanceof Element)) return"
+   }
+  ]
+ },
+ {
+  "name": "Delegate: no drop of destroyed engines at a delivery",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Delegate.ts",
+    "find": "\t\tthis.#discard()\n\t\tthis.#release()\n",
+    "replace": "\t\tthis.#release()\n"
+   }
+  ]
+ },
+ {
+  "name": "Delegate: observing never stops",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Delegate.ts",
+    "find": "if (size > 0 && this.#owned.size === 0) this.#observer.disconnect()",
+    "replace": "void size"
+   }
+  ]
+ },
+ {
+  "name": "Delegate: observer never observes",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Delegate.ts",
+    "find": "this.#observer.observe(this.#root, { childList: true, subtree: true })",
+    "replace": "void this.#root"
+   }
+  ]
+ },
+ {
+  "name": "Delegate: releases contained hosts too",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Delegate.ts",
+    "find": "\t\t\tif (this.#root.contains(engine.host)) continue\n",
+    "replace": ""
+   }
+  ]
+ },
+ {
+  "name": "Delegate: no per-click mark",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Delegate.ts",
+    "find": "if (hosts.has(host)) return false",
+    "replace": "if (host === null) return false"
+   }
+  ]
+ },
+ {
+  "name": "Delegate: never drives a found engine",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/Delegate.ts",
+    "find": "Button.find(host) ?? this.#acquire(",
+    "replace": "this.#acquire("
+   }
+  ]
+ },
+ {
+  "name": "resolveOptions: the attribute table ignored",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/helpers.ts",
+    "find": "const name = attributes[key]",
+    "replace": "const name = `data-bs-${key}`"
+   }
+  ]
+ },
+ {
+  "name": "resolveOptions: an undefined constructor value applied",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/helpers.ts",
+    "find": "if (value !== undefined) resolved[key] = value",
+    "replace": "resolved[key] = value"
+   }
+  ]
+ },
+ {
+  "name": "resolveVocabulary: an undefined supplied value applied",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/helpers.ts",
+    "find": "\t\tif (value === undefined) continue\n\t\tif (!guard(value))",
+    "replace": "\t\tif (!guard(value))"
+   }
+  ]
+ },
+ {
+  "name": "recordCalls: no call recorded",
+  "proof": "tests/src/browser/index.test.ts tests/src/browser/Delegate.test.ts",
+  "edits": [
+   {
+    "file": "tests/setupBrowser.ts",
+    "find": "recorder.handler(this)\n",
+    "replace": "\n"
+   }
+  ]
+ }
+]
