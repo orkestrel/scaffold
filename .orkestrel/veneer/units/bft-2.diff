@@ -1,0 +1,933 @@
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index a466fa0..27454a7 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -180,13 +180,23 @@ describe('Bootstrap component oracle', () => {
+ 
+ describe('cascade ledger', () => {
+ 	const cascade = compileExpandedCascade()
+-	const measured = collectLedger(
+-		cascade,
+-		readOracleInventory(),
+-		collectShippedComponents(readCompatibility()),
+-	)
++	const inventory = readOracleInventory()
++	const shipped = collectShippedComponents(readCompatibility())
++	const recorded = readAdditions()
++	const measured = collectLedger(cascade, inventory, shipped)
+ 	const departures = scanLedgerDrift(measured.departures, readDepartures(), describeDeparture)
+-	const additions = scanLedgerDrift(measured.additions, readAdditions(), describeAddition)
++	const additions = scanLedgerDrift(measured.additions, recorded, describeAddition)
++	// One literal on a recorded selector in the components layer, on a property the release records
++	// for no `.form-control` rule and the guide's Additions table names for none.
++	const planted = scanLedgerDrift(
++		collectLedger(
++			`${cascade}\n@layer components { .form-control { letter-spacing: 0.01em } }\n`,
++			inventory,
++			shipped,
++		).additions,
++		recorded,
++		describeAddition,
++	)
+ 
+ 	it('records every measured value difference in the guide ledger', () => {
+ 		expect(departures.unrecorded).toEqual([])
+@@ -204,6 +214,17 @@ describe('cascade ledger', () => {
+ 		expect(additions.stale).toEqual([])
+ 	})
+ 
++	it('reports an unrecorded literal declaration on a shipped rule as a declaration addition', () => {
++		// A literal the partial adds on a property no text-control row values or reads passes both
++		// text-control proofs: the Node case compares only the properties that read a `var()`, and the
++		// browser case reads only the properties a row values. This ledger is the reading that reports
++		// it, and the unmodified cascade is the control that reports nothing.
++		expect(planted.unrecorded).toEqual([
++			'form-control | .form-control { letter-spacing } | — | declaration',
++		])
++		expect(additions.unrecorded).toEqual([])
++	})
++
+ 	// `scanCompatibilityPresence` stops at its first failure and judges only names the inventory
+ 	// carries. This case names every deferral the cascade ships, so a row whose owner shipped the
+ 	// name reads as the stale row it is rather than as one refusal standing for all of them.
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 915c4b3..7e95459 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -41,6 +41,7 @@ import {
+ 	attributeSelector,
+ 	classifyDeparture,
+ 	collectAdditions,
++	collectDeclarationReads,
+ 	collectElementTags,
+ 	collectImportClosure,
+ 	collectImportantNames,
+@@ -62,6 +63,7 @@ import {
+ 	describeSite,
+ 	describeValueCell,
+ 	extractSpecifiers,
++	filterComparableBlocks,
+ 	isAdditionCategory,
+ 	isDeparture,
+ 	matchShippedKey,
+@@ -87,6 +89,7 @@ import {
+ 	readOracleInventory,
+ 	readVeneerGuide,
+ 	recordButtonOracle,
++	renderRuleKey,
+ 	scanCompatibilityPresence,
+ 	scanOracleObligation,
+ 	scanOracleFixture,
+@@ -496,6 +499,7 @@ describe('server setup', () => {
+ 			'attributeSelector',
+ 			'classifyDeparture',
+ 			'collectAdditions',
++			'collectDeclarationReads',
+ 			'collectElementTags',
+ 			'collectImportClosure',
+ 			'collectImportantNames',
+@@ -517,6 +521,7 @@ describe('server setup', () => {
+ 			'describeValueCell',
+ 			'extractSpecifiers',
+ 			'extractStringArgument',
++			'filterComparableBlocks',
+ 			'findDuplication',
+ 			'indexRecordingKeys',
+ 			'isAdditionCategory',
+@@ -542,6 +547,7 @@ describe('server setup', () => {
+ 			'readValueCell',
+ 			'readVeneerGuide',
+ 			'recordButtonOracle',
++			'renderRuleKey',
+ 			'scanCompatibilityPresence',
+ 			'scanEscapingImport',
+ 			'scanForbiddenBuild',
+@@ -2024,6 +2030,73 @@ describe('server setup', () => {
+ 		])
+ 	})
+ 
++	it('renders a rule under no condition as its selector and a rule under one as the selector, a space, and the condition', () => {
++		expect(renderRuleKey({ selector: '.form-range', condition: undefined })).toBe('.form-range')
++		expect(
++			renderRuleKey({
++				selector: '.form-range::-webkit-slider-thumb',
++				condition: '@media (prefers-reduced-motion: reduce)',
++			}),
++		).toBe('.form-range::-webkit-slider-thumb @media (prefers-reduced-motion: reduce)')
++		// A block nested under two at-rules carries both in its condition, and the key keeps them as
++		// the reader joined them.
++		expect(
++			readCascadeBlocks(
++				'@media print { @media (width >= 40em) { .form-range { color: red } } }',
++			).map(renderRuleKey),
++		).toEqual(['.form-range @media print and @media (width >= 40em)'])
++		// Absence is `undefined` alone, so an empty condition keeps the separator rather than reading
++		// as a rule under none.
++		expect(renderRuleKey({ selector: '.form-range', condition: '' })).toBe('.form-range ')
++	})
++
++	it('keeps the blocks under the selector prefix whose condition a recorded rule sits under, in either width notation', () => {
++		const blocks = readCascadeBlocks(
++			'@layer components { .range { color: red } .range:focus { color: blue } .other { color: red } ' +
++				'@media (width < 576px) { .range { color: green } } ' +
++				'@media (forced-colors: active) { .range:focus { outline: 0 } } }',
++		)
++		const rules = [{ condition: undefined }, { condition: '@media (max-width: 575.98px)' }]
++		// The block under the release's width notation is kept, the block under a condition no rule
++		// records is left out, and a block outside the prefix is left out under any condition.
++		expect(filterComparableBlocks(blocks, '.range', rules).map(renderRuleKey)).toEqual([
++			'.range',
++			'.range:focus',
++			'.range @media (width < 576px)',
++		])
++		expect(filterComparableBlocks(blocks, '.range', [])).toEqual([])
++		expect(filterComparableBlocks([], '.range', rules)).toEqual([])
++		expect(blocks).toHaveLength(5)
++	})
++
++	it('collects the custom properties each declaration reads, keyed by selector and by condition', () => {
++		const reads = collectDeclarationReads(
++			readCascadeBlocks(
++				'@layer components { .range { padding: 0; box-shadow: 0 0 0 1px var(--vn-surface), 0 0 0 var(--vn-width) var(--vn-color); transition: opacity var(--vn-motion) } ' +
++					'@media (prefers-reduced-motion: reduce) { .range { transition: none } } ' +
++					'.range:focus { color: var(--vn-ink) } .range:focus { color: red; margin: var( --vn-gap ) } }',
++			),
++		)
++		// A reduced-motion twin carries its resting rule's selector, so the condition beside it is
++		// what keeps its declarations out of the resting entry.
++		expect([...reads.keys()]).toEqual([
++			'.range',
++			'.range @media (prefers-reduced-motion: reduce)',
++			'.range:focus',
++		])
++		// Each name keeps its written position, and a property reading no custom property is absent,
++		// so a twin writing only a literal reads as an empty entry rather than as no entry.
++		expect(reads.get('.range')).toEqual({
++			'box-shadow': ['--vn-surface', '--vn-width', '--vn-color'],
++			transition: ['--vn-motion'],
++		})
++		expect(reads.get('.range @media (prefers-reduced-motion: reduce)')).toEqual({})
++		// Rules under one key merge, and the later declaration of a property replaces what the earlier
++		// one read, so a token overwritten by a literal no longer reads as bound.
++		expect(reads.get('.range:focus')).toEqual({ margin: ['--vn-gap'] })
++		expect(collectDeclarationReads([]).size).toBe(0)
++	})
++
+ 	it('reads the release width notation and the range notation as one condition', () => {
+ 		expect(normalizeMediaCondition(undefined)).toBeUndefined()
+ 		expect(normalizeMediaCondition('@media (min-width: 576px)')).toBe('(width >= 576px)')
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 9c4f1cf..940b547 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1364,6 +1364,95 @@ export function readCascadeBlocks(cascade: string): readonly CascadeBlock[] {
+ 	return blocks
+ }
+ 
++/**
++ * Renders the key that names a rule by its selector and the condition it sits under.
++ *
++ * @param rule - The rule's selector and condition, as a cascade block or a recorded rule carries
++ *   them.
++ * @returns The selector for a rule under no condition, and the selector, a space, and the
++ *   condition otherwise.
++ *
++ * @remarks
++ * This key is the lookup contract of the {@link collectDeclarationReads} helper: each entry that
++ * helper returns is found by the key this function renders for the recorded rule or the case row
++ * naming it. An empty condition is still a condition, so only `undefined` renders the selector
++ * alone.
++ *
++ * @example
++ * ```ts
++ * renderRuleKey({ selector: '.form-range', condition: '@media (prefers-reduced-motion: reduce)' })
++ * // '.form-range @media (prefers-reduced-motion: reduce)'
++ * ```
++ */
++export function renderRuleKey(rule: Pick<CascadeBlock, 'selector' | 'condition'>): string {
++	return rule.condition === undefined ? rule.selector : `${rule.selector} ${rule.condition}`
++}
++
++/**
++ * Collects the custom properties each declaration of a compiled cascade reads, keyed by selector
++ * and condition.
++ *
++ * @param blocks - The cascade's blocks, as the {@link readCascadeBlocks} helper reads them.
++ * @returns One entry per selector and condition, in the order each key is first written, keyed by
++ *   the selector for a block under no condition and by the selector, a space, and the condition
++ *   otherwise. Each entry maps every property whose declaration reads a custom property to the
++ *   names that declaration reads, in written order.
++ *
++ * @remarks
++ * Every key is the one the {@link renderRuleKey} helper renders for the block. A reduced-motion
++ * twin carries its resting rule's selector, so the condition in the key is what keeps the twin's
++ * declarations out of the resting entry. Blocks sharing a key merge into one entry, and a later
++ * declaration of a property replaces what the earlier one read. A property whose declaration reads
++ * no custom property is absent from the entry, so a rule writing no `var()` at all reads as an
++ * empty entry rather than as no entry.
++ */
++export function collectDeclarationReads(
++	blocks: readonly CascadeBlock[],
++): ReadonlyMap<string, Readonly<Record<string, readonly string[]>>> {
++	const declared = new Map<string, Map<string, readonly string[]>>()
++	for (const block of blocks) {
++		const key = renderRuleKey(block)
++		const properties = declared.get(key) ?? new Map<string, readonly string[]>()
++		for (const [property, value] of block.declarations)
++			properties.set(property, collectValueNames(value))
++		declared.set(key, properties)
++	}
++	return new Map(
++		[...declared].map(([key, properties]) => [
++			key,
++			Object.fromEntries([...properties].filter(([, names]) => names.length > 0)),
++		]),
++	)
++}
++
++/**
++ * Filters a compiled cascade's blocks down to those a component's recorded rules are compared
++ * against.
++ *
++ * @param blocks - The cascade's blocks, as the {@link readCascadeBlocks} helper reads them.
++ * @param prefix - The selector text every compared block opens with.
++ * @param rules - The component's recorded rules, whose conditions bound the population.
++ * @returns Each block whose selector opens with `prefix` and whose condition, normalized by the
++ *   {@link normalizeMediaCondition} helper, is one a recorded rule sits under, in written order.
++ *
++ * @remarks
++ * A block under a condition no recorded rule sits under is this package's own addition rather than
++ * a recorded rule, so the additions ledger holds it and the comparison leaves it out. A block under
++ * a recorded condition stays in whether or not a rule records its selector, so a written rule no
++ * row names still reddens the comparison.
++ */
++export function filterComparableBlocks(
++	blocks: readonly CascadeBlock[],
++	prefix: string,
++	rules: ReadonlyArray<Pick<CascadeBlock, 'condition'>>,
++): readonly CascadeBlock[] {
++	const conditions = new Set(rules.map((rule) => normalizeMediaCondition(rule.condition)))
++	return blocks.filter(
++		(block) =>
++			block.selector.startsWith(prefix) && conditions.has(normalizeMediaCondition(block.condition)),
++	)
++}
++
+ /**
+  * Collects every animation name a compiled cascade defines.
+  * @param cascade - The compiled CSS text.
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 5874b6c..4f72f75 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -11,7 +11,9 @@ import oracle from './fixtures/oracle/inventory.json'
+ import {
+ 	BOOTSTRAP_VERSION,
+ 	findDuplication,
++	collectDeclarationReads,
+ 	compileExpandedCascade,
++	filterComparableBlocks,
+ 	LEDGER_GUIDE,
+ 	readBootstrapCascade,
+ 	readCascadeBlocks,
+@@ -19,6 +21,7 @@ import {
+ 	readDeferrals,
+ 	readOracleInventory,
+ 	readVeneerGuide,
++	renderRuleKey,
+ 	scanCompatibilityPresence,
+ 	scanStyleBlocks,
+ 	SheetReader,
+@@ -80,7 +83,6 @@ import {
+ 	INPUT_GROUP_DEFERRED,
+ 	INPUT_GROUP_FLOATING_CASES,
+ 	INPUT_GROUP_MARKUP,
+-	INPUT_GROUP_ROUNDING,
+ 	INPUT_GROUP_SIZE_CASES,
+ 	LINK_OFFSET_CASES,
+ 	LINK_OPACITY_CASES,
+@@ -251,7 +253,6 @@ describe('styles setup', () => {
+ 				'INPUT_GROUP_DEFERRED',
+ 				'INPUT_GROUP_FLOATING_CASES',
+ 				'INPUT_GROUP_MARKUP',
+-				'INPUT_GROUP_ROUNDING',
+ 				'INPUT_GROUP_SIZE_CASES',
+ 				'LINK_OFFSET_CASES',
+ 				'LINK_OPACITY_CASES',
+@@ -1791,13 +1792,17 @@ describe('styles setup', () => {
+ 		)
+ 		expect(normalizeDeclaration('0.75rem')).not.toBe(normalizeDeclaration('0.8rem'))
+ 	})
+-	it('binds every range selector to the inventory, to its engine, and to the tokens it reads', () => {
++	it('binds every range rule to the inventory, to its engine, and each declaration to the tokens its row names for that property', () => {
+ 		const rules = requireValue(
+ 			readOracleInventory().components['form-range'],
+ 			'The inventory records no range key',
+ 		).rules
+-		const recorded = [...new Set(rules.map((rule) => rule.selector))]
+-		expect([...FORM_RANGE_CASES].map((entry) => entry.selector).sort()).toEqual(recorded.sort())
++		// A rule and its reduced-motion twin carry the same selector, so each row is keyed by the
++		// condition beside it. Keyed by selector alone the twin's declarations fold into the resting
++		// rule's row, and a twin the partial stopped emitting still reads as written.
++		const keyed = rules.map(renderRuleKey)
++		const cased = FORM_RANGE_CASES.map(renderRuleKey)
++		expect([...cased].sort()).toEqual([...keyed].sort())
+ 		// The engine cell is read off the selector rather than trusted, so a row naming the wrong
+ 		// engine reddens here instead of sending a browser proof to look for a rule that engine
+ 		// never writes.
+@@ -1810,44 +1815,60 @@ describe('styles setup', () => {
+ 		).toEqual([])
+ 		// Both halves are read out of the compiled cascade, where no browser parser has been near
+ 		// them: this is the one reading that reaches the Gecko rules at all, because Chromium
+-		// discards their selectors and the CSSOM never carries them.
+-		// A rule and its reduced-motion twin carry the same selector, so each entry is keyed by the
+-		// condition beside it. Keyed by selector alone the twin's declarations fold into the
+-		// resting rule's entry, and a twin the partial stopped emitting still reads as written.
+-		const keyed = rules.map((rule) =>
+-			rule.condition === undefined ? rule.selector : `${rule.selector} ${rule.condition}`,
++		// discards their selectors and the CSSOM never carries them. The comparison leaves out a
++		// block under a condition no range rule records, and the following case pins that exclusion.
++		const written = collectDeclarationReads(
++			filterComparableBlocks(readCascadeBlocks(compileExpandedCascade()), '.form-range', rules),
+ 		)
+-		const blocks = readCascadeBlocks(compileExpandedCascade())
+-		const written = new Map<string, string>()
+-		for (const block of blocks) {
+-			if (!block.selector.startsWith('.form-range')) continue
+-			const key =
+-				block.condition === undefined ? block.selector : `${block.selector} ${block.condition}`
+-			const declarations = [...block.declarations]
+-				.map(([property, value]) => `${property}: ${value}`)
+-				.join('; ')
+-			written.set(key, `${written.get(key) ?? ''}${declarations}; `)
+-		}
+-		expect([...written.keys()].sort()).toEqual(keyed.sort())
+-		// An empty list is the claim that the rule reads no custom property at all, so a rule with
+-		// no name to look for is held to that rather than passing for want of one.
+-		const untokenized: string[] = []
++		expect([...written.keys()].sort()).toEqual([...keyed].sort())
++		// The written side keeps only the properties that read a custom property, which is the
++		// population a row names, so an empty row holds its rule to no `var()` at all and a row
++		// naming a property its rule writes as a literal reddens as surely as one missing a token.
+ 		for (const entry of FORM_RANGE_CASES) {
+-			const declarations = requireValue(
+-				written.get(entry.selector),
+-				`The compiled cascade writes no ${entry.selector} rule`,
+-			)
+-			expect([...entry.reads].filter((name) => !declarations.includes(`var(${name})`))).toEqual([])
+-			if (entry.reads.length === 0 && declarations.includes('var('))
+-				untokenized.push(entry.selector)
++			const key = renderRuleKey(entry)
++			expect({
++				selector: key,
++				reads: requireValue(written.get(key), `The compiled cascade writes no ${key} rule`),
++			}).toEqual({ selector: key, reads: entry.reads })
+ 		}
+-		expect(untokenized).toEqual([])
+ 		expect(Object.isFrozen(FORM_RANGE_CASES)).toBe(true)
+ 		for (const entry of FORM_RANGE_CASES) {
+ 			expect(Object.isFrozen(entry)).toBe(true)
+ 			expect(Object.isFrozen(entry.reads)).toBe(true)
++			expect(Object.values(entry.reads).every((names) => Object.isFrozen(names))).toBe(true)
+ 		}
+ 	})
++	it('leaves a range rule under a condition no range rule records out of the compared keys and compares one under a recorded condition', () => {
++		const rules = requireValue(
++			readOracleInventory().components['form-range'],
++			'The inventory records no range key',
++		).rules
++		const keyed = rules.map(renderRuleKey)
++		const cascade = compileExpandedCascade()
++		// The same focus rule is planted in the components layer under a condition the inventory
++		// records for no range rule, and then under the reduced-motion condition it records for the
++		// thumb twins. The reader carries the first plant, so its absence from the compared keys is
++		// the filter's doing rather than a plant that never reached the blocks.
++		const unrecorded = readCascadeBlocks(
++			`${cascade}\n@layer components { @media (forced-colors: active) { .form-range:focus { outline: 1px solid red } } }\n`,
++		)
++		expect(unrecorded.map(renderRuleKey)).toContain(
++			'.form-range:focus @media (forced-colors: active)',
++		)
++		expect(
++			[
++				...collectDeclarationReads(filterComparableBlocks(unrecorded, '.form-range', rules)).keys(),
++			].sort(),
++		).toEqual([...keyed].sort())
++		const recorded = readCascadeBlocks(
++			`${cascade}\n@layer components { @media (prefers-reduced-motion: reduce) { .form-range:focus { outline: 1px solid red } } }\n`,
++		)
++		expect(
++			[
++				...collectDeclarationReads(filterComparableBlocks(recorded, '.form-range', rules)).keys(),
++			].sort(),
++		).toEqual([...keyed, '.form-range:focus @media (prefers-reduced-motion: reduce)'].sort())
++	})
+ 	it('carries the classed pair, the disabled control, and the bare control in the range markup', () => {
+ 		// The markup is the proof's own fixture, so the classed pair and the bare control are held
+ 		// against the class the partial paints and the state the disabled thumb rule needs a host
+@@ -1870,12 +1891,8 @@ describe('styles setup', () => {
+ 				!rule.selector.startsWith('.input-group') &&
+ 				!/\.(?:was-validated|is-valid|is-invalid)\b/u.test(rule.selector),
+ 		)
+-		const keyed = rules.map((rule) =>
+-			rule.condition === undefined ? rule.selector : `${rule.selector} ${rule.condition}`,
+-		)
+-		const cased = FORM_CONTROL_CASES.map((entry) =>
+-			entry.condition === undefined ? entry.selector : `${entry.selector} ${entry.condition}`,
+-		)
++		const keyed = rules.map(renderRuleKey)
++		const cased = FORM_CONTROL_CASES.map(renderRuleKey)
+ 		expect([...cased].sort()).toEqual([...keyed].sort())
+ 		// The rung is read off the selector rather than trusted: a Gecko part is out of the browser's
+ 		// reach, the prefixed file-button alias is withheld, and every other rung names a reading a
+@@ -1890,20 +1907,9 @@ describe('styles setup', () => {
+ 			}),
+ 		).toEqual([])
+ 		const cascade = compileExpandedCascade()
+-		const declared = new Map<string, Map<string, readonly string[]>>()
+-		for (const block of readCascadeBlocks(cascade)) {
+-			const key =
+-				block.condition === undefined ? block.selector : `${block.selector} ${block.condition}`
+-			// Each property keeps the names its own declaration reads, so a token that moved off the
+-			// property consuming it onto another declaration of the same rule reads as a changed row.
+-			const properties = declared.get(key) ?? new Map<string, readonly string[]>()
+-			for (const [property, value] of block.declarations)
+-				properties.set(
+-					property,
+-					[...value.matchAll(/var\((--[\w-]+)/gu)].map((match) => match[1] ?? ''),
+-				)
+-			declared.set(key, properties)
+-		}
++		// Each property keeps the names its own declaration reads, so a token that moved off the
++		// property consuming it onto another declaration of the same rule reads as a changed row.
++		const declared = collectDeclarationReads(readCascadeBlocks(cascade))
+ 		// The withheld alias is absent under every condition, and every other rule is written under
+ 		// the condition the release records for it, so a dropped reduced-motion twin is its own
+ 		// missing key.
+@@ -1917,15 +1923,10 @@ describe('styles setup', () => {
+ 		// naming a property its rule writes as a literal reddens as surely as one missing a token.
+ 		for (const entry of FORM_CONTROL_CASES) {
+ 			if (entry.evidence === 'excluded') continue
+-			const key =
+-				entry.condition === undefined ? entry.selector : `${entry.selector} ${entry.condition}`
+-			const properties = requireValue(
+-				declared.get(key),
+-				`The compiled cascade writes no ${key} rule`,
+-			)
++			const key = renderRuleKey(entry)
+ 			expect({
+ 				selector: key,
+-				reads: Object.fromEntries([...properties].filter(([, names]) => names.length > 0)),
++				reads: requireValue(declared.get(key), `The compiled cascade writes no ${key} rule`),
+ 			}).toEqual({ selector: key, reads: entry.reads })
+ 		}
+ 		// The Gecko swatch is read here and nowhere else: Chromium discards its selector, so this
+@@ -2519,20 +2520,13 @@ describe('input group case tables', () => {
+ 		).selectors.map(({ selector }) => normalizeComplexSelector(selector))
+ 		const blocks = readCascadeBlocks(compileExpandedCascade())
+ 		const written = new Map<string, number>()
+-		const declared = new Map<string, Map<string, readonly string[]>>()
+ 		for (const block of blocks) {
+ 			if (!recorded.includes(block.selector)) continue
+ 			written.set(block.selector, (written.get(block.selector) ?? 0) + 1)
+-			// Each property keeps the names its own declaration reads, so a token that moved off the
+-			// property consuming it onto another declaration of the same rule reads as a changed row.
+-			const properties = declared.get(block.selector) ?? new Map<string, readonly string[]>()
+-			for (const [property, value] of block.declarations)
+-				properties.set(
+-					property,
+-					[...value.matchAll(/var\((--[\w-]+)/gu)].map((match) => match[1] ?? ''),
+-				)
+-			declared.set(block.selector, properties)
+ 		}
++		// Each property keeps the names its own declaration reads, so a token that moved off the
++		// property consuming it onto another declaration of the same rule reads as a changed row.
++		const declared = collectDeclarationReads(blocks)
+ 		// A sized select heads more than one recorded rule, and a stacking rule the validation partial writes
+ 		// is recorded once, so counting per selector reports a rule this partial copies as well as a
+ 		// rule it drops. A deferred toggle rule is recorded once and written never.
+@@ -2548,18 +2542,16 @@ describe('input group case tables', () => {
+ 		// The written side keeps only the properties that read a custom property, which is the
+ 		// population a row names, so an empty row holds its rule to no `var()` at all and a row
+ 		// naming a property its rule writes as a literal reddens as surely as one missing a token.
+-		for (const entry of INPUT_GROUP_CASES) {
+-			const properties = requireValue(
+-				declared.get(normalizeComplexSelector(entry.selector)),
+-				`The compiled cascade writes no ${entry.selector} rule`,
+-			)
++		for (const entry of INPUT_GROUP_CASES)
+ 			expect({
+ 				selector: entry.selector,
+-				reads: Object.fromEntries([...properties].filter(([, names]) => names.length > 0)),
++				reads: requireValue(
++					declared.get(normalizeComplexSelector(entry.selector)),
++					`The compiled cascade writes no ${entry.selector} rule`,
++				),
+ 			}).toEqual({ selector: entry.selector, reads: entry.reads })
+-		}
+ 	})
+-	it('freezes the input-group tables and carries the grouped children and the rounding rule the proofs mount', () => {
++	it('freezes the input-group tables and carries the grouped children the proofs mount', () => {
+ 		expect(Object.isFrozen(INPUT_GROUP_CASES)).toBe(true)
+ 		expect(Object.isFrozen(INPUT_GROUP_DEFERRED)).toBe(true)
+ 		expect(Object.isFrozen(INPUT_GROUP_SIZE_CASES)).toBe(true)
+@@ -2582,10 +2574,6 @@ describe('input group case tables', () => {
+ 			'class="form-control"',
+ 			'class="btn btn-outline-secondary"',
+ 		])
+-		// The rounding sits beneath the components layer, which is what lets every corner the group
+-		// writes outrank it; an unlayered rule would outrank the group instead and square nothing.
+-		expect(INPUT_GROUP_ROUNDING.startsWith('@layer elements {')).toBe(true)
+-		expect(INPUT_GROUP_ROUNDING).toContain('.form-control, .form-select')
+ 	})
+ 	it('names the first filled column, and names no column when every cell is empty', () => {
+ 		expect(
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 0b56a69..cf8a78b 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -3587,9 +3587,24 @@ export const PLACEHOLDER_MARKUP =
+ 	'<p class="placeholder-wave"><span class="placeholder col-7"></span></p>' +
+ 	'<p><a class="btn btn-primary disabled placeholder col-4" aria-hidden="true"></a></p>'
+ 
++/** Carries one rule the range key records, the engine it is written for, and the tokens it reads. */
++export interface FormRangeCase {
++	/** Holds the selector as the official vocabulary records it. */
++	readonly selector: string
++	/** Names the engine whose pseudo-element the selector names, and `undefined` for a selector naming none. */
++	readonly engine: 'gecko' | 'webkit' | undefined
++	/** Holds the at-rule a reduced-motion twin sits under, and `undefined` for a rule under none. */
++	readonly condition: string | undefined
++	/**
++	 * Maps each property whose declaration carries a `var()` to the custom properties that
++	 * declaration reads, in written order.
++	 */
++	readonly reads: Readonly<Record<string, readonly string[]>>
++}
++
+ /**
+- * Pins every selector the range key emits against the engine whose pseudo-element it names and the
+- * custom properties its declarations read.
++ * Pins every rule the range key records against the engine whose pseudo-element it names and the
++ * custom properties each of its declarations reads.
+  *
+  * @remarks
+  * `engine` is the axis the range family varies on: a selector naming one engine's pseudo-element is
+@@ -3603,85 +3618,162 @@ export const PLACEHOLDER_MARKUP =
+  * parser has been near them, and `tests/src/styles/components/form-range.test.ts` reads each half
+  * against what its own host can see.
+  *
+- * `reads` names the custom properties the selector's declarations carry. An empty list is the claim
+- * that the rule writes no `var()` at all, which is what separates a site holding Bootstrap's own
+- * value from one this package routed onto a token.
++ * A thumb rule and its reduced-motion twin carry the same selector, so each is its own row, and
++ * the `condition` field names the at-rule the twin sits under.
++ *
++ * The `reads` map is keyed by property. A property the map leaves out is the claim that its
++ * declaration writes no `var()`, so an empty map states that the rule reads no custom property,
++ * which is what separates a rule holding Bootstrap's own values from one this package routed onto
++ * tokens. A token moved from the property that consumes it onto another declaration of the same
++ * rule reads as a different row.
+  */
+-export const FORM_RANGE_CASES = Object.freeze([
++export const FORM_RANGE_CASES: readonly FormRangeCase[] = Object.freeze([
+ 	Object.freeze({
+ 		selector: '.form-range',
+ 		engine: undefined,
+-		reads: Object.freeze(['--vn-space-12']),
++		condition: undefined,
++		reads: Object.freeze({ height: Object.freeze(['--vn-space-12']) }),
++	}),
++	Object.freeze({
++		selector: '.form-range:focus',
++		engine: undefined,
++		condition: undefined,
++		reads: Object.freeze({}),
++	}),
++	Object.freeze({
++		selector: '.form-range:disabled',
++		engine: undefined,
++		condition: undefined,
++		reads: Object.freeze({}),
+ 	}),
+-	Object.freeze({ selector: '.form-range:focus', engine: undefined, reads: Object.freeze([]) }),
+-	Object.freeze({ selector: '.form-range:disabled', engine: undefined, reads: Object.freeze([]) }),
+ 	Object.freeze({
+ 		selector: '.form-range::-moz-focus-outer',
+ 		engine: 'gecko',
+-		reads: Object.freeze([]),
++		condition: undefined,
++		reads: Object.freeze({}),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range:focus::-webkit-slider-thumb',
+ 		engine: 'webkit',
+-		reads: Object.freeze(['--vn-surface-body-base', '--vn-focus-width', '--vn-focus-color']),
++		condition: undefined,
++		reads: Object.freeze({
++			'box-shadow': Object.freeze([
++				'--vn-surface-body-base',
++				'--vn-focus-width',
++				'--vn-focus-color',
++			]),
++		}),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range:focus::-moz-range-thumb',
+ 		engine: 'gecko',
+-		reads: Object.freeze(['--vn-surface-body-base', '--vn-focus-width', '--vn-focus-color']),
++		condition: undefined,
++		reads: Object.freeze({
++			'box-shadow': Object.freeze([
++				'--vn-surface-body-base',
++				'--vn-focus-width',
++				'--vn-focus-color',
++			]),
++		}),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range::-webkit-slider-thumb',
+ 		engine: 'webkit',
+-		reads: Object.freeze([
+-			'--vn-space-8',
+-			'--vn-space-2',
+-			'--vn-palette-blue',
+-			'--vn-radius-xlarge',
+-			'--vn-motion-feedback',
+-			'--vn-ease-standard',
+-		]),
++		condition: undefined,
++		reads: Object.freeze({
++			width: Object.freeze(['--vn-space-8']),
++			height: Object.freeze(['--vn-space-8']),
++			'margin-top': Object.freeze(['--vn-space-2']),
++			'background-color': Object.freeze(['--vn-palette-blue']),
++			'border-radius': Object.freeze(['--vn-radius-xlarge']),
++			transition: Object.freeze([
++				'--vn-motion-feedback',
++				'--vn-ease-standard',
++				'--vn-motion-feedback',
++				'--vn-ease-standard',
++				'--vn-motion-feedback',
++				'--vn-ease-standard',
++			]),
++		}),
++	}),
++	Object.freeze({
++		selector: '.form-range::-webkit-slider-thumb',
++		engine: 'webkit',
++		condition: '@media (prefers-reduced-motion: reduce)',
++		reads: Object.freeze({}),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range::-moz-range-thumb',
+ 		engine: 'gecko',
+-		reads: Object.freeze([
+-			'--vn-space-8',
+-			'--vn-palette-blue',
+-			'--vn-radius-xlarge',
+-			'--vn-motion-feedback',
+-			'--vn-ease-standard',
+-		]),
++		condition: undefined,
++		reads: Object.freeze({
++			width: Object.freeze(['--vn-space-8']),
++			height: Object.freeze(['--vn-space-8']),
++			'background-color': Object.freeze(['--vn-palette-blue']),
++			'border-radius': Object.freeze(['--vn-radius-xlarge']),
++			transition: Object.freeze([
++				'--vn-motion-feedback',
++				'--vn-ease-standard',
++				'--vn-motion-feedback',
++				'--vn-ease-standard',
++				'--vn-motion-feedback',
++				'--vn-ease-standard',
++			]),
++		}),
++	}),
++	Object.freeze({
++		selector: '.form-range::-moz-range-thumb',
++		engine: 'gecko',
++		condition: '@media (prefers-reduced-motion: reduce)',
++		reads: Object.freeze({}),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range::-webkit-slider-thumb:active',
+ 		engine: 'webkit',
+-		reads: Object.freeze(['--vn-palette-blue', '--vn-palette-white-base']),
++		condition: undefined,
++		reads: Object.freeze({
++			'background-color': Object.freeze(['--vn-palette-blue', '--vn-palette-white-base']),
++		}),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range::-moz-range-thumb:active',
+ 		engine: 'gecko',
+-		reads: Object.freeze(['--vn-palette-blue', '--vn-palette-white-base']),
++		condition: undefined,
++		reads: Object.freeze({
++			'background-color': Object.freeze(['--vn-palette-blue', '--vn-palette-white-base']),
++		}),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range::-webkit-slider-runnable-track',
+ 		engine: 'webkit',
+-		reads: Object.freeze(['--vn-space-4', '--bs-secondary-bg', '--vn-radius-xlarge']),
++		condition: undefined,
++		reads: Object.freeze({
++			height: Object.freeze(['--vn-space-4']),
++			'background-color': Object.freeze(['--bs-secondary-bg']),
++			'border-radius': Object.freeze(['--vn-radius-xlarge']),
++		}),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range::-moz-range-track',
+ 		engine: 'gecko',
+-		reads: Object.freeze(['--vn-space-4', '--bs-secondary-bg', '--vn-radius-xlarge']),
++		condition: undefined,
++		reads: Object.freeze({
++			height: Object.freeze(['--vn-space-4']),
++			'background-color': Object.freeze(['--bs-secondary-bg']),
++			'border-radius': Object.freeze(['--vn-radius-xlarge']),
++		}),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range:disabled::-webkit-slider-thumb',
+ 		engine: 'webkit',
+-		reads: Object.freeze(['--bs-secondary-color']),
++		condition: undefined,
++		reads: Object.freeze({ 'background-color': Object.freeze(['--bs-secondary-color']) }),
+ 	}),
+ 	Object.freeze({
+ 		selector: '.form-range:disabled::-moz-range-thumb',
+ 		engine: 'gecko',
+-		reads: Object.freeze(['--bs-secondary-color']),
++		condition: undefined,
++		reads: Object.freeze({ 'background-color': Object.freeze(['--bs-secondary-color']) }),
+ 	}),
+ ])
+ 
+@@ -4386,18 +4478,6 @@ export const INPUT_GROUP_DEFERRED = Object.freeze([
+ export const INPUT_GROUP_MARKUP =
+ 	'<span class="input-group-text">@</span><input class="form-control" type="text" aria-label="Recipient handle"><button type="button" class="btn btn-outline-secondary">Send</button>'
+ 
+-/**
+- * Supplies a consumer rule that rounds every text control and select in the elements layer.
+- *
+- * @remarks
+- * The text control and select classes carry no radius of their own in this cascade, so a
+- * `.form-control` in a group that sets no size reads a squared corner the same as an untouched one.
+- * This rule supplies a radius from beneath the components layer, where every rule the group writes
+- * outranks it, so a corner the group squares reads `0` and a corner it leaves reads this radius.
+- */
+-export const INPUT_GROUP_ROUNDING =
+-	'@layer elements { .form-control, .form-select { border-radius: 7px } }'
+-
+ /**
+  * Pins every selector the floating-label key emits against the custom properties its declarations
+  * read and against the reading that answers for it.
+@@ -4857,7 +4937,9 @@ export interface FormControlCase {
+  * The `reads` map is keyed by property. A property the map leaves out is the claim that its
+  * declaration writes no `var()`, so an empty map states that the rule reads no custom property
+  * and leaves its literals to the value assertions. A token moved from the property that consumes
+- * it onto another declaration of the same rule reads as a different row.
++ * it onto another declaration of the same rule reads as a different row. A literal declaration on
++ * a property the row neither values nor reads falls outside both maps, and the conformance case
++ * `records every emitted name the official inventory lacks` reports it as a `declaration` addition.
+  */
+ export const FORM_CONTROL_CASES: readonly FormControlCase[] = Object.freeze([
+ 	Object.freeze({
+diff --git a/tests/src/styles/components/form-range.test.ts b/tests/src/styles/components/form-range.test.ts
+index 4a2b147..53feef2 100644
+--- a/tests/src/styles/components/form-range.test.ts
++++ b/tests/src/styles/components/form-range.test.ts
+@@ -106,14 +106,26 @@ describe('form range classes', () => {
+ 	it('keeps the WebKit part rules in the cascade and reports the host style for a part pseudo', () => {
+ 		const host = scene.mount(`<div>${FORM_RANGE_MARKUP}</div>`)
+ 		const element = requireValue(host.querySelector('.form-range'), 'No range control')
+-		const kept = FORM_RANGE_CASES.filter((entry) => entry.engine !== 'gecko')
++		// A reduced-motion twin carries its resting rule's selector, and the `findRule` helper returns
++		// the first rule a selector reaches, which is the resting one, so the twins are read by the
++		// motion case.
++		const kept = FORM_RANGE_CASES.filter(
++			(entry) => entry.engine !== 'gecko' && entry.condition === undefined,
++		)
+ 		expect(kept.filter((entry) => findRule(entry.selector) === undefined)).toEqual([])
++		// Each property is read off its own declaration, so a token that moved onto another property of
++		// the same rule reads as missing where its row names it.
+ 		for (const entry of kept) {
+-			const declared = requireValue(
++			const rule = requireValue(
+ 				findRule(entry.selector),
+ 				`The cascade carries no ${entry.selector} rule`,
+-			).style.cssText
+-			expect([...entry.reads].filter((name) => !declared.includes(`var(${name})`))).toEqual([])
++			)
++			expect(
++				Object.entries(entry.reads).filter(([property, names]) => {
++					const declared = rule.style.getPropertyValue(property)
++					return names.some((name) => !declared.includes(`var(${name})`))
++				}),
++			).toEqual([])
+ 		}
+ 		// Chromium discards a selector naming a Gecko pseudo-element at parse time, so the CSSOM
+ 		// carries none of those rules and no reading taken in this browser reaches them. They are
+diff --git a/tests/src/styles/components/input-group.test.ts b/tests/src/styles/components/input-group.test.ts
+index 9b48418..3def642 100644
+--- a/tests/src/styles/components/input-group.test.ts
++++ b/tests/src/styles/components/input-group.test.ts
+@@ -17,7 +17,6 @@ import {
+ 	BUTTON_GROUP_CORNERS,
+ 	INPUT_GROUP_FLOATING_CASES,
+ 	INPUT_GROUP_MARKUP,
+-	INPUT_GROUP_ROUNDING,
+ 	INPUT_GROUP_SIZE_CASES,
+ } from '../../../setupStyles.js'
+ 
+@@ -168,15 +167,15 @@ describe('input group overlap', () => {
+ 
+ describe('input group corners', () => {
+ 	it('squares every inner corner and keeps the outer ones on the addon, the control, and the button', () => {
+-		scene.load(INPUT_GROUP_ROUNDING)
+ 		const host = scene.mount(
+-			`<div class="input-group">${INPUT_GROUP_MARKUP}</div><span class="input-group-text">Alone</span><input class="form-control" type="text" aria-label="Alone"><button type="button" class="btn btn-outline-secondary">Alone</button>`,
++			`<div class="input-group">${INPUT_GROUP_MARKUP}</div><span class="input-group-text">Alone</span><input class="form-control" type="text" aria-label="Alone"><button type="button" class="btn btn-outline-secondary">Alone</button><span style="border-radius: var(--bs-border-radius)"></span>`,
+ 		)
+ 		const [addon, control, button] = [
+ 			...requireValue(host.querySelector('.input-group'), 'No group').children,
+ 		]
+ 		// Each reference is the same element outside the group, so a kept corner is held to the
+-		// radius that element carries of its own rather than to a number written here.
++		// radius that element's own rule writes rather than to a number written here, and a corner
++		// the group squares reads `0`.
+ 		const references = [
+ 			':scope > .input-group-text',
+ 			':scope > .form-control',
+@@ -188,7 +187,14 @@ describe('input group corners', () => {
+ 			),
+ 		)
+ 		expect(references.filter((radius) => radius <= 0)).toEqual([])
+-		const [text, , action] = references
++		const [text, round, action] = references
++		// The addon and the control write their corner from `--bs-border-radius`, which the last span
++		// resolves on its own, so the kept corners they are held to are the shipped radius.
++		const shipped = readPixels(
++			requireValue(host.querySelector(':scope > span:last-child'), 'No radius reference'),
++			'border-top-left-radius',
++		)
++		expect([text, round]).toEqual([shipped, shipped])
+ 		expect(
+ 			BUTTON_GROUP_CORNERS.map((corner) => readPixels(requireValue(addon, 'No addon'), corner)),
+ 		).toEqual([text, 0, 0, text])
+@@ -201,13 +207,13 @@ describe('input group corners', () => {
+ 	})
+ 
+ 	it('counts one child further from the end in a group reporting validation', () => {
+-		scene.load(INPUT_GROUP_ROUNDING)
+ 		const host = scene.mount(
+ 			'<div class="input-group has-validation"><input class="form-control is-invalid" type="text" aria-label="Checked amount"><span class="input-group-text">.00</span><div class="invalid-feedback">Enter an amount.</div></div>' +
+ 				'<div class="input-group"><input class="form-control is-invalid" type="text" aria-label="Unchecked amount"><span class="input-group-text">.00</span><div class="invalid-feedback">Enter an amount.</div></div>' +
+ 				'<input class="form-control" type="text" aria-label="Ungrouped amount"><span class="input-group-text">.00</span>',
+ 		)
+-		// Each kept corner is held to the radius the same element carries outside a group.
++		// Each kept corner is held to the radius the same element carries outside a group, which is
++		// the `--bs-border-radius` corner its own rule writes, and a squared corner reads `0`.
+ 		const round = readPixels(
+ 			requireValue(host.querySelector(':scope > .form-control'), 'No ungrouped control'),
+ 			'border-top-left-radius',
+@@ -243,19 +249,20 @@ describe('input group corners', () => {
+ 	})
+ 
+ 	it('squares the control or select inside a floating wrapper on the side its neighbour sits', () => {
+-		scene.load(INPUT_GROUP_ROUNDING)
+-		// The last box holds the same control and select outside a group, each the radius its own
+-		// kind's kept corner is read against, because the select ships its radius from its own rule
+-		// while the control reads the fixture's until the control family lands.
++		// The last box holds the same control and select outside a group, whose corners are the radius
++		// each kind's kept corner is read against, and a span that resolves the `--bs-border-radius`
++		// variable on its own. Each kind writes its corner from that variable in its own rule, so a
++		// kept corner reads the shipped radius and a corner the group squares reads `0`.
+ 		const host = scene.mount(
+ 			INPUT_GROUP_FLOATING_CASES.map(
+ 				({ group, markup }) => `<div class="${group}">${markup}</div>`,
+ 			).join('') +
+-				'<div><input class="form-control" type="text" aria-label="Ungrouped weight"><select class="form-select" aria-label="Ungrouped unit"><option>kg</option></select></div>',
++				'<div><input class="form-control" type="text" aria-label="Ungrouped weight"><select class="form-select" aria-label="Ungrouped unit"><option>kg</option></select><span style="border-radius: var(--bs-border-radius)"></span></div>',
+ 		)
+-		const [radius, selected] = [
++		const [radius, selected, shipped] = [
+ 			':scope > div:last-child > .form-control',
+ 			':scope > div:last-child > .form-select',
++			':scope > div:last-child > span',
+ 		].map((selector) =>
+ 			readPixels(
+ 				requireValue(host.querySelector(selector), `No ${selector}`),
+@@ -265,7 +272,7 @@ describe('input group corners', () => {
+ 		const round = requireValue(radius, 'No ungrouped control radius')
+ 		const chosen = requireValue(selected, 'No ungrouped select radius')
+ 		expect(round).toBeGreaterThan(0)
+-		expect(chosen).toBeGreaterThan(0)
++		expect([round, chosen]).toEqual([shipped, shipped])
+ 		// The wrapper itself carries no border, so the rules reach through it to the control or
+ 		// select that does.
+ 		const fields = [...host.querySelectorAll('.form-floating > *')]
