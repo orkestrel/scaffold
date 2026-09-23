@@ -1,0 +1,4 @@
+{"mutation": "flush-class-dropped", "exit": 1, "tally": "2 failed | 2 passed (4)", "failed": ["renders an ordinary and a flush group and every resting state class in markup through the shared section contract", "rounds the ordinary group at its ends and squares the flush group throughout"]}
+{"mutation": "collapsed-dropped-over-hidden-panel", "exit": 1, "tally": "1 failed | 3 passed (4)", "failed": ["renders each item in the state its button announces, with the panel it names shown or hidden to match"]}
+{"mutation": "show-added-under-collapsed", "exit": 1, "tally": "1 failed | 3 passed (4)", "failed": ["renders each item in the state its button announces, with the panel it names shown or hidden to match"]}
+{"mutation": "aria-expanded-disagrees", "exit": 1, "tally": "1 failed | 3 passed (4)", "failed": ["renders each item in the state its button announces, with the panel it names shown or hidden to match"]}

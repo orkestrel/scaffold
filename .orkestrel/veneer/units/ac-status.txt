@@ -1,0 +1,4 @@
+?? app/browser/sections/AccordionSection.ts
+?? src/styles/components/_accordion.scss
+?? tests/app/browser/sections/AccordionSection.test.ts
+?? tests/src/styles/components/accordion.test.ts

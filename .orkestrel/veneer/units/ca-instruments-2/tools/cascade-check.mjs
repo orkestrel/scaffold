@@ -233,7 +233,7 @@ for (const key of shared) {
 	const sequence = (list) =>
 		[...new Set(list.map(([property]) => property).reverse())]
 			.reverse()
-			.filter((property) => !expected.has(property) && theirs.some(([p]) => p === property) && ours.some(([p]) => p === property))
+			.filter((property) => theirs.some(([p]) => p === property) && ours.some(([p]) => p === property))
 	// The expanded compile keeps the partial's declaration order, so the order is compared there. The
 	// minifier splits and merges rule blocks, which moves distinct properties within a key without
 	// changing what any of them resolves to; in built mode each property's last value is compared
