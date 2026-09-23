@@ -18,4 +18,4 @@ Round: `bpb` round 1 (`b-passive-close-b-brief.md`; report `b-passive-close-b-re
 - **R2 (reviewer).** Under `stageMedia({ forced: true })` the report measured `outline-color` as `rgba(5, 0, 73, 0.8)`, which is no system colour; the staging emulates the media query and the proofs read style and width only. Recorded as an observation on `@orkestrel/test`'s forced staging for that package's next campaign; no Veneer carrier, and the same reading is what B-FORMS-CLOSE-FORCED's referral B left unmeasured.
 - **R3 (reviewer).** The unit's report states counts. A returned report is retained as returned; the finding is noted against the writer's prose, and the landing message and the fold carry none.
 
-VERDICT: PASS on the claims; outside the claims: F1, F2 — fixed at landing as an integration edit
+VERDICT: PASS on the claims; outside the claims: F1, F2 — fixed at landing as an integration edit, verified PASS in `bpb-landing-checker-verdict.md`
