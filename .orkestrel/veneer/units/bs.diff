@@ -1,0 +1,155 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index c7ad73d..cdd3966 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -493,9 +493,13 @@ the document root, which preflight resets to inherit the page's own font, color,
+ 
+ The `Tag`, `Property`, `Standalone`, and `Preflight` columns name the element, the property, the
+ value the shipped cascade alone resolves for it, and the value the `preflight` profile resolves,
+-each as Chromium 141 reports it. The proof holds the measured pairs and the recorded rows equal in
+-both directions, so a move this table does not carry and a row the pairing no longer produces each
+-redden.
++each read on Chromium 141. A build's own user-agent default for an element such as `select` or
++`table` moves the standalone column across a Chromium version, so the proof compares each measured
++move by tag, property, and the preflight value alone, and asserts the measured standalone value
++differs from it, rather than equating a user-agent default with a recorded reading. The Standalone
++column stays the Chromium 141 reading, informational. The proof holds the measured pairs and the
++recorded rows equal by tag, property, and preflight value, in both directions, so a move this table
++does not carry and a row the pairing no longer produces each redden.
+ 
+ | Tag        | Property                      | Standalone            | Preflight                                                                                                                                                                               |
+ | ---------- | ----------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+diff --git a/tests/service/tailwind/preflight.test.ts b/tests/service/tailwind/preflight.test.ts
+index fb3c5da..c691700 100644
+--- a/tests/service/tailwind/preflight.test.ts
++++ b/tests/service/tailwind/preflight.test.ts
+@@ -132,20 +132,26 @@ describe('the preflight pairing', () => {
+ 			}
+ 			for (const [property, value] of standalone) {
+ 				const resolved = paired.get(property)
+-				if (resolved !== value)
+-					measured.push(`${tag} | ${property} | ${value} | ${String(resolved)}`)
++				if (resolved === value) continue
++				// The move is compared by the preflight value alone, never by the standalone one: a
++				// user-agent default (a `select` or `table` reset, for example) varies across builds
++				// while the value Tailwind's preflight declares does not, so this is what makes the
++				// comparison build-independent (D45).
++				expect(String(resolved)).not.toBe(String(value))
++				measured.push(`${tag} | ${property} | ${String(resolved)}`)
+ 			}
+ 			await stage.clear()
+ 		}
+ 		// A run whose comparison read nothing at all would report no move and no kept property, and
+ 		// pass every reading taken over either list.
+ 		expect(kept).toContain('hr | border-top-style')
+-		expect(measured).toContain('html | tab-size | 8 | 4')
++		expect(measured).toContain('html | tab-size | 4')
+ 		// Every move is a row of the guide's table, and every row is a move. The comparison is the
+ 		// whole population both ways, so a move the guide does not record and a row the pairing no
+-		// longer produces each redden.
++		// longer produces each redden. The guide's Standalone column stays the Chromium 141 reading,
++		// informational; the comparison reads the Preflight column alone.
+ 		const recorded = readPreflightDepartures(readVeneerGuide())
+-			.map((row) => `${row.tag} | ${row.property} | ${row.standalone} | ${row.preflight}`)
++			.map((row) => `${row.tag} | ${row.property} | ${row.preflight}`)
+ 			.sort()
+ 		expect([...measured].sort()).toEqual(recorded)
+ 	})
+diff --git a/tests/src/styles/components/close.test.ts b/tests/src/styles/components/close.test.ts
+index 281ca25..b954e65 100644
+--- a/tests/src/styles/components/close.test.ts
++++ b/tests/src/styles/components/close.test.ts
+@@ -49,7 +49,12 @@ describe('close control geometry', () => {
+ 		expect(readStyle(control, 'background-image')).toBe(CLOSE_MARK)
+ 		expect(readStyle(control, 'background-repeat')).toBe('no-repeat')
+ 		expect(readStyle(control, 'background-position')).toBe('50% 50%')
+-		expect(readStyle(control, 'background-size')).toBe(`${String(em)}px`)
++		// A one-value `background-size` serializes as that one value on one build and as
++		// `<length> auto` on another (D45), so the width is read from the leading term and the
++		// second term, where a build writes one, is asserted `auto` rather than compared by string.
++		const [size, height] = readStyle(control, 'background-size').split(' ')
++		expect(size).toBe(`${String(em)}px`)
++		expect(height === undefined || height === 'auto').toBe(true)
+ 		// The shorthand writes a transparent color beside the mark, which is what keeps the button
+ 		// element's own fill from painting behind it.
+ 		expect(readStyle(control, 'background-color')).toBe('rgba(0, 0, 0, 0)')
+diff --git a/tests/src/styles/components/form-select.test.ts b/tests/src/styles/components/form-select.test.ts
+index a51ee4d..4b252e6 100644
+--- a/tests/src/styles/components/form-select.test.ts
++++ b/tests/src/styles/components/form-select.test.ts
+@@ -273,8 +273,13 @@ describe('form select classes', () => {
+ 			6, 36, 12, 12, 4, 8, 8, 16, 6, 4, 8,
+ 		])
+ 		// The caret sits the horizontal padding in from the end edge, so it follows the padding. The
+-		// position lists one value per image layer, and the caret is the first layer.
+-		expect(readStyle(plain, 'background-position')).toMatch(/^right 12px 50%,/u)
++		// position lists one value per image layer, and the caret is the first layer. Chromium
++		// serializes the `right <length>` keyword form as `right <length>` on one build and as
++		// `calc(100% - <length>)` on another (D45), so the match accepts either serialization of
++		// the same computed offset rather than naming one build's string.
++		expect(readStyle(plain, 'background-position')).toMatch(
++			/^(?:right 12px|calc\(100% - 12px\)) 50%,/u,
++		)
+ 		// The size classes move the block padding, the start padding, and the corners, and leave the
+ 		// end padding the caret needs.
+ 		expect(readPixels(small, 'padding-right')).toBe(readPixels(plain, 'padding-right'))
+@@ -292,7 +297,11 @@ describe('form select classes', () => {
+ 			expect(sites.map(([element, property]) => readPixels(element, property))).toStrictEqual([
+ 				12, 72, 24, 24, 8, 16, 16, 32, 12, 8, 16,
+ 			])
+-			expect(readStyle(plain, 'background-position')).toMatch(/^right 24px 50%,/u)
++			// Accepts either serialization of the same computed offset (D45), the way the resting
++			// reading above does.
++			expect(readStyle(plain, 'background-position')).toMatch(
++				/^(?:right 24px|calc\(100% - 24px\)) 50%,/u,
++			)
+ 		} finally {
+ 			root.style.removeProperty(TOKEN_NAMES.factor.density)
+ 			root.style.removeProperty(TOKEN_NAMES.factor.radius)
+diff --git a/tests/src/styles/components/validation.test.ts b/tests/src/styles/components/validation.test.ts
+index d1962b6..5d99fc2 100644
+--- a/tests/src/styles/components/validation.test.ts
++++ b/tests/src/styles/components/validation.test.ts
+@@ -74,7 +74,11 @@ describe('validation classes', () => {
+ 			// The mark's inset is `calc(0.375em + 0.1875rem)`, which resolves to 9px against the
+ 			// control's own 16px type, the release's own reading; a retuned control size moves it and
+ 			// reports here.
+-			expect(readStyle(control, 'background-position')).toBe('right 9px 50%')
++			// Accepts either serialization of the same computed offset from the control's edge
++			// (D45): `right 9px` on one build, `calc(100% - 9px)` on another.
++			expect(readStyle(control, 'background-position')).toMatch(
++				/^(?:right 9px|calc\(100% - 9px\)) 50%$/u,
++			)
+ 			expect(readToken(single, '--bs-form-select-bg-icon')).toBe(`url("${image}")`)
+ 			expect(readPixels(single, 'padding-right')).toBe(66)
+ 			// The release withholds the mark from a select showing more than one value, so a rule
+@@ -82,7 +86,13 @@ describe('validation classes', () => {
+ 			expect(readToken(multiple, '--bs-form-select-bg-icon')).toBe('')
+ 			// A text area is taller than one line, so the release moves its mark to the top corner
+ 			// rather than centring it, and widens the swatch by the room the mark takes.
+-			expect(readStyle(area, 'background-position')).toBe('right 9px top 9px')
++			// Accepts either serialization of the same computed offsets from the control's edges
++			// (D45): `right 9px top 9px` on one build, `calc(100% - 9px) 9px` on another (the `top`
++			// keyword drops because the offset from the top edge needs no keyword to disambiguate
++			// it).
++			expect(readStyle(area, 'background-position')).toMatch(
++				/^(?:right 9px top 9px|calc\(100% - 9px\) 9px)$/u,
++			)
+ 			expect(readStyle(area, 'background-image')).toBe(`url("${image}")`)
+ 			// The swatch widens by the room the mark takes: `calc(var(--vn-space-24) + 1.5em + 0.75rem)`
+ 			// resolves to 81px against the published 14px body type.
+@@ -332,7 +342,13 @@ describe('validation classes', () => {
+ 			const border = readToken(control, `--bs-form-${state}-border-color`)
+ 			expect(matchesColor(readStyle(control, 'border-top-color'), border)).toBe(true)
+ 			expect(readStyle(control, 'background-image')).toBe(`url("${image}")`)
+-			expect(readStyle(area, 'background-position')).toBe('right 9px top 9px')
++			// Accepts either serialization of the same computed offsets from the control's edges
++			// (D45): `right 9px top 9px` on one build, `calc(100% - 9px) 9px` on another (the `top`
++			// keyword drops because the offset from the top edge needs no keyword to disambiguate
++			// it).
++			expect(readStyle(area, 'background-position')).toMatch(
++				/^(?:right 9px top 9px|calc\(100% - 9px\) 9px)$/u,
++			)
+ 			expect(matchesColor(readStyle(choice, 'border-top-color'), border)).toBe(true)
+ 			expect(readToken(choice, '--bs-form-select-bg-icon')).toBe(`url("${image}")`)
+ 			// The swatch widens by the room the mark takes: `calc(var(--vn-space-24) + 1.5em + 0.75rem)`
