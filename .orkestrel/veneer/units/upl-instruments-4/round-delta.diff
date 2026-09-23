@@ -1,0 +1,133 @@
+diff --git a/tmp/upl-r2/app/browser/styles/_shell.scss b/app/browser/styles/_shell.scss
+index 2d25732..b988e11 100644
+--- a/tmp/upl-r2/app/browser/styles/_shell.scss
++++ b/app/browser/styles/_shell.scss
+@@ -43,8 +43,11 @@
+ 	// such a descendant overflows inside the frame without making the frame a scroll container, so a
+ 	// backdrop sized to the viewport raises no scrollbar on the frame or on the page. The height is
+ 	// bounded, because a fixed descendant sized to its containing block takes the frame's height, and
+-	// it leaves room for a default dialog at the narrowest variant. The frame declares no fill and no
+-	// border, so everything inside it is what the published cascade paints.
++	// it leaves room for a default dialog at the narrowest variant. The bounded height also gives a
++	// percentage height or offset a definite height to resolve against, so the `Edge offsets`,
++	// `Centered translation`, `Stacking levels`, and `Height steps` specimens use the frame for that
++	// reason. The frame declares no fill and no border, so everything inside it is what the
++	// published cascade paints.
+ 	.viewport {
+ 		height: 24rem;
+ 		overflow: clip;
+diff --git a/tmp/upl-r2/tests/app/browser/sections/SizingSection.test.ts b/tests/app/browser/sections/SizingSection.test.ts
+index a7ec78b..736db24 100644
+--- a/tmp/upl-r2/tests/app/browser/sections/SizingSection.test.ts
++++ b/tests/app/browser/sections/SizingSection.test.ts
+@@ -4,7 +4,7 @@ import { requireValue } from '@orkestrel/test'
+ import { build, mount, readPixels } from '@orkestrel/test/browser'
+ import { beforeAll, describe, expect, it } from 'vitest'
+ import { visitBreakpoint } from '../../../setupBrowser.js'
+-import { SIZE_STEP_CASES, VIEWPORT_SIZE_CASES, VIEWPORT_WIDTHS } from '../../../setupStyles.js'
++import { SIZING_STEP_CASES, VIEWPORT_SIZE_CASES, VIEWPORT_WIDTHS } from '../../../setupStyles.js'
+ 
+ // The geometry case reads the specimens as the published cascade and the shell lay them out, so
+ // both stylesheets have to be in the document before a box is measured.
+@@ -36,7 +36,7 @@ describe('SizingSection', () => {
+ 			// Every selector names a composition the specimens render, so the list of misses is empty.
+ 			expect(
+ 				[
+-					...[...SIZE_STEP_CASES.map(({ step }) => step), 'auto'].flatMap((step) => [
++					...[...SIZING_STEP_CASES.map(({ step }) => step), 'auto'].flatMap((step) => [
+ 						`[data-specimen="Width steps"] p > .placeholder.w-${step}`,
+ 						`[data-specimen="Height steps"] .viewport .row.h-100 > .col > .placeholder.w-100.h-${step}`,
+ 					]),
+@@ -96,7 +96,7 @@ describe('SizingSection', () => {
+ 					)
+ 					return {
+ 						page: document.documentElement.scrollWidth,
+-						widths: SIZE_STEP_CASES.map(
++						widths: SIZING_STEP_CASES.map(
+ 							({ step }) =>
+ 								readPixels(
+ 									requireValue(
+@@ -106,7 +106,7 @@ describe('SizingSection', () => {
+ 									'width',
+ 								) / line.clientWidth,
+ 						),
+-						heights: SIZE_STEP_CASES.map(
++						heights: SIZING_STEP_CASES.map(
+ 							({ step }) =>
+ 								readPixels(
+ 									requireValue(
+@@ -139,8 +139,8 @@ describe('SizingSection', () => {
+ 					}
+ 				})
+ 				const [across, down] = reading.window
+-				expect(reading.widths).toEqual(SIZE_STEP_CASES.map(({ share }) => share))
+-				expect(reading.heights).toEqual(SIZE_STEP_CASES.map(({ share }) => share))
++				expect(reading.widths).toEqual(SIZING_STEP_CASES.map(({ share }) => share))
++				expect(reading.heights).toEqual(SIZING_STEP_CASES.map(({ share }) => share))
+ 				for (const [capped, limit] of reading.caps) expect(capped).toBe(limit)
+ 				expect(reading.viewport).toEqual(
+ 					VIEWPORT_SIZE_CASES.map(({ property }) => (property === 'width' ? across : down)),
+diff --git a/tmp/upl-r2/tests/src/styles/utilities/position.test.ts b/tests/src/styles/utilities/position.test.ts
+index e17d438..9d3b053 100644
+--- a/tmp/upl-r2/tests/src/styles/utilities/position.test.ts
++++ b/tests/src/styles/utilities/position.test.ts
+@@ -12,6 +12,7 @@ import {
+ 	POSITION_ENTRY_CASES,
+ 	POSITION_VALUES,
+ 	STACK_LEVEL_CASES,
++	TRANSLATION_BOX,
+ } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+@@ -89,7 +90,7 @@ describe('position utilities', () => {
+ 
+ 	it('centers a box on each axis with the translation entries', () => {
+ 		const host = scene.mount(
+-			`<div class="probe" style="${PLACEMENT_CONTAINER}"><div class="position-absolute top-50 start-50 translate-middle" style="width: 100px; height: 40px"></div><div class="position-absolute top-0 start-50 translate-middle-x" style="width: 100px; height: 40px"></div><div class="position-absolute top-50 start-0 translate-middle-y" style="width: 100px; height: 40px"></div></div>`,
++			`<div class="probe" style="${PLACEMENT_CONTAINER}"><div class="position-absolute top-50 start-50 translate-middle" style="${TRANSLATION_BOX}"></div><div class="position-absolute top-0 start-50 translate-middle-x" style="${TRANSLATION_BOX}"></div><div class="position-absolute top-50 start-0 translate-middle-y" style="${TRANSLATION_BOX}"></div></div>`,
+ 		)
+ 		const corner = requireValue(
+ 			host.querySelector('.probe'),
+@@ -188,7 +189,7 @@ describe('position utilities', () => {
+ 		// The release writes each entry's values in its map order, so where an element carries two
+ 		// values of one entry, the later value wins.
+ 		const host = scene.mount(
+-			`<div style="${PLACEMENT_CONTAINER}"><div class="position-absolute position-relative"></div><div class="translate-middle-x translate-middle" style="width: 100px; height: 40px"></div><div class="z-3 z-n1 position-relative"></div></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><div class="position-absolute position-relative"></div><div class="translate-middle-x translate-middle" style="${TRANSLATION_BOX}"></div><div class="z-3 z-n1 position-relative"></div></div>`,
+ 		)
+ 		expect(
+ 			readStyle(requireValue(host.querySelector('.position-absolute'), 'No pair'), 'position'),
+diff --git a/tmp/upl-r2/tests/src/styles/utilities/sizing.test.ts b/tests/src/styles/utilities/sizing.test.ts
+index 0df9595..f132b38 100644
+--- a/tmp/upl-r2/tests/src/styles/utilities/sizing.test.ts
++++ b/tests/src/styles/utilities/sizing.test.ts
+@@ -6,7 +6,7 @@ import { scene, visitBreakpoint } from '../../../setupBrowser.js'
+ import {
+ 	BREAKPOINT_INFIXES,
+ 	PLACEMENT_CONTAINER,
+-	SIZE_STEP_CASES,
++	SIZING_STEP_CASES,
+ 	SIZING_ENTRY_CASES,
+ 	VIEWPORT_WIDTHS,
+ } from '../../../setupStyles.js'
+@@ -18,9 +18,9 @@ afterEach(() => {
+ describe('sizing utilities', () => {
+ 	it('resolves every width and height step against a container of definite size', () => {
+ 		const host = scene.mount(
+-			`<div style="${PLACEMENT_CONTAINER}">${SIZE_STEP_CASES.map(({ step }) => `<div class="w-${step}"></div>`).join('')}</div><div style="${PLACEMENT_CONTAINER}; display: flex">${SIZE_STEP_CASES.map(({ step }) => `<div class="h-${step}"></div>`).join('')}</div>`,
++			`<div style="${PLACEMENT_CONTAINER}">${SIZING_STEP_CASES.map(({ step }) => `<div class="w-${step}"></div>`).join('')}</div><div style="${PLACEMENT_CONTAINER}; display: flex">${SIZING_STEP_CASES.map(({ step }) => `<div class="h-${step}"></div>`).join('')}</div>`,
+ 		)
+-		for (const { step, share } of SIZE_STEP_CASES) {
++		for (const { step, share } of SIZING_STEP_CASES) {
+ 			expect(
+ 				readPixels(requireValue(host.querySelector(`.w-${step}`), `No .w-${step}`), 'width'),
+ 			).toBe(400 * share)
+@@ -34,7 +34,7 @@ describe('sizing utilities', () => {
+ 		// The inline sizes stand in for a rule of the element's own; the step's importance is what
+ 		// sets them aside, and the content's box is what the element then takes.
+ 		const host = scene.mount(
+-			'<div style="width: 400px; height: 200px; display: flex; align-items: flex-start"><div class="w-auto h-auto" style="width: 50px; height: 50px"><div style="width: 30px; height: 20px"></div></div></div>',
++			`<div style="${PLACEMENT_CONTAINER}; display: flex; align-items: flex-start"><div class="w-auto h-auto" style="width: 50px; height: 50px"><div style="width: 30px; height: 20px"></div></div></div>`,
+ 		)
+ 		const box = requireValue(host.querySelector('.w-auto'), 'No .w-auto')
+ 		expect([readPixels(box, 'width'), readPixels(box, 'height')]).toEqual([30, 20])

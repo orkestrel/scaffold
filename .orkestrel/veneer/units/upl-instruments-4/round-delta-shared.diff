@@ -1,0 +1,20 @@
+diff --git a/tmp/upl-e4-r3/tests/setupStyles.test.ts b/tmp/upl-e4-r4/tests/setupStyles.test.ts
+index 1a2384d..f0097f7 100644
+--- a/tmp/upl-e4-r3/tests/setupStyles.test.ts
++++ b/tmp/upl-e4-r4/tests/setupStyles.test.ts
+@@ -113,6 +113,7 @@ import {
+ 	PLACEHOLDER_SELECTORS,
+ 	PLACEHOLDER_SIZE_CASES,
+ 	PLACEMENT_CONTAINER,
++	TRANSLATION_BOX,
+ 	POSITION_ENTRY_CASES,
+ 	POSITION_VALUES,
+ 	PROGRESS_MARKUP,
+@@ -1560,6 +1561,7 @@ describe('styles setup', () => {
+ 		expect(sides).toHaveLength(2)
+ 		expect(new Set([...sides, ...VIEWPORT_WIDTHS]).size).toBe(sides.length + VIEWPORT_WIDTHS.length)
+ 		expect(PLACEMENT_CONTAINER).toContain('position: relative')
++		expect(TRANSLATION_BOX).toMatch(/^width: \d+px; height: \d+px$/u)
+ 		for (const table of [
+ 			BREAKPOINT_INFIXES,
+ 			VIEWPORT_WIDTHS,
