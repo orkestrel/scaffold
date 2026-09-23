@@ -15,7 +15,10 @@ Beyond the claims, rule on: the partial's mixin and placeholder names, `FORM_CHE
 name, and the specimen names under `names.md`; the guide section against the `### Form range classes`
 voice and its evidence-limit sentences; the case titles (named for what they prove, one idea each);
 the TSDoc and comments against `writing.md`; and whether the frames show what the report claims.
-BEYOND_CLAIMS_EXTRA
+Rule as well on the specimen name `Form check box` (deviation 3) and the added `Form check switch
+reverse` specimen (deviation 4); on the fill bound to the palette entry rather than the role token
+(deviation 2) as a consumer retuning `--vn-color-primary-base` would meet it; and on the four frames
+the report names against what they show.
 
 Output: the `orkestrel-falsify` verdict shape and nothing else — numbered verdicts with `file:line`,
 findings outside the claims to the `BROKEN` standard, and one terminal line `VERDICT: PASS` or
