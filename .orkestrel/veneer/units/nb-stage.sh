@@ -1,6 +1,6 @@
 #!/bin/bash
 # Stage the nb worktree from a658879 with its own node_modules and build. Log: nb-worktree.log.txt
-SCR=/tmp/clanbe-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad; LOG=$SCR/nb-worktree.log.txt; : > "$LOG"
+SCR=/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad; LOG=$SCR/nb-worktree.log.txt; : > "$LOG"
 export PATH="$SCR/npm11/node_modules/.bin:$PATH"
 WT=/home/user/veneer-nb
 if [ ! -d "$WT" ]; then git -C /home/user/veneer worktree add --detach "$WT" a658879 -q >> "$LOG" 2>&1; fi

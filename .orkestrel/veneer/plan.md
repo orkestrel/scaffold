@@ -114,6 +114,8 @@ and UTIL-SPACER landed (`8ca1609`, `746d3e9`). Each unit owns its partial under
 `tests/app/browser/integration.test.ts`, the showcase wiring under `app/browser/`, and
 `guides/veneer.md` (its own section, its rows, and its `plugin` row).
 
+**Requests from the engine session.** Its design verdict (`engine/j-engine-design-verdict.md` § Pending shared changes and requests to the baseline) asks the baseline to extend the conformance Proof resolver beyond Button's recording so a shipped `plugin` row's Proof cell can name a test file; until then a shipped plugin row carries Proof `—` and names its proof in the Obligation cell. Carrier: PROOF-RESOLVER, a `builder` unit on Sonnet after the B-MODAL wave-1 landings, briefed from `tests/setupServer.test.ts`'s resolver and the guide's § Compatibility Proof column; the engine session is told at the next boundary through this record.
+
 **Pending shared changes.** The ALERT landing appends the alert `CASCADE_KEYS` rows and `CaptureSubject` members to `tests/setup.ts` and adds the Alert `plugin` row with `Owner: J-ENGINE.` to `guides/veneer.md`; CAROUSEL, ACCORDION, TOGGLES, and NAVBAR follow with the same shape (NAVBAR retires the `$assets` map in `src/styles/_tokens.scss` and its `_theme.scss` walk). The disclosure landing's rows and its Collapse, Dropdown, Tab, and ScrollSpy `plugin` rows are on `main` at `a658879`.
 In general, `tests/setup.ts` gains `CASCADE_KEYS` rows, `DRIVEN_KEYS` rows, and `CaptureSubject`
 members with each landing, append-only at the registry's end. `guides/veneer.md`

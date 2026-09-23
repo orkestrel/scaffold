@@ -1,0 +1,1043 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index 22baf29..ad08a50 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -2,6 +2,7 @@ import type { ColorModeInterface } from '@src/browser'
+ import type { SectionInterface, ShowcaseInterface } from './types.js'
+ import { ColorMode } from '@src/browser'
+ import { SHOWCASE_CONTROL, SHOWCASE_COPY } from './constants.js'
++import { AlertSection } from './sections/AlertSection.js'
+ import { ButtonGroupSection } from './sections/ButtonGroupSection.js'
+ import { BadgeSection } from './sections/BadgeSection.js'
+ import { BreadcrumbSection } from './sections/BreadcrumbSection.js'
+@@ -120,6 +121,7 @@ export class Showcase implements ShowcaseInterface {
+ 			new CollapseSection(this.#main),
+ 			new DropdownSection(this.#main),
+ 			new NavSection(this.#main),
++			new AlertSection(this.#main),
+ 		]
+ 	}
+ 
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 18b0a6d..2c70ac5 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -1439,6 +1439,43 @@ export const BADGE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 	}),
+ )
+ 
++/** Holds the Alert section's visible copy and accessible name. */
++export const ALERT_COPY = Object.freeze({
++	region: 'Alert',
++	paragraph:
++		'Compare each role fill, the heading and the link an alert paints in its own text, and the close control a dismissible alert places in its corner.',
++})
++
++/**
++ * Lists the alert specimens in their rendering order: the role ramp, the linked alert, and the
++ * dismissible alert.
++ *
++ * @remarks
++ * The roles share one specimen because a capture scenario's stem may carry no mode token, and a
++ * per-role specimen would name one `light` scenario and one `dark` scenario. The role list is the
++ * release's own, so Veneer's `tertiary` role, which emits no variant, renders no alert. No specimen
++ * carries the `fade` class or the `show` class: those classes are the engine's, and the alert rules
++ * paint the same without them.
++ */
++export const ALERT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Role alerts',
++		markup: ['primary', 'secondary', 'success', 'info', 'warning', 'danger', 'light', 'dark']
++			.map((role) => `<div class="alert alert-${role}" role="alert">The ${role} notice.</div>`)
++			.join(''),
++	}),
++	Object.freeze({
++		name: 'Linked alert',
++		markup:
++			'<div class="alert alert-success" role="alert"><h4 class="alert-heading">Oak order delivered</h4>The order reached the Northworks yard. Read the <a class="alert-link" href="#main">delivery manifest</a> for the signed receipt.</div>',
++	}),
++	Object.freeze({
++		name: 'Dismissible alert',
++		markup:
++			'<div class="alert alert-warning alert-dismissible" role="alert">The ash order is held at the border. <button type="button" class="btn-close" aria-label="Close"></button></div>',
++	}),
++])
++
+ /** Holds the Breadcrumb section's visible copy and accessible name. */
+ export const BREADCRUMB_COPY = Object.freeze({
+ 	region: 'Breadcrumb',
+@@ -1469,7 +1506,7 @@ export const BREADCRUMB_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ export const CLOSE_COPY = Object.freeze({
+ 	region: 'Close',
+ 	paragraph:
+-		'Compare the close control at rest, refused through the attribute, refused through the class, and inverted over a dark surface. The inverted specimen sits in a table row whose visible text names the notice, while the control announces the dismissal it performs. Hover or focus the resting control to compare its states.',
++		'Compare the close control at rest, refused through the attribute, refused through the class, and inverted over a dark surface. The inverted specimen sits in a table row whose visible text names the notice, while the control is named through its aria-label attribute. Hover or focus the resting control to compare its states.',
+ })
+ 
+ /** Lists the close control specimens in their rendering order. */
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 66467cf..1de18b2 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -30,3 +30,4 @@ export * from './sections/InputGroupSection.js'
+ export * from './sections/CollapseSection.js'
+ export * from './sections/DropdownSection.js'
+ export * from './sections/NavSection.js'
++export * from './sections/AlertSection.js'
+diff --git a/app/browser/sections/AlertSection.ts b/app/browser/sections/AlertSection.ts
+new file mode 100644
+index 0000000..b7004aa
+--- /dev/null
++++ b/app/browser/sections/AlertSection.ts
+@@ -0,0 +1,20 @@
++import { ALERT_COPY, ALERT_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared alert specimens into a named region.
++ * @example
++ * ```ts
++ * const section = new AlertSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class AlertSection extends SpecimenSection {
++	/**
++	 * Mounts the Alert region and its specimens.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, ALERT_COPY, ALERT_SPECIMENS)
++	}
++}
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 605d1a5..72115ec 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -219,6 +219,7 @@ The following files carry the axis.
+ | `src/styles/components/_icon-link.scss`     | The icon link, its icon combinator, and its hover and focus shifts in the components layer.                                                                                                                                                        |
+ | `src/styles/components/_breadcrumb.scss`    | The breadcrumb trail, its item inset, its divider, and the current page in the components layer.                                                                                                                                                   |
+ | `src/styles/components/_badge.scss`         | The badge box, its empty collapse, and its offset inside a button in the components layer.                                                                                                                                                         |
++| `src/styles/components/_alert.scss`         | The alert box, its heading and link, the dismissible room and the close control it places, and the contextual roles in the components layer.                                                                                                       |
+ | `src/styles/components/_close.scss`         | The close control, its states, and its opt-in inversion in the components layer.                                                                                                                                                                   |
+ | `src/styles/components/_progress.scss`      | The progress track, its stacked form, and the bar families in the components layer.                                                                                                                                                                |
+ | `src/styles/components/_spinner.scss`       | The border and grow spinners, their small twins, and their keyframes in the components layer.                                                                                                                                                      |
+@@ -1673,6 +1674,64 @@ stays in flow.
+ 
+ The `tests/src/styles/components/badge.test.ts` proof reads each resolved treatment in the browser.
+ 
++### Alert classes
++
++The alert key ships whole: the alert box, its heading and its link, the dismissible alert and the
++close control it places, and the contextual roles.
++
++The `.alert` rule declares every slot it reads on itself, so a consumer retunes an alert through a
++rule of their own that selects the alert, and the same property set on an ancestor is shadowed. The
++inset and the bottom spacing read Veneer's density scale. The edge reads `--bs-border-width` and the
++radius reads `--bs-border-radius`, which this cascade declares over `--vn-radius-base`, so
++`--vn-factor-radius` reaches the alert's corners. The fill and the edge color are transparent and
++the text and link slots inherit, so a plain alert paints the text of whatever carries it and no fill
++of its own.
++
++A heading carrying the `.alert-heading` class takes the alert's own text color rather than the
++heading color the elements layer gives every other heading. A link carrying the `.alert-link` class
++takes the fixed `700` weight Bootstrap writes and paints from `--bs-alert-link-color`, which a
++contextual role sets to its text tier; no published Veneer weight resolves to `700`, so that weight
++stays literal.
++
++The `.alert-dismissible` class reserves room at the alert's right, and the close control inside it
++is placed in that room: against the top and right edges of the alert's padding box, at
++`z-index: 2`, with a block inset of `1.25` times the inline one. The room and the control's
++placement are physical, so they sit at the right whatever the document's writing direction. The
++placement selects the control through the dismissible class, so a close control inside a plain alert
++stays in flow. § Close classes gives the control's own treatment.
++
++The contextual roles walk the tokens module's aliased role list, which is the release's own set.
++Veneer carries a `tertiary` role of its own and the release does not, so no `.alert-tertiary` rule is
++emitted and an alert carrying that class paints as a plain one. Each role class retunes the alert's
++text, fill, edge, and link slots from the role's `--bs-{role}-text-emphasis`,
++`--bs-{role}-bg-subtle`, and `--bs-{role}-border-subtle` aliases and declares no property of its
++own. The theme scopes retune those aliases, so an alert inside a dark island paints its role's dark
++tiers.
++
++The alert classes are set in markup. The release's Alert plugin, which removes a dismissed alert
++after its `fade` transition, is behavior the engine owns, and § Compatibility records it. No
++showcase specimen carries the `fade` class or the `show` class, and every alert rule paints the same
++without them.
++
++These are the key's recorded departures.
++
++- **The spacing reads Veneer's density scale.** The release writes `1rem` for the alert's inset and
++  bottom spacing and `3rem` for the dismissible right padding; Veneer writes the `--vn-space-8` token
++  and the `--vn-space-24` token, which already resolve to those lengths. The close control's inset
++  inside a dismissible alert, `1.25rem` and `1rem` in the release, is written over the same
++  `--vn-space-8` token, so `--vn-factor-density` moves the room and the control together. The
++  ledger files that inset under the `btn-close` table, because the release records the combinator
++  under the close key as well.
++
++The showcase's Alert region carries every role in one ramp, an alert with a heading and a link, and a
++dismissible alert whose close control is named through its `aria-label` attribute.
++
++The `tests/src/styles/components/alert.test.ts` proof reads each resolved treatment in the browser:
++the box and its slots, a consumer retune and an ancestor retune, the density and radius factors, the
++heading and the link beside a bare heading and a bare link, each role against its own aliases in
++light and inside a dark island, and the close control's placement and its stacking over positioned
++content beside a control inside a plain alert.
++
+ ### Progress classes
+ 
+ The progress key ships whole: the track, the stacked track, the bar, the striped bar, and the
+@@ -1756,8 +1815,8 @@ and the row geometry at each viewport around every boundary.
+ ### Close classes
+ 
+ The close key ships the control, its hover, focus, and `disabled` states, and the opt-in inversion.
+-The combinators the alert, toast, modal, and offcanvas headers write belong to the overlay
+-components and stay listed under § Deferred selectors.
++Each overlay partial writes the combinator that fits the control into its header or its
++dismissible box; a combinator whose partial has not landed stays listed under § Deferred selectors.
+ 
+ The control is a content-box square one `em` on each side with a `0.25em` inset, so the whole target
+ measures one and a half `em` and that `em` box scales with the text around it. The radius and the
+@@ -1970,7 +2029,6 @@ name this release declares nowhere is recorded in § Outside the ledger instead.
+ | `.btn-group-lg > .btn + .dropdown-toggle-split`                                  | Disclosure | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3)`       | Disclosure | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.input-group.has-validation > .dropdown-toggle:nth-last-child(n+4)`             | Disclosure | The owning component supplies this relationship.                                                                                                                                                                |
+-| `.alert-dismissible .btn-close`                                                  | Overlays   | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.toast-header .btn-close`                                                       | Overlays   | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.modal-header .btn-close`                                                       | Overlays   | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.offcanvas-header .btn-close`                                                   | Overlays   | The owning component supplies this relationship.                                                                                                                                                                |
+@@ -3946,6 +4004,15 @@ declaration.
+ | --------- | -------- | ------------------ | --------- | --------------- | ------------------------------ | --------- |
+ | `badge`   | `.badge` | `--bs-badge-color` | —         | `#fff`          | `var(--vn-palette-white-base)` | tokenized |
+ 
++#### `alert`
++
++| Component | Selector             | Property                   | Condition | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | -------------------- | -------------------------- | --------- | --------------- | -------------------- | --------- |
++| `alert`   | `.alert`             | `--bs-alert-padding-x`     | —         | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `alert`   | `.alert`             | `--bs-alert-padding-y`     | —         | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `alert`   | `.alert`             | `--bs-alert-margin-bottom` | —         | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `alert`   | `.alert-dismissible` | `padding-right`            | —         | `3rem`          | `var(--vn-space-24)` | tokenized |
++
+ #### `progress`
+ 
+ | Component  | Selector                | Property                  | Condition | Bootstrap 5.3.8                                                                                                                                                                       | Veneer                                                                                                                                                                                                                          | Departure |
+@@ -3968,14 +4035,15 @@ declaration.
+ 
+ #### `btn-close`
+ 
+-| Component   | Selector              | Property               | Condition | Bootstrap 5.3.8 | Veneer                         | Departure |
+-| ----------- | --------------------- | ---------------------- | --------- | --------------- | ------------------------------ | --------- |
+-| `btn-close` | `.btn-close`          | `--bs-btn-close-color` | —         | `#000`          | `var(--vn-palette-black-base)` | tokenized |
+-| `btn-close` | `.btn-close`          | `border-radius`        | —         | `0.375rem`      | `var(--vn-radius-base)`        | tokenized |
+-| `btn-close` | `.btn-close:disabled` | `-webkit-user-select`  | —         | `none`          | —                              | dropped   |
+-| `btn-close` | `.btn-close:disabled` | `-moz-user-select`     | —         | `none`          | —                              | dropped   |
+-| `btn-close` | `.btn-close.disabled` | `-webkit-user-select`  | —         | `none`          | —                              | dropped   |
+-| `btn-close` | `.btn-close.disabled` | `-moz-user-select`     | —         | `none`          | —                              | dropped   |
++| Component   | Selector                        | Property               | Condition | Bootstrap 5.3.8 | Veneer                                             | Departure |
++| ----------- | ------------------------------- | ---------------------- | --------- | --------------- | -------------------------------------------------- | --------- |
++| `btn-close` | `.btn-close`                    | `--bs-btn-close-color` | —         | `#000`          | `var(--vn-palette-black-base)`                     | tokenized |
++| `btn-close` | `.btn-close`                    | `border-radius`        | —         | `0.375rem`      | `var(--vn-radius-base)`                            | tokenized |
++| `btn-close` | `.btn-close:disabled`           | `-webkit-user-select`  | —         | `none`          | —                                                  | dropped   |
++| `btn-close` | `.btn-close:disabled`           | `-moz-user-select`     | —         | `none`          | —                                                  | dropped   |
++| `btn-close` | `.btn-close.disabled`           | `-webkit-user-select`  | —         | `none`          | —                                                  | dropped   |
++| `btn-close` | `.btn-close.disabled`           | `-moz-user-select`     | —         | `none`          | —                                                  | dropped   |
++| `btn-close` | `.alert-dismissible .btn-close` | `padding`              | —         | `1.25rem 1rem`  | `calc(var(--vn-space-8) * 1.25) var(--vn-space-8)` | tokenized |
+ 
+ #### `placeholder`
+ 
+@@ -4373,6 +4441,8 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | dropdown         | variable       | Every official `--bs-dropdown-*` custom property is declared on the `.dropdown-menu` class and retuned by the `.dropdown-menu-dark` class, and every alignment class declares the `--bs-position` property; each slot is read beside the property it drives in `tests/src/styles/components/dropdown.test.ts`.                                                                                                                                                   | —                     | shipped  |
+ | nav              | selector       | Every official `.nav` selector ships in the components layer, the tabs, pills, underline, fill, justified, and tab-pane rules included, less the `.navbar` combinators recorded under § Styles; resolved behavior is proved in `tests/src/styles/components/nav.test.ts`.                                                                                                                                                                                        | —                     | shipped  |
+ | nav              | variable       | Every `--bs-nav-link-*`, `--bs-nav-tabs-*`, `--bs-nav-pills-*`, and `--bs-nav-underline-*` property the release declares is declared on its own class; each one is read beside the property it drives in `tests/src/styles/components/nav.test.ts`.                                                                                                                                                                                                              | —                     | shipped  |
++| alert            | selector       | Every official `.alert` selector ships in the components layer, the dismissible close placement and the contextual roles included; resolved box, content, placement, and role paint are proved in `tests/src/styles/components/alert.test.ts`.                                                                                                                                                                                                                   | —                     | shipped  |
++| alert            | variable       | Every official `--bs-alert-*` custom property is declared on `.alert`, and each contextual role retunes it from that role's aliases; each one is read beside the property it drives in `tests/src/styles/components/alert.test.ts`.                                                                                                                                                                                                                              | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+ | engine           | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                                                                                                                                                                                                                                                         | —                     | accepted |
+ | engine           | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                                                                                                                                                                                                                                                    | —                     | accepted |
+@@ -4398,6 +4468,7 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | engine           | plugin         | Dropdown: the `[data-bs-toggle="dropdown"]` data API; the `autoClose`, `boundary`, `display`, `offset`, `popperConfig`, and `reference` options; the `toggle`, `show`, `hide`, `dispose`, and `update` methods; the paired `.bs.dropdown` events, the `show` and `hide` events cancelable; the `aria-expanded` attribute; arrow and `Escape` key focus; placement from the `--bs-position` property and the wrappers, centering included. Owner: J-ENGINE.       | —                     | accepted |
+ | engine           | plugin         | Tab: `[data-bs-toggle="tab\|pill\|list"]` shows the pane its trigger names with `show()`; fires `hide.bs.tab`, `hidden.bs.tab`, `show.bs.tab`, and `shown.bs.tab` with `relatedTarget`, `show` and `hide` cancelable; arrow keys, `Home`, and `End` move focus; writes `role`, `aria-selected`, `tabindex`, and `active`; `show` on the pane; in a dropdown, `active` on the toggle, `show` on the menu, and `aria-expanded` on the item. Owner: J-ENGINE.       | —                     | accepted |
+ | engine           | plugin         | ScrollSpy: `[data-bs-spy="scroll"]` observes the sections its `target` links name through `IntersectionObserver` (`rootMargin`, `threshold`, `offset`, `smoothScroll`); `refresh()`, `dispose()`; fires `activate.bs.scrollspy` with `relatedTarget` and no cancelable event; moves the `active` class. Owner: J-ENGINE.                                                                                                                                         | —                     | accepted |
++| engine           | plugin         | Alert: a `[data-bs-dismiss="alert"]` trigger closes the alert it names, or the `.alert` ancestor it sits in; no defaults; the `close` method; the cancelable `close.bs.alert` event, then the `closed.bs.alert` event after removal; the `close` method removes the `show` class and waits on the transition only when the alert carries the `fade` class, then removes the element and disposes the instance; no key, focus, or ARIA handling. Owner: J-ENGINE. | —                     | accepted |
+ 
+ A `plugin` row records a behavior J-ENGINE owns, while the classes that behavior sets ship in the
+ cascade and render in markup.
+@@ -4471,6 +4542,7 @@ The application proofs drive the shell through its interface; see
+ [specimen rendering and engine ownership](../tests/app/browser/sections/ButtonSection.test.ts),
+ [typography class specimens](../tests/app/browser/sections/TypeSection.test.ts),
+ [media class specimens](../tests/app/browser/sections/MediaSection.test.ts),
++[alert specimens](../tests/app/browser/sections/AlertSection.test.ts),
+ [badge specimens](../tests/app/browser/sections/BadgeSection.test.ts),
+ [breadcrumb specimens](../tests/app/browser/sections/BreadcrumbSection.test.ts),
+ [button group specimens](../tests/app/browser/sections/ButtonGroupSection.test.ts),
+@@ -4577,6 +4649,7 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the table classes](../tests/src/styles/components/table.test.ts),
+ [the breadcrumb classes](../tests/src/styles/components/breadcrumb.test.ts),
+ [the badge classes](../tests/src/styles/components/badge.test.ts),
++[the alert classes](../tests/src/styles/components/alert.test.ts),
+ [the close classes](../tests/src/styles/components/close.test.ts),
+ [the collapse classes](../tests/src/styles/components/collapse.test.ts),
+ [the dropdown classes](../tests/src/styles/components/dropdown.test.ts),
+diff --git a/src/styles/components/_alert.scss b/src/styles/components/_alert.scss
+new file mode 100644
+index 0000000..5db8079
+--- /dev/null
++++ b/src/styles/components/_alert.scss
+@@ -0,0 +1,69 @@
++@use '../tokens';
++
++@layer components {
++	// The alert ships Bootstrap's recorded box. Its inset and its bottom spacing route through the
++	// density scale token that already resolves to the recorded `1rem`, and its edge and radius read
++	// the compatibility variables the release reads. The fill and the edge color are transparent and
++	// the text and link slots inherit, so a plain alert paints nothing of its own until a role
++	// retunes it.
++	.alert {
++		--bs-alert-bg: transparent;
++		--bs-alert-padding-x: var(--vn-space-8);
++		--bs-alert-padding-y: var(--vn-space-8);
++		--bs-alert-margin-bottom: var(--vn-space-8);
++		--bs-alert-color: inherit;
++		--bs-alert-border-color: transparent;
++		--bs-alert-border: var(--bs-border-width) solid var(--bs-alert-border-color);
++		--bs-alert-border-radius: var(--bs-border-radius);
++		--bs-alert-link-color: inherit;
++		position: relative;
++		padding: var(--bs-alert-padding-y) var(--bs-alert-padding-x);
++		margin-bottom: var(--bs-alert-margin-bottom);
++		color: var(--bs-alert-color);
++		background-color: var(--bs-alert-bg);
++		border: var(--bs-alert-border);
++		border-radius: var(--bs-alert-border-radius);
++	}
++
++	// A heading inside an alert takes the alert's text rather than the heading slot the elements
++	// layer paints every other heading from.
++	.alert-heading {
++		color: inherit;
++	}
++
++	// The weight is the fixed `700` the release writes; no published Veneer weight resolves to it.
++	.alert-link {
++		font-weight: 700;
++		color: var(--bs-alert-link-color);
++	}
++
++	// The right padding reserves the room the close control is placed in. The control's block inset
++	// is the release's `1.25` multiple of its inline inset, and each is written over the density
++	// token the alert's own inset reads. The room and the placement are physical, so they sit at the
++	// right whatever the document's writing direction. The placement selects the control through the
++	// dismissible class, so a close control inside a plain alert stays in flow.
++	.alert-dismissible {
++		padding-right: var(--vn-space-24);
++	}
++
++	.alert-dismissible .btn-close {
++		position: absolute;
++		top: 0;
++		right: 0;
++		z-index: 2;
++		padding: calc(var(--vn-space-8) * 1.25) var(--vn-space-8);
++	}
++
++	// The contextual roles walk the aliased role list, so the set is Bootstrap's own and Veneer's
++	// `tertiary` role emits no variant. Each variant retunes the alert's own slots from the role's
++	// aliases and declares no property of its own, so the base rule paints through the slots it
++	// moved, in either color mode.
++	@each $role in tokens.$aliased {
++		.alert-#{$role} {
++			--bs-alert-color: var(--bs-#{$role}-text-emphasis);
++			--bs-alert-bg: var(--bs-#{$role}-bg-subtle);
++			--bs-alert-border-color: var(--bs-#{$role}-border-subtle);
++			--bs-alert-link-color: var(--bs-#{$role}-text-emphasis);
++		}
++	}
++}
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index 9736a3c..9699c99 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -65,6 +65,7 @@
+ @use 'components/breadcrumb';
+ @use 'components/pagination';
+ @use 'components/badge';
++@use 'components/alert';
+ @use 'components/progress' as progress-component;
+ @use 'components/list-group';
+ @use 'components/close';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index d76a95e..d9438fb 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -1,4 +1,5 @@
+ import {
++	ALERT_SPECIMENS,
+ 	BUTTON_COPY,
+ 	BUTTON_GROUP_SPECIMENS,
+ 	BADGE_SPECIMENS,
+@@ -117,6 +118,7 @@ describe('Showcase', () => {
+ 				'Collapse',
+ 				'Dropdown',
+ 				'Nav',
++				'Alert',
+ 			])
+ 			expect(
+ 				[...host.querySelectorAll('[data-specimen]')].map((element) =>
+@@ -151,6 +153,7 @@ describe('Showcase', () => {
+ 					...COLLAPSE_SPECIMENS,
+ 					...DROPDOWN_SPECIMENS,
+ 					...NAV_SPECIMENS,
++					...ALERT_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+ 			expect(readPerception('Showcase')).toBe('Explore the color mode with the Dark mode control.')
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 83b91c7..b02f488 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -7,6 +7,9 @@ describe('app browser entry', () => {
+ 	// what proves they are types.
+ 	it('exports the showcase surface, the specimen table, and the sections family', () => {
+ 		expect(Object.keys(entry).sort()).toStrictEqual([
++			'ALERT_COPY',
++			'ALERT_SPECIMENS',
++			'AlertSection',
+ 			'BADGE_COPY',
+ 			'BADGE_SPECIMENS',
+ 			'BREADCRUMB_COPY',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index f33b4db..1b9a452 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -39,6 +39,7 @@ import {
+ import { afterAll, afterEach, beforeEach, describe, expect, inject, it } from 'vitest'
+ import { commands, page } from 'vitest/browser'
+ import {
++	ALERT_SPECIMENS,
+ 	BUTTON_GROUP_SPECIMENS,
+ 	BADGE_SPECIMENS,
+ 	BREADCRUMB_SPECIMENS,
+@@ -1835,6 +1836,7 @@ describe('portfolio', () => {
+ 	it('names a specimen the showcase declares, or its own region, as every scenario subject', () => {
+ 		const declared = new Set([
+ 			...[
++				ALERT_SPECIMENS,
+ 				BADGE_SPECIMENS,
+ 				BREADCRUMB_SPECIMENS,
+ 				BUTTON_SPECIMENS,
+diff --git a/tests/app/browser/sections/AlertSection.test.ts b/tests/app/browser/sections/AlertSection.test.ts
+new file mode 100644
+index 0000000..dd65f1f
+--- /dev/null
++++ b/tests/app/browser/sections/AlertSection.test.ts
+@@ -0,0 +1,92 @@
++import type { SectionInterface } from '@app/browser'
++import { ALERT_COPY, ALERT_SPECIMENS, AlertSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readName } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('AlertSection', () => {
++	it('renders the role ramp, the linked alert, and the dismissible alert through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new AlertSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Alert region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Alert')
++			expect(region.querySelector('p')?.textContent).toBe(ALERT_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Role alerts',
++				'Linked alert',
++				'Dismissible alert',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				ALERT_SPECIMENS.map(({ markup }) => markup),
++			)
++			// The ramp renders the release's roles in the release's order, one alert each, and no
++			// alert for Veneer's own `tertiary` role, which emits no variant.
++			const ramp = requireValue(
++				region.querySelector('[data-specimen="Role alerts"]'),
++				'No role ramp specimen',
++			)
++			expect([...ramp.querySelectorAll('.alert')].map((alert) => alert.className)).toEqual(
++				['primary', 'secondary', 'success', 'info', 'warning', 'danger', 'light', 'dark'].map(
++					(role) => `alert alert-${role}`,
++				),
++			)
++			expect(region.querySelector('.alert-tertiary')).toBeNull()
++			// Every alert announces itself through the role the release's markup gives it.
++			expect(
++				[...region.querySelectorAll('.alert')].filter(
++					(alert) => alert.getAttribute('role') !== 'alert',
++				),
++			).toStrictEqual([])
++			const linked = requireValue(
++				region.querySelector('[data-specimen="Linked alert"] .alert'),
++				'No linked alert',
++			)
++			expect(linked.querySelector('.alert-heading')).not.toBeNull()
++			const link = requireValue(linked.querySelector('a.alert-link'), 'No alert link')
++			expect(link.getAttribute('href')).toBe('#main')
++			const dismissible = requireValue(
++				region.querySelector('[data-specimen="Dismissible alert"] .alert.alert-dismissible'),
++				'No dismissible alert',
++			)
++			// The close control paints a mark rather than a label, so it is named through its own
++			// `aria-label` attribute.
++			const control = requireValue(dismissible.querySelector('.btn-close'), 'No close control')
++			expect(control.tagName).toBe('BUTTON')
++			expect(control.getAttribute('aria-label')).toBe('Close')
++			expect(readName(control)).toBe('Close')
++			expect(control.textContent).toBe('')
++			// The release's fade classes are the engine's to set, and every alert rule paints the
++			// same without them, so no specimen carries one.
++			expect(region.querySelector('.fade, .show')).toBeNull()
++			expect(Object.isFrozen(ALERT_COPY)).toBe(true)
++			expect(Object.isFrozen(ALERT_SPECIMENS)).toBe(true)
++			expect(ALERT_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases the region and preserves adjacent content on repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new AlertSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Alert region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 01fa963..d193bc5 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -96,6 +96,7 @@ describe('Bootstrap component oracle', () => {
+ 		const rows = readCompatibility()
+ 		const shipped = collectShippedComponents(rows)
+ 		const listed: readonly string[] = [
++			'alert',
+ 			'badge',
+ 			'blockquote',
+ 			'breadcrumb',
+@@ -387,6 +388,7 @@ describe('Bootstrap source order', () => {
+ 			'breadcrumb',
+ 			'pagination',
+ 			'badge',
++			'alert',
+ 			'progress',
+ 			'list-group',
+ 			'close',
+@@ -409,6 +411,7 @@ describe('Bootstrap source order', () => {
+ 			'breadcrumb',
+ 			'pagination',
+ 			'badge',
++			'alert',
+ 			'progress',
+ 			'list-group',
+ 			'close',
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 8ec9f25..f5a9ab2 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -119,6 +119,7 @@ export type CaptureSubject =
+ 	| 'Dropstart'
+ 	| 'Dropup'
+ 	| 'Dropup center'
++	| 'Dismissible alert'
+ 	| 'Form check box'
+ 	| 'Form check checked'
+ 	| 'Form check disabled'
+@@ -130,6 +131,7 @@ export type CaptureSubject =
+ 	| 'Form check switch disabled'
+ 	| 'Form check switch reverse'
+ 	| 'Large pagination'
++	| 'Linked alert'
+ 	| 'Check group'
+ 	| 'Horizontal group'
+ 	| 'Large group'
+@@ -195,6 +197,7 @@ export type CaptureSubject =
+ 	| 'Form select multiple'
+ 	| 'Form select sized'
+ 	| 'Form select small'
++	| 'Role alerts'
+ 	| 'Role links'
+ 	| 'Showcase'
+ 	| 'Small pagination'
+@@ -1261,6 +1264,24 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.card:has(> .collapse-horizontal)',
+ 		property: 'height',
+ 	}),
++	Object.freeze({
++		scenario: 'role-alerts',
++		subject: 'Role alerts',
++		selector: '.alert-primary',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'linked-alert',
++		subject: 'Linked alert',
++		selector: '.alert:has(.alert-link)',
++		property: 'color',
++	}),
++	Object.freeze({
++		scenario: 'dismissible-alert',
++		subject: 'Dismissible alert',
++		selector: '.alert-dismissible',
++		property: 'padding-right',
++	}),
+ ])
+ 
+ /**
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index d6fb87f..25a401a 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1336,6 +1336,7 @@ describe('server setup', () => {
+ 		)
+ 		expect(new Set(rows.map((row) => row.component))).toEqual(
+ 			new Set([
++				'alert',
+ 				'badge',
+ 				'blockquote',
+ 				'breadcrumb',
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index daef14f..9460a00 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -30,6 +30,10 @@ import {
+ } from './setupServer.js'
+ import * as setup from './setupStyles.js'
+ import {
++	ALERT_DISMISSIBLE_GEOMETRY,
++	ALERT_ROLES,
++	ALERT_SELECTORS,
++	ALERT_SPACE_CASES,
+ 	BADGE_GEOMETRY_CASES,
+ 	BADGE_SELECTORS,
+ 	BOOTSTRAP_DARK_VARIABLES,
+@@ -203,6 +207,10 @@ describe('styles setup', () => {
+ 	it('exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
++				'ALERT_DISMISSIBLE_GEOMETRY',
++				'ALERT_ROLES',
++				'ALERT_SELECTORS',
++				'ALERT_SPACE_CASES',
+ 				'BADGE_GEOMETRY_CASES',
+ 				'BADGE_SELECTORS',
+ 				'BOOTSTRAP_DARK_VARIABLES',
+@@ -2346,6 +2354,60 @@ describe('passive component case tables', () => {
+ 			),
+ 		)
+ 	})
++	it('binds the alert tables to the official inventory and the recorded dismissible geometry', () => {
++		const recorded = oracle.components.alert.selectors
++		const names = new Set(recorded.map(({ selector }) => selector))
++		// The recorded vocabulary partitions into the pinned base selectors and one variant per role,
++		// so a pin naming an invented selector and a recorded rule neither table reaches each redden
++		// this comparison.
++		const variants = ALERT_ROLES.map((role) => `.alert-${role}`)
++		expect(new Set([...ALERT_SELECTORS, ...variants])).toEqual(names)
++		expect(ALERT_SELECTORS.filter((selector) => variants.includes(selector))).toEqual([])
++		const rules = new Map(
++			recorded.map(({ selector, declarations }): readonly [string, ReadonlyMap<string, string>] => [
++				selector,
++				new Map(
++					declarations.map(({ property, value }): readonly [string, string] => [property, value]),
++				),
++			]),
++		)
++		// Each variant reads its own role's aliases, which is the pairing the alert proof retunes.
++		for (const role of ALERT_ROLES)
++			expect(rules.get(`.alert-${role}`)).toEqual(
++				new Map([
++					['--bs-alert-color', `var(--bs-${role}-text-emphasis)`],
++					['--bs-alert-bg', `var(--bs-${role}-bg-subtle)`],
++					['--bs-alert-border-color', `var(--bs-${role}-border-subtle)`],
++					['--bs-alert-link-color', `var(--bs-${role}-text-emphasis)`],
++				]),
++			)
++		const base = rules.get('.alert')
++		for (const { property, token, pixels } of ALERT_SPACE_CASES) {
++			expect(token).toBe(`--vn-space-${String(pixels / 2)}`)
++			expect(base?.get(property)).toBe(`${String(pixels / 16)}rem`)
++		}
++		const { right, block, inline, lift } = ALERT_DISMISSIBLE_GEOMETRY
++		expect(rules.get('.alert-dismissible')?.get('padding-right')).toBe(`${String(right / 16)}rem`)
++		const control = requireValue(
++			rules.get('.alert-dismissible .btn-close'),
++			'The inventory records no dismissible close rule',
++		)
++		expect(control.get('padding')).toBe(`${String(block / 16)}rem ${String(inline / 16)}rem`)
++		expect(control.get('z-index')).toBe(lift)
++		expect([control.get('position'), control.get('top'), control.get('right')]).toEqual([
++			'absolute',
++			'0',
++			'0',
++		])
++		for (const table of [
++			ALERT_SELECTORS,
++			ALERT_ROLES,
++			ALERT_SPACE_CASES,
++			ALERT_DISMISSIBLE_GEOMETRY,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		expect(ALERT_SPACE_CASES.every((entry) => Object.isFrozen(entry))).toBe(true)
++	})
+ 	it('derives the badge geometry and the breadcrumb inset from the recorded declarations', () => {
+ 		const badge = requireValue(
+ 			oracle.components.badge.selectors.find(({ selector }) => selector === '.badge'),
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index bbe11e6..428a750 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -4078,6 +4078,61 @@ export const BADGE_GEOMETRY_CASES = Object.freeze([
+ 	Object.freeze({ name: '24px host', host: 24, size: 18, insetX: 11.7, insetY: 6.3 }),
+ ])
+ 
++/**
++ * Lists every official `.alert` selector outside the contextual role family the components layer
++ * ships.
++ *
++ * @remarks
++ * The dismissible combinator is recorded under the alert key and under the close key alike, so it
++ * sits in this table and in the {@link CLOSE_SELECTORS} constant, and each table is compared against
++ * its own key's record.
++ */
++export const ALERT_SELECTORS = Object.freeze([
++	'.alert',
++	'.alert-heading',
++	'.alert-link',
++	'.alert-dismissible',
++	'.alert-dismissible .btn-close',
++])
++
++/** Lists the contextual alert roles, independently of the partial's own loop. */
++export const ALERT_ROLES = Object.freeze([
++	'primary',
++	'secondary',
++	'success',
++	'info',
++	'warning',
++	'danger',
++	'light',
++	'dark',
++])
++
++/**
++ * Pins each alert slot the cascade routes onto a space token, beside that token and its length at
++ * the density factor's initial value.
++ */
++export const ALERT_SPACE_CASES = Object.freeze([
++	Object.freeze({ property: '--bs-alert-padding-x', token: TOKEN_NAMES.space[8], pixels: 16 }),
++	Object.freeze({ property: '--bs-alert-padding-y', token: TOKEN_NAMES.space[8], pixels: 16 }),
++	Object.freeze({ property: '--bs-alert-margin-bottom', token: TOKEN_NAMES.space[8], pixels: 16 }),
++])
++
++/**
++ * Pins the dismissible alert's geometry against the recorded declarations, in CSS pixels at the
++ * density factor's initial value.
++ *
++ * @remarks
++ * The `right` field is the alert's own right padding, which reserves the room the control sits in.
++ * The `block` and `inline` fields are the control's inset inside that room, and the `lift` field is
++ * the stacking level that puts the control over the alert's content.
++ */
++export const ALERT_DISMISSIBLE_GEOMETRY = Object.freeze({
++	right: 48,
++	block: 20,
++	inline: 16,
++	lift: '2',
++})
++
+ /** Lists every official `.btn-close` selector the components layer ships. */
+ export const CLOSE_SELECTORS = Object.freeze([
+ 	'.btn-close',
+@@ -4086,11 +4141,11 @@ export const CLOSE_SELECTORS = Object.freeze([
+ 	'.btn-close:disabled',
+ 	'.btn-close.disabled',
+ 	'.btn-close-white',
++	'.alert-dismissible .btn-close',
+ ])
+ 
+ /** Lists the official `.btn-close` combinators the overlay components still owe. */
+ export const CLOSE_DEFERRED = Object.freeze([
+-	'.alert-dismissible .btn-close',
+ 	'.toast-header .btn-close',
+ 	'.modal-header .btn-close',
+ 	'.offcanvas-header .btn-close',
+diff --git a/tests/src/styles/components/alert.test.ts b/tests/src/styles/components/alert.test.ts
+new file mode 100644
+index 0000000..c8f9a5c
+--- /dev/null
++++ b/tests/src/styles/components/alert.test.ts
+@@ -0,0 +1,252 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import {
++	findRule,
++	matchesColor,
++	readHit,
++	readPixels,
++	readStyle,
++	readToken,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene } from '../../../setupBrowser.js'
++import {
++	ALERT_DISMISSIBLE_GEOMETRY,
++	ALERT_ROLES,
++	ALERT_SELECTORS,
++	ALERT_SPACE_CASES,
++	TEXT_MODES,
++} from '../../../setupStyles.js'
++
++afterEach(() => {
++	scene.clear()
++	for (const token of [TOKEN_NAMES.factor.density, TOKEN_NAMES.factor.radius])
++		document.documentElement.style.removeProperty(token)
++})
++
++describe('alert box', () => {
++	it('carries a rule for every shipped alert name', () => {
++		// The lookup reads the sheet the browser resolved rather than the source. It is a containment
++		// lookup and proves no completeness; the conformance ledger holds the recorded set whole.
++		const names = [...ALERT_SELECTORS, ...ALERT_ROLES.map((role) => `.alert-${role}`)]
++		expect(names.filter((selector) => findRule(selector) === undefined)).toEqual([])
++	})
++
++	it('pads, spaces, and rounds the box from its own slots and paints no fill or edge at rest', () => {
++		const host = scene.mount(
++			'<div style="color: rgb(10, 20, 30)"><div class="alert">Oak shipment</div></div>',
++		)
++		const alert = requireValue(host.querySelector('.alert'), 'No alert')
++		expect(readStyle(alert, 'position')).toBe('relative')
++		for (const side of ['top', 'right', 'bottom', 'left']) {
++			expect(readPixels(alert, `padding-${side}`)).toBe(16)
++			expect(readPixels(alert, `border-${side}-width`)).toBe(1)
++			expect(readStyle(alert, `border-${side}-style`)).toBe('solid')
++			expect(readStyle(alert, `border-${side}-color`)).toBe('rgba(0, 0, 0, 0)')
++		}
++		expect(readPixels(alert, 'margin-bottom')).toBe(16)
++		expect(readStyle(alert, 'background-color')).toBe('rgba(0, 0, 0, 0)')
++		// A plain alert declares its text slot as `inherit`, so it paints whatever text color its
++		// host carries rather than a color of its own.
++		expect(readStyle(alert, 'color')).toBe('rgb(10, 20, 30)')
++		expect(readPixels(alert, 'border-top-left-radius')).toBe(
++			readPixels(alert, 'border-bottom-right-radius'),
++		)
++		expect(readPixels(alert, 'border-top-left-radius')).toBeCloseTo(6, 3)
++	})
++
++	it.each(ALERT_SPACE_CASES)(
++		'reads $property from its own token',
++		({ property, token, pixels }) => {
++			const host = scene.mount(
++				`<div class="alert">Oak shipment<span data-probe style="display:block;width:var(${property})"></span></div>`,
++			)
++			const alert = requireValue(host.querySelector('.alert'), 'No alert')
++			expect(readToken(alert, property)).toBe(readToken(alert, token))
++			// The slot is read as a length as well, because two properties resolving to one another stay
++			// equal through a retune that moves them together and away from the release.
++			expect(
++				readPixels(requireValue(alert.querySelector('[data-probe]'), 'No probe'), 'width'),
++			).toBe(pixels)
++		},
++	)
++
++	it('moves the padding through a consumer scope retuning its slots and shadows an ancestor retune', () => {
++		const host = scene.mount(
++			'<div class="retuned" style="--bs-alert-padding-x: 40px; --bs-alert-padding-y: 40px"><div class="alert">Oak shipment</div></div>',
++		)
++		const alert = requireValue(host.querySelector('.alert'), 'No alert')
++		// The alert declares its slots on itself, so the same retune carried by an ancestor reaches
++		// nothing and the box keeps the release's inset.
++		expect(readPixels(alert, 'padding-left')).toBe(16)
++		expect(readPixels(alert, 'padding-top')).toBe(16)
++		// A consumer rule that still selects the alert and scopes it to an ancestor of their own is
++		// where the compatibility contract puts a retune. A padding written as the recorded literal
++		// resolves the same inset at rest and follows no retune, so this reading is what separates
++		// the slot from the value.
++		scene.load('.retuned .alert { --bs-alert-padding-x: 30px; --bs-alert-padding-y: 10px; }')
++		expect(readPixels(alert, 'padding-left')).toBe(30)
++		expect(readPixels(alert, 'padding-right')).toBe(30)
++		expect(readPixels(alert, 'padding-top')).toBe(10)
++		expect(readPixels(alert, 'padding-bottom')).toBe(10)
++	})
++
++	it('rescales the box with the density and radius factors', () => {
++		const host = scene.mount(
++			'<div class="alert">Oak shipment</div><div class="alert alert-dismissible">Ash shipment <button type="button" class="btn-close" aria-label="Close"></button></div>',
++		)
++		const [alert, dismissible] = [...host.querySelectorAll('.alert')]
++		const plain = requireValue(alert, 'No alert')
++		const room = requireValue(dismissible, 'No dismissible alert')
++		const control = requireValue(room.querySelector('.btn-close'), 'No close control')
++		const radius = readPixels(plain, 'border-top-left-radius')
++		// The factors are published at the document root, where every token the alert reads resolves
++		// its own value, so the retune is applied there rather than on the alert.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		expect(readPixels(plain, 'padding-left')).toBe(32)
++		expect(readPixels(plain, 'margin-bottom')).toBe(32)
++		expect(readPixels(room, 'padding-right')).toBe(ALERT_DISMISSIBLE_GEOMETRY.right * 2)
++		expect(readPixels(control, 'padding-top')).toBe(ALERT_DISMISSIBLE_GEOMETRY.block * 2)
++		expect(readPixels(control, 'padding-left')).toBe(ALERT_DISMISSIBLE_GEOMETRY.inline * 2)
++		expect(readPixels(plain, 'border-top-left-radius')).toBe(radius)
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.radius, '2')
++		expect(readPixels(plain, 'border-top-left-radius')).toBe(radius * 2)
++	})
++})
++
++describe('alert content', () => {
++	it('paints the heading in the alert text color where a bare heading reads the heading slot', () => {
++		const host = scene.mount(
++			'<div class="alert alert-success" style="--bs-heading-color: rgb(1, 2, 3)"><h4 class="alert-heading">Oak delivered</h4><h4>Ash pending</h4></div>',
++		)
++		const alert = requireValue(host.querySelector('.alert'), 'No alert')
++		const heading = requireValue(alert.querySelector('.alert-heading'), 'No alert heading')
++		const bare = requireValue(alert.querySelector('h4:not(.alert-heading)'), 'No bare heading')
++		// The bare heading is the control: it reads the retuned heading slot, so a heading class that
++		// stopped declaring its own color would paint that slot as well.
++		expect(readStyle(bare, 'color')).toBe('rgb(1, 2, 3)')
++		expect(readStyle(heading, 'color')).toBe(readStyle(alert, 'color'))
++		expect(matchesColor(readStyle(heading, 'color'), 'rgb(1, 2, 3)')).toBe(false)
++	})
++
++	it('weights the link and paints it from its own slot, inheriting the alert text at rest', () => {
++		const host = scene.mount(
++			'<div style="color: rgb(10, 20, 30)"><div class="alert">Oak <a class="alert-link" href="#main">manifest</a> <a href="#main">archive</a></div></div>',
++		)
++		const alert = requireValue(host.querySelector<HTMLElement>('.alert'), 'No alert')
++		const link = requireValue(alert.querySelector('.alert-link'), 'No alert link')
++		const bare = requireValue(alert.querySelector('a:not(.alert-link)'), 'No bare link')
++		expect(readStyle(link, 'font-weight')).toBe('700')
++		expect(readStyle(bare, 'font-weight')).not.toBe('700')
++		// A plain alert declares its link slot as `inherit`, so the link paints the alert's own text
++		// where a bare anchor beside it paints the link color.
++		expect(readStyle(link, 'color')).toBe('rgb(10, 20, 30)')
++		expect(matchesColor(readStyle(bare, 'color'), 'rgb(10, 20, 30)')).toBe(false)
++		alert.style.setProperty('--bs-alert-link-color', 'rgb(40, 50, 60)')
++		expect(readStyle(link, 'color')).toBe('rgb(40, 50, 60)')
++		expect(readStyle(alert, 'color')).toBe('rgb(10, 20, 30)')
++	})
++})
++
++describe('contextual alert roles', () => {
++	describe.each(TEXT_MODES)('in %s', (mode) => {
++		it.each(ALERT_ROLES)('paints the %s alert from its own role aliases', (role) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}"><div class="alert alert-${role}">Oak <a class="alert-link" href="#main">manifest</a></div></div>`,
++			)
++			const island = requireValue(host.querySelector<HTMLElement>('[data-bs-theme]'), 'No island')
++			const alert = requireValue(host.querySelector('.alert'), 'No alert')
++			const link = requireValue(alert.querySelector('.alert-link'), 'No alert link')
++			const aliases = [
++				`--bs-${role}-text-emphasis`,
++				`--bs-${role}-bg-subtle`,
++				`--bs-${role}-border-subtle`,
++			] as const
++			const [text, fill, edge] = aliases
++			const resolved = aliases.map((name) => readToken(island, name))
++			// A variant reading another role's alias reddens here only where the two roles resolve
++			// apart, so every other role is first held apart from this one on each alias the variant
++			// reads, in the mode the island names.
++			for (const other of ALERT_ROLES.filter((name) => name !== role))
++				for (const [index, name] of aliases.entries())
++					expect(
++						matchesColor(readToken(island, name.replace(role, other)), resolved[index] ?? ''),
++					).toBe(false)
++			expect(matchesColor(readStyle(alert, 'color'), readToken(island, text))).toBe(true)
++			expect(matchesColor(readStyle(alert, 'background-color'), readToken(island, fill))).toBe(true)
++			expect(matchesColor(readStyle(alert, 'border-top-color'), readToken(island, edge))).toBe(true)
++			expect(matchesColor(readStyle(link, 'color'), readToken(island, text))).toBe(true)
++			// Retuning the aliases on the island moves every paint with them. A variant written
++			// as the literal its alias resolves to reads the same at rest and follows no retune, so
++			// this is what separates the routing from the value in either mode.
++			island.style.setProperty(text, 'rgb(11, 22, 33)')
++			island.style.setProperty(fill, 'rgb(44, 55, 66)')
++			island.style.setProperty(edge, 'rgb(77, 88, 99)')
++			expect(readStyle(alert, 'color')).toBe('rgb(11, 22, 33)')
++			expect(readStyle(alert, 'background-color')).toBe('rgb(44, 55, 66)')
++			expect(readStyle(alert, 'border-top-color')).toBe('rgb(77, 88, 99)')
++			expect(readStyle(link, 'color')).toBe('rgb(11, 22, 33)')
++		})
++	})
++
++	it('emits no variant for the role Bootstrap 5.3.8 does not name', () => {
++		const host = scene.mount(
++			'<div class="alert alert-tertiary">Oak shipment</div><div class="alert">Ash shipment</div>',
++		)
++		const [invented, plain] = [...host.querySelectorAll('.alert')]
++		// Veneer carries a `tertiary` role of its own, and the alert's role walk is the aliased list,
++		// so this class reaches no rule and the alert paints as a plain one.
++		for (const property of ['background-color', 'border-top-color', 'color'])
++			expect(readStyle(requireValue(invented, 'No invented alert'), property)).toBe(
++				readStyle(requireValue(plain, 'No plain alert'), property),
++			)
++	})
++})
++
++describe('dismissible alert', () => {
++	it('reserves the right padding and pins the close control to the top-right corner above the content', () => {
++		const host = scene.mount(
++			'<div class="alert alert-warning alert-dismissible">Oak shipment held <span data-cover style="position: absolute; inset: 0; z-index: 1"></span><button type="button" class="btn-close" aria-label="Close"></button></div>',
++		)
++		const alert = requireValue(host.querySelector('.alert'), 'No alert')
++		const cover = requireValue(alert.querySelector('[data-cover]'), 'No cover')
++		const control = requireValue(alert.querySelector('.btn-close'), 'No close control')
++		const { right, block, inline, lift } = ALERT_DISMISSIBLE_GEOMETRY
++		expect(readPixels(alert, 'padding-right')).toBe(right)
++		expect(readPixels(alert, 'padding-left')).toBe(16)
++		expect(readStyle(control, 'position')).toBe('absolute')
++		// The cover is content stacked one level up, and it spans the whole alert, so the hit at the
++		// alert's own center lands on it. The control's lift is what puts the control over that
++		// content: a control stacked below it, or left at no level of its own, hands the hit at its
++		// center to the cover.
++		expect(readHit(alert)).toBe(cover)
++		expect(readHit(control)).toBe(control)
++		expect(readStyle(control, 'z-index')).toBe(lift)
++		for (const side of ['top', 'bottom']) expect(readPixels(control, `padding-${side}`)).toBe(block)
++		for (const side of ['left', 'right'])
++			expect(readPixels(control, `padding-${side}`)).toBe(inline)
++		// The control is placed against the alert's padding box, so its outer edges meet the alert's
++		// inner border edges at the top and the right. A control placed from the left edge instead
++		// meets the left border and leaves the right corner empty.
++		const box = alert.getBoundingClientRect()
++		const target = control.getBoundingClientRect()
++		expect(target.top).toBeCloseTo(box.top + readPixels(alert, 'border-top-width'), 3)
++		expect(target.right).toBeCloseTo(box.right - readPixels(alert, 'border-right-width'), 3)
++		expect(target.left).toBeGreaterThan(box.left + box.width / 2)
++	})
++
++	it('leaves a close control inside a plain alert in flow', () => {
++		const host = scene.mount(
++			'<div class="alert alert-warning">Oak shipment held <button type="button" class="btn-close" aria-label="Close"></button></div>',
++		)
++		const alert = requireValue(host.querySelector('.alert'), 'No alert')
++		const control = requireValue(alert.querySelector('.btn-close'), 'No close control')
++		// The placement rule selects the control through the dismissible class, so a rule written
++		// against the bare alert class would lift this control out of flow as well.
++		expect(readStyle(control, 'position')).toBe('static')
++		expect(readStyle(control, 'z-index')).toBe('auto')
++		expect(readPixels(alert, 'padding-right')).toBe(16)
++		const em = readPixels(control, 'font-size')
++		expect(readPixels(control, 'padding-top')).toBeCloseTo(em * 0.25, 3)
++	})
++})

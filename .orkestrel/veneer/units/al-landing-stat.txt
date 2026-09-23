@@ -1,0 +1,18 @@
+ app/browser/Showcase.ts                         |   2 +
+ app/browser/constants.ts                        |  39 +++-
+ app/browser/index.ts                            |   1 +
+ app/browser/sections/AlertSection.ts            |  20 ++
+ guides/veneer.md                                |  95 +++++++--
+ src/styles/components/_alert.scss               |  69 +++++++
+ src/styles/index.scss                           |   1 +
+ tests/app/browser/Showcase.test.ts              |   3 +
+ tests/app/browser/index.test.ts                 |   3 +
+ tests/app/browser/integration.test.ts           |   2 +
+ tests/app/browser/sections/AlertSection.test.ts |  92 +++++++++
+ tests/conformance.test.ts                       |   3 +
+ tests/setup.ts                                  |  21 ++
+ tests/setupServer.test.ts                       |   1 +
+ tests/setupStyles.test.ts                       |  62 ++++++
+ tests/setupStyles.ts                            |  57 +++++-
+ tests/src/styles/components/alert.test.ts       | 252 ++++++++++++++++++++++++
+ 17 files changed, 710 insertions(+), 13 deletions(-)
