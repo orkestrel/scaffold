@@ -15,7 +15,8 @@ each) and their reading choices (structural through `SheetReader`, computed thro
 guide's § Tailwind, § Files, § Scripts, and § Tests prose against `writing.md` and the planner's
 sentence list; the README row's grammar; the `tests/setup.css` header comment; and the shape a
 consumer meets in the recipe fences.
-BEYOND_CLAIMS_EXTRA
+Rule as well on the profiles proof's replacement case (claim 1) and on observation 3's narrowing as
+a consumer would read the guide's claim that Bootstrap wins.
 
 Output: the `orkestrel-falsify` verdict shape and nothing else — numbered verdicts with `file:line`,
 findings outside the claims to the `BROKEN` standard, and one terminal line `VERDICT: PASS` or
