@@ -332,3 +332,10 @@ top inset, each exact at factor 1. The density case asserts the control's conten
 non-negative at factor 2 and every inset and the height scale together; the ledger rows for those
 properties read `tokenized`; the guide's density sentence follows. The backdrop's `1.5em` height and
 the `1.25` line height stay literal (each is relative already). Carrier: the FLOATING fix round.
+
+## D25a — The import-placement citation
+
+D25's citation is CSS Cascading and Inheritance Level 5 § Importing Style Sheets (`#at-import`) and
+§ Declaring Without Styles (`#layer-empty`), the two sections that state the `@import` placement
+rule; § Layer Ordering states no such rule and CSS Syntax Level 3 defines no `@import` section.
+Verified against `https://www.w3.org/TR/css-cascade-5/` on 2026-09-23.
