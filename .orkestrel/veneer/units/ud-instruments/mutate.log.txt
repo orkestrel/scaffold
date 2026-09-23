@@ -1,0 +1,89 @@
+print-omitted: exit=1 tests: Tests  1 failed | 10 passed (11)
+  red: display utilities > switches to the print values under the print medium, and back to the screen values after it
+print-screen: exit=1 tests: Tests  1 failed | 10 passed (11)
+  red: display utilities > switches to the print values under the print medium, and back to the screen values after it
+print-before-walk: exit=1 tests: Tests  1 failed | 10 passed (11)
+  red: display utilities > switches to the print values under the print medium, and back to the screen values after it
+display-value-omitted: exit=1 tests: Tests  7 failed | 4 passed (11)
+  red: display utilities > resolves every value around the 'lg' boundary
+  red: display utilities > resolves every value around the 'md' boundary
+  red: display utilities > resolves every value around the 'sm' boundary
+  red: display utilities > resolves every value around the 'xl' boundary
+  red: display utilities > resolves every value around the 'xs' boundary
+  red: display utilities > resolves every value around the 'xxl' boundary
+  red: display utilities > switches to the print values under the print medium, and back to the screen values after it
+display-breakpoint-omitted: exit=1 tests: Tests  1 failed | 10 passed (11)
+  red: display utilities > resolves every value around the 'lg' boundary
+display-walk-reversed: exit=1 tests: Tests  1 failed | 10 passed (11)
+  red: display utilities > resolves a wider infix over a narrower one whatever order the classes are written in
+display-important-dropped: exit=1 tests: Tests  9 failed | 2 passed (11)
+  red: display utilities > keeps its priority over a later unlayered consumer rule
+  red: display utilities > resolves every value around the 'lg' boundary
+  red: display utilities > resolves every value around the 'md' boundary
+  red: display utilities > resolves every value around the 'sm' boundary
+  red: display utilities > resolves every value around the 'xl' boundary
+  red: display utilities > resolves every value around the 'xs' boundary
+  red: display utilities > resolves every value around the 'xxl' boundary
+  red: display utilities > switches to the print values under the print medium, and back to the screen values after it
+  red: display utilities > yields to an important override inside the utilities layer and to no unlayered one
+flex-initial-value: exit=1 tests: Tests  14 failed | 2 passed (16)
+  red: flex utilities > moves each constrained layout at and above the 'lg' boundary
+  red: flex utilities > moves each constrained layout at and above the 'md' boundary
+  red: flex utilities > moves each constrained layout at and above the 'sm' boundary
+  red: flex utilities > moves each constrained layout at and above the 'xl' boundary
+  red: flex utilities > moves each constrained layout at and above the 'xs' boundary
+  red: flex utilities > moves each constrained layout at and above the 'xxl' boundary
+  red: flex utilities > reads no token or mode, so a dark island and a doubled density factor leave every value
+  red: flex utilities > resolves every flex value around the 'lg' boundary
+  red: flex utilities > resolves every flex value around the 'md' boundary
+  red: flex utilities > resolves every flex value around the 'sm' boundary
+  red: flex utilities > resolves every flex value around the 'xl' boundary
+  red: flex utilities > resolves every flex value around the 'xs' boundary
+  red: flex utilities > resolves every flex value around the 'xxl' boundary
+  red: flex utilities > yields to an important override inside the utilities layer and to no unlayered one
+flex-justify-initial: exit=1 tests: Tests  12 failed | 4 passed (16)
+  red: flex utilities > moves each constrained layout at and above the 'lg' boundary
+  red: flex utilities > moves each constrained layout at and above the 'md' boundary
+  red: flex utilities > moves each constrained layout at and above the 'sm' boundary
+  red: flex utilities > moves each constrained layout at and above the 'xl' boundary
+  red: flex utilities > moves each constrained layout at and above the 'xs' boundary
+  red: flex utilities > moves each constrained layout at and above the 'xxl' boundary
+  red: flex utilities > resolves every flex value around the 'lg' boundary
+  red: flex utilities > resolves every flex value around the 'md' boundary
+  red: flex utilities > resolves every flex value around the 'sm' boundary
+  red: flex utilities > resolves every flex value around the 'xl' boundary
+  red: flex utilities > resolves every flex value around the 'xs' boundary
+  red: flex utilities > resolves every flex value around the 'xxl' boundary
+flex-per-entry: exit=1 tests: Tests  1 failed | 15 passed (16)
+  red: flex utilities > resolves a later entry over an earlier one at one infix, and a wider infix over a narrower one
+flex-important-dropped: exit=1 tests: Tests  8 failed | 8 passed (16)
+  red: flex utilities > keeps every flex priority over a later unlayered consumer rule
+  red: flex utilities > resolves every flex value around the 'lg' boundary
+  red: flex utilities > resolves every flex value around the 'md' boundary
+  red: flex utilities > resolves every flex value around the 'sm' boundary
+  red: flex utilities > resolves every flex value around the 'xl' boundary
+  red: flex utilities > resolves every flex value around the 'xs' boundary
+  red: flex utilities > resolves every flex value around the 'xxl' boundary
+  red: flex utilities > yields to an important override inside the utilities layer and to no unlayered one
+align-initial-value: exit=1 tests: Tests  5 failed (5)
+  red: vertical alignment utilities > keeps its priority over a later unlayered consumer rule
+  red: vertical alignment utilities > places each box on its own line position in an inline context
+  red: vertical alignment utilities > reads no token or mode, so a dark island and a doubled density factor leave every value
+  red: vertical alignment utilities > resolves every value at every viewport, and writes no responsive class
+  red: vertical alignment utilities > yields to an important override inside the utilities layer and to no unlayered one
+align-responsive: exit=1 tests: Tests  1 failed | 4 passed (5)
+  red: vertical alignment utilities > resolves every value at every viewport, and writes no responsive class
+align-important-dropped: exit=1 tests: Tests  3 failed | 2 passed (5)
+  red: vertical alignment utilities > keeps its priority over a later unlayered consumer rule
+  red: vertical alignment utilities > resolves every value at every viewport, and writes no responsive class
+  red: vertical alignment utilities > yields to an important override inside the utilities layer and to no unlayered one
+stack-display-dropped: exit=1 tests: Tests  2 failed | 3 passed (5)
+  red: stack helpers > lays a horizontal stack out as a centered row that composes the gap utility
+  red: stack helpers > reads no token or mode, so a dark island and a doubled density factor leave the stacks
+stack-important: exit=1 tests: Tests  2 failed | 3 passed (5)
+  red: stack helpers > keeps its declarations normal, so an important flex utility overrides each one
+  red: stack helpers > sits in the components layer beneath a later unlayered consumer rule
+stack-utilities-layer: exit=1 tests: Tests  1 failed | 4 passed (5)
+  red: stack helpers > sits in the components layer beneath a later unlayered consumer rule
+flex-shrink-before-flex: exit=1 tests: Tests  1 failed | 15 passed (16)
+  red: flex utilities > keeps every flex priority over a later unlayered consumer rule
