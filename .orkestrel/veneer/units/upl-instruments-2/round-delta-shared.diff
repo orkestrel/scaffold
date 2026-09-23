@@ -1,0 +1,745 @@
+--- round-1/app/browser/constants.ts
++++ round-2/app/browser/constants.ts
+@@ -1780,9 +1780,9 @@
+  * A sized box has to paint to show its size, and the placeholder is the release's own consumer of
+  * the width utilities, so each box is a placeholder hidden from assistive technology. A percentage
+  * height resolves only against a container of definite height, so the height steps and the height
+- * cap render inside the shell's `viewport` frame, whose height is bounded. The viewport sizes render
+- * inside the same frame, which clips what they overflow, so a box as wide as the viewport raises no
+- * scrollbar on the page.
++ * cap render inside the shell's `viewport` frame, whose height is bounded. A box sized to the
++ * viewport renders inside the same frame, which clips what it overflows, so the viewport sizes and
++ * the width cap's viewport-wide box, beside the height cap, raise no scrollbar on the page.
+  */
+ export const SIZING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -1812,7 +1812,7 @@
+ 	Object.freeze({
+ 		name: 'Maximum sizes',
+ 		markup:
+-			'<p><span class="placeholder vw-100 mw-100" aria-hidden="true"></span></p><div class="viewport"><div class="h-50"><span class="placeholder w-25 vh-100 mh-100" aria-hidden="true"></span></div></div>',
++			'<div class="viewport"><p><span class="placeholder vw-100 mw-100" aria-hidden="true"></span></p><div class="h-50"><span class="placeholder w-25 vh-100 mh-100" aria-hidden="true"></span></div></div>',
+ 	}),
+ 	Object.freeze({
+ 		name: 'Viewport sizes',
+--- round-1/guides/veneer.md
++++ round-2/guides/veneer.md
+@@ -457,8 +457,9 @@
+ reads what the rule claims: with the exclusion line dropped and Tailwind's own rule on the page,
+ every element carrying a name in the branch resolves, for every property that rule declares, what it
+ resolves under the cascade alone. Each element is read on the longhands its own name's rule
+-declares, because the gap rows sit inside the `.container` element, whose width moves when the line
+-is dropped. A planted rule drives the partial-importance case: it declares `!important` on the
++declares, because a longhand another name declares can move for a reason outside the equality: the
++gap rows sit inside the `.container` element, whose width moves when the line is dropped, and the
++width steps declare the `width` longhand. A planted rule drives the partial-importance case: it declares `!important` on the
+ `grid-column-start` longhand alone, leaving the `grid-column-end` longhand that Tailwind's `col-1`
+ rule also declares normal, and the equality still holds with the `col-1` class on the line.
+ 
+@@ -1784,33 +1785,34 @@
+ 
+ The position keys ship whole in the utilities layer: the position values, the top, bottom, start,
+ and end offsets at the `0`, `50`, and `100` steps, the centered translation on both axes and on each
+-one, and the stacking levels `.z-n1` to `.z-3`. The fixed and sticky helpers ship beside them in the
+-components layer.
++one, and the stacking levels from the `.z-n1` class to the `.z-3` class. The fixed and sticky
++helpers ship beside them in the components layer.
+ 
+ The `src/styles/utilities/_position.scss` partial writes every entry through the `utility` mixin
+-that § Styles describes, so each declaration carries the `!important` the release writes, and no
+-position key writes a breakpoint infix. The partial writes the entries and their values in the
+-release's map order, so where an element carries two values of one entry, the later value wins:
+-`.position-absolute.position-relative` resolves `absolute`, and
+-`.translate-middle.translate-middle-x` resolves the horizontal translation alone. The release writes
+-the `z-index` entry last in its map, and the partial writes it beside the position entries; no other
+-utility sets that property, so the placement moves no resolution.
+-
+-An offset step is a share of the containing block: `.top-50` places a box half its containing
+-block's height from the top, and `.start-50` half its width from the start. The `.start-*` and
+-`.end-*` classes set the physical `left` and `right` properties, as the release's own stylesheet
+-does, so a right-to-left scope leaves `.start-0` on the left edge. The offsets, the translations,
+-and the stacking levels stay literal, because no published Veneer token carries them, and none of
+-them reads the density factor.
++that § Styles describes, so each declaration carries the `!important` flag the release writes, and
++no position key writes a breakpoint infix. The partial writes the entries and their values in the
++release's map order, so where an element carries two values of one entry, the later value wins: an
++element carrying the `.position-absolute` and `.position-relative` classes resolves the `absolute`
++value, and an element carrying the `.translate-middle` and `.translate-middle-x` classes resolves the
++horizontal translation alone. The release writes the `z-index` entry last in its map, and the
++partial writes it beside the position entries; no other utility sets that property, so the placement
++moves no resolution.
++
++An offset step is a share of the containing block: the `.top-50` class places a box half its
++containing block's height from the top, and the `.start-50` class places it half the block's width
++from the start. The `.start-*` and `.end-*` classes set the physical `left` and `right` properties,
++as the release's own stylesheet does, so in a right-to-left scope the `.start-0` class still holds a
++box to the left edge. The offsets, the translations, and the stacking levels stay literal, because
++no published Veneer token carries them, and none of them reads the density factor.
+ 
+ The `.fixed-top` and `.fixed-bottom` helpers pin a box across its containing block at one edge. The
+ `.sticky-top` and `.sticky-bottom` helpers stick a box to one edge of its scroll container, each
+-from its breakpoint infix up: `.sticky-md-top` sticks from a 768px viewport and stays in the flow
+-below it. The `src/styles/components/_position.scss` partial writes the helpers in the components
+-layer with normal declarations, as the release writes them, so a position utility or a rule of your
+-own overrides them. The fixed helpers read the `--vn-stack-fixed` level and the sticky helpers read
+-the `--vn-stack-sticky` level, so a retuned level moves the helpers beside the overlays that read
+-the same ladder.
++from its breakpoint infix up: the `.sticky-md-top` helper sticks a box from a 768px viewport and
++leaves it in the flow below that width. The `src/styles/components/_position.scss` partial writes
++the helpers in the components layer with normal declarations, as the release writes them, so a
++position utility or a rule of your own overrides them. The fixed helpers read the
++`--vn-stack-fixed` token and the sticky helpers read the `--vn-stack-sticky` token, so a retuned
++level moves the helpers beside the overlays that read the same ladder.
+ 
+ The `tests/src/styles/utilities/position.test.ts` proof reads every position value, each offset
+ against a containing block of definite size, the physical edges in a right-to-left scope, the
+@@ -1823,37 +1825,40 @@
+ 
+ These are the keys' recorded departures.
+ 
+-- **The helpers read Veneer's stacking ladder.** The release writes `1030` for the fixed helpers and
+-  `1020` for the sticky helpers; Veneer writes `var(--vn-stack-fixed)` and `var(--vn-stack-sticky)`,
+-  which resolve to the same levels.
+-- **The prefixed sticky value is absent.** The official cascade writes `position: -webkit-sticky`
+-  ahead of `position: sticky` on the `.position-sticky` class and on every sticky helper; Veneer
+-  writes the standard value alone, because the managed Chromium and Edge receipts this cascade is
+-  proved on resolve it and leave the prefixed value redundant.
++- **The helpers read Veneer's stacking ladder.** The release writes the `1030` level for the fixed
++  helpers and the `1020` level for the sticky helpers; Veneer writes the `var(--vn-stack-fixed)`
++  and `var(--vn-stack-sticky)` values, which resolve to the same levels.
++- **The prefixed sticky value is absent.** The official cascade writes the
++  `position: -webkit-sticky` declaration ahead of the `position: sticky` declaration on the
++  `.position-sticky` class and on every sticky helper; Veneer writes the standard value alone,
++  because the managed Chromium and Edge receipts this cascade is proved on resolve it and leave the
++  prefixed value redundant.
+ 
+ ### Sizing utilities
+ 
+-The sizing keys ship whole in the utilities layer: the width and height steps `25`, `50`, `75`,
+-`100`, and `auto`, the maximum sizes `.mw-100` and `.mh-100`, the viewport sizes `.vw-100` and
+-`.vh-100`, and the viewport floors `.min-vw-100` and `.min-vh-100`, which the `min` key carries.
+-
+-A step is a share of the containing block, so `.w-50` resolves half its container's width, and a
+-height step resolves only inside a container of definite height. The `auto` step sizes a box by its
+-content over a size of the element's own. A maximum size caps a box at its container. A viewport
+-size and a viewport floor read the viewport rather than the container, so `.vw-100` is as wide as
+-the viewport wherever it sits. Every value stays literal, because no published Veneer token carries
+-a share or a viewport size, and none of them reads the density factor.
++The sizing keys ship whole in the utilities layer: the `25`, `50`, `75`, `100`, and `auto` width
++and height steps, the `.mw-100` and `.mh-100` maximum sizes, the `.vw-100` and `.vh-100` viewport
++sizes, and the `.min-vw-100` and `.min-vh-100` viewport floors, which the `min` key carries.
++
++A step is a share of the containing block, so the `.w-50` class resolves half its container's
++width, and a height step resolves only inside a container of definite height. The `auto` step sets
++aside a width or height the element declares, so the box takes its content's size. A maximum size
++caps a box at its container. A viewport size and a viewport floor read the viewport rather than the
++container, so a box carrying the `.vw-100` class is as wide as the viewport wherever it sits. Every
++value stays literal, because no published Veneer token carries a share or a viewport size, and none
++of them reads the density factor.
+ 
+ The `src/styles/utilities/_sizing.scss` partial writes every entry through the `utility` mixin in
+ the release's map order: the width, maximum-width, viewport-width, and viewport-floor entries, then
+-the same entries for the height. So a viewport size wins over a step on the same property:
+-`.w-25.vw-100` resolves the viewport's width. No sizing key writes a breakpoint infix.
++the same entries for the height. So a viewport size wins over a step on the same property: an
++element carrying the `.w-25` and `.vw-100` classes resolves the viewport's width. No sizing key
++writes a breakpoint infix.
+ 
+ The `tests/src/styles/utilities/sizing.test.ts` proof reads every step against a container of
+-definite size, the `auto` step over a size of the element's own, both caps, each viewport size and
+-floor at the 390 and 1280 viewports, the density factor, a dark island, the order between entries,
+-the priority over a later unlayered rule, and the escape inside the utilities layer. The sizing keys
+-carry no recorded departure.
++definite size, the `auto` step over a width and a height the element declares, the width and height
++caps, each viewport size and floor at the 390 and 1280 viewports, the density factor, a dark island,
++the order between entries, the priority over a later unlayered rule, and the escape inside the
++utilities layer. The sizing keys carry no recorded departure.
+ 
+ ### Visibility utilities
+ 
+@@ -1861,10 +1866,10 @@
+ the visually hidden helper with its focusable form.
+ 
+ The `.invisible` class hides a box while the box keeps its room in the layout, and the `.visible`
+-class shows a box, one inside an invisible ancestor included. The release's entry carries no class,
+-so each value's key is the whole class name; the `src/styles/utilities/_visibility.scss` partial
+-writes the entry through the `utility` mixin with an empty class, and no visibility class writes a
+-breakpoint infix.
++class shows a box, including a box inside an invisible ancestor. The release's entry carries no
++class, so each value's key is the whole class name; the `src/styles/utilities/_visibility.scss`
++partial writes the entry through the `utility` mixin with an empty class, and no visibility class
++writes a breakpoint infix.
+ 
+ The `.visually-hidden` helper clips a box to one pixel and keeps its text in the accessible name, so
+ a screen reader announces text a sighted reader does not see. The `.visually-hidden-focusable`
+@@ -1872,15 +1877,15 @@
+ link appears when the keyboard reaches it. A caption keeps its table position rather than turning
+ absolute, and a child of a hidden box keeps its overflow hidden.
+ 
+-The release writes the helper with `!important` on every declaration, so the
++The release writes the helper with the `!important` flag on every declaration, so the
+ `src/styles/utilities/_visually-hidden.scss` partial places it in the utilities layer ahead of every
+ utility partial. The helper is not a utility entry and each of its declarations carries its own
+ value, so the partial writes the declarations itself rather than through the `utility` mixin. The
+ cascade reverses layer order for important declarations, so in the components layer the helper would
+ beat every utility. At the head of the utilities layer, a utility the release lets win still wins:
+-`.visually-hidden.w-100` resolves its container's width. The helper's own `:not(caption)` rule is
+-more specific than a position utility, so `.visually-hidden.position-relative` stays absolute, as it
+-does in the release.
++an element carrying the `.visually-hidden` and `.w-100` classes resolves its container's width. The
++helper's own `:not(caption)` rule is more specific than a position utility, so an element carrying
++the `.visually-hidden` and `.position-relative` classes stays absolute, as it does in the release.
+ 
+ The `tests/src/styles/utilities/visibility.test.ts` proof reads the room an invisible box keeps
+ beside a visible twin, a visible box inside an invisible ancestor, the later value where an element
+@@ -4307,7 +4312,7 @@
+ | h                | selector       | Every official `.h-*` selector ships in the utilities layer; heights resolved against a definite container are proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                                            | —                     | shipped  |
+ | mh               | selector       | The official `.mh-100` selector ships in the utilities layer; the cap against its container is proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                                                            | —                     | shipped  |
+ | vh               | selector       | The official `.vh-100` selector ships in the utilities layer; the height read against the viewport is proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                                                     | —                     | shipped  |
+-| position         | selector       | Every official `.position-*` selector ships in the utilities layer; each resolved scheme is proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
++| position         | selector       | Every official `.position-*` selector ships in the utilities layer; each resolved value is proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                                              | —                     | shipped  |
+ | top              | selector       | Every official `.top-*` selector ships in the utilities layer; offsets resolved against the containing block are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                        | —                     | shipped  |
+ | bottom           | selector       | Every official `.bottom-*` selector ships in the utilities layer; offsets resolved against the containing block are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                     | —                     | shipped  |
+ | start            | selector       | Every official `.start-*` selector ships in the utilities layer on the physical left edge; resolved offsets are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                         | —                     | shipped  |
+@@ -4376,16 +4381,17 @@
+ accessible name. The application barrel is a workspace implementation surface and is outside this
+ guide's published API tables.
+ 
+-The Position, Sizing, and Visibility regions follow the component regions. A fixed, sticky, or
+-viewport-sized specimen renders inside the shell's `viewport` frame, which paints nothing. Layout
+-containment makes the frame the containing block of every fixed and absolute element inside it, and
+-paint containment with a clip keeps what such an element overflows inside the frame without making
+-the frame scroll, so a fixed bar holds to the frame's edge and a backdrop sized to the viewport
+-raises no scrollbar on the frame or on the page. The frame's bounded height holds a default dialog
+-at the 390 viewport. The sticky bars scroll inside the shell's `scroller` box within the frame,
+-because the frame clips rather than scrolls; see [position
+-specimens](../tests/app/browser/sections/PositionSection.test.ts), which proves the frame at the 390
+-and 1280 viewports.
++The shell's `viewport` class marks a frame that paints nothing. Layout containment makes the frame
++the containing block of every fixed and absolute element inside it, and paint containment with a
++clip keeps what such an element overflows inside the frame without making the frame scroll. So a
++fixed bar holds to the frame's edge, and a backdrop sized to the viewport raises no scrollbar on the
++frame or on the page. The frame's bounded height holds a default dialog at the 390 viewport and
++gives a percentage height or offset a definite height to resolve against. Every Position specimen
++and the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes` specimens render
++inside an element carrying the shell's `viewport` class. The sticky bars scroll inside an element
++carrying the shell's `scroller` class within the frame, because the frame clips rather than
++scrolls; see [position specimens](../tests/app/browser/sections/PositionSection.test.ts), which
++proves the frame at the 390 and 1280 viewports.
+ 
+ The specimen and region names are what the capture registry addresses a frame by: every registered
+ scenario names the specimen or the region that is its subject, and § Tests gives the filename law
+--- round-1/tests/service/tailwind/consumer.test.ts
++++ round-2/tests/service/tailwind/consumer.test.ts
+@@ -183,23 +183,22 @@
+ 		expect(declared).toEqual(['row-gap', 'column-gap'])
+ 		const branch = collectImportantNames(await stage.expand(readBuiltCascade()), longhands)
+ 		expect(branch).toContain('gap-3')
+-		// Each name's reading is the longhands Tailwind's own rule for that name declares, as
+-		// Chromium expands them. Dropping the exclusion line also moves the names outside the
+-		// branch, `.container` among them, and an element's used width follows its container, so a
+-		// reading of every longhand, or of a longhand another branch name declares, would report
+-		// the ancestor moving rather than this rule losing: the gap rows sit inside the container,
+-		// and the width steps declare the `width` longhand.
+-		const properties = (name: string): readonly string[] => longhands.get(name) ?? []
++		// Each element is read on the longhands Tailwind's own rule for its name declares, as
++		// Chromium expands them, because a longhand another name declares can move for a reason
++		// outside the equality. Dropping the exclusion line also moves the names outside the branch,
++		// `.container` among them, and an element's used width follows its container: the gap rows
++		// sit inside the container, and the width steps declare the `width` longhand, so a reading of
++		// that longhand on a gap row would report the ancestor moving rather than this rule losing.
+ 		await stage.mount(consumerMarkup)
+ 		const standalone: Array<readonly [string, ReadonlyMap<string, string>]> = []
+ 		for (const name of branch) {
+-			for (const snapshot of await stage.read(`[class~="${name}"]`, properties(name)))
++			for (const snapshot of await stage.read(`[class~="${name}"]`, longhands.get(name) ?? []))
+ 				standalone.push([name, snapshot])
+ 		}
+ 		// Each reading has to carry the longhands the cascade declares important for its name, or
+ 		// the comparison that follows runs over nothing.
+ 		for (const [name, snapshot] of standalone)
+-			expect(properties(name).filter((property) => !snapshot.has(property))).toEqual([])
++			expect((longhands.get(name) ?? []).filter((property) => !snapshot.has(property))).toEqual([])
+ 		expect(standalone.filter(([name]) => name === 'gap-3')).not.toEqual([])
+ 		// The instrument is the recipe with its exclusion line dropped, so Tailwind's own rule for
+ 		// each of these names is on the page, and the element still resolves, for every property
+@@ -207,7 +206,7 @@
+ 		await stage.load(instrumentProfile)
+ 		const paired: Array<ReadonlyMap<string, string>> = []
+ 		for (const name of branch)
+-			paired.push(...(await stage.read(`[class~="${name}"]`, properties(name))))
++			paired.push(...(await stage.read(`[class~="${name}"]`, longhands.get(name) ?? [])))
+ 		expect(paired).toHaveLength(standalone.length)
+ 		expect(
+ 			standalone.flatMap(([name, snapshot], index) => {
+--- round-1/tests/setup.ts
++++ round-2/tests/setup.ts
+@@ -392,6 +392,11 @@
+  * than the element the key ships: that element's own box clips to no pixel, so a frame declared on
+  * it reads back nothing. Its declared region is the element that hosts it, and the collapse itself
+  * is read in the component's cascade proof.
++ *
++ * A key whose recorded rule clips its element to one pixel names the element's positioned host
++ * through a `:has()` selector over that element, such as `.position-relative:has(> .visually-hidden)`,
++ * and reads the host's `position` property, because a frame declared on the one-pixel box reads back
++ * nothing. The helper's cascade proof reads the hidden box itself.
+  */
+ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 	Object.freeze({
+--- round-1/tests/setupBrowser.test.ts
++++ round-2/tests/setupBrowser.test.ts
+@@ -49,6 +49,7 @@
+ 	mountClose,
+ 	mountShowcase,
+ 	mountTrail,
++	mountTraversalStart,
+ 	measureVariation,
+ 	ORACLE_ACTIONS,
+ 	ORACLE_EXCLUDED,
+@@ -467,6 +468,7 @@
+ 				'mountPagination',
+ 				'mountShowcase',
+ 				'mountTrail',
++				'mountTraversalStart',
+ 				'pressOracleKeys',
+ 				'readButton',
+ 				'readCascadeSheet',
+@@ -1374,4 +1376,16 @@
+ 		expect(host.localName).toBe('div')
+ 		expect(mountClose(' disabled').getAttribute('class')).toBe('btn-close disabled')
+ 	})
++
++	it('mounts a focused start control, so a traversal reaches the first control mounted after it', async () => {
++		const start = mountTraversalStart()
++		expect(start.localName).toBe('button')
++		expect(start.type).toBe('button')
++		expect(readName(start)).toBe('Start')
++		expect(document.activeElement).toBe(start)
++		const fixture = scene.mount('<p><a href="#main">First link</a></p>')
++		expect(await traverseAccessible('First link')).toBe(fixture.querySelector('a'))
++		scene.clear()
++		expect(start.isConnected).toBe(false)
++	})
+ })
+--- round-1/tests/setupBrowser.ts
++++ round-2/tests/setupBrowser.ts
+@@ -1652,3 +1652,30 @@
+ 		'The mounted host renders no close control',
+ 	)
+ }
++
++/**
++ * Mounts a focused control the keyboard traversal starts from, ahead of every node mounted after it.
++ *
++ * @returns The mounted `Start` button, holding focus, inside a container {@link scene} removes for you.
++ *
++ * @remarks
++ * The installed `traverseAccessible` export sends Tab from the element holding focus, and from a
++ * page where nothing holds focus its first Tab reaches no element. A case that walks to a fixture's
++ * first focusable element mounts this control before the fixture, so that first Tab lands on the
++ * fixture.
++ *
++ * @example
++ * ```ts
++ * mountTraversalStart()
++ * await traverseAccessible('Skip to main content')
++ * ```
++ */
++export function mountTraversalStart(): HTMLButtonElement {
++	const host = scene.mount('<button type="button">Start</button>')
++	const control = requireValue(
++		host.querySelector<HTMLButtonElement>('button'),
++		'The mounted host renders no start control',
++	)
++	control.focus()
++	return control
++}
+--- round-1/tests/setupStyles.test.ts
++++ round-2/tests/setupStyles.test.ts
+@@ -39,6 +39,7 @@
+ 	BREADCRUMB_MARKUP,
+ 	BREADCRUMB_SELECTORS,
+ 	BREAKPOINT_CASES,
++	BREAKPOINT_INFIXES,
+ 	BUTTON_GROUP_CORNERS,
+ 	BUTTON_GROUP_RADIUS_CASES,
+ 	BUTTON_GROUP_SELECTORS,
+@@ -109,25 +110,38 @@
+ 	PAGINATION_SIZE_CASES,
+ 	PAGINATION_STATE_CASES,
+ 	PLACEHOLDER_MARKUP,
++	PLACEMENT_CONTAINER,
+ 	PLACEHOLDER_SELECTORS,
+ 	PLACEHOLDER_SIZE_CASES,
+ 	PROGRESS_MARKUP,
+ 	PROGRESS_SELECTORS,
+ 	PROGRESS_VARIABLE_CASES,
++	POSITION_ENTRY_CASES,
++	POSITION_VALUES,
+ 	QUOTE_FOOTER_CASES,
+ 	RATIO_CASES,
+ 	REDUCED_MOTION,
+ 	REFERENCE_MARKUP,
+ 	RETAINED_COLOR_ALIASES,
+ 	RETAINED_LENGTH_ALIASES,
++	SIZE_STEP_CASES,
++	SIZING_ENTRY_CASES,
+ 	SPINNER_SELECTORS,
+ 	SPINNER_SIZE_CASES,
+ 	SPINNER_VARIABLE_CASES,
++	STACK_LEVEL_CASES,
++	STICKY_SCROLLER,
+ 	TABLE_GEOMETRY_CASES,
+ 	NEUTRAL_MARKUP,
++	OFFSET_EDGES,
++	OFFSET_STEP_CASES,
+ 	TABLE_MARKUP,
+ 	TABLE_RESPONSIVE_CASES,
+ 	TABLE_ROLES,
++	VIEWPORT_SIZE_CASES,
++	VIEWPORT_WIDTHS,
++	VISUALLY_HIDDEN_PROPERTIES,
++	VISUALLY_HIDDEN_READING,
+ 	TABLE_ROLE_CASES,
+ 	TABLE_SELECTORS,
+ 	THEME_DARK_ADDITIONS,
+@@ -201,6 +215,7 @@
+ 				'BREADCRUMB_MARKUP',
+ 				'BREADCRUMB_SELECTORS',
+ 				'BREAKPOINT_CASES',
++				'BREAKPOINT_INFIXES',
+ 				'BUTTON_BARE_CASES',
+ 				'BUTTON_BARE_VALUES',
+ 				'BUTTON_CONTRAST_FLOOR_CASES',
+@@ -277,26 +292,36 @@
+ 				'LIST_GROUP_SPACE_CASES',
+ 				'MANDATED_TAG_PAIRS',
+ 				'NEUTRAL_MARKUP',
++				'OFFSET_EDGES',
++				'OFFSET_STEP_CASES',
+ 				'PAGINATION_MARKUP',
+ 				'PAGINATION_PARENT_CASES',
+ 				'PAGINATION_SELECTORS',
+ 				'PAGINATION_SIZE_CASES',
+ 				'PAGINATION_STATE_CASES',
+ 				'PLACEHOLDER_MARKUP',
++				'PLACEMENT_BOX',
++				'PLACEMENT_CONTAINER',
+ 				'PLACEHOLDER_SELECTORS',
+ 				'PLACEHOLDER_SIZE_CASES',
+ 				'PROGRESS_MARKUP',
+ 				'PROGRESS_SELECTORS',
+ 				'PROGRESS_VARIABLE_CASES',
++				'POSITION_ENTRY_CASES',
++				'POSITION_VALUES',
+ 				'QUOTE_FOOTER_CASES',
+ 				'RATIO_CASES',
+ 				'REDUCED_MOTION',
+ 				'REFERENCE_MARKUP',
+ 				'RETAINED_COLOR_ALIASES',
+ 				'RETAINED_LENGTH_ALIASES',
++				'SIZE_STEP_CASES',
++				'SIZING_ENTRY_CASES',
+ 				'SPINNER_SELECTORS',
+ 				'SPINNER_SIZE_CASES',
+ 				'SPINNER_VARIABLE_CASES',
++				'STACK_LEVEL_CASES',
++				'STICKY_SCROLLER',
+ 				'TABLE_GEOMETRY_CASES',
+ 				'TABLE_MARKUP',
+ 				'TABLE_RESPONSIVE_CASES',
+@@ -334,6 +359,10 @@
+ 				'TYPE_TEXT_CASES',
+ 				'UNMAPPED_TOKENS',
+ 				'VENEER_GUIDE_PATH',
++				'VIEWPORT_SIZE_CASES',
++				'VIEWPORT_WIDTHS',
++				'VISUALLY_HIDDEN_PROPERTIES',
++				'VISUALLY_HIDDEN_READING',
+ 				'collectFencedBlocks',
+ 				'collectGridVocabulary',
+ 				'collectReferenceRows',
+@@ -1402,6 +1431,143 @@
+ 			expect(entry.pixels).toBe(Number.parseFloat(entry.value) * 16)
+ 		}
+ 	})
++	it('binds the placement steps, values, and fixtures to the inventory, the ramp, and the journey', async () => {
++		const recorded = new Map(
++			Object.entries(oracle.components).map(([key, { selectors }]) => [
++				key,
++				selectors.map(({ selector, declarations }) => ({ selector, declarations })),
++			]),
++		)
++		const declared = new Map(
++			[...recorded.values()].flat().map(({ selector, declarations }) => [selector, declarations]),
++		)
++		// Each step's share is read against the percentage the release records for it, so a case
++		// whose share and value disagree reddens even where the record agrees with the step.
++		for (const key of ['w', 'h']) {
++			expect(
++				requireValue(recorded.get(key), `No ${key} key`).map(({ selector, declarations }) => [
++					selector,
++					declarations.map(({ value }) => value),
++				]),
++			).toEqual([
++				...SIZE_STEP_CASES.map(({ step, value }) => [`.${key}-${step}`, [value]]),
++				[`.${key}-auto`, ['auto']],
++			])
++		}
++		for (const { step, share, value } of [...SIZE_STEP_CASES, ...OFFSET_STEP_CASES]) {
++			expect(Number.parseFloat(value) / 100).toBe(share)
++			expect(Number.parseFloat(step) / 100).toBe(share)
++		}
++		for (const edge of OFFSET_EDGES) {
++			expect(
++				requireValue(recorded.get(edge), `No ${edge} key`).map(({ selector, declarations }) => [
++					selector,
++					declarations.map(({ value }) => value),
++				]),
++			).toEqual(OFFSET_STEP_CASES.map(({ step, value }) => [`.${edge}-${step}`, [value]]))
++		}
++		// The sticky value is recorded after its prefixed alias, so each value is the last one its
++		// selector declares.
++		expect(
++			requireValue(recorded.get('position'), 'No position key').map(
++				({ selector, declarations }) => [selector, declarations.at(-1)?.value],
++			),
++		).toEqual(POSITION_VALUES.map((value) => [`.position-${value}`, value]))
++		expect(
++			requireValue(recorded.get('z'), 'No z key').map(({ selector, declarations }) => [
++				selector,
++				declarations.map(({ value }) => value),
++			]),
++		).toEqual(STACK_LEVEL_CASES.map(({ level, value }) => [`.z-${level}`, [value]]))
++		// Each entry's class is recorded, and every selector recorded under the entries' keys answers
++		// to one of the stems, so a stem the table leaves out reddens as surely as a class it misnames.
++		for (const [keys, cases] of [
++			[['w', 'mw', 'vw', 'min', 'h', 'mh', 'vh'], SIZING_ENTRY_CASES],
++			[
++				['position', 'top', 'bottom', 'start', 'end', 'translate-middle', 'z'],
++				POSITION_ENTRY_CASES,
++			],
++		] as const) {
++			expect(cases.filter(({ name }) => !declared.has(`.${name}`))).toEqual([])
++			expect(cases.filter(({ prefix, name }) => !`${name}-`.startsWith(`${prefix}-`))).toEqual([])
++			expect(
++				keys
++					.flatMap((key) => requireValue(recorded.get(key), `No ${key} key`))
++					.filter(({ selector }) =>
++						cases.every(({ prefix }) => !`${selector}-`.startsWith(`.${prefix}-`)),
++					),
++			).toEqual([])
++		}
++		expect(
++			VIEWPORT_SIZE_CASES.map(({ name }) =>
++				requireValue(declared.get(`.${name}`), `No recorded .${name}`).map(({ property }) =>
++					property.replace(/^min-/u, ''),
++				),
++			),
++		).toEqual(VIEWPORT_SIZE_CASES.map(({ property }) => [property]))
++		// The resting reading is the helper's recorded box: its width and height as rendered lengths,
++		// then each read property's recorded value, with the clip's bare zeros written as the lengths
++		// a computed style reports.
++		const hidden = new Map(
++			[
++				...requireValue(declared.get('.visually-hidden'), 'No recorded helper'),
++				...requireValue(declared.get('.visually-hidden:not(caption)'), 'No recorded position'),
++			].map(({ property, value }) => [property, value]),
++		)
++		expect([
++			...['width', 'height'].map((property) =>
++				Number.parseFloat(requireValue(hidden.get(property), `No hidden ${property}`)),
++			),
++			...VISUALLY_HIDDEN_PROPERTIES.map((property) =>
++				requireValue(
++					hidden.get(property.replace(/-[xy]$/u, '')),
++					`No hidden ${property}`,
++				).replaceAll(/\b0(?=[,)])/gu, '0px'),
++			),
++		]).toEqual(VISUALLY_HIDDEN_READING)
++		const ramp = await compileBreakpointRamp()
++		expect(BREAKPOINT_INFIXES).toEqual([...ramp.members.keys()])
++		const journey = readFileSync('configs/app/vite.journey.config.ts', 'utf8')
++		expect(
++			[...new Set([...journey.matchAll(/width: (\d+)/gu)].map(([, width]) => Number(width)))].sort(
++				(left, right) => left - right,
++			),
++		).toEqual(VIEWPORT_WIDTHS)
++		// The container is positioned, and its sides differ from each other and from every variant
++		// width, which is what lets an offset on the wrong axis or a viewport unit read a different
++		// size.
++		const sides = [...PLACEMENT_CONTAINER.matchAll(/(?:width|height): (\d+)px/gu)].map(([, side]) =>
++			Number(side),
++		)
++		expect(sides).toHaveLength(2)
++		expect(new Set([...sides, ...VIEWPORT_WIDTHS]).size).toBe(sides.length + VIEWPORT_WIDTHS.length)
++		expect(PLACEMENT_CONTAINER).toContain('position: relative')
++		for (const table of [
++			BREAKPOINT_INFIXES,
++			VIEWPORT_WIDTHS,
++			SIZE_STEP_CASES,
++			SIZING_ENTRY_CASES,
++			VIEWPORT_SIZE_CASES,
++			POSITION_VALUES,
++			OFFSET_EDGES,
++			OFFSET_STEP_CASES,
++			STACK_LEVEL_CASES,
++			POSITION_ENTRY_CASES,
++			VISUALLY_HIDDEN_PROPERTIES,
++			VISUALLY_HIDDEN_READING,
++			STICKY_SCROLLER,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of [
++			...SIZE_STEP_CASES,
++			...SIZING_ENTRY_CASES,
++			...VIEWPORT_SIZE_CASES,
++			...OFFSET_STEP_CASES,
++			...STACK_LEVEL_CASES,
++			...POSITION_ENTRY_CASES,
++		])
++			expect(Object.isFrozen(entry)).toBe(true)
++	})
+ 	it('pins the frozen container variants and payload widths against the retained scale', () => {
+ 		expect(CONTAINER_CLASS_CASES.map(({ name, boundary }) => [name, boundary])).toEqual([
+ 			['container', 0],
+--- round-1/tests/setupStyles.ts
++++ round-2/tests/setupStyles.ts
+@@ -1839,6 +1839,137 @@
+ 	Object.freeze({ step: 5, value: '3rem', pixels: 48, token: TOKEN_NAMES.gap[5] }),
+ ])
+ 
++/** Lists the breakpoint infixes, which are the grid breakpoint names above the unconditional one. */
++export const BREAKPOINT_INFIXES = Object.freeze(
++	GRID_BREAKPOINT_CASES.filter(({ boundary }) => boundary !== 0).map(({ name }) => name),
++)
++
++/** Lists the viewport widths the journey's variants render at, narrowest first. */
++export const VIEWPORT_WIDTHS = Object.freeze([390, 1280])
++
++/**
++ * Holds the inline style of the container the placement proofs mount their boxes in.
++ *
++ * @remarks
++ * The container is positioned, so it is the containing block of every absolute box inside it. Its
++ * width and height are definite, differ from each other, and differ from every viewport width a
++ * case visits, so a step or an offset written as a length of the same number, or as a viewport
++ * unit, reads a different size, and an offset read against the wrong axis reads a different one.
++ */
++export const PLACEMENT_CONTAINER = 'position: relative; width: 400px; height: 200px'
++
++/** Holds the inline style of a box small enough that every offset step leaves it a distinct place. */
++export const PLACEMENT_BOX = 'width: 20px; height: 10px'
++
++/**
++ * Holds the scroll container a sticky helper sticks against, with the offset each case scrolls it to.
++ *
++ * @remarks
++ * The `style` field is the container's inline style, and the `offset` field is far enough past a
++ * helper resting 50px down the box that a helper left in the flow has scrolled out of it.
++ */
++export const STICKY_SCROLLER = Object.freeze({
++	style: 'height: 100px; overflow: auto',
++	offset: 200,
++})
++
++/**
++ * Lists the width and height steps that take a share of their container, in the release's map order.
++ *
++ * @remarks
++ * The `value` field is the percentage the release records, and the `share` field is the fraction
++ * of the container it resolves. The `auto` step follows these in the map and takes no share.
++ */
++export const SIZE_STEP_CASES = Object.freeze([
++	Object.freeze({ step: '25', value: '25%', share: 0.25 }),
++	Object.freeze({ step: '50', value: '50%', share: 0.5 }),
++	Object.freeze({ step: '75', value: '75%', share: 0.75 }),
++	Object.freeze({ step: '100', value: '100%', share: 1 }),
++])
++
++/** Lists each sizing entry's class stem in the release's map order, with one class it writes. */
++export const SIZING_ENTRY_CASES = Object.freeze([
++	Object.freeze({ prefix: 'w', name: 'w-25' }),
++	Object.freeze({ prefix: 'mw', name: 'mw-100' }),
++	Object.freeze({ prefix: 'vw', name: 'vw-100' }),
++	Object.freeze({ prefix: 'min-vw', name: 'min-vw-100' }),
++	Object.freeze({ prefix: 'h', name: 'h-25' }),
++	Object.freeze({ prefix: 'mh', name: 'mh-100' }),
++	Object.freeze({ prefix: 'vh', name: 'vh-100' }),
++	Object.freeze({ prefix: 'min-vh', name: 'min-vh-100' }),
++])
++
++/** Lists the viewport sizes and floors, each with the axis it reads the viewport on. */
++export const VIEWPORT_SIZE_CASES = Object.freeze([
++	Object.freeze({ name: 'vw-100', property: 'width' }),
++	Object.freeze({ name: 'min-vw-100', property: 'width' }),
++	Object.freeze({ name: 'vh-100', property: 'height' }),
++	Object.freeze({ name: 'min-vh-100', property: 'height' }),
++])
++
++/** Lists the position values in the release's list order. */
++export const POSITION_VALUES = Object.freeze(['static', 'relative', 'absolute', 'fixed', 'sticky'])
++
++/** Lists the offset entries' class stems in the release's map order. */
++export const OFFSET_EDGES = Object.freeze(['top', 'bottom', 'start', 'end'])
++
++/**
++ * Lists the offset steps in the release's map order.
++ *
++ * @remarks
++ * The `value` field is the offset the release records, and the `share` field is the fraction of
++ * the containing block it offsets by.
++ */
++export const OFFSET_STEP_CASES = Object.freeze([
++	Object.freeze({ step: '0', value: '0', share: 0 }),
++	Object.freeze({ step: '50', value: '50%', share: 0.5 }),
++	Object.freeze({ step: '100', value: '100%', share: 1 }),
++])
++
++/** Lists the stacking levels in the release's map order, each with the `z-index` value it sets. */
++export const STACK_LEVEL_CASES = Object.freeze([
++	Object.freeze({ level: 'n1', value: '-1' }),
++	Object.freeze({ level: '0', value: '0' }),
++	Object.freeze({ level: '1', value: '1' }),
++	Object.freeze({ level: '2', value: '2' }),
++	Object.freeze({ level: '3', value: '3' }),
++])
++
++/** Lists each position entry's class stem in the release's map order, with one class it writes. */
++export const POSITION_ENTRY_CASES = Object.freeze([
++	Object.freeze({ prefix: 'position', name: 'position-static' }),
++	Object.freeze({ prefix: 'top', name: 'top-0' }),
++	Object.freeze({ prefix: 'bottom', name: 'bottom-0' }),
++	Object.freeze({ prefix: 'start', name: 'start-0' }),
++	Object.freeze({ prefix: 'end', name: 'end-0' }),
++	Object.freeze({ prefix: 'translate-middle', name: 'translate-middle' }),
++	Object.freeze({ prefix: 'z', name: 'z-0' }),
++])
++
++/** Lists the properties a visually hidden box is read on through its computed style. */
++export const VISUALLY_HIDDEN_PROPERTIES = Object.freeze([
++	'position',
++	'clip',
++	'overflow-x',
++	'overflow-y',
++])
++
++/**
++ * Holds the reading every visually hidden box resolves at rest.
++ *
++ * @remarks
++ * The reading is the box's rendered width and height, then the computed value of each property
++ * {@link VISUALLY_HIDDEN_PROPERTIES} lists, in its order.
++ */
++export const VISUALLY_HIDDEN_READING = Object.freeze([
++	1,
++	1,
++	'absolute',
++	'rect(0px, 0px, 0px, 0px)',
++	'hidden',
++	'hidden',
++])
++
+ /**
+  * Pins each named aspect ratio against the percentage its own name derives.
+  *
