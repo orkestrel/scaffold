@@ -1,7 +1,0 @@
-.viewport: a bottom band of the page surface
-=== worktree at 5fb8b41 with the band; harness 7 clipsOverflow sites from orkestrel-test-0.0.20.tgz
-=== build:src exit=0
-=== light-1280 exit=1 (21:24:47)  Tests 1 failed | 42 passed (43)
-    2186|    expect(variation, `Blank frame region: ${path}`).toBeGreaterThan(0)
-AssertionError: Blank frame region: tmp/capture/states/height-steps--light-1280.png: expected 0 to be greater than 0
-Terminated
