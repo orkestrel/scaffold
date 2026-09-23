@@ -11,10 +11,10 @@ tokens; the section renders the wrappers, the alignments, the directions, the da
 toolbar of caret-only toggles inside grid rooms with no inline style, and its proof measures the
 containment at 390 and at 1280. The registry gains the resting rows and the hover and focus
 frames, the guide gains the section, the rows, the deferral rows, the plugin row with the family's
-sentence, and the § Tests links. The unit DROPDOWN ran over two rounds on opus in
+sentence, and the § Tests links. The unit DROPDOWN ran over a first round and a fix round on opus in
 /home/user/veneer-dd from 87ff1d0, audited by the objective lane (Opus 5.5 in round 1 while the
 Codex bench was dark, Astra in round 2), the subjective lane, and a checker, with every named
-mutation executed red and the four journey variants green on the validation copy.
+mutation executed red and each journey variant green on the validation copy.
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

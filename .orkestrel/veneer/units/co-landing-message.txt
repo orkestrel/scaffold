@@ -10,7 +10,7 @@ island; the section renders the panels with each state set in markup and no inli
 Tailwind recipe fences and the consumer fixtures exclude the collapse name, whose Tailwind
 utility would hide every shown panel. The registry gains the resting rows, and the guide gains the
 section, the rows, the plugin row, the § Tailwind sentences, and the § Tests link. The unit
-COLLAPSE ran over two rounds on opus and builder in /home/user/veneer-co from 87ff1d0, audited by
+COLLAPSE ran over a first round on opus and a fix round on builder in /home/user/veneer-co from 87ff1d0, audited by
 the objective lane on Opus 5.5 (the Codex bench dark), the subjective lane, and a checker, with a
 landing check on the regenerated patch.
 

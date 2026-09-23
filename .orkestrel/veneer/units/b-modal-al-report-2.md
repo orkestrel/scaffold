@@ -1,7 +1,7 @@
 # Unit ALERT (`al`) report, round 2
 
 Executor: `opus` on Opus 5.5, native Claude subagent, sole writer in `/home/user/veneer-al` over
-`c3ac297`. Brief: `tmp/units/al-brief-2.md`.
+`c3ac297`. Brief: `/home/user/scaffold/.orkestrel/veneer/units/al-brief-2.md`.
 
 Deviation state: no stop. Every finding the brief carries is closed, and every acceptance criterion
 closed on the validation copy `tmp/probe/base`. That copy was deleted after its logs landed in
@@ -272,8 +272,8 @@ This brief fact disagrees with the tree, and the tree wins:
 ## Review evidence
 
 - `/home/user/scaffold/.orkestrel/veneer/units/al-shared-2.patch`
-- `tmp/units/al-2.diff`: `git diff --no-index /dev/null <path>` for each owned file, concatenated.
-- `tmp/units/al-2-status.txt`: `git -C /home/user/veneer-al status --porcelain`, which lists the owned
+- `/home/user/scaffold/.orkestrel/veneer/units/al-2.diff`: `git diff --no-index /dev/null <path>` for each owned file, concatenated.
+- `/home/user/scaffold/.orkestrel/veneer/units/al-2-status.txt`: `git -C /home/user/veneer-al status --porcelain`, which lists the owned
   files as untracked.
 - `/home/user/scaffold/.orkestrel/veneer/units/al-instruments-2/`, which holds the following:
   - `stage.sh`, `check.sh`, `run.sh`, `gates.sh`, and `derive.py`

@@ -1,0 +1,8 @@
+# The disclosure stack rebuilt over identical trees after the landing check (dx-landing-checker-verdict.md claim 6)
+
+old commit -> new commit (tree)
+a1b12ab -> 76b7b81 (ced8505179e37fb7b60c9ac559a802db50c039a8)
+77bb770 -> d926de6 (dbc41446a217fdf1e720734ce9833459ac3ea239)
+041925c -> fb131ff (e8281fed78e791ec8f5f4ae6044fb41bd70c44e6)
+
+Instrument: dx-reword.py (the messages), then git commit-tree per commit with the retained message and git update-ref on the session branch; git status clean before and after; the fast gates (dx-fast-gates.log.txt) and the verification chain ran on these trees.
