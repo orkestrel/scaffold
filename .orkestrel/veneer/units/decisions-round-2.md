@@ -228,3 +228,31 @@ bundle case and the manifest case keep proving that the published entries and th
 Tailwind requirement. Lint's `import/no-dynamic-require` refuses a variable specifier, so the service
 module's literal import is the only lint-clean form. Carrier: F8c-B MOVE, which owns
 `tests/conformance.test.ts` for the exemption.
+
+## D25 — The import-placement sentence
+
+The guide's § Tailwind states the rule a consumer follows as the CSS syntax rule it rests on — an
+`@import` rule is valid only ahead of every rule other than `@charset` and `@layer` statements — with
+its citation, and the executed guard is the consumer recipe-equality case that holds each recipe
+import-first. The sentence about Vite's bundled `postcss-import` is restated as a consequence of that
+rule: a processor that follows the syntax drops a late import and the cascade import is the one a
+consumer loses. No test asserts the plugin's behaviour, because asserting it needs `postcss-import`,
+which the tree does not declare; the F8c-B analyst lane's executed probe (retained in its verdict)
+is the evidence that the consequence holds in Vite 7.
+
+## D26 — The theme scope's select caret and switch knob
+
+`$assets` in `src/styles/_tokens.scss` still maps `select-indicator` and `switch-knob`, and
+`_theme.scss` emits them under `[data-bs-theme='dark']`; VALIDATION kept them and CHECK and SELECT
+hold both files off-limits. A follow-up unit, B-FORMS-ASSETS, removes both entries, amends the
+`tokens.test.ts` case that re-declares every theme-dependent name inside each mode scope, the § Tokens
+paragraph naming the retuned variables, and the `$assets` doc comment, after CHECK and SELECT land
+their component-level dark rules. Carrier: B-FORMS-ASSETS (`builder` on Sonnet, fully specified).
+
+## D27 — The document-order reading in the service proofs
+
+The service proofs read the document's layer order structurally, as the first placement of each
+layer across the linked cascade followed by the loaded profile; the sheet sequence is fixed by
+`stage.open` (the cascade linked first) and `stage.load` (the profile appended), not observed. The
+limit is stated in the profiles proof's case comment and in the guide's sentence on the order line.
+No stage member is added for it.
