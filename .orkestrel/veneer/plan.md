@@ -66,3 +66,7 @@ commit from `unit/f8b` (`commit-tree` over the worktree's tree with parent `0783
   faults on the record; a FAIL that stands needs a fix round.
 - An Orchestrator ruling appended to a lane's returned verdict is a defect: the ruling goes to the
   round verdict file, and the lane file stays as returned.
+- A claims file states the rules' requirements and nothing beyond them: the 100-column bar on prose
+  and comments is not a house gate (oxfmt preserves prose wrap and does not reflow comments, base
+  lines exceed it, and no rule states it), so it leaves the claims files; a rewrap rides a round
+  that already edits the paragraph and never opens a round by itself.
