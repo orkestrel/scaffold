@@ -339,3 +339,20 @@ D25's citation is CSS Cascading and Inheritance Level 5 § Importing Style Sheet
 § Declaring Without Styles (`#layer-empty`), the two sections that state the `@import` placement
 rule; § Layer Ordering states no such rule and CSS Syntax Level 3 defines no `@import` section.
 Verified against `https://www.w3.org/TR/css-cascade-5/` on 2026-09-23.
+
+## D35 — The barrel loads the forms partials in the release's order, validation last
+
+`src/styles/index.scss` loads `validation` at line 55, before the forms partials that landed after
+it, and the release loads validation last in its `_forms.scss` sequence (form-text, form-control,
+form-select, form-check, form-range, floating-labels, input-group, validation). Where a forms rule
+ties a validation rule at equal specificity on one property, the load order decides, and Veneer's
+order inverts the release's: a floating `.form-control.is-invalid` resets its `padding-right` to the
+floating shorthand's value instead of keeping the validation icon's room, and a focused
+`.form-check-input.is-valid` keeps the focus tint instead of the validation border. The barrel's forms
+block takes the release's order (`form-control`, `form-select`, `form-check`, `form-range`,
+`form-floating`, `input-group`, `validation`, each present partial in that sequence), and a Node
+case reads the barrel and asserts that subsequence. Carrier: the FLOATING fix round moves the
+`validation` line after `form-floating` and adds the case with the floating `is-invalid`
+`padding-right` reading; each later landing keeps the order the case asserts. The showcase's
+construction order stays alphabetical by section class (the family's convention); the barrel, the
+guide sections, and the barrel-order case follow the release.
