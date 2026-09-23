@@ -1,7 +1,8 @@
 # land-seams.py: join the two seams a three-way apply drops when both sides append at one anchor. Run after the
 # unit's resolver, from the landing checkout's root. Rule 1, app/browser/constants.ts: a `/** Holds the <Region>
 # section's visible copy and accessible name. */` line whose preceding text ends in a markup row (`',`) instead of the
-# closing `\t}),\n])\n` of the previous specimen list receives that closing. Rule 2, tests/setup.ts: a resting
+# closing `\t}),\n])\n` of the previous specimen list receives that closing and the blank line the file keeps between
+# a list's closing and the next doc comment. Rule 2, tests/setup.ts: a resting
 # CASCADE_KEYS row whose `property: '…',` line is followed directly by the next row's `scenario:` line receives the
 # closing `\t}),\n\tObject.freeze({\n` between them, and a row whose opening `Object.freeze({` line was dropped after the
 # previous row's `}),` receives it. Rule 3, tests/app/browser/integration.test.ts: a journey case whose closing `})`
@@ -13,7 +14,7 @@ def constants():
     for m in re.finditer(r"\n/\*\* Holds the [A-Za-z ]+ section's visible copy and accessible name\. \*/\n", s):
         head=s[pos:m.start()]
         if head.endswith("',"):
-            out.append(head+"\n\t}),\n])"); joined+=1
+            out.append(head+"\n\t}),\n])\n"); joined+=1
         else:
             out.append(head)
         out.append(m.group(0)); pos=m.end()
