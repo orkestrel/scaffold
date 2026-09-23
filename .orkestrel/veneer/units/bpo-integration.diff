@@ -1,130 +1,18 @@
-diff --git a/src/styles/index.scss b/src/styles/index.scss
-index f1b8ed1..7cf86b2 100644
---- a/src/styles/index.scss
-+++ b/src/styles/index.scss
-@@ -49,9 +49,6 @@
- @use 'components/container';
- @use 'components/grid';
- @use 'components/table' as table-component;
--@use 'components/icon-link';
--@use 'components/ratio';
--@use 'components/vr';
- @use 'components/form-label';
- @use 'components/form-control';
- @use 'components/form-select';
-@@ -60,14 +57,17 @@
- @use 'components/form-floating';
- @use 'components/input-group';
- @use 'components/validation';
--@use 'components/pagination';
- @use 'components/button-group';
--@use 'components/progress' as progress-component;
--@use 'components/spinner';
--@use 'components/placeholder';
- @use 'components/card';
--@use 'components/list-group';
- @use 'components/breadcrumb';
-+@use 'components/pagination';
- @use 'components/badge';
-+@use 'components/progress' as progress-component;
-+@use 'components/list-group';
- @use 'components/close';
-+@use 'components/spinner';
-+@use 'components/placeholder';
-+@use 'components/icon-link';
-+@use 'components/ratio';
-+@use 'components/vr';
- @use 'utilities/gap';
-diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
-index 2cf4ff2..659dc89 100644
---- a/tests/conformance.test.ts
-+++ b/tests/conformance.test.ts
-@@ -349,6 +349,66 @@ describe('Bootstrap source order', () => {
- 		].flatMap(([, name]) => (name === undefined ? [] : [name]))
- 		expect(loaded.filter((name) => release.includes(name))).toEqual(release)
- 	})
-+	// The release names the passive partials with the `spinners` token and the `placeholders`
-+	// token, plural forms Veneer writes from the singular `spinner` stem and the `placeholder`
-+	// stem, so this case maps them the way the forms case maps its own renamed partials. The
-+	// passive block and the helpers both load after every forms partial, in the release's own
-+	// sequence.
-+	it('loads the passive block and the helpers in the release order, after every forms partial', () => {
-+		const stems: Readonly<Record<string, string>> = Object.freeze({
-+			spinners: 'spinner',
-+			placeholders: 'placeholder',
-+		})
-+		const passiveNames = new Set([
-+			'button-group',
-+			'card',
-+			'breadcrumb',
-+			'pagination',
-+			'badge',
-+			'progress',
-+			'list-group',
-+			'close',
-+			'spinners',
-+			'placeholders',
-+		])
-+		const bootstrapSource = readFileSync(
-+			resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'scss/bootstrap.scss'),
-+			'utf8',
-+		)
-+		const passive = [...bootstrapSource.matchAll(/@import "([\w-]+)";/gu)]
-+			.flatMap(([, name]) => (name === undefined || !passiveNames.has(name) ? [] : [name]))
-+			.map((name) => stems[name] ?? name)
-+		expect(passive).toEqual([
-+			'button-group',
-+			'card',
-+			'breadcrumb',
-+			'pagination',
-+			'badge',
-+			'progress',
-+			'list-group',
-+			'close',
-+			'spinner',
-+			'placeholder',
-+		])
-+		const helperNames = new Set(['icon-link', 'ratio', 'vr'])
-+		const helpersSource = readFileSync(
-+			resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'scss/_helpers.scss'),
-+			'utf8',
-+		)
-+		const helpers = [...helpersSource.matchAll(/@import "helpers\/([\w-]+)";/gu)].flatMap(
-+			([, name]) => (name === undefined || !helperNames.has(name) ? [] : [name]),
-+		)
-+		expect(helpers).toEqual(['icon-link', 'ratio', 'vr'])
-+		const loaded = [
-+			...readFileSync(resolve(WORKSPACE_ROOT, 'src/styles/index.scss'), 'utf8').matchAll(
-+				/^@use 'components\/([\w-]+)'/gmu,
-+			),
-+		].flatMap(([, name]) => (name === undefined ? [] : [name]))
-+		const validationAt = loaded.indexOf('validation')
-+		const afterForms = loaded.slice(validationAt + 1)
-+		const expected = [...passive, ...helpers]
-+		expect(afterForms.filter((name) => expected.includes(name))).toEqual(expected)
-+	})
- })
- 
- describe('runtime boundaries', () => {
-diff --git a/tests/src/styles/components/ratio.test.ts b/tests/src/styles/components/ratio.test.ts
-index ad4484d..61eb39b 100644
---- a/tests/src/styles/components/ratio.test.ts
-+++ b/tests/src/styles/components/ratio.test.ts
-@@ -59,6 +59,17 @@ describe('ratio classes', () => {
- 		expect(readPixels(element, 'height')).toBe(150)
+--- a/tests/src/styles/components/ratio.test.ts	2026-09-23 13:06:35.412507489 +0000
++++ b/tests/src/styles/components/ratio.test.ts	2026-09-23 13:06:35.387217849 +0000
+@@ -60,10 +60,11 @@
  	})
  
-+	it('reads a nested card as absolute, the barrel resolving the tie in the release order', () => {
+ 	it('reads a nested card as absolute, the barrel resolving the tie in the release order', () => {
+-		// `.ratio > *` and `.card` both declare `position` at specificity `(0,1,0)`, so the barrel
+-		// that loads later wins the tie. The release loads its helpers, `_ratio.scss` among them,
+-		// after `card`, so a card nested in a ratio box reads `position: absolute` from the ratio
+-		// rule rather than `relative` from its own.
 +		// The `.ratio > *` selector and the `.card` selector both declare the `position` property at
 +		// specificity `(0,1,0)`, so the partial that loads later wins the tie. The release loads its
 +		// helpers, the `_ratio.scss` partial among them, after the `card` partial, so a card nested
 +		// in a ratio box reads the `absolute` value from the ratio rule rather than the `relative`
 +		// value from its own.
-+		const host = scene.mount('<div class="ratio ratio-1x1"><div class="card"></div></div>')
-+		const card = requireValue(host.querySelector('.card'), 'No nested card')
-+		expect(readStyle(card, 'position')).toBe('absolute')
-+	})
-+
- 	it('keeps the aspect through every width the box is given', () => {
- 		const host = scene.mount('<div><div class="ratio ratio-16x9"></div></div>')
- 		const element = requireValue(host.querySelector('.ratio'), 'No ratio specimen')
+ 		const host = scene.mount('<div class="ratio ratio-1x1"><div class="card"></div></div>')
+ 		const card = requireValue(host.querySelector('.card'), 'No nested card')
+ 		expect(readStyle(card, 'position')).toBe('absolute')

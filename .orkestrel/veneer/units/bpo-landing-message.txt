@@ -1,0 +1,12 @@
+Load the passive block and the helpers in the release order
+
+B-PASSIVE-ORDER (`builder` on Sonnet) moves the barrel's passive partials into Bootstrap's
+order after the forms partials (`button-group`, `card`, `breadcrumb`, `pagination`, `badge`,
+`progress`, `list-group`, `close`, `spinner`, `placeholder`) and the helper partials
+(`icon-link`, `ratio`, `vr`) after them, and adds the conformance case that derives that order
+from the release's barrel and helpers file with the pre-reorder barrel as its negative control.
+No resolved reading in the thirteen passive and helper proofs moved. The guide's sections and
+`#### <key>` tables follow in a builder unit on the landed guide.
+
+Audited by `analyst` on Astra and `checker` on Sonnet. Records: `.orkestrel/veneer/units/bpo-*`
+and `b-passive-order-*` in the scaffold repository.
