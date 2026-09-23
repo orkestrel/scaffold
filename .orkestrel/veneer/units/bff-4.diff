@@ -1,0 +1,297 @@
+--- round3/guides/veneer.md
++++ round4/guides/veneer.md
+@@ -1069,8 +1069,9 @@
+   beside the standard properties; the partial writes the standard properties alone, and the build
+   adds back only the `-webkit-print-color-adjust` alias its targets need.
+ 
+-Under forced colors the focused box also draws an outline in the system highlight through the
+-`forced-ring` mixin, because forced colors do not paint the shadow ring. § Additions records it.
++Under forced colors the focused box's rule also writes an outline in the system highlight color
++through the `forced-ring` mixin, because forced colors paint no shadow ring. § Additions records
++it.
+ 
+ The resting fill reads `--bs-body-bg`, and the border reads `--bs-border-width` and
+ `--bs-border-color`, each of which this package already declares, so each matches the release's
+@@ -1141,8 +1142,9 @@
+   longest class each selector carries, so their tokenized ring width is recorded under this key's
+   table rather than under the validation keys'.
+ 
+-Under forced colors the focused select also draws an outline in the system highlight through the
+-`forced-ring` mixin, because forced colors do not paint the shadow ring. § Additions records it.
++Under forced colors the focused select's rule also writes an outline in the system highlight color
++through the `forced-ring` mixin, because forced colors paint no shadow ring. § Additions records
++it.
+ 
+ The fill, the text, the border, the corners, the disabled surface, and the Gecko reset read the
+ `--bs-body-bg`, `--bs-body-color`, `--bs-border-width`, and `--bs-border-color` variables, the
+@@ -1211,8 +1213,9 @@
+   `-webkit-appearance` and `-moz-appearance` properties beside the standard property; the build's
+   targets emit the standard property alone.
+ 
+-Under forced colors the focused control also draws an outline in the system highlight through the
+-`forced-ring` mixin, because forced colors do not paint the shadow ring. § Additions records it.
++Under forced colors the focused control's rule also writes an outline in the system highlight
++color through the `forced-ring` mixin, because forced colors paint no shadow ring. § Additions
++records it.
+ The validation partial's focus rules write a border and a shadow and no outline, so a validated
+ control keeps that outline. The plaintext form's focus rule writes the release's `outline: 0`
+ declaration and no ring. The plaintext form therefore draws no focus indicator in any mode, so
+@@ -1248,8 +1251,9 @@
+ 
+ The focus ring is read after keyboard traversal and its contrast ratio is held to the calibrated
+ ratio the Button sweep pins in each mode. The outline is read under staged forced colors on the text
+-control and on a validated one, by its style and width, because forced colors replace every color
+-a rule writes. The capture journey writes a resting element frame of every specimen and a page
++control and on a validated one, by its style and width, because a color reading cannot fail under
++forced colors: the installed color reader resolves each side through a probe whose color forced
++colors also replace. The capture journey writes a resting element frame of every specimen and a page
+ frame of the text control under keyboard focus.
+ 
+ ### Form range classes
+@@ -1290,8 +1294,8 @@
+   `-webkit-appearance`, `-moz-appearance`, `-webkit-transition`, and `-moz-transition` beside the
+   standard properties; the build's targets emit the standard property alone.
+ 
+-Under forced colors the focused control draws an outline in the system highlight on the host
+-through the `forced-ring` mixin, because forced colors do not paint the thumb's shadow ring.
++Under forced colors the focused control's rule writes an outline in the system highlight color on
++the host through the `forced-ring` mixin, because forced colors paint no thumb shadow ring.
+ § Additions records it.
+ 
+ The track fill reads `--bs-secondary-bg` and the disabled thumb reads `--bs-secondary-color`,
+@@ -2068,10 +2072,10 @@
+ color, a width, and an optional shadow expression. Its element caller uses the calibrated primary
+ ring; its component caller reads `--bs-btn-focus-box-shadow`. In forced colors, the mixin replaces
+ the shadow with an outline in the system highlight color, which it draws through the `forced-ring`
+-mixin. The `.form-control:focus`, `.form-select:focus`, `.form-check-input:focus`, and
+-`.form-range:focus` rules include the `forced-ring` mixin beside the shadow ring they keep from the
+-release, because forced colors paint no shadow and those controls would otherwise show no focus
+-indicator there.
++mixin. The `.form-control:focus`, `.form-select:focus`, and `.form-check-input:focus` rules include
++the `forced-ring` mixin beside the shadow ring they keep from the release, and the
++`.form-range:focus` rule includes it on the host, because the range's ring sits on its thumb.
++Forced colors paint no shadow, so those controls would otherwise show no focus indicator there.
+ 
+ The following table names the compatible properties declared on the base class.
+ 
+--- round3/tests/setupStyles.test.ts
++++ round4/tests/setupStyles.test.ts
+@@ -15,7 +15,6 @@
+ 	compileExpandedCascade,
+ 	filterComparableBlocks,
+ 	LEDGER_GUIDE,
+-	normalizeMediaCondition,
+ 	readBootstrapCascade,
+ 	readCascadeBlocks,
+ 	readBuiltCascade,
+@@ -1870,38 +1869,6 @@
+ 			].sort(),
+ 		).toEqual([...keyed, '.form-range:focus @media (prefers-reduced-motion: reduce)'].sort())
+ 	})
+-	it('emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline', () => {
+-		// A caller's content shares the mixin's media block: the `forced-ring` mixin opens one
+-		// `forced-colors` block and writes the content after the outline inside it, which is how the
+-		// shadow reset the `focus-ring` mixin passes reaches the button. Content emitted in a block of
+-		// its own ships the same bytes, because the build merges adjacent identical media blocks, so
+-		// the count is read in the expanded compile, where the blocks stay apart.
+-		const forced = readCascadeBlocks(compileExpandedCascade()).filter(
+-			(block) => normalizeMediaCondition(block.condition) === '(forced-colors: active)',
+-		)
+-		const grouped = Map.groupBy(forced, renderRuleKey)
+-		expect([...grouped.keys()]).toEqual(
+-			expect.arrayContaining([
+-				'button:focus-visible @media (forced-colors: active)',
+-				'.btn:focus-visible @media (forced-colors: active)',
+-				'.form-control:focus @media (forced-colors: active)',
+-				'.form-select:focus @media (forced-colors: active)',
+-				'.form-check-input:focus @media (forced-colors: active)',
+-				'.form-range:focus @media (forced-colors: active)',
+-			]),
+-		)
+-		expect([...grouped].filter(([, blocks]) => blocks.length > 1).map(([key]) => key)).toEqual([])
+-		for (const key of [
+-			'button:focus-visible @media (forced-colors: active)',
+-			'.btn:focus-visible @media (forced-colors: active)',
+-		]) {
+-			const [block] = requireValue(grouped.get(key), `The expanded compile writes no ${key} block`)
+-			expect([...requireValue(block, `No ${key} block`).declarations.keys()]).toEqual([
+-				'outline',
+-				'box-shadow',
+-			])
+-		}
+-	})
+ 	it('carries the classed pair, the disabled control, and the bare control in the range markup', () => {
+ 		// The markup is the proof's own fixture, so the classed pair and the bare control are held
+ 		// against the class the partial paints and the state the disabled thumb rule needs a host
+--- round3/tests/conformance.test.ts
++++ round4/tests/conformance.test.ts
+@@ -1,3 +1,4 @@
++import { requireValue } from '@orkestrel/test'
+ import { readInventory, resolveContained } from '@orkestrel/test/server'
+ import { parseJSON } from '@orkestrel/contract'
+ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+@@ -23,6 +24,7 @@
+ 	compileExpandedCascade,
+ 	describeAddition,
+ 	describeDeparture,
++	normalizeMediaCondition,
+ 	scanCompatibilityPresence,
+ 	scanLedgerDrift,
+ 	scanShippedDeferrals,
+@@ -30,6 +32,8 @@
+ 	readAdditions,
+ 	readManifestMember,
+ 	readBuiltCascade,
++	readCascadeBlocks,
++	renderRuleKey,
+ 	SheetReader,
+ 	readCompatibility,
+ 	readDeferrals,
+@@ -275,6 +279,38 @@
+ 		expect(compared).toBeGreaterThan(0)
+ 		expect(mismatches).toEqual([])
+ 	})
++	it('emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline', () => {
++		// A caller's content shares the mixin's media block: the `forced-ring` mixin opens one
++		// `forced-colors` block and writes the content after the outline inside it, which is how the
++		// shadow reset the `focus-ring` mixin passes reaches the button. Content emitted in a block of
++		// its own ships the same bytes, because the build merges adjacent identical media blocks, so
++		// the count is read in the expanded compile, where the blocks stay apart.
++		const forced = readCascadeBlocks(compileExpandedCascade()).filter(
++			(block) => normalizeMediaCondition(block.condition) === '(forced-colors: active)',
++		)
++		const grouped = Map.groupBy(forced, renderRuleKey)
++		expect([...grouped.keys()]).toEqual(
++			expect.arrayContaining([
++				'button:focus-visible @media (forced-colors: active)',
++				'.btn:focus-visible @media (forced-colors: active)',
++				'.form-control:focus @media (forced-colors: active)',
++				'.form-select:focus @media (forced-colors: active)',
++				'.form-check-input:focus @media (forced-colors: active)',
++				'.form-range:focus @media (forced-colors: active)',
++			]),
++		)
++		expect([...grouped].filter(([, blocks]) => blocks.length > 1).map(([key]) => key)).toEqual([])
++		for (const key of [
++			'button:focus-visible @media (forced-colors: active)',
++			'.btn:focus-visible @media (forced-colors: active)',
++		]) {
++			const [block] = requireValue(grouped.get(key), `The expanded compile writes no ${key} block`)
++			expect([...requireValue(block, `No ${key} block`).declarations.keys()]).toEqual([
++				'outline',
++				'box-shadow',
++			])
++		}
++	})
+ })
+ 
+ describe('Bootstrap source order', () => {
+--- round3/tests/src/styles/components/form-check.test.ts
++++ round4/tests/src/styles/components/form-check.test.ts
+@@ -348,8 +348,9 @@
+ 		expect(await traverseAccessible('Box')).toBe(box)
+ 		expect(box.matches(':focus-visible')).toBe(true)
+ 		expect(readStyle(box, 'outline-style')).toBe('none')
+-		// Forced colors replace every color a rule writes, so the outline is read by its style and
+-		// its width rather than by its paint.
++		// A color reading cannot fail under forced colors, because the installed color reader
++		// resolves each side through a probe whose color forced colors also replace, so the outline
++		// is read by its style and its width rather than by its paint.
+ 		await stageMedia({ forced: true })
+ 		expect(readStyle(box, 'outline-style')).toBe('solid')
+ 		expect(readPixels(box, 'outline-width')).toBe(readPixels(gauge, 'width'))
+--- round3/tests/src/styles/components/form-control.test.ts
++++ round4/tests/src/styles/components/form-control.test.ts
+@@ -327,8 +327,9 @@
+ 		expect(control.matches(':focus-visible')).toBe(true)
+ 		// Out of forced colors the ring is the shadow, and the release's `outline: 0` holds.
+ 		expect(readStyle(control, 'outline-style')).toBe('none')
+-		// Forced colors replace every color a rule writes with a system color, so the outline is read
+-		// by its style and its width rather than by its paint.
++		// A color reading cannot fail under forced colors, because the installed color reader
++		// resolves each side through a probe whose color forced colors also replace, so the outline
++		// is read by its style and its width rather than by its paint.
+ 		await stageMedia({ forced: true })
+ 		expect(readStyle(control, 'outline-style')).toBe('solid')
+ 		expect(readPixels(control, 'outline-width')).toBe(readPixels(gauge, 'width'))
+--- round3/tests/src/styles/components/form-range.test.ts
++++ round4/tests/src/styles/components/form-range.test.ts
+@@ -113,8 +113,9 @@
+ 		expect(element.matches(':focus-visible')).toBe(true)
+ 		expect(readStyle(element, 'outline-style')).toBe('none')
+ 		// The outline is worn by the host rather than the thumb, because the thumb has no resolved
+-		// reading on this host. Forced colors replace every color a rule writes, so the outline is
+-		// read by its style and its width rather than by its paint.
++		// reading on this host. A color reading cannot fail under forced colors, because the
++		// installed color reader resolves each side through a probe whose color forced colors also
++		// replace, so the outline is read by its style and its width rather than by its paint.
+ 		await stageMedia({ forced: true })
+ 		expect(readStyle(element, 'outline-style')).toBe('solid')
+ 		expect(readPixels(element, 'outline-width')).toBe(readPixels(gauge, 'width'))
+--- round3/tests/src/styles/components/form-select.test.ts
++++ round4/tests/src/styles/components/form-select.test.ts
+@@ -379,8 +379,9 @@
+ 		expect(await traverseAccessible('Plain choice')).toBe(plain)
+ 		expect(plain.matches(':focus-visible')).toBe(true)
+ 		expect(readStyle(plain, 'outline-style')).toBe('none')
+-		// Forced colors replace every color a rule writes, so the outline is read by its style and
+-		// its width rather than by its paint.
++		// A color reading cannot fail under forced colors, because the installed color reader
++		// resolves each side through a probe whose color forced colors also replace, so the outline
++		// is read by its style and its width rather than by its paint.
+ 		await stageMedia({ forced: true })
+ 		expect(readStyle(plain, 'outline-style')).toBe('solid')
+ 		expect(readPixels(plain, 'outline-width')).toBe(readPixels(gauge, 'width'))
+--- round3/tests/src/styles/components/validation.test.ts
++++ round4/tests/src/styles/components/validation.test.ts
+@@ -411,24 +411,36 @@
+ 					'<input type="color" class="form-control form-control-color" aria-label="Scoped stated shade">' +
+ 					'</form>',
+ 			)
+-			const [first, second, third, fourth] =
+-				container.querySelectorAll<HTMLInputElement>('[type="color"]')
+-			const settled = requireValue(third, 'No scoped resting swatch')
+-			const scoped = requireValue(fourth, 'No scoped stated swatch')
++			const pair = {
++				resting: requireValue(
++					container.querySelector<HTMLInputElement>('[aria-label="Resting shade"]'),
++					'No resting swatch',
++				),
++				stated: requireValue(
++					container.querySelector<HTMLInputElement>('[aria-label="Stated shade"]'),
++					'No stated swatch',
++				),
++			}
++			const scope = {
++				resting: requireValue(
++					container.querySelector<HTMLInputElement>('[aria-label="Scoped resting shade"]'),
++					'No scoped resting swatch',
++				),
++				stated: requireValue(
++					container.querySelector<HTMLInputElement>('[aria-label="Scoped stated shade"]'),
++					'No scoped stated swatch',
++				),
++			}
+ 			// A color input always holds a value, so it fails only through a custom message. A disabled
+ 			// control is barred from validation and matches neither state, so it keeps the resting
+ 			// width inside the scope.
+-			scoped.setCustomValidity(state === 'invalid' ? 'Pick a shade' : '')
+-			expect(settled.matches(':valid, :invalid')).toBe(false)
+-			expect(scoped.matches(`:${state}`)).toBe(true)
++			scope.stated.setCustomValidity(state === 'invalid' ? 'Pick a shade' : '')
++			expect(scope.resting.matches(':valid, :invalid')).toBe(false)
++			expect(scope.stated.matches(`:${state}`)).toBe(true)
+ 			const pairs = [
+-				{
+-					form: 'class',
+-					resting: requireValue(first, 'No resting swatch'),
+-					stated: requireValue(second, 'No stated swatch'),
+-				},
+-				{ form: 'scope', resting: settled, stated: scoped },
+-			].map((pair) => ({ ...pair, base: readPixels(pair.resting, 'width') }))
++				{ form: 'class', ...pair },
++				{ form: 'scope', ...scope },
++			].map((entry) => ({ ...entry, base: readPixels(entry.resting, 'width') }))
+ 			// Each reading is soft and names its form, so a width written for one form alone reddens that
+ 			// form's readings while the other form's readings still run.
+ 			// The room is the release's literal `1.5em + 0.75rem`, which resolves to 36px against the
