@@ -64,10 +64,13 @@ prune commit's message is the promotion record for what that commit removed.
   chain log as `units/<unit>-verify-stopped.log.txt` beside the reason.
 - `units/x-retention-carry-brief.md` and `units/x-retention-carry-distillate.md` are the carry
   register X-RETENTION reads.
-- The Codex bench is dark on quota from 2026-09-23 13:34 UTC (ROADMAP § Standing conditions); every
-  objective lane runs on Opus 5.5 as `reviewer` told it holds that lane, with a
-  `<unit>-audit-objective-brief.md` beside the `analyst` brief it substitutes for, until the bench
-  round-trips again.
+- The Codex bench was dark on quota from 2026-09-23 13:34 UTC to 15:18 UTC, when the user reset
+  the limits and a bounded round trip came back (`codex exec --model gpt-6-astra`, thread
+  `01a0ced9-1af4-7260-b880-adf089965967`, the answer `ready` in 15 s). Every objective lane
+  dispatched in that window ran on Opus 5.5 as `reviewer` told it holds that lane, with a
+  `<unit>-audit-objective-brief.md` beside the `analyst` brief it substituted for (the ALERT
+  round, dispatched at 15:16, is the last of them); from 15:18 the objective lane is `analyst` on
+  Astra again, re-probed at each dispatch.
 
 ## The engine session (D43)
 
