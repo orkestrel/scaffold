@@ -93,8 +93,7 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Veneer `origin/main` `a658879` (this session's disclosure landing over the engine session's `376d84a`), scaffold `origin/main` `56841cb`, read 2026-09-23 at
-16:25 UTC. The engine session's records sit under `engine/` (its plan, `engine/decisions.md` with E1
+**Marker.** Veneer `origin/main` `97ac9ab` (the engine session's J-SEED landing over this session's disclosure landing `a658879`: `src/browser/ColorMode.ts`, its proof, and one guide sentence), scaffold `origin/main` `c2bad4a`, read 2026-09-23 at 16:58 UTC. The engine session's E5 excludes from its landing gate the rows red on its Windows host with Chromium 153 (the close, form-select, and validation style proofs and the preflight service proof, each green in this container's Chromium 141); those proofs are this session's, so CLOSE-OUT carries a reading of them against the engine session's `engine/units/host-chromium-153-reading.md` before the family closes. The ALERT landing merges `97ac9ab` before its push. The engine session's records sit under `engine/` (its plan, `engine/decisions.md` with E1
 to E4, and its terrain record); its landing on Veneer `main` since the previous marker is `376d84a`
 (the removal of `prompt.txt`, E4). Under E4 it works on `main` in both repositories, so every landing
 here merges `origin/main` into the session branch before the push and `main` is fast-forwarded from
