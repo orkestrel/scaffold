@@ -1,0 +1,2 @@
+ M app/browser/constants.ts
+ M tests/app/browser/sections/TableSection.test.ts
