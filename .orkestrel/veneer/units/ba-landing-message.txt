@@ -1,0 +1,32 @@
+Land the badge, breadcrumb, and close classes as a Bootstrap 5.3.8 baseline
+
+Unit B-PASSIVE-A on Opus over three rounds, audited by analyst on Astra,
+reviewer on Opus, and checker on Sonnet, the fix rounds by analyst on
+Astra.
+
+- src/styles/components/_badge.scss, _breadcrumb.scss, and _close.scss
+  emit every recorded badge, breadcrumb, and close selector once from one
+  declaration each, the badge's padding resolved against its own font
+  size, the close control's hover opacity read from the variable a
+  consumer retunes through a scope, the inverted control and the refused
+  states as the release writes them.
+- The proofs drive the hover through the installed pointer driver, read
+  the badge's geometry at a retuned badge size against a fixed host, and
+  build their fixtures through mountBadge, mountTrail, and mountClose from
+  the browser setup, each proof going red under its named mutation.
+- The showcase gains the Badge, Breadcrumb, and Close regions, a badge on
+  a primary button and an inverted control among them, with the resting
+  and driven scenarios registered; the journey lifts the live close
+  control to photograph its hover and re-reads the driven state after
+  each shot; the guide gains Badge classes, Breadcrumb classes, and Close
+  classes, the Files, compatibility, and Tests rows, and the departure
+  rows under Tokens, the btn-close rows regrouped under their own key
+  (D22).
+- Integration edits at landing: the Button specimen query in
+  tests/app/browser/Showcase.test.ts and the variant census in
+  ButtonSection.test.ts exclude the badge's button host; the three guide
+  sections are reflowed at the file's width; the _badge.scss header
+  comment distinguishes the font-size, padding, and weight references.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
