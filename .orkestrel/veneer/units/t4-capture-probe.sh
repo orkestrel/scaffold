@@ -1,7 +1,7 @@
 #!/bin/bash
 # t4-capture-probe.sh VARIANT...: regenerate the named Veneer journey variants with the packed harness fix, in a probe
 # worktree that never touches /home/user/veneer. The worktree sits at the Veneer session tip with the frame-band edit
-# (upl-landing-frame-band.py) applied; its node_modules is a hard-linked copy of the checkout's with the Vite caches and
+# (upl-landing-frame-band-2.py, the transparent bottom border) applied; its node_modules is a hard-linked copy of the checkout's with the Vite caches and
 # the `@orkestrel/test` directory removed and the packed tarball ($TARBALL, default the round-2 pack) extracted in its
 # place, so no hard-linked file is written. The source is built once. Each variant logs to
 # t4-capture-probe-<variant>.log.txt; the census's first refusal per variant and a floor table over every frame the
@@ -12,7 +12,7 @@ TARBALL=${TARBALL:-$S/t4/orkestrel-test-0.0.20.tgz}
 if [ ! -d $W ]; then
   TIP=$(git -C /home/user/veneer rev-parse --short HEAD)
   git -C /home/user/veneer worktree add -q --detach $W $TIP || exit 1
-  python3 $U/upl-landing-frame-band.py $W || exit 2
+  python3 $U/upl-landing-frame-band-2.py $W || exit 2
   cp -al /home/user/veneer/node_modules $W/node_modules && rm -rf $W/node_modules/.vite $W/node_modules/.vitest $W/node_modules/.cache
   rm -rf $W/node_modules/@orkestrel/test && mkdir -p $S/t4/x && rm -rf $S/t4/x/* && tar -xzf $TARBALL -C $S/t4/x && mv $S/t4/x/package $W/node_modules/@orkestrel/test || exit 3
   echo "=== worktree at $TIP with the band; harness $(grep -c 'clipsOverflow' $W/node_modules/@orkestrel/test/dist/src/browser/index.js) clipsOverflow sites from $(basename $TARBALL)"

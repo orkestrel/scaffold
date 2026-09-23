@@ -780,6 +780,9 @@ nothing.
 - Kill by process id, never by pattern. `pkill -f` matches the relaunch that is already starting, so
   the pattern that cleans up the old run kills the new one and the cleanup reads as a launch
   failure.
+- Build a kill list by walking down from the recorded process id with `ps --ppid <pid> -o pid=`,
+  repeated for each child, print it, and kill only after reading it. Refuse a list that holds PID 1,
+  the shell that launched the harness, or an id outside that descent.
 - A killed `codex exec` is dead only when its process tree is dead: walk the children with
   `ps --ppid` and confirm the `codex-code-mode-host` child is gone. Before dispatching a substitute
   writer, check the owned files' modification times against the baseline — a live orphan is still
