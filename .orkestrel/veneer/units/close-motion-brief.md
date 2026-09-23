@@ -3,7 +3,7 @@
 ## Role and engine
 
 `builder` on Sonnet (native Claude subagent), sole writer in `/home/user/veneer-cm` (a worktree
-detached at `BFL_LANDED_SHA`, the session branch tip after B-FORMS-LABEL-CASCADE landed and
+detached at `88684bc`, the session branch tip after B-FORMS-LABEL-CASCADE landed and
 folded, with `node_modules` installed and `dist/` built by the Orchestrator). Perform the
 assignment directly and spawn nothing. Use absolute paths under `/home/user/veneer-cm` for every
 command and file, and run every npm and npx command from `/home/user/veneer-cm`. Run
@@ -52,7 +52,7 @@ installed export does is a defect.
 
 **Control identifiers.** R3 and R9 are this brief's labels; name a test for what it proves.
 
-**Standing conditions.** The tree is clean at `BFL_LANDED_SHA`. `tmp/` is gitignored.
+**Standing conditions.** The tree is clean at `88684bc`. `tmp/` is gitignored.
 
 ## Unknowns
 
@@ -120,4 +120,4 @@ and the import order.
 
 ## Review evidence
 
-The diff against `BFL_LANDED_SHA` and the status, this report, the greps, and the mutation run.
+The diff against `88684bc` and the status, this report, the greps, and the mutation run.

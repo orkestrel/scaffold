@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5 (native Claude subagent), sole writer in `/home/user/veneer-cg` (a worktree
-detached at `BFL_LANDED_SHA`, the session branch tip after B-FORMS-LABEL-CASCADE landed and
+detached at `88684bc`, the session branch tip after B-FORMS-LABEL-CASCADE landed and
 folded, with `node_modules` installed and `dist/` built by the Orchestrator). Perform the
 assignment directly and spawn nothing. Use absolute paths under `/home/user/veneer-cg` for every
 command and file, and run every npm and npx command from `/home/user/veneer-cg`. Run
@@ -67,7 +67,7 @@ the parity; `npm run test:conformance` reads the built `dist/`; the scoped style
 **Control identifiers.** R1, R4, R5, R6, R7, R10, D17, D35 are this brief's labels; name a test for
 what it proves.
 
-**Standing conditions.** The tree is clean at `BFL_LANDED_SHA`. The `#### <key>` ledger tables and
+**Standing conditions.** The tree is clean at `88684bc`. The `#### <key>` ledger tables and
 the § Departures and § Additions rows are machine-read by the conformance equalities: change no
 cell of them (the sweep rules a cell as data). The executable fences and the `Summary` cells are
 read by the parity proof: change no fence and no summary paragraph's meaning.
@@ -177,5 +177,5 @@ Orchestrator takes them in the landing chain.
 
 ## Review evidence
 
-The diff against `BFL_LANDED_SHA` and the status, this report, the sweep ledger, and the
+The diff against `88684bc` and the status, this report, the sweep ledger, and the
 failing-then-green runs of the two new cases.
