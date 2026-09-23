@@ -1,0 +1,13 @@
+Reconcile the J-TYPES round-6 audit, run rounds 7 and 8, and open audit round 8
+
+Rounds 6 and 7 closed the round-5 findings (derived composites, token language, the renames,
+the backdrop pass-through, the scroll lock's class map) and audited FAIL 1, 2, 6, 7: the
+scrollspy parent sentence read the host for the target, the carousel image selector embedded
+the entry token, the popover description broke the one-term rule, the sanitizer's data
+attribute default missed the element-local list (probe 8 measured it on Chromium 153), and the
+offcanvas resize row promised a registry walk the registry cannot supply, ruled per instance.
+Round 8 carries every ruling and seven bounds; its audit runs on Astra, Opus 5.5, and the
+checker. Every brief, report, diff, verdict, gate log, and probe is retained. J-ENGINE
+campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
