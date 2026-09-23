@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5 (native Claude subagent), sole writer in `/home/user/veneer-bff` (a worktree
-detached at `BFT_LANDED_SHA`, the session branch tip after B-FORMS-CLOSE-TABLES landed, with
+detached at `ccb10a7`, the session branch tip after B-FORMS-CLOSE-TABLES landed (`d06945c`, fold 35, and the guide rewrap), with
 `node_modules` installed by the Orchestrator). Perform the assignment directly and spawn nothing.
 Use absolute paths under `/home/user/veneer-bff` for every command and file, and run every npm and
 npx command from `/home/user/veneer-bff`. Do not commit, push, install, or run `git checkout`,
@@ -88,7 +88,7 @@ density 1 and 2 before writing their assertions. Under forced colours a colour r
 **Control identifiers.** R2, R3, R3a, R3b, R8, R11, R12, D37 are this brief's labels. Name a test
 for what it proves, never for the label that specified it.
 
-**Standing conditions.** The tree is clean at `BFT_LANDED_SHA`. `findRule('.form-range:focus')` is
+**Standing conditions.** The tree is clean at `ccb10a7`. `findRule('.form-range:focus')` is
 a substring lookup and can return the forced twin; read the resting rule by its exact selector and
 condition. `npm run test:guides` and `npm run test:conformance` read the guide's tables, so the
 ledger cells and Additions rows must land in the same edit as the cascade change.
