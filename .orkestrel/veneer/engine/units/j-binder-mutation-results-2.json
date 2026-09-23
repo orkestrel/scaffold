@@ -1,0 +1,54 @@
+[
+ {
+  "name": "settleAnimations: resolves at once",
+  "tally": "2 failed | 19 passed (21)",
+  "failed": [
+   "settleAnimations > resolves after a running transition finishes",
+   "settleAnimations > re-reads the list and waits for a transition that starts when the first one finishes"
+  ]
+ },
+ {
+  "name": "settleAnimations: no re-read",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "settleAnimations > re-reads the list and waits for a transition that starts when the first one finishes"
+  ]
+ },
+ {
+  "name": "settleAnimations: infinite and paused kept",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "settleAnimations > leaves infinite and paused animations out"
+  ]
+ },
+ {
+  "name": "settleAnimations: signal ignored",
+  "tally": "6 passed (21)",
+  "failed": []
+ },
+ {
+  "name": "reflow: no layout read",
+  "tally": "5 failed | 16 passed (21)",
+  "failed": [
+   "settleAnimations > resolves after a running transition finishes",
+   "settleAnimations > re-reads the list and waits for a transition that starts when the first one finishes",
+   "settleAnimations > treats a cancelled transition as settled",
+   "settleAnimations > treats a transition whose element is removed midway as settled",
+   "settleAnimations > resolves at once when the signal aborts, leaving the transition running"
+  ]
+ },
+ {
+  "name": "resolveOptions: falsy values dropped",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "resolveOptions > merges the defaults, the config attribute, the declared attributes, and the constructor object in that order"
+  ]
+ },
+ {
+  "name": "resolveOptions: failed coercion skipped",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "resolveOptions > throws the entity code for a declared attribute or config key that fails coercion"
+  ]
+ }
+]

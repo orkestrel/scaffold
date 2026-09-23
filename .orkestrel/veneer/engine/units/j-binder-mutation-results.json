@@ -1,0 +1,247 @@
+[
+ {
+  "name": "delegate: observer removed",
+  "tally": "3 failed | 13 passed (16)",
+  "failed": [
+   "Delegate > restores removed hosts at the observer delivery after their removal and releases their ownership",
+   "Delegate > releases a connected host moved outside the root at the observer delivery after the move",
+   "Delegate > acquires a released host again with a fresh engine after reinsertion"
+  ]
+ },
+ {
+  "name": "delegate: release every owned engine at delivery, contained or not",
+  "tally": "2 failed | 14 passed (16)",
+  "failed": [
+   "Delegate > restores removed hosts at the observer delivery after their removal and releases their ownership",
+   "Delegate > keeps the engine and the state of a host removed and reinserted in one task"
+  ]
+ },
+ {
+  "name": "delegate: no per-click claim across delegates",
+  "tally": "1 failed | 15 passed (16)",
+  "failed": [
+   "Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it"
+  ]
+ },
+ {
+  "name": "delegate: never drives a found engine",
+  "tally": "9 failed | 7 passed (16)",
+  "failed": [
+   "Delegate > toggles a child click host, prevents its default, and reuses its engine",
+   "Delegate > reuses a fragment-rooted engine across clicks",
+   "Delegate > drives the engine a consumer constructed and leaves it to that consumer on destruction",
+   "Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it",
+   "Delegate > acquires and toggles a native disabled host on a dispatched click",
+   "Delegate > keeps toggling a host through its engine after the disabled class arrives",
+   "Delegate > acquires and toggles a host already carrying the disabled class, and restores it",
+   "Delegate > acquires and toggles an aria-disabled anchor, and leaves the attribute alone",
+   "Delegate > keeps the engine and the state of a host removed and reinserted in one task"
+  ]
+ },
+ {
+  "name": "emitEvent: no mirrored properties",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "emitEvent > mirrors each detail field as an own property a document listener reads"
+  ]
+ },
+ {
+  "name": "emitEvent: always non-cancelable",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "emitEvent > dispatches a cancelable event and returns false when a listener prevents it"
+  ]
+ },
+ {
+  "name": "bindEventMap: no guard",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "bindEventMap > binds the hooks of a non-Button map to their wire names and releases them on abort"
+  ]
+ },
+ {
+  "name": "settleAnimations: resolves at once",
+  "error": "pattern not found"
+ },
+ {
+  "name": "settleAnimations: a rejected finished rejects the wait",
+  "tally": "2 failed | 19 passed (21)",
+  "failed": [
+   "settleAnimations > treats a cancelled transition as settled",
+   "settleAnimations > treats a transition whose element is removed midway as settled"
+  ]
+ },
+ {
+  "name": "settleAnimations: no re-read",
+  "error": "pattern not found"
+ },
+ {
+  "name": "settleAnimations: infinite and paused kept",
+  "error": "pattern not found"
+ },
+ {
+  "name": "settleAnimations: signal ignored",
+  "tally": "6 passed (21)",
+  "failed": []
+ },
+ {
+  "name": "reflow: no layout read",
+  "error": "pattern not found"
+ },
+ {
+  "name": "readTargets: no CSS.escape",
+  "tally": "2 failed | 19 passed (21)",
+  "failed": [
+   "readTarget > resolves the data-bs-target selector, escaping an id that carries a special character",
+   "readTarget > falls back to the href fragment when the target is absent or a bare hash"
+  ]
+ },
+ {
+  "name": "readTargets: href fragment of a full URL dropped",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "readTarget > falls back to the href fragment when the target is absent or a bare hash"
+  ]
+ },
+ {
+  "name": "readTargets: non-HTML matches kept",
+  "tally": "2 failed | 19 passed (21)",
+  "failed": [
+   "readTarget > returns undefined when no selector resolves to an HTML element",
+   "readTargets > returns every HTML element a selector list names, in document order"
+  ]
+ },
+ {
+  "name": "generateId: fixed suffix",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "generateId > appends a random suffix to the prefix and returns a different id on each call"
+  ]
+ },
+ {
+  "name": "resolveOptions: config overrides attributes",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "resolveOptions > merges the defaults, the config attribute, the declared attributes, and the constructor object in that order"
+  ]
+ },
+ {
+  "name": "resolveOptions: falsy values dropped",
+  "error": "pattern not found"
+ },
+ {
+  "name": "resolveOptions: constructor object applied before attributes",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "resolveOptions > merges the defaults, the config attribute, the declared attributes, and the constructor object in that order"
+  ]
+ },
+ {
+  "name": "resolveOptions: failed coercion skipped",
+  "error": "pattern not found"
+ },
+ {
+  "name": "resolveOptions: undeclared keys admitted",
+  "tally": "1 failed | 20 passed (21)",
+  "failed": [
+   "resolveOptions > merges the defaults, the config attribute, the declared attributes, and the constructor object in that order"
+  ]
+ },
+ {
+  "name": "registry: release ignores the engine",
+  "tally": "1 failed | 3 passed (4)",
+  "failed": [
+   "Registry > releases only for the engine that holds the claim, then admits a new claim"
+  ]
+ },
+ {
+  "name": "registry: second claim replaces",
+  "tally": "1 failed | 3 passed (4)",
+  "failed": [
+   "Registry > refuses a second claim with the configured code and keeps the first owner"
+  ]
+ },
+ {
+  "name": "snapshot: class attribute kept",
+  "tally": "1 failed | 6 passed (7)",
+  "failed": [
+   "Snapshot > removes the class attribute it found absent when restoring leaves the list empty"
+  ]
+ },
+ {
+  "name": "snapshot: later save overwrites",
+  "tally": "1 failed | 6 passed (7)",
+  "failed": [
+   "Snapshot > keeps the first recording of a target saved twice"
+  ]
+ },
+ {
+  "name": "snapshot: priority dropped",
+  "tally": "1 failed | 6 passed (7)",
+  "failed": [
+   "Snapshot > restores an inline property with its priority and removes one it found absent"
+  ]
+ },
+ {
+  "name": "snapshot: records kept after restore",
+  "tally": "1 failed | 6 passed (7)",
+  "failed": [
+   "Snapshot > forgets its records on restore, so a later restore keeps every edit"
+  ]
+ },
+ {
+  "name": "snapshot: absent attribute left",
+  "tally": "1 failed | 6 passed (7)",
+  "failed": [
+   "Snapshot > writes back a present attribute and removes an absent one"
+  ]
+ },
+ {
+  "name": "button: find ignores the registry",
+  "tally": "1 failed | 32 passed (33)",
+  "failed": [
+   "Button > finds the live engine by its host and forgets it after destruction"
+  ]
+ },
+ {
+  "name": "button: registry not released",
+  "tally": "3 failed | 30 passed (33)",
+  "failed": [
+   "Button > refuses invalid hosts and concurrent ownership then permits reconstruction",
+   "Button > finds the live engine by its host and forgets it after destruction",
+   "Button > preserves destruction performed by a listener during a toggle"
+  ]
+ },
+ {
+  "name": "button: snapshot not restored",
+  "tally": "26 failed | 7 passed (33)",
+  "failed": [
+   "Button > releases hooks and leaves later toggles inert while reading the live host",
+   "Button > restores active membership and the exact original attribute while preserving consumer edits",
+   "Button > restores original membership and attribute presence for class=undefined and aria-pressed=undefined",
+   "Button > restores original membership and attribute presence for class=undefined and aria-pressed='true'",
+   "Button > restores original membership and attribute presence for class=undefined and aria-pressed='false'",
+   "Button > restores original membership and attribute presence for class=undefined and aria-pressed='mixed'",
+   "Button > restores original membership and attribute presence for class='btn' and aria-pressed=undefined",
+   "Button > restores original membership and attribute presence for class='btn' and aria-pressed='true'",
+   "Button > restores original membership and attribute presence for class='btn' and aria-pressed='false'",
+   "Button > restores original membership and attribute presence for class='btn' and aria-pressed='mixed'",
+   "Button > restores original membership and attribute presence for class='' and aria-pressed=undefined",
+   "Button > restores original membership and attribute presence for class='' and aria-pressed='true'",
+   "Button > restores original membership and attribute presence for class='' and aria-pressed='false'",
+   "Button > restores original membership and attribute presence for class='' and aria-pressed='mixed'",
+   "Button > restores original membership and attribute presence for class='active btn' and aria-pressed=undefined",
+   "Button > restores original membership and attribute presence for class='active btn' and aria-pressed='true'",
+   "Button > restores original membership and attribute presence for class='active btn' and aria-pressed='false'",
+   "Button > restores original membership and attribute presence for class='active btn' and aria-pressed='mixed'",
+   "Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed=undefined",
+   "Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed='true'",
+   "Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed='false'",
+   "Button > restores original membership and attribute presence for class=' active  btn ' and aria-pressed='mixed'",
+   "Button > keeps consumer class tokens on a host constructed without a class attribute",
+   "Button > restores absent and empty attributes distinctly on detached hosts",
+   "Button > refuses invalid hosts and concurrent ownership then permits reconstruction",
+   "Button > preserves destruction performed by a listener during a toggle"
+  ]
+ }
+]
