@@ -1,8 +1,0 @@
-mutation: control setup
-unmutated
-{
- "exit": 0,
- "failed": [],
- "failedCount": 0,
- "total": 251
-}

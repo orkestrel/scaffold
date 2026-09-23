@@ -1,0 +1,41 @@
+=== nb diff3 apply of nb-shared-3.patch and nb-offlimits-3.patch on d0c1eff 20:21:21
+--- resolve
+app/browser/Showcase.ts: 1 block(s)
+app/browser/constants.ts: 1 block(s)
+app/browser/index.ts: 1 block(s)
+guides/veneer.md: 6 block(s) — ruled: key records, the split toggle included, ship from ; table rows: ours then theirs; ruled: The theme scopes declare `--bs-carousel-indicator-; table rows: ours then theirs; ruled: the dropdown ledger cell; table rows: ours then theirs
+src/styles/_tokens.scss: 4 block(s) — ruled: // The forms and accordion glyphs Bootstrap paints; ruled: // `--bs-*` variable the component rule reads, nev; ruled: 	'toggler-icon': '--bs-navbar-toggler-icon-bg',
+tests/app/browser/Showcase.test.ts: 2 block(s)
+tests/app/browser/integration.test.ts: 1 block(s)
+tests/conformance.test.ts: 1 block(s) — ruled: 	// sequence, the nav partial joins the block at t
+tests/setup.ts: 3 block(s)
+tests/setupStyles.test.ts: 2 block(s) — ruled: 		// The map carries a glyph for every form contro
+tests/setupStyles.ts: 2 block(s)
+--- theirs guide = a658879's guide with the shared patch applied
+theirs applied
+--- deferral table
+deleted by theirs: `.navbar-nav .dropdown-menu` `.navbar-expand-sm .navbar-nav .dropdown-menu` `.navbar-expand-md .navbar-nav .dropdown-menu` `.navbar-expand-lg .navbar-nav .dropdown-menu` `.navbar-expand-xl .navbar-nav .dropdown-menu` `.navbar-expand-xxl .navbar-nav .dropdown-menu` `.navbar-expand .navbar-nav .dropdown-menu` `.navbar-nav .nav-link.active` `.navbar-nav .nav-link.show` `.navbar-expand-sm .navbar-nav .nav-link` `.navbar-expand-md .navbar-nav .nav-link` `.navbar-expand-lg .navbar-nav .nav-link` `.navbar-expand-xl .navbar-nav .nav-link` `.navbar-expand-xxl .navbar-nav .nav-link` `.navbar-expand .navbar-nav .nav-link`
+added by theirs: none
+taken from theirs: none
+--- owned files copied from the worktree (the landing cherry-picks them before the shared patch)
+--- retirement patch (plain apply)
+retirement apply exit=0
+--- seams and sort
+constants: joined 0
+setup: joined 0
+journey: joined 0
+tests/setupBrowser.test.ts arrays resorted: 0
+tests/setupStyles.test.ts arrays resorted: 1
+tests/setup.test.ts arrays resorted: 0
+tests/app/browser/index.test.ts arrays resorted: 0
+tests/setupServer.test.ts arrays resorted: 0
+tests/conformance.test.ts arrays resorted: 0
+set literal 77 -> 77 added []
+--- $assets after the resolution
+--- the ruled dropdown sentence and cell
+1607:key records, the split toggle included, ship from the partials that write them, and the tab and
+1608-navbar menu names ship from the nav and navbar partials. § Input group classes and § Button group
+1609-classes describe the split-toggle partials.
+1610-
+5074:| dropdown         | selector       | Every official `.dropdown-menu`, `.dropdown-item`, `.dropdown-toggle`, and direction wrapper selector ships in the components layer, the caret in each direction, the placement of each direction, the alignment ramp, th
+--- done 20:21:23

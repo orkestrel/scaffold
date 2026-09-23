@@ -1,7 +1,0 @@
- M tests/fixtures/tailwind/consumer.css
- M tests/fixtures/tailwind/preflight.css
- M tests/setup.css
-?? app/browser/sections/CollapseSection.ts
-?? src/styles/components/_collapse.scss
-?? tests/app/browser/sections/CollapseSection.test.ts
-?? tests/src/styles/components/collapse.test.ts

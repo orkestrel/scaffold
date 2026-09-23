@@ -1,1 +1,0 @@
-| `src/styles/components/_carousel.scss`      | The carousel track, its slides and their advancing and fading states, the controls and their marks, the indicators, the caption, and the dark retune in the components layer.                                                                      |

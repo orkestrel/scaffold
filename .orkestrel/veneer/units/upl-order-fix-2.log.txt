@@ -1,0 +1,35 @@
+=== HEAD 725ac07 after upl-landing-order-2.py (20:34:14)
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  187.87 kB │ gzip: 24.16 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.09s
+=== build:src:styles exit=0
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+······················
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  20:34:17
+   Duration  15.59s (transform 678ms, setup 113ms, import 8.74s, tests 6.58s, environment 0ms)
+
+=== test:conformance exit=0 (20:34:33)
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 2ms on 1 files using 4 threads.
+=== oxfmt check exit=0
