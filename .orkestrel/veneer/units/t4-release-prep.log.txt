@@ -1,0 +1,305 @@
+=== HEAD 474fd9f; registry: contract@0.0.17 guide@0.0.20 probe@0.0.16 scaffold@0.0.77 test@0.0.20 
+dependencies @orkestrel/contract: ^0.0.17 -> ^0.0.17
+devDependencies @orkestrel/guide: ^0.0.20 -> ^0.0.20
+devDependencies @orkestrel/probe: ^0.0.16 -> ^0.0.16
+devDependencies @orkestrel/scaffold: ^0.0.76 -> ^0.0.77
+=== install (re-pin) (22:04:19)
+
+changed 1 package, and audited 135 packages in 813ms
+
+31 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+=== install (re-pin) exit=0
+=== preparation commit f9ee02c
+=== scaffold overwrite (22:04:20)
+0 of 45 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 12.
+scripts/codex.sh replaced (0-line delta).
+3 written, 48 unchanged, 0 removed in ..
+50 published, 4 guides fetched, 0 no longer listed.
+=== scaffold overwrite exit=0
+=== scaffold audit (22:04:27)
+dependencies: @vitest/browser-playwright declares major 4, while the registry serves major 5.
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.
+0 of 45 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 12.
+=== scaffold audit exit=0
+=== install (full) (22:04:30)
+
+removed 2 packages, changed 12 packages, and audited 133 packages in 15s
+
+31 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+=== install (full) exit=0
+=== format (22:04:45)
+
+> @orkestrel/test@0.0.20 format
+> oxfmt --config .oxfmtrc.json --write .
+
+Finished in 3698ms on 60 files using 4 threads.
+=== format exit=0
+=== status after the visit: [ M .claude/agents/orkestrel.md  M package-lock.json  M package.json  M scripts/codex.sh ]
+=== format:check (22:04:49)
+
+> @orkestrel/test@0.0.20 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 3620ms on 60 files using 4 threads.
+=== format:check exit=0
+=== lint:check (22:04:53)
+
+> @orkestrel/test@0.0.20 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+=== lint:check exit=0
+=== check (22:04:54)
+
+> @orkestrel/test@0.0.20 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/test@0.0.20 check:src
+> npm run check:src:core && npm run check:src:browser && npm run check:src:server
+
+
+> @orkestrel/test@0.0.20 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/test@0.0.20 check:src:browser
+> tsc --noEmit -p configs/src/tsconfig.browser.json
+
+
+> @orkestrel/test@0.0.20 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+
+=== check exit=0
+=== build (22:05:04)
+
+> @orkestrel/test@0.0.20 build
+> npm run clean && npm run build:src
+
+
+> @orkestrel/test@0.0.20 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/test@0.0.20 build:src
+> npm run build:src:core && npm run build:src:browser && npm run build:src:server
+
+
+> @orkestrel/test@0.0.20 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 7 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  37.16 kB │ gzip: 11.13 kB │ map: 53.52 kB
+
+transforming...
+✓ 7 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  38.41 kB │ gzip: 11.33 kB │ map: 53.84 kB
+
+✓ built in 256ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/test@0.0.20 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+> @orkestrel/test@0.0.20 build:src:browser
+> vite build --config configs/src/vite.browser.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  168.28 kB │ gzip: 50.80 kB │ map: 241.21 kB
+
+✓ built in 113ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/test@0.0.20 build:src:server
+> vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+vite v8.3.0 building client environment for production...
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  39.69 kB │ gzip: 11.45 kB │ map: 56.90 kB
+
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  41.72 kB │ gzip: 11.71 kB │ map: 58.56 kB
+
+✓ built in 118ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/test@0.0.20 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+=== build exit=0
+=== test (22:05:17)
+
+> @orkestrel/test@0.0.20 test
+> npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:setup:browser && npm run test:guides
+
+
+> @orkestrel/test@0.0.20 test:src
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser --project src:server
+
+
+ RUN  v4.1.11 /home/user/test
+
+············································································································--·················································-···········-······-····-···························································--···························Port 63315 is in use, trying another one...
+10:05:20 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+·········································································································································································································································································································································································10:05:57 PM [vite] (client) [Unhandled error] Error: Boom
+ > ../../../@vite/client:305:50
+ > tests/src/browser/factories.test.ts:464:10
+    462 |  		try {
+    463 |  			journal.start()
+    464 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Boom' }))
+        |            ^
+    465 |  			window.dispatchEvent(
+    466 |  				new PromiseRejectionEvent('unhandledrejection', {
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:302:11
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:1903:26
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:2326:20
+ > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:2323:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:2305:20
+ > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:2272:10
+
+10:05:57 PM [vite] (client) [Unhandled rejection] Unknown Error: Refused
+
+10:05:57 PM [vite] (client) [Unhandled error] Error: Ignored
+ > ../../../@vite/client:305:50
+ > tests/src/browser/factories.test.ts:473:10
+    471 |  			journal.stop()
+    472 |  			recorded = journal.output
+    473 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Ignored' }))
+        |            ^
+    474 |  		} finally {
+    475 |  			Object.assign(console, channels)
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:302:11
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:1903:26
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:2326:20
+ > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:2323:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:2305:20
+ > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=41765b76:2272:10
+
+······································
+
+ Test Files  7 passed (7)
+      Tests  661 passed | 2 expected fail | 8 skipped (671)
+   Start at  22:05:18
+   Duration  41.48s (transform 1.01s, setup 1.00s, import 1.20s, tests 32.41s, environment 1ms)
+
+
+> @orkestrel/test@0.0.20 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/test
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  22:06:01
+   Duration  2.02s (transform 189ms, setup 55ms, import 367ms, tests 1.44s, environment 0ms)
+
+
+> @orkestrel/test@0.0.20 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/test
+
+············································································································································································-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  173 passed | 1 skipped (174)
+   Start at  22:06:04
+   Duration  5.78s (transform 620ms, setup 53ms, import 1.46s, tests 4.07s, environment 0ms)
+
+
+> @orkestrel/test@0.0.20 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/test
+
+·····················
+
+ Test Files  2 passed (2)
+      Tests  21 passed (21)
+   Start at  22:06:11
+   Duration  576ms (transform 297ms, setup 145ms, import 353ms, tests 30ms, environment 0ms)
+
+
+> @orkestrel/test@0.0.20 test:setup:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup:browser
+
+
+ RUN  v4.1.11 /home/user/test
+
+Port 63315 is in use, trying another one...
+10:06:13 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+······
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  22:06:13
+   Duration  9.88s (transform 0ms, setup 181ms, import 17ms, tests 5ms, environment 0ms)
+
+
+> @orkestrel/test@0.0.20 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/test[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m51 passed[39m[22m[90m (51)[39m
+[2m   Start at [22m 22:06:24
+[2m   Duration [22m 1.44s[2m (transform 274ms, setup 80ms, import 928ms, tests 253ms, environment 0ms)[22m
+
+=== test exit=0
+=== fetch 0.0.20 (22:06:26)
+orkestrel-test-0.0.20.tgz
+=== fetch 0.0.20 exit=0
+=== dist compare (material, maps excluded, whitespace ignored)
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/t4/published/package/dist/src/browser/index.d.ts and dist/src/browser/index.d.ts differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/t4/published/package/dist/src/browser/index.js and dist/src/browser/index.js differ
+=== dist compare exit=1 (1 = moved)
+=== visit done (22:06:26); the bump, prepublishOnly, and the release commit follow in t4-release-bump.sh
