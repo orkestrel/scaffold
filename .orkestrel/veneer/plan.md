@@ -17,9 +17,21 @@ This folder keeps only what the open units still read; git history archives ever
   `units/b-passive-baseline.md` bind every B unit, and `units/b-forms-terrain-report.md`,
   `units/b-passive-terrain-report.md`, and `units/f8-terrain-report.md` are the terrain records
   their briefs point at.
+- Process corrections taken 2026-09-23 after a full re-read of `AGENTS.md`, the rule files, the
+  role files, the dispatch template, the transport contract, and the `orkestrel-falsify` skill:
+  every writing brief keeps the template's rows verbatim (the FLOATING and SELECT briefs were
+  rewritten before dispatch; GROUP and CHECK received successor briefs `-brief-2.md` mid-unit);
+  every audit claims file carries the falsify anatomy (the chain, what the round decides, already
+  established, unknowns, the threshold, and the instruction that `CONFIRMED` names the attack that
+  failed); the next Astra lanes are prepared through the `analyst` driver role and launched by the
+  Orchestrator; the `probe` MCP server is registered in `.mcp.json` but unapproved in this cloud
+  session, so every unit takes the runtime-probe fallback with a negative control and reports it.
 - The live B-FORMS units, each in its own worktree from Veneer `main` (`2c10329`) with its own
   `node_modules`: B-FORMS-GROUP (`veneer-bfg`, `units/b-forms-group-brief.md`, `opus`) and
-  B-FORMS-CHECK (`veneer-bfc`, `units/b-forms-check-brief.md`, `opus`), in parallel; each is audited
+  B-FORMS-CHECK (`veneer-bfc`, `units/b-forms-check-brief.md`, `opus`), B-FORMS-FLOATING
+  (`veneer-bff`, `units/b-forms-floating-brief.md`, `opus`), and B-FORMS-SELECT (`veneer-bfs`,
+  `units/b-forms-select-brief.md`, `opus`), in parallel; CONTROL follows the first landing and
+  CLOSE the rest; each is audited
   (`analyst` on Astra, `reviewer` on Opus, `checker` where mechanical) and landed serially through
   the landing procedure recorded later in this file.
 - The live unit: F8c-B MOVE (`veneer-f8b`, `units/f8c-b-brief.md`, `opus`, dispatched from the
