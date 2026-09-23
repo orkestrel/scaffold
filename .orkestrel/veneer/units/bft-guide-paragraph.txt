@@ -1,8 +1,0 @@
-The text control and select classes write their corners from `--bs-border-radius` through the
-`input-border` mixin. The proof holds every kept corner to the radius the same element carries
-outside a group, and it holds the control's and the select's kept corners to the value that the
-`--bs-border-radius` custom property resolves to. Every corner the group squares reads zero. The
-group's free-space and focus-lift rules select the floating wrapper, so the proof reads them on
-the wrapper. The wrapper draws no border, so the proof reads the corners the group squares on the
-control or select inside it. No wrapper the proof mounts holds a label, so the proof reads no
-floated label.
