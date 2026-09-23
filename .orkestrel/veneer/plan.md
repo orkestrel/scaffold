@@ -70,3 +70,6 @@ commit from `unit/f8b` (`commit-tree` over the worktree's tree with parent `0783
   and comments is not a house gate (oxfmt preserves prose wrap and does not reflow comments, base
   lines exceed it, and no rule states it), so it leaves the claims files; a rewrap rides a round
   that already edits the paragraph and never opens a round by itself.
+- A claims file or lane brief that cites a pruned record names it by its history path
+  (`git -C /home/user/scaffold show <prune-commit>~1:.orkestrel/veneer/units/<file>`), never by the
+  working-tree path the prune removed; a lane cannot check a citation that resolves to nothing.

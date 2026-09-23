@@ -1,0 +1,10 @@
+Name the form-input mixins for the release's input family
+
+B-FORMS-RENAME (`builder` on Sonnet, D40a) renames the D40 mixins `control-type` and
+`control-border` to `input-text` and `input-border`: the `_mixins.scss` file's form for a
+typography run is `-text`, `control-text` is the reboot reset every control element takes, and
+the release derives both runs from its `$input-*` variables. The declarations, their order, and
+the compiled bytes are unchanged, the comments name `.form-control`, `.form-select`, and
+`.input-group-text` as the readers, and the `INPUT_GROUP_CASES` remark states the `reads` map in the
+`FORM_CONTROL_CASES` remark's voice. Audited by `analyst` on Astra, `reviewer` on Opus 5, and
+`checker` on Sonnet.

@@ -1,0 +1,11 @@
+=== bfr worktree status before commit
+ M src/styles/_mixins.scss
+ M src/styles/components/_form-control.scss
+ M src/styles/components/_form-select.scss
+ M src/styles/components/_input-group.scss
+ M tests/setupStyles.ts
+=== bfr committed as 569076a on unit/bfr
+[claude/inspiring-allen-t4qzv1 569076a] Name the form-input mixins for the release's input family
+ Date: Wed Sep 23 07:53:05 2026 +0000
+ 5 files changed, 18 insertions(+), 19 deletions(-)
+=== cherry-pick clean: 569076a
