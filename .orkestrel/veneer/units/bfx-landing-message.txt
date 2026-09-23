@@ -1,0 +1,9 @@
+Read the floating select's line height resolved now that the select ships
+
+B-FORMS-FLOATING-SELECT (`builder` on Sonnet, the FLOATING landing's carrier for the select family)
+replaces the floating select's `toBe('normal')` reading with the resolved line height (the release's
+`1.25` against the select's type size, 20px at 16px), because the `.form-select` rule removes the
+native appearance that made Chromium reset it, and rewrites the two guide sentences in § Form
+floating classes that described the bare select and the unshipped `.form-select` rule.
+
+Records: `.orkestrel/veneer/units/b-forms-floating-select-*` and `bfx-*` in the scaffold repository.
