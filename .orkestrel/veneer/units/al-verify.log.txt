@@ -1,0 +1,44 @@
+=== HEAD f31f24c base a658879 (16:30:51)
+=== oxfmt exit=0 changed: 0
+=== format:check exit=0 (16:31:11)
+=== lint:check exit=0 (16:31:13)
+=== check exit=0 (16:31:35)
+=== test:policy exit=0 (16:31:41)
+=== test:guides exit=0 (16:31:46)
+=== test:setup exit=0 (16:32:09)
+=== build:src exit=0 (16:32:20)
+=== scoped styles (alert, close) exit=0 (16:32:38)
+=== test:service exit=0 (16:33:16)
+=== test:conformance exit=1 (16:34:09)
+=== section proofs (Alert, Close, Showcase, entry) exit=0 (16:34:42)
+=== al fast gates done (16:34:42)
+=== build:src exit=0
+=== test:conformance exit=0
+=== test:setup exit=0
+=== test:app exit=0
+=== capture light-1280 exit=0 (16:40:03) load 6.90
+=== capture dark-1280 exit=0 (16:43:22) load 4.47
+=== capture light-390 exit=0 (16:45:57) load 5.64
+=== capture dark-390 exit=0 (16:49:05) load 12.56
+=== test:journey exit=0 (16:52:23) load 21.05
+1280
+=== npm install exit=0 (16:52:25)
+=== format:check exit=0 (16:52:38)
+=== lint:check exit=0 (16:52:41)
+=== check exit=0 (16:53:11)
+=== build exit=0 (16:53:24)
+=== test:src:core exit=0 (16:53:27)
+=== test:src:browser exit=0 (16:53:40)
+=== test:src:styles exit=0 (16:55:32)
+=== test:app exit=0 (16:56:02)
+=== test:journey exit=0 (16:59:25)
+=== test:policy exit=0 (16:59:30)
+=== test:config exit=0 (16:59:41)
+=== test:setup exit=0 (17:00:00)
+=== test:setup:browser exit=0 (17:00:19)
+=== test:conformance exit=0 (17:00:35)
+=== test:guides exit=0 (17:00:40)
+=== test:distribution exit=0 (17:01:05)
+=== test:service exit=0 (17:01:18)
+=== gates done (17:01:18)
+=== verify done (17:01:18)

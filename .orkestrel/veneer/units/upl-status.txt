@@ -1,0 +1,17 @@
+ M app/browser/styles/_shell.scss
+?? app/browser/sections/PositionSection.ts
+?? app/browser/sections/SizingSection.ts
+?? app/browser/sections/VisibilitySection.ts
+?? src/styles/components/_position.scss
+?? src/styles/utilities/_position.scss
+?? src/styles/utilities/_sizing.scss
+?? src/styles/utilities/_visibility.scss
+?? src/styles/utilities/_visually-hidden.scss
+?? tests/app/browser/sections/PositionSection.test.ts
+?? tests/app/browser/sections/SizingSection.test.ts
+?? tests/app/browser/sections/VisibilitySection.test.ts
+?? tests/src/styles/components/position.test.ts
+?? tests/src/styles/utilities/position.test.ts
+?? tests/src/styles/utilities/sizing.test.ts
+?? tests/src/styles/utilities/visibility.test.ts
+?? tests/src/styles/utilities/visually-hidden.test.ts
