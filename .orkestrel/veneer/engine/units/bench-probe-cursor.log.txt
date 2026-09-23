@@ -1,0 +1,9 @@
+start 2026-09-23T15:32:23Z
+entry=C:\Users\mikes\AppData\Local/cursor-agent/versions/2026.09.18-9a7762b/
+2026.09.18-9a7762b
+version-exit=0
+exec-exit=0
+end 2026-09-23T15:32:41Z
+"session_id":"3e59bf7c-1fc4-4fb7-b9fa-69b306b2e778"
+"type":"result","subtype":"success","duration_ms":12695,"duration_api_ms":12695,"is_error":false,"result":"READY","session_id":"3e59bf7c-1fc4-4fb7-b9fa-69b306b2e778","request_id":"a44e0bdf-d6e8-43d5-a8fd-312b894951c7","usage":{"inputTokens":19161,"outputTokens":603,"cacheReadTokens":1152,"cacheWrite
+err-bytes=0

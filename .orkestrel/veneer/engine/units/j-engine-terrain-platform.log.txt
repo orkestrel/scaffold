@@ -1,0 +1,105 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config C:/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/vite.probe-browser.config.ts --root C:/Users/mikes/WebstormProjects/veneer --reporter=verbose
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/vite.probe-browser.config.ts:5:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/vite.probe-browser.config.ts:5:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+stdout | tmp/probe/platform.test.ts:41:2 > platform terrain > records the installed browser and the presence readings
+J-ENGINE-PLATFORM-READINGS {
+ "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+ "control.present": true,
+ "control.absent": false,
+ "dialog.showModal": true,
+ "dialog.requestClose": true,
+ "dialog.closedBy": true,
+ "dialog.closedBy.reflect": "any",
+ "popover.attribute": true,
+ "popover.showPopover": true,
+ "popover.hidePopover": true,
+ "popover.togglePopover": true,
+ "popover.popoverTargetElement": true,
+ "popover.selector": true,
+ "popover.hint": true,
+ "ToggleEvent": "function",
+ "CommandEvent": "function",
+ "command.attribute": true,
+ "commandForElement": true,
+ "inert": true,
+ "CloseWatcher": "function",
+ "anchor.anchorName": true,
+ "anchor.positionAnchor": true,
+ "anchor.positionArea": true,
+ "anchor.positionTryFallbacks": true,
+ "anchor.positionTryOrder": true,
+ "anchor.positionVisibility": true,
+ "anchor.area.physical": true,
+ "anchor.area.logical": true,
+ "anchor.area.span": true,
+ "anchor.fallbacks.flip": true,
+ "anchor.fallbacks.area": true,
+ "anchor.visibility": true,
+ "anchor.function": true,
+ "anchor.size": true,
+ "transition.allowDiscrete": true,
+ "CSSStartingStyleRule": "function",
+ "interpolateSize": true,
+ "calcSize": true,
+ "getAnimations": true,
+ "animation.finished": true,
+ "animation.commitStyles": true,
+ "CSSTransition": "function",
+ "startViewTransition": true,
+ "beforematch": true,
+ "hidden.untilFound": "until-found",
+ "details.name": true,
+ "details.contentPseudo": true,
+ "IntersectionObserver": "function",
+ "IntersectionObserver.scrollMargin": true,
+ "IntersectionObserver.trackVisibility": true,
+ "ResizeObserver": "function",
+ "scrollend": true,
+ "scrollSnap": true,
+ "scrollIntoView.container": "accepted",
+ "scrollbarGutter": true,
+ "overscrollBehavior": true,
+ "AbortSignal.any": "function",
+ "AbortSignal.timeout": "function",
+ "CSS.escape": "function",
+ "checkVisibility": true,
+ "moveBefore": true,
+ "userActivation": true,
+ "reducedMotion.matches": false,
+ "forcedColors.matches": false,
+ "setHTML": true,
+ "setHTMLUnsafe": true,
+ "Sanitizer": "function",
+ "sanitizer.default": "<b>safe</b><a>link</a>",
+ "focusVisible.option": true,
+ "popover.togglePopover.return": "true/false",
+ "popover.beforetoggle.cancelable": "cancelable=true openedDespitePreventDefault=false",
+ "dialog.beforetoggle": "beforetoggle",
+ "details.beforetoggle": "none",
+ "dialog.showModal.scrollLock": "bodyOverflow=visible scrollTopAfterScrollTo500=500",
+ "dialog.showModal.inert": "outsideFocusable=false insideFocusedOnOpen=true",
+ "transition.getAnimations": "count=1 kind=CSSTransition property=width finished=resolved",
+ "transition.cancel": "events=run,start,cancel outcome=finished-rejected:AbortError",
+ "transition.removeMidway": "events=cancel outcome=finished-rejected:AbortError",
+ "transition.reducedMotionZero": "animations=0 events=",
+ "popover.lightDismiss.trusted": "openBefore=true openAfterOutsideClick=false",
+ "popover.escape.trusted": "openAfterEscape=false",
+ "dialog.closedby.any.trusted": "openAfterOutsideClick=false cancelEvents=1",
+ "closeWatcher.escape.trusted": "closed=1 cancelCancelable=true"
+}
+ ✓ |[object Object] (chromium)| tmp/probe/platform.test.ts:41:2 > platform terrain > records the installed browser and the presence readings 664ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  11:38:58
+   Duration  4.79s (transform 0ms, setup 0ms, import 10ms, tests 665ms, environment 0ms)
+
+exit=0
