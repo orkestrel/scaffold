@@ -1,3 +1,4 @@
-1adc7af Ship the split toggle and the grouped dropdown toggle corners with their proofs and guide rows
-72e97e2 Fold the UTIL-DISPLAY landing into the roadmap
-d6f4dbe Separate the accordion and display copy constants from the specimen lists before them with a blank line
+51a8fa0 Merge remote-tracking branch 'origin/main' into claude/inspiring-allen-t4qzv1
+9b3b178 Fold the TOGGLES landing into the roadmap
+f538d48 Close the round-5 to round-8 audits on the engine contracts: derived composites, one-home tokens, key language
+a7d1441 Reshape the engine contracts to Veneer's own vocabulary, wire names, and sanitizer port
