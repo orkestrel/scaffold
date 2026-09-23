@@ -1,0 +1,35 @@
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index 272c364..de17941 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -342,7 +342,7 @@
+ // value keyed `null` emits the bare class. An empty `$class` drops the infix's leading hyphen, so a
+ // classless entry emits the key alone at the empty infix and the `md-` prefix before the key at the
+ // `-md` infix. `$values` is a map from key to value, or a list whose every member is both its key
+-// and its value. Each pseudo-class in `$state` adds a second class after the base class, suffixed
++// and its value. Each pseudo-class in `$state` adds a class after the base class, suffixed
+ // with a hyphen and the pseudo-class and matched only in that state, as the release's `state` key
+ // does: a `hover` state pairs `.link-offset-1` with `.link-offset-1-hover:hover`.
+ //
+diff --git a/tests/app/browser/sections/LayoutSection.test.ts b/tests/app/browser/sections/LayoutSection.test.ts
+index 31915c7..0072f25 100644
+--- a/tests/app/browser/sections/LayoutSection.test.ts
++++ b/tests/app/browser/sections/LayoutSection.test.ts
+@@ -76,7 +76,7 @@ describe('LayoutSection', () => {
+ 				expect(
+ 					region.querySelector(`[data-specimen="Gutter steps"] .row.g-${String(step)} > div`),
+ 				).not.toBeNull()
+-				// Each gap step lays two plain items out side by side with the gutter cleared, so the
++				// Each gap step lays a plain item and its neighbor out side by side with the gutter cleared, so the
+ 				// space between them is the step's gap alone.
+ 				expect(
+ 					region.querySelector(
+@@ -114,7 +114,7 @@ describe('LayoutSection', () => {
+ 			const first = requireValue(boxes.at(0), 'No first item')
+ 			const second = requireValue(boxes.at(1), 'No second item')
+ 			const last = requireValue(boxes.at(-1), 'No last item')
+-			// The two leading items share the first row, spaced by the `column-gap-xl-2` step of 8px,
++			// The leading item and its neighbor share the first row, spaced by the `column-gap-xl-2` step of 8px,
+ 			// and the last item starts a second row, spaced by the `row-gap-lg-5` step of 48px, so the
+ 			// specimen shows both axes at the 1280 variant.
+ 			expect(second.top).toBe(first.top)

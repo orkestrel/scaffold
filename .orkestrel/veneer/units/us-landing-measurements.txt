@@ -1,0 +1,39 @@
+# Orchestrator measurements for the UTIL-SPACER landing, 2026-09-23
+
+$ git log --oneline -1
+746d3e9 Ship the gap utilities through the utility mixins with state and classless-infix support
+
+$ git apply --3way us-shared-3.patch (before the amend)
+Applied patch to 'ROADMAP.md' cleanly.
+Applied patch to 'app/browser/constants.ts' cleanly.
+Applied patch to 'guides/veneer.md' cleanly.
+Applied patch to 'tests/conformance.test.ts' cleanly.
+Applied patch to 'tests/setup.ts' cleanly.
+Applied patch to 'tests/setupServer.test.ts' cleanly.
+Applied patch to 'tests/setupStyles.ts' cleanly.
+apply exit=0
+
+$ git show --stat HEAD (files)
+ ROADMAP.md                                       |   2 +-
+ app/browser/constants.ts                         |  16 +-
+ guides/veneer.md                                 | 211 +++++++++++++++++++++--
+ src/styles/_mixins.scss                          |  89 ++++++++++
+ src/styles/utilities/_gap.scss                   |  14 +-
+ tests/app/browser/sections/LayoutSection.test.ts |  57 +++++-
+ tests/conformance.test.ts                        |  99 +++++++++--
+ tests/fixtures/tailwind/markup.html              |  24 +++
+ tests/service/tailwind/consumer.test.ts          |  28 ++-
+ tests/service/tailwind/preflight.test.ts         |  21 ++-
+ tests/service/tailwind/profiles.test.ts          |  59 ++++---
+ tests/setup.ts                                   |  14 ++
+ tests/setupServer.test.ts                        |   2 +
+ tests/setupStyles.ts                             |   2 +-
+ tests/src/styles/fixtures/mixins.scss            | 101 +++++++++++
+ tests/src/styles/mixins.test.ts                  | 155 +++++++++++++++++
+ tests/src/styles/utilities/gap.test.ts           | 107 ++++++++++--
+ 17 files changed, 902 insertions(+), 99 deletions(-)
+
+$ grep -n "landing hash" ROADMAP.md
+435:| CL8b gap keys `gap` and `column-gap`, with `row-gap`                                                              
+
+$ grep -n "Gap steps\|Responsive gap\|gap specimens" guides/veneer.md
