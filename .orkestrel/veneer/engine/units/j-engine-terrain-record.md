@@ -120,6 +120,49 @@ What the readings settle, each a fact of this build and not of a version table:
 - Trusted input: `popover="auto"` light-dismisses on an outside click and on Escape; a `closedby="any"` modal dialog light-dismisses on an outside click.
 - This host runs with `prefers-reduced-motion` unmatched and `forced-colors` inactive; a proof stages either through the installed Test `MediaOptions` contract.
 
+## Platform readings 2 (the probe suite the design round asked for, run 2026-09-23 12:09 local)
+
+Instrument: `j-engine-terrain-platform-2.test.ts` through the same configuration, log `j-engine-terrain-platform-2.log.txt`; the same two controls read `true` and `false`. The readings, verbatim from the run:
+
+```json
+{
+ "control.present": true,
+ "control.absent": false,
+ "ua.popover.open": "position=fixed inset=0px margin=432px 182.234px 432px 182.219px padding=4px border=3px solid rgb(0, 0, 0) background-color=rgb(255, 255, 255) color=rgb(0, 0, 0) overflow=auto width=35.5469px height=18px display=block z-index=auto",
+ "ua.popover.closed": "display=none position=fixed inset=0px margin=auto border=3px solid rgb(0, 0, 0) padding=4px",
+ "ua.popover.backdrop": "background=rgba(0, 0, 0, 0) inset=0px position=fixed",
+ "transition.sameTask.noReflow": "count=0",
+ "transition.sameTask.readBeforeChange": "count=1",
+ "transition.sameTask.readAfterChange": "count=1",
+ "transition.class.readAfterChange": "count=1",
+ "transition.reducedMotion.staged": "matches=false count=1",
+ "event.ownProperty.readback": "host",
+ "event.completedCancelable.defaultPrevented": "dispatchEvent=false defaultPrevented=true",
+ "observer.removeReinsertSameTask": "batches=1-0,0-1 contained=true",
+ "observer.moveBefore": "batches=1-0,0-1 contained=true",
+ "sanitizer.default.attributes": "<span title=\"t\" lang=\"en\" dir=\"ltr\">y</span><a href=\"https://x\">a</a><b>b</b><h1>h</h1><ul><li>l</li></ul><pre>p</pre><small>s</small><u>u</u><table><tbody><tr><td>t</td></tr></tbody></table><svg><circle r=\"1\"></circle></svg>",
+ "sanitizer.custom.elements": "<b class=\"c\">b</b><a href=\"https://x\" aria-label=\"l\">a</a><span title=\"t\" data-x=\"1\">s</span>",
+ "sanitizer.custom.ariaWildcard": "html=<span>s</span>",
+ "sanitizer.instance.methods": "allowAttribute,allowElement,get,removeAttribute,removeElement,removeUnsafe,replaceElementWithChildren,setComments,setDataAttributes,allowProcessingInstruction,removeProcessingInstruction,constructor",
+ "closeWatcher.noActivation.requestClose": "cancelCancelable=true closedDespitePreventDefault=0",
+ "closeWatcher.second.freeWatcher": "closes=second,first",
+ "anchor.containerQuery": "inserted=CSSContainerRule",
+ "anchor.positionArea.readback": "area=span-right bottom fallbacks=flip-block, flip-inline",
+ "inert.laterSibling": "laterSiblingFocused=true"
+}
+```
+
+What these readings settle:
+
+- **Promoting an element to the top layer costs a reset.** The UA `[popover]` rules paint an open popover `position: fixed; inset: 0; margin: auto` (centred in the viewport), `padding: 4px`, `border: 3px solid black`, `background-color: white`, `overflow: auto`, and `width: fit-content`; its `::backdrop` is transparent. A `.dropdown-menu` or `.tooltip` promoted with `popover` therefore needs every one of those declarations reset by the cascade or written inline by the engine, and Veneer's cascade carries no `[popover]` rule.
+- **A transition is readable in the same task once the before-style exists.** Reading a layout property (`offsetWidth`) before the change makes `getAnimations()` return the `CSSTransition` synchronously after the change, with or without a read after it; without any read before the change on a freshly inserted element, no transition starts. A class-driven transition behaves the same. Staging reduced motion needs the Test `MediaOptions` contract; the host's own preference is unmatched.
+- **An own property defined on a `CustomEvent` reads back in a document-level listener**, and a completed event dispatched `cancelable: true` reports `defaultPrevented` after a listener prevents it.
+- **`MutationObserver` batches a same-task remove and reinsert, and a `moveBefore`, into one callback whose records show the host removed then added, with the host contained at callback time**, so a release check at the callback keeps such a host.
+- **`setHTML`'s default sanitizer is not Bootstrap's allowlist.** The default drops `img`, `iframe`, `strike`, `class`, `id`, `role`, every `aria-*`, `data-*`, `style`, `tabindex`, `target`, and `rel`, keeps `svg`, and keeps `title`, `lang`, `dir`, and `href`. A custom `Sanitizer({ elements, attributes })` keeps exactly the listed names and drops `onclick` and unlisted `id`, but keeps `data-*` attributes unless `setDataAttributes(false)` is applied, and an `aria-*` wildcard in `attributes` matches nothing. The instance exposes `allowAttribute`, `allowElement`, `removeAttribute`, `removeElement`, `removeUnsafe`, `replaceElementWithChildren`, `setComments`, and `setDataAttributes`, so a Bootstrap-shaped allowlist is built by listing Bootstrap's tags and attributes and adding each `aria-*` name the input carries.
+- **`CloseWatcher` groups every free watcher.** Two watchers constructed without user activation close together on one Escape (`second` then `first`), so a watcher per shown overlay cannot give the topmost overlay alone the Escape; `requestClose()` on a fresh watcher fired a cancelable `cancel` whose `preventDefault()` stopped the close in this run. A per-element `keydown` Escape listener, Bootstrap's own mechanism, keeps the topmost-only rule.
+- **Anchored container queries parse** (`@container anchored(fallback: flip-block)` inserts a `CSSContainerRule`), and `position-area` serializes as `span-right bottom`.
+- **`inert` written on the siblings present at show does not reach a sibling inserted later**, which can take focus; isolation must observe later insertions or re-apply.
+
 ## Spot checks over the candidate map (the Orchestrator, 2026-09-23)
 
 Taken in `C:/Users/mikes/WebstormProjects/veneer/node_modules/@orkestrel/` after the map returned:

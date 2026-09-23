@@ -1,0 +1,45 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config C:/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/vite.probe-browser.config.ts --root C:/Users/mikes/WebstormProjects/veneer --reporter=verbose
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/vite.probe-browser.config.ts:5:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/vite.probe-browser.config.ts:5:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+stdout | tmp/probe/platform-2.test.ts:52:2 > platform terrain 2 > records the readings the design round asked for
+J-ENGINE-PLATFORM-READINGS-2 {
+ "control.present": true,
+ "control.absent": false,
+ "ua.popover.open": "position=fixed inset=0px margin=432px 182.234px 432px 182.219px padding=4px border=3px solid rgb(0, 0, 0) background-color=rgb(255, 255, 255) color=rgb(0, 0, 0) overflow=auto width=35.5469px height=18px display=block z-index=auto",
+ "ua.popover.closed": "display=none position=fixed inset=0px margin=auto border=3px solid rgb(0, 0, 0) padding=4px",
+ "ua.popover.backdrop": "background=rgba(0, 0, 0, 0) inset=0px position=fixed",
+ "transition.sameTask.noReflow": "count=0",
+ "transition.sameTask.readBeforeChange": "count=1",
+ "transition.sameTask.readAfterChange": "count=1",
+ "transition.class.readAfterChange": "count=1",
+ "transition.reducedMotion.staged": "matches=false count=1",
+ "event.ownProperty.readback": "host",
+ "event.completedCancelable.defaultPrevented": "dispatchEvent=false defaultPrevented=true",
+ "observer.removeReinsertSameTask": "batches=1-0,0-1 contained=true",
+ "observer.moveBefore": "batches=1-0,0-1 contained=true",
+ "sanitizer.default.attributes": "<span title=\"t\" lang=\"en\" dir=\"ltr\">y</span><a href=\"https://x\">a</a><b>b</b><h1>h</h1><ul><li>l</li></ul><pre>p</pre><small>s</small><u>u</u><table><tbody><tr><td>t</td></tr></tbody></table><svg><circle r=\"1\"></circle></svg>",
+ "sanitizer.custom.elements": "<b class=\"c\">b</b><a href=\"https://x\" aria-label=\"l\">a</a><span title=\"t\" data-x=\"1\">s</span>",
+ "sanitizer.custom.ariaWildcard": "html=<span>s</span>",
+ "sanitizer.instance.methods": "allowAttribute,allowElement,get,removeAttribute,removeElement,removeUnsafe,replaceElementWithChildren,setComments,setDataAttributes,allowProcessingInstruction,removeProcessingInstruction,constructor",
+ "closeWatcher.noActivation.requestClose": "cancelCancelable=true closedDespitePreventDefault=0",
+ "closeWatcher.second.freeWatcher": "closes=second,first",
+ "anchor.containerQuery": "inserted=CSSContainerRule",
+ "anchor.positionArea.readback": "area=span-right bottom fallbacks=flip-block, flip-inline",
+ "inert.laterSibling": "laterSiblingFocused=true"
+}
+ ✓ |[object Object] (chromium)| tmp/probe/platform-2.test.ts:52:2 > platform terrain 2 > records the readings the design round asked for 66ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  12:09:01
+   Duration  3.84s (transform 0ms, setup 0ms, import 11ms, tests 68ms, environment 0ms)
+
+exit=0
