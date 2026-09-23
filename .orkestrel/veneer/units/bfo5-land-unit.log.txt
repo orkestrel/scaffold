@@ -1,9 +1,0 @@
-=== bfo5 worktree status before commit
- M guides/veneer.md
- M tests/app/browser/integration.test.ts
- M tests/src/styles/components/input-group.test.ts
-=== bfo5 committed as d480ed3 on unit/bfo5
-[claude/inspiring-allen-t4qzv1 d480ed3] Start the select and input-group focus walks after the date control and read the bare control at full width
- Date: Wed Sep 23 07:23:21 2026 +0000
- 3 files changed, 31 insertions(+), 18 deletions(-)
-=== cherry-pick clean: d480ed3
