@@ -1,0 +1,24 @@
+ ROADMAP.md                                       |   3 +-
+ app/browser/Showcase.ts                          |   2 +
+ app/browser/constants.ts                         |  67 +++
+ app/browser/index.ts                             |   1 +
+ app/browser/sections/NavbarSection.ts            |  20 +
+ guides/veneer.md                                 | 179 +++++--
+ src/styles/_mixins.scss                          |  14 +
+ src/styles/_theme.scss                           |  10 -
+ src/styles/_tokens.scss                          |  25 +-
+ src/styles/components/_nav.scss                  |   9 +-
+ src/styles/components/_navbar.scss               | 235 +++++++++
+ src/styles/index.scss                            |   1 +
+ tests/app/browser/Showcase.test.ts               |   3 +
+ tests/app/browser/index.test.ts                  |   3 +
+ tests/app/browser/integration.test.ts            |  76 +++
+ tests/app/browser/sections/NavbarSection.test.ts | 161 ++++++
+ tests/conformance.test.ts                        |   9 +-
+ tests/setup.ts                                   |  79 +++
+ tests/setupServer.test.ts                        |   1 +
+ tests/setupStyles.test.ts                        | 265 ++++++++--
+ tests/setupStyles.ts                             | 355 ++++++++++++-
+ tests/src/styles/components/navbar.test.ts       | 612 +++++++++++++++++++++++
+ tests/src/styles/theme.test.ts                   |  14 +-
+ 23 files changed, 2019 insertions(+), 125 deletions(-)
