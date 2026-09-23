@@ -1,0 +1,156 @@
+diff --git a/ROADMAP.md b/ROADMAP.md
+index 4cbbbe9..3c9bd06 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -146,9 +146,7 @@ Design rulings:
+   placement proved on captures, reduced-motion gating in script, `IntersectionObserver` for
+   Scrollspy, and completion read from the actual transition. Refuse `@vue/reactivity`, the factory
+   idiom, the fixed transition fallback, position-based bare-tag rules, the Tailwind `!important`
+-  workaround, and post-`destroy` mutation. Land each mechanism with its first consumer: `emitEvent`,
+-  `bindEventMap`, and `Delegate` stay Button-shaped and the guide records that until the first
+-  cancelable-event component moves them.
++  workaround, and post-`destroy` mutation. Land each mechanism with its first consumer.
+ - Make Bootstrap and Tailwind compatible, Bootstrap favoured on conflict: every Bootstrap utility
+   ships with its `!important` as Bootstrap writes it, a consumer overrides one with its own
+   `!important`, and where a class name exists in both libraries Bootstrap's declaration wins (D2,
+@@ -473,9 +471,7 @@ Every open item from the design round's lane tables, each with its unit or its r
+ | Vue delivery                                                                                                                                                                                                                                                                                                                                                                                                     | E-VUE as a `src/vue` export with no declared dependency (D3)                                                                                                                                                                                                                                                                                                              |
+ | Tailwind tooling                                                                                                                                                                                                                                                                                                                                                                                                 | F8 TAILWIND; the Orchestrator installed `tailwindcss` and its PostCSS plugin as development dependencies at `104a573` (D2)                                                                                                                                                                                                                                                |
+ | A later unit that ships a shared class name whose Veneer declarations are all normal                                                                                                                                                                                                                                                                                                                             | carrier not yet known: re-checked at every forms and utilities dispatch; the F8c consumer proof reddens when such a name ships, which is the trigger                                                                                                                                                                                                                      |
+-| `emitEvent`, `bindEventMap`, and `Delegate` are Button-shaped (audit claim 24)                                                                                                                                                                                                                                                                                                                                   | J-ENGINE's first cancelable-event unit moves all three (D41; F6 FOUNDATION recorded the shape, `04114c5`)                                                                                                                                                                                                                                                                 |
+ | Audit claim 3: the restoration proof compares class membership and one attribute value rather than the serialized `class` and `aria-pressed` attributes over every initial state                                                                                                                                                                                                                                 | F4 HOST-OBSERVATIONS extends `tests/src/browser/Button.test.ts` over an absent class attribute, `class="active btn"`, whitespace variants, and each pressed-by-membership combination, comparing the serialized attributes before and after, without restoring consumer edits                                                                                             |
+-| Audit claim 4: delegated release on host removal happens only on the next click that reaches the root                                                                                                                                                                                                                                                                                                            | J-ENGINE rules release-on-removal (D41; F4 HOST-OBSERVATIONS recorded the present semantics, `af673cb`)                                                                                                                                                                                                                                                                   |
+ | Audit claim 5: `apply('light')` inside a dark island removes the attribute and inherits dark                                                                                                                                                                                                                                                                                                                     | F6 FOUNDATION writes the attribute for both modes, captures and restores the root's original attribute, deletes the stored flag, and corrects the guide sentences                                                                                                                                                                                                         |
+ | Audit claim 7: `matchesLooseTagPair` accepts `p:not(h1 + p)`                                                                                                                                                                                                                                                                                                                                                     | F5a ACCOUNTING-SPLIT landed the rendered proof; its planted control is `p:not(h1 + p)` and the grammar is deleted (closed)                                                                                                                                                                                                                                                |
+ | Audit claim 8: `[hidden]` and the calendar-picker rule carry `!important` outside class utilities                                                                                                                                                                                                                                                                                                                | F6 FOUNDATION states the two attribute cases, the consumer escape, and the Tailwind conflict rule in the guide (D6)                                                                                                                                                                                                                                                       |
+diff --git a/app/browser/sections/ButtonSection.ts b/app/browser/sections/ButtonSection.ts
+index 6f6d416..6480e1e 100644
+--- a/app/browser/sections/ButtonSection.ts
++++ b/app/browser/sections/ButtonSection.ts
+@@ -1,6 +1,6 @@
+ import type { ButtonInterface } from '@src/browser'
+ import type { ButtonSpecimen, SectionInterface } from '../types.js'
+-import { Button, BUTTON_SELECTOR } from '@src/browser'
++import { Button, BUTTON_SELECTORS } from '@src/browser'
+ import { BUTTON_COPY, BUTTON_GRID, BUTTON_SPECIMENS } from '../constants.js'
+ 
+ /**
+@@ -71,7 +71,7 @@ export class ButtonSection implements SectionInterface {
+ 			label.textContent = specimen.name
+ 			element.append(label)
+ 		} else element.textContent = specimen.name
+-		if (!element.matches(BUTTON_SELECTOR)) this.#engines.push(new Button(element))
++		if (!element.matches(BUTTON_SELECTORS.trigger)) this.#engines.push(new Button(element))
+ 		return element
+ 	}
+ }
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index 12b4073..1c49f6d 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -36,7 +36,7 @@ import {
+ 	TABLE_SPECIMENS,
+ 	VALIDATION_SPECIMENS,
+ } from '@app/browser'
+-import { Button, BUTTON_SELECTOR } from '@src/browser'
++import { Button, BUTTON_SELECTORS } from '@src/browser'
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	build,
+@@ -180,7 +180,7 @@ describe('Showcase', () => {
+ 			// The published selector names the delegated population, so the hosts the sections own are
+ 			// whatever it leaves: a hand-written attribute test here would be a second declaration of
+ 			// the ownership rule and would pass while the published one moved.
+-			const owned = specimens.filter((element) => !element.matches(BUTTON_SELECTOR))
++			const owned = specimens.filter((element) => !element.matches(BUTTON_SELECTORS.trigger))
+ 			expect(owned).not.toStrictEqual([])
+ 			// The shell paints the mode control's affordance through the class the showcase sets on
+ 			// that button, and what keeps every specimen out of the header is where this tree puts
+diff --git a/tests/app/browser/sections/ButtonSection.test.ts b/tests/app/browser/sections/ButtonSection.test.ts
+index a9400df..cdc3027 100644
+--- a/tests/app/browser/sections/ButtonSection.test.ts
++++ b/tests/app/browser/sections/ButtonSection.test.ts
+@@ -1,6 +1,6 @@
+ import { BUTTON_SPECIMENS, ButtonSection } from '@app/browser'
+ import { isAppError } from '@src/core'
+-import { Button, BUTTON_SELECTOR } from '@src/browser'
++import { Button, BUTTON_SELECTORS } from '@src/browser'
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	build,
+@@ -84,8 +84,8 @@ describe('ButtonSection', () => {
+ 		const section = new ButtonSection(host)
+ 		try {
+ 			const rendered = BUTTON_SPECIMENS.map((specimen) => readButton(host, specimen.name))
+-			const delegated = rendered.filter((element) => element.matches(BUTTON_SELECTOR))
+-			const plain = rendered.filter((element) => !element.matches(BUTTON_SELECTOR))
++			const delegated = rendered.filter((element) => element.matches(BUTTON_SELECTORS.trigger))
++			const plain = rendered.filter((element) => !element.matches(BUTTON_SELECTORS.trigger))
+ 			// The rendered partition is set beside the table's own declaration, so the selector and the
+ 			// specimen that carries it have to agree before either side of the sweep means anything.
+ 			expect(delegated.map((element) => readName(element))).toStrictEqual(
+@@ -130,7 +130,7 @@ describe('ButtonSection', () => {
+ 				raised = error
+ 			}
+ 			expect(isAppError(raised) && raised.code).toBe('BUTTON_HOST_OWNED')
+-			expect(raised instanceof Error && raised.message).toBe('Button host already has a live owner')
++			expect(raised instanceof Error && raised.message).toBe('Host already has a live owner')
+ 		} finally {
+ 			section.destroy()
+ 			host.remove()
+@@ -142,7 +142,7 @@ describe('ButtonSection', () => {
+ 		const section = new ButtonSection(host)
+ 		const selected = readButton(host, 'Selected')
+ 		const plain = BUTTON_SPECIMENS.map((specimen) => readButton(host, specimen.name)).filter(
+-			(element) => !element.matches(BUTTON_SELECTOR),
++			(element) => !element.matches(BUTTON_SELECTORS.trigger),
+ 		)
+ 		try {
+ 			expect(readStates(selected)).toContain('pressed=true')
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index a28f28c..1f1aa00 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -55,6 +55,7 @@ import {
+ 	PROBE_CASCADE,
+ 	pressOracleKeys,
+ 	readCascadeSheet,
++	recordCalls,
+ 	recordListeners,
+ 	recordEvents,
+ 	recordState,
+@@ -475,6 +476,7 @@ describe('browser setup', () => {
+ 				'readRegion',
+ 				'readSpecimen',
+ 				'readSubject',
++				'recordCalls',
+ 				'recordEvents',
+ 				'recordListeners',
+ 				'recordState',
+@@ -749,6 +751,26 @@ describe('browser setup', () => {
+ 		).toEqual([document])
+ 	})
+ 
++	it('records the receiver of each call to a prototype method, still calls it, and restores it', () => {
++		const original = MutationObserver.prototype.disconnect
++		const recording = recordCalls(MutationObserver.prototype, 'disconnect')
++		const target = build('div')
++		const observer = new MutationObserver(() => {})
++		try {
++			observer.observe(target, { attributes: true })
++			observer.disconnect()
++			target.setAttribute('data-probe', '')
++			expect(observer.takeRecords()).toEqual([])
++			expect(recording.recorder.calls).toEqual([[observer]])
++		} finally {
++			recording.restore()
++		}
++		recording.restore()
++		expect(MutationObserver.prototype.disconnect).toBe(original)
++		observer.disconnect()
++		expect(recording.recorder.count).toBe(1)
++	})
++
+ 	it('mounts real content and cleans it up repeatedly', async () => {
+ 		const mounted = await mountShowcase()
+ 		try {

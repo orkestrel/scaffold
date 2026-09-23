@@ -1,0 +1,165 @@
+# The Orchestrator's re-run of a sample of J-BINDER round 7's mutations (2026-09-23, Chromium 153.0.8010.12, the unit's instrument j-binder7-mutate.mjs over binder7-sample.json drawn from j-binder7-mutations.json)
+worktree: cea3359 Merge branch 'main' into unit/binder
+--- results
+[
+ {
+  "name": "Button: the event detail from the read before the aria-pressed write",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 42 passed (43)",
+  "failed": [
+   "Button > dispatches the state the host carries when a reaction to its aria-pressed write toggles again"
+  ]
+ },
+ {
+  "name": "HostSnapshot: #withdraw compares presence instead of the owner",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "HostSnapshot: #writeBack compares presence instead of the owner",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "HostSnapshot: a publish replaces an entry another restoration owns",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "Button: aria-pressed and the event detail from the stale token-write result",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "2 failed | 41 passed (43)",
+  "failed": [
+   "Button > writes and dispatches the state the host carries when a reaction to its token write toggles again",
+   "Button > dispatches the state the host carries when a reaction to its aria-pressed write toggles again"
+  ]
+ },
+ {
+  "name": "Button: the return from the value read before the dispatch",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 42 passed (43)",
+  "failed": [
+   "Button > preserves destruction performed by a listener during a toggle and returns the state the host carries"
+  ]
+ },
+ {
+  "name": "ColorMode: storage written from the stale mode",
+  "proof": "tests/src/browser/ColorMode.test.ts",
+  "tally": "1 failed | 17 passed (18)",
+  "failed": [
+   "ColorMode > writes the mode the root carries to storage when a reaction to its attribute write applies the other mode"
+  ]
+ },
+ {
+  "name": "HostSnapshot: the owner comparison removed from the write back",
+  "proof": "tests/src/browser/HostSnapshot.test.ts tests/src/browser/Button.test.ts tests/src/browser/Delegate.test.ts",
+  "tally": "6 failed | 74 passed (80)",
+  "failed": [
+   "Button > hands the originals to an engine constructed at the token write of its restoration",
+   "Delegate > hands the originals to the engine a click acquires while a consumer destroys the delegate engine",
+   "Delegate > hands the originals to the engine an inner delegate acquires while the outer one restores the host",
+   "HostSnapshot > hands a pending original to a snapshot saved during a restoration, which then skips that target",
+   "HostSnapshot > hands a snapshot its own pending original when it saves the target during its own restoration",
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "HostSnapshot: the finally block withdraws nothing, the exception still propagating",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > withdraws every target it has not written back when a write throws, so a later save reads the element"
+  ]
+ },
+ {
+  "name": "HostSnapshot: a nested restore withdraws every entry on the element",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "2 failed | 12 passed (14)",
+  "failed": [
+   "HostSnapshot > keeps the outer restoration writing its own targets when a reaction re-enters restore on the same snapshot",
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "HostSnapshot: a snapshot never takes its own pending entry",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > hands a snapshot its own pending original when it saves the target during its own restoration"
+  ]
+ },
+ {
+  "name": "HostSnapshot: attributes before tokens",
+  "proof": "tests/src/browser/HostSnapshot.test.ts tests/src/browser/Button.test.ts",
+  "tally": "6 failed | 51 passed (57)",
+  "failed": [
+   "Button > releases its host before restoring it, so an engine constructed at the restoration last write keeps its state",
+   "HostSnapshot > restores class tokens, then inline properties, then attributes, whatever the save order",
+   "HostSnapshot > records the live element for a target already written back when a reaction to a later write saves it",
+   "HostSnapshot > hands a snapshot its own pending original when it saves the target during its own restoration",
+   "HostSnapshot > withdraws every target it has not written back when a write throws, so a later save reads the element",
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "Button: restore before releasing the claim",
+  "proof": "tests/src/browser/Button.test.ts tests/src/browser/Delegate.test.ts",
+  "tally": "6 failed | 60 passed (66)",
+  "failed": [
+   "Button > releases its host before restoring it, so an engine constructed at the restoration last write keeps its state",
+   "Button > hands the originals to an engine constructed at the token write of its restoration",
+   "Button > stops a toggle whose own token write destroys the button, writing and dispatching nothing more",
+   "Delegate > drives a live engine for a click a restoration reaction sends, never the destroyed one",
+   "Delegate > hands the originals to the engine a click acquires while a consumer destroys the delegate engine",
+   "Delegate > hands the originals to the engine an inner delegate acquires while the outer one restores the host"
+  ]
+ },
+ {
+  "name": "Delegate: never drives a found engine",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "9 failed | 14 passed (23)",
+  "failed": [
+   "Delegate > toggles a child click host, prevents its default, and reuses its engine",
+   "Delegate > reuses a fragment-rooted engine across clicks",
+   "Delegate > drives the engine a consumer constructed and leaves it to that consumer on destruction",
+   "Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it",
+   "Delegate > acquires and toggles a native disabled host on a dispatched click",
+   "Delegate > keeps toggling a host through its engine after the disabled class arrives",
+   "Delegate > acquires and toggles a host already carrying the disabled class, and restores it",
+   "Delegate > acquires and toggles an aria-disabled anchor, and leaves the attribute alone",
+   "Delegate > keeps the engine and the state of a host removed and reinserted in the same synchronous run, before the observer delivers"
+  ]
+ }
+]
+--- restore check
+every source restored byte for byte
+--- status after
+ M guides/veneer.md
+ M src/browser/Button.ts
+ M src/browser/ColorMode.ts
+ M src/browser/Delegate.ts
+ A src/browser/HostSnapshot.ts
+ D src/browser/Snapshot.ts
+ M src/browser/constants.ts
+ M src/browser/helpers.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/setupBrowser.ts
+ M tests/src/browser/Button.test.ts
+ M tests/src/browser/ColorMode.test.ts
+ M tests/src/browser/Delegate.test.ts
+ A tests/src/browser/HostSnapshot.test.ts
+ D tests/src/browser/Snapshot.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/validators.test.ts

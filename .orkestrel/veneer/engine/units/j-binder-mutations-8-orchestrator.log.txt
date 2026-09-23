@@ -1,0 +1,54 @@
+# The Orchestrator's re-run of J-BINDER round 8's mutation rows (2026-09-23, Chromium 153.0.8010.12, the unit's instrument j-binder8-mutate.mjs over binder8-sample.json drawn from j-binder8-mutations.json)
+worktree: cea3359 Merge branch 'main' into unit/binder
+--- results
+[
+ {
+  "name": "HostSnapshot: #withdraw compares presence instead of the owner",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "HostSnapshot: #writeBack compares presence instead of the owner",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "HostSnapshot: a publish replaces an entry another restoration owns",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ }
+]
+--- restore check
+every source restored byte for byte
+--- the joined-line owner sweep (a restoration named as the owner across wrapped lines; no hit is the pass)
+owner sweep hits: 0 (0 is the pass)
+--- status after
+ M guides/veneer.md
+ M src/browser/Button.ts
+ M src/browser/ColorMode.ts
+ M src/browser/Delegate.ts
+ A src/browser/HostSnapshot.ts
+ D src/browser/Snapshot.ts
+ M src/browser/constants.ts
+ M src/browser/helpers.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/setupBrowser.ts
+ M tests/src/browser/Button.test.ts
+ M tests/src/browser/ColorMode.test.ts
+ M tests/src/browser/Delegate.test.ts
+ A tests/src/browser/HostSnapshot.test.ts
+ D tests/src/browser/Snapshot.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/validators.test.ts
