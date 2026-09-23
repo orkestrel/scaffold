@@ -1,10 +1,10 @@
 #!/bin/bash
-# veneer-021.sh: after @orkestrel/contract 0.0.18 and @orkestrel/test 0.0.21 are on the registry, re-pin Veneer's session
-# branch to both in one commit (test depends on the contract at runtime, so one commit keeps a single contract copy; the
-# engine session's J-BINDER follow-up owns the `isInstance` call sites) and verify the wave-2
+# veneer-021.sh: after @orkestrel/test 0.0.21 is on the registry, re-pin Veneer's session branch to it and verify the wave-2
+# landings. The release keeps @orkestrel/contract at ^0.0.17, Veneer's own range, so one contract copy installs; the
+# contract's 0.0.18 re-pin (Veneer and a test re-pin release together) follows in the engine session. Verifies the wave-2
 # landings (UTIL-PLACEMENT ac96f81, NAVBAR 009b95a, the specimen band 5d7f3b9) with the repaired harness. Derived from
 # verify-upl.sh, refresh-upl.sh, regen-upl.sh, and main-upl-gates.sh. Refuses a dirty tree and a registry that does not
-# serve test 0.0.21 and contract 0.0.18. Steps: the re-pin (package.json range, npm install, the lock marker, the re-pin commit); the refresh
+# serve test 0.0.21. Steps: the re-pin (package.json range, npm install, the lock marker, the re-pin commit); the refresh
 # (build:src, conformance, setup, app); the portfolio regeneration, one variant at a time, then the plain journey; the
 # authoritative chain. Stops at the first red step. Log: veneer-021.log.txt (copied to units at the end).
 set -u
@@ -18,12 +18,11 @@ gate() { echo "=== $1 ($(date -u +%H:%M:%S))" >> $LOG; timeout 1500 npm run $1 >
 served=$(npm view @orkestrel/test version 2>/dev/null)
 echo "=== npm $(npm --version) node $(node --version) HEAD $(git rev-parse --short HEAD) registry @orkestrel/test@$served @orkestrel/contract@$(npm view @orkestrel/contract version 2>/dev/null)" >> $LOG
 [ "$served" = "0.0.21" ] || { echo "=== the registry serves $served, not 0.0.21; refusing" >> $LOG; finish 3; }
-[ "$(npm view @orkestrel/contract version 2>/dev/null)" = "0.0.18" ] || { echo "=== the registry does not serve contract 0.0.18; refusing" >> $LOG; finish 4; }
 python3 - >> $LOG 2>&1 <<'PY'
 import json
 p = json.load(open('package.json'))
 for group in ('dependencies', 'devDependencies'):
-    for name, version in (('@orkestrel/test', '0.0.21'), ('@orkestrel/contract', '0.0.18')):
+    for name, version in (('@orkestrel/test', '0.0.21'),):
         if name in p.get(group, {}):
             print(f'{group} {name}: {p[group][name]} -> ^{version}'); p[group][name] = '^' + version
 open('package.json', 'w').write(json.dumps(p, indent='\t') + '\n')
@@ -32,7 +31,7 @@ echo "=== npm install ($(date -u +%H:%M:%S))" >> $LOG; npm install --ignore-scri
 sha256sum package-lock.json | cut -d' ' -f1 > node_modules/.orkestrel-lock.sha256
 echo "=== installed test $(node -p "require('./node_modules/@orkestrel/test/package.json').version") contract $(node -p "require('./node_modules/@orkestrel/contract/package.json').version"); nested contract copies: [$(find node_modules -path '*/@orkestrel/contract/package.json' | tr '\n' ' ')]; status: [$(git status --porcelain | tr '\n' ' ')]" >> $LOG
 npx oxfmt --write package.json >> $LOG 2>&1
-git add package.json package-lock.json && git commit -q -m "Re-pin @orkestrel/test to 0.0.21 and @orkestrel/contract to 0.0.18 in one commit, so one contract copy installs" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" -m "Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK"
+git add package.json package-lock.json && git commit -q -m "Re-pin @orkestrel/test to 0.0.21, whose content edge ends a clipped descendant at its frame" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" -m "Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK"
 echo "=== re-pin commit $(git rev-parse --short HEAD)" >> $LOG
 for g in build:src test:conformance test:setup test:app; do gate $g; done
 for v in light-1280 dark-1280 light-390 dark-390; do
