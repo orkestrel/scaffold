@@ -127,3 +127,8 @@ tests/app/browser/sections/ButtonSection.test.ts(3,18): error TS2724: '"@src/bro
 tests/app/browser/Showcase.test.ts(39,18): error TS2724: '"@src/browser"' has no exported member named 'BUTTON_SELECTOR'. Did you mean 'BUTTON_SELECTORS'?
 tests/app/browser/Showcase.test.ts(231,11): error TS2358: The left-hand side of an 'instanceof' expression must be of type 'any', an object type or a type parameter.
 check exit=2
+--- the Orchestrator's apply check (appended after the checker asked for the literal command; run in the worktree without applying)
+git apply --check j-binder4-setuptest.diff exit=0
+git apply --check j-binder2-app.diff exit=0
+git apply --check j-binder2-roadmap.diff exit=0
+git apply --check --unidiff-zero j-binder-patch-buttonsection.diff exit=0
