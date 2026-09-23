@@ -12,7 +12,7 @@ token pass-through and adds the offcanvas `fade` token; deletes the scroll lock'
 listener; corrects the `dataAttributes` default to the platform's measured behaviour (an
 element-local list also excludes an unlisted data attribute) and the `auto` token sentences;
 and turns every event-map description to the verb-to-event direction. The guide's Surface
-rows and Methods cells follow. J-TYPES rounds 6 to 9, each audited by Astra, Opus 5.5, and the
-checker. J-ENGINE campaign (D43).
+rows and Methods cells follow. J-TYPES rounds 6 to 10, each audited by Astra and the checker, with Opus 5.5 on the
+subjective lane through round 9. J-ENGINE campaign (D43).
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
