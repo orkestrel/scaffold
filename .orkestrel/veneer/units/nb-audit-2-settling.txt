@@ -1,0 +1,85 @@
+NAVBAR round 2, the Orchestrator's readings settling the checker's command sub-clauses (2026-09-23, 18:57 UTC)
+
+Claim 1, index hashes: each shared-patch index base equals git rev-parse --short a658879:<path>:
+  ROADMAP.md 919466d equal
+  app/browser/Showcase.ts 22baf29 equal
+  app/browser/constants.ts 18b0a6d equal
+  app/browser/index.ts 66467cf equal
+  guides/veneer.md 605d1a5 equal
+  src/styles/_tokens.scss 7577415 equal
+  src/styles/index.scss 9736a3c equal
+  tests/app/browser/Showcase.test.ts d76a95e equal
+  tests/app/browser/index.test.ts 83b91c7 equal
+  tests/app/browser/integration.test.ts f33b4db equal
+  tests/conformance.test.ts 01fa963 equal
+  tests/setup.ts 8ec9f25 equal
+  tests/setupServer.test.ts d6fb87f equal
+  tests/setupStyles.test.ts daef14f equal
+  tests/setupStyles.ts bbe11e6 equal
+  nb-offlimits-2.patch src/styles/_mixins.scss de17941 equal
+  nb-offlimits-2.patch src/styles/components/_nav.scss 93abb90 equal
+  nb-retirement-2.patch src/styles/_theme.scss d93c9eb equal
+  nb-retirement-2.patch src/styles/_tokens.scss 4a25dbb base-not-a658879 (the retirement patch's base is the simulated post-ACCORDION state)
+  nb-retirement-2.patch tests/setupStyles.test.ts 09a2f22 base-not-a658879 (the retirement patch's base is the simulated post-ACCORDION state)
+  nb-retirement-2.patch tests/src/styles/theme.test.ts cff2414 base-not-a658879 (the retirement patch's base is the simulated post-ACCORDION state)
+
+Claim 1, apply checks in the worktree:
+  nb-shared-2.patch exit 0
+  nb-offlimits-2.patch exit 0
+
+Claim 1, round-to-round deltas of the off-limits and retirement patches (diff of the patch files, hunk headers and index lines excluded):
+  0a1
+  > diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+  8c9
+  < +// colors, and direction beside it, because those are what separate a nav row from a navbar list.
+  ---
+  > +// colors, and flex flow beside it, because those are what separate a nav row from a navbar list.
+  22a24
+  > diff --git a/src/styles/components/_nav.scss b/src/styles/components/_nav.scss
+  --- retirement:
+  1,21c1
+  < --- a/src/styles/_tokens.scss
+  < +++ b/src/styles/_tokens.scss
+  <  		url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"),
+  <  );
+  <  
+  < -// The Bootstrap variable each image-valued dark entry is declared as, for the components that have
+  < -// not yet landed their own dark rule. Bootstrap 5.3.8 gives each of these no light counterpart at
+  < -// theme scope, so the dark scope in `_theme.scss` walks this map and the light scope declares none
+  < -// of them; a light island nested inside a dark one inherits the dark asset. Each keeps Bootstrap's
+  < -// own value until the component that paints it lands its canonical token on its own dark rule, as
+  < -// the check, select, and navbar partials do for the switch knob, the select caret, and the toggler
+  < -// icon, and `guides/veneer.md` under Tokens records the limit. A data URI cannot read a custom
+  < -// property, which is why the value is an asset rather than a token expression. The map is
+  < -// configurable so `tests/setupStyles.test.ts` can compile the shipped partials with a key `$dark`
+  < -// does not declare and read the `@error` `_theme.scss` raises for it.
+  < -$assets: (
+  < -) !default;
+  < -
+  <  @property --vn-factor-density {
+
+Claim 1, shared-patch files changed between rounds: a first reading that compared the patch texts is struck (the round-1 patch carries no index lines and a different header form, so the text comparison read every file as changed); the corrected reading at the end of this file applies each patch to an extract of a658879 and compares the results per file.
+
+Claim 7, the outside stop recorded in mutations.log.txt:
+  10:run stopped externally at 18:28 UTC during 'the toggler ring dropped', before its restore; the stage partial was restored from the worktree (cmp equal) and the set resumed from that mutation
+
+Claim 8, installed export names against the unit's exported symbols (no new exported helper in the owned files; the shared tables are data):
+  NAVBAR_COLOR_CASES   NAVBAR_COPY   NAVBAR_DARK_CASES   NAVBAR_DARK_SPELLING_CASES   NAVBAR_EXPAND_CASES   NAVBAR_LENGTH_CASES   NAVBAR_MARKUP   NAVBAR_SELECTORS   NAVBAR_SPECIMENS   NavbarSection +export * from './sections/NavbarSection.js' 
+
+Claim 1 (corrected reading): the shared patches applied to two extracts of a658879 and the results compared per file:
+  ROADMAP.md identical
+  app/browser/Showcase.ts identical
+  app/browser/constants.ts CHANGED (24 lines differ)
+  app/browser/index.ts identical
+  guides/veneer.md CHANGED (40 lines differ)
+  src/styles/_tokens.scss CHANGED (17 lines differ)
+  src/styles/index.scss identical
+  tests/app/browser/Showcase.test.ts identical
+  tests/app/browser/index.test.ts identical
+  tests/app/browser/integration.test.ts identical
+  tests/conformance.test.ts identical
+  tests/setup.ts identical
+  tests/setupServer.test.ts identical
+  tests/setupStyles.test.ts CHANGED (29 lines differ)
+  tests/setupStyles.ts CHANGED (81 lines differ)
+  tests/setup.ts and tests/app/browser/integration.test.ts identical, so the registry rows and the journey hunk equal round 1; the changed files are the five the report names.
