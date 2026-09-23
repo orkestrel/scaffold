@@ -1,0 +1,311 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 2dc34bd..afcc557 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -7,115 +7,117 @@
+ The core entry publishes the token registry and the types that read it. The browser entry
+ publishes the color-mode controller. The token values those names carry are in § Tokens.
+ 
+-| Name                      | Kind      | Summary                                                                                                                              |
+-| ------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+-| `TOKEN_NAMES`             | const     | Names every canonical custom property the shipped cascade declares, grouped by the surface each one paints or the scale it controls. |
+-| `TokenLeaf`               | type      | Reduces a group of custom-property names to the union of the names at its leaves.                                                    |
+-| `TokenMap`                | type      | Describes the grouped tree of custom-property names the token registry carries.                                                      |
+-| `TokenName`               | type      | Names one canonical custom property the shipped cascade declares.                                                                    |
+-| `ColorModeState`          | type      | Names the color modes Bootstrap's color-mode attribute accepts.                                                                      |
+-| `ColorModeOptions`        | interface | Configures the root and optional persistence of a color-mode controller.                                                             |
+-| `ColorModeInterface`      | interface | Controls the color-mode attribute on one root element.                                                                               |
+-| `ColorMode`               | class     | Applies and optionally restores a root's color mode without registering listeners.                                                   |
+-| `isColorModeState`        | const     | Checks whether a value names a supported color mode.                                                                                 |
+-| `COLOR_MODE_ATTRIBUTE`    | const     | Names the Bootstrap color-mode attribute.                                                                                            |
+-| `COLOR_MODE_KEY`          | const     | Names the storage key for the chosen color mode.                                                                                     |
+-| `AppError`                | class     | Describes a programmer error with a machine-readable code and optional context.                                                      |
+-| `isAppError`              | function  | Checks whether a value belongs to the application's error class.                                                                     |
+-| `BUTTON_ACTIVE`           | const     | Names the class that carries a button's pressed state.                                                                               |
+-| `BUTTON_SELECTOR`         | const     | Selects hosts activated by delegated button clicks.                                                                                  |
+-| `BUTTON_TOGGLE`           | const     | Names the bubbling event dispatched after a button toggles.                                                                          |
+-| `Button`                  | class     | Toggles a host's pressed state and restores its original state on destruction.                                                       |
+-| `ButtonDetail`            | interface | Describes the pressed state after a button toggles.                                                                                  |
+-| `ButtonEventMap`          | interface | Maps a button's completed toggle to its DOM event.                                                                                   |
+-| `ButtonHooks`             | type      | Configures the initial DOM event subscriptions for a button.                                                                         |
+-| `ButtonInterface`         | interface | Controls the pressed class and accessibility attribute on a host.                                                                    |
+-| `ButtonOptions`           | interface | Configures a button's initial event hooks.                                                                                           |
+-| `Delegate`                | class     | Activates data-attribute button hosts through a root's delegated click listener.                                                     |
+-| `DelegateInterface`       | interface | Owns delegated activation and the button engines it constructs.                                                                      |
+-| `DelegateOptions`         | interface | Configures the root for delegated button activation.                                                                                 |
+-| `bindEventMap`            | function  | Binds button hooks to their DOM wire events until the signal aborts.                                                                 |
+-| `emitEvent`               | function  | Dispatches a bubbling, non-cancelable DOM event carrying the supplied detail.                                                        |
+-| `isButtonEvent`           | function  | Checks whether a DOM event carries a boolean pressed state.                                                                          |
+-| `isButtonHost`            | function  | Checks whether a value is an HTML host in the current browser realm.                                                                 |
+-| `EventHooks`              | type      | Maps each event of an entity's event map to an optional listener bound until the entity is destroyed.                                |
+-| `EventWire`               | type      | Maps each event of an entity's event map to the wire name its bubbling DOM event carries.                                            |
+-| `RegistryOptions`         | interface | Configures the ownership record one engine class keeps for its hosts.                                                                |
+-| `RegistryInterface`       | interface | Records which engine owns each host, one record per engine class.                                                                    |
+-| `SnapshotCategory`        | type      | Names the kinds of host state a snapshot records: an attribute, a class token, or an inline property.                                |
+-| `SnapshotTarget`          | interface | Describes one piece of host state a snapshot records before an engine first writes it.                                               |
+-| `SnapshotInterface`       | interface | Records host state before an engine writes it and writes that state back on restore.                                                 |
+-| `IsolationOptions`        | interface | Configures where focus returns when an isolation ends.                                                                               |
+-| `IsolationInterface`      | interface | Makes every element outside a host inert while the isolation lives.                                                                  |
+-| `BackdropOptions`         | interface | Configures the backdrop element a modal or an offcanvas panel places behind itself.                                                  |
+-| `BackdropInterface`       | interface | Shows and hides the cascade's own backdrop element.                                                                                  |
+-| `ScrollLockOptions`       | interface | Configures the document a scroll lock holds.                                                                                         |
+-| `ScrollLockInterface`     | interface | Holds one reference to a document-wide scroll lock that compensates for the scrollbar's width.                                       |
+-| `PlacementPosition`       | type      | Names Bootstrap's placement strings, the positions a menu or a tip takes against its reference.                                      |
+-| `PlacementSide`           | type      | Names the physical side a positioned element resolves to, as its `data-popper-placement` attribute carries it.                       |
+-| `PlacementOptions`        | interface | Configures where the mechanism sets a menu or a tip against its reference, from the values the owning component resolved.            |
+-| `PlacementInput`          | interface | Names the elements a placement anchors and the popover mode it promotes the positioned element with.                                 |
+-| `PlacementInterface`      | interface | Anchors a menu or a tip to its reference through CSS anchor positioning in the top layer.                                            |
+-| `SwipeDirection`          | type      | Names the horizontal direction a swipe or a slide moves the content.                                                                 |
+-| `SwipeOptions`            | interface | Configures the gesture a swipe reports and where it reports it.                                                                      |
+-| `SwipeInterface`          | interface | Reports horizontal touch and pen swipes on a host through pointer events.                                                            |
+-| `SanitizeAllowlist`       | type      | Maps each element name to the attributes sanitized tip markup keeps on it, mirroring Bootstrap's `allowList` option.                 |
+-| `SanitizeOptions`         | interface | Configures how tip markup is sanitized before it is written.                                                                         |
+-| `SetHTMLOptions`          | interface | Mirrors the WHATWG dictionary the platform's `setHTML` method reads its sanitizer from.                                              |
+-| `SanitizeTargetInterface` | interface | Describes a node whose `setHTML` method parses markup through a sanitizer.                                                           |
+-| `TipContent`              | type      | Describes the content of a tip slot: text, an element moved in, or a function of the trigger returning either.                       |
+-| `CollapseEventMap`        | interface | Maps a collapse's wire events to the verbs Bootstrap names them by.                                                                  |
+-| `CollapseHooks`           | type      | Configures the initial DOM event subscriptions for a collapse.                                                                       |
+-| `CollapseOptions`         | interface | Configures a collapse's accordion parent, initial toggle, hooks, and lifetime.                                                       |
+-| `CollapseInterface`       | interface | Shows and hides a `.collapse` panel through its height or width transition.                                                          |
+-| `DropdownDetail`          | interface | Transliterates the fields Bootstrap hydrates onto a dropdown event.                                                                  |
+-| `DropdownEventMap`        | interface | Maps a dropdown's wire events to the verbs Bootstrap names them by.                                                                  |
+-| `DropdownHooks`           | type      | Configures the initial DOM event subscriptions for a dropdown.                                                                       |
+-| `DropdownOptions`         | interface | Configures a dropdown's dismissal, placement, reference, hooks, and lifetime.                                                        |
+-| `DropdownInterface`       | interface | Opens and closes a `.dropdown-menu` from its toggle, anchored in the top layer.                                                      |
+-| `TabDetail`               | interface | Transliterates the field Bootstrap hydrates onto a tab event.                                                                        |
+-| `TabEventMap`             | interface | Maps a tab's wire events to the verbs Bootstrap names them by.                                                                       |
+-| `TabHooks`                | type      | Configures the initial DOM event subscriptions for a tab.                                                                            |
+-| `TabOptions`              | interface | Configures a tab's hooks and lifetime.                                                                                               |
+-| `TabInterface`            | interface | Activates a tab trigger and its pane, and moves focus between sibling triggers with the arrow keys.                                  |
+-| `ScrollSpyDetail`         | interface | Transliterates the field Bootstrap hydrates onto a scrollspy event.                                                                  |
+-| `ScrollSpyEventMap`       | interface | Maps a scrollspy's wire event to the verb Bootstrap names it by.                                                                     |
+-| `ScrollSpyHooks`          | type      | Configures the initial DOM event subscriptions for a scrollspy.                                                                      |
+-| `ScrollSpyOptions`        | interface | Configures a scrollspy's navigation, scrolling, observation, hooks, and lifetime.                                                    |
+-| `ScrollSpyInterface`      | interface | Activates the navigation link whose section is in view as a container scrolls.                                                       |
+-| `DismissOptions`          | interface | Selects which close requests hide a modal or an offcanvas panel.                                                                     |
+-| `ModalDetail`             | interface | Transliterates the field Bootstrap hydrates onto a modal event.                                                                      |
+-| `ModalEventMap`           | interface | Maps a modal's wire events to the verbs Bootstrap names them by.                                                                     |
+-| `ModalHooks`              | type      | Configures the initial DOM event subscriptions for a modal.                                                                          |
+-| `ModalOptions`            | interface | Configures a modal's backdrop, dismissal, focus, hooks, and lifetime.                                                                |
+-| `ModalInterface`          | interface | Shows and hides a `.modal` over a backdrop, with scroll lock and focus isolation.                                                    |
+-| `OffcanvasDetail`         | interface | Transliterates the field Bootstrap hydrates onto an offcanvas event.                                                                 |
+-| `OffcanvasEventMap`       | interface | Maps an offcanvas panel's wire events to the verbs Bootstrap names them by.                                                          |
+-| `OffcanvasHooks`          | type      | Configures the initial DOM event subscriptions for an offcanvas panel.                                                               |
+-| `OffcanvasOptions`        | interface | Configures an offcanvas panel's backdrop, dismissal, scrolling, hooks, and lifetime.                                                 |
+-| `OffcanvasInterface`      | interface | Slides an `.offcanvas` panel in and out, with an optional backdrop, scroll lock, and focus isolation.                                |
+-| `TooltipEventMap`         | interface | Maps a tooltip's wire events to the verbs Bootstrap names them by.                                                                   |
+-| `TooltipHooks`            | type      | Configures the initial DOM event subscriptions for a tooltip.                                                                        |
+-| `TooltipOptions`          | interface | Configures a tooltip's content, triggers, timing, tip, placement, sanitizing, hooks, and lifetime.                                   |
+-| `TooltipInterface`        | interface | Shows a tip anchored to its trigger in the top layer on hover, focus, click, or call.                                                |
+-| `PopoverEventMap`         | interface | Maps a popover's wire events to the verbs Bootstrap names them by.                                                                   |
+-| `PopoverHooks`            | type      | Configures the initial DOM event subscriptions for a popover.                                                                        |
+-| `PopoverOptions`          | interface | Configures a popover: the tooltip options, a body slot, and the popover defaults.                                                    |
+-| `PopoverInterface`        | interface | Shows a header-and-body tip anchored to its trigger: the tooltip contract under the `.bs.popover` event names.                       |
+-| `AlertEventMap`           | interface | Maps an alert's wire events to the verbs Bootstrap names them by.                                                                    |
+-| `AlertHooks`              | type      | Configures the initial DOM event subscriptions for an alert.                                                                         |
+-| `AlertOptions`            | interface | Configures an alert's hooks and lifetime.                                                                                            |
+-| `AlertInterface`          | interface | Closes an `.alert` by fading it out and removing it from the document.                                                               |
+-| `ToastEventMap`           | interface | Maps a toast's wire events to the verbs Bootstrap names them by.                                                                     |
+-| `ToastHooks`              | type      | Configures the initial DOM event subscriptions for a toast.                                                                          |
+-| `ToastOptions`            | interface | Configures a toast's fade, automatic hiding, hooks, and lifetime.                                                                    |
+-| `ToastInterface`          | interface | Shows a `.toast` in its container's flow and hides it after a delay.                                                                 |
+-| `CarouselDetail`          | interface | Transliterates the fields Bootstrap hydrates onto a carousel event.                                                                  |
+-| `CarouselEventMap`        | interface | Maps a carousel's wire events to the verbs Bootstrap names them by.                                                                  |
+-| `CarouselHooks`           | type      | Configures the initial DOM event subscriptions for a carousel.                                                                       |
+-| `CarouselRide`            | type      | Names when a carousel starts cycling on its own: at construction, or after the first interaction.                                    |
+-| `CarouselOptions`         | interface | Configures a carousel's cycling, keyboard and touch input, wrapping, hooks, and lifetime.                                            |
+-| `CarouselInterface`       | interface | Moves a `.carousel` between its items by call, key, swipe, indicator, or interval.                                                   |
++| Name                                      | Kind      | Summary                                                                                                                              |
++| ----------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
++| `TOKEN_NAMES`                             | const     | Names every canonical custom property the shipped cascade declares, grouped by the surface each one paints or the scale it controls. |
++| `TokenLeaf`                               | type      | Reduces a group of custom-property names to the union of the names at its leaves.                                                    |
++| `TokenMap`                                | type      | Describes the grouped tree of custom-property names the token registry carries.                                                      |
++| `TokenName`                               | type      | Names one canonical custom property the shipped cascade declares.                                                                    |
++| `ColorModeState`                          | type      | Names the color modes Bootstrap's color-mode attribute accepts.                                                                      |
++| `ColorModeOptions`                        | interface | Configures the root and optional persistence of a color-mode controller.                                                             |
++| `ColorModeInterface`                      | interface | Controls the color-mode attribute on one root element.                                                                               |
++| `ColorMode`                               | class     | Applies and optionally restores a root's color mode without registering listeners.                                                   |
++| `isColorModeState`                        | const     | Checks whether a value names a supported color mode.                                                                                 |
++| `COLOR_MODE_ATTRIBUTE`                    | const     | Names the Bootstrap color-mode attribute.                                                                                            |
++| `COLOR_MODE_KEY`                          | const     | Names the storage key for the chosen color mode.                                                                                     |
++| `AppError`                                | class     | Describes a programmer error with a machine-readable code and optional context.                                                      |
++| `isAppError`                              | function  | Checks whether a value belongs to the application's error class.                                                                     |
++| `BUTTON_ACTIVE`                           | const     | Names the class that carries a button's pressed state.                                                                               |
++| `BUTTON_SELECTOR`                         | const     | Selects hosts activated by delegated button clicks.                                                                                  |
++| `BUTTON_TOGGLE`                           | const     | Names the bubbling event dispatched after a button toggles.                                                                          |
++| `Button`                                  | class     | Toggles a host's pressed state and restores its original state on destruction.                                                       |
++| `ButtonDetail`                            | interface | Describes the pressed state after a button toggles.                                                                                  |
++| `ButtonEventMap`                          | interface | Maps a button's completed toggle to its DOM event.                                                                                   |
++| `ButtonHooks`                             | type      | Configures the initial DOM event subscriptions for a button.                                                                         |
++| `ButtonInterface`                         | interface | Controls the pressed class and accessibility attribute on a host.                                                                    |
++| `ButtonOptions`                           | interface | Configures a button's initial event hooks.                                                                                           |
++| `Delegate`                                | class     | Activates data-attribute button hosts through a root's delegated click listener.                                                     |
++| `DelegateInterface`                       | interface | Owns delegated activation and the button engines it constructs.                                                                      |
++| `DelegateOptions`                         | interface | Configures the root for delegated button activation.                                                                                 |
++| `bindEventMap`                            | function  | Binds button hooks to their DOM wire events until the signal aborts.                                                                 |
++| `emitEvent`                               | function  | Dispatches a bubbling, non-cancelable DOM event carrying the supplied detail.                                                        |
++| `isButtonEvent`                           | function  | Checks whether a DOM event carries a boolean pressed state.                                                                          |
++| `isButtonHost`                            | function  | Checks whether a value is an HTML host in the current browser realm.                                                                 |
++| `EventHooks`                              | type      | Maps each event of an entity's event map to an optional listener bound until the entity is destroyed.                                |
++| `EventWire`                               | type      | Maps each event of an entity's event map to the wire name its bubbling DOM event carries.                                            |
++| `RegistryOptions`                         | interface | Configures the ownership record one engine class keeps for its hosts.                                                                |
++| `RegistryInterface`                       | interface | Records which engine owns each host, one record per engine class.                                                                    |
++| `SnapshotCategory`                        | type      | Names the kinds of host state a snapshot records: an attribute, a class token, or an inline property.                                |
++| `SnapshotTarget`                          | interface | Describes one piece of host state a snapshot records before an engine first writes it.                                               |
++| `SnapshotInterface`                       | interface | Records host state before an engine writes it and writes that state back on restore.                                                 |
++| `IsolationOptions`                        | interface | Configures where focus returns when an isolation ends.                                                                               |
++| `IsolationInterface`                      | interface | Makes every element outside a host inert while the isolation lives.                                                                  |
++| `BackdropOptions`                         | interface | Configures the backdrop element a modal or an offcanvas panel places behind itself.                                                  |
++| `BackdropInterface`                       | interface | Shows and hides the cascade's own backdrop element.                                                                                  |
++| `ScrollLockOptions`                       | interface | Configures the document a scroll lock holds.                                                                                         |
++| `ScrollLockInterface`                     | interface | Holds one reference to a document-wide scroll lock that compensates for the scrollbar's width.                                       |
++| `PlacementPosition`                       | type      | Names Bootstrap's placement strings, the positions a menu or a tip takes against its reference.                                      |
++| `PlacementSide`                           | type      | Names the physical side a positioned element resolves to, as its `data-popper-placement` attribute carries it.                       |
++| `PlacementOptions`                        | interface | Configures where the mechanism sets a menu or a tip against its reference, from the values the owning component resolved.            |
++| `PlacementInput`                          | interface | Names the elements a placement anchors and the popover mode it promotes the positioned element with.                                 |
++| `PlacementInterface`                      | interface | Anchors a menu or a tip to its reference through CSS anchor positioning in the top layer.                                            |
++| `SwipeDirection`                          | type      | Names the horizontal direction a swipe or a slide moves the content.                                                                 |
++| `SwipeOptions`                            | interface | Configures the gesture a swipe reports and where it reports it.                                                                      |
++| `SwipeInterface`                          | interface | Reports horizontal touch and pen swipes on a host through pointer events.                                                            |
++| `SanitizeAllowlist`                       | type      | Maps each element name to the attributes sanitized tip markup keeps on it, mirroring Bootstrap's `allowList` option.                 |
++| `SanitizeOptions`                         | interface | Configures how tip markup is sanitized before it is written.                                                                         |
++| `SanitizerElementNamespaceWithAttributes` | interface | Mirrors the HTML standard's dictionary that names one element the platform sanitizer keeps and the attributes kept on it.            |
++| `SanitizerConfig`                         | interface | Mirrors the HTML standard's dictionary that lists the elements and attributes the platform sanitizer keeps.                          |
++| `SetHTMLOptions`                          | interface | Mirrors the HTML standard's dictionary the platform's `setHTML` method reads its sanitizer from.                                     |
++| `SanitizeTargetInterface`                 | interface | Describes a node whose `setHTML` method parses markup through a sanitizer.                                                           |
++| `TipContent`                              | type      | Describes the content of a tip slot: text, an element moved in, or a function of the trigger returning either.                       |
++| `CollapseEventMap`                        | interface | Maps a collapse's wire events to the verbs Bootstrap names them by.                                                                  |
++| `CollapseHooks`                           | type      | Configures the initial DOM event subscriptions for a collapse.                                                                       |
++| `CollapseOptions`                         | interface | Configures a collapse's accordion parent, initial toggle, hooks, and lifetime.                                                       |
++| `CollapseInterface`                       | interface | Shows and hides a `.collapse` panel through its height or width transition.                                                          |
++| `DropdownDetail`                          | interface | Transliterates the fields Bootstrap hydrates onto a dropdown event.                                                                  |
++| `DropdownEventMap`                        | interface | Maps a dropdown's wire events to the verbs Bootstrap names them by.                                                                  |
++| `DropdownHooks`                           | type      | Configures the initial DOM event subscriptions for a dropdown.                                                                       |
++| `DropdownOptions`                         | interface | Configures a dropdown's dismissal, placement, reference, hooks, and lifetime.                                                        |
++| `DropdownInterface`                       | interface | Opens and closes a `.dropdown-menu` from its toggle, anchored in the top layer.                                                      |
++| `TabDetail`                               | interface | Transliterates the field Bootstrap hydrates onto a tab event.                                                                        |
++| `TabEventMap`                             | interface | Maps a tab's wire events to the verbs Bootstrap names them by.                                                                       |
++| `TabHooks`                                | type      | Configures the initial DOM event subscriptions for a tab.                                                                            |
++| `TabOptions`                              | interface | Configures a tab's hooks and lifetime.                                                                                               |
++| `TabInterface`                            | interface | Activates a tab trigger and its pane, and moves focus between sibling triggers with the arrow keys.                                  |
++| `ScrollSpyDetail`                         | interface | Transliterates the field Bootstrap hydrates onto a scrollspy event.                                                                  |
++| `ScrollSpyEventMap`                       | interface | Maps a scrollspy's wire event to the verb Bootstrap names it by.                                                                     |
++| `ScrollSpyHooks`                          | type      | Configures the initial DOM event subscriptions for a scrollspy.                                                                      |
++| `ScrollSpyOptions`                        | interface | Configures a scrollspy's navigation, scrolling, observation, hooks, and lifetime.                                                    |
++| `ScrollSpyInterface`                      | interface | Activates the navigation link whose section is in view as a container scrolls.                                                       |
++| `DismissOptions`                          | interface | Selects which close requests hide a modal or an offcanvas panel.                                                                     |
++| `ModalDetail`                             | interface | Transliterates the field Bootstrap hydrates onto a modal event.                                                                      |
++| `ModalEventMap`                           | interface | Maps a modal's wire events to the verbs Bootstrap names them by.                                                                     |
++| `ModalHooks`                              | type      | Configures the initial DOM event subscriptions for a modal.                                                                          |
++| `ModalOptions`                            | interface | Configures a modal's backdrop, dismissal, focus, hooks, and lifetime.                                                                |
++| `ModalInterface`                          | interface | Shows and hides a `.modal` over a backdrop, with scroll lock and focus isolation.                                                    |
++| `OffcanvasDetail`                         | interface | Transliterates the field Bootstrap hydrates onto an offcanvas event.                                                                 |
++| `OffcanvasEventMap`                       | interface | Maps an offcanvas panel's wire events to the verbs Bootstrap names them by.                                                          |
++| `OffcanvasHooks`                          | type      | Configures the initial DOM event subscriptions for an offcanvas panel.                                                               |
++| `OffcanvasOptions`                        | interface | Configures an offcanvas panel's backdrop, dismissal, scrolling, hooks, and lifetime.                                                 |
++| `OffcanvasInterface`                      | interface | Slides an `.offcanvas` panel in and out, with an optional backdrop, scroll lock, and focus isolation.                                |
++| `TooltipEventMap`                         | interface | Maps a tooltip's wire events to the verbs Bootstrap names them by.                                                                   |
++| `TooltipHooks`                            | type      | Configures the initial DOM event subscriptions for a tooltip.                                                                        |
++| `TooltipOptions`                          | interface | Configures a tooltip's content, triggers, timing, tip, placement, sanitizing, hooks, and lifetime.                                   |
++| `TooltipInterface`                        | interface | Shows a tip anchored to its trigger in the top layer on hover, focus, click, or call.                                                |
++| `PopoverEventMap`                         | interface | Maps a popover's wire events to the verbs Bootstrap names them by.                                                                   |
++| `PopoverHooks`                            | type      | Configures the initial DOM event subscriptions for a popover.                                                                        |
++| `PopoverOptions`                          | interface | Configures a popover: the tooltip options, a body slot, and the popover defaults.                                                    |
++| `PopoverInterface`                        | interface | Shows a header-and-body tip anchored to its trigger: the tooltip contract under the `.bs.popover` event names.                       |
++| `AlertEventMap`                           | interface | Maps an alert's wire events to the verbs Bootstrap names them by.                                                                    |
++| `AlertHooks`                              | type      | Configures the initial DOM event subscriptions for an alert.                                                                         |
++| `AlertOptions`                            | interface | Configures an alert's hooks and lifetime.                                                                                            |
++| `AlertInterface`                          | interface | Closes an `.alert` by fading it out and removing it from the document.                                                               |
++| `ToastEventMap`                           | interface | Maps a toast's wire events to the verbs Bootstrap names them by.                                                                     |
++| `ToastHooks`                              | type      | Configures the initial DOM event subscriptions for a toast.                                                                          |
++| `ToastOptions`                            | interface | Configures a toast's fade, automatic hiding, hooks, and lifetime.                                                                    |
++| `ToastInterface`                          | interface | Shows a `.toast` in its container's flow and hides it after a delay.                                                                 |
++| `CarouselDetail`                          | interface | Transliterates the fields Bootstrap hydrates onto a carousel event.                                                                  |
++| `CarouselEventMap`                        | interface | Maps a carousel's wire events to the verbs Bootstrap names them by.                                                                  |
++| `CarouselHooks`                           | type      | Configures the initial DOM event subscriptions for a carousel.                                                                       |
++| `CarouselRide`                            | type      | Names when a carousel starts cycling on its own: at construction, or after the first interaction.                                    |
++| `CarouselOptions`                         | interface | Configures a carousel's cycling, keyboard and touch input, wrapping, hooks, and lifetime.                                            |
++| `CarouselInterface`                       | interface | Moves a `.carousel` between its items by call, key, swipe, indicator, or interval.                                                   |
+ 
+ The controller reads its mode from the root on every access. A `dark` attribute selects dark mode;
+ every other value selects light mode. Applying a mode writes the attribute for that mode, light
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index c6912ba..dba1a23 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -394,32 +394,67 @@ export interface SanitizeOptions {
+ }
+ 
+ /**
+- * Mirrors the WHATWG dictionary the platform's `setHTML` method reads its sanitizer from.
++ * Mirrors the HTML standard's dictionary that names one element the platform sanitizer keeps and the attributes kept on it.
+  *
+  * @remarks
+- * The HTML standard gives the dictionary this name, and TypeScript's DOM library does not declare it.
++ * The HTML standard names this dictionary `SanitizerElementNamespaceWithAttributes`. The mirror carries
++ * only its `name` and `attributes` fields, the ones the tip sanitizer sets. The standard types each
++ * entry of the `elements` list as a string or this dictionary, and the `elements` field of
++ * `SanitizerConfig` states that union.
++ */
++export interface SanitizerElementNamespaceWithAttributes {
++	/** Names the element the sanitized markup keeps, mirroring the dictionary's `name` field. */
++	readonly name: string
++	/** Lists the attribute names this element keeps beside the configuration's `attributes` list, mirroring the dictionary's `attributes` field. */
++	readonly attributes?: readonly string[]
++}
++
++/**
++ * Mirrors the HTML standard's dictionary that lists the elements and attributes the platform sanitizer keeps.
++ *
++ * @remarks
++ * The HTML standard names this dictionary `SanitizerConfig`. The mirror carries only its `elements`,
++ * `attributes`, and `dataAttributes` fields, the ones the tip sanitizer sets.
++ */
++export interface SanitizerConfig {
++	/** Lists the elements the sanitized markup keeps, mirroring the dictionary's `elements` field: a string names an element kept with the `attributes` list, and an entry names an element kept with its own attributes as well. */
++	readonly elements?: ReadonlyArray<string | SanitizerElementNamespaceWithAttributes>
++	/** Lists the attribute names every kept element keeps, mirroring the dictionary's `attributes` field. Default: the attributes the platform's safe baseline keeps. */
++	readonly attributes?: readonly string[]
++	/** If `true`, keeps every `data-*` attribute; if `false`, drops each one, mirroring the dictionary's `dataAttributes` field. The field is valid only beside `attributes`, and the platform refuses a configuration that names it alone. Default: kept when `attributes` is absent, dropped when `attributes` is given. */
++	readonly dataAttributes?: boolean
++}
++
++/**
++ * Mirrors the HTML standard's dictionary the platform's `setHTML` method reads its sanitizer from.
++ *
++ * @remarks
++ * The HTML standard names this dictionary `SetHTMLOptions`, and TypeScript's DOM library does not
++ * declare it. The standard's `sanitizer` field also accepts a sanitizer object, but the declaration
++ * rollup compiles with TypeScript 5.9.3, whose DOM library declares no sanitizer types, so the contract
++ * carries the `SanitizerConfig` dictionary rather than a sanitizer object.
+  */
+ export interface SetHTMLOptions {
+-	/** Carries the sanitizer the markup is parsed through. Default: the platform's safe default sanitizer. */
+-	readonly sanitizer?: Sanitizer
++	/** Carries the configuration the markup is sanitized through. Default: the platform's safe baseline. */
++	readonly sanitizer?: SanitizerConfig
+ }
+ 
+ /**
+  * Describes a node whose `setHTML` method parses markup through a sanitizer.
+  *
+  * @remarks
+- * The DOM library of TypeScript 6.0.3 declares `Sanitizer` and `setHTMLUnsafe` and omits `setHTML`,
+- * so a guard narrows an element to this contract before the tip content is written.
++ * The DOM library of TypeScript 6.0.3 omits `setHTML`, so a guard narrows an element to this contract
++ * before the tip content is written.
+  */
+ export interface SanitizeTargetInterface {
+ 	/**
+ 	 * Replaces the node's children with the markup the sanitizer keeps, mirroring the platform's `setHTML` method.
+ 	 *
+ 	 * @param html - The markup to parse.
+-	 * @param options - The sanitizer to parse it through.
++	 * @param options - The sanitizer configuration to parse it through.
+ 	 * @example
+ 	 * ```ts
+-	 * target.setHTML('<b>Saved</b>', { sanitizer: new Sanitizer() })
++	 * target.setHTML('<b>Saved</b>', { sanitizer: { elements: ['b'] } })
+ 	 * ```
+ 	 */
+ 	setHTML(html: string, options?: SetHTMLOptions): void
