@@ -83,3 +83,8 @@ Claim 1 (corrected reading): the shared patches applied to two extracts of a6588
   tests/setupStyles.test.ts CHANGED (29 lines differ)
   tests/setupStyles.ts CHANGED (81 lines differ)
   tests/setup.ts and tests/app/browser/integration.test.ts identical, so the registry rows and the journey hunk equal round 1; the changed files are the five the report names.
+
+Claim 7 (the reviewer's clause): npm run check in /home/user/veneer-nb at 19:03 UTC exits 2; every diagnostic names an owned file:
+        2 app/browser/sections/NavbarSection.ts
+        5 tests/app/browser/sections/NavbarSection.test.ts
+       14 tests/src/styles/components/navbar.test.ts
