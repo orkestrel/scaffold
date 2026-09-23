@@ -3,8 +3,8 @@
 ## Role and engine
 
 `builder` on Sonnet (native Claude subagent), sole writer in `/home/user/veneer-bfr` (a worktree
-detached at `cd4fdd2`, the session branch tip after CONTROL's landing, with `node_modules`
-installed by the Orchestrator). Perform the assignment directly and spawn nothing. Use absolute
+detached at `53628aa`, the session branch tip after CONTROL's landing, its consequence rounds, and
+fold 32, with `node_modules` installed by the Orchestrator). Perform the assignment directly and spawn nothing. Use absolute
 paths under `/home/user/veneer-bfr` for every command and file, and run every npm and npx command
 from `/home/user/veneer-bfr`. Do not commit, push, install, or run `git checkout`, `git restore`,
 `git stash`, `git reset`, `git clean`, or `git checkout-index`.
@@ -18,7 +18,7 @@ byte-identical before and after, the `INPUT_GROUP_CASES` remark states the `read
 ## Context
 
 **Evidence.** The rename sites, from `grep -rn "control-type\|control-border" src tests guides`
-run at `cd4fdd2` (the `ROADMAP.md` mentions are the Orchestrator's):
+run at `53628aa` (the `ROADMAP.md` mentions are the Orchestrator's):
 
 ```text
 src/styles/_mixins.scss:49:@mixin control-type {
@@ -116,7 +116,11 @@ no git command that discards a change.
 
 **A native subagent:** perform the assignment directly and spawn nothing.
 
-Apply § Edits in order, then run and record each exit code:
+Run `export PATH="/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/npm11/node_modules/.bin:$PATH"`
+in every shell before any npm or npx command: the manifest's `devEngines` pin refuses the host's
+npm 10 with `EBADDEVENGINES`, and that path carries npm 11. Never run `corepack use`, which
+writes a `packageManager` field into the nearest manifest. Apply § Edits in order, then run and
+record each exit code:
 
 1. `grep -rn "control-type\|control-border" src tests guides` (must return nothing).
 2. `npx oxfmt --config .oxfmtrc.json --check` over the owned files.
@@ -125,7 +129,7 @@ Apply § Edits in order, then run and record each exit code:
 5. `npm run build:src`.
 6. `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts`.
 7. `npm run test:policy`.
-8. `git status --porcelain` and `git diff cd4fdd2 --stat`.
+8. `git status --porcelain` and `git diff 53628aa --stat`.
 
 ## Output
 
@@ -153,5 +157,5 @@ by itself beyond where a rewrap breaks a line. Stop and report on any other conf
 
 ## Review evidence
 
-The diff against `cd4fdd2` and the status output, rendered by the Orchestrator at the unit's
+The diff against `53628aa` and the status output, rendered by the Orchestrator at the unit's
 return; the report `b-forms-rename-report.md`; the compile comparison's exit codes.

@@ -1,0 +1,15 @@
+Start the select and input-group focus walks after the date control and read the bare control at full width
+
+The CONTROL landing's regeneration read three consequences its worktree could not see: the
+plain-select and input-group focus journeys walked from the document's start, crossed the
+`Form control date` specimen, and stopped there (the installed `driveTraversal` walk stops at the
+first element it reaches twice), so their frames went missing; the input-group layout proof held a
+bare `.form-control` under its container's width, which the shipped `width: 100%` makes false; and
+one comment and one guide sentence said the control's border was the browser's own until the key
+ships. Each journey now starts from the control the preceding specimen renders (the range case's
+pattern), the layout proof reads the bare control at the container's width, and the two sentences
+state the shipped border; the input-group section's paragraph now says the `.form-control`,
+`.form-select`, and `.form-floating` rules ship, the preceding-focus reason lives in the range case
+alone, and the layout comment names the group's scoped `width: 1%`. `builder` on Sonnet, rounds 5
+and 6 of B-FORMS-CONTROL, each audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker`
+on Sonnet.
