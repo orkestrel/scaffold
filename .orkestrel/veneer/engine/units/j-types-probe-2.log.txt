@@ -1,0 +1,9 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run tsc --ignoreConfig --noEmit --strict --exactOptionalPropertyTypes --lib ESNext,DOM --target ESNext --module preserve --moduleResolution bundler --allowImportingTsExtensions C:/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/probe2.ts
+../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/probe2.ts(20,57): error TS2353: Object literal may only specify known properties, and 'static' does not exist in type '{ readonly position?: PlacementPosition; readonly offset?: readonly [number, number]; readonly fallbacks?: readonly PlacementPosition[]; }'.
+../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/probe2.ts(21,61): error TS2353: Object literal may only specify known properties, and 'position' does not exist in type '{ readonly offset?: readonly [number, number]; readonly static?: boolean; }'.
+../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/probe2.ts(22,76): error TS2322: Type '"auto"' is not assignable to type '"manual" | "hint"'.
+../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/probe2.ts(23,53): error TS2322: Type '() => void' is not assignable to type '(content: Readonly<Record<string, TipContent | undefined>>) => Promise<boolean>'.
+  Type 'void' is not assignable to type 'Promise<boolean>'.
+../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/probe2.ts(24,80): error TS2353: Object literal may only specify known properties, and 'active' does not exist in type 'ScrollSpyInterface'.
+probe exit=2
