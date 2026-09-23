@@ -16,7 +16,7 @@ paths=(
 	tg-* b-collapse-tg-* upl-* b-utilities-upl-* nb-* b-collapse-nb-* tm-* band-*
 	main-tg-* refresh-tg* regen-tg* verify-tg* dry-check-tg* main-upl-* refresh-upl* regen-upl* verify-upl*
 	merge-51a8fa0-* base-build-55ca0cd* fold-55-message.txt fold-61.py fold-62.py fold-63.py wave2-briefs.py plan-marker-2.py
-	veneer-021.sh veneer-021.log.txt
+	veneer-021.sh veneer-021.log.txt veneer-021-2.sh veneer-021-2.log.txt land-wave2.sh land-wave2.log.txt prune-wave2.sh
 	ac.diff al.diff ca.diff cn.diff co.diff dd.diff nv.diff pr.diff bs.diff ud.diff us.diff
 	ac-instruments-2 al-instruments al-instruments-2 ca-instruments ca-instruments-2 co-instruments dd-instruments-2
 	ud-instruments-2 ud-instruments-3 us-instruments
