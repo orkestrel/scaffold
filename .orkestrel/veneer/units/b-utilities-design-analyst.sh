@@ -1,0 +1,7 @@
+#!/bin/bash
+# B-UTILITIES design round, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at /home/user/veneer.
+# Command in the form the analyst driver resolved for the CONTROL round-2 lane; queued behind the B-COLLAPSE design lane through units/codex-queue-2.sh; the bench copy tmp/codex/b-utilities-design-brief.md is byte-identical to the retained brief this launcher names; the Orchestrator sized the cap (2100 s: the B-PASSIVE-CLOSE design lane ran under 30 min over a comparable brief, plus slack).
+# Brief: .orkestrel/veneer/units/b-utilities-design-brief.md  Terrain: .orkestrel/veneer/units/b-utilities-terrain-report.md  Journal: tmp/codex/b-utilities-design-analyst.jsonl  Last message: tmp/codex/b-utilities-design-analyst-last.md
+cd /home/user/scaffold
+timeout 2100 codex exec --json -C /home/user/veneer --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message /home/user/scaffold/tmp/codex/b-utilities-design-analyst-last.md "Your working directory is /home/user/veneer. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/b-utilities-design-brief.md exactly, holding the objective lane. Make your final message the proposal the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/b-utilities-design-analyst.jsonl 2> /home/user/scaffold/tmp/codex/b-utilities-design-analyst.err
+echo "exit=$?" >> /home/user/scaffold/tmp/codex/b-utilities-design-analyst.err
