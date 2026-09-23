@@ -22,4 +22,4 @@ Round: `bfl` round 2 (`b-forms-label-cascade-brief-2.md`; report `b-forms-label-
 
 The integration edit is `bfl-probe-bfl-integration.py` with its diff `bfl-integration.diff`, verified by the landing checker (`bfl-landing-checker-verdict.md`).
 
-VERDICT: FAIL 6 (one site, fixed at landing as an integration edit); outside the claims: legend-antecedent — fixed in the same edit
+VERDICT: FAIL 6 (one site, fixed at landing as an integration edit); outside the claims: legend-antecedent — fixed in the same edit, verified PASS in `bfl-landing-checker-verdict.md`
