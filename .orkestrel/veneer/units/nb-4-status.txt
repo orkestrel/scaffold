@@ -1,0 +1,5 @@
+ M tests/src/styles/theme.test.ts
+?? app/browser/sections/NavbarSection.ts
+?? src/styles/components/_navbar.scss
+?? tests/app/browser/sections/NavbarSection.test.ts
+?? tests/src/styles/components/navbar.test.ts
