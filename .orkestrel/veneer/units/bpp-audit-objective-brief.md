@@ -13,14 +13,12 @@ evidence is `/home/user/scaffold/.orkestrel/veneer/units/bpp.diff` (the whole di
 `/home/user/scaffold/.claude/rules/{writing,tests,typescript,names}.md`. Perform the audit
 directly and spawn nothing. Bound: rule within 12 minutes.
 
-Standing conditions: you have Read, Grep, and Glob only (no shell), so rule claim 2 by reading the two files for the regex pattern and claim 4 from the code and the report's run;
-name the mutation for claim 4 and whether the assertions distinguish it; list every `{@link}` tag
-run, naming the mutation and whether the assertions distinguish it; list every `{@link}` tag
-followed directly by a verb outside claim 2's regex as a finding outside the claims (the carrier's
-input), never as a BROKEN claim; a loopback listener, a nested install, and the network are denied.
-npm 11 is on `PATH` through
-`export PATH="/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/npm11/node_modules/.bin:$PATH"`.
-Never edit the worktree. Never read `.env*`, `.npmrc`, `auth.json`, or any credential file.
+Standing conditions: you have Read, Grep, and Glob only (no shell): rule claim 2 by grepping the two
+files for the pattern yourself; rule claim 4 from the code and the report's recorded run, naming
+the mutation and whether the assertions distinguish it; list every `{@link}` tag followed directly
+by a verb outside claim 2's regex as a finding outside the claims (the carrier's input), never as a
+BROKEN claim. Never edit the worktree. Never read `.env*`, `.npmrc`, `auth.json`, or any credential
+file.
 
 Output: the `orkestrel-falsify` verdict shape and nothing else — numbered verdicts with `file:line`
 (for a CONFIRMED verdict, the attack that failed; for a claim about a proof, the mutation and
