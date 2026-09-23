@@ -356,3 +356,9 @@ case reads the barrel and asserts that subsequence. Carrier: the FLOATING fix ro
 `padding-right` reading; each later landing keeps the order the case asserts. The showcase's
 construction order stays alphabetical by section class (the family's convention); the barrel, the
 guide sections, and the barrel-order case follow the release.
+
+## D36 — A generic type argument on a DOM query is not an assertion
+
+`querySelector<HTMLSelectElement>(…)` and `querySelectorAll<HTMLElement>(…)` pass the type parameter
+the DOM declarations declare; they are not the `as` assertion `AGENTS.md` bans, and the proofs keep
+them where the selector's element kind is what the case reads. No change to the existing uses.
