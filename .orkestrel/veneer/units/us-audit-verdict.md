@@ -1,0 +1,31 @@
+# Audit verdict — UTIL-SPACER (`us`), round 1 (2026-09-23)
+
+Subject: `us.diff` against `87ff1d0` in `/home/user/veneer-us`, `us-status.txt`, `us-shared.patch`, the report `b-utilities-us-report.md`; claims `us-audit-claims.md`; effective brief `us-brief-2.md` (successor of `b-utilities-us-brief.md` after the container restart). Lanes: the objective lane on `reviewer` on Opus 5.5 (`us-audit-objective-verdict.md`), substituted for `analyst` on Astra because the Codex bench is dark on quota (ROADMAP § Standing conditions); the subjective lane on `reviewer` on Opus 5.5 (`us-audit-subjective-verdict.md`); `checker` on Sonnet (`us-audit-checker-verdict.md`); blind on one claims file. The writer was `opus` on Opus 5; both lanes ran on the writer's engine under the recorded substitution (the subjective lane's R5), which the standing condition accepts until the bench round-trips.
+
+| Claim | Objective | Subjective | Checker | Reconciled |
+| --- | --- | --- | --- | --- |
+| 1 Delta and scope | CONFIRMED | CONFIRMED | CONFIRMED | CONFIRMED; deviations 1 and 2 bounded and accepted as ruled in the claims file |
+| 2 The mixins | CONFIRMED | CONFIRMED | — | CONFIRMED |
+| 3 The gap partial and the cascade | CONFIRMED (checked in `dist`) | CONFIRMED | — | CONFIRMED |
+| 4 The Tailwind contract | CONFIRMED | CONFIRMED; R2 on the weakened `variables` assertion | — | CONFIRMED; the fix round restores the exact equality (see the rulings) |
+| 5 Specimens and the Layout proof | CONFIRMED | CONFIRMED on the wording; F3, F4, R3 | CONFIRMED | CONFIRMED; F3, F4, and R3 fixed by the fix round |
+| 6 Shared patches and the ledger | CONFIRMED (hunk contexts checked) | CONFIRMED; F5, F6, F7 | CONFIRMED; the ledger-equals-measurement sub-claim UNRESOLVED | CONFIRMED; the landing's conformance run settles the ledger; F5, F6, F7 fixed by the fix round |
+| 7 Law and report | BROKEN: (a) tokens without nouns, (b) criterion 3's record | BROKEN: the compatibility rows' unbackticked tokens | CONFIRMED; report counts listed | BROKEN: fixed by the fix round as ruled |
+
+## Rulings
+
+- **Token nouns (claim 7a).** The CONTROL round-3 ruling (carried by P1 SCAFFOLD-PROPAGATE) and D42 make a CSS property, value, function, custom property, class selector written as a selector, and `!important` token its own noun; a Sass variable (`$values`, `$class`, `$properties`, `$locals`, `$responsive`) is the same case and stands as its own noun, following the file's existing comments ("`$tint` and `$edge` are…"). So "`.gap-*` sets both axes", "`gap`, then `row-gap`, then `column-gap`", "carries `-moz-column-gap` beside `column-gap`", and "the `!important` the release writes" stand. A file path, a mixin name, a test name, and a layer name are identifiers and take a noun: "the `tests/src/styles/utilities/gap.test.ts` proof reads", "the `breakpoint-each` mixin", "under the `components` layer", "the `vn-utility-` prefix". The fix round applies that split. P1 SCAFFOLD-PROPAGATE's sentence gains the Sass-variable clause (recorded here as the carrier's input).
+- **Compatibility rows (claim 7, subjective).** Fixed in the shared patch: "Every official `.gap-*` step and breakpoint selector ships; resolved row and column gaps are proved in the `tests/src/styles/utilities/gap.test.ts` proof." and the `column-gap` row the same way.
+- **Criterion 3's record (claim 7b).** The fix round's report records the baseline compile command and the `compare.mjs` invocation with their printed lines, and retains the baseline step as an instrument.
+- **F1 (`$state`).** Adopted: `utility` and `utility-variable` gain `$state: ()`, emitting `.{name}-{state}:{state}` beside the base class as the release does, with fixture entries proving a hover variant on each mixin; the fix lands before wave 2 dispatches (UTIL-TEXT's link entries are the first shipped consumer).
+- **F2 (classless responsive infix).** Adopted: when `$class` is empty the infix drops its leading hyphen (`.md-key`), with a fixture entry; the header comment then holds.
+- **F3 and R3 (specimens).** Adopted: the gap specimens draw their boxes in the gutter siblings' shape (`.container-fluid > .row.row-cols-auto.g-0.gap-N > div`), no borrowed component; the `Responsive gap` specimen wraps at the 1280 variant (`row-cols-2` like the gutter sibling) so `row-gap-lg-5` shows; `LayoutSection.test.ts` selectors follow.
+- **F4, F5, F6, F7 (prose and placement).** Adopted as the subjective lane states them: one term ("gutter and gap steps"); the § Tailwind sentence written so it needs no edit when names are added; the mixin contract sentences move to § Styles and § Gap utilities keeps the gap-specific sentences; the CL8b cell in the closed rows' form with the hash filled at landing.
+- **unconsumed-utility-variable (objective).** R4 stands with its reason recorded: the family record names UTIL-TEXT's link entries (`.link-opacity-N-hover:hover` through `utility-variable` with `$state`) and UTIL-PAINT's `css-var` utilities as the first real consumers, dispatched from this landing; the family's exit criterion gains "each mixin has shipped callers in at least two partials at the family's close, or it is inlined" (the subjective lane's R4). No mixin moves.
+- **R2.** The profiles case restores an exact equality over the `tailwind` profile's variables (the measured set the generated gap utilities read) so a leaked reset token fails; `GAP_KEYS` stays a one-use local constant in `gap.test.ts`; `as const` is the tree's const assertion, permitted by `.claude/rules/typescript.md`.
+- **R4 (section placement).** `### Gap utilities` stays its own section: one mechanism, one section; UTIL-SPACING's brief names it as a neighbour.
+- **F8 and the report's counts and terms.** The report is retained as returned with the faults on record; the fix round's report states no count and no banned term.
+
+Findings outside the claims all carried by the fix round (`us-brief-3.md`) except the P1 sentence (carrier P1 SCAFFOLD-PROPAGATE) and the family exit clause (carrier: the family record, edited by the Orchestrator at this reconciliation).
+
+VERDICT: FAIL 7; outside the claims: F1, F2, F3, F4, F5, F6, F7, unconsumed-utility-variable — carried by the fix round

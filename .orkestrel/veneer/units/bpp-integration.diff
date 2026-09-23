@@ -1,0 +1,30 @@
+--- /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/bpp-int/setupServer.pre.ts	2026-09-23 13:58:09.840905204 +0000
++++ /home/user/veneer-bpp/tests/setupServer.ts	2026-09-23 13:58:09.873566687 +0000
+@@ -529,8 +529,7 @@
+ 
+ /**
+  * Maps each planted shared name onto the longhands Tailwind's rule for it declares, the input the
+- * proofs the {@link collectImportantNames} helper drives read as the longhands each name has to
+- * cover.
++ * proofs of the {@link collectImportantNames} helper pass as the longhands each name has to cover.
+  *
+  * @remarks
+  * The `col-1` entry carries the longhands of a shorthand, the `table` entry a single longhand, and
+@@ -1989,7 +1988,7 @@
+  *   inventory order.
+  *
+  * @remarks
+- * the {@link attributeSelector} helper answers one rule at a time and the cascade carries many, so
++ * The {@link attributeSelector} helper answers one rule at a time and the cascade carries many, so
+  * the membership reading is built once here rather than walked per rule.
+  */
+ export function indexRecordingKeys(
+@@ -2017,7 +2016,7 @@
+  *   records the selector, which is an attribution the two rules disagree on.
+  *
+  * @remarks
+- * the {@link LAYER_COMPONENTS} constant answers first, because a layer carrying element treatments answers to
++ * The {@link LAYER_COMPONENTS} constant answers first, because a layer carrying element treatments answers to
+  * the release's own element component whatever its rules select. Inventory membership answers
+  * next, so a selector the release writes under one key reaches that key rather than the key its
+  * class prefix suggests, and a selector recorded only under a key this release withholds stays

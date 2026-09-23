@@ -1,0 +1,36 @@
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -57,6 +57,7 @@
+ @use 'components/form-floating';
+ @use 'components/input-group';
+ @use 'components/validation';
++@use 'components/dropdown';
+ @use 'components/button-group';
+ @use 'components/card';
+ @use 'components/breadcrumb';
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -107,6 +107,7 @@
+ 			'col',
+ 			'container',
+ 			'display',
++			'dropdown',
+ 			'figure',
+ 			'form',
+ 			'form-check',
+@@ -360,6 +361,7 @@
+ 			placeholders: 'placeholder',
+ 		})
+ 		const passiveNames = new Set([
++			'dropdown',
+ 			'button-group',
+ 			'card',
+ 			'breadcrumb',
+@@ -379,6 +381,7 @@
+ 			.flatMap(([, name]) => (name === undefined || !passiveNames.has(name) ? [] : [name]))
+ 			.map((name) => stems[name] ?? name)
+ 		expect(passive).toEqual([
++			'dropdown',
+ 			'button-group',
+ 			'card',
+ 			'breadcrumb',

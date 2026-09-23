@@ -1,0 +1,489 @@
+import { requireValue } from '@orkestrel/test'
+import { readInventory, resolveContained } from '@orkestrel/test/server'
+import { parseJSON } from '@orkestrel/contract'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { dirname, resolve } from 'node:path'
+import { ELEMENT_TAGS } from './setupStyles.js'
+import { describe, expect, it } from 'vitest'
+import {
+	BOOTSTRAP_BUNDLE_DIGEST,
+	BOOTSTRAP_CSS_DIGEST,
+	BOOTSTRAP_MANIFEST_PATH,
+	BOOTSTRAP_VERSION,
+	FORBIDDEN_RUNTIME,
+	FORBIDDEN_SIGNATURES,
+	FORM_PARTIALS,
+	ELEMENT_RELATIVES,
+	ORACLE_TIMEOUT,
+	WORKSPACE_ROOT,
+	collectElementTags,
+	collectImportClosure,
+	collectLedger,
+	collectMandatedRelatives,
+	collectShippedComponents,
+	compileExpandedCascade,
+	describeAddition,
+	describeDeparture,
+	normalizeMediaCondition,
+	scanCompatibilityPresence,
+	scanLedgerDrift,
+	scanShippedDeferrals,
+	computeArtifactDigest,
+	readAdditions,
+	readManifestMember,
+	readBuiltCascade,
+	readCascadeBlocks,
+	renderRuleKey,
+	SheetReader,
+	readCompatibility,
+	readDeferrals,
+	readDepartures,
+	readOracleInventory,
+	recordButtonOracle,
+	scanOracleObligation,
+	scanOracleFixture,
+	scanEscapingImport,
+	scanForbiddenBuild,
+	scanForbiddenDependency,
+	scanForbiddenSource,
+} from './setupServer.js'
+
+describe('Bootstrap reference identity', () => {
+	it('installs the exact Bootstrap release this package tracks', () => {
+		expect(readManifestMember(BOOTSTRAP_MANIFEST_PATH, 'version')).toBe(BOOTSTRAP_VERSION)
+	})
+
+	it('pins the installed CSS and bundled JavaScript bytes', () => {
+		const root = dirname(BOOTSTRAP_MANIFEST_PATH)
+		expect(computeArtifactDigest(resolve(root, 'dist/css/bootstrap.css'))).toBe(
+			BOOTSTRAP_CSS_DIGEST,
+		)
+		expect(computeArtifactDigest(resolve(root, 'dist/js/bootstrap.bundle.js'))).toBe(
+			BOOTSTRAP_BUNDLE_DIGEST,
+		)
+	})
+})
+
+describe('Bootstrap component oracle', () => {
+	it('reports an omitted container navigation selector even when its fluid shell ships', () => {
+		const cascade = readBuiltCascade()
+		const selector = '.navbar>.container-fluid'
+		expect(cascade).toContain(selector)
+		expect(
+			scanCompatibilityPresence(
+				readCompatibility(),
+				readOracleInventory(),
+				readDeferrals(),
+				cascade.replaceAll(selector, '.omitted-navbar>.container-fluid'),
+			),
+		).toContain('.navbar > .container-fluid')
+	})
+	it('reports an omitted link hover selector even when its resting twin ships', () => {
+		const cascade = readBuiltCascade()
+		const selector = '.link-opacity-10-hover:hover'
+		expect(cascade).toContain(selector)
+		expect(
+			scanCompatibilityPresence(
+				readCompatibility(),
+				readOracleInventory(),
+				readDeferrals(),
+				cascade.replaceAll(selector, '.omitted-link-opacity-10:hover'),
+			),
+		).toContain(selector)
+	})
+	it('carries every shipped component selector and custom property in the built cascade', () => {
+		const rows = readCompatibility()
+		const shipped = collectShippedComponents(rows)
+		const listed: readonly string[] = [
+			'badge',
+			'blockquote',
+			'breadcrumb',
+			'btn',
+			'btn-close',
+			'btn-group',
+			'btn-toolbar',
+			'card',
+			'col',
+			'collapse',
+			'collapsing',
+			'container',
+			'display',
+			'figure',
+			'form',
+			'form-check',
+			'form-control',
+			'form-floating',
+			'form-range',
+			'form-select',
+			'g',
+			'gx',
+			'gy',
+			'h1',
+			'h2',
+			'h3',
+			'h4',
+			'h5',
+			'h6',
+			'icon-link',
+			'img',
+			'initialism',
+			'input-group',
+			'invalid-feedback',
+			'invalid-tooltip',
+			'is-invalid',
+			'is-valid',
+			'lead',
+			'link',
+			'list-group',
+			'list-inline',
+			'list-unstyled',
+			'mark',
+			'offset',
+			'pagination',
+			'placeholder',
+			'progress',
+			'ratio',
+			'reboot',
+			'row',
+			'row-gap',
+			'small',
+			'spinner',
+			'table',
+			'valid-feedback',
+			'valid-tooltip',
+			'vr',
+			'was-validated',
+		]
+		expect(
+			scanCompatibilityPresence(rows, readOracleInventory(), readDeferrals(), readBuiltCascade()),
+		).toBeUndefined()
+		expect(shipped, 'Guide shipped components and conformance component list must agree').toEqual(
+			listed,
+		)
+	})
+
+	it(
+		'records official Button behavior and matches each named fixture step',
+		async () => {
+			const path = resolve(WORKSPACE_ROOT, 'tests/fixtures/oracle/button.json')
+			if (process.env.ORACLE_REFRESH !== '1' && !existsSync(path))
+				throw new Error(
+					'Missing oracle fixture: tests/fixtures/oracle/button.json; record with ORACLE_REFRESH=1',
+				)
+			const recording = await recordButtonOracle()
+			if (process.env.ORACLE_REFRESH === '1') {
+				mkdirSync(dirname(path), { recursive: true })
+				writeFileSync(path, `${JSON.stringify(recording, undefined, '\t')}\n`)
+			}
+			const fixture = parseJSON(readFileSync(path, 'utf8'))
+			expect(scanOracleFixture(recording, fixture)).toBeUndefined()
+			for (const row of readCompatibility()) {
+				expect(scanOracleObligation(row, recording)).toBeUndefined()
+			}
+		},
+		ORACLE_TIMEOUT,
+	)
+})
+
+describe('cascade ledger', () => {
+	const cascade = compileExpandedCascade()
+	const inventory = readOracleInventory()
+	const shipped = collectShippedComponents(readCompatibility())
+	const recorded = readAdditions()
+	const measured = collectLedger(cascade, inventory, shipped)
+	const departures = scanLedgerDrift(measured.departures, readDepartures(), describeDeparture)
+	const additions = scanLedgerDrift(measured.additions, recorded, describeAddition)
+	// One literal on a recorded selector in the components layer, on a property the release records
+	// for no `.form-control` rule and the guide's Additions table names for none.
+	const planted = scanLedgerDrift(
+		collectLedger(
+			`${cascade}\n@layer components { .form-control { letter-spacing: 0.01em } }\n`,
+			inventory,
+			shipped,
+		).additions,
+		recorded,
+		describeAddition,
+	)
+
+	it('records every measured value difference in the guide ledger', () => {
+		expect(departures.unrecorded).toEqual([])
+	})
+
+	it('names no departure the compiled cascade no longer carries', () => {
+		expect(departures.stale).toEqual([])
+	})
+
+	it('records every emitted name the official inventory lacks', () => {
+		expect(additions.unrecorded).toEqual([])
+	})
+
+	it('names no addition the compiled cascade no longer emits', () => {
+		expect(additions.stale).toEqual([])
+	})
+
+	it('reports an unrecorded literal declaration on a shipped rule as a declaration addition', () => {
+		// A literal the partial adds on a property no text-control row values or reads passes both
+		// text-control proofs: the Node case compares only the properties that read a `var()`, and the
+		// browser case reads only the properties a row values. This ledger is the reading that reports
+		// it, and the unmodified cascade is the control that reports nothing.
+		expect(planted.unrecorded).toEqual([
+			'form-control | .form-control { letter-spacing } | — | declaration',
+		])
+		expect(additions.unrecorded).toEqual([])
+	})
+
+	// `scanCompatibilityPresence` stops at its first failure and judges only names the inventory
+	// carries. This case names every deferral the cascade ships, so a row whose owner shipped the
+	// name reads as the stale row it is rather than as one refusal standing for all of them.
+	it('defers no name the built cascade ships', () => {
+		expect(scanShippedDeferrals(readDeferrals(), readBuiltCascade())).toEqual([])
+	})
+
+	it('selects in the elements layer exactly the tags the partial table names', () => {
+		const written = [...new Set(ELEMENT_TAGS.flatMap(([, tags]) => tags))].sort()
+		const selected = collectElementTags(cascade)
+		expect(selected).toEqual(written.filter((tag) => !ELEMENT_RELATIVES.includes(tag)))
+		expect(collectMandatedRelatives(selected)).toEqual([...ELEMENT_RELATIVES].sort())
+	})
+})
+
+describe('declaration priority', () => {
+	// D39a: the oracle fixture records a declaration's value without its priority, so the ledger's
+	// value comparison cannot carry a dropped or added `!important`. This case holds D39's rule
+	// directly against the release's compiled CSS instead, where the priority is held equal.
+	it('carries the priority the release writes on every declaration both sheets make, and adds none', () => {
+		const release = new SheetReader(
+			readFileSync(
+				createRequire(import.meta.url).resolve('bootstrap/dist/css/bootstrap.css'),
+				'utf8',
+			),
+		)
+		const cascade = new SheetReader(readBuiltCascade())
+		const key = (selector: string, property: string): string => `${selector} { ${property} }`
+		const shipped = new Map<string, boolean>()
+		for (const declaration of cascade.declarations) {
+			const pair = key(declaration.selector, declaration.property)
+			shipped.set(pair, (shipped.get(pair) ?? false) || declaration.important)
+		}
+		const seen = new Set<string>()
+		const mismatches: string[] = []
+		let compared = 0
+		for (const declaration of release.declarations) {
+			const pair = key(declaration.selector, declaration.property)
+			const important = shipped.get(pair)
+			if (important === undefined || seen.has(pair)) continue
+			seen.add(pair)
+			compared += 1
+			if (important !== declaration.important)
+				mismatches.push(
+					`${pair}: release ${declaration.important ? 'important' : 'normal'}, cascade ${important ? 'important' : 'normal'}`,
+				)
+		}
+		expect(compared).toBeGreaterThan(0)
+		expect(mismatches).toEqual([])
+	})
+	it('emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline', () => {
+		// A caller's content shares the mixin's media block: the `forced-ring` mixin opens one
+		// `forced-colors` block and writes the content after the outline inside it, which is how the
+		// shadow reset the `focus-ring` mixin passes reaches the button. Content emitted in a block of
+		// its own ships the same bytes, because the build merges adjacent identical media blocks, so
+		// the count is read in the expanded compile, where the blocks stay apart.
+		const forced = readCascadeBlocks(compileExpandedCascade()).filter(
+			(block) => normalizeMediaCondition(block.condition) === '(forced-colors: active)',
+		)
+		const grouped = Map.groupBy(forced, renderRuleKey)
+		expect([...grouped.keys()]).toEqual(
+			expect.arrayContaining([
+				'button:focus-visible @media (forced-colors: active)',
+				'.btn:focus-visible @media (forced-colors: active)',
+				'.form-control:focus @media (forced-colors: active)',
+				'.form-select:focus @media (forced-colors: active)',
+				'.form-check-input:focus @media (forced-colors: active)',
+				'.form-range:focus @media (forced-colors: active)',
+			]),
+		)
+		expect([...grouped].filter(([, blocks]) => blocks.length > 1).map(([key]) => key)).toEqual([])
+		for (const key of [
+			'button:focus-visible @media (forced-colors: active)',
+			'.btn:focus-visible @media (forced-colors: active)',
+		]) {
+			const [block] = requireValue(grouped.get(key), `The expanded compile writes no ${key} block`)
+			expect([...requireValue(block, `No ${key} block`).declarations.keys()]).toEqual([
+				'outline',
+				'box-shadow',
+			])
+		}
+	})
+})
+
+describe('Bootstrap source order', () => {
+	// A forms rule that ties a validation rule on one property yields to it only because the release
+	// loads validation after it, so the barrel keeps the release's forms sequence. The release splits
+	// the label and the help text across its own partials that Veneer writes from one, and names its
+	// floating partial `floating-labels`; the `FORM_PARTIALS` record maps each onto the Veneer partial
+	// writing its rules, and the repeat the label pair leaves is removed.
+	it('loads every forms partial in the release order, validation last', () => {
+		const release = [
+			...new Set(
+				[
+					...readFileSync(
+						resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'scss/_forms.scss'),
+						'utf8',
+					).matchAll(/@import "forms\/([\w-]+)";/gu),
+				].flatMap(([, name]) => (name === undefined ? [] : [FORM_PARTIALS[name] ?? name])),
+			),
+		]
+		expect(release).toEqual([
+			'form-label',
+			'form-control',
+			'form-select',
+			'form-check',
+			'form-range',
+			'form-floating',
+			'input-group',
+			'validation',
+		])
+		const loaded = [
+			...readFileSync(resolve(WORKSPACE_ROOT, 'src/styles/index.scss'), 'utf8').matchAll(
+				/^@use 'components\/([\w-]+)'/gmu,
+			),
+		].flatMap(([, name]) => (name === undefined ? [] : [name]))
+		expect(loaded.filter((name) => release.includes(name))).toEqual(release)
+	})
+	// The release names the passive partials with the `spinners` token and the `placeholders`
+	// token, plural forms Veneer writes from the singular `spinner` stem and the `placeholder`
+	// stem, and it writes the collapse classes in its `transitions` partial, which Veneer writes as
+	// the `collapse` stem, so this case maps them the way the forms case maps its own renamed
+	// partials. The passive block and the helpers both load after every forms partial, in the
+	// release's own sequence.
+	it('loads the passive block and the helpers in the release order, after every forms partial', () => {
+		const stems: Readonly<Record<string, string>> = Object.freeze({
+			transitions: 'collapse',
+			spinners: 'spinner',
+			placeholders: 'placeholder',
+		})
+		const passiveNames = new Set([
+			'transitions',
+			'button-group',
+			'card',
+			'breadcrumb',
+			'pagination',
+			'badge',
+			'progress',
+			'list-group',
+			'close',
+			'spinners',
+			'placeholders',
+		])
+		const bootstrapSource = readFileSync(
+			resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'scss/bootstrap.scss'),
+			'utf8',
+		)
+		const passive = [...bootstrapSource.matchAll(/@import "([\w-]+)";/gu)]
+			.flatMap(([, name]) => (name === undefined || !passiveNames.has(name) ? [] : [name]))
+			.map((name) => stems[name] ?? name)
+		expect(passive).toEqual([
+			'collapse',
+			'button-group',
+			'card',
+			'breadcrumb',
+			'pagination',
+			'badge',
+			'progress',
+			'list-group',
+			'close',
+			'spinner',
+			'placeholder',
+		])
+		const helperNames = new Set(['icon-link', 'ratio', 'vr'])
+		const helpersSource = readFileSync(
+			resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'scss/_helpers.scss'),
+			'utf8',
+		)
+		const helpers = [...helpersSource.matchAll(/@import "helpers\/([\w-]+)";/gu)].flatMap(
+			([, name]) => (name === undefined || !helperNames.has(name) ? [] : [name]),
+		)
+		expect(helpers).toEqual(['icon-link', 'ratio', 'vr'])
+		const loaded = [
+			...readFileSync(resolve(WORKSPACE_ROOT, 'src/styles/index.scss'), 'utf8').matchAll(
+				/^@use 'components\/([\w-]+)'/gmu,
+			),
+		].flatMap(([, name]) => (name === undefined ? [] : [name]))
+		const validationAt = loaded.indexOf('validation')
+		const afterForms = loaded.slice(validationAt + 1)
+		const expected = [...passive, ...helpers]
+		expect(afterForms.filter((name) => expected.includes(name))).toEqual(expected)
+	})
+})
+
+describe('runtime boundaries', () => {
+	it('declares no forbidden runtime dependency or peer', () => {
+		expect(
+			scanForbiddenDependency(
+				readFileSync(resolve(WORKSPACE_ROOT, 'package.json'), 'utf8'),
+				FORBIDDEN_RUNTIME,
+			),
+		).toBeUndefined()
+	})
+
+	it('imports no forbidden runtime package from source, application, or tests', () => {
+		const files = readInventory(WORKSPACE_ROOT, ['src', 'app', 'tests'])
+		for (const [path, source] of Object.entries(files)) {
+			if (!/\.[cm]?[jt]sx?$/u.test(path)) continue
+			// The service setup, its proof, and the service proofs drive the installed Tailwind
+			// compiler as their subject, so importing it is what they are for rather than a runtime
+			// the package ships.
+			if (
+				path === 'tests/setupService.ts' ||
+				path === 'tests/setupService.test.ts' ||
+				path.startsWith('tests/service/')
+			)
+				continue
+			expect({ path, forbidden: scanForbiddenSource(source, FORBIDDEN_RUNTIME) }).toEqual({
+				path,
+				forbidden: undefined,
+			})
+		}
+	})
+
+	// `npm run build:src` precedes this case, the way the cascade presence cases assume their own
+	// built artifact. A bundler resolves an import away, so a forbidden runtime reaches a published
+	// entry as inlined code rather than as a specifier, and the source scan preceding this one
+	// cannot see it.
+	it('bundles no forbidden runtime into a published JavaScript entry', () => {
+		for (const entry of ['dist/src/core/index.js', 'dist/src/browser/index.js']) {
+			expect({
+				entry,
+				forbidden: scanForbiddenBuild(
+					resolve(WORKSPACE_ROOT, entry),
+					FORBIDDEN_RUNTIME,
+					FORBIDDEN_SIGNATURES,
+				),
+			}).toEqual({ entry, forbidden: undefined })
+		}
+	})
+
+	it('keeps relative module imports inside the workspace', () => {
+		const files = readInventory(WORKSPACE_ROOT, ['src', 'app', 'tests'])
+		for (const [path, source] of Object.entries(files)) {
+			if (!/\.[cm]?[jt]sx?$/u.test(path)) continue
+			expect({
+				path,
+				escape: scanEscapingImport(resolve(WORKSPACE_ROOT, path), source, WORKSPACE_ROOT),
+			}).toEqual({ path, escape: undefined })
+		}
+	})
+
+	it('keeps every published entry closure inside source', () => {
+		const root = resolve(WORKSPACE_ROOT, 'src')
+		for (const entry of ['core/index.ts', 'browser/index.ts', 'styles/index.ts']) {
+			const path = resolve(root, entry)
+			const closure = collectImportClosure(path)
+			expect(closure.has(path)).toBe(true)
+			for (const file of closure) {
+				expect(resolveContained(root, file) === undefined, `${entry}: ${file}`).toBe(false)
+			}
+		}
+	})
+})

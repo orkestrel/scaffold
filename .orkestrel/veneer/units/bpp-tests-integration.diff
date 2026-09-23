@@ -1,0 +1,49 @@
+--- /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/bpp-int/veneer.pre.md	2026-09-23 14:07:31.074939223 +0000
++++ guides/veneer.md	2026-09-23 14:07:31.110510839 +0000
+@@ -4048,7 +4048,30 @@
+ [showcase mounting and destruction](../tests/app/browser/Showcase.test.ts),
+ [specimen rendering and engine ownership](../tests/app/browser/sections/ButtonSection.test.ts),
+ [typography class specimens](../tests/app/browser/sections/TypeSection.test.ts),
+-[media class specimens](../tests/app/browser/sections/MediaSection.test.ts), and
++[media class specimens](../tests/app/browser/sections/MediaSection.test.ts),
++[badge specimens](../tests/app/browser/sections/BadgeSection.test.ts),
++[breadcrumb specimens](../tests/app/browser/sections/BreadcrumbSection.test.ts),
++[button group specimens](../tests/app/browser/sections/ButtonGroupSection.test.ts),
++[card specimens](../tests/app/browser/sections/CardSection.test.ts),
++[close specimens](../tests/app/browser/sections/CloseSection.test.ts),
++[content specimens](../tests/app/browser/sections/ContentSection.test.ts),
++[form check specimens](../tests/app/browser/sections/FormCheckSection.test.ts),
++[form control specimens](../tests/app/browser/sections/FormControlSection.test.ts),
++[form floating specimens](../tests/app/browser/sections/FormFloatingSection.test.ts),
++[form label specimens](../tests/app/browser/sections/FormLabelSection.test.ts),
++[form range specimens](../tests/app/browser/sections/FormRangeSection.test.ts),
++[form select specimens](../tests/app/browser/sections/FormSelectSection.test.ts),
++[input group specimens](../tests/app/browser/sections/InputGroupSection.test.ts),
++[layout specimens](../tests/app/browser/sections/LayoutSection.test.ts),
++[link specimens](../tests/app/browser/sections/LinkSection.test.ts),
++[list group specimens](../tests/app/browser/sections/ListGroupSection.test.ts),
++[pagination specimens](../tests/app/browser/sections/PaginationSection.test.ts),
++[placeholder specimens](../tests/app/browser/sections/PlaceholderSection.test.ts),
++[progress specimens](../tests/app/browser/sections/ProgressSection.test.ts),
++[specimen table rendering](../tests/app/browser/sections/SpecimenSection.test.ts),
++[spinner specimens](../tests/app/browser/sections/SpinnerSection.test.ts),
++[table specimens](../tests/app/browser/sections/TableSection.test.ts),
++[validation specimens](../tests/app/browser/sections/ValidationSection.test.ts), and
+ [showcase journeys](../tests/app/browser/integration.test.ts).
+ 
+ The journey run also writes the capture portfolio an appearance round is ruled on. Each frame is
+@@ -4142,6 +4165,14 @@
+ [the input group classes](../tests/src/styles/components/input-group.test.ts),
+ [the floating label classes](../tests/src/styles/components/form-floating.test.ts),
+ [the select classes](../tests/src/styles/components/form-select.test.ts),
++[the card classes](../tests/src/styles/components/card.test.ts),
++[the button group classes](../tests/src/styles/components/button-group.test.ts),
++[the pagination classes](../tests/src/styles/components/pagination.test.ts),
++[the placeholder classes](../tests/src/styles/components/placeholder.test.ts),
++[the progress classes](../tests/src/styles/components/progress.test.ts),
++[the spinner classes](../tests/src/styles/components/spinner.test.ts),
++[the list group classes](../tests/src/styles/components/list-group.test.ts),
++[the validation classes](../tests/src/styles/components/validation.test.ts),
+ [the gutter utilities](../tests/src/styles/utilities/gap.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and

@@ -27,7 +27,9 @@ Family record: `units/b-collapse-family.md`.
 ## Rulings
 
 - **R1 States at rest.** Every state class renders in a resting specimen with the class in markup
-  (`show`, `collapsed`, `active`, `.nav-item.show`, `.collapsing` with an inline size); driven rows
+  (`show`, `collapsed`, `active`, `.nav-item.show`); `.collapsing` carries no specimen, because the
+  journey's census refuses an inline style, and is proved on probe elements (amended 2026-09-23 by the
+  Orchestrator's ruling to COLLAPSE, recorded in the family record's rule 2); driven rows
   only for pointer and keyboard pseudo-classes that change the paint; no `CaptureState` member
   added. (Both lanes.)
 - **R2 The container combinators stay in `_container.scss`.** The pinned inventory records
@@ -98,7 +100,8 @@ Family record: `units/b-collapse-family.md`.
 The family ends when: `collapse`, `collapsing`, `dropdown`, `nav`, `navbar`, and `accordion` are
 shipped in the `listed` literal with their compatibility rows and the ledger, deferral, and
 priority gates green; no `Disclosure` row is left in § Deferred selectors; every state class
-renders at rest in a registered specimen with frames at every variant; the dark retunes live on
+renders at rest in a registered specimen with frames at every variant (the `.collapsing` classes
+excepted per R1 as amended); the dark retunes live on
 component rules and the `$assets` mechanism is gone; the four plugin rows name J-ENGINE and the
 `scrollspy` absence is recorded; no unit changed `src/browser/**` or `src/core/**`; the Tailwind
 service proofs are green with `collapse` shared; the guide carries the sections, the § Surface

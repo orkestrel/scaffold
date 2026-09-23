@@ -1,0 +1,13 @@
+Give every doc-comment code token its noun and split selector lists at the top level
+
+B-PASSIVE-PROSE (`builder` on Sonnet, three rounds) follows every `{@link}` tag and bare identifier
+in `tests/setupServer.ts` and `tests/setupStyles.ts` with its D42 noun (`helper`, `method`,
+`member`, `constant`), removes the counts those comments stated, and replaces the two `split(',')`
+sites in the button-group proof with `splitTopLevelList` (ruling R9), so a selector list with a
+comma inside a group reads as its members. The guide's § Tests gains the links to the style proofs
+and the section proofs the row's scope named (the § Tests patch the unit returned).
+
+Audited in three rounds by `reviewer` on Opus 5 holding the objective lane (the Codex bench dark on
+quota) and `checker` on Sonnet; the round-3 integration edit (the `collectImportantNames` sentence
+and two sentence-initial capitals) and the § Tests patch verified by `checker` on Sonnet at landing.
+Records: `.orkestrel/veneer/units/bpp-*` and `b-passive-prose-*` in the scaffold repository.

@@ -1,0 +1,370 @@
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -61,6 +61,7 @@
+ @use 'components/input-group';
+ @use 'components/validation';
+ @use 'components/pagination';
++@use 'components/collapse';
+ @use 'components/button-group';
+ @use 'components/progress' as progress-component;
+ @use 'components/spinner';
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -1690,3 +1690,48 @@
+ 			'<div class="container-fluid"><fieldset class="row"><legend class="col-5 col-form-label">Pickup</legend><div class="col-7"><input class="form-control" type="date" aria-label="Pickup date" value="2026-09-23"></div></fieldset></div>',
+ 	}),
+ ])
++
++/** Holds the Collapse section's visible copy and accessible name. */
++export const COLLAPSE_COPY = Object.freeze({
++	region: 'Collapse',
++	paragraph:
++		'Compare a shown and a hidden panel, then the same pair carrying the horizontal class, each state set as a class in markup.',
++})
++
++/**
++ * Lists the collapse specimens the section renders, one state each, in render order.
++ *
++ * @remarks
++ * Each state is a class written in the markup, and no specimen carries a trigger: the classes are
++ * what this key ships, and the plugin that moves a panel between them is an engine obligation the
++ * guide's compatibility table records. Each panel sits inside a card under the header it belongs to,
++ * so a frame of a hidden panel is the header alone rather than an empty box. The horizontal pair
++ * renders the same as the vertical pair, because the horizontal class takes effect only beside the
++ * closing class.
++ *
++ * No specimen renders the closing class. A closing panel rests at zero height until an engine writes
++ * an inline size on it, and the showcase renders no inline style, so its frame would carry nothing;
++ * the `tests/src/styles/components/collapse.test.ts` file reads that class on its own elements.
++ */
++export const COLLAPSE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Collapse shown',
++		markup:
++			'<div class="card"><div class="card-header">Parcel 1042</div><div class="collapse show"><div class="card-body">Left the Harbor Street depot at 08:10. The courier expects to arrive before noon.</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Collapse hidden',
++		markup:
++			'<div class="card"><div class="card-header">Parcel 1043</div><div class="collapse"><div class="card-body">Waiting at the Harbor Street depot for the afternoon run.</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Horizontal collapse shown',
++		markup:
++			'<div class="card"><div class="card-header">Route 7</div><div class="collapse collapse-horizontal show"><div class="card-body">Carries every parcel bound for the north loop.</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Horizontal collapse hidden',
++		markup:
++			'<div class="card"><div class="card-header">Route 8</div><div class="collapse collapse-horizontal"><div class="card-body">Carries every parcel bound for the south loop.</div></div></div>',
++	}),
++])
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -27,3 +27,4 @@
+ export * from './sections/BreadcrumbSection.js'
+ export * from './sections/CloseSection.js'
+ export * from './sections/InputGroupSection.js'
++export * from './sections/CollapseSection.js'
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -8,6 +8,7 @@
+ import { ButtonSection } from './sections/ButtonSection.js'
+ import { CardSection } from './sections/CardSection.js'
+ import { CloseSection } from './sections/CloseSection.js'
++import { CollapseSection } from './sections/CollapseSection.js'
+ import { ContentSection } from './sections/ContentSection.js'
+ import { FormCheckSection } from './sections/FormCheckSection.js'
+ import { FormControlSection } from './sections/FormControlSection.js'
+@@ -114,6 +115,7 @@
+ 			new BreadcrumbSection(this.#main),
+ 			new CloseSection(this.#main),
+ 			new InputGroupSection(this.#main),
++			new CollapseSection(this.#main),
+ 		]
+ 	}
+ 
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -197,6 +197,10 @@
+ 	| 'Vertical group'
+ 	| 'Wrapping toolbar'
+ 	| 'Waving placeholder'
++	| 'Collapse shown'
++	| 'Collapse hidden'
++	| 'Horizontal collapse shown'
++	| 'Horizontal collapse hidden'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -373,6 +377,11 @@
+  * the grow spinners and the `tests/src/styles/components/spinner.test.ts` file reads their running
+  * timelines; what is declined here is the frame, because there is nothing in it to read.
+  *
++ * The closing collapse box is declined for the same reason. A panel carrying the `collapsing` class
++ * rests at zero height until an engine writes an inline size on it, and the showcase renders no
++ * inline style, so the Collapse region renders no closing panel and the
++ * `tests/src/styles/components/collapse.test.ts` file reads that class on its own elements.
++ *
+  * A key whose recorded rule resolves `display: none` at rest names the surrounding region rather
+  * than the element the key ships: that element's own box clips to no pixel, so a frame declared on
+  * it reads back nothing. Its declared region is the element that hosts it, and the collapse itself
+@@ -1063,6 +1072,30 @@
+ 		selector: 'legend.col-form-label',
+ 		property: 'margin-bottom',
+ 	}),
++	Object.freeze({
++		scenario: 'collapse-shown',
++		subject: 'Collapse shown',
++		selector: '.collapse.show',
++		property: 'display',
++	}),
++	Object.freeze({
++		scenario: 'collapse-hidden',
++		subject: 'Collapse hidden',
++		selector: '.card:has(> .collapse)',
++		property: 'height',
++	}),
++	Object.freeze({
++		scenario: 'horizontal-collapse-shown',
++		subject: 'Horizontal collapse shown',
++		selector: '.collapse-horizontal.show',
++		property: 'display',
++	}),
++	Object.freeze({
++		scenario: 'horizontal-collapse-hidden',
++		subject: 'Horizontal collapse hidden',
++		selector: '.card:has(> .collapse-horizontal)',
++		property: 'height',
++	}),
+ ])
+ 
+ /**
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -5,6 +5,7 @@
+ 	BREADCRUMB_SPECIMENS,
+ 	BUTTON_SPECIMENS,
+ 	CLOSE_SPECIMENS,
++	COLLAPSE_SPECIMENS,
+ 	CONTENT_SPECIMENS,
+ 	FORM_CHECK_SPECIMENS,
+ 	FORM_CONTROL_SPECIMENS,
+@@ -111,6 +112,7 @@
+ 				'Breadcrumb',
+ 				'Close',
+ 				'Input group',
++				'Collapse',
+ 			])
+ 			expect(
+ 				[...host.querySelectorAll('[data-specimen]')].map((element) =>
+@@ -142,6 +144,7 @@
+ 					...BREADCRUMB_SPECIMENS,
+ 					...CLOSE_SPECIMENS,
+ 					...INPUT_GROUP_SPECIMENS,
++					...COLLAPSE_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+ 			expect(readPerception('Showcase')).toBe('Explore the color mode with the Dark mode control.')
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -27,10 +27,13 @@
+ 			'CARD_SPECIMENS',
+ 			'CLOSE_COPY',
+ 			'CLOSE_SPECIMENS',
++			'COLLAPSE_COPY',
++			'COLLAPSE_SPECIMENS',
+ 			'CONTENT_COPY',
+ 			'CONTENT_SPECIMENS',
+ 			'CardSection',
+ 			'CloseSection',
++			'CollapseSection',
+ 			'ContentSection',
+ 			'FORM_CHECK_COPY',
+ 			'FORM_CHECK_SPECIMENS',
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -45,6 +45,7 @@
+ 	BUTTON_SPECIMENS,
+ 	CARD_SPECIMENS,
+ 	CLOSE_SPECIMENS,
++	COLLAPSE_SPECIMENS,
+ 	CONTENT_SPECIMENS,
+ 	FORM_CHECK_SPECIMENS,
+ 	FORM_CONTROL_SPECIMENS,
+@@ -1678,6 +1679,7 @@
+ 				BUTTON_SPECIMENS,
+ 				CARD_SPECIMENS,
+ 				CLOSE_SPECIMENS,
++				COLLAPSE_SPECIMENS,
+ 				CONTENT_SPECIMENS,
+ 				FORM_CHECK_SPECIMENS,
+ 				FORM_CONTROL_SPECIMENS,
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -105,6 +105,8 @@
+ 			'btn-toolbar',
+ 			'card',
+ 			'col',
++			'collapse',
++			'collapsing',
+ 			'container',
+ 			'display',
+ 			'figure',
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1345,6 +1345,8 @@
+ 				'btn-toolbar',
+ 				'card',
+ 				'col',
++				'collapse',
++				'collapsing',
+ 				'container',
+ 				'display',
+ 				'engine',
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -64,8 +64,8 @@
+ `emitEvent` dispatches a bubbling, non-cancelable event and cannot express a cancelable one, and
+ `bindEventMap` and `Delegate` are shaped around Button: the event map, the selector, and the engine
+ each name that one component. `emitEvent`, `bindEventMap`, and `Delegate` are mechanisms with one
+-consumer, so they stay that shape until a second component needs them. B-COLLAPSE is the unit that
+-generalizes them, because Collapse is the first component carrying a cancelable pre-change event.
++consumer, so they stay that shape until the first engine component carrying a cancelable pre-change
++event lands.
+ 
+ ## Methods
+ 
+@@ -216,6 +216,7 @@
+ | `src/styles/components/_input-group.scss`   | The input group row, its addon, sizes, squared corners, overlap, and lifts in the components layer, read by `tests/src/styles/components/input-group.test.ts`.                                                                                     |
+ | `src/styles/components/_validation.scss`    | The validation scope, state classes, feedback, and tooltips in the components layer, read by `tests/src/styles/components/validation.test.ts`.                                                                                                     |
+ | `src/styles/components/_pagination.scss`    | The pagination strip, its page links, their states, and the size classes in the components layer.                                                                                                                                                  |
++| `src/styles/components/_collapse.scss`      | The hidden and shown panel, the closing box on each axis, and their transitions in the components layer, read by `tests/src/styles/components/collapse.test.ts`.                                                                                   |
+ | `src/styles/_reset.scss`                    | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.                                                                                                                                                         |
+ | `src/styles/elements/_html.scss`            | The document baseline in the elements layer.                                                                                                                                                                                                       |
+ | `src/styles/elements/_body.scss`            | The body baseline in the elements layer.                                                                                                                                                                                                           |
+@@ -357,7 +358,7 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table");
+ ```
+ 
+ The following recipe is the `preflight` profile, which takes the bare import so Tailwind's own reset
+@@ -370,7 +371,7 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table");
+ ```
+ 
+ The workspace compiles the `tailwind` recipe as written. The `tests/fixtures/tailwind/consumer.css`
+@@ -400,7 +401,10 @@
+ rule for that name declares; a name Veneer declares important on some other longhand stays on the
+ line, because that importance does not cover every longhand Tailwind's rule would otherwise win.
+ The line withholds a name that stays on it from Tailwind's generation, so Veneer's declaration is
+-the only one the page carries for it.
++the only one the page carries for it. The `collapse` class is one such name: Tailwind's `collapse`
++utility writes `visibility: collapse`, so a paired build that generated it would hide every shown
++panel, and [the consumer pairing](../tests/service/tailwind/consumer.test.ts) reads the shown panel
++its markup fixture carries resolving what the shipped cascade alone resolves for it.
+ 
+ The `tests/setup.css` file is where the workspace writes that line. The
+ profiles proof reads it from that file rather than repeating it,
+@@ -825,6 +829,46 @@
+ refused pointer, the density and radius factors, a consumer's own override, and the transition
+ collapse under the staged preference.
+ 
++### Collapse classes
++
++The collapse key and the collapsing key ship whole: the hidden panel, the shown panel, and the
++closing box on each axis. Each state is a class set in markup. This section describes what each
++class renders, and § Compatibility records the plugin that moves a panel between the classes as an
++engine obligation.
++
++A panel carrying the `collapse` class without the `show` class resolves `display: none`, so it
++leaves the page and the accessible tree together. Adding the `show` class returns the panel to the
++display its own element carries: a panel on a `div` element is a block, and a panel on a `span`
++element is inline. No rule writes a display for the shown state, and the `collapse-horizontal` class
++changes nothing at rest, because its rule selects it only beside the `collapsing` class.
++
++The `collapsing` class is the box a panel is while it opens or closes. It zeroes the height and
++hides the overflow, so the panel clips its content to the height the element carries inline, and a
++panel carrying no inline height is a zero-height box. The `collapse-horizontal` class on the same
++element turns the clip onto the other axis: the width is zeroed, the height returns to `auto`, and
++the panel clips its content to the width the element carries inline. The horizontal rule is a
++compound selector, so a horizontal element nested inside a closing panel takes nothing from it.
++
++Each closing box transitions the size it clips, `height` or `width`, over the release's
++`0.35s ease` value. No published motion token resolves to `0.35s`, so the value is Bootstrap's
++literal rather than a motion token, and `--vn-factor-motion` does not rescale it. The transition is written
++through the `transition` mixin, so the reduced-motion rule the release records beside each one is
++emitted with it, and the duration resolves to `0s` under that preference. The hiding rule carries no
++transition, so a panel shown or hidden by its class changes state at once.
++
++No rule here paints a color, so every state resolves the same in either color mode.
++
++The Collapse region renders the shown and the hidden panel on each axis, each inside a card under
++its header. It renders no closing panel: a panel carrying the `collapsing` class rests at zero
++height until an engine writes an inline size on it, and no specimen carries an inline style, so a
++frame of it would carry nothing. The capture registry declines that frame the way it declines the
++grow spinners, and the cascade proof reads the class instead.
++
++`tests/src/styles/components/collapse.test.ts` reads each state in the browser: the written
++selectors, the hidden and the shown display, the clip under an inline height with a hit test below
++the panel's edge, the zero box under none, the horizontal compound against a nested element, both
++transitions at rest and under the staged preference, and every state inside a dark island.
++
+ ### Button group classes
+ 
+ The button group key ships whole, in its own partial after the vertical rule in the components
+@@ -3935,6 +3979,8 @@
+ | is-invalid       | variable       | The `--bs-form-select-bg-icon` property carries the invalid mark on a single-value select; its value and the icon map behind it are proved in `tests/src/styles/components/validation.test.ts`.                                                                                                                                                                                                                                                                  | —                     | shipped  |
+ | pagination       | selector       | Every official `.pagination`, `.page-link`, and `.page-item` selector ships in the components layer; resolved geometry, states, and stacking are proved in `tests/src/styles/components/pagination.test.ts`.                                                                                                                                                                                                                                                     | —                     | shipped  |
+ | pagination       | variable       | Every official `--bs-pagination-*` property is declared, and each size class redeclares its padding, font, and radius; overrides are proved in `tests/src/styles/components/pagination.test.ts`.                                                                                                                                                                                                                                                                 | —                     | shipped  |
++| collapse         | selector       | Every official `.collapse` selector ships in the components layer, the hiding rule and the horizontal closing box included; resolved display, clip, and motion are proved in `tests/src/styles/components/collapse.test.ts`.                                                                                                                                                                                                                                     | —                     | shipped  |
++| collapsing       | selector       | Every official `.collapsing` selector ships in the components layer, the horizontal compound and each reduced-motion twin included; resolved clip, size, and motion are proved in `tests/src/styles/components/collapse.test.ts`.                                                                                                                                                                                                                                | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+ | engine           | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                                                                                                                                                                                                                                                         | —                     | accepted |
+ | engine           | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                                                                                                                                                                                                                                                    | —                     | accepted |
+@@ -3956,6 +4002,9 @@
+ | engine           | option         | util/config.js: Base `Config` class; `Default: {}`, `DefaultType: {}`; `NAME` getter throws; extended by `BaseComponent`, `Backdrop`, `FocusTrap`, `Swipe`, `TemplateFactory`                                                                                                                                                                                                                                                                                    | —                     | accepted |
+ | engine           | method         | util/index.js: `getUID`, `getElement`, `isElement`, `isVisible`, `isDisabled`, `isRTL`, `toType`, `noop`, `parseSelector`, `reflow`, `execute`, `findShadowRoot`, `getNextActiveElement` exported as shared utilities                                                                                                                                                                                                                                            | —                     | accepted |
+ | engine           | initialization | util/index.js: `getjQuery` skipped when `document.body` carries `data-bs-no-jquery`; `defineJQueryPlugin` registers `$.fn[NAME]` after `onDOMContentLoaded`                                                                                                                                                                                                                                                                                                      | —                     | accepted |
++| engine           | plugin         | Collapse: a `[data-bs-toggle="collapse"]` trigger names its panel by `data-bs-target` or `href` attribute; `parent: null` and `toggle: true` defaults; `toggle`, `show`, and `hide` methods; cancelable `show.bs.collapse` and `hide.bs.collapse` events, then `shown.bs.collapse` and `hidden.bs.collapse` events; trigger `aria-expanded` and `collapsed` states track the panel; `collapsing` class and inline size until transition end. Owner: J-ENGINE.    | —                     | accepted |
++
++A `plugin` row records behavior the engine owns and no shipped Veneer module performs, while the classes that plugin sets ship in the cascade and render in markup.
+ 
+ An accepted row records scope; a named Proof step obliges the official recording to agree with the
+ row. A shipped selector or variable row requires its official vocabulary less the deferrals under
+@@ -4024,8 +4073,9 @@
+ timelines, so what is declined is the frame rather than the proof.
+ 
+ A Validation region follows the Table region; a Form check, a Form control, a Form floating, a Form
+-label, a Form range, and a Form select region follow the Spinner region; and an Input group region
+-follows the Close region, each carrying that key's own specimens. The Form label region carries a
++label, a Form range, and a Form select region follow the Spinner region; an Input group region
++follows the Close region; and a Collapse region follows the Input group region, each carrying that
++key's own specimens. The Form label region carries a
+ label above its control with the help text the control names as its description, and a horizontal
+ label level with the control beside it at each size and as the legend of a group.
+ 
+@@ -4140,6 +4190,7 @@
+ [the breadcrumb classes](../tests/src/styles/components/breadcrumb.test.ts),
+ [the badge classes](../tests/src/styles/components/badge.test.ts),
+ [the close classes](../tests/src/styles/components/close.test.ts),
++[the collapse classes](../tests/src/styles/components/collapse.test.ts),
+ [the icon link classes](../tests/src/styles/components/icon-link.test.ts),
+ [the ratio classes](../tests/src/styles/components/ratio.test.ts),
+ [the vertical rule](../tests/src/styles/components/vr.test.ts),
+--- a/tests/fixtures/tailwind/markup.html
++++ b/tests/fixtures/tailwind/markup.html
+@@ -34,5 +34,6 @@
+ 			</tr>
+ 		</tbody>
+ 	</table>
++	<div class="collapse show">Shown panel</div>
+ 	<button type="button" class="btn px-8">Action</button>
+ </div>

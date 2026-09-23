@@ -34,7 +34,7 @@ proof `tests/app/browser/sections/<Name>Section.test.ts` exist per partial and p
    earns no rule. Every difference takes a `#### <key>` table row under `### Departures`; every
    extra name takes a `### Additions` row.
 2. **States at rest (R1).** Every state class renders in a resting specimen with the class in
-   markup; the `.collapsing` specimens carry an inline size; driven rows only for hover and focus
+   markup; no specimen carries an inline style (the journey's census refuses one), so `.collapsing` and `.collapsing.collapse-horizontal` render no specimen and no frame and are proved on probe elements from their declared and resolved values (the Orchestrator's ruling of 2026-09-23 to the COLLAPSE unit, D17); driven rows only for hover and focus
    readings that change the paint; no `CaptureState` member is added; no unit writes engine code, an
    event, a listener, an observer, or a behavioural proof (D41).
 3. **No right-to-left support (D5); physical properties (D11).** The caret's `margin-left` and
@@ -60,7 +60,7 @@ proof `tests/app/browser/sections/<Name>Section.test.ts` exist per partial and p
 9. **The showcase.** One `SpecimenSection` subclass per region in the `TableSection.ts` shape, fed
    by `<KEY>_COPY` and `<KEY>_SPECIMENS` in `app/browser/constants.ts` (report-only patch), appended
    after `InputGroupSection` in the barrel order (R18 names); every recorded selector rendered by a
-   specimen, with two exceptions recorded here: the `.navbar-expand-* .offcanvas` rules are proved
+   specimen, with these exceptions recorded here: the `.collapsing` classes render no specimen (rule 2); the `.navbar-expand-* .offcanvas` rules are proved
    without a specimen until the Offcanvas unit of B-MODAL … B-CAROUSEL supplies one (R10), and the
    `navbar-expand-xl` and `-xxl` expanded states have no frame under the 390 and 1280 variants (R16).
 10. **Room for positioned parts (R4).** A shown menu sits inside a wrapper that reserves its room in

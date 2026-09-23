@@ -1,0 +1,907 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index bf97e15..a82971a 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -726,262 +726,6 @@ overflow scrolls below the named boundary and is absent at and above it. The unc
+ scrolls at every viewport. The vocabulary proof compares Bootstrap's `max-width: (N - 0.02)px`
+ boundary with Veneer's `width < Npx` form by adding 0.02 to the recorded boundary.
+ 
+-### Helper classes
+-
+-The helper keys ship whole, each in its own partial: the icon link with its icon combinator and its
+-hover and focus shifts, the aspect-ratio box with its named aspects, and the vertical rule.
+-
+-The icon link lays its content out as an inline flex row, tints its underline from `--vn-link-rgb`
+-at the `--bs-link-opacity` a consumer sets, and offsets that underline by `0.25em`. Its icon
+-combinator sizes the icon to `1em` on each axis, fills it from the current color, and transitions its
+-transform. The `.icon-link-hover` class is what arms the shift: hover and keyboard focus each move
+-the icon by `--bs-icon-link-transform`, and the resting `.icon-link` class alone moves nothing.
+-
+-The combinator names the `.bi` class, which belongs to Bootstrap Icons. Veneer declares no rule for
+-that class and no rule selects it alone, so the combinator matches nothing until a consumer brings
+-the icon markup. This is the ruling the container's navigation combinators already carry: the
+-declarations are self-contained on the element Veneer owns.
+-
+-The aspect-ratio box holds its own proportion through a pseudo-element whose top padding is a
+-percentage, which resolves against the containing block's width. Each named aspect declares
+-`--bs-aspect-ratio` as its own height over its width, so the name is the whole declaration of the
+-value and a consumer setting the property directly retunes any box. Sass emits ten decimal places,
+-which is the precision this family's official values carry; `_grid.scss` rounds its column
+-percentages to eight instead, because the official arithmetic rounds there. The build then shortens
+-every percentage to six significant digits, the shipped column widths included, so the widest aspect
+-ships as `42.8571%` where the source declares `42.8571428571%`.
+-
+-The vertical rule reads `--bs-border-width` for its width, stretches to its flex line, holds a `1em`
+-floor, and paints the current color at a literal `0.25` opacity. The alias the `_tokens.scss`
+-partial declares over `--vn-border-width` is what carries a retune of either name into the rule. The
+-opacity stays a literal because no published scale retunes it, which is the treatment the `hr` rule
+-gives its own opacity.
+-
+-The `tests/src/styles/components/icon-link.test.ts`, `tests/src/styles/components/ratio.test.ts`,
+-and `tests/src/styles/components/vr.test.ts` proofs read each resolved treatment in the browser. The
+-icon link's reduced-motion collapse is read under the staged preference, and the declaration the
+-rule carries under that condition is read from the built cascade beside it.
+-
+-These are the keys' recorded departures.
+-
+-- **The prefixed backface property is absent.** The official cascade carries
+-  `-webkit-backface-visibility` beside `backface-visibility`; Veneer emits the standard property
+-  alone, because the managed Chromium and Edge receipts this cascade is proved on resolve it and
+-  leave the alias redundant. The prefixed `-webkit-text-decoration-color` alias is not a departure:
+-  the build emits it from the standard property without the source declaring it.
+-- **The icon's transition reads Veneer's motion tokens.** The official value is `0.2s ease-in-out`;
+-  Veneer writes `var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to `0.15s ease`
+-  and rescales with `--vn-factor-motion`, as the `.btn` class does. A transition written outside
+-  those tokens would ignore the motion factor the package publishes.
+-- **The shift's direction is physical.** `translate3d(0.25em, 0, 0)` moves the icon to the right,
+-  and Veneer declares that one transform, so the icon shifts the same way whatever the document's
+-  writing direction.
+-
+-### Pagination classes
+-
+-The pagination key ships whole: the strip, its page links, the hover, focus, active, and disabled
+-states, the collapsed borders between adjacent pages, the rounded ends, and the small and large size
+-classes.
+-
+-Every value the family paints is Bootstrap 5.3.8's own, apart from the forced-colors focus outline
+-§ Additions records. A length reads the Veneer scale token that already resolves to it, so the strip
+-answers to `--vn-factor-density` for its padding and to `--vn-factor-radius` for its rounded ends,
+-the way the Button family does. A color reads the compatibility variable Bootstrap itself names, so
+-the resting page takes the body surface, the link color, and the border color, and the hover, focus,
+-and disabled states take the tertiary and secondary surfaces. The active page is the exception:
+-Bootstrap paints it with the palette blue rather than with a variable, so the class reads
+-`--vn-palette-blue` and `--vn-palette-white-base`, which carry that exact pair. The active page
+-therefore holds one fill in both color modes while the pages around it retune, and it holds that
+-fill through a brand retune as well: a `--vn-color-primary-base` override leaves the active page and
+-the page focus ring on Bootstrap's blue, because each reads the palette token rather than the
+-primary role, and the overrides that move them are `--bs-pagination-active-bg`,
+-`--bs-pagination-active-border-color`, and `--bs-pagination-focus-box-shadow` declared on the strip,
+-which is where the proof's own override case sets a published property.
+-
+-The focus ring is the recorded quarter-rem shadow at a quarter of the palette blue, written as a mix
+-over that token because a partial declares no literal color. It replaces the native outline rather
+-than sitting beside it, which is why the rule clears the outline at the same site. Under forced
+-colors the focused page's rule also writes an outline in the system highlight color through the
+-`forced-ring` mixin, because forced colors paint no shadow ring. § Additions records it.
+-
+-Stacking decides whose chrome paints over the edge two pages share. Adjacent pages share one border,
+-because every page after the first pulls itself one border width towards the page before it. A
+-hovered page lifts to `2`, so its own border paints over that shared edge, and a focused page and
+-the active page each lift to `3`, so either of them paints over a hovered neighbour. Focus and
+-active hold the same value, so document order settles the pair where they meet: an active page later
+-in the strip paints over the ring of the focused page before it. A disabled page lifts to nothing
+-and refuses the pointer outright.
+-
+-The state classes read the same on a page link and on its item: `.page-link.active` and
+-`.active > .page-link` carry one treatment, and so do `.page-link.disabled` and
+-`.disabled > .page-link`. A template can carry either class wherever its own markup puts it.
+-
+-The link transition carries Bootstrap's own `0.15s ease-in-out` rather than the motion tokens the
+-Button family reads, because this family ships the release's recorded surface and no published token
+-resolves to that easing. It is written through the `transition` mixin, so the reduced-motion rule the
+-release records beside it is emitted with it and the transition collapses under that preference.
+-
+-The `tests/src/styles/components/pagination.test.ts` proof reads each resolved treatment in the
+-browser: the size geometry, the collapsed borders as painted boxes, the stacking under a real
+-pointer and real keyboard focus, the focus ring through the installed ring reader, the twin state
+-spellings, the refused pointer, the density and radius factors, a consumer's own override, and the
+-transition collapse under the staged preference.
+-
+-### Button group classes
+-
+-The button group key ships whole, in its own partial: the horizontal group, the vertical group, the
+-relationships that join their children, and the sized group families. It declares no custom property
+-of its own. Its radius reads `--bs-border-radius` and its overlap reads `--bs-border-width`, and
+-the `_tokens.scss` partial already declares each of those over `--vn-radius-base` and
+-`--vn-border-width`, so a consumer retuning either name moves the group.
+-
+-A group lays its children out as an inline flex line, and each child grows and shrinks from an
+-automatic basis, so the children share the group's free space. The vertical group turns that line
+-into a column, aligns it to the leading edge, and stretches every child to the group's own width.
+-
+-Neighbouring children overlap rather than doubling their shared border: each child after the first
+-is pulled back by one border width, on the inline axis in a horizontal group and on the block axis
+-in a vertical one. A child the reader is addressing lifts over that shared border, and the states
+-that lift it are a checked or focused `.btn-check` input's label, a hovered child, a focused child,
+-a pressed child, and a child carrying `.active`.
+-
+-The corners follow the same physical reading. A horizontal group clears the trailing corners of
+-every child but the last and the leading corners of every child but the first, so the group keeps
+-one rounded outline; a vertical group clears the bottom corners and the top corners the same way. A
+-group nested inside a group is treated as one of those children, and its own children carry the
+-corners it would have carried. A child carrying the `.dropdown-toggle` class keeps its trailing
+-corners, which is what leaves room for the split toggle Disclosure ships.
+-
+-The `.btn-group-sm > .btn` and `.btn-group-lg > .btn` twins ship from the
+-`src/styles/components/_button.scss` partial, where Bootstrap's own `@extend` rule puts them, so the
+-sized group families resolve the Button size each name declares and this partial writes nothing for
+-them.
+-
+-The `tests/src/styles/components/button-group.test.ts` proof reads each resolved treatment in the
+-browser: the direction and child growth, the overlap measured as the offset between neighbours,
+-every corner of every child position, the excluded `.dropdown-toggle` child read against a plain
+-child in each direction, each lift driven or written, the label of a focused input that is still
+-unchecked, the retuned compatibility variables, and the published radius and density factors. The
+-lift a pressed child takes is read out of the cascade as well as rendered: the pointer driver moves
+-onto its target before pressing it, so the rendered reading alone cannot tell the pressed selector
+-from the hovered one that lifts the same child.
+-
+-These are the key's recorded departures.
+-
+-- **The split-toggle selectors are absent.** Each of them belongs to the split toggle Disclosure
+-  owns, and § Deferred selectors carries a row for each. That table is where they are enumerated, so
+-  a name withheld under this key is read there rather than written twice.
+-- **The shown-group shadow is absent from the release as well.** Bootstrap writes
+-  `.btn-group.show .dropdown-toggle` through its shadow mixin, and that mixin emits nothing while
+-  shadows are off, so the official cascade carries no such rule and neither does this one.
+-
+-### Button toolbar classes
+-
+-The toolbar key ships its own selector in the same partial. A toolbar lays its groups out as a flex
+-line that wraps, and holds them at its leading edge, so a toolbar narrower than its groups moves
+-the trailing ones onto a second line rather than shrinking them. It declares no custom property.
+-
+-The `.btn-toolbar .input-group` combinator ships with the input group it sizes, from
+-`src/styles/components/_input-group.scss`; § Input group classes describes it.
+-
+-### Progress classes
+-
+-The progress key ships whole: the track, the stacked track, the bar, the striped bar, and the
+-animated bar. The elements layer keeps its own `progress { vertical-align: baseline }` rule for the
+-bare tag, which this family never selects.
+-
+-The track declares the whole closure the bar reads, so a consumer retunes a progress bar on the
+-element that carries it. Its radius reads `--bs-border-radius`, which the `_tokens.scss` partial
+-declares over `--vn-radius-base`, so the radius factor rescales the track's corners; its fill reads
+-`--bs-secondary-bg`, so the track repaints with the color mode. The `--bs-progress-box-shadow`
+-property is declared and no rule reads it, which is Bootstrap's own emission: shadows are off in
+-this build, so the recorded cascade declares the variable and paints no shadow.
+-
+-The stacked track is the same closure on another name. Each segment inside it is a track whose
+-overflow is released, so its own bar fills the width the segment was given and the rounding stays on
+-the outer track.
+-
+-The bar's width transition is written through the `transition` mixin, so the reduced-motion
+-preference collapses it; the stripe animation stops under the same preference. Both collapses are
+-Bootstrap's own recorded behavior rather than an addition here.
+-
+-These are the key's recorded departures.
+-
+-- **The bar's text and fill read palette tokens.** The recorded values are `#fff` and `#0d6efd`,
+-  and Veneer writes `var(--vn-palette-white-base)` and `var(--vn-palette-blue)`, which are the
+-  tokens declaring those bytes. The bar reads the palette entry rather than the primary role, so a
+-  `--vn-color-primary-base` retune leaves it on the release's blue, and the
+-  `--bs-progress-bar-bg` property on the track, or a `--vn-palette-blue` retune, moves it.
+-- **The stripe tints through the white channel triplet.** The recorded gradient writes
+-  `rgba(255, 255, 255, 0.15)` at each stop, and Veneer writes
+-  `rgba(var(--vn-palette-white-rgb), 0.15)`, which resolves to the same color.
+-
+-The `tests/src/styles/components/progress.test.ts` proof reads the resolved track, bar, stripe,
+-transition, and animation in the browser, under each motion preference and in each color mode.
+-
+-### Spinner classes
+-
+-The spinner key ships whole: the border spinner, the grow spinner, and their small twins. One rule
+-declares the box each spinner shares, and each name declares the speed and the animation it runs, so
+-a consumer retunes either spinner through `--bs-spinner-animation-speed` and reaches the shared box
+-through `--bs-spinner-width` and `--bs-spinner-height`.
+-
+-The border spinner paints a ring from `currentcolor` with a transparent right edge, and the grow
+-spinner paints a filled circle that scales from nothing, so each one takes its color from the text
+-around it.
+-
+-Under the reduced-motion preference each spinner slows to `1.5s` and keeps turning. A spinner
+-reports that work is still running, so a still ring would report the opposite of what the component
+-exists to say, and this is Bootstrap's own recorded behavior. The preference retunes the same speed
+-property a consumer retunes, which is why the animation itself is declared once.
+-
+-The rotation is physical: the ring turns the same way whatever the document's writing direction, so
+-the direction-flipping annotation the release carries on that keyframe does not ship.
+-
+-The `tests/src/styles/components/spinner.test.ts` proof reads the resolved box, border, paint, and
+-running animation in the browser, under each motion preference and in each color mode.
+-
+-### Placeholder classes
+-
+-The placeholder key ships whole: the placeholder itself, the `xs`, `sm`, and `lg` height floors, the
+-glow, the wave, and the empty box a button-shaped placeholder carries. That button box is the
+-`.placeholder.btn::before` rule, which this family ships, so § Deferred selectors carries no row for
+-it.
+-
+-A placeholder paints the current text color at half strength and takes the wait cursor, so it takes
+-its color from the text it stands in for and repaints with the color mode. Its height floors are
+-written in `em`, which is what makes a placeholder inside a heading as tall as that heading's own
+-line. Width comes from the grid: a placeholder carries a column class the way the release's own
+-markup carries one.
+-
+-The glow dims every placeholder inside its wrapper rather than the wrapper itself, so a paragraph of
+-placeholders pulses as one block. The wave is a mask that travels across the element, so it dims
+-whatever the element paints instead of laying a second color over it.
+-
+-Neither animation is gated on the reduced-motion preference, because the recorded cascade gates
+-neither. The repository's animation line governs Veneer's own animations, and these are the
+-release's, so the recorded behavior ships as recorded.
+-
+-These are the key's recorded departures.
+-
+-- **The mask paints through the black tokens.** The recorded gradient writes `#000` and
+-  `rgba(0, 0, 0, 0.8)`, and Veneer writes `var(--vn-palette-black-base)` and
+-  `rgba(var(--vn-palette-black-rgb), 0.8)`, which are the tokens declaring those bytes.
+-- **The prefixed mask properties are absent.** The official cascade carries `-webkit-mask-image` and
+-  `-webkit-mask-size` beside the standard properties. Veneer writes the standard properties alone,
+-  because the managed Chromium and Edge receipts this cascade is proved on resolve them and leave
+-  the aliases redundant; § Deferred selectors names those receipts. A consumer serving a browser
+-  that reads the prefixed names alone brings its own declarations for them. This is the ruling the
+-  icon link's prefixed backface property already carries.
+-- **The wave keyframe carries no prefixed alias.** The official `placeholder-wave` keyframe writes
+-  `-webkit-mask-position` beside `mask-position`, and Veneer writes the standard property alone on
+-  the footing the preceding row states. The ledger carries no row for that alias: the cascade
+-  comparison reads declarations outside keyframes, so a keyframe's own declaration reaches neither
+-  ledger file.
+-
+-The `tests/src/styles/components/placeholder.test.ts` proof reads the resolved paint, height floors,
+-button box, and both animations in the browser, in each color mode.
+-
+ ### Form label classes
+ 
+ The form label partial ships the form label, the help text, and the horizontal label at each size.
+@@ -1528,6 +1272,63 @@ against the resting one at a doubled density and under a direct `--vn-space-24`
+ reads a required empty control inside a `.was-validated` form on arrival and again after the control
+ is filled, which is the scoped form the release reaches without a state class.
+ 
++### Button group classes
++
++The button group key ships whole, in its own partial: the horizontal group, the vertical group, the
++relationships that join their children, and the sized group families. It declares no custom property
++of its own. Its radius reads `--bs-border-radius` and its overlap reads `--bs-border-width`, and
++the `_tokens.scss` partial already declares each of those over `--vn-radius-base` and
++`--vn-border-width`, so a consumer retuning either name moves the group.
++
++A group lays its children out as an inline flex line, and each child grows and shrinks from an
++automatic basis, so the children share the group's free space. The vertical group turns that line
++into a column, aligns it to the leading edge, and stretches every child to the group's own width.
++
++Neighbouring children overlap rather than doubling their shared border: each child after the first
++is pulled back by one border width, on the inline axis in a horizontal group and on the block axis
++in a vertical one. A child the reader is addressing lifts over that shared border, and the states
++that lift it are a checked or focused `.btn-check` input's label, a hovered child, a focused child,
++a pressed child, and a child carrying `.active`.
++
++The corners follow the same physical reading. A horizontal group clears the trailing corners of
++every child but the last and the leading corners of every child but the first, so the group keeps
++one rounded outline; a vertical group clears the bottom corners and the top corners the same way. A
++group nested inside a group is treated as one of those children, and its own children carry the
++corners it would have carried. A child carrying the `.dropdown-toggle` class keeps its trailing
++corners, which is what leaves room for the split toggle Disclosure ships.
++
++The `.btn-group-sm > .btn` and `.btn-group-lg > .btn` twins ship from the
++`src/styles/components/_button.scss` partial, where Bootstrap's own `@extend` rule puts them, so the
++sized group families resolve the Button size each name declares and this partial writes nothing for
++them.
++
++The `tests/src/styles/components/button-group.test.ts` proof reads each resolved treatment in the
++browser: the direction and child growth, the overlap measured as the offset between neighbours,
++every corner of every child position, the excluded `.dropdown-toggle` child read against a plain
++child in each direction, each lift driven or written, the label of a focused input that is still
++unchecked, the retuned compatibility variables, and the published radius and density factors. The
++lift a pressed child takes is read out of the cascade as well as rendered: the pointer driver moves
++onto its target before pressing it, so the rendered reading alone cannot tell the pressed selector
++from the hovered one that lifts the same child.
++
++These are the key's recorded departures.
++
++- **The split-toggle selectors are absent.** Each of them belongs to the split toggle Disclosure
++  owns, and § Deferred selectors carries a row for each. That table is where they are enumerated, so
++  a name withheld under this key is read there rather than written twice.
++- **The shown-group shadow is absent from the release as well.** Bootstrap writes
++  `.btn-group.show .dropdown-toggle` through its shadow mixin, and that mixin emits nothing while
++  shadows are off, so the official cascade carries no such rule and neither does this one.
++
++### Button toolbar classes
++
++The toolbar key ships its own selector in the same partial. A toolbar lays its groups out as a flex
++line that wraps, and holds them at its leading edge, so a toolbar narrower than its groups moves
++the trailing ones onto a second line rather than shrinking them. It declares no custom property.
++
++The `.btn-toolbar .input-group` combinator ships with the input group it sizes, from
++`src/styles/components/_input-group.scss`; § Input group classes describes it.
++
+ ### Card classes
+ 
+ The card key ships whole: the card box, its header and footer caps, the body and its title family,
+@@ -1579,6 +1380,143 @@ list-group joins at each position a group takes inside a card, an `active` heade
+ resting link in the same navigation, and the group boundary at each viewport around it, on cards
+ carrying every cap and image the joined row squares.
+ 
++### Breadcrumb classes
++
++The breadcrumb key ships whole: the trail, the inset between items, the divider each item after the
++first paints before itself, and the current page the `active` class marks.
++
++The trail is a wrapping flex row carrying no list marker, so an `ol` element renders as a line of
++steps that wraps at its container's edge. Its bottom margin reads `--vn-space-8` and the inset
++between items reads `--vn-space-4`, so both rescale with `--vn-factor-density`. The trail's own
++padding is zero on each axis, and every remaining length is Bootstrap's own literal.
++
++The divider is the leading content of each item after the first, written as
++`var(--bs-breadcrumb-divider, "/")`. The cascade declares that property nowhere, so the slash is the
++fallback the rule carries, and a consumer replaces the divider by declaring the property on the
++trail. The pseudo-element floats to the physical start, so the divider sits ahead of its item's text
++whatever the document's writing direction.
++
++The fill and the radius are declared with nothing after the colon, which is what Bootstrap writes:
++each property stands so a consumer can set it, and each declaration reading it resolves as unset
++until one does. `--bs-breadcrumb-font-size` is declared nowhere, for the same reason Bootstrap
++declares it nowhere, so the `font-size` declaration reading it leaves the trail at its inherited
++size.
++
++The divider color and the `active` item's color both read `--bs-secondary-color`, which each color
++mode declares for itself, so a trail inside a dark island follows the island.
++
++The `tests/src/styles/components/breadcrumb.test.ts` proof reads each resolved treatment in the
++browser.
++
++### Pagination classes
++
++The pagination key ships whole: the strip, its page links, the hover, focus, active, and disabled
++states, the collapsed borders between adjacent pages, the rounded ends, and the small and large size
++classes.
++
++Every value the family paints is Bootstrap 5.3.8's own, apart from the forced-colors focus outline
++§ Additions records. A length reads the Veneer scale token that already resolves to it, so the strip
++answers to `--vn-factor-density` for its padding and to `--vn-factor-radius` for its rounded ends,
++the way the Button family does. A color reads the compatibility variable Bootstrap itself names, so
++the resting page takes the body surface, the link color, and the border color, and the hover, focus,
++and disabled states take the tertiary and secondary surfaces. The active page is the exception:
++Bootstrap paints it with the palette blue rather than with a variable, so the class reads
++`--vn-palette-blue` and `--vn-palette-white-base`, which carry that exact pair. The active page
++therefore holds one fill in both color modes while the pages around it retune, and it holds that
++fill through a brand retune as well: a `--vn-color-primary-base` override leaves the active page and
++the page focus ring on Bootstrap's blue, because each reads the palette token rather than the
++primary role, and the overrides that move them are `--bs-pagination-active-bg`,
++`--bs-pagination-active-border-color`, and `--bs-pagination-focus-box-shadow` declared on the strip,
++which is where the proof's own override case sets a published property.
++
++The focus ring is the recorded quarter-rem shadow at a quarter of the palette blue, written as a mix
++over that token because a partial declares no literal color. It replaces the native outline rather
++than sitting beside it, which is why the rule clears the outline at the same site. Under forced
++colors the focused page's rule also writes an outline in the system highlight color through the
++`forced-ring` mixin, because forced colors paint no shadow ring. § Additions records it.
++
++Stacking decides whose chrome paints over the edge two pages share. Adjacent pages share one border,
++because every page after the first pulls itself one border width towards the page before it. A
++hovered page lifts to `2`, so its own border paints over that shared edge, and a focused page and
++the active page each lift to `3`, so either of them paints over a hovered neighbour. Focus and
++active hold the same value, so document order settles the pair where they meet: an active page later
++in the strip paints over the ring of the focused page before it. A disabled page lifts to nothing
++and refuses the pointer outright.
++
++The state classes read the same on a page link and on its item: `.page-link.active` and
++`.active > .page-link` carry one treatment, and so do `.page-link.disabled` and
++`.disabled > .page-link`. A template can carry either class wherever its own markup puts it.
++
++The link transition carries Bootstrap's own `0.15s ease-in-out` rather than the motion tokens the
++Button family reads, because this family ships the release's recorded surface and no published token
++resolves to that easing. It is written through the `transition` mixin, so the reduced-motion rule the
++release records beside it is emitted with it and the transition collapses under that preference.
++
++The `tests/src/styles/components/pagination.test.ts` proof reads each resolved treatment in the
++browser: the size geometry, the collapsed borders as painted boxes, the stacking under a real
++pointer and real keyboard focus, the focus ring through the installed ring reader, the twin state
++spellings, the refused pointer, the density and radius factors, a consumer's own override, and the
++transition collapse under the staged preference.
++
++### Badge classes
++
++The badge key ships whole: the label box, the empty collapse, and the offset a badge takes inside a
++button.
++
++The font size and the padding are relative, and so is the `em` box they make. The font size is
++`0.75em` of the host, and the padding is `0.65em` and `0.35em` of the badge's own size, so the two
++multiply and the box sizes itself from whatever text it sits in. The line height is the unitless
++`1`, so the label's line box is the badge's own font size rather than the body rhythm. The offset a
++badge takes inside a button is the absolute `-1px` Bootstrap writes, so it moves with no text size.
++The radius reads `--bs-border-radius`, which this cascade declares over `--vn-radius-base`, so
++`--vn-factor-radius` reaches a badge whose own rule names no Veneer token.
++
++The label color reads `--vn-palette-white-base`, which holds Bootstrap's own `#fff`. The class
++declares no fill at all, which is Bootstrap's own treatment: a badge paints its label over whatever
++surface carries it, and a contextual fill class supplies the rest. Veneer ships no such class, so
++the showcase paints each badge specimen on a dark table surface.
++
++An empty badge collapses, and a badge inside a button lifts by one pixel. Both are Bootstrap's own
++rules, and the offset selects `.btn .badge` rather than the badge class, so a badge outside a button
++stays in flow.
++
++The `tests/src/styles/components/badge.test.ts` proof reads each resolved treatment in the browser.
++
++### Progress classes
++
++The progress key ships whole: the track, the stacked track, the bar, the striped bar, and the
++animated bar. The elements layer keeps its own `progress { vertical-align: baseline }` rule for the
++bare tag, which this family never selects.
++
++The track declares the whole closure the bar reads, so a consumer retunes a progress bar on the
++element that carries it. Its radius reads `--bs-border-radius`, which the `_tokens.scss` partial
++declares over `--vn-radius-base`, so the radius factor rescales the track's corners; its fill reads
++`--bs-secondary-bg`, so the track repaints with the color mode. The `--bs-progress-box-shadow`
++property is declared and no rule reads it, which is Bootstrap's own emission: shadows are off in
++this build, so the recorded cascade declares the variable and paints no shadow.
++
++The stacked track is the same closure on another name. Each segment inside it is a track whose
++overflow is released, so its own bar fills the width the segment was given and the rounding stays on
++the outer track.
++
++The bar's width transition is written through the `transition` mixin, so the reduced-motion
++preference collapses it; the stripe animation stops under the same preference. Both collapses are
++Bootstrap's own recorded behavior rather than an addition here.
++
++These are the key's recorded departures.
++
++- **The bar's text and fill read palette tokens.** The recorded values are `#fff` and `#0d6efd`,
++  and Veneer writes `var(--vn-palette-white-base)` and `var(--vn-palette-blue)`, which are the
++  tokens declaring those bytes. The bar reads the palette entry rather than the primary role, so a
++  `--vn-color-primary-base` retune leaves it on the release's blue, and the
++  `--bs-progress-bar-bg` property on the track, or a `--vn-palette-blue` retune, moves it.
++- **The stripe tints through the white channel triplet.** The recorded gradient writes
++  `rgba(255, 255, 255, 0.15)` at each stop, and Veneer writes
++  `rgba(var(--vn-palette-white-rgb), 0.15)`, which resolves to the same color.
++
++The `tests/src/styles/components/progress.test.ts` proof reads the resolved track, bar, stripe,
++transition, and animation in the browser, under each motion preference and in each color mode.
++
+ ### List group classes
+ 
+ The list-group key ships whole: the group box, its items and the joins between them, the `active`
+@@ -1624,92 +1562,154 @@ marker, the flush edges, each action state driven on a resting host and on an `a
+ kind, the palette retune the preceding departure records, the contextual roles against a plain item,
+ and the row geometry at each viewport around every boundary.
+ 
+-### Breadcrumb classes
++### Close classes
+ 
+-The breadcrumb key ships whole: the trail, the inset between items, the divider each item after the
+-first paints before itself, and the current page the `active` class marks.
++The close key ships the control, its hover, focus, and `disabled` states, and the opt-in inversion.
++The combinators the alert, toast, modal, and offcanvas headers write belong to the overlay
++components and stay listed under § Deferred selectors.
+ 
+-The trail is a wrapping flex row carrying no list marker, so an `ol` element renders as a line of
+-steps that wraps at its container's edge. Its bottom margin reads `--vn-space-8` and the inset
+-between items reads `--vn-space-4`, so both rescale with `--vn-factor-density`. The trail's own
+-padding is zero on each axis, and every remaining length is Bootstrap's own literal.
++The control is a content-box square one `em` on each side with a `0.25em` inset, so the whole target
++measures one and a half `em` and that `em` box scales with the text around it. The radius and the
++focus shadow read `rem`, so each one follows the root size rather than the text the control sits in.
++It paints a mark rather than a label, and the mark is a data URI: a data URI cannot read a custom
++property, which is what keeps this one value outside the token set. The text color reads
++`--vn-palette-black-base` and the radius reads `--vn-radius-base`. The opacities, the focus shadow,
++and the `em` lengths are Bootstrap's own literals, because no published Veneer scale resolves to the
++recorded value.
+ 
+-The divider is the leading content of each item after the first, written as
+-`var(--bs-breadcrumb-divider, "/")`. The cascade declares that property nowhere, so the slash is the
+-fallback the rule carries, and a consumer replaces the divider by declaring the property on the
+-trail. The pseudo-element floats to the physical start, so the divider sits ahead of its item's text
+-whatever the document's writing direction.
++Each state reads its own opacity variable: `0.5` at rest, `0.75` under the pointer, `1` on focus,
++and `0.25` when `disabled`. Focus removes the outline and paints the recorded shadow, which is what
++separates this control from the focus ring the button class wears. The shadow keeps the release's
++literal blue at a quarter strength rather than reading the primary role, so a brand retune leaves
++it, and the `--bs-btn-close-focus-shadow` property the `.btn-close` rule declares moves it. Under
++forced colors the focused control's rule also writes an outline in the system highlight color
++through the `forced-ring` mixin, because forced colors paint no shadow ring. § Additions records it.
++A control is `disabled` through the `disabled` attribute and through the `disabled` class alike, and
++each form removes pointer events and text selection beside dimming the control.
+ 
+-The fill and the radius are declared with nothing after the colon, which is what Bootstrap writes:
+-each property stands so a consumer can set it, and each declaration reading it resolves as unset
+-until one does. `--bs-breadcrumb-font-size` is declared nowhere, for the same reason Bootstrap
+-declares it nowhere, so the `font-size` declaration reading it leaves the trail at its inherited
+-size.
++The mark is inverted by `--bs-btn-close-filter`, which the theme scopes declare: empty in light and
++the recorded inversion in dark, so a control inside a dark island inverts on its own. The
++`.btn-close-white` class declares the same inversion on the control itself, which is the opt-in for
++a control sitting over a dark surface inside a light island.
+ 
+-The divider color and the `active` item's color both read `--bs-secondary-color`, which each color
+-mode declares for itself, so a trail inside a dark island follows the island.
++The showcase's Close region carries the control at rest, refused through the `disabled` attribute,
++refused through the `disabled` class, and inverted over a dark surface.
+ 
+-The `tests/src/styles/components/breadcrumb.test.ts` proof reads each resolved treatment in the
+-browser.
++The `tests/src/styles/components/close.test.ts` proof reads each resolved treatment in the browser.
+ 
+-### Badge classes
++### Spinner classes
+ 
+-The badge key ships whole: the label box, the empty collapse, and the offset a badge takes inside a
+-button.
++The spinner key ships whole: the border spinner, the grow spinner, and their small twins. One rule
++declares the box each spinner shares, and each name declares the speed and the animation it runs, so
++a consumer retunes either spinner through `--bs-spinner-animation-speed` and reaches the shared box
++through `--bs-spinner-width` and `--bs-spinner-height`.
+ 
+-The font size and the padding are relative, and so is the `em` box they make. The font size is
+-`0.75em` of the host, and the padding is `0.65em` and `0.35em` of the badge's own size, so the two
+-multiply and the box sizes itself from whatever text it sits in. The line height is the unitless
+-`1`, so the label's line box is the badge's own font size rather than the body rhythm. The offset a
+-badge takes inside a button is the absolute `-1px` Bootstrap writes, so it moves with no text size.
+-The radius reads `--bs-border-radius`, which this cascade declares over `--vn-radius-base`, so
+-`--vn-factor-radius` reaches a badge whose own rule names no Veneer token.
++The border spinner paints a ring from `currentcolor` with a transparent right edge, and the grow
++spinner paints a filled circle that scales from nothing, so each one takes its color from the text
++around it.
+ 
+-The label color reads `--vn-palette-white-base`, which holds Bootstrap's own `#fff`. The class
+-declares no fill at all, which is Bootstrap's own treatment: a badge paints its label over whatever
+-surface carries it, and a contextual fill class supplies the rest. Veneer ships no such class, so
+-the showcase paints each badge specimen on a dark table surface.
++Under the reduced-motion preference each spinner slows to `1.5s` and keeps turning. A spinner
++reports that work is still running, so a still ring would report the opposite of what the component
++exists to say, and this is Bootstrap's own recorded behavior. The preference retunes the same speed
++property a consumer retunes, which is why the animation itself is declared once.
++
++The rotation is physical: the ring turns the same way whatever the document's writing direction, so
++the direction-flipping annotation the release carries on that keyframe does not ship.
++
++The `tests/src/styles/components/spinner.test.ts` proof reads the resolved box, border, paint, and
++running animation in the browser, under each motion preference and in each color mode.
++
++### Placeholder classes
++
++The placeholder key ships whole: the placeholder itself, the `xs`, `sm`, and `lg` height floors, the
++glow, the wave, and the empty box a button-shaped placeholder carries. That button box is the
++`.placeholder.btn::before` rule, which this family ships, so § Deferred selectors carries no row for
++it.
++
++A placeholder paints the current text color at half strength and takes the wait cursor, so it takes
++its color from the text it stands in for and repaints with the color mode. Its height floors are
++written in `em`, which is what makes a placeholder inside a heading as tall as that heading's own
++line. Width comes from the grid: a placeholder carries a column class the way the release's own
++markup carries one.
++
++The glow dims every placeholder inside its wrapper rather than the wrapper itself, so a paragraph of
++placeholders pulses as one block. The wave is a mask that travels across the element, so it dims
++whatever the element paints instead of laying a second color over it.
++
++Neither animation is gated on the reduced-motion preference, because the recorded cascade gates
++neither. The repository's animation line governs Veneer's own animations, and these are the
++release's, so the recorded behavior ships as recorded.
++
++These are the key's recorded departures.
++
++- **The mask paints through the black tokens.** The recorded gradient writes `#000` and
++  `rgba(0, 0, 0, 0.8)`, and Veneer writes `var(--vn-palette-black-base)` and
++  `rgba(var(--vn-palette-black-rgb), 0.8)`, which are the tokens declaring those bytes.
++- **The prefixed mask properties are absent.** The official cascade carries `-webkit-mask-image` and
++  `-webkit-mask-size` beside the standard properties. Veneer writes the standard properties alone,
++  because the managed Chromium and Edge receipts this cascade is proved on resolve them and leave
++  the aliases redundant; § Deferred selectors names those receipts. A consumer serving a browser
++  that reads the prefixed names alone brings its own declarations for them. This is the ruling the
++  icon link's prefixed backface property already carries.
++- **The wave keyframe carries no prefixed alias.** The official `placeholder-wave` keyframe writes
++  `-webkit-mask-position` beside `mask-position`, and Veneer writes the standard property alone on
++  the footing the preceding row states. The ledger carries no row for that alias: the cascade
++  comparison reads declarations outside keyframes, so a keyframe's own declaration reaches neither
++  ledger file.
++
++The `tests/src/styles/components/placeholder.test.ts` proof reads the resolved paint, height floors,
++button box, and both animations in the browser, in each color mode.
+ 
+-An empty badge collapses, and a badge inside a button lifts by one pixel. Both are Bootstrap's own
+-rules, and the offset selects `.btn .badge` rather than the badge class, so a badge outside a button
+-stays in flow.
++### Helper classes
+ 
+-The `tests/src/styles/components/badge.test.ts` proof reads each resolved treatment in the browser.
++The helper keys ship whole, each in its own partial: the icon link with its icon combinator and its
++hover and focus shifts, the aspect-ratio box with its named aspects, and the vertical rule.
+ 
+-### Close classes
++The icon link lays its content out as an inline flex row, tints its underline from `--vn-link-rgb`
++at the `--bs-link-opacity` a consumer sets, and offsets that underline by `0.25em`. Its icon
++combinator sizes the icon to `1em` on each axis, fills it from the current color, and transitions its
++transform. The `.icon-link-hover` class is what arms the shift: hover and keyboard focus each move
++the icon by `--bs-icon-link-transform`, and the resting `.icon-link` class alone moves nothing.
+ 
+-The close key ships the control, its hover, focus, and `disabled` states, and the opt-in inversion.
+-The combinators the alert, toast, modal, and offcanvas headers write belong to the overlay
+-components and stay listed under § Deferred selectors.
++The combinator names the `.bi` class, which belongs to Bootstrap Icons. Veneer declares no rule for
++that class and no rule selects it alone, so the combinator matches nothing until a consumer brings
++the icon markup. This is the ruling the container's navigation combinators already carry: the
++declarations are self-contained on the element Veneer owns.
+ 
+-The control is a content-box square one `em` on each side with a `0.25em` inset, so the whole target
+-measures one and a half `em` and that `em` box scales with the text around it. The radius and the
+-focus shadow read `rem`, so each one follows the root size rather than the text the control sits in.
+-It paints a mark rather than a label, and the mark is a data URI: a data URI cannot read a custom
+-property, which is what keeps this one value outside the token set. The text color reads
+-`--vn-palette-black-base` and the radius reads `--vn-radius-base`. The opacities, the focus shadow,
+-and the `em` lengths are Bootstrap's own literals, because no published Veneer scale resolves to the
+-recorded value.
++The aspect-ratio box holds its own proportion through a pseudo-element whose top padding is a
++percentage, which resolves against the containing block's width. Each named aspect declares
++`--bs-aspect-ratio` as its own height over its width, so the name is the whole declaration of the
++value and a consumer setting the property directly retunes any box. Sass emits ten decimal places,
++which is the precision this family's official values carry; `_grid.scss` rounds its column
++percentages to eight instead, because the official arithmetic rounds there. The build then shortens
++every percentage to six significant digits, the shipped column widths included, so the widest aspect
++ships as `42.8571%` where the source declares `42.8571428571%`.
+ 
+-Each state reads its own opacity variable: `0.5` at rest, `0.75` under the pointer, `1` on focus,
+-and `0.25` when `disabled`. Focus removes the outline and paints the recorded shadow, which is what
+-separates this control from the focus ring the button class wears. The shadow keeps the release's
+-literal blue at a quarter strength rather than reading the primary role, so a brand retune leaves
+-it, and the `--bs-btn-close-focus-shadow` property the `.btn-close` rule declares moves it. Under
+-forced colors the focused control's rule also writes an outline in the system highlight color
+-through the `forced-ring` mixin, because forced colors paint no shadow ring. § Additions records it.
+-A control is `disabled` through the `disabled` attribute and through the `disabled` class alike, and
+-each form removes pointer events and text selection beside dimming the control.
++The vertical rule reads `--bs-border-width` for its width, stretches to its flex line, holds a `1em`
++floor, and paints the current color at a literal `0.25` opacity. The alias the `_tokens.scss`
++partial declares over `--vn-border-width` is what carries a retune of either name into the rule. The
++opacity stays a literal because no published scale retunes it, which is the treatment the `hr` rule
++gives its own opacity.
+ 
+-The mark is inverted by `--bs-btn-close-filter`, which the theme scopes declare: empty in light and
+-the recorded inversion in dark, so a control inside a dark island inverts on its own. The
+-`.btn-close-white` class declares the same inversion on the control itself, which is the opt-in for
+-a control sitting over a dark surface inside a light island.
++The `tests/src/styles/components/icon-link.test.ts`, `tests/src/styles/components/ratio.test.ts`,
++and `tests/src/styles/components/vr.test.ts` proofs read each resolved treatment in the browser. The
++icon link's reduced-motion collapse is read under the staged preference, and the declaration the
++rule carries under that condition is read from the built cascade beside it.
+ 
+-The showcase's Close region carries the control at rest, refused through the `disabled` attribute,
+-refused through the `disabled` class, and inverted over a dark surface.
++These are the keys' recorded departures.
+ 
+-The `tests/src/styles/components/close.test.ts` proof reads each resolved treatment in the browser.
++- **The prefixed backface property is absent.** The official cascade carries
++  `-webkit-backface-visibility` beside `backface-visibility`; Veneer emits the standard property
++  alone, because the managed Chromium and Edge receipts this cascade is proved on resolve it and
++  leave the alias redundant. The prefixed `-webkit-text-decoration-color` alias is not a departure:
++  the build emits it from the standard property without the source declaring it.
++- **The icon's transition reads Veneer's motion tokens.** The official value is `0.2s ease-in-out`;
++  Veneer writes `var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to `0.15s ease`
++  and rescales with `--vn-factor-motion`, as the `.btn` class does. A transition written outside
++  those tokens would ignore the motion factor the package publishes.
++- **The shift's direction is physical.** `translate3d(0.25em, 0, 0)` moves the icon to the right,
++  and Veneer declares that one transform, so the icon shifts the same way whatever the document's
++  writing direction.
+ 
+ ### Deferred selectors
+ 
+@@ -2887,15 +2887,6 @@ declaration.
+ | `h6`      | `.h6`    | `line-height`   | —         | `1.2`           | `var(--vn-line-heading)`   | tokenized |
+ | `h6`      | `.h6`    | `font-size`     | —         | `1rem`          | `var(--vn-size-3)`         | tokenized |
+ 
+-#### `icon-link`
+-
+-| Component   | Selector           | Property                        | Condition | Bootstrap 5.3.8                                               | Veneer                                                        | Departure |
+-| ----------- | ------------------ | ------------------------------- | --------- | ------------------------------------------------------------- | ------------------------------------------------------------- | --------- |
+-| `icon-link` | `.icon-link`       | `-webkit-text-decoration-color` | —         | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 0.5))` | —                                                             | dropped   |
+-| `icon-link` | `.icon-link`       | `text-decoration-color`         | —         | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 0.5))` | `rgba(var(--vn-link-rgb), var(--bs-link-opacity, 0.5))`       | tokenized |
+-| `icon-link` | `.icon-link`       | `-webkit-backface-visibility`   | —         | `hidden`                                                      | —                                                             | dropped   |
+-| `icon-link` | `.icon-link > .bi` | `transition`                    | —         | `0.2s ease-in-out transform`                                  | `transform var(--vn-motion-feedback) var(--vn-ease-standard)` | tokenized |
+-
+ #### `img`
+ 
+ | Component | Selector         | Property  | Condition | Bootstrap 5.3.8 | Veneer              | Departure |
+@@ -3291,42 +3282,6 @@ declaration.
+ | `was-validated` | `.was-validated .form-control-color:invalid`     | `width`      | —         | `calc(3rem + calc(1.5em + 0.75rem))`              | `calc(var(--vn-space-24) + 1.5em + 0.75rem)`                    | tokenized |
+ | `was-validated` | `.was-validated .form-check-input:invalid:focus` | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`  | `0 0 0 var(--vn-focus-width) rgba(var(--bs-danger-rgb), 0.25)`  | tokenized |
+ 
+-#### `pagination`
+-
+-| Component    | Selector         | Property                              | Condition | Bootstrap 5.3.8                          | Veneer                                                                      | Departure |
+-| ------------ | ---------------- | ------------------------------------- | --------- | ---------------------------------------- | --------------------------------------------------------------------------- | --------- |
+-| `pagination` | `.pagination`    | `--bs-pagination-padding-x`           | —         | `0.75rem`                                | `var(--vn-space-6)`                                                         | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-padding-y`           | —         | `0.375rem`                               | `var(--vn-space-3)`                                                         | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-font-size`           | —         | `1rem`                                   | `var(--vn-size-3)`                                                          | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-focus-box-shadow`    | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)` | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)` | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-active-color`        | —         | `#fff`                                   | `var(--vn-palette-white-base)`                                              | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-active-bg`           | —         | `#0d6efd`                                | `var(--vn-palette-blue)`                                                    | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-active-border-color` | —         | `#0d6efd`                                | `var(--vn-palette-blue)`                                                    | tokenized |
+-| `pagination` | `.pagination-lg` | `--bs-pagination-padding-x`           | —         | `1.5rem`                                 | `var(--vn-space-12)`                                                        | tokenized |
+-| `pagination` | `.pagination-lg` | `--bs-pagination-padding-y`           | —         | `0.75rem`                                | `var(--vn-space-6)`                                                         | tokenized |
+-| `pagination` | `.pagination-lg` | `--bs-pagination-font-size`           | —         | `1.25rem`                                | `var(--vn-size-5)`                                                          | tokenized |
+-| `pagination` | `.pagination-sm` | `--bs-pagination-padding-x`           | —         | `0.5rem`                                 | `var(--vn-space-4)`                                                         | tokenized |
+-| `pagination` | `.pagination-sm` | `--bs-pagination-padding-y`           | —         | `0.25rem`                                | `var(--vn-space-2)`                                                         | tokenized |
+-| `pagination` | `.pagination-sm` | `--bs-pagination-font-size`           | —         | `0.875rem`                               | `var(--vn-size-2)`                                                          | tokenized |
+-
+-#### `placeholder`
+-
+-| Component     | Selector            | Property             | Condition | Bootstrap 5.3.8                                                       | Veneer                                                                                                                                    | Departure |
+-| ------------- | ------------------- | -------------------- | --------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+-| `placeholder` | `.placeholder-wave` | `-webkit-mask-image` | —         | `linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%)` | —                                                                                                                                         | dropped   |
+-| `placeholder` | `.placeholder-wave` | `mask-image`         | —         | `linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%)` | `linear-gradient(130deg, var(--vn-palette-black-base) 55%, rgba(var(--vn-palette-black-rgb), 0.8) 75%, var(--vn-palette-black-base) 95%)` | tokenized |
+-| `placeholder` | `.placeholder-wave` | `-webkit-mask-size`  | —         | `200% 100%`                                                           | —                                                                                                                                         | dropped   |
+-
+-#### `progress`
+-
+-| Component  | Selector                | Property                  | Condition | Bootstrap 5.3.8                                                                                                                                                                       | Veneer                                                                                                                                                                                                                          | Departure |
+-| ---------- | ----------------------- | ------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+-| `progress` | `.progress`             | `--bs-progress-bar-color` | —         | `#fff`                                                                                                                                                                                | `var(--vn-palette-white-base)`                                                                                                                                                                                                  | tokenized |
+-| `progress` | `.progress`             | `--bs-progress-bar-bg`    | —         | `#0d6efd`                                                                                                                                                                             | `var(--vn-palette-blue)`                                                                                                                                                                                                        | tokenized |
+-| `progress` | `.progress-stacked`     | `--bs-progress-bar-color` | —         | `#fff`                                                                                                                                                                                | `var(--vn-palette-white-base)`                                                                                                                                                                                                  | tokenized |
+-| `progress` | `.progress-stacked`     | `--bs-progress-bar-bg`    | —         | `#0d6efd`                                                                                                                                                                             | `var(--vn-palette-blue)`                                                                                                                                                                                                        | tokenized |
+-| `progress` | `.progress-bar-striped` | `background-image`        | —         | `linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent)` | `linear-gradient(45deg, rgba(var(--vn-palette-white-rgb), 0.15) 25%, transparent 25%, transparent 50%, rgba(var(--vn-palette-white-rgb), 0.15) 50%, rgba(var(--vn-palette-white-rgb), 0.15) 75%, transparent 75%, transparent)` | tokenized |
+-
+ #### `form-range`
+ 
+ | Component    | Selector                                     | Property             | Condition                                 | Bootstrap 5.3.8                                                                                    | Veneer                                                                                                                                                                                             | Departure |
+@@ -3360,52 +3315,6 @@ declaration.
+ | `form-range` | `.form-range::-moz-range-track`              | `height`             | —                                         | `0.5rem`                                                                                           | `var(--vn-space-4)`                                                                                                                                                                                | tokenized |
+ | `form-range` | `.form-range::-moz-range-track`              | `border-radius`      | —                                         | `1rem`                                                                                             | `var(--vn-radius-xlarge)`                                                                                                                                                                          | tokenized |
+ 
+-#### `card`
+-
+-| Component | Selector | Property                        | Condition | Bootstrap 5.3.8 | Veneer              | Departure |
+-| --------- | -------- | ------------------------------- | --------- | --------------- | ------------------- | --------- |
+-| `card`    | `.card`  | `--bs-card-spacer-y`            | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
+-| `card`    | `.card`  | `--bs-card-spacer-x`            | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
+-| `card`    | `.card`  | `--bs-card-title-spacer-y`      | —         | `0.5rem`        | `var(--vn-space-4)` | tokenized |
+-| `card`    | `.card`  | `--bs-card-cap-padding-y`       | —         | `0.5rem`        | `var(--vn-space-4)` | tokenized |
+-| `card`    | `.card`  | `--bs-card-cap-padding-x`       | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
+-| `card`    | `.card`  | `--bs-card-img-overlay-padding` | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
+-| `card`    | `.card`  | `--bs-card-group-margin`        | —         | `0.75rem`       | `var(--vn-space-6)` | tokenized |
+-
+-#### `list-group`
+-
+-| Component    | Selector      | Property                              | Condition | Bootstrap 5.3.8 | Veneer                         | Departure |
+-| ------------ | ------------- | ------------------------------------- | --------- | --------------- | ------------------------------ | --------- |
+-| `list-group` | `.list-group` | `--bs-list-group-item-padding-x`      | —         | `1rem`          | `var(--vn-space-8)`            | tokenized |
+-| `list-group` | `.list-group` | `--bs-list-group-item-padding-y`      | —         | `0.5rem`        | `var(--vn-space-4)`            | tokenized |
+-| `list-group` | `.list-group` | `--bs-list-group-active-color`        | —         | `#fff`          | `var(--vn-palette-white-base)` | tokenized |
+-| `list-group` | `.list-group` | `--bs-list-group-active-bg`           | —         | `#0d6efd`       | `var(--vn-palette-blue)`       | tokenized |
+-| `list-group` | `.list-group` | `--bs-list-group-active-border-color` | —         | `#0d6efd`       | `var(--vn-palette-blue)`       | tokenized |
+-
+-#### `badge`
+-
+-| Component | Selector | Property           | Condition | Bootstrap 5.3.8 | Veneer                         | Departure |
+-| --------- | -------- | ------------------ | --------- | --------------- | ------------------------------ | --------- |
+-| `badge`   | `.badge` | `--bs-badge-color` | —         | `#fff`          | `var(--vn-palette-white-base)` | tokenized |
+-
+-#### `breadcrumb`
+-
+-| Component    | Selector      | Property                         | Condition | Bootstrap 5.3.8 | Veneer              | Departure |
+-| ------------ | ------------- | -------------------------------- | --------- | --------------- | ------------------- | --------- |
+-| `breadcrumb` | `.breadcrumb` | `--bs-breadcrumb-margin-bottom`  | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
+-| `breadcrumb` | `.breadcrumb` | `--bs-breadcrumb-item-padding-x` | —         | `0.5rem`        | `var(--vn-space-4)` | tokenized |
+-
+-#### `btn-close`
+-
+-| Component   | Selector              | Property               | Condition | Bootstrap 5.3.8 | Veneer                         | Departure |
+-| ----------- | --------------------- | ---------------------- | --------- | --------------- | ------------------------------ | --------- |
+-| `btn-close` | `.btn-close`          | `--bs-btn-close-color` | —         | `#000`          | `var(--vn-palette-black-base)` | tokenized |
+-| `btn-close` | `.btn-close`          | `border-radius`        | —         | `0.375rem`      | `var(--vn-radius-base)`        | tokenized |
+-| `btn-close` | `.btn-close:disabled` | `-webkit-user-select`  | —         | `none`          | —                              | dropped   |
+-| `btn-close` | `.btn-close:disabled` | `-moz-user-select`     | —         | `none`          | —                              | dropped   |
+-| `btn-close` | `.btn-close.disabled` | `-webkit-user-select`  | —         | `none`          | —                              | dropped   |
+-| `btn-close` | `.btn-close.disabled` | `-moz-user-select`     | —         | `none`          | —                              | dropped   |
+-
+ #### `form`
+ 
+ | Component | Selector      | Property        | Condition | Bootstrap 5.3.8 | Veneer              | Departure |
+@@ -3588,6 +3497,97 @@ declaration.
+ | `valid-tooltip` | `.valid-tooltip` | `font-size` | —         | `0.875rem`       | `var(--vn-size-2)`                    | tokenized |
+ | `valid-tooltip` | `.valid-tooltip` | `color`     | —         | `#fff`           | `var(--vn-palette-white-base)`        | tokenized |
+ 
++#### `card`
++
++| Component | Selector | Property                        | Condition | Bootstrap 5.3.8 | Veneer              | Departure |
++| --------- | -------- | ------------------------------- | --------- | --------------- | ------------------- | --------- |
++| `card`    | `.card`  | `--bs-card-spacer-y`            | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
++| `card`    | `.card`  | `--bs-card-spacer-x`            | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
++| `card`    | `.card`  | `--bs-card-title-spacer-y`      | —         | `0.5rem`        | `var(--vn-space-4)` | tokenized |
++| `card`    | `.card`  | `--bs-card-cap-padding-y`       | —         | `0.5rem`        | `var(--vn-space-4)` | tokenized |
++| `card`    | `.card`  | `--bs-card-cap-padding-x`       | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
++| `card`    | `.card`  | `--bs-card-img-overlay-padding` | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
++| `card`    | `.card`  | `--bs-card-group-margin`        | —         | `0.75rem`       | `var(--vn-space-6)` | tokenized |
++
++#### `breadcrumb`
++
++| Component    | Selector      | Property                         | Condition | Bootstrap 5.3.8 | Veneer              | Departure |
++| ------------ | ------------- | -------------------------------- | --------- | --------------- | ------------------- | --------- |
++| `breadcrumb` | `.breadcrumb` | `--bs-breadcrumb-margin-bottom`  | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
++| `breadcrumb` | `.breadcrumb` | `--bs-breadcrumb-item-padding-x` | —         | `0.5rem`        | `var(--vn-space-4)` | tokenized |
++
++#### `pagination`
++
++| Component    | Selector         | Property                              | Condition | Bootstrap 5.3.8                          | Veneer                                                                      | Departure |
++| ------------ | ---------------- | ------------------------------------- | --------- | ---------------------------------------- | --------------------------------------------------------------------------- | --------- |
++| `pagination` | `.pagination`    | `--bs-pagination-padding-x`           | —         | `0.75rem`                                | `var(--vn-space-6)`                                                         | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-padding-y`           | —         | `0.375rem`                               | `var(--vn-space-3)`                                                         | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-font-size`           | —         | `1rem`                                   | `var(--vn-size-3)`                                                          | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-focus-box-shadow`    | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)` | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)` | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-active-color`        | —         | `#fff`                                   | `var(--vn-palette-white-base)`                                              | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-active-bg`           | —         | `#0d6efd`                                | `var(--vn-palette-blue)`                                                    | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-active-border-color` | —         | `#0d6efd`                                | `var(--vn-palette-blue)`                                                    | tokenized |
++| `pagination` | `.pagination-lg` | `--bs-pagination-padding-x`           | —         | `1.5rem`                                 | `var(--vn-space-12)`                                                        | tokenized |
++| `pagination` | `.pagination-lg` | `--bs-pagination-padding-y`           | —         | `0.75rem`                                | `var(--vn-space-6)`                                                         | tokenized |
++| `pagination` | `.pagination-lg` | `--bs-pagination-font-size`           | —         | `1.25rem`                                | `var(--vn-size-5)`                                                          | tokenized |
++| `pagination` | `.pagination-sm` | `--bs-pagination-padding-x`           | —         | `0.5rem`                                 | `var(--vn-space-4)`                                                         | tokenized |
++| `pagination` | `.pagination-sm` | `--bs-pagination-padding-y`           | —         | `0.25rem`                                | `var(--vn-space-2)`                                                         | tokenized |
++| `pagination` | `.pagination-sm` | `--bs-pagination-font-size`           | —         | `0.875rem`                               | `var(--vn-size-2)`                                                          | tokenized |
++
++#### `badge`
++
++| Component | Selector | Property           | Condition | Bootstrap 5.3.8 | Veneer                         | Departure |
++| --------- | -------- | ------------------ | --------- | --------------- | ------------------------------ | --------- |
++| `badge`   | `.badge` | `--bs-badge-color` | —         | `#fff`          | `var(--vn-palette-white-base)` | tokenized |
++
++#### `progress`
++
++| Component  | Selector                | Property                  | Condition | Bootstrap 5.3.8                                                                                                                                                                       | Veneer                                                                                                                                                                                                                          | Departure |
++| ---------- | ----------------------- | ------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
++| `progress` | `.progress`             | `--bs-progress-bar-color` | —         | `#fff`                                                                                                                                                                                | `var(--vn-palette-white-base)`                                                                                                                                                                                                  | tokenized |
++| `progress` | `.progress`             | `--bs-progress-bar-bg`    | —         | `#0d6efd`                                                                                                                                                                             | `var(--vn-palette-blue)`                                                                                                                                                                                                        | tokenized |
++| `progress` | `.progress-stacked`     | `--bs-progress-bar-color` | —         | `#fff`                                                                                                                                                                                | `var(--vn-palette-white-base)`                                                                                                                                                                                                  | tokenized |
++| `progress` | `.progress-stacked`     | `--bs-progress-bar-bg`    | —         | `#0d6efd`                                                                                                                                                                             | `var(--vn-palette-blue)`                                                                                                                                                                                                        | tokenized |
++| `progress` | `.progress-bar-striped` | `background-image`        | —         | `linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent)` | `linear-gradient(45deg, rgba(var(--vn-palette-white-rgb), 0.15) 25%, transparent 25%, transparent 50%, rgba(var(--vn-palette-white-rgb), 0.15) 50%, rgba(var(--vn-palette-white-rgb), 0.15) 75%, transparent 75%, transparent)` | tokenized |
++
++#### `list-group`
++
++| Component    | Selector      | Property                              | Condition | Bootstrap 5.3.8 | Veneer                         | Departure |
++| ------------ | ------------- | ------------------------------------- | --------- | --------------- | ------------------------------ | --------- |
++| `list-group` | `.list-group` | `--bs-list-group-item-padding-x`      | —         | `1rem`          | `var(--vn-space-8)`            | tokenized |
++| `list-group` | `.list-group` | `--bs-list-group-item-padding-y`      | —         | `0.5rem`        | `var(--vn-space-4)`            | tokenized |
++| `list-group` | `.list-group` | `--bs-list-group-active-color`        | —         | `#fff`          | `var(--vn-palette-white-base)` | tokenized |
++| `list-group` | `.list-group` | `--bs-list-group-active-bg`           | —         | `#0d6efd`       | `var(--vn-palette-blue)`       | tokenized |
++| `list-group` | `.list-group` | `--bs-list-group-active-border-color` | —         | `#0d6efd`       | `var(--vn-palette-blue)`       | tokenized |
++
++#### `btn-close`
++
++| Component   | Selector              | Property               | Condition | Bootstrap 5.3.8 | Veneer                         | Departure |
++| ----------- | --------------------- | ---------------------- | --------- | --------------- | ------------------------------ | --------- |
++| `btn-close` | `.btn-close`          | `--bs-btn-close-color` | —         | `#000`          | `var(--vn-palette-black-base)` | tokenized |
++| `btn-close` | `.btn-close`          | `border-radius`        | —         | `0.375rem`      | `var(--vn-radius-base)`        | tokenized |
++| `btn-close` | `.btn-close:disabled` | `-webkit-user-select`  | —         | `none`          | —                              | dropped   |
++| `btn-close` | `.btn-close:disabled` | `-moz-user-select`     | —         | `none`          | —                              | dropped   |
++| `btn-close` | `.btn-close.disabled` | `-webkit-user-select`  | —         | `none`          | —                              | dropped   |
++| `btn-close` | `.btn-close.disabled` | `-moz-user-select`     | —         | `none`          | —                              | dropped   |
++
++#### `placeholder`
++
++| Component     | Selector            | Property             | Condition | Bootstrap 5.3.8                                                       | Veneer                                                                                                                                    | Departure |
++| ------------- | ------------------- | -------------------- | --------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------- |
++| `placeholder` | `.placeholder-wave` | `-webkit-mask-image` | —         | `linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%)` | —                                                                                                                                         | dropped   |
++| `placeholder` | `.placeholder-wave` | `mask-image`         | —         | `linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%)` | `linear-gradient(130deg, var(--vn-palette-black-base) 55%, rgba(var(--vn-palette-black-rgb), 0.8) 75%, var(--vn-palette-black-base) 95%)` | tokenized |
++| `placeholder` | `.placeholder-wave` | `-webkit-mask-size`  | —         | `200% 100%`                                                           | —                                                                                                                                         | dropped   |
++
++#### `icon-link`
++
++| Component   | Selector           | Property                        | Condition | Bootstrap 5.3.8                                               | Veneer                                                        | Departure |
++| ----------- | ------------------ | ------------------------------- | --------- | ------------------------------------------------------------- | ------------------------------------------------------------- | --------- |
++| `icon-link` | `.icon-link`       | `-webkit-text-decoration-color` | —         | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 0.5))` | —                                                             | dropped   |
++| `icon-link` | `.icon-link`       | `text-decoration-color`         | —         | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 0.5))` | `rgba(var(--vn-link-rgb), var(--bs-link-opacity, 0.5))`       | tokenized |
++| `icon-link` | `.icon-link`       | `-webkit-backface-visibility`   | —         | `hidden`                                                      | —                                                             | dropped   |
++| `icon-link` | `.icon-link > .bi` | `transition`                    | —         | `0.2s ease-in-out transform`                                  | `transform var(--vn-motion-feedback) var(--vn-ease-standard)` | tokenized |
++
+ ### Additions
+ 
+ Each row names one name this cascade emits that the official inventory lacks, attributed to the
