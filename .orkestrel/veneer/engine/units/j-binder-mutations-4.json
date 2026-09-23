@@ -1,0 +1,4 @@
+[
+ {"name": "settleAnimations: abort not raced", "file": "src/browser/helpers.ts", "proof": "tests/src/browser/helpers.test.ts",
+  "find": "\t\t\t\tPromise.allSettled(running.map((animation) => animation.finished)),\n\t\t\t\taborted,\n", "replace": "\t\t\t\tPromise.allSettled(running.map((animation) => animation.finished)),\n"}
+]
