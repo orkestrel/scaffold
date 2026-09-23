@@ -1,3 +1,0 @@
-f3624fc Ship the collapse key with its hidden, shown, and closing states and its section
-c43fc7b Ship the nav key with its tabs, pills, underline, fill, and justified forms
-4476fb0 Ship the dropdown key with its placement ramp, carets, dark menu, and section

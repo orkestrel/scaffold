@@ -1,4 +1,0 @@
-?? app/browser/sections/DropdownSection.ts
-?? src/styles/components/_dropdown.scss
-?? tests/app/browser/sections/DropdownSection.test.ts
-?? tests/src/styles/components/dropdown.test.ts

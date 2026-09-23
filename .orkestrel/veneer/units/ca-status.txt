@@ -1,4 +1,0 @@
-?? app/browser/sections/CarouselSection.ts
-?? src/styles/components/_carousel.scss
-?? tests/app/browser/sections/CarouselSection.test.ts
-?? tests/src/styles/components/carousel.test.ts
