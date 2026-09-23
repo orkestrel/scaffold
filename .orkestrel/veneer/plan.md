@@ -14,25 +14,38 @@ prune commit's message is the promotion record for what that commit removed.
 ## What the folder holds
 
 - `f8-design-verdict.md` (amended by `f8c-design-verdict.md`), `b-passive-design-verdict.md`,
-  `b-sweep-design-verdict.md`, `b-forms-design-verdict.md`, and `b-forms-close-design-verdict.md`
-  (the close's four units, its rulings R1 to R12, and its exit criterion) are the design rulings the
-  live units execute. `units/decisions-round-2.md` carries the user's rulings D2 to D13 verbatim and the
-  Orchestrator's rulings from D14 on. `units/b-passive-family.md` and `units/b-passive-baseline.md`
-  bind every B unit. `units/b-forms-terrain-report.md`, `units/b-forms-close-terrain-report.md`, `units/f8-terrain-report.md`,
+  `b-sweep-design-verdict.md`, `b-forms-design-verdict.md`, `b-forms-close-design-verdict.md`
+  (the close's units, its rulings R1 to R12, and its exit criterion), `b-forms-label-design-verdict.md`
+  (the `form` key's rulings A to L, with D re-baselined by the B-FORMS-LABEL-CASCADE round-2 audit),
+  and `b-passive-close-design-verdict.md` (the family close's units CLOSE-REGISTRY, CLOSE-MOTION,
+  CLOSE-GUIDE, CLOSE-ID, and CLOSE-VERIFY, its rulings R1 to R11, and its exit criterion) are the
+  design rulings the live units execute. `units/decisions-round-2.md` carries the user's rulings D2
+  to D13 verbatim and the Orchestrator's rulings from D14 on. `units/b-passive-family.md` and
+  `units/b-passive-baseline.md` bind every B unit. `units/b-forms-terrain-report.md`,
+  `units/b-forms-close-terrain-report.md`, `units/b-forms-label-terrain-report.md`,
+  `units/b-passive-close-terrain-report.md`, `units/f8-terrain-report.md`,
   `units/f8-terrain-3-report.md`, and the `units/f8-tailwind-intersection.*` measurement are the
-  terrain records the open briefs point at.
+  terrain records the open briefs point at; each design round's lane proposals sit beside its
+  verdict as `units/<round>-design-<lane>-proposal.md` until the round's last unit lands.
 - A live or unlanded unit's brief, report, audit claims, lane briefs, lane verdicts, round verdicts,
   launchers, diffs, status files, plant instruments, and logs sit under `units/` by unit prefix
   (`b-forms-<key>-*` for the writing unit and `bf<letter>-*` for its audit rounds, the close's
-  units as `b-forms-close-<unit>-*` with `bfs-*`, `bft-*`, `bff-*`, and `bfl-*` for their rounds;
-  `f8b-*` and `f8c-*` for the F8 SERVICE line) until the unit lands on Veneer `main`, and the prune commit that
-  follows the landing removes them.
+  units as `b-forms-close-<unit>-*` with `bfs-*`, `bft-*`, and `bff-*` for their rounds, the label
+  units as `b-forms-label-<unit>-*` with `bfw-*` and `bfl-*`, the family close's units as
+  `close-<unit>-*` with `cr-*`, `cm-*`, `cg-*`, and `ci-*`, and the caption unit as
+  `f7b-*`; `f8b-*` and `f8c-*` for the F8 SERVICE line) until the unit lands on Veneer `main`, and
+  the prune commit that follows the landing removes them. A landing's integration edit is retained
+  as `units/<unit>-probe-<unit>-integration*.py` with its `units/<unit>-integration.diff` and the
+  landing checker's brief and verdict, in the same set.
 - The landing instruments: `units/land-unit.sh` (diff3 through `units/resolve-diff3.py`,
   `units/resolve-hunks.py`, and `units/resolve-files-table.py`), `units/sort-inventories.py` (sorted
   literal arrays and the shipped-key Set), `units/regen-portfolio.sh`, each landing's
   `units/verify-<unit>.sh` chain and `units/fold-<n>.py` roadmap fold while that landing is open,
-  and `units/codex-queue-2.sh` (the bench launcher queue; each lane launcher under `tmp/codex/` is a
-  copy of the retained `units/<unit>-audit-analyst.sh`).
+  each landing's `units/<unit>-fast-gates.sh` with its `units/<unit>-landing-gates.log.txt`, and
+  `units/codex-queue-2.sh` (the bench launcher queue; each lane launcher under `tmp/codex/` is a
+  copy of the retained `units/<unit>-audit-analyst.sh`). A landing whose chain is deferred to a
+  later unit's combined chain (a unit red only on a gap the later unit closes) keeps its stopped
+  chain log as `units/<unit>-verify-stopped.log.txt` beside the reason.
 - `units/x-retention-carry-brief.md` and `units/x-retention-carry-distillate.md` are the carry
   register X-RETENTION reads.
 
