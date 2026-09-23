@@ -1,0 +1,15 @@
+# B-FORMS-CONTROL, round 4 (the two-sentence micro-round) — `analyst` on GPT-6 Astra, objective lane
+
+`codex exec --sandbox read-only` rooted at `/home/user/veneer-bfo`, session `01a0ccef-adc6-7e53-a335-501f34367fa9`, journal `tmp/codex/bfo-4-audit-analyst.jsonl` (swept at acceptance), exit 0 at 06:27:53 UTC on 2026-09-23. The verdict text is the lane's last message verbatim.
+
+1. **CONFIRMED — The delta is the brief.** The retained diffs differ only at [tests/setupStyles.ts:3808](/home/user/veneer-bfo/tests/setupStyles.ts:3808), where the prescribed replacements and rewrapping appear. Other file patches are byte-identical. The retained status matches round 3, and the live diff and status match the retained evidence. **Attack that failed:** comparing the delta against the exact prescribed text found no additional edit; restoring the earlier wording in memory made the comparison fail.
+
+2. **CONFIRMED — The sentences.** Each rung token has its noun at [tests/setupStyles.ts:3811](/home/user/veneer-bfo/tests/setupStyles.ts:3811). The paragraph at [tests/setupStyles.ts:3817](/home/user/veneer-bfo/tests/setupStyles.ts:3817) matches the prescribed text and the map comparison at [tests/setupStyles.test.ts:1830](/home/user/veneer-bfo/tests/setupStyles.test.ts:1830). **Attack that failed:** an in-memory Sass compilation adding `outline-offset: 123px` to `.form-control[type=file]` preserved the empty reads map and the recorded `{ overflow: "hidden" }` value projection. Replacing that literal with `var(--vn-space-3)` produced an additional map entry, which the assertion distinguishes. The unrecorded literal remains outside the token-map and recorded-value assertions; the revised sentence no longer claims otherwise. The browser assertion selects recorded properties at [form-control.test.ts:107](/home/user/veneer-bfo/tests/src/styles/components/form-control.test.ts:107). This measurement ran in Node, without Vitest or a browser.
+
+3. **CONFIRMED — Law and scope.** **Attack that failed:** a TypeScript AST inspection of additions across the whole diff found no forbidden `any`, type assertion other than `as const`, non-null assertion, mutable member, or disallowed nested function; the suppression scan also found none. In-memory controls containing forbidden constructs were detected. Runtime inspection confirmed that the table, entries, value maps, reads maps, and nested token arrays are frozen at [tests/setupStyles.ts:3822](/home/user/veneer-bfo/tests/setupStyles.ts:3822); the interface members are readonly at [tests/setupStyles.ts:3770](/home/user/veneer-bfo/tests/setupStyles.ts:3770). The round delta touches no off-limits content and preserves the earlier scope rulings. The required `npm run check` command, defined at [package.json:53](/home/user/veneer-bfo/package.json:53), **exited 0**.
+
+Findings outside the claims: none.
+
+Attacked and held: logical negation and CSS `!important` are permitted adjacent syntax. An empty reads map establishes the absence of custom-property reads; literal-value coverage belongs to the separate value assertions.
+
+VERDICT: PASS
