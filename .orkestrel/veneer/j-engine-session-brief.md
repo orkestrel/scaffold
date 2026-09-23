@@ -212,6 +212,21 @@ how `engine` and `plugin` rows are parsed before you edit one), and the policy s
 **Tools and limits.** The full harness. No role commits, pushes, installs, or runs a destructive
 git command; you do those yourself, within D43's branch grants.
 
+## Reconciling with the baseline session
+
+Veneer's `ROADMAP.md` § Protocol › § The engine session states the protocol; follow it at each
+boundary it names and add nothing to it without the user. Your side of it: keep your marker under
+`engine/plan.md` § Intersession state (the `origin/main` commit of Veneer and of scaffold you last
+reconciled, with the date), your units in flight with their owned and shared files, and your pending
+shared changes; number your decisions `E<n>` in `engine/decisions.md`. The baseline's side sits in
+`.orkestrel/veneer/plan.md` § Intersession state and `.orkestrel/veneer/units/decisions-round-2.md`;
+its landings are the Status cells of the `ROADMAP.md` rows and the `### The engine session` rows it
+adds for your landings. At session start, before every brief, before every landing, and at every
+re-baseline: `git fetch origin main` in both repositories, read `git log --oneline
+<marker>..origin/main` in both, read the baseline's state section and decisions, move your marker,
+and send any landing that touches a unit in flight to that unit as a mid-campaign decision. Name
+your marker in every report to the user.
+
 ## Execution
 
 Run `.agents/orchestration.md` § Execution loop as written, in this shape:

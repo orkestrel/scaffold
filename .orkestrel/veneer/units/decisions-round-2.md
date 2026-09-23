@@ -523,3 +523,12 @@ Carriers: fold 50 (`### The engine session` in ROADMAP § Protocol, the D41 tene
 J-ENGINE phase row, § Decisions, § Records); `plan.md` (the engine folder and the merge step in the
 landing procedure); `j-engine-session-brief.md` (the engine session's kickoff brief); `prompt.txt`
 in the Veneer root (the prompt the user pastes into the engine session).
+
+- **D44 (2026-09-23, the user): the intersession reconciliation protocol.** Both sessions reconcile
+  at every step boundary, not only at landings. The protocol's home is Veneer's `ROADMAP.md` §
+  Protocol › § The engine session: a marker per session in its plan file's § Intersession state,
+  the boundaries at which each session fetches `origin/main` in both repositories and reads the
+  other's plan and decisions, pending shared changes recorded before the landing that applies them,
+  `D<n>` and `E<n>` decision numbering, the `plugin` rows' shared ownership, and the marker named
+  in every report to the user. `plan.md` § Intersession state and the engine brief's
+  § Reconciling with the baseline session carry each session's side; `prompt.txt` names it.

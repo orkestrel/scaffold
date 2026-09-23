@@ -1,0 +1,485 @@
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -497,7 +497,7 @@
+ export const LAYOUT_COPY = Object.freeze({
+ 	region: 'Layout',
+ 	paragraph:
+-		'Containers center content with inline gutters, and a vertical rule separates inline content. Resize the viewport to compare their caps, grid columns, offsets, row counts, and gutter and row-gap steps.',
++		'Containers center content with inline gutters, and a vertical rule separates inline content. Resize the viewport to compare their caps, grid columns, offsets, row counts, and gutter and gap steps.',
+ })
+ 
+ /** Lists the container and grid specimens. */
+@@ -577,6 +577,20 @@
+ 		markup:
+ 			'<div class="navbar"><div class="container-fluid"><span>Leading content</span><div class="vr"></div><span>Trailing content</span></div></div>',
+ 	}),
++	Object.freeze({
++		name: 'Gap steps',
++		markup: Object.keys(TOKEN_NAMES.gap)
++			.map(
++				(step) =>
++					`<div class="container-fluid"><div class="row row-cols-auto g-0 gap-${String(step)}"><div>Gap ${String(step)}</div><div>Neighbor</div></div></div>`,
++			)
++			.join(''),
++	}),
++	Object.freeze({
++		name: 'Responsive gap',
++		markup:
++			'<div class="container-fluid"><div class="row row-cols-auto g-0 gap-1 gap-md-3 row-gap-lg-5 column-gap-xl-2"><div>Resize for gap steps</div><div>Column gap</div><div class="col-12">Row gap on wrap</div></div></div>',
++	}),
+ ])
+ 
+ /** Holds the Table section's visible copy and accessible name. */
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -197,6 +197,8 @@
+ 	| 'Vertical group'
+ 	| 'Wrapping toolbar'
+ 	| 'Waving placeholder'
++	| 'Gap steps'
++	| 'Responsive gap'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -1063,6 +1065,18 @@
+ 		selector: 'legend.col-form-label',
+ 		property: 'margin-bottom',
+ 	}),
++	Object.freeze({
++		scenario: 'gap-steps',
++		subject: 'Gap steps',
++		selector: '.gap-5',
++		property: 'column-gap',
++	}),
++	Object.freeze({
++		scenario: 'responsive-gap',
++		subject: 'Responsive gap',
++		selector: '.gap-md-3',
++		property: 'column-gap',
++	}),
+ ])
+ 
+ /**
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -105,6 +105,7 @@
+ 			'btn-toolbar',
+ 			'card',
+ 			'col',
++			'column-gap',
+ 			'container',
+ 			'display',
+ 			'figure',
+@@ -115,6 +116,7 @@
+ 			'form-range',
+ 			'form-select',
+ 			'g',
++			'gap',
+ 			'gx',
+ 			'gy',
+ 			'h1',
+@@ -349,6 +351,78 @@
+ 		].flatMap(([, name]) => (name === undefined ? [] : [name]))
+ 		expect(loaded.filter((name) => release.includes(name))).toEqual(release)
+ 	})
++
++	it('loads the helpers and the utilities in the release order, each important helper ahead of the utilities', () => {
++		// The release imports its helpers from one partial and declares its utilities as one map, in
++		// that order. A helper whose declarations are normal sits in the components layer in the
++		// release's helper order. A helper the release writes with `!important` sits in the utilities
++		// layer ahead of every utility partial, because the cascade reverses layer order for important
++		// declarations, so an earlier layer's important declaration beats a later one's. The utility
++		// partials follow the map's entry order, which is the order the release emits them in. Each
++		// release name reaches the barrel path of the Veneer partial writing it: a helper defaults to
++		// its own name under the `components` directory, an entry to its own name under the `utilities`
++		// directory, and each record names the paths that differ. The `color-bg` helper's rules head
++		// the `color` utility partial, so that partial takes the utility's place in the order.
++		const scss = resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'scss')
++		const helpers = [
++			...readFileSync(resolve(scss, '_helpers.scss'), 'utf8').matchAll(
++				/@import "helpers\/([\w-]+)";/gu,
++			),
++		].flatMap(([, name]) => (name === undefined ? [] : [name]))
++		expect(helpers).toEqual([
++			'clearfix',
++			'color-bg',
++			'colored-links',
++			'focus-ring',
++			'icon-link',
++			'ratio',
++			'position',
++			'stacks',
++			'visually-hidden',
++			'stretched-link',
++			'text-truncation',
++			'vr',
++		])
++		const entries = [
++			...readFileSync(resolve(scss, '_utilities.scss'), 'utf8').matchAll(/^ {4}"([\w-]+)": \(/gmu),
++		].flatMap(([, name]) => (name === undefined ? [] : [name]))
++		expect(entries.slice(entries.indexOf('gap'), entries.indexOf('gap') + 3)).toEqual([
++			'gap',
++			'row-gap',
++			'column-gap',
++		])
++		const helperPaths: Readonly<Record<string, string>> = {
++			'color-bg': 'utilities/color',
++			'colored-links': 'utilities/link',
++			'visually-hidden': 'utilities/visually-hidden',
++		}
++		const entryPaths: Readonly<Record<string, string>> = {
++			'row-gap': 'utilities/gap',
++			'column-gap': 'utilities/gap',
++		}
++		const helperOrder = helpers.map((name) => helperPaths[name] ?? `components/${name}`)
++		const utilityOrder = [
++			...new Set(entries.map((name) => entryPaths[name] ?? `utilities/${name}`)),
++		]
++		const loaded = [
++			...readFileSync(resolve(WORKSPACE_ROOT, 'src/styles/index.scss'), 'utf8').matchAll(
++				/^@use '((?:components|utilities)\/[\w-]+)'/gmu,
++			),
++		].flatMap(([, path]) => (path === undefined ? [] : [path]))
++		expect(loaded).toContain('utilities/gap')
++		const components = helperOrder.filter((path) => path.startsWith('components/'))
++		expect(loaded.filter((path) => components.includes(path))).toEqual(
++			components.filter((path) => loaded.includes(path)),
++		)
++		expect(loaded.filter((path) => path.startsWith('utilities/'))).toEqual(
++			[
++				...helperOrder.filter(
++					(path) => path.startsWith('utilities/') && !utilityOrder.includes(path),
++				),
++				...utilityOrder,
++			].filter((path) => loaded.includes(path)),
++		)
++	})
+ })
+ 
+ describe('runtime boundaries', () => {
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1345,6 +1345,7 @@
+ 				'btn-toolbar',
+ 				'card',
+ 				'col',
++				'column-gap',
+ 				'container',
+ 				'display',
+ 				'engine',
+@@ -1356,6 +1357,7 @@
+ 				'form-range',
+ 				'form-select',
+ 				'g',
++				'gap',
+ 				'gx',
+ 				'gy',
+ 				'h1',
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1828,7 +1828,7 @@
+ /** Lists the offset steps, with zero emitted only at a non-zero breakpoint. */
+ export const GRID_OFFSET_STEPS = Object.freeze([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+ 
+-/** Pins the density-independent gutter and row-gap steps against the official inventory. */
++/** Pins the density-independent gutter and gap steps against the official inventory. */
+ export const GAP_STEP_CASES = Object.freeze([
+ 	Object.freeze({ step: 0, value: '0', pixels: 0, token: TOKEN_NAMES.gap[0] }),
+ 	Object.freeze({ step: 1, value: '0.25rem', pixels: 4, token: TOKEN_NAMES.gap[1] }),
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -162,6 +162,21 @@
+ name exists in Bootstrap and in Tailwind, the declaration Veneer ships is Bootstrap's; § Tailwind
+ states how a paired build keeps that true.
+ 
++Every utility partial writes its classes through the `utility` mixin in the
++`src/styles/_mixins.scss` file, and a utility that sets a `--bs-*` custom property writes it through
++the `utility-variable` mixin, so no partial writes an `!important` flag by hand. The `utility` mixin
++names each class the way the release's utility API names it: the class, then the breakpoint infix,
++then a hyphen and the value's key, so the `gap` utility's step `3` at the `-md` infix is
++`.gap-md-3`. An entry with no class drops the infix's leading hyphen, as the release does. Each
++pseudo-class an entry names as a state adds a class after the base class, suffixed with a hyphen and
++that pseudo-class and matched only in that state, so a `hover` state pairs a class with its
++`-hover` variant under the `:hover` pseudo-class. The `utility` mixin writes every property with
++`!important` and every local variable it is given without it. The `utility-variable` mixin writes
++its custom property without it, as the release writes a `css-var` utility, so a rule that reads the
++variable decides its own priority. The `tests/src/styles/mixins.test.ts` proof reads the mixins'
++naming, their breakpoint gating, their state classes, and the priority of each declaration they
++write, from a fixture that calls them the way a utility partial does.
++
+ Override an important utility from inside that utility's own layer, which your sheet re-opens by
+ name. An important declaration in a layer beats an important declaration outside every layer,
+ because the cascade reverses layer order for important declarations and sorts the unlayered ones
+@@ -255,7 +270,7 @@
+ | `src/styles/elements/_iframe.scss`          | The iframe family and its mandated pairs in the elements layer.                                                                                                                                                                                    |
+ | `src/styles/elements/_details.scss`         | The details family and its mandated pairs in the elements layer.                                                                                                                                                                                   |
+ | `src/styles/elements/_progress.scss`        | The progress family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
+-| `src/styles/utilities/_gap.scss`            | The gutter and row-gap step utilities in the utilities layer.                                                                                                                                                                                      |
++| `src/styles/utilities/_gap.scss`            | The gutter and gap step utilities in the utilities layer.                                                                                                                                                                                          |
+ | `src/styles/index.scss`                     | The compilation barrel.                                                                                                                                                                                                                            |
+ | `src/styles/index.ts`                       | The side-effect entry, and the build's library entry.                                                                                                                                                                                              |
+ | `configs/src/vite.styles.config.ts`         | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
+@@ -418,22 +433,26 @@
+ name that gains the `!important` declarations the rule asks for leaves the line. The proof reads
+ Tailwind's longhands from the unexcluded instrument and Veneer's importance from the built cascade,
+ each as Chromium expands it, so a shorthand counts as the longhands it sets. The importance branch
+-runs over the shared names that rule lets leave the line. No shipped shared name is important, so
+-that branch is driven by planted `!important` declarations on the `grid-column-start` and
+-`grid-column-end` longhands Tailwind's `col-1` rule declares, and it reads what the rule claims:
+-with the exclusion line dropped and Tailwind's own rule on the page, the element resolves, for
+-every property that rule declares, what it resolves under the cascade and the plant alone. The
+-partial-importance plant makes only the `grid-column-start` longhand important, and the equality
+-still holds with the `col-1` class on the line.
++runs over the shared names that rule lets leave the line. The gap steps `gap-0` to `gap-5` are
++shipped names off the line: Tailwind's rule for each declares the `gap` shorthand, which Chromium
++expands to the `row-gap` and `column-gap` longhands, and Veneer declares the same shorthand with
++`!important`. The proof asserts that the `gap-3` name is in the branch and reads what the rule
++claims: with the exclusion line dropped and Tailwind's own rule on the page, every element carrying
++a name in the branch resolves, for every property that rule declares, what it resolves under the
++cascade alone. A planted rule drives the partial-importance case: it declares `!important` on the
++`grid-column-start` longhand alone of the two longhands Tailwind's `col-1` rule declares, and the
++equality still holds with the `col-1` class on the line.
+ 
+ The workspace executes the profiles from `tests/setup.css` for the `tailwind` profile and
+ `tests/fixtures/tailwind/preflight.css` for the `preflight` profile. Those profiles scan a
+-candidate list derived from the built cascade rather than your markup, and every name that list
+-offers is on the exclusion line, so the executed `tailwind` profile emits nothing at all — and that
+-silence is what proves the exclusion complete. The `tests/fixtures/tailwind/unexcluded.css`
+-instrument drops the line and adds an `@source inline(…)` control naming utilities the cascade
+-declares no class for, so the same compilation emits something and the composed imports are read
+-from what it emits.
++candidate list derived from the built cascade rather than your markup, so every utility an executed
++profile emits is a shared name, and the stylesheet profiles proof holds each profile's emitted
++utilities equal to the shared names off the exclusion line, the gap steps among them. A name that
++stays on the line is withheld, and a name that leaves it is generated and loses to Veneer's
++important declaration. The `tests/fixtures/tailwind/unexcluded.css` instrument drops the line and
++adds an `@source inline(…)` control naming utilities the cascade declares no class for, so its
++compilation emits something whatever the line holds, and the composed imports are read from what
++it emits.
+ 
+ The proofs under `tests/service/tailwind/` run in the `service` project. They compile each profile
+ in Node through the installed `@tailwindcss/postcss` plugin, from the profile's own path; they read
+@@ -1701,6 +1720,41 @@
+ 
+ `tests/src/styles/components/close.test.ts` reads each resolved treatment in the browser.
+ 
++### Gap utilities
++
++The gap keys ship whole in the utilities layer, from the `src/styles/utilities/_gap.scss` partial
++beside the gutter classes: `.gap-*` sets both axes, `.row-gap-*` the row axis, and
++`.column-gap-*` the column axis, each at the steps `0` to `5` and at every breakpoint infix. The
++gutter classes `.g-*`, `.gx-*`, and `.gy-*` set the `--bs-gutter-x` and `--bs-gutter-y` properties
++the grid reads, and they stay in the same partial and the same layer.
++
++Every step reads the `--vn-gap-*` scale the gutters read, and that scale carries no density factor,
++so a retuned `--vn-gap-3` token moves `.gap-3`, `.row-gap-3`, `.column-gap-3`, and `.g-3` together,
++and the `--vn-factor-density` token moves none of them. Each gap declaration carries the
++`!important` the release writes, and the gutter properties stay normal, as the release writes them.
++§ Styles shows the escape from an important utility inside the utilities layer.
++
++The partial writes the gap keys through the `utility` mixin that § Styles describes, so each class
++reads the key, then the infix, then a hyphen and the step. The partial walks the breakpoints once
++and writes every entry inside each infix in the release's map order: the `gap` entry, then the
++`row-gap` entry, then the `column-gap` entry. So at one infix an axis class beats a `.gap-*` class on
++its own axis, and a wider infix beats every narrower one: at a 768px viewport,
++`.gap-md-4.column-gap-sm-2` resolves a 24px column gap.
++
++The `tests/src/styles/utilities/gap.test.ts` proof reads each step at every infix at its boundary
++and one pixel below it, the density factor and a retuned step, a dark island, the order between
++entries and between infixes, the priority over a later unlayered rule, and the escape inside the
++utilities layer.
++
++These are the keys' recorded departures.
++
++- **The steps read Veneer's gap scale.** The release writes each step as a literal length; Veneer
++  writes `var(--vn-gap-0)` to `var(--vn-gap-5)`, which resolve to the same lengths and move with the
++  gutters.
++- **The prefixed column-gap property is absent.** The official cascade carries `-moz-column-gap`
++  beside `column-gap`; Veneer emits the standard property alone, because the managed Chromium and
++  Edge receipts this cascade is proved on resolve it and leave the alias redundant.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -2049,9 +2103,9 @@
+ 576px, `--vn-container-md` from 768px, and `--vn-container-xxl` from 1400px. `.container-fluid` reads
+ no cap.
+ 
+-The gutter and row-gap utilities read a separate scale. Its tokens carry no density factor,
++The gutter and gap utilities read a separate scale. Its tokens carry no density factor,
+ matching the default gutter tokens. Override a step to retune its utilities without changing the
+-default gutters. The `gap` and `column-gap` keys remain assigned to the utilities family.
++default gutters. § Gap utilities names the classes that read it.
+ 
+ | Token        | Value     | Source                              | Alias |
+ | ------------ | --------- | ----------------------------------- | ----- |
+@@ -2574,6 +2628,83 @@
+ | `col`     | `.col-form-label-sm` | `padding-bottom` | —         | `calc(0.25rem + var(--bs-border-width))`  | `calc(var(--vn-space-2) + var(--bs-border-width))` | tokenized |
+ | `col`     | `.col-form-label-sm` | `font-size`      | —         | `0.875rem`                                | `var(--vn-size-2)`                                 | tokenized |
+ 
++#### `column-gap`
++
++| Component    | Selector            | Property          | Condition                    | Bootstrap 5.3.8 | Veneer            | Departure |
++| ------------ | ------------------- | ----------------- | ---------------------------- | --------------- | ----------------- | --------- |
++| `column-gap` | `.column-gap-0`     | `-moz-column-gap` | —                            | `0`             | —                 | dropped   |
++| `column-gap` | `.column-gap-0`     | `column-gap`      | —                            | `0`             | `var(--vn-gap-0)` | tokenized |
++| `column-gap` | `.column-gap-1`     | `-moz-column-gap` | —                            | `0.25rem`       | —                 | dropped   |
++| `column-gap` | `.column-gap-1`     | `column-gap`      | —                            | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `column-gap` | `.column-gap-2`     | `-moz-column-gap` | —                            | `0.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-2`     | `column-gap`      | —                            | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `column-gap` | `.column-gap-3`     | `-moz-column-gap` | —                            | `1rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-3`     | `column-gap`      | —                            | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `column-gap` | `.column-gap-4`     | `-moz-column-gap` | —                            | `1.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-4`     | `column-gap`      | —                            | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `column-gap` | `.column-gap-5`     | `-moz-column-gap` | —                            | `3rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-5`     | `column-gap`      | —                            | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `column-gap` | `.column-gap-sm-0`  | `-moz-column-gap` | `@media (min-width: 576px)`  | `0`             | —                 | dropped   |
++| `column-gap` | `.column-gap-sm-0`  | `column-gap`      | `@media (width >= 576px)`    | `0`             | `var(--vn-gap-0)` | tokenized |
++| `column-gap` | `.column-gap-sm-1`  | `-moz-column-gap` | `@media (min-width: 576px)`  | `0.25rem`       | —                 | dropped   |
++| `column-gap` | `.column-gap-sm-1`  | `column-gap`      | `@media (width >= 576px)`    | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `column-gap` | `.column-gap-sm-2`  | `-moz-column-gap` | `@media (min-width: 576px)`  | `0.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-sm-2`  | `column-gap`      | `@media (width >= 576px)`    | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `column-gap` | `.column-gap-sm-3`  | `-moz-column-gap` | `@media (min-width: 576px)`  | `1rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-sm-3`  | `column-gap`      | `@media (width >= 576px)`    | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `column-gap` | `.column-gap-sm-4`  | `-moz-column-gap` | `@media (min-width: 576px)`  | `1.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-sm-4`  | `column-gap`      | `@media (width >= 576px)`    | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `column-gap` | `.column-gap-sm-5`  | `-moz-column-gap` | `@media (min-width: 576px)`  | `3rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-sm-5`  | `column-gap`      | `@media (width >= 576px)`    | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `column-gap` | `.column-gap-md-0`  | `-moz-column-gap` | `@media (min-width: 768px)`  | `0`             | —                 | dropped   |
++| `column-gap` | `.column-gap-md-0`  | `column-gap`      | `@media (width >= 768px)`    | `0`             | `var(--vn-gap-0)` | tokenized |
++| `column-gap` | `.column-gap-md-1`  | `-moz-column-gap` | `@media (min-width: 768px)`  | `0.25rem`       | —                 | dropped   |
++| `column-gap` | `.column-gap-md-1`  | `column-gap`      | `@media (width >= 768px)`    | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `column-gap` | `.column-gap-md-2`  | `-moz-column-gap` | `@media (min-width: 768px)`  | `0.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-md-2`  | `column-gap`      | `@media (width >= 768px)`    | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `column-gap` | `.column-gap-md-3`  | `-moz-column-gap` | `@media (min-width: 768px)`  | `1rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-md-3`  | `column-gap`      | `@media (width >= 768px)`    | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `column-gap` | `.column-gap-md-4`  | `-moz-column-gap` | `@media (min-width: 768px)`  | `1.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-md-4`  | `column-gap`      | `@media (width >= 768px)`    | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `column-gap` | `.column-gap-md-5`  | `-moz-column-gap` | `@media (min-width: 768px)`  | `3rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-md-5`  | `column-gap`      | `@media (width >= 768px)`    | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `column-gap` | `.column-gap-lg-0`  | `-moz-column-gap` | `@media (min-width: 992px)`  | `0`             | —                 | dropped   |
++| `column-gap` | `.column-gap-lg-0`  | `column-gap`      | `@media (width >= 992px)`    | `0`             | `var(--vn-gap-0)` | tokenized |
++| `column-gap` | `.column-gap-lg-1`  | `-moz-column-gap` | `@media (min-width: 992px)`  | `0.25rem`       | —                 | dropped   |
++| `column-gap` | `.column-gap-lg-1`  | `column-gap`      | `@media (width >= 992px)`    | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `column-gap` | `.column-gap-lg-2`  | `-moz-column-gap` | `@media (min-width: 992px)`  | `0.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-lg-2`  | `column-gap`      | `@media (width >= 992px)`    | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `column-gap` | `.column-gap-lg-3`  | `-moz-column-gap` | `@media (min-width: 992px)`  | `1rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-lg-3`  | `column-gap`      | `@media (width >= 992px)`    | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `column-gap` | `.column-gap-lg-4`  | `-moz-column-gap` | `@media (min-width: 992px)`  | `1.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-lg-4`  | `column-gap`      | `@media (width >= 992px)`    | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `column-gap` | `.column-gap-lg-5`  | `-moz-column-gap` | `@media (min-width: 992px)`  | `3rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-lg-5`  | `column-gap`      | `@media (width >= 992px)`    | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `column-gap` | `.column-gap-xl-0`  | `-moz-column-gap` | `@media (min-width: 1200px)` | `0`             | —                 | dropped   |
++| `column-gap` | `.column-gap-xl-0`  | `column-gap`      | `@media (width >= 1200px)`   | `0`             | `var(--vn-gap-0)` | tokenized |
++| `column-gap` | `.column-gap-xl-1`  | `-moz-column-gap` | `@media (min-width: 1200px)` | `0.25rem`       | —                 | dropped   |
++| `column-gap` | `.column-gap-xl-1`  | `column-gap`      | `@media (width >= 1200px)`   | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `column-gap` | `.column-gap-xl-2`  | `-moz-column-gap` | `@media (min-width: 1200px)` | `0.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-xl-2`  | `column-gap`      | `@media (width >= 1200px)`   | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `column-gap` | `.column-gap-xl-3`  | `-moz-column-gap` | `@media (min-width: 1200px)` | `1rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-xl-3`  | `column-gap`      | `@media (width >= 1200px)`   | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `column-gap` | `.column-gap-xl-4`  | `-moz-column-gap` | `@media (min-width: 1200px)` | `1.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-xl-4`  | `column-gap`      | `@media (width >= 1200px)`   | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `column-gap` | `.column-gap-xl-5`  | `-moz-column-gap` | `@media (min-width: 1200px)` | `3rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-xl-5`  | `column-gap`      | `@media (width >= 1200px)`   | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `column-gap` | `.column-gap-xxl-0` | `-moz-column-gap` | `@media (min-width: 1400px)` | `0`             | —                 | dropped   |
++| `column-gap` | `.column-gap-xxl-0` | `column-gap`      | `@media (width >= 1400px)`   | `0`             | `var(--vn-gap-0)` | tokenized |
++| `column-gap` | `.column-gap-xxl-1` | `-moz-column-gap` | `@media (min-width: 1400px)` | `0.25rem`       | —                 | dropped   |
++| `column-gap` | `.column-gap-xxl-1` | `column-gap`      | `@media (width >= 1400px)`   | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `column-gap` | `.column-gap-xxl-2` | `-moz-column-gap` | `@media (min-width: 1400px)` | `0.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-xxl-2` | `column-gap`      | `@media (width >= 1400px)`   | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `column-gap` | `.column-gap-xxl-3` | `-moz-column-gap` | `@media (min-width: 1400px)` | `1rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-xxl-3` | `column-gap`      | `@media (width >= 1400px)`   | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `column-gap` | `.column-gap-xxl-4` | `-moz-column-gap` | `@media (min-width: 1400px)` | `1.5rem`        | —                 | dropped   |
++| `column-gap` | `.column-gap-xxl-4` | `column-gap`      | `@media (width >= 1400px)`   | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `column-gap` | `.column-gap-xxl-5` | `-moz-column-gap` | `@media (min-width: 1400px)` | `3rem`          | —                 | dropped   |
++| `column-gap` | `.column-gap-xxl-5` | `column-gap`      | `@media (width >= 1400px)`   | `3rem`          | `var(--vn-gap-5)` | tokenized |
++
+ #### `container`
+ 
+ | Component   | Selector           | Property        | Condition                  | Bootstrap 5.3.8 | Veneer                    | Departure |
+@@ -2719,6 +2850,47 @@
+ | `g`       | `.g-xxl-5` | `--bs-gutter-x` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-gap-5)` | tokenized |
+ | `g`       | `.g-xxl-5` | `--bs-gutter-y` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-gap-5)` | tokenized |
+ 
++#### `gap`
++
++| Component | Selector     | Property | Condition                  | Bootstrap 5.3.8 | Veneer            | Departure |
++| --------- | ------------ | -------- | -------------------------- | --------------- | ----------------- | --------- |
++| `gap`     | `.gap-0`     | `gap`    | —                          | `0`             | `var(--vn-gap-0)` | tokenized |
++| `gap`     | `.gap-1`     | `gap`    | —                          | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `gap`     | `.gap-2`     | `gap`    | —                          | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `gap`     | `.gap-3`     | `gap`    | —                          | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `gap`     | `.gap-4`     | `gap`    | —                          | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `gap`     | `.gap-5`     | `gap`    | —                          | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `gap`     | `.gap-sm-0`  | `gap`    | `@media (width >= 576px)`  | `0`             | `var(--vn-gap-0)` | tokenized |
++| `gap`     | `.gap-sm-1`  | `gap`    | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `gap`     | `.gap-sm-2`  | `gap`    | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `gap`     | `.gap-sm-3`  | `gap`    | `@media (width >= 576px)`  | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `gap`     | `.gap-sm-4`  | `gap`    | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `gap`     | `.gap-sm-5`  | `gap`    | `@media (width >= 576px)`  | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `gap`     | `.gap-md-0`  | `gap`    | `@media (width >= 768px)`  | `0`             | `var(--vn-gap-0)` | tokenized |
++| `gap`     | `.gap-md-1`  | `gap`    | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `gap`     | `.gap-md-2`  | `gap`    | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `gap`     | `.gap-md-3`  | `gap`    | `@media (width >= 768px)`  | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `gap`     | `.gap-md-4`  | `gap`    | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `gap`     | `.gap-md-5`  | `gap`    | `@media (width >= 768px)`  | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `gap`     | `.gap-lg-0`  | `gap`    | `@media (width >= 992px)`  | `0`             | `var(--vn-gap-0)` | tokenized |
++| `gap`     | `.gap-lg-1`  | `gap`    | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `gap`     | `.gap-lg-2`  | `gap`    | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `gap`     | `.gap-lg-3`  | `gap`    | `@media (width >= 992px)`  | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `gap`     | `.gap-lg-4`  | `gap`    | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `gap`     | `.gap-lg-5`  | `gap`    | `@media (width >= 992px)`  | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `gap`     | `.gap-xl-0`  | `gap`    | `@media (width >= 1200px)` | `0`             | `var(--vn-gap-0)` | tokenized |
++| `gap`     | `.gap-xl-1`  | `gap`    | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `gap`     | `.gap-xl-2`  | `gap`    | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `gap`     | `.gap-xl-3`  | `gap`    | `@media (width >= 1200px)` | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `gap`     | `.gap-xl-4`  | `gap`    | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `gap`     | `.gap-xl-5`  | `gap`    | `@media (width >= 1200px)` | `3rem`          | `var(--vn-gap-5)` | tokenized |
++| `gap`     | `.gap-xxl-0` | `gap`    | `@media (width >= 1400px)` | `0`             | `var(--vn-gap-0)` | tokenized |
++| `gap`     | `.gap-xxl-1` | `gap`    | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-gap-1)` | tokenized |
++| `gap`     | `.gap-xxl-2` | `gap`    | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-gap-2)` | tokenized |
++| `gap`     | `.gap-xxl-3` | `gap`    | `@media (width >= 1400px)` | `1rem`          | `var(--vn-gap-3)` | tokenized |
++| `gap`     | `.gap-xxl-4` | `gap`    | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
++| `gap`     | `.gap-xxl-5` | `gap`    | `@media (width >= 1400px)` | `3rem`          | `var(--vn-gap-5)` | tokenized |
++
+ #### `gx`
+ 
+ | Component | Selector    | Property        | Condition                  | Bootstrap 5.3.8 | Veneer            | Departure |
+@@ -3807,6 +3979,8 @@
+ | gy               | selector       | Every official .gy step and breakpoint selector ships; resolved margins, padding, and row gaps are proved in tests/src/styles/utilities/gap.test.ts.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
+ | gy               | variable       | The `--bs-gutter-y` property reads the density-independent `--vn-gap-{n}` scale; resolved geometry is proved in tests/src/styles/utilities/gap.test.ts.                                                                                                                                                                                                                                                                                                          | —                     | shipped  |
+ | row-gap          | selector       | Every official .row-gap step and breakpoint selector ships; resolved margins, padding, and row gaps are proved in tests/src/styles/utilities/gap.test.ts.                                                                                                                                                                                                                                                                                                        | —                     | shipped  |
++| gap              | selector       | Every official `.gap-*` step and breakpoint selector ships; resolved row and column gaps are proved in the `tests/src/styles/utilities/gap.test.ts` proof.                                                                                                                                                                                                                                                                                                       | —                     | shipped  |
++| column-gap       | selector       | Every official `.column-gap-*` step and breakpoint selector ships; resolved column gaps are proved in the `tests/src/styles/utilities/gap.test.ts` proof.                                                                                                                                                                                                                                                                                                        | —                     | shipped  |
+ | row              | selector       | Every `.row-gap-*` selector ships; resolved row gaps are proved in `tests/src/styles/utilities/gap.test.ts`.                                                                                                                                                                                                                                                                                                                                                     | —                     | shipped  |
+ | row              | selector       | The `.row` family ships with physical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                                                                                                                                                                                                                                                              | —                     | shipped  |
+ | row              | selector       | The `.row > *` family ships with physical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                                                                                                                                                                                                                                                          | —                     | shipped  |
+@@ -3981,7 +4155,7 @@
+ text specimens, lists, quotations, code, media, tables, form controls, and interactive tags, a Type
+ region carrying the typography, list, and quotation classes, and a Media region carrying the image
+ and figure classes beside the aspect-ratio boxes, and a Links region carrying the link classes and
+-the icon links, and a Layout region carrying the container, grid, and gutter specimens and the
++the icon links, and a Layout region carrying the container, grid, gutter, and gap specimens and the
+ vertical rule, and a Table region carrying the table variant and responsive specimens. Each helper
+ key sits in the region whose subject it belongs to rather than in a region of its own, which is how
+ every other section is grouped: the image classes and the figure classes share Media, and the
+@@ -4150,7 +4324,7 @@
+ [the input group classes](../tests/src/styles/components/input-group.test.ts),
+ [the floating label classes](../tests/src/styles/components/form-floating.test.ts),
+ [the select classes](../tests/src/styles/components/form-select.test.ts),
+-[the gutter utilities](../tests/src/styles/utilities/gap.test.ts), and
++[the gutter and gap utilities](../tests/src/styles/utilities/gap.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -375,7 +375,7 @@
+ | Chrome receipt                                                                                                                                                                                                                                                                                                                                                                                                   | E-RECEIPTS records the promised hosts (F4 HOST-OBSERVATIONS pinned them, `af673cb`); the install is the user's                                                                                                                                                                                                                                                            |
+ | U1-del legacy tree in the working tree                                                                                                                                                                                                                                                                                                                                                                           | X-RETENTION carries the working-tree deletion (recorded drop: `fc36cec`)                                                                                                                                                                                                                                                                                                  |
+ | Cross-cutting reconciliation                                                                                                                                                                                                                                                                                                                                                                                     | closed: the F5 ACCOUNTING units landed before the families opened (F5a `984d062` through F5e `67d12d7`)                                                                                                                                                                                                                                                                   |
+-| CL8b gap keys `gap` and `column-gap`, with `row-gap`                                                                                                                                                                                                                                                                                                                                                             | B-UTILITIES                                                                                                                                                                                                                                                                                                                                                               |
++| CL8b gap keys `gap` and `column-gap`, with `row-gap`                                                                                                                                                                                                                                                                                                                                                             | closed: UTIL-SPACER landed (`<landing hash>`) with the `gap` and `column-gap` keys beside the `row-gap` key in the `src/styles/utilities/_gap.scss` partial                                                                                                                                                                                                               |
+ | U7c paint calibration readings                                                                                                                                                                                                                                                                                                                                                                                   | E-ELEMENTS takes the readings; E-IDENTITY lands the ruling (its own later row)                                                                                                                                                                                                                                                                                            |
+ | Frame grammar; unaligned filename stems; one-sided palette gap; accessibility artifacts not comparable; the link key's single-anchor frame; the pixel guard running only under the capture flag; the sampler's origin pixel                                                                                                                                                                                      | F7 CAPTURE                                                                                                                                                                                                                                                                                                                                                                |
+ | Portfolio finding 5 (differing context) and finding 7 (ineffective link crop)                                                                                                                                                                                                                                                                                                                                    | F7 CAPTURE proves comparable context and includes the link's actual background                                                                                                                                                                                                                                                                                            |

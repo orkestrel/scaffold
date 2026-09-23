@@ -78,7 +78,34 @@ file, and the prompt the user pastes into it is `prompt.txt` in the Veneer root 
 `plugin` rows' cells, and `### The engine session` in the roadmap; this session owns the rest and
 adds a `plugin` row (status `accepted`, owner J-ENGINE) per landed family. Both sessions treat
 `tests/setup.ts`, `tests/setupBrowser.ts`, `package.json`, and `README.md` as report-only until a
-landing applies a change.
+landing applies a change. Veneer's `ROADMAP.md` § Protocol › § The engine session is the home of
+the reconciliation protocol both sessions follow (the marker, the boundaries at which each session
+fetches and reads the other's records, the pending shared changes, the decisions files, the
+`plugin` rows, and the marker in every report); § Intersession state in this file carries this
+session's side of it.
+
+## Intersession state
+
+**Marker.** Veneer `origin/main` `3985067`, scaffold `origin/main` `1d94e24`, read 2026-09-23.
+The engine session has recorded no landing and no `engine/` record yet; move this marker at every
+boundary the protocol names.
+
+**In flight (this session).** NAV round 2 (`/home/user/veneer-nv`), DROPDOWN round 2
+(`/home/user/veneer-dd`), COLLAPSE round 2 (returned, awaiting its landing check and DROPDOWN's
+landing), UTIL-SPACER round 2 (returned, in audit), CONDITIONS (`/home/user/veneer-cn`), ALERT
+(`/home/user/veneer-al`), and CAROUSEL (`/home/user/veneer-ca`). Each owns its partial under
+`src/styles/`, its proof under `tests/src/styles/`, and its section and section proof under
+`app/browser/sections/` and `tests/app/browser/sections/`; each returns a report-only patch over
+`tests/setup.ts` (rows appended at the registry's end), `tests/setupStyles.ts`,
+`tests/setupStyles.test.ts`, `tests/conformance.test.ts`, `tests/setupServer.test.ts`,
+`tests/app/browser/integration.test.ts`, the showcase wiring under `app/browser/`, and
+`guides/veneer.md` (its own section, its rows, and its `plugin` row).
+
+**Pending shared changes.** `tests/setup.ts` gains `CASCADE_KEYS` rows, `DRIVEN_KEYS` rows, and
+`CaptureSubject` members with each landing, append-only at the registry's end. `guides/veneer.md`
+gains a `plugin` row with `Owner: J-ENGINE.` for Collapse, Dropdown, Tab, ScrollSpy, Alert, and
+Carousel as those families land, and later for Modal, Offcanvas, Tooltip, Popover, and Toast. No
+change to `tests/setupBrowser.ts`, to the `package.json` exports map, or to `README.md` is pending.
 
 ## Landing procedure
 

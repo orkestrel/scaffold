@@ -1,0 +1,39 @@
+# Orchestrator measurements, 2026-09-23, taken on a fresh archive of c3ac297 under the scratchpad
+
+$ git apply --check co-shared-2.patch (against c3ac297)
+exit=0
+
+$ grep "^+++ " co-shared-2.patch
++++ b/app/browser/Showcase.ts
++++ b/app/browser/constants.ts
++++ b/app/browser/index.ts
++++ b/guides/veneer.md
++++ b/src/styles/index.scss
++++ b/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/index.test.ts
++++ b/tests/app/browser/integration.test.ts
++++ b/tests/conformance.test.ts
++++ b/tests/fixtures/tailwind/markup.html
++++ b/tests/setup.ts
++++ b/tests/setupServer.test.ts
+
+$ git -C /home/user/veneer-co status --porcelain
+ M tests/fixtures/tailwind/consumer.css
+ M tests/fixtures/tailwind/preflight.css
+ M tests/setup.css
+?? app/browser/sections/CollapseSection.ts
+?? src/styles/components/_collapse.scss
+?? tests/app/browser/sections/CollapseSection.test.ts
+?? tests/src/styles/components/collapse.test.ts
+
+$ cat co-2-status.txt
+ M tests/fixtures/tailwind/consumer.css
+ M tests/fixtures/tailwind/preflight.css
+ M tests/setup.css
+?? app/browser/sections/CollapseSection.ts
+?? src/styles/components/_collapse.scss
+?? tests/app/browser/sections/CollapseSection.test.ts
+?? tests/src/styles/components/collapse.test.ts
+
+$ grep -n "Validation region follows" /home/user/veneer/guides/veneer.md
+exit=1

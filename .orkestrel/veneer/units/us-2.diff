@@ -1,0 +1,903 @@
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index dee8703..272c364 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -1,4 +1,7 @@
++@use 'sass:list';
+ @use 'sass:map';
++@use 'sass:meta';
++@use 'sass:string';
+ 
+ @mixin alias-gutters {
+ 	--bs-gutter-x: var(--vn-gutter-x);
+@@ -333,3 +336,89 @@
+ 	--bs-carousel-caption-color: #{map.get($values, 'carousel-caption')};
+ 	--bs-carousel-control-icon-filter: #{map.get($values, 'carousel-icon-filter')};
+ }
++
++// Emits one utility class per entry of `$values`, named the way the release's utility API names it:
++// the class, then the infix, then a hyphen and the value's key. A `null` key adds no modifier, so a
++// value keyed `null` emits the bare class. An empty `$class` drops the infix's leading hyphen, so a
++// classless entry emits the key alone at the empty infix and the `md-` prefix before the key at the
++// `-md` infix. `$values` is a map from key to value, or a list whose every member is both its key
++// and its value. Each pseudo-class in `$state` adds a second class after the base class, suffixed
++// with a hyphen and the pseudo-class and matched only in that state, as the release's `state` key
++// does: a `hover` state pairs `.link-offset-1` with `.link-offset-1-hover:hover`.
++//
++// Every property in `$properties` carries the `!important` the release writes on a utility, and
++// every entry of `$locals` is written first as a normal `--bs-*` declaration the properties can
++// read. A partial walks the `breakpoint-each` mixin once and includes each entry at every infix it
++// yields, in the release's map order; an entry that is not `$responsive` emits at the empty infix
++// alone, so the walk emits it once, ahead of every media block, as the release does.
++@mixin utility(
++	$class,
++	$properties,
++	$values,
++	$infix: '',
++	$responsive: false,
++	$locals: (),
++	$state: ()
++) {
++	@if $responsive or $infix == '' {
++		$pairs: $values;
++		@if meta.type-of($values) != 'map' {
++			$pairs: ();
++			@each $value in $values {
++				$pairs: map.set($pairs, $value, $value);
++			}
++		}
++		$lead: $infix;
++		@if $class == '' and $infix != '' {
++			$lead: string.slice($infix, 2);
++		}
++		@each $key, $value in $pairs {
++			$name: $class + $lead;
++			@if $key != null {
++				@if $name != '' {
++					$name: $name + '-';
++				}
++				$name: $name + $key;
++			}
++			$selectors: '.#{$name}';
++			@each $pseudo in $state {
++				$selectors: list.append($selectors, '.#{$name}-#{$pseudo}:#{$pseudo}', comma);
++			}
++			@each $selector in $selectors {
++				#{$selector} {
++					@each $local, $setting in $locals {
++						--bs-#{$local}: #{$setting};
++					}
++					@each $property in $properties {
++						#{$property}: $value !important;
++					}
++				}
++			}
++		}
++	}
++}
++
++// Emits one class per entry of the `$values` map that sets the `--bs-{$variable}` custom property
++// to the entry's value, named as the `utility` mixin names a class at the empty infix, with a state
++// class after it for each pseudo-class in `$state`. The declaration is normal, as the release
++// writes a `css-var` utility, so a rule reading the variable decides its own priority.
++@mixin utility-variable($class, $variable, $values, $state: ()) {
++	@each $key, $value in $values {
++		$name: $class;
++		@if $key != null {
++			@if $name != '' {
++				$name: $name + '-';
++			}
++			$name: $name + $key;
++		}
++		$selectors: '.#{$name}';
++		@each $pseudo in $state {
++			$selectors: list.append($selectors, '.#{$name}-#{$pseudo}:#{$pseudo}', comma);
++		}
++		@each $selector in $selectors {
++			#{$selector} {
++				--bs-#{$variable}: #{$value};
++			}
++		}
++	}
++}
+diff --git a/src/styles/utilities/_gap.scss b/src/styles/utilities/_gap.scss
+index c4706df..315139d 100644
+--- a/src/styles/utilities/_gap.scss
++++ b/src/styles/utilities/_gap.scss
+@@ -1,7 +1,14 @@
++@use 'sass:map';
+ @use '../mixins' as *;
+ 
+ @layer utilities {
+ 	$steps: 0, 1, 2, 3, 4, 5;
++	// Stands in for the release's `$spacers` map. Each step reads the density-independent
++	// `--vn-gap-*` scale the gutters read, so a retuned step moves the gutters and the gaps together.
++	$spacers: ();
++	@each $step in $steps {
++		$spacers: map.set($spacers, $step, var(--vn-gap-#{$step}));
++	}
+ 	@include breakpoint-each using ($infix, $_boundary) {
+ 		@each $step in $steps {
+ 			.g#{$infix}-#{$step},
+@@ -13,10 +20,9 @@
+ 			.gy#{$infix}-#{$step} {
+ 				--bs-gutter-y: var(--vn-gap-#{$step});
+ 			}
+-
+-			.row-gap#{$infix}-#{$step} {
+-				row-gap: var(--vn-gap-#{$step}) !important;
+-			}
+ 		}
++		@include utility(gap, gap, $spacers, $infix, true);
++		@include utility(row-gap, row-gap, $spacers, $infix, true);
++		@include utility(column-gap, column-gap, $spacers, $infix, true);
+ 	}
+ }
+diff --git a/tests/app/browser/sections/LayoutSection.test.ts b/tests/app/browser/sections/LayoutSection.test.ts
+index bfdd678..31915c7 100644
+--- a/tests/app/browser/sections/LayoutSection.test.ts
++++ b/tests/app/browser/sections/LayoutSection.test.ts
+@@ -3,7 +3,15 @@ import { TOKEN_NAMES } from '@src/core'
+ import { LAYOUT_COPY, LAYOUT_SPECIMENS, LayoutSection, SpecimenSection } from '@app/browser'
+ import { requireValue } from '@orkestrel/test'
+ import { build, mount } from '@orkestrel/test/browser'
+-import { describe, expect, it } from 'vitest'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { visitBreakpoint } from '../../../setupBrowser.js'
++
++// The geometry case reads the specimens as the published cascade lays them out, so the cascade has
++// to be in the document before a box is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
+ 
+ describe('LayoutSection', () => {
+ 	it('renders every declared specimen through the shared section contract', () => {
+@@ -29,6 +37,8 @@ describe('LayoutSection', () => {
+ 				'Independent gutters',
+ 				'Responsive gutters and row gap',
+ 				'Vertical rule',
++				'Gap steps',
++				'Responsive gap',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				LAYOUT_SPECIMENS.map((specimen) => specimen.markup),
+@@ -59,12 +69,28 @@ describe('LayoutSection', () => {
+ 				'[data-specimen="Independent gutters"] .row.gx-5.gy-2',
+ 				'[data-specimen="Responsive gutters and row gap"] .row.g-0.g-md-3.gx-lg-5.gy-xl-2.row-gap-1.row-gap-md-4',
+ 				'[data-specimen="Vertical rule"] span + .vr + span',
++				'[data-specimen="Responsive gap"] .container-fluid > .row.row-cols-auto.g-0.gap-1.gap-md-3.row-gap-lg-5.column-gap-xl-2 > div + div + div.col-12',
+ 			])
+ 				expect(region.querySelector(selector)).not.toBeNull()
+-			for (const step of Object.keys(TOKEN_NAMES.gap))
++			for (const step of Object.keys(TOKEN_NAMES.gap)) {
+ 				expect(
+ 					region.querySelector(`[data-specimen="Gutter steps"] .row.g-${String(step)} > div`),
+ 				).not.toBeNull()
++				// Each gap step lays two plain items out side by side with the gutter cleared, so the
++				// space between them is the step's gap alone.
++				expect(
++					region.querySelector(
++						`[data-specimen="Gap steps"] .container-fluid > .row.row-cols-auto.g-0.gap-${String(step)} > div + div`,
++					),
++				).not.toBeNull()
++			}
++			// The gap specimens draw their items the way the gutter specimens do, with no component
++			// borrowed for a frame.
++			expect(
++				region.querySelector(
++					'[data-specimen="Gap steps"] .card, [data-specimen="Responsive gap"] .card',
++				),
++			).toBeNull()
+ 			expect(Object.isFrozen(LAYOUT_COPY)).toBe(true)
+ 			expect(Object.isFrozen(LAYOUT_SPECIMENS)).toBe(true)
+ 			expect(LAYOUT_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
+@@ -74,6 +100,33 @@ describe('LayoutSection', () => {
+ 		}
+ 	})
+ 
++	it('lays the responsive gap specimen out as two rows at the 1280 variant', async () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new LayoutSection(host)
++		try {
++			const row = requireValue(
++				host.querySelector('[data-specimen="Responsive gap"] .row'),
++				'No responsive gap row',
++			)
++			const boxes = await visitBreakpoint(1280, () =>
++				[...row.children].map((item) => item.getBoundingClientRect()),
++			)
++			const first = requireValue(boxes.at(0), 'No first item')
++			const second = requireValue(boxes.at(1), 'No second item')
++			const last = requireValue(boxes.at(-1), 'No last item')
++			// The two leading items share the first row, spaced by the `column-gap-xl-2` step of 8px,
++			// and the last item starts a second row, spaced by the `row-gap-lg-5` step of 48px, so the
++			// specimen shows both axes at the 1280 variant.
++			expect(second.top).toBe(first.top)
++			expect(second.left - first.right).toBe(8)
++			expect(last.top).toBeGreaterThan(first.bottom)
++			expect(last.top - first.bottom).toBe(48)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
+ 	it('releases its region and preserves neighboring content through repeated destruction', () => {
+ 		const host = mount(build('div'))
+ 		const neighbor = build('p', { text: 'Existing content' })
+diff --git a/tests/fixtures/tailwind/markup.html b/tests/fixtures/tailwind/markup.html
+index 728a69f..b5f61ac 100644
+--- a/tests/fixtures/tailwind/markup.html
++++ b/tests/fixtures/tailwind/markup.html
+@@ -34,5 +34,29 @@
+ 			</tr>
+ 		</tbody>
+ 	</table>
++	<div class="row gap-0">
++		<div>Gap step 0</div>
++		<div>Neighbor</div>
++	</div>
++	<div class="row gap-1">
++		<div>Gap step 1</div>
++		<div>Neighbor</div>
++	</div>
++	<div class="row gap-2">
++		<div>Gap step 2</div>
++		<div>Neighbor</div>
++	</div>
++	<div class="row gap-3">
++		<div>Gap step 3</div>
++		<div>Neighbor</div>
++	</div>
++	<div class="row gap-4">
++		<div>Gap step 4</div>
++		<div>Neighbor</div>
++	</div>
++	<div class="row gap-5">
++		<div>Gap step 5</div>
++		<div>Neighbor</div>
++	</div>
+ 	<button type="button" class="btn px-8">Action</button>
+ </div>
+diff --git a/tests/service/tailwind/consumer.test.ts b/tests/service/tailwind/consumer.test.ts
+index f0bd82d..717692b 100644
+--- a/tests/service/tailwind/consumer.test.ts
++++ b/tests/service/tailwind/consumer.test.ts
+@@ -174,39 +174,33 @@ describe('the consumer pairing', () => {
+ 	it('keeps an important shared declaration whatever the recipe withholds', async () => {
+ 		// This is the other half of the shared-name rule: a name Veneer declares with `!important` on
+ 		// every longhand Tailwind's rule for it declares wins by importance in any layer order, so the
+-		// recipe need not withhold it. Every shared name the cascade ships today is a normal
+-		// declaration, so the plant is what drives the branch: importance on the
+-		// `grid-column-start` and `grid-column-end` longhands Tailwind's `col-1` rule declares, in a
+-		// layer of its own the way a release shipping such a declaration would land it.
+-		const planted =
+-			'@layer components { .col-1 { grid-column-start: 5 !important; grid-column-end: 5 !important } }'
++		// recipe need not withhold it. The gap steps are such names: Tailwind's `gap-3` rule declares
++		// the `gap` shorthand, which Chromium expands to the `row-gap` and `column-gap` longhands, and
++		// the shipped `.gap-3` rule declares the same shorthand with `!important`, so the branch is
++		// read on the cascade as it ships.
+ 		const longhands = collectRuleLonghands(await stage.expand(instrumentProfile), shared)
+-		const declared = requireValue(longhands.get('col-1'), 'The instrument declares no col-1 rule')
+-		expect(declared).toEqual(['grid-column-start', 'grid-column-end'])
+-		const branch = collectImportantNames(
+-			await stage.expand(`${readBuiltCascade()}\n${planted}`),
+-			longhands,
+-		)
+-		expect(branch).toContain('col-1')
++		const declared = requireValue(longhands.get('gap-3'), 'The instrument declares no gap-3 rule')
++		expect(declared).toEqual(['row-gap', 'column-gap'])
++		const branch = collectImportantNames(await stage.expand(readBuiltCascade()), longhands)
++		expect(branch).toContain('gap-3')
+ 		// The reading is the longhands Tailwind's own rule for each of these names declares, as
+ 		// Chromium expands them. Dropping the exclusion line also moves the names outside the
+ 		// branch, `.container` among them, and an element's used width follows its container, so a
+ 		// reading of every longhand would report the ancestor moving rather than this rule losing.
+ 		const properties = [...new Set(branch.flatMap((name) => longhands.get(name) ?? []))]
+ 		await stage.mount(consumerMarkup)
+-		await stage.load(planted)
+ 		const standalone: Array<ReadonlyMap<string, string>> = []
+ 		for (const name of branch) {
+ 			standalone.push(...(await stage.read(`[class~="${name}"]`, properties)))
+ 		}
+-		// Each reading has to carry the longhands the plant made important, or the comparison that
+-		// follows runs over nothing.
++		// Each reading has to carry the longhands the cascade declares important, or the comparison
++		// that follows runs over nothing.
+ 		for (const snapshot of standalone)
+ 			expect(declared.filter((property) => !snapshot.has(property))).toEqual([])
+ 		expect(standalone).not.toEqual([])
+ 		// The instrument is the recipe with its exclusion line dropped, so Tailwind's own rule for
+ 		// each of these names is on the page, and the element still resolves, for every property
+-		// that rule declares, what it resolves under the cascade and the plant alone.
++		// that rule declares, what it resolves under the cascade alone.
+ 		await stage.load(instrumentProfile)
+ 		const paired: Array<ReadonlyMap<string, string>> = []
+ 		for (const name of branch) paired.push(...(await stage.read(`[class~="${name}"]`, properties)))
+diff --git a/tests/service/tailwind/preflight.test.ts b/tests/service/tailwind/preflight.test.ts
+index fa36ac0..fb3c5da 100644
+--- a/tests/service/tailwind/preflight.test.ts
++++ b/tests/service/tailwind/preflight.test.ts
+@@ -29,6 +29,13 @@ const overlap = collectTypeSelectors(reset.flatMap((layer) => layer.selectors)).
+ 	ELEMENT_TAGS.some(([, tags]) => tags.includes(tag)),
+ )
+ 
++// The utility rules the profile generates for the shared names off the exclusion line, which the
++// profiles proof holds equal to those names. They sit outside the reset, so the property population
++// leaves them out.
++const generated = new SheetReader(preflightProfile).layers.flatMap((layer) =>
++	layer.name === 'utilities' ? layer.selectors : [],
++)
++
+ // The property population the comparison walks, and the longhands each elements-layer rule
+ // declares, as Chromium expands them. Both are the engine's answer, so they are read after the
+ // stage opens.
+@@ -40,7 +47,9 @@ beforeAll(async () => {
+ 	properties = [
+ 		...new Set(
+ 			(await stage.expand(preflightProfile)).flatMap((rule) =>
+-				rule.properties.filter((property) => !property.startsWith('--')),
++				generated.includes(rule.selector)
++					? []
++					: rule.properties.filter((property) => !property.startsWith('--')),
+ 			),
+ 		),
+ 	]
+@@ -71,11 +80,15 @@ describe('the preflight pairing', () => {
+ 		// The property set is what the comparison walks, so the reset's universal rule contributes
+ 		// its properties to every element's reading rather than to the elements it names. Chromium
+ 		// expands the whole profile, so `border: 0 solid` is read as every side's width, style, and
+-		// color rather than as the shorthand the reset writes. The whole profile is the reset's
+-		// population because every property it declares outside a custom property sits in `base`.
++		// color rather than as the shorthand the reset writes. The profile less its generated
++		// utilities is the reset's population, because every other property it declares outside a
++		// custom property sits in the `base` layer.
+ 		expect(
+ 			new SheetReader(preflightProfile).declarations.filter(
+-				(declaration) => !declaration.property.startsWith('--') && declaration.layer !== 'base',
++				(declaration) =>
++					!declaration.property.startsWith('--') &&
++					declaration.layer !== 'base' &&
++					!generated.includes(declaration.selector),
+ 			),
+ 		).toEqual([])
+ 		expect(properties).toContain('tab-size')
+diff --git a/tests/service/tailwind/profiles.test.ts b/tests/service/tailwind/profiles.test.ts
+index a74beb6..dddcfe5 100644
+--- a/tests/service/tailwind/profiles.test.ts
++++ b/tests/service/tailwind/profiles.test.ts
+@@ -56,25 +56,33 @@ describe('stylesheet profiles', () => {
+ 
+ 	it('fills Tailwind reset only under the preflight profile', () => {
+ 		// This is the difference the two profile names stand for. The `tailwind` profile composes
+-		// the theme and utilities imports and reaches no reset; the `preflight` profile takes the
+-		// bare import, which fills the `base` layer with Tailwind's reset and declares Tailwind's
+-		// own theme tokens beside it.
++		// the theme and utilities imports and reaches no reset: it fills only the layers the
++		// utilities it generates need, the `utilities` block for their rules and the `theme` block
++		// for the variables they read. The `preflight` profile takes the bare import, which fills
++		// the `base` layer with Tailwind's reset and declares Tailwind's own font tokens beside it.
++		// Both scan the one candidate list under the one exclusion line, so both generate the same
++		// utilities, and the reset and its tokens are all that tells them apart.
+ 		const tailwind = new SheetReader(tailwindProfile)
+-		expect(tailwind.layers.map((layer) => layer.name)).toEqual([])
+-		expect(tailwind.variables).toEqual([])
++		expect(tailwind.layers.map((layer) => layer.name)).toEqual(['theme', 'utilities'])
++		// The generated gap steps read the spacing scale and no other theme variable, so the
++		// profile keeps that one variable, and a token the reset or a static theme would declare
++		// breaks the equality.
++		expect(tailwind.variables).toEqual(['--spacing'])
+ 		const preflight = new SheetReader(preflightProfile)
+-		expect(preflight.layers.map((layer) => layer.name)).toEqual(['theme', 'base'])
++		expect(preflight.layers.map((layer) => layer.name)).toEqual(['theme', 'base', 'utilities'])
+ 		expect(preflight.variables).toContain('--font-sans')
+-		expect(preflight.selectors).not.toEqual([])
++		expect(
++			preflight.layers.flatMap((layer) => (layer.name === 'base' ? layer.selectors : [])),
++		).not.toEqual([])
+ 	})
+ 
+ 	it('composes the theme and utilities imports, proved by a candidate the cascade never ships', () => {
+-		// Every name the candidate list offers is on the exclusion line, so the `tailwind` profile
+-		// emits nothing and its silence cannot tell a composed profile from one whose imports were
+-		// deleted. The instrument carries an `@source inline(…)` control naming utilities the built
+-		// cascade declares no class for, so its emission is positive: the `theme` block holds the
+-		// variables those utilities read, and the `utilities` block holds their rules. Removing
+-		// either import takes one of those readings away.
++		// The `tailwind` profile emits only the shared names off the exclusion line, so what it
++		// emits follows which names a release declares important rather than which imports the
++		// profile composes. The instrument carries an `@source inline(…)` control naming utilities
++		// the built cascade declares no class for, so its emission is positive whatever the line
++		// holds: the `theme` block holds the variables those utilities read, and the `utilities`
++		// block holds their rules. Removing either import takes one of those readings away.
+ 		const [control] = collectInlineSources(instrumentSource).filter((source) => !source.excluded)
+ 		const names = requireValue(control, 'The instrument declares no candidate control').names
+ 		const instrument = new SheetReader(instrumentProfile)
+@@ -117,7 +125,7 @@ describe('stylesheet profiles', () => {
+ 		])
+ 	})
+ 
+-	it('withholds every shared class name the exclusion line names, and emits them without it', () => {
++	it('withholds every shared class name the exclusion line names, and emits exactly the shared names off it', () => {
+ 		const [exclusion] = collectInlineSources(tailwindSource).filter((source) => source.excluded)
+ 		const excluded = requireValue(
+ 			exclusion,
+@@ -130,19 +138,30 @@ describe('stylesheet profiles', () => {
+ 		const instrument = new SheetReader(instrumentProfile)
+ 		for (const name of CANDIDATE_FLOOR) expect(instrument.selectors).toContain(`.${name}`)
+ 		// The instrument's own control names are read from the directive that adds them rather than
+-		// repeated here, so the list has one home on this side too. Every name the compiler
+-		// generated that the cascade also declares is on the exclusion line, which is what makes
+-		// the line complete for the class names this release ships rather than for the ones the
+-		// floor happens to list, and everything else it generated is the control.
++		// repeated here, so the list has one home on this side too. Everything the compiler
++		// generated that the cascade does not also declare is the control.
+ 		const control = collectInlineSources(instrumentSource).flatMap((source) =>
+ 			source.excluded ? [] : source.names,
+ 		)
+ 		const shared = collectSharedNames(instrument.names, new SheetReader(cascade).names)
+-		expect(shared.filter((name) => !excluded.includes(name))).toEqual([])
+ 		expect(instrument.names.filter((name) => !shared.includes(name)).sort()).toEqual(
+ 			[...control].sort(),
+ 		)
+-		expect(new SheetReader(tailwindProfile).selectors).toEqual([])
++		// A shared name leaves the line only where the cascade declares it important on every
++		// longhand Tailwind's rule for it declares, which the consumer pairing reads as an equality.
++		// What this case reads is the other side of that line: each executed profile emits
++		// exactly the shared names off it and nothing else, so a name that stays on the line is
++		// withheld and a name that leaves it is generated. The gap steps ship off the line, so the
++		// reading covers a name rather than an empty set.
++		const off = shared.filter((name) => !excluded.includes(name))
++		expect(off).toContain('gap-3')
++		for (const compiled of [tailwindProfile, preflightProfile]) {
++			const emitted = new SheetReader(compiled).layers.flatMap((layer) =>
++				layer.name === 'utilities' ? layer.selectors : [],
++			)
++			expect([...emitted].sort()).toEqual(off.map((name) => `.${name}`).sort())
++		}
++		expect([...new SheetReader(tailwindProfile).names].sort()).toEqual([...off].sort())
+ 	})
+ 
+ 	it('holds every written copy of the exclusion line equal to the profile that declares it', () => {
+diff --git a/tests/src/styles/fixtures/mixins.scss b/tests/src/styles/fixtures/mixins.scss
+index 2ad9483..0f4c3eb 100644
+--- a/tests/src/styles/fixtures/mixins.scss
++++ b/tests/src/styles/fixtures/mixins.scss
+@@ -50,3 +50,104 @@
+ 		}
+ 	}
+ }
++
++// Calls the utility mixins the way a utility partial does: one walk of the `breakpoint-each` mixin
++// that includes every entry at every infix, then the `utility-variable` mixin outside the walk. The
++// entries cover a responsive entry, a static entry, an entry with no class, a responsive entry with
++// no class, an entry keyed `null`, a list-valued entry, an entry carrying a local, and a hover
++// state on each mixin, so the proof reads each naming and priority branch from the selectors and
++// declarations the mixins emitted. Every name carries the `vn-utility-` prefix, which the proof
++// filters on and the shipped cascade never writes.
++@include breakpoint-each using ($infix, $_boundary) {
++	@include utility(
++		vn-utility-gap,
++		column-gap,
++		(
++			0: 0,
++			1: 1px,
++		),
++		$infix,
++		true
++	);
++	@include utility(
++		vn-utility-static,
++		padding-top,
++		(
++			1: 1px,
++		),
++		$infix
++	);
++	@include utility(
++		'',
++		visibility,
++		(
++			vn-utility-visible: visible,
++			vn-utility-invisible: hidden,
++		),
++		$infix
++	);
++	@include utility(
++		vn-utility-border,
++		border-top-width,
++		(
++			null: 3px,
++			0: 0,
++		),
++		$infix
++	);
++	@include utility(
++		'',
++		z-index,
++		(
++			vn-utility-raised: 1,
++		),
++		$infix,
++		true
++	);
++	@include utility(vn-utility-align, vertical-align, top middle, $infix);
++	@include utility(
++		vn-utility-pad,
++		padding-left padding-right,
++		(
++			2: 2px,
++		),
++		$infix,
++		false,
++		(
++			vn-utility-alpha: 0.5,
++		)
++	);
++	@include utility(
++		vn-utility-lift,
++		margin-top,
++		(
++			1: 1px,
++		),
++		$infix,
++		$state: (hover)
++	);
++}
++
++@include utility-variable(
++	vn-utility-offset,
++	vn-utility-offset,
++	(
++		1: 1px,
++		null: 2px,
++	)
++);
++@include utility-variable(
++	'',
++	vn-utility-ring,
++	(
++		vn-utility-ring: 3px,
++	)
++);
++@include utility-variable(
++	vn-utility-tint,
++	vn-utility-tint,
++	(
++		1: 0.1,
++	),
++	$state: (hover)
++);
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index 74354fd..a27a26a 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -217,3 +217,158 @@ describe('breakpoint mixins', () => {
+ 		expect(drift).toEqual([])
+ 	})
+ })
++
++describe('utility mixins', () => {
++	const names = Object.keys(TOKEN_NAMES.breakpoint)
++
++	it('names each class from its class, infix, key, and state, with no hyphen where the class or the key is absent', () => {
++		// The static, classless, list-valued, local-carrying, and stateful entries and the entry keyed
++		// `null` emit at the empty infix alone, and the responsive entries at every infix, so the
++		// population is the whole naming contract at once: a hyphen written for an absent class or key,
++		// a classless infix that keeps its hyphen, a static entry emitted at a boundary, a responsive
++		// entry held at the empty infix, or a state written without its suffix, without its
++		// pseudo-class, or on the base class each changes it.
++		// The fixture's own rules, nested ones included. The shipped cascade writes no `vn-utility-`
++		// name, so every rule this collects is one the fixture's mixin calls emitted.
++		const rules = readRules().flatMap((rule) =>
++			rule instanceof CSSStyleRule && rule.selectorText.includes('vn-utility-') ? [rule] : [],
++		)
++		expect(rules.map((rule) => rule.selectorText).sort()).toEqual(
++			[
++				'.vn-utility-gap-0',
++				'.vn-utility-gap-1',
++				...names
++					.filter((name) => name !== 'xs')
++					.flatMap((name) => [
++						`.vn-utility-gap-${name}-0`,
++						`.vn-utility-gap-${name}-1`,
++						// A classless entry drops the infix's leading hyphen, as the release does.
++						`.${name}-vn-utility-raised`,
++					]),
++				'.vn-utility-raised',
++				'.vn-utility-static-1',
++				'.vn-utility-visible',
++				'.vn-utility-invisible',
++				'.vn-utility-border',
++				'.vn-utility-border-0',
++				'.vn-utility-align-top',
++				'.vn-utility-align-middle',
++				'.vn-utility-pad-2',
++				// Each state writes a second class, suffixed with the pseudo-class and gated on it.
++				'.vn-utility-lift-1',
++				'.vn-utility-lift-1-hover:hover',
++				'.vn-utility-offset-1',
++				'.vn-utility-offset',
++				'.vn-utility-ring',
++				'.vn-utility-tint-1',
++				'.vn-utility-tint-1-hover:hover',
++			].sort(),
++		)
++		// A list-valued entry keys each member by itself, and a `null` key names the bare class.
++		const values = new Map(rules.map((rule) => [rule.selectorText, rule.style.cssText] as const))
++		expect(values.get('.vn-utility-align-top')).toBe('vertical-align: top !important;')
++		expect(values.get('.vn-utility-align-middle')).toBe('vertical-align: middle !important;')
++		expect(values.get('.vn-utility-border')).toBe('border-top-width: 3px !important;')
++		expect(values.get('.vn-utility-border-0')).toBe('border-top-width: 0px !important;')
++		expect(values.get('.vn-utility-offset')).toBe('--bs-vn-utility-offset: 2px;')
++		expect(values.get('.vn-utility-ring')).toBe('--bs-vn-utility-ring: 3px;')
++		// A state class writes its base class's declarations, and follows that class.
++		expect(values.get('.vn-utility-lift-1-hover:hover')).toBe('margin-top: 1px !important;')
++		expect(values.get('.vn-utility-tint-1-hover:hover')).toBe('--bs-vn-utility-tint: 0.1;')
++		const order = rules.map((rule) => rule.selectorText)
++		for (const base of ['.vn-utility-lift-1', '.vn-utility-tint-1'])
++			expect(order[order.indexOf(base) + 1]).toBe(`${base}-hover:hover`)
++	})
++
++	it('gates each responsive class at the width its own infix names, and gates no static class', () => {
++		const container = scene.mount(
++			names
++				.map(
++					(name) =>
++						`<div id="boundary-${name}" style="padding: var(--vn-breakpoint-${name})"></div>`,
++				)
++				.join(''),
++		)
++		const rules = readRules()
++		const readings = names.map((name) => {
++			const width = readPixels(
++				requireValue(container.querySelector(`#boundary-${name}`), `No specimen for ${name}`),
++				'padding-top',
++			)
++			const infix = width === 0 ? '' : `-${name}`
++			const lead = width === 0 ? '' : `${name}-`
++			return {
++				name,
++				width,
++				gates: [
++					`.vn-utility-gap${infix}-0`,
++					`.vn-utility-gap${infix}-1`,
++					`.${lead}vn-utility-raised`,
++				].map((selector) => collectMediaConditions(rules, selector).map(parseMediaWidth)),
++			}
++		})
++		// The zero boundary yields the empty infix, which the walk emits with no media wrapper; every
++		// other name gates each of its classes at the width its published token carries.
++		expect(readings.map(({ name, gates }) => [name, gates])).toEqual(
++			readings.map(({ name, width }) => [
++				name,
++				width === 0 ? [[], [], []] : [[width], [width], [width]],
++			]),
++		)
++		for (const selector of [
++			'.vn-utility-static-1',
++			'.vn-utility-visible',
++			'.vn-utility-border',
++			'.vn-utility-align-top',
++			'.vn-utility-pad-2',
++			'.vn-utility-lift-1-hover:hover',
++			'.vn-utility-offset-1',
++			'.vn-utility-tint-1-hover:hover',
++		])
++			expect(collectMediaConditions(rules, selector)).toEqual([])
++	})
++
++	it('writes every utility property important and every local and custom property normal', () => {
++		const rules = readRules().flatMap((rule) =>
++			rule instanceof CSSStyleRule && rule.selectorText.includes('vn-utility-') ? [rule] : [],
++		)
++		expect(rules).not.toEqual([])
++		// Each declaration is read with its priority, so a property the mixin wrote normal or a
++		// custom property it wrote important reports under its own selector.
++		const priorities = rules.flatMap((rule) =>
++			Array.from(rule.style, (property) => [
++				rule.selectorText,
++				property,
++				rule.style.getPropertyPriority(property),
++			]),
++		)
++		expect(
++			priorities.filter(([, property, priority]) =>
++				property?.startsWith('--') === true ? priority !== '' : priority !== 'important',
++			),
++		).toEqual([])
++		// The locals come first, so the properties that follow can read them.
++		const pad = requireValue(
++			rules.find((rule) => rule.selectorText === '.vn-utility-pad-2'),
++			'The fixture emitted no local-carrying class',
++		)
++		expect(Array.from(pad.style)).toEqual([
++			'--bs-vn-utility-alpha',
++			'padding-left',
++			'padding-right',
++		])
++		expect(pad.style.getPropertyValue('--bs-vn-utility-alpha')).toBe('0.5')
++		// The resolved reading of the same priorities: an inline declaration outranks a normal rule
++		// and loses to an important one.
++		const host = scene.mount(
++			'<div class="vn-utility-pad-2" style="padding-left: 9px; padding-right: 9px; --bs-vn-utility-alpha: 0.9"></div><div class="vn-utility-offset-1" style="--bs-vn-utility-offset: 9px"></div>',
++		)
++		const padded = requireValue(host.querySelector('.vn-utility-pad-2'), 'No padded specimen')
++		const offset = requireValue(host.querySelector('.vn-utility-offset-1'), 'No offset specimen')
++		expect([readPixels(padded, 'padding-left'), readPixels(padded, 'padding-right')]).toEqual([
++			2, 2,
++		])
++		expect(readToken(padded, '--bs-vn-utility-alpha')).toBe('0.9')
++		expect(readToken(offset, '--bs-vn-utility-offset')).toBe('9px')
++	})
++})
+diff --git a/tests/src/styles/utilities/gap.test.ts b/tests/src/styles/utilities/gap.test.ts
+index 552b2c6..841edd9 100644
+--- a/tests/src/styles/utilities/gap.test.ts
++++ b/tests/src/styles/utilities/gap.test.ts
+@@ -5,6 +5,9 @@ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene, visitBreakpoint } from '../../../setupBrowser.js'
+ import { GAP_STEP_CASES, GRID_BREAKPOINT_CASES } from '../../../setupStyles.js'
+ 
++// The gutter classes, then the gap entries in the release's map order.
++const GAP_KEYS = ['g', 'gx', 'gy', 'gap', 'row-gap', 'column-gap']
++
+ afterEach(() => {
+ 	scene.clear()
+ })
+@@ -15,18 +18,16 @@ describe('gap utilities', () => {
+ 		async ({ name, boundary, readings }) => {
+ 			const infix = boundary === 0 ? '' : `-${name}`
+ 			const host = scene.mount(
+-				['g', 'gx', 'gy', 'row-gap']
+-					.flatMap((key) =>
+-						GAP_STEP_CASES.map(
+-							({ step }) => `<div class="row ${key}${infix}-${String(step)}"><div></div></div>`,
+-						),
+-					)
+-					.join(''),
++				GAP_KEYS.flatMap((key) =>
++					GAP_STEP_CASES.map(
++						({ step }) => `<div class="row ${key}${infix}-${String(step)}"><div></div></div>`,
++					),
++				).join(''),
+ 			)
+ 			for (const viewport of readings) {
+ 				await visitBreakpoint(viewport, () => {
+ 					expect(window.innerWidth).toBe(viewport)
+-					for (const key of ['g', 'gx', 'gy', 'row-gap']) {
++					for (const key of GAP_KEYS) {
+ 						for (const { step, pixels, token, value } of GAP_STEP_CASES) {
+ 							const row = requireValue(
+ 								host.querySelector(`.${key}${infix}-${String(step)}`),
+@@ -42,8 +43,16 @@ describe('gap utilities', () => {
+ 							expect(readPixels(child, 'padding-right')).toBe(horizontal / 2)
+ 							expect(readPixels(row, 'margin-top')).toBe(vertical === 0 ? 0 : -vertical)
+ 							expect(readPixels(child, 'margin-top')).toBe(vertical)
++							// The `gap` utility sets both axes, and each axis utility sets its own alone.
+ 							expect(readStyle(row, 'row-gap')).toBe(
+-								viewport >= boundary && key === 'row-gap' ? `${String(pixels)}px` : 'normal',
++								viewport >= boundary && (key === 'gap' || key === 'row-gap')
++									? `${String(pixels)}px`
++									: 'normal',
++							)
++							expect(readStyle(row, 'column-gap')).toBe(
++								viewport >= boundary && (key === 'gap' || key === 'column-gap')
++									? `${String(pixels)}px`
++									: 'normal',
+ 							)
+ 						}
+ 					}
+@@ -54,25 +63,32 @@ describe('gap utilities', () => {
+ 
+ 	it('keeps the steps independent of density and follows a retuned step on every axis', () => {
+ 		const host = scene.mount(
+-			`<div class="row"><div></div></div><div class="row g-4 row-gap-4" style="padding-top: var(${TOKEN_NAMES.space[3]})"><div></div></div>`,
++			`<div class="row"><div></div></div><div class="row g-4 row-gap-4" style="padding-top: var(${TOKEN_NAMES.space[3]})"><div></div></div><div class="row gap-4"></div><div class="row column-gap-4"></div>`,
+ 		)
+ 		const baseline = requireValue(host.querySelector('.row'), 'No default row')
+ 		const row = requireValue(host.querySelector('.g-4'), 'No retuned row')
+ 		const child = requireValue(row.firstElementChild, 'No retuned child')
++		const both = requireValue(host.querySelector('.gap-4'), 'No gap row')
++		const column = requireValue(host.querySelector('.column-gap-4'), 'No column-gap row')
+ 		expect(readPixels(row, 'padding-top')).toBe(6)
+ 		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
+ 		try {
++			// The density factor doubles the space scale the padding reads and leaves every gap step.
+ 			expect(readPixels(row, 'padding-top')).toBe(12)
+ 			expect(readPixels(row, 'margin-left')).toBe(readPixels(baseline, 'margin-left'))
+ 			expect(readPixels(child, 'padding-left')).toBe(12)
+ 			expect(readPixels(row, 'margin-top')).toBe(-24)
+ 			expect(readPixels(row, 'row-gap')).toBe(24)
++			expect([readPixels(both, 'row-gap'), readPixels(both, 'column-gap')]).toEqual([24, 24])
++			expect(readPixels(column, 'column-gap')).toBe(24)
+ 			host.style.setProperty(TOKEN_NAMES.gap[4], '2rem')
+ 			expect(readPixels(row, 'margin-left')).toBe(-16)
+ 			expect(readPixels(child, 'padding-left')).toBe(16)
+ 			expect(readPixels(row, 'margin-top')).toBe(-32)
+ 			expect(readPixels(child, 'margin-top')).toBe(32)
+ 			expect(readPixels(row, 'row-gap')).toBe(32)
++			expect([readPixels(both, 'row-gap'), readPixels(both, 'column-gap')]).toEqual([32, 32])
++			expect(readPixels(column, 'column-gap')).toBe(32)
+ 			expect(readPixels(baseline, 'margin-left')).toBe(-12)
+ 		} finally {
+ 			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
+@@ -80,12 +96,69 @@ describe('gap utilities', () => {
+ 		expect(readPixels(row, 'padding-top')).toBe(6)
+ 	})
+ 
+-	it('keeps row-gap priority over a later unlayered consumer rule', () => {
+-		const host = scene.mount('<div class="row row-gap-4"></div><div class="row"></div>')
+-		scene.load('.row { row-gap: 7px }')
+-		const row = requireValue(host.querySelector('.row-gap-4'), 'No utility row')
+-		const baseline = requireValue(host.querySelector('.row:not(.row-gap-4)'), 'No consumer row')
+-		expect(readPixels(baseline, 'row-gap')).toBe(7)
+-		expect(readPixels(row, 'row-gap')).toBe(24)
++	it('resolves the same steps inside a dark island', () => {
++		const host = scene.mount(
++			'<div data-bs-theme="dark"><div class="row gap-3"></div><div class="row column-gap-5"></div></div>',
++		)
++		const both = requireValue(host.querySelector('.gap-3'), 'No gap row')
++		const column = requireValue(host.querySelector('.column-gap-5'), 'No column-gap row')
++		expect([readPixels(both, 'row-gap'), readPixels(both, 'column-gap')]).toEqual([16, 16])
++		expect(readPixels(column, 'column-gap')).toBe(48)
++	})
++
++	it('resolves a later entry over an earlier one at one infix, and a wider infix over a narrower one', async () => {
++		// The release writes every entry inside each boundary's block, in its map order, so at one
++		// infix the axis entries follow the `gap` entry, and a wider infix's block follows every
++		// narrower one.
++		const host = scene.mount(
++			'<div class="row gap-3 row-gap-1 column-gap-5"></div><div class="row column-gap-2 gap-4"></div><div class="row gap-md-4 column-gap-sm-2"></div>',
++		)
++		const axes = requireValue(host.querySelector('.row-gap-1'), 'No axis row')
++		const written = requireValue(host.querySelector('.column-gap-2'), 'No reordered row')
++		const widths = requireValue(host.querySelector('.gap-md-4'), 'No responsive row')
++		expect([readPixels(axes, 'row-gap'), readPixels(axes, 'column-gap')]).toEqual([4, 48])
++		expect([readPixels(written, 'row-gap'), readPixels(written, 'column-gap')]).toEqual([24, 8])
++		// Each visit resizes the one page viewport, so the readings run one after the other.
++		const below = await visitBreakpoint(767, () => [
++			readStyle(widths, 'row-gap'),
++			readStyle(widths, 'column-gap'),
++		])
++		const at = await visitBreakpoint(768, () => [
++			readStyle(widths, 'row-gap'),
++			readStyle(widths, 'column-gap'),
++		])
++		expect([below, at]).toEqual([
++			['normal', '8px'],
++			['24px', '24px'],
++		])
++	})
++
++	it('keeps every gap priority over a later unlayered consumer rule', () => {
++		const host = scene.mount(
++			'<div class="row row-gap-4"></div><div class="row gap-4"></div><div class="row column-gap-4"></div><div class="row"></div>',
++		)
++		scene.load('.row { gap: 7px }')
++		const baseline = requireValue(host.querySelector('.row:not([class*="gap"])'), 'No consumer row')
++		expect([readPixels(baseline, 'row-gap'), readPixels(baseline, 'column-gap')]).toEqual([7, 7])
++		const row = requireValue(host.querySelector('.row-gap-4'), 'No row-gap row')
++		const both = requireValue(host.querySelector('.gap-4'), 'No gap row')
++		const column = requireValue(host.querySelector('.column-gap-4'), 'No column-gap row')
++		expect([readPixels(row, 'row-gap'), readPixels(row, 'column-gap')]).toEqual([24, 7])
++		expect([readPixels(both, 'row-gap'), readPixels(both, 'column-gap')]).toEqual([24, 24])
++		expect([readPixels(column, 'row-gap'), readPixels(column, 'column-gap')]).toEqual([7, 24])
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<div class="row gap-4"></div><div class="row column-gap-4"></div>')
++		// An unlayered `!important` sorts after every layered one, so the shipped utility keeps its
++		// step; the same declaration re-opened inside the utilities layer arrives after the shipped
++		// rule in that layer and wins.
++		scene.load('.row { gap: 9px !important }')
++		const both = requireValue(host.querySelector('.gap-4'), 'No gap row')
++		const column = requireValue(host.querySelector('.column-gap-4'), 'No column-gap row')
++		expect([readPixels(both, 'column-gap'), readPixels(column, 'column-gap')]).toEqual([24, 24])
++		scene.load('@layer utilities { .gap-4, .column-gap-4 { column-gap: 2rem !important } }')
++		expect([readPixels(both, 'column-gap'), readPixels(column, 'column-gap')]).toEqual([32, 32])
++		expect(readPixels(both, 'row-gap')).toBe(24)
+ 	})
+ })
