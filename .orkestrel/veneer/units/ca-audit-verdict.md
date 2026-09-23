@@ -1,0 +1,35 @@
+# Audit verdict — CAROUSEL (`ca`), round 1 (2026-09-23)
+
+Subject: `ca.diff` (the four untracked owned files in `/home/user/veneer-ca` over `c3ac297`), `ca-status.txt`, `ca-shared.patch`, the report `b-modal-ca-report.md`; claims `ca-audit-claims.md`; brief `b-modal-ca-brief.md`. Lanes: the objective lane `analyst` on GPT-6 Astra (`ca-audit-objective-verdict.md`; thread `01a0ceeb-04f1-7540-ad94-0f1153329009`, journal `tmp/codex/ca-audit-analyst.jsonl`, launched through `codex-queue-4.sh` after the bench came live at 15:18 UTC); the subjective lane `reviewer` on Opus 5.5 (`ca-audit-subjective-verdict.md`); `checker` on Sonnet (`ca-audit-checker-verdict.md`); blind on one claims file. The writer was `opus` on Opus 5.5, so the objective lane is the auditor engine that did not write the work.
+
+| Claim | Objective | Subjective | Checker | Reconciled |
+| --- | --- | --- | --- | --- |
+| 1 Delta and scope | CONFIRMED | CONFIRMED | CONFIRMED | CONFIRMED |
+| 2 The partial and the cascade | CONFIRMED (an in-memory expanded compile with controls) | UNRESOLVED (the comparator not retained) | — | CONFIRMED on the objective lane's own comparison; the retention gap is F1 |
+| 3 The cascade proof | BROKEN (the guard rows name cases that do not distinguish them) | BROKEN (the display, fade-active, and next-right rules have no mutation) | — | BROKEN: the matrix names wrong cases for `next-guard-dropped` and `prev-guard-dropped`, and the `display` rule for the incoming slides, the `.carousel-fade .carousel-item.active` rule, and the `.carousel-control-next { right: 0 }` rule have no executed mutation |
+| 4 The section and the specimens | BROKEN (height asserted for one slide) | BROKEN (same) | — | BROKEN on the height clause; the rename, the names, the markup, and the copy's placement hold |
+| 5 The capture rows | CONFIRMED | CONFIRMED | CONFIRMED | CONFIRMED |
+| 6 The tables, the ledger, and the deferrals | CONFIRMED | CONFIRMED | CONFIRMED | CONFIRMED |
+| 7 The guide content | BROKEN (the showcase pointer's form) | CONFIRMED (the class-section pointer in the Close form; the § Showcase paragraph a decline pointer in the spinner form) | — | CONFIRMED: the region pointer "The Carousel region renders…" sits in the class section in the Collapse and Close form, and the § Showcase paragraph is a decline pointer after the grow-spinner precedent, not a region pointer; the claims file's "X sits in Y" clause named the region-summary paragraph the patch does not add (a claims-file fault) |
+| 8 Law and report | BROKEN (counts, bare class tokens, the report's `new`, `now`, positional references, missing commands) | BROKEN (bare class tokens, counts) | CONFIRMED | BROKEN on the tokens, the counts, and the report |
+
+Outside the claims: F1 (the comparator `cascade-check.mjs` not retained; subjective), F2 and REPORT-COUNTS (the report's counts and positional references; both lanes), CAROUSEL-COPY (M14 wants one imperative sentence; objective). The subjective lane's referrals R1, R2, and R3 are ruled here.
+
+## Rulings
+
+- **Claim 3.** Round 2 adds `next-display-dropped`, `prev-display-dropped` (the incoming slide's `display: block` removed from the list rule), `fade-active-dropped` (`.carousel-fade .carousel-item.active` removed from the stacking and opacity rule), and `next-right-dropped` (`.carousel-control-next { right: 0 }` removed) to `mutate.py`, runs each red on its named case, and rewrites the matrix so `next-guard-dropped` and `prev-guard-dropped` name the advance case the retained log reddens, the `.carousel-item-next` and `.carousel-item-prev` rows name the display mutations, the `.carousel-fade .carousel-item.active` row names `fade-active-dropped`, and the `.carousel-control-next` row names `next-right-dropped`.
+- **Claim 4.** The section proof asserts, for every `.carousel-item.active` and `.carousel-item-next` slide in every specimen, that the slide's box height equals its picture's, and the mutation `stray-block` (visible text appended after the picture inside the captioned specimen's active slide) reddens it.
+- **Claim 7.** No change. The claims file's clause is recorded as the fault.
+- **Claim 8.** The partial's opening comment and the `CAROUSEL_SPECIMENS` TSDoc write "the `active` class marks…", "the `carousel-item-next` and `carousel-item-prev` classes mark…", and "the `carousel-item-start` and `carousel-item-end` classes mark…"; the guide writes "the `--bs-carousel-*` variables" and "the same variables"; the proof writes "omits one of its variables" and titles the case "retunes every carousel variable…"; the report drops `new` and `now`, cites its deviations by heading, states no count, and records the close proof's command and the scoped `oxfmt` and `oxlint` commands from `gates.sh`.
+- **CAROUSEL-COPY (M14).** `CAROUSEL_COPY.paragraph` reads one imperative sentence: "Compare a captioned carousel, a fading one, an inverted one over light pictures, and one caught advancing to its next slide, each state set as a class in markup, and hover or focus a control to compare its states." The ALERT copy is the precedent inside the family.
+- **F1.** Round 2 re-authors the cascade comparator as `ca-instruments-2/tools/cascade-check.mjs`, runs it on the expanded and the built cascade, runs it with a negative control (one planted carousel rule, then one swapped icon URI) recorded red, and retains the script beside its logs.
+- **R1 (the `visually-hidden` sentence).** Round 2 drops the reason clause: the guide reads "Each control is named by its `aria-label` attribute." and the specimens' remark says the same without "because the visually hidden label the release's markup writes is a utility this cascade does not ship". Whether the specimens adopt the release's hidden-label markup after UTIL-PLACEMENT ships `visually-hidden` is CLOSE-OUT's row.
+- **R2 (the caption contrast).** The contrast case reads every fill the specimen's SVG paints beneath the caption box (the `<rect>` fill and the `<path>` fill, parsed from the specimen source), asserts the lowest ratio against the caption color meets 4.5:1, and the mutation `path-lightened` (the path fill raised to a light gray) reddens it.
+- **R3 (the caption at 390).** NOT-EVIDENCED in this round: the landing's capture regeneration rules it on the `captioned-carousel` and `inverted-carousel` frames at 390, an Orchestrator reading, recorded with the landing.
+- **Claim 2.** CONFIRMED on the objective lane's comparison; F1 carries the retention.
+
+## Carriers
+
+Every finding is carried by `ca-brief-2.md` (the fix round on `opus`, audited by `analyst` on Astra as the objective lane, `reviewer` as the subjective lane, and a checker): claims 3, 4, and 8, CAROUSEL-COPY, F1, F2 and REPORT-COUNTS (the report), R1, and R2. R3 is the landing's capture reading (the Orchestrator). The hidden-label markup revisit is CLOSE-OUT's.
+
+VERDICT: FAIL 3, 4, 8; outside the claims: F1, F2, REPORT-COUNTS, CAROUSEL-COPY, R1, R2 — carried by the fix round; R3 — the landing's capture reading

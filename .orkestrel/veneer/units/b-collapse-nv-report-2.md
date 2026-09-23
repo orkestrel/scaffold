@@ -326,7 +326,7 @@ this report names. `tmp/probe/` was deleted before this report.
 
 ## Review evidence
 
-- `/home/user/veneer-nv//home/user/scaffold/.orkestrel/veneer/units/nv-shared-2.patch`
+- `/home/user/scaffold/.orkestrel/veneer/units/nv-shared-2.patch`
 - `/home/user/veneer-nv/tmp/units/nv-2.diff`
 - `/home/user/veneer-nv/tmp/units/nv-2-status.txt`
 - `/home/user/scaffold/.orkestrel/veneer/units/nv-instruments-2/`

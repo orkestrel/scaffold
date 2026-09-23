@@ -1,0 +1,4 @@
+?? app/browser/sections/AlertSection.ts
+?? src/styles/components/_alert.scss
+?? tests/app/browser/sections/AlertSection.test.ts
+?? tests/src/styles/components/alert.test.ts

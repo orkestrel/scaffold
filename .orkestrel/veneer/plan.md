@@ -93,14 +93,22 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Veneer `origin/main` `e4e6a40`, scaffold `origin/main` `e5d9ab6`, read 2026-09-23.
-The engine session has recorded no landing and no `engine/` record yet; move this marker at every
-boundary the protocol names.
+**Marker.** Veneer `origin/main` `376d84a`, scaffold `origin/main` `0b9d5eb`, read 2026-09-23 at
+16:00 UTC. The engine session's records sit under `engine/` (its plan, `engine/decisions.md` with E1
+to E4, and its terrain record); its landing on Veneer `main` since the previous marker is `376d84a`
+(the removal of `prompt.txt`, E4). Under E4 it works on `main` in both repositories, so every landing
+here merges `origin/main` into the session branch before the push and `main` is fast-forwarded from
+the merge result. Its in-flight work at this reading: the J-ENGINE design round (`planner` and
+`analyst`, blind on `engine/units/j-engine-design-brief.md`), with no writing unit dispatched and no
+Veneer file owned; its pending shared changes: none recorded. Move this marker at every boundary the
+protocol names.
 
-**In flight (this session).** NAV round 2 (`/home/user/veneer-nv`), DROPDOWN round 2
-(`/home/user/veneer-dd`), COLLAPSE round 2 (returned, awaiting its landing check and DROPDOWN's
-landing), UTIL-SPACER round 2 (returned, in audit), CONDITIONS (`/home/user/veneer-cn`), ALERT
-(`/home/user/veneer-al`), and CAROUSEL (`/home/user/veneer-ca`). Each owns its partial under
+**In flight (this session).** The disclosure landing: DROPDOWN (`a1b12ab`), NAV (`77bb770`), and
+COLLAPSE (`041925c`) on the session branch over `e4e6a40`, fast gates green, the verification chain
+and the landing check running, the fold and the push pending. UTIL-DISPLAY (`/home/user/veneer-ud`)
+and UTIL-PLACEMENT (`/home/user/veneer-upl`) on `opus` from `e4e6a40`. ALERT round 2 returned and
+in audit (`/home/user/veneer-al`). CAROUSEL round 2 on `opus` (`/home/user/veneer-ca`). CONDITIONS
+and UTIL-SPACER landed (`8ca1609`, `746d3e9`). Each unit owns its partial under
 `src/styles/`, its proof under `tests/src/styles/`, and its section and section proof under
 `app/browser/sections/` and `tests/app/browser/sections/`; each returns a report-only patch over
 `tests/setup.ts` (rows appended at the registry's end), `tests/setupStyles.ts`,
@@ -108,8 +116,12 @@ landing), UTIL-SPACER round 2 (returned, in audit), CONDITIONS (`/home/user/vene
 `tests/app/browser/integration.test.ts`, the showcase wiring under `app/browser/`, and
 `guides/veneer.md` (its own section, its rows, and its `plugin` row).
 
-**Pending shared changes.** `tests/setup.ts` gains `CASCADE_KEYS` rows, `DRIVEN_KEYS` rows, and
-`CaptureSubject` members with each landing, append-only at the registry's end. `guides/veneer.md`
+**Pending shared changes.** The disclosure landing appends the dropdown, nav, and collapse
+`CASCADE_KEYS` rows, the dropdown and nav `DRIVEN_KEYS` rows, and their `CaptureSubject` members to
+`tests/setup.ts`, and adds the Collapse, Dropdown, Tab, and ScrollSpy `plugin` rows with
+`Owner: J-ENGINE.` to `guides/veneer.md`; the ALERT and CAROUSEL landings follow with the same shape.
+In general, `tests/setup.ts` gains `CASCADE_KEYS` rows, `DRIVEN_KEYS` rows, and `CaptureSubject`
+members with each landing, append-only at the registry's end. `guides/veneer.md`
 gains a `plugin` row with `Owner: J-ENGINE.` for Collapse, Dropdown, Tab, ScrollSpy, Alert, and
 Carousel as those families land, and later for Modal, Offcanvas, Tooltip, Popover, and Toast. No
 change to `tests/setupBrowser.ts`, to the `package.json` exports map, or to `README.md` is pending.
