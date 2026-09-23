@@ -1,0 +1,49 @@
+diff --git a/tests/setup.ts b/tests/setup.ts
+index b7f1c88..299c43b 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -110,7 +110,7 @@ export function isSerializableRecord(value: unknown): value is Readonly<Record<s
+ 	}
+ }
+ 
+-/** Lists the `npm` command line `tests/distribution.test.ts` packs and installs a consumer with. */
++/** Lists the `npm` arguments the `tests/distribution.test.ts` suite checks the registry's availability with. */
+ export const PING = Object.freeze([
+ 	'ping',
+ 	'--fetch-retries=0',
+@@ -216,9 +216,9 @@ export const MODULES: Readonly<Record<string, string>> = Object.freeze({
+ })
+ 
+ /**
+- * Declarations deliberately kept out of the barrel, as `computeSymbolKey` strings.
++ * Lists the declarations deliberately kept out of the barrel, as `computeSymbolKey` strings.
+  *
+- * A class that one-class-per-file evicted from its single consumer cannot become a local, so it
++ * A class that one-class-per-file evicted from its owning consumer cannot become a local, so it
+  * stays exported without being public. Naming it here is what makes that intentional rather than
+  * forgotten — and the assertion in `tests/guides.test.ts` that reads this table fails when a name
+  * here stops being stranded, so the list cannot rot.
+diff --git a/tests/src/browser/factories.test.ts b/tests/src/browser/factories.test.ts
+index b6c5e72..3f22e04 100644
+--- a/tests/src/browser/factories.test.ts
++++ b/tests/src/browser/factories.test.ts
+@@ -884,10 +884,6 @@ const MIXED_SCENARIOS: ReadonlyArray<
+ 	requireValue(DISCLOSURE_SCENARIOS[3]),
+ ]
+ 
+-const EMPTY_SCENARIOS: ReadonlyArray<
+-	StateScenario<DisclosureState, DisclosureEvent, DisclosureContext>
+-> = []
+-
+ describe('createHarness', () => {
+ 	// A harness mounts itself and records nothing, exactly as `mount` does, so a harness a failing
+ 	// assertion left behind is the next test's ambiguity. This takes back whatever is still there.
+@@ -905,7 +901,7 @@ describe('createHarness', () => {
+ 		expect(
+ 			captureError(() =>
+ 				createHarness({
+-					scenarios: EMPTY_SCENARIOS,
++					scenarios: [],
+ 					build: buildDisclosure,
+ 					state: readDisclosure,
+ 				}),

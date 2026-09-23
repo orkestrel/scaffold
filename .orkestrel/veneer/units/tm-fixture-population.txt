@@ -1,0 +1,134 @@
+# Module-level declarations left in the @orkestrel/test test files after TEST-MATRICES (0bc5bca), measured 2026-09-23 21:50 UTC
+# Command: grep -nE '^(export )?(declare )?(const|let|class|function|async function|interface|type|enum) ' over git ls-files 'tests/**/*.test.ts' 'tests/*.test.ts' minus the vendored policy.test.ts and config.test.ts
+tests/distribution.test.ts:43:const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/distribution.test.ts:44:const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:50:const TSC = createRequire(join(ROOT, 'package.json')).resolve('typescript/bin/tsc')
+tests/distribution.test.ts:55:const SHELL = process.platform === 'win32'
+tests/distribution.test.ts:59:const RELEASE = import.meta.env.MODE === 'release'
+tests/distribution.test.ts:65:const BROWSER_OUTPUT = './dist/src/browser/'
+tests/distribution.test.ts:66:const ABSENT_SUBPATH = '/no-subpath-is-published-under-this-name'
+tests/distribution.test.ts:72:const DIAGNOSTIC_PATTERN = /^(.+?)\(\d+,\d+\): error TS\d+: /u
+tests/distribution.test.ts:73:const ESM_DRIVER = 'drive.mjs'
+tests/distribution.test.ts:74:const CJS_DRIVER = 'drive.cjs'
+tests/distribution.test.ts:75:const CONSUMER_MANIFEST = `{ "name": "distribution-consumer", "private": true, "type": "module" }\n`
+tests/distribution.test.ts:76:const ESM_DRIVER_SOURCE = `const entry = await import(process.argv[2])
+tests/distribution.test.ts:79:const CJS_DRIVER_SOURCE = `const entry = require(process.argv[2])
+tests/distribution.test.ts:85:const ADDON_EXTENSION = '.node'
+tests/distribution.test.ts:87:interface TargetResolution {
+tests/distribution.test.ts:94:const BROWSER_DRIVER = RESOLUTIONS.find((candidate) => candidate.label === 'bundler')
+tests/distribution.test.ts:101:interface Entry {
+tests/distribution.test.ts:119:interface Stage {
+tests/distribution.test.ts:130:function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+tests/distribution.test.ts:134:function isNames(value: unknown): value is readonly string[] {
+tests/distribution.test.ts:142:function isPackageTarget(target: string): boolean {
+tests/distribution.test.ts:155:function readJson(path: string): unknown {
+tests/distribution.test.ts:160:function readManifestName(path: string): string {
+tests/distribution.test.ts:168:function writeFile(path: string, content: string): void {
+tests/distribution.test.ts:173:function readOutput(result: SpawnSyncReturns<string>): string {
+tests/distribution.test.ts:177:function runNpm(args: readonly string[], cwd: string): SpawnSyncReturns<string> {
+tests/distribution.test.ts:187:function runNode(args: readonly string[], cwd: string): SpawnSyncReturns<string> {
+tests/distribution.test.ts:192:function resolvePackageTarget(
+tests/distribution.test.ts:217:function resolveTarget(entry: unknown, conditions: readonly string[]): string | undefined {
+tests/distribution.test.ts:223:function matchesFile(path: string): boolean {
+tests/distribution.test.ts:234:function targetToDeclaration(target: string, installed: string): string | undefined {
+tests/distribution.test.ts:246:function resolveDeclaration(
+tests/distribution.test.ts:271:function readPackageType(installed: string, target: string): unknown {
+tests/distribution.test.ts:290:function resolvesBrowser(entry: unknown): boolean {
+tests/distribution.test.ts:302:function resolvesCommonJS(entry: unknown, installed: string): boolean {
+tests/distribution.test.ts:316:function declaresCommonJS(entry: unknown, installed: string): boolean {
+tests/distribution.test.ts:326:function collectTargets(entry: unknown): readonly string[] {
+tests/distribution.test.ts:342:function isModule(target: string): boolean {
+tests/distribution.test.ts:351:function isDeclaration(target: string): boolean {
+tests/distribution.test.ts:359:function readDeclaration(
+tests/distribution.test.ts:375:function selectEntries(entries: readonly Entry[], conditions: readonly string[]): readonly Entry[] {
+tests/distribution.test.ts:386:function selectDrivers(entry: Entry, format: Format): readonly Resolution[] {
+tests/distribution.test.ts:395:function selectUntypable(entries: readonly Entry[], installed: string): readonly Entry[] {
+tests/distribution.test.ts:409:interface Surface {
+tests/distribution.test.ts:419:function writeProject(
+tests/distribution.test.ts:449:function checkProject(stage: Stage, project: string): readonly string[] {
+tests/distribution.test.ts:490:function checkSurface(stage: Stage, surface: Surface): readonly string[] {
+tests/distribution.test.ts:498:const published = {${keys.length === 0 ? '' : ` ${keys} `}} as const
+tests/distribution.test.ts:499:const declared: Record<keyof typeof entry, true> = published
+tests/distribution.test.ts:500:const surfaced: Record<keyof typeof published, true> = declared
+tests/distribution.test.ts:509:function writeConsumerProbe(stage: Stage, path: string, specifiers: readonly string[]): void {
+tests/distribution.test.ts:524:function driveRuntime(stage: Stage, specifier: string, driver: string): readonly string[] {
+tests/distribution.test.ts:534:const BROWSER_PAGE = `<!doctype html>
+tests/distribution.test.ts:546:function readContentType(path: string): string {
+tests/distribution.test.ts:557:function describeBrowser(options: PlaywrightProviderOptions): string {
+tests/distribution.test.ts:567:async function launchBrowser(options: PlaywrightProviderOptions): Promise<Browser> {
+tests/distribution.test.ts:576:async function bundleEntry(stage: Stage, entry: Entry): Promise<string> {
+tests/distribution.test.ts:597:async function readBrowserExports(browser: Browser, bundle: string): Promise<readonly string[]> {
+tests/distribution.test.ts:633:function buildStage(): Stage {
+tests/distribution.test.ts:708:const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
+tests/distribution.test.ts:709:const CACHE = join(SCRATCH, 'cache')
+tests/distribution.test.ts:723:function openStage(): Stage | undefined {
+tests/distribution.test.ts:738:const STAGE = openStage()
+tests/distribution.test.ts:739:const STAGED = STAGE !== undefined
+tests/distribution.test.ts:811:function requireStage(context: TestContext): Stage {
+tests/guides.test.ts:17:const EXAMPLE_LANGUAGE = 'ts'
+tests/guides.test.ts:19:const GUIDE_SPEC = 'guides/test.md'
+tests/guides.test.ts:25:type LoaderEvents = {
+tests/guides.test.ts:30:type InvokeFunction = typeof invokeUnchecked
+tests/guides.test.ts:32:class ScriptedLoader implements EventSourceInterface<LoaderEvents> {
+tests/guides.test.ts:59:const FENCE_OPEN = /^ {0,3}(`{3,})[^`]*$/
+tests/guides.test.ts:60:const FENCE_CLOSE = /^ {0,3}(`{3,})[ \t]*$/
+tests/guides.test.ts:62:const HEADING = /^(#{1,6}) (.+)$/
+tests/guides.test.ts:67:function buildMarker(section: string, heading: string): string {
+tests/guides.test.ts:74:function carriesMarker(text: string, marker: string): boolean {
+tests/guides.test.ts:82:function normalizeComments(text: string): string {
+tests/guides.test.ts:91:function renderKeys(keys: readonly string[]): string {
+tests/guides.test.ts:96:interface Snapshot {
+tests/guides.test.ts:105:interface Schema {
+tests/guides.test.ts:110:function serializeSchema(schema: Schema): Readonly<Record<string, unknown>> {
+tests/guides.test.ts:114:function parseSchema(
+tests/src/browser/factories.test.ts:35:const DIRECTORY = '../../../tmp/capture/portfolio'
+tests/src/browser/factories.test.ts:37:let width = 0
+tests/src/browser/factories.test.ts:38:let height = 0
+tests/src/browser/factories.test.ts:762:type DisclosureState = 'closed' | 'open'
+tests/src/browser/factories.test.ts:764:type DisclosureEvent = 'toggle' | 'dismiss'
+tests/src/browser/factories.test.ts:766:interface DisclosureContext {
+tests/src/browser/factories.test.ts:773:let mounted: HTMLElement | undefined
+tests/src/browser/factories.test.ts:775:function buildDisclosure(): DisclosureContext {
+tests/src/browser/factories.test.ts:788:function readDisclosure(context: DisclosureContext): DisclosureState {
+tests/src/browser/factories.test.ts:792:async function arrangeDisclosure(
+tests/src/browser/factories.test.ts:801:async function actOnDisclosure(_context: DisclosureContext, event: DisclosureEvent): Promise<void> {
+tests/src/browser/factories.test.ts:806:function assertDisclosure(context: DisclosureContext, state: DisclosureState): void {
+tests/src/browser/factories.test.ts:810:const DISCLOSURE_SCENARIOS: ReadonlyArray<
+tests/src/browser/factories.test.ts:861:const MISMATCHED_SCENARIOS: ReadonlyArray<
+tests/src/browser/factories.test.ts:878:const MIXED_SCENARIOS: ReadonlyArray<
+tests/src/browser/factories.test.ts:887:const EMPTY_SCENARIOS: ReadonlyArray<
+tests/src/browser/helpers.test.ts:124:const GLYPH = '\uF4FE'
+tests/src/browser/helpers.test.ts:125:const GLYPH_STYLE = `.glyph::before { content: "${GLYPH}" }`
+tests/src/browser/helpers.test.ts:126:const GLYPH_ICON = '<i class="glyph" aria-hidden="true"></i>'
+tests/src/browser/helpers.test.ts:130:const FRAMES = '../../../tmp/capture/frame'
+tests/src/browser/helpers.test.ts:134:let width = 0
+tests/src/browser/helpers.test.ts:135:let height = 0
+tests/src/core/factories.test.ts:15:type ScriptedEventMap = {
+tests/src/core/factories.test.ts:20:class ScriptedEventSource implements EventSourceInterface<ScriptedEventMap> {
+tests/src/core/helpers.test.ts:40:interface Snapshot {
+tests/src/core/helpers.test.ts:45:interface Session {
+tests/src/core/helpers.test.ts:50:interface Envelope {
+tests/src/core/helpers.test.ts:54:declare const tag: unique symbol
+tests/src/core/helpers.test.ts:56:interface Tagged {
+tests/src/core/helpers.test.ts:1025:type DisclosureState = 'closed' | 'open'
+tests/src/core/helpers.test.ts:1027:type DisclosureEvent = 'show' | 'hide'
+tests/src/core/helpers.test.ts:1029:interface DisclosureContext {
+tests/src/core/helpers.test.ts:1034:class Disclosure {
+tests/src/core/helpers.test.ts:1052:const REFUSAL = Object.freeze({ reason: 'refused' })
+tests/src/core/helpers.test.ts:1054:function arrangeDisclosure(context: DisclosureContext, state: DisclosureState): void {
+tests/src/core/helpers.test.ts:1061:async function actOnDisclosure(context: DisclosureContext, event: DisclosureEvent): Promise<void> {
+tests/src/core/helpers.test.ts:1068:function assertDisclosure(context: DisclosureContext, state: DisclosureState): void {
+tests/src/core/helpers.test.ts:1073:function buildDisclosure(
+tests/src/core/helpers.test.ts:1079:const DISCLOSURE_SCENARIOS: ReadonlyArray<
+tests/src/core/helpers.test.ts:1099:const MISMATCHED_SCENARIOS: ReadonlyArray<
+tests/src/core/helpers.test.ts:1110:const REFUSED_SCENARIO: StateScenario<DisclosureState, DisclosureEvent, DisclosureContext> = {
+tests/src/core/validators.test.ts:5:type ScriptedEventMap = {
+tests/src/server/helpers.test.ts:55:const HOLD_CWD = "process.stdout.write('ready\\n'); setTimeout(() => {}, 1e9)"
+tests/src/server/helpers.test.ts:64:function probePermissionHold(): boolean {
+tests/src/server/helpers.test.ts:87:const PERMISSION_HOLD_REFUSES_REMOVAL = probePermissionHold()
+tests/src/server/helpers.test.ts:94:function countSocketHandles(): number {
+tests/src/server/helpers.test.ts:104:function overrideTemporaryDirectory(path: string): () => void {
+tests/src/server/helpers.test.ts:124:const HOST_ROOT = resolve(tmpdir())
+tests/src/server/helpers.test.ts:125:const FOREIGN_ROOTS = FOREIGN_ROOT_SPELLINGS.filter((target) =>
+tests/src/server/helpers.test.ts:133:const NESTED_SPELLING = relative('root', join('root', 'nested', 'file.txt'))
+tests/src/server/helpers.test.ts:134:const NATIVE_SEPARATOR_DIFFERS = NESTED_SPELLING.includes(sep) && !NESTED_SPELLING.includes('/')
