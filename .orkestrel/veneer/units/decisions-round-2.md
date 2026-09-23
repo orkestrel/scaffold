@@ -267,3 +267,33 @@ CHECK fix unit mounts that nesting once, reads `background-image` against the li
 URIs, records the reading in its report, and states the limit in one sentence of
 `### Form check classes`. A light-knob reading is a deviation the unit reports without changing
 prose. D26 keeps the § Tokens paragraph rewrite. Carrier: the CHECK fix round.
+
+## D29 — The input group focus scenario drives the button group
+
+`_input-group.scss` gives the group's control `position: relative` at rest and its addon no
+position, so the control paints over the static addon before focus and the focus lift to
+`z-index: 5` changes nothing against that addon; the lift is load-bearing against the grouped button,
+which sits at `position: relative; z-index: 2`. The focus scenario therefore drives the `Input group
+button` control (scenario `input-group-button-focus`, a page frame, the ring read after the shot the
+same way), and the `INPUT_GROUP_KEYS` remarks and the `### Input group classes` sentence state that
+the lift puts the ring over the grouped button rather than over the addon. The plain group keeps its
+resting frame alone. Carrier: the GROUP fix round; the resulting frame is the evidence.
+
+## D30 — Two-member per-variant blocks take one `@each`
+
+`.claude/rules/styles.md` § "Never repeat per-color/per-variant blocks" reaches a pair as it reaches
+a longer list: CHECK's checkbox and radio glyph rules and GROUP's `-lg` and `-sm` size blocks each take
+one `@each` over a map, the compile proved byte-identical before and after. The shipped precedents
+that still repeat a size pair (`_button.scss`, `_pagination.scss`, `_placeholder.scss`) are a
+finding against B-PASSIVE-CLOSE, recorded in `ROADMAP.md` by the GROUP landing's patch, never
+reopened in a forms unit.
+
+## D31 — The tooltip specimens and the rounding fixture name their carriers
+
+`valid-tooltip` and `invalid-tooltip` ship from GROUP with no rendered specimen (D6). B-FORMS-CLOSE
+carries `Input group valid tooltip` and `Input group invalid tooltip` as resting element frames over
+a wrapper that keeps the tooltip's overflow room beneath the group, and the ROADMAP row names that
+unit. B-FORMS-CONTROL retires `INPUT_GROUP_ROUNDING` and the guide sentence on the consumer radius
+when the control and select classes ship their own radius; the fixture's TSDoc is restated in the
+present tense by the GROUP fix round. The `--vn-space-24` indicator room of a sized select in a group
+is an observation handed to B-FORMS-SELECT's audit claims.
