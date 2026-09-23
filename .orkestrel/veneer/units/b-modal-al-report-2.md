@@ -36,8 +36,7 @@ the following shared files relative to round 1:
 
 The other shared files carry round 1's hunks unchanged.
 
-Diffstat. The owned files are all additions: `_alert.scss` 69 lines, `alert.test.ts` 252,
-`AlertSection.ts` 20, and `AlertSection.test.ts` 92. The shared patch
+Diffstat. The owned files are all additions. The shared patch
 (`git -C tmp/probe/base diff --stat`) reports `13 files changed, 280 insertions(+), 13 deletions(-)`.
 Its SHA-256 is `6c32eb15eac2b64e3148c06b7fcd982dbd4f6d4abf808c278fe66408c2fec3a0`.
 
@@ -180,7 +179,7 @@ mutation named in the matrix is a row of the preceding table.
 | `.alert-link` | `weights the link and paints it from its own slot…`; each role case's link reading | `link-dropped` (that case, the containment case, and every role case) | `Linked alert` | `linked-alert` |
 | `.alert-dismissible` | `reserves the right padding and pins the close control to the top-right corner above the content`; `rescales the box…` | `dismissible-literal` (factor case) | `Dismissible alert` | `dismissible-alert` |
 | `.alert-dismissible .btn-close` | `reserves the right padding and pins the close control…`; `leaves a close control inside a plain alert in flow`; `close.test.ts` `carries a rule for every shipped close name and none for a deferred combinator` | `close-left` (dismissible case); `close-plain-alert` (plain-alert case and containment case); `lift-sunk` and `lift-dropped` (dismissible case, at the hit reading) | `Dismissible alert` | `dismissible-alert` |
-| `.alert-{role}` for each role | `paints the %s alert from its own role aliases` in light and in dark; `emits no variant for the role Bootstrap 5.3.8 does not name` | `role-alias` (info, both modes); `role-literal` (warning, both modes); `loop-roles` (the tertiary case, and the conformance additions case) | `Role alerts` | `role-alerts` |
+| `.alert-{role}` for each role | `paints the %s alert from its own role aliases` in light and in dark; `emits no variant for the role Bootstrap 5.3.8 does not name` | `role-alias` (info, in light and in dark); `role-literal` (warning, in light and in dark); `loop-roles` (the tertiary case, and the conformance additions case) | `Role alerts` | `role-alerts` |
 
 This round changes the following rows relative to round 1:
 
@@ -241,7 +240,7 @@ equals the Shared row.
 These are the ancillary choices this unit settled:
 
 - The hit reading's shape is `readHit(alert)` against the cover, then `readHit(control)` against the
-  control, just before the `z-index` reading. The cover is positioned content at `z-index: 1`. With
+  control, immediately before the `z-index` reading. The cover is positioned content at `z-index: 1`. With
   plain text alone, dropping the `z-index` declaration leaves the control on top, and only
   `z-index: -1` would redden.
 - The partial's comment adds the physical-direction sentence beside the 7b word change, after the
