@@ -56,4 +56,4 @@ C=W+'app/browser/constants.ts'
 edit(C,
 " * The tooltip pair is one passing and one failing group, derived from one state list so neither\n",
 " * The tooltip pair is one passing and one failing specimen, derived from one state list so neither\n")
-print('seven edits applied')
+print('edits applied')

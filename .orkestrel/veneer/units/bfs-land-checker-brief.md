@@ -14,7 +14,7 @@ commits on `/home/user/veneer` are `54536c1` (the unit with its integration edit
    section's paragraph (holding "the ring paints on a part with no resolved reading") does not
    carry them; the sentences appear once in the file.
 2. `tests/app/browser/integration.test.ts`, `tests/setup.ts`, and `app/browser/constants.ts` carry
-   the seven replacements of `/home/user/scaffold/.orkestrel/veneer/units/bfs-integration-2.py`
+   the replacements of `/home/user/scaffold/.orkestrel/veneer/units/bfs-integration-2.py`
    verbatim (each `new` string), and no `old` string remains.
 3. Every replaced sentence follows `writing.md`: no count, no position name, no banned term, a
    code token followed by a noun (a CSS token its own noun), one idea per sentence.
