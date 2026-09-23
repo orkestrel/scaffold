@@ -1,0 +1,102 @@
+Finished in 69ms on 2 files using 4 threads.
+=== oxfmt --write (owned) exit=0
+
+> @orkestrel/test@0.0.20 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 3021ms on 60 files using 4 threads.
+=== format:check exit=0
+
+> @orkestrel/test@0.0.20 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+=== lint:check exit=0
+
+> @orkestrel/test@0.0.20 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/test@0.0.20 check:src
+> npm run check:src:core && npm run check:src:browser && npm run check:src:server
+
+
+> @orkestrel/test@0.0.20 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/test@0.0.20 check:src:browser
+> tsc --noEmit -p configs/src/tsconfig.browser.json
+
+
+> @orkestrel/test@0.0.20 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+
+=== check exit=0
+
+> @orkestrel/test@0.0.20 test:src:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+
+ RUN  v4.1.11 /home/user/test
+
+···············································································································································································································································································································································································9:54:06 PM [vite] (client) [Unhandled error] Error: Boom
+ > ../../../@vite/client:305:50
+ > tests/src/browser/factories.test.ts:464:10
+    462 |  		try {
+    463 |  			journal.start()
+    464 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Boom' }))
+        |            ^
+    465 |  			window.dispatchEvent(
+    466 |  				new PromiseRejectionEvent('unhandledrejection', {
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:302:11
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:1903:26
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:2326:20
+ > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:2323:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:2305:20
+ > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:2272:10
+
+9:54:06 PM [vite] (client) [Unhandled rejection] Unknown Error: Refused
+
+9:54:06 PM [vite] (client) [Unhandled error] Error: Ignored
+ > ../../../@vite/client:305:50
+ > tests/src/browser/factories.test.ts:473:10
+    471 |  			journal.stop()
+    472 |  			recorded = journal.output
+    473 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Ignored' }))
+        |            ^
+    474 |  		} finally {
+    475 |  			Object.assign(console, channels)
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:302:11
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:1903:26
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:2326:20
+ > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:2323:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:2305:20
+ > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=aa34578d:2272:10
+
+································
+
+ Test Files  2 passed (2)
+      Tests  397 passed | 2 expected fail (399)
+   Start at  21:53:20
+   Duration  48.06s (transform 0ms, setup 288ms, import 329ms, tests 30.26s, environment 0ms)
+
+=== test:src:browser exit=0
+
+> @orkestrel/test@0.0.20 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/test[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m51 passed[39m[22m[90m (51)[39m
+[2m   Start at [22m 21:54:10
+[2m   Duration [22m 1.31s[2m (transform 169ms, setup 50ms, import 800ms, tests 255ms, environment 0ms)[22m
+
+=== test:guides exit=0
+=== status: [ M tests/setup.ts  M tests/src/browser/factories.test.ts ]

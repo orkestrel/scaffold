@@ -1,0 +1,39 @@
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 3ce6a34..b7f1c88 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -224,3 +224,10 @@ export const MODULES: Readonly<Record<string, string>> = Object.freeze({
+  * here stops being stranded, so the list cannot rot.
+  */
+ export const INTERNAL: readonly string[] = Object.freeze([])
++
++/**
++ * Carries the refusal a scenario phase throws by identity, so a case over a non-error throw asserts on
++ * the value that came back rather than on a rendering of it. A frozen record is not an `Error`, which
++ * is the whole of what such a case turns on.
++ */
++export const REFUSAL = Object.freeze({ reason: 'refused' })
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index aabe322..bcf9200 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -33,7 +33,7 @@ import {
+ 	waitForText,
+ } from '@src/core'
+ import { describe, expect, expectTypeOf, it } from 'vitest'
+-import { createAsyncSource, createStreamSource } from '../../setup.js'
++import { createAsyncSource, createStreamSource, REFUSAL } from '../../setup.js'
+ 
+ // Interfaces rather than type aliases: TypeScript grants an implicit index signature to an alias
+ // and never to an interface, so only an interface exercises what the `JSONValue` bound rejected.
+@@ -1047,10 +1047,6 @@ class Disclosure {
+ 	}
+ }
+ 
+-// Thrown by identity, so the non-error case asserts on the value that came back rather than on a
+-// rendering of it. A frozen record is not an `Error`, which is the whole of what the case turns on.
+-const REFUSAL = Object.freeze({ reason: 'refused' })
+-
+ function arrangeDisclosure(context: DisclosureContext, state: DisclosureState): void {
+ 	context.trail.handler('arrange', state)
+ 	if (state === 'open') context.disclosure.show()
