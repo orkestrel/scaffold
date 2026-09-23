@@ -17,9 +17,11 @@ each entity's attribute table (`AttributeMap`) with a parser map (`ParserMap`) a
 tests. The guide's § Ownership and restoration states the handoff, the precedence (the
 restoration that started first writes a shared target), and the write-sequence rule with its two
 doors (a custom element's attribute reaction inside a write; a synchronous listener inside a
-dispatch). The app's button section and its tests follow the renamed selectors. Every proof read
-red first; the instrument's mutation rows redden each. Six rounds, each audited by Astra on the
-objective lane, Opus 5.5 on the subjective lane, and the checker, with the Orchestrator's gates and
-mutation replays. J-ENGINE campaign (D43).
+dispatch, and the `await` of an asynchronous sequence, with the takeover stop at every door and
+its reading left to each entity's subsection). The app's button section and its tests follow the
+renamed selectors. Every proof read red first except the overlap proof, which three mutation rows
+bind; the instrument's rows redden each. Eight rounds, audited by Astra on the objective lane,
+Opus 5.5 on the subjective lane, and the checker, with the Orchestrator's gates, Chromium
+reproductions, and mutation replays. J-ENGINE campaign (D43).
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

@@ -1,0 +1,41 @@
+# J-BINDER landing — the verifier's Gate Report (returned 2026-09-23 by `verifier` on Sonnet, native subagent, 10 tool uses, 173 s; retained verbatim from the subagent's return text; the Orchestrator's E5 reading follows it)
+
+## Gate Report
+
+**Commit confirmed:** `git -C C:/Users/mikes/WebstormProjects/veneer log --oneline -1` reads `1395361 Merge branch 'main' into unit/binder`. Tree clean (`git status --porcelain` empty).
+
+| Gate | Command | Result |
+|---|---|---|
+| 1 | `npm run format:check` | PASS (exit 0) |
+| 2 | `npm run lint:check` | PASS (exit 0) |
+| 3 | `npm run check` | PASS (exit 0) |
+| 4 | `npm run build` | PASS (exit 0) |
+| 5 | `npm test` | FAIL (exit 1) |
+| 6 | `npm run test:service` | FAIL (exit 1) |
+
+**Gate 5 failure (`npm test`):** 1 failed, 976 passed (977 total), 85 passed files, 1 failed file.
+- `tests/src/styles/components/accordion.test.ts:110`, test "accordion classes > lays each button out as a full-width row with its chevron at the end, and zeroes the header margin"
+- Assertion: `readStyle(button, 'background-size', '::after')` expected `'20px'`, received `'20px auto'`
+- This matches the standing row recorded in `host-chromium-153-reading.md` § "New standing row (2026-09-23, the J-TYPES rounds 5 to 10 landing)" exactly (same file, same line, same expected/received values).
+
+**Gate 6 failure (`npm run test:service`):** 1 failed, 17 passed (18 total).
+- `tests/service/tailwind/preflight.test.ts:156`, test "the preflight pairing > keeps every property the elements layer declares, and records every property the profile moves"
+- Assertion: `expect([...measured].sort()).toEqual(recorded)` — diff shows `"select | height | 18px"` expected vs. `"select | height | 21px"` received, and four `table | border-*-color` rows (`border-bottom-color`, `border-left-color`, `border-right-color`, `border-top-color`) present in `recorded` but absent from `measured`.
+- This matches the standing preflight row in `host-chromium-153-reading.md` (the table's last row and the "Struck rows" note) exactly.
+
+**Overall verdict:** NOT GREEN. Gates 1–4 PASS. Gates 5–6 FAIL, but both failures are exactly the two standing rows recorded in `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/engine/units/host-chromium-153-reading.md` — no new red row.
+
+**Anomalies:** None; no unexpected tracked-file drift, no other red rows, no flake observed (single run each).
+
+**Chromium build:** the browser projects (`src:browser` and `service`) launched Playwright's managed Chromium build; no separate version string was printed by the run itself, consistent with the brief's stated 153.0.8010.12 for this host.
+
+**Files referenced:**
+- `C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/components/accordion.test.ts`
+- `C:/Users/mikes/WebstormProjects/veneer/tests/service/tailwind/preflight.test.ts`
+- `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/engine/units/host-chromium-153-reading.md`
+
+---
+
+## The Orchestrator's E5 reading
+
+The chain reads green except the two standing rows `host-chromium-153-reading.md` records (the baseline's accordion `background-size` row and the preflight service row), each matching that file by test, line, and assertion; no new red row. Under E5 the landing gate is met, and Veneer `main` at `1395361` is pushed.

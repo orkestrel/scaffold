@@ -1,0 +1,26 @@
+[
+ {
+  "name": "HostSnapshot: #withdraw compares presence instead of the owner",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "HostSnapshot: #writeBack compares presence instead of the owner",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ },
+ {
+  "name": "HostSnapshot: a publish replaces an entry another restoration owns",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 13 passed (14)",
+  "failed": [
+   "HostSnapshot > lets the restoration that started first write a target two snapshots saved, whichever saved it first"
+  ]
+ }
+]
