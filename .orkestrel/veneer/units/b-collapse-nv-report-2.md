@@ -3,7 +3,7 @@
 `opus` on Opus 5.5, native subagent, sole writer in `/home/user/veneer-nv` (branch `unit/nv`,
 uncommitted over `87ff1d0`). Effective brief: `tmp/units/nv-brief-3.md`. Every finding in
 `nv-audit-verdict.md` § Rulings is closed in the owned files and in the regenerated patch
-`tmp/units/nv-shared-2.patch`, which applies to `c3ac297`. Every acceptance criterion reads green in
+`/home/user/scaffold/.orkestrel/veneer/units/nv-shared-2.patch`, which applies to `c3ac297`. Every acceptance criterion reads green in
 the validation copy. No deviation stopped the unit; the ancillary choices are recorded in the
 Deviation state section.
 
@@ -19,15 +19,15 @@ Owned, in the worktree (round-1 files edited in place):
 - `tests/app/browser/sections/NavSection.test.ts`: asserts the release's open-menu markup and the
   plain `.nav-item.show` tab.
 - `tests/app/browser/sections/CardSection.test.ts`: unchanged this round.
-- `tmp/units/nv-shared-2.patch`: one unified diff against `c3ac297` over the Shared row.
-- `tmp/units/nv-instruments-2/`: this round's instruments and logs.
+- `/home/user/scaffold/.orkestrel/veneer/units/nv-shared-2.patch`: one unified diff against `c3ac297` over the Shared row.
+- `/home/user/scaffold/.orkestrel/veneer/units/nv-instruments-2/`: this round's instruments and logs.
 
 `git -C /home/user/veneer-nv diff --stat 87ff1d0` printed
 `tests/app/browser/sections/CardSection.test.ts | 19 ++++++++++++++++++-`. The other owned files
 are untracked; `tmp/units/nv-2-status.txt` holds the status and `tmp/units/nv-2.diff` holds the
 full diff, with each untracked file taken through `git diff --no-index /dev/null <path>`.
 
-`git apply --stat tmp/units/nv-shared-2.patch` names `app/browser/Showcase.ts`,
+`git apply --stat /home/user/scaffold/.orkestrel/veneer/units/nv-shared-2.patch` names `app/browser/Showcase.ts`,
 `app/browser/constants.ts`, `app/browser/index.ts`, `guides/veneer.md`, `src/styles/index.scss`,
 `tests/app/browser/Showcase.test.ts`, `tests/app/browser/index.test.ts`,
 `tests/app/browser/integration.test.ts`, `tests/conformance.test.ts`, `tests/setup.ts`,
@@ -179,7 +179,7 @@ on top.
 
 ## Mutation matrix
 
-Instrument: `tmp/units/nv-instruments-2/mutate.py`, run over the control and every mutation in
+Instrument: `/home/user/scaffold/.orkestrel/veneer/units/nv-instruments-2/mutate.py`, run over the control and every mutation in
 the validation copy after the final sync (`mutate-run.log.txt`). A styles mutation edits the partial
 or the barrel, runs `npm run build:src:styles`, and runs
 `npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json tests/src/styles/components/nav.test.ts tests/src/styles/components/card.test.ts`.
@@ -276,7 +276,7 @@ this unit's delta. The deciding re-run is yours.
 ## `git apply --check`
 
 After `git -C tmp/probe/base apply -R` returned the copy's shared files to `c3ac297` (status then
-listed only the owned files), `git -C tmp/probe/base apply --check tmp/units/nv-shared-2.patch`
+listed only the owned files), `git -C tmp/probe/base apply --check /home/user/scaffold/.orkestrel/veneer/units/nv-shared-2.patch`
 printed nothing and ended `exit=0`, run against a copy of the patch staged at that relative path.
 The verbose run over the worktree's patch checked every Shared-row file and ended `exit=0`
 (`apply-check.log.txt`).
@@ -319,14 +319,14 @@ No stop. Ancillary choices, recorded:
 
 ## Instruments
 
-`/home/user/veneer-nv/tmp/units/nv-instruments-2/`: `guide.py` (the guide edits, each anchor
+`/home/user/scaffold/.orkestrel/veneer/units/nv-instruments-2/`: `guide.py` (the guide edits, each anchor
 asserted unique), `sync.sh`, `dropdown-rows.py` (DROPDOWN's `Navbar` rows for the partition proof),
 `revert-probe.py` (the failing-first readings), `mutate.py`, `gates.sh`, `journey.sh`, and every log
 this report names. `tmp/probe/` was deleted before this report.
 
 ## Review evidence
 
-- `/home/user/veneer-nv/tmp/units/nv-shared-2.patch`
+- `/home/user/veneer-nv//home/user/scaffold/.orkestrel/veneer/units/nv-shared-2.patch`
 - `/home/user/veneer-nv/tmp/units/nv-2.diff`
 - `/home/user/veneer-nv/tmp/units/nv-2-status.txt`
-- `/home/user/veneer-nv/tmp/units/nv-instruments-2/`
+- `/home/user/scaffold/.orkestrel/veneer/units/nv-instruments-2/`

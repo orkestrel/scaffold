@@ -2,7 +2,7 @@
 
 ## Outcome
 
-`tmp/units/us-shared-3.patch` regenerated against `c3ac297`. `git -C tmp/probe/land apply --check` (rebuilt as `tmp/probe/land3` for the final check, both swept before this report) exits `0`. The gates in criterion 3 all pass on the validation copy. One hunk from `us-shared-2.patch` could not be carried and is recorded under Deviations.
+`/home/user/scaffold/.orkestrel/veneer/units/us-shared-3.patch` regenerated against `c3ac297`. `git -C tmp/probe/land apply --check` (rebuilt as `tmp/probe/land3` for the final check, both swept before this report) exits `0`. The gates in criterion 3 all pass on the validation copy. One hunk from `us-shared-2.patch` could not be carried and is recorded under Deviations.
 
 ## Hunk relocations (site at `c3ac297`, by heading and first line)
 
@@ -42,7 +42,7 @@ It now holds, in order: the passive-partial rename and order assertion (unchange
 ## Gates (`tmp/probe/land2`, rebuilt from `c3ac297` plus the owned round-2 files plus this patch, swept after this report was written)
 
 ```
-$ git -C tmp/probe/land apply --check tmp/units/us-shared-3.patch
+$ git -C tmp/probe/land apply --check /home/user/scaffold/.orkestrel/veneer/units/us-shared-3.patch
 exit=0
 
 $ npm run build:src
@@ -99,5 +99,5 @@ Per-file, split on `+++ b/` markers, sorted, and diffed:
 
 ## Files
 
-- `tmp/units/us-shared-3.patch` (owned)
+- `/home/user/scaffold/.orkestrel/veneer/units/us-shared-3.patch` (owned)
 - `tmp/units/us-report-3.md` (owned, this file)

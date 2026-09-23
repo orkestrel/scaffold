@@ -78,7 +78,7 @@ The validation copy: `git -C /home/user/veneer-co archive eb422a9 | tar -x -C tm
 `co-instruments/sync-owned.sh`, and the shared-file edits applied directly in that copy to derive
 `co-shared-2.patch` by diff. `tmp/probe/` is removed after this report is written.
 
-- `git apply --check tmp/units/co-shared-2.patch` against a separate fresh `eb422a9` archive: exit 0.
+- `git apply --check /home/user/scaffold/.orkestrel/veneer/units/co-shared-2.patch` against a separate fresh `eb422a9` archive: exit 0.
 - `npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot
   tests/src/styles/components/collapse.test.ts`: `Test Files 1 passed (1)`, `Tests 9 passed (9)`.
 - `npm run check`: exits 0, no diagnostic on either `tsc` project or `vue-tsc`.
@@ -101,7 +101,7 @@ panel's edge" names a spatial position rather than a cross-reference.
 this round), `?? app/browser/sections/CollapseSection.ts`, `?? src/styles/components/_collapse.scss`,
 `?? tests/app/browser/sections/CollapseSection.test.ts` (round 1's owned files, unchanged this
 round), and `?? tests/src/styles/components/collapse.test.ts` (round 1's file plus this round's one
-added case). No other file in the worktree moved. `tmp/units/co-shared-2.patch` carries the twelve
+added case). No other file in the worktree moved. `/home/user/scaffold/.orkestrel/veneer/units/co-shared-2.patch` carries the twelve
 shared files the Shared row names: `src/styles/index.scss`, `tests/conformance.test.ts`,
 `app/browser/constants.ts`, `app/browser/index.ts`, `app/browser/Showcase.ts`, `tests/setup.ts`,
 `tests/app/browser/Showcase.test.ts`, `tests/app/browser/index.test.ts`,

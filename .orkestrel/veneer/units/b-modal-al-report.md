@@ -15,7 +15,7 @@ Owned (added, untracked in the worktree):
 - `app/browser/sections/AlertSection.ts` — the `SpecimenSection` subclass for the Alert region.
 - `tests/app/browser/sections/AlertSection.test.ts` — the section proof.
 
-Shared (report-only; `tmp/units/al-shared.patch`, unified diff against `c3ac297`):
+Shared (report-only; `/home/user/scaffold/.orkestrel/veneer/units/al-shared.patch`, unified diff against `c3ac297`):
 
 - `src/styles/index.scss` — `@use 'components/alert'` between `badge` and `progress`.
 - `tests/setupStyles.ts` — `ALERT_SELECTORS`, `ALERT_ROLES`, `ALERT_SPACE_CASES`,
@@ -46,8 +46,8 @@ Diffstat: owned `_alert.scss` 68, `alert.test.ts` 238, `AlertSection.ts` 20,
 `AlertSection.test.ts` 92 lines, all added. Shared patch: 13 files, 277 insertions, 12 deletions
 (`git apply --stat` on the fresh copy).
 
-Review evidence: `tmp/units/al.diff`, `tmp/units/al-status.txt`, `tmp/units/al-shared.patch`.
-Instruments and logs: `tmp/units/al-instruments/` (`gates.sh`, `run.sh`, `tailwind-names.mjs`,
+Review evidence: `tmp/units/al.diff`, `tmp/units/al-status.txt`, `/home/user/scaffold/.orkestrel/veneer/units/al-shared.patch`.
+Instruments and logs: `/home/user/scaffold/.orkestrel/veneer/units/al-instruments/` (`gates.sh`, `run.sh`, `tailwind-names.mjs`,
 `mutations/*.scss`, `logs/*.log.txt`). The scripts name `tmp/probe/` paths, which were deleted
 before this report as the brief requires; re-running them needs the copy rebuilt first.
 
@@ -321,7 +321,7 @@ setup-server files.
 
 ## Shared patch
 
-The exact content of `tmp/units/al-shared.patch` (SHA-256
+The exact content of `/home/user/scaffold/.orkestrel/veneer/units/al-shared.patch` (SHA-256
 `c28d76b25dd03df84d364eef765e3ab958bdf0331e71c9bb49cd83727b8cc6f3`):
 
 ```diff

@@ -21,7 +21,7 @@
 | F7 | The CL8b cell reads "closed: UTIL-SPACER landed (`<landing hash>`) with the `gap` and `column-gap` keys beside the `row-gap` key in the `src/styles/utilities/_gap.scss` partial". Criterion 6 required the added nouns. The Orchestrator fills the hash. | patch: `ROADMAP.md` |
 | Claim 7a (token nouns) | Applied as ruled to the changed comments and the patch. Examples: "the `breakpoint-each` mixin", "the `vn-utility-` prefix", "the `md-` prefix", "the `gap` entry", "sits in the `base` layer", "under the `components` directory" and "under the `utilities` directory" (these are barrel path segments, not layers), "the `gap-3` name", and "the `tests/src/styles/utilities/gap.test.ts` proof". CSS properties, values, functions, custom properties, class selectors, the `!important` token, and Sass variables stay bare. The ruling allows this. | owned comments; patch |
 | Compatibility rows | "Every official `.gap-*` step and breakpoint selector ships; resolved row and column gaps are proved in the `tests/src/styles/utilities/gap.test.ts` proof." The `column-gap` row reads the same way with `.column-gap-*`. | patch: `guides/veneer.md` § Compatibility |
-| Claim 7b (criterion 3's record) | The baseline step is retained as `us-instruments/baseline.sh`. Its commands and printed lines are recorded in § Gates. | `tmp/units/us-instruments/baseline.sh` |
+| Claim 7b (criterion 3's record) | The baseline step is retained as `us-instruments/baseline.sh`. Its commands and printed lines are recorded in § Gates. | `/home/user/scaffold/.orkestrel/veneer/units/us-instruments/baseline.sh` |
 | R2 | The profiles case asserts `expect(tailwind.variables).toEqual(['--spacing'])`, the measured set. `GAP_KEYS` and `as const` are unchanged, as ruled. | `tests/service/tailwind/profiles.test.ts` |
 
 The § Tailwind paragraph also takes the objective lane's prose note. The partial-importance sentence says that the planted rule declares `!important` on the `grid-column-start` longhand alone. It no longer reads as editing Tailwind's rule.
@@ -67,21 +67,21 @@ npm 11 on `PATH` through the export the brief names.
 | 3 | `npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/mixins.test.ts tests/src/styles/utilities/gap.test.ts` | 0 | `Test Files  2 passed (2)`, `Tests  21 passed (21)` |
 | 4 | `npm run build:src:styles && npm run test:service` | 0 | `Test Files  3 passed (3)`, `Tests  18 passed (18)` |
 | 5 (probe copy, revised patch applied) | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/LayoutSection.test.ts` | 0 | `Tests  3 passed (3)` |
-| 6 | `git apply --check --verbose ../../units/us-shared.patch` in a fresh `git archive 87ff1d0` extract; `git -C /home/user/veneer-us apply --check tmp/units/us-shared.patch` | 0, 0 | "Checking patch" for each of `app/browser/constants.ts`, `tests/setup.ts`, `tests/conformance.test.ts`, `tests/setupServer.test.ts`, `tests/setupStyles.ts`, `guides/veneer.md`, and `ROADMAP.md`; the applied files equal the probe's revised files byte for byte |
+| 6 | `git apply --check --verbose ../../units/us-shared.patch` in a fresh `git archive 87ff1d0` extract; `git -C /home/user/veneer-us apply --check /home/user/scaffold/.orkestrel/veneer/units/us-shared.patch` | 0, 0 | "Checking patch" for each of `app/browser/constants.ts`, `tests/setup.ts`, `tests/conformance.test.ts`, `tests/setupServer.test.ts`, `tests/setupStyles.ts`, `guides/veneer.md`, and `ROADMAP.md`; the applied files equal the probe's revised files byte for byte |
 | 6 | `npx oxfmt --config .oxfmtrc.json --check` over the patched shared files (probe copy) | 0 | "All matched files use the correct format." |
 
 ### Criterion 2: the built cascade against round 1
 
-The baseline step, retained as `tmp/units/us-instruments/baseline.sh`, extracts `git archive 87ff1d0`, overlays optional style sources, and runs `npm run build:src:styles`. Before this round edited anything, the round-1 style sources were copied to `tmp/probe/round1-src` and the round-1 `dist/src/styles/index.css` to `tmp/probe/round1-built`.
+The baseline step, retained as `/home/user/scaffold/.orkestrel/veneer/units/us-instruments/baseline.sh`, extracts `git archive 87ff1d0`, overlays optional style sources, and runs `npm run build:src:styles`. Before this round edited anything, the round-1 style sources were copied to `tmp/probe/round1-src` and the round-1 `dist/src/styles/index.css` to `tmp/probe/round1-built`.
 
 ```text
-$ bash tmp/units/us-instruments/baseline.sh base
+$ bash /home/user/scaffold/.orkestrel/veneer/units/us-instruments/baseline.sh base
 badeb54ac6cbb073007223a0116ecb770f6ab0a0cf75aebcf479a76770890e8d  /home/user/veneer-us/tmp/probe/base/index.css
-$ bash tmp/units/us-instruments/baseline.sh round1 tmp/probe/round1-src
+$ bash /home/user/scaffold/.orkestrel/veneer/units/us-instruments/baseline.sh round1 tmp/probe/round1-src
 df76aab7ff8dcf3b7ce7e4ff8ececebf1644540956a42adc29b63c1c4f0ed765  /home/user/veneer-us/tmp/probe/round1/index.css
 $ sha256sum dist/src/styles/index.css            # after this round's npm run build:src
 df76aab7ff8dcf3b7ce7e4ff8ececebf1644540956a42adc29b63c1c4f0ed765  dist/src/styles/index.css
-$ node tmp/units/us-instruments/compare.mjs
+$ node /home/user/scaffold/.orkestrel/veneer/units/us-instruments/compare.mjs
 baseline family rules 180 built family rules 252
 baseline rules missing or changed in build: []
 added rules by key: [ [ 'gap', 36 ], [ 'column-gap', 36 ] ]
@@ -108,7 +108,7 @@ The round-1 rebuild's digest equals the digest of the retained round-1 `dist`. T
 
 ## Mutations each proof distinguishes
 
-The `tmp/units/us-instruments/mutate-styles-2.py` sweep is the successor of `mutate-styles.py`. It restates round 1's mutations against the round-2 text and adds the state and classless-infix mutations. Each mutation rebuilds and runs the criterion 3 command. The source was restored after the sweep, checked with `cmp` against the backup.
+The `/home/user/scaffold/.orkestrel/veneer/units/us-instruments/mutate-styles-2.py` sweep is the successor of `mutate-styles.py`. It restates round 1's mutations against the round-2 text and adds the state and classless-infix mutations. Each mutation rebuilds and runs the criterion 3 command. The source was restored after the sweep, checked with `cmp` against the backup.
 
 | Mutation | Tally | Red cases |
 | --- | --- | --- |
@@ -128,7 +128,7 @@ The `tmp/units/us-instruments/mutate-styles-2.py` sweep is the successor of `mut
 | Density factor added (round 1) | `7 failed \| 14 passed` | the gap boundary cases; density |
 | Loop per entry (round 1) | `1 failed \| 20 passed` | gap order |
 
-The `tmp/units/us-instruments/mutate-layout.py` sweep runs in the probe copy. Each mutation edits the copy's `app/browser/constants.ts` and runs the Layout proof. The file was restored and checked with `cmp`.
+The `/home/user/scaffold/.orkestrel/veneer/units/us-instruments/mutate-layout.py` sweep runs in the probe copy. Each mutation edits the copy's `app/browser/constants.ts` and runs the Layout proof. The file was restored and checked with `cmp`.
 
 | Mutation | Tally | Red assertion |
 | --- | --- | --- |
@@ -138,7 +138,7 @@ The `tmp/units/us-instruments/mutate-layout.py` sweep runs in the probe copy. Ea
 | `Gap steps` items as `.card > .card-body` (round 1's markup) | `1 failed \| 2 passed` | the no-`.card` check |
 | `Gap steps` without `.container-fluid` | `1 failed \| 2 passed` | shape selector |
 
-The `tmp/units/us-instruments/mutate-service-2.sh` script runs the service controls on the exact equality. Each control edits `tests/setup.css` from a backup and restores it. `cmp` and `git status --short tests/setup.css` confirm the restore.
+The `/home/user/scaffold/.orkestrel/veneer/units/us-instruments/mutate-service-2.sh` script runs the service controls on the exact equality. Each control edits `tests/setup.css` from a backup and restores it. `cmp` and `git status --short tests/setup.css` confirm the restore.
 
 | Control | Result | Red case |
 | --- | --- | --- |
@@ -198,7 +198,7 @@ The diffstat from `git diff 87ff1d0 --stat` is: `10 files changed, 591 insertion
 
 The review evidence captured at hand-back is `tmp/units/us-2.diff` (`git diff 87ff1d0`) and `tmp/units/us-2-status.txt` (`git status --porcelain`).
 
-The revised shared patch at `tmp/units/us-shared.patch` supersedes round 1's patch whole. Round 1's copy is retained as `.orkestrel/veneer/units/us-shared.patch` in the scaffold checkout. The patch covers these files:
+The revised shared patch at `/home/user/scaffold/.orkestrel/veneer/units/us-shared.patch` supersedes round 1's patch whole. Round 1's copy is retained as `.orkestrel/veneer/units/us-shared.patch` in the scaffold checkout. The patch covers these files:
 - `app/browser/constants.ts`
 - `tests/setup.ts`
 - `tests/conformance.test.ts`
@@ -207,7 +207,7 @@ The revised shared patch at `tmp/units/us-shared.patch` supersedes round 1's pat
 - `guides/veneer.md`
 - `ROADMAP.md`
 
-These instruments are in `tmp/units/us-instruments/`:
+These instruments are in `/home/user/scaffold/.orkestrel/veneer/units/us-instruments/`:
 - `baseline.sh`
 - `probe-tree.sh`, which builds `tmp/probe/tree` from `87ff1d0`, the worktree changes, and the revised shared files
 - `mutate-styles-2.py`
