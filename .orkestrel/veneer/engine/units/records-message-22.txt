@@ -1,0 +1,11 @@
+Reconcile the J-TYPES round-9 audit and brief round 10
+
+Round 9's audit confirmed the tab's one-home keys and every bound, and broke the report's
+sentence that the offcanvas lifetime listener hides the same set Bootstrap's resize handler
+hides: Bootstrap also hides a panel still sliding in, and it ignores a non-responsive panel a
+consumer un-fixes. The contract gains the settle-then-apply rule on the interface block, the
+departure paragraph and the plan's J-OFFCANVAS row state both differences beside the load-time
+adoption, and three Tab wording bounds are adopted. Round 10 carries every ruling on the same
+writer; its audit is the objective lane and the checker. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
