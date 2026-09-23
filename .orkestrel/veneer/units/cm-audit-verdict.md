@@ -13,4 +13,4 @@ Round: `cm` round 1 (`close-motion-brief.md`; report `close-motion-report.md`) o
 
 The unit lands after the integration edit's check.
 
-VERDICT: FAIL 6 (one site, fixed at landing as an integration edit); outside the claims: none
+VERDICT: FAIL 6 (one site, fixed at landing as an integration edit, verified PASS in `cm-landing-checker-verdict.md`); outside the claims: none
