@@ -1,0 +1,13 @@
+Declare the engine contracts: event maps, hooks, options, interfaces, and the shared mechanisms
+
+`src/browser/types.ts` declares every contract the J-ENGINE design verdict fixes (R2 to R14):
+the `EventHooks` and `EventWire` helper types, the registry, snapshot, isolation, backdrop,
+scroll-lock, placement, swipe, and sanitizing contracts with their options, and for each of the
+eleven components its detail, event map, hooks, options, and interface, with every property
+readonly, every state-changing verb returning `Promise<boolean>`, and an `@example` on every
+method. The guide's § Surface carries one row per export and § Methods one table per behavioural
+interface. The seed's declarations are unchanged except the `ColorModeInterface.toggle` summary,
+which states the post-destroy return. `SetHTMLOptions` and `SanitizeTargetInterface` mirror the
+`setHTML` method the installed DOM library omits. J-TYPES, W0 of the J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

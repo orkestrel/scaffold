@@ -22,7 +22,7 @@ The authoritative gate chain's exit-code truth on the Veneer `main` checkout at 
 
 **Control identifiers.** None.
 
-**Standing conditions.** `git status` may show the Orchestrator's records under `tmp/` (ignored) and nothing else; a dirty tracked file is a finding to report, never to discard. The `test:service` project drives Chromium and takes longer than the unit projects. `npm run build` writes `dist/`, which is expected.
+**Standing conditions.** `git status` may show the Orchestrator's records under `tmp/` (ignored) and nothing else; a dirty tracked file is a finding to report, never to discard. The `test:service` project drives Chromium and takes longer than the unit projects. `npm run build` writes `dist/`, which is expected. The host's standing red rows (`host-chromium-153-reading.md` beside this file: the close, form-select, and validation style proofs and the preflight service proof, red on Chromium 153 at the baseline's own tip) are expected to read red; report each red test by its file, title, and assertion message, so the Orchestrator can compare the list against that reading (E5), and never trim a red row because it looks expected.
 
 ## Unknowns
 
