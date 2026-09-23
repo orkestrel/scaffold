@@ -297,3 +297,26 @@ unit. B-FORMS-CONTROL retires `INPUT_GROUP_ROUNDING` and the guide sentence on t
 when the control and select classes ship their own radius; the fixture's TSDoc is restated in the
 present tense by the GROUP fix round. The `--vn-space-24` indicator room of a sized select in a group
 is an observation handed to B-FORMS-SELECT's audit claims.
+
+## D32 — The duplication gate's relative arm moves its floor to five declarations
+
+`findDuplication` in `tests/setupServer.ts` takes, under its relative arm, an overlap of at least 4
+declarations that is more than half of the smaller block. The floating label block shares
+`position: absolute`, `top: 0`, `left: 0`, and `height: 100%` with `.ratio > *` and four
+declarations with the hidden check input in `_button.scss`, each side recording the release's own
+values, which `.claude/rules/styles.md` calls a coincidence to keep inline. The relative arm's floor
+moves to 5 (`count >= 5 && count * 2 > smallest`); the absolute arm stays at 6; the TSDoc records the
+2026-09-23 measurement (the largest overlap two partials wrote independently is 4, the floating label
+against the ratio child and the hidden check input) and states that a whole copy of a two-, three-,
+or four-declaration rule sits under the floor; the proof's boundary cases move with it. Carrier:
+B-FORMS-FLOOR (`builder` on Sonnet) in the FLOATING worktree before the FLOATING audit; it lands
+with FLOATING.
+
+## D33 — The sized select's end padding in a group takes the multiplied space token
+
+GROUP wrote `padding-right: var(--vn-space-24)` for `.input-group-lg > .form-select` and
+`.input-group-sm > .form-select`, and SELECT wrote `calc(var(--vn-space-6) * 3)` for the select's own
+end padding, each resolving the release's `$form-select-padding-x` multiple. One concept, one term:
+the group's value is written `calc(var(--vn-space-6) * 4)`, the release's `$form-select-padding-x *
+4`. The ledger row stays `tokenized`; the N2 table's expected references follow. Carrier: the GROUP
+fix round.
