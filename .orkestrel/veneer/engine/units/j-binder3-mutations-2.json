@@ -1,0 +1,45 @@
+[
+ {
+  "name": "HostSnapshot: attributes before tokens",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\tfor (const { target, value } of records) {\n\t\t\tif (target.category !== 'attribute') continue\n\t\t\tif (value === undefined) target.element.removeAttribute(target.name)\n\t\t\telse target.element.setAttribute(target.name, value)\n\t\t}\n",
+    "replace": ""
+   },
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\tthis.#classes = new Map()\n",
+    "replace": "\t\tthis.#classes = new Map()\n\t\tfor (const { target, value } of records) {\n\t\t\tif (target.category !== 'attribute') continue\n\t\t\tif (value === undefined) target.element.removeAttribute(target.name)\n\t\t\telse target.element.setAttribute(target.name, value)\n\t\t}\n"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: attributes before tokens (at the Button)",
+  "proof": "tests/src/browser/Button.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\tfor (const { target, value } of records) {\n\t\t\tif (target.category !== 'attribute') continue\n\t\t\tif (value === undefined) target.element.removeAttribute(target.name)\n\t\t\telse target.element.setAttribute(target.name, value)\n\t\t}\n",
+    "replace": ""
+   },
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\tthis.#classes = new Map()\n",
+    "replace": "\t\tthis.#classes = new Map()\n\t\tfor (const { target, value } of records) {\n\t\t\tif (target.category !== 'attribute') continue\n\t\t\tif (value === undefined) target.element.removeAttribute(target.name)\n\t\t\telse target.element.setAttribute(target.name, value)\n\t\t}\n"
+   }
+  ]
+ },
+ {
+  "name": "resolveVocabulary: an undefined supplied value applied",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/helpers.ts",
+    "find": "\t\tif (value === undefined) continue\n\t\tif (!guard(value))",
+    "replace": "\t\tif (!guard(value))"
+   }
+  ]
+ }
+]

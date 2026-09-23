@@ -1,0 +1,7 @@
+npm notice run npm run check:src:core
+npm notice run @orkestrel/contract@0.0.17 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+check exit=0
+ Test Files  19 passed (19)
+      Tests  1350 passed (1350)
+test:src exit=0

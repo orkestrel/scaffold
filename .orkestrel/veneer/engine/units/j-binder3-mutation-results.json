@@ -1,0 +1,160 @@
+[
+ {
+  "name": "Button: restores the host before releasing the claim",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 37 passed (38)",
+  "failed": [
+   "Button > releases its host before restoring it, so an engine constructed at the restoration last write keeps its state"
+  ]
+ },
+ {
+  "name": "HostSnapshot: writes in record order",
+  "error": "pattern not found once: if (target.category === 'token') target.element.classList.toggle(target.name, value !== undefined)"
+ },
+ {
+  "name": "HostSnapshot: attributes before tokens (proved at the Button)",
+  "error": "pattern not found once: \t\tfor (const { target, value } of records) {\n\t\t\tif (target.category === 'token') target.element.classList.toggle(target.name, value !== undefined)\n\t\t}\n"
+ },
+ {
+  "name": "Delegate: a click during restoration driven at once",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 21 passed (22)",
+  "failed": [
+   "Delegate > holds a click a reaction sends before the restoration ends, then drives a fresh engine"
+  ]
+ },
+ {
+  "name": "Delegate: a held click never driven",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "2 failed | 20 passed (22)",
+  "failed": [
+   "Delegate > drives a live engine for a click a restoration reaction sends, never the destroyed one",
+   "Delegate > holds a click a reaction sends before the restoration ends, then drives a fresh engine"
+  ]
+ },
+ {
+  "name": "Delegate: no hold and the old destroy order",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "2 failed | 20 passed (22)",
+  "failed": [
+   "Delegate > drives a live engine for a click a restoration reaction sends, never the destroyed one",
+   "Delegate > holds a click a reaction sends before the restoration ends, then drives a fresh engine"
+  ]
+ },
+ {
+  "name": "Delegate: no drop of destroyed engines at a click",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 21 passed (22)",
+  "failed": [
+   "Delegate > drops an engine a consumer destroyed at the next delivery or click and stops observing its root"
+  ]
+ },
+ {
+  "name": "Delegate: no drop of destroyed engines at a delivery",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 21 passed (22)",
+  "failed": [
+   "Delegate > drops an engine a consumer destroyed at the next delivery or click and stops observing its root"
+  ]
+ },
+ {
+  "name": "Delegate: observing never stops",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 21 passed (22)",
+  "failed": [
+   "Delegate > drops an engine a consumer destroyed at the next delivery or click and stops observing its root"
+  ]
+ },
+ {
+  "name": "Delegate: observer never observes",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "7 failed | 15 passed (22)",
+  "failed": [
+   "Delegate > restores removed hosts at the observer delivery after their removal and releases their ownership",
+   "Delegate > releases a connected host moved outside the root at the observer delivery after the move",
+   "Delegate > releases and restores a host reinserted after the observer delivered its removal",
+   "Delegate > acquires a released host again with a fresh engine after reinsertion",
+   "Delegate > drops an engine a consumer destroyed at the next delivery or click and stops observing its root",
+   "Delegate > drives a live engine for a click a restoration reaction sends, never the destroyed one",
+   "Delegate > holds a click a reaction sends before the restoration ends, then drives a fresh engine"
+  ]
+ },
+ {
+  "name": "Delegate: releases every owned engine at delivery, contained or not",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "4 failed | 18 passed (22)",
+  "failed": [
+   "Delegate > restores removed hosts at the observer delivery after their removal and releases their ownership",
+   "Delegate > keeps the engine and the state of a host removed and reinserted in the same synchronous run, before the observer delivers",
+   "Delegate > drives a live engine for a click a restoration reaction sends, never the destroyed one",
+   "Delegate > holds a click a reaction sends before the restoration ends, then drives a fresh engine"
+  ]
+ },
+ {
+  "name": "Delegate: no per-click mark",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 21 passed (22)",
+  "failed": [
+   "Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it"
+  ]
+ },
+ {
+  "name": "Delegate: never drives a found engine",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "9 failed | 13 passed (22)",
+  "failed": [
+   "Delegate > toggles a child click host, prevents its default, and reuses its engine",
+   "Delegate > reuses a fragment-rooted engine across clicks",
+   "Delegate > drives the engine a consumer constructed and leaves it to that consumer on destruction",
+   "Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it",
+   "Delegate > acquires and toggles a native disabled host on a dispatched click",
+   "Delegate > keeps toggling a host through its engine after the disabled class arrives",
+   "Delegate > acquires and toggles a host already carrying the disabled class, and restores it",
+   "Delegate > acquires and toggles an aria-disabled anchor, and leaves the attribute alone",
+   "Delegate > keeps the engine and the state of a host removed and reinserted in the same synchronous run, before the observer delivers"
+  ]
+ },
+ {
+  "name": "resolveOptions: the attribute table ignored",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "2 failed | 24 passed (26)",
+  "failed": [
+   "resolveOptions > reads the attribute the table names for a declared key and not the default one",
+   "resolveOptions > throws the entity code for a declared attribute that fails coercion, an array literal included"
+  ]
+ },
+ {
+  "name": "resolveOptions: an undefined constructor value applied",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 25 passed (26)",
+  "failed": [
+   "resolveOptions > skips a constructor value that is undefined, keeping the attribute or the default"
+  ]
+ },
+ {
+  "name": "resolveVocabulary: an undefined supplied value applied",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 25 passed (26)",
+  "failed": [
+   "resolveVocabulary > throws the entity code naming the key when a supplied value fails the guard"
+  ]
+ },
+ {
+  "name": "recordCalls: the original method not called",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "22 passed (22)",
+  "failed": []
+ },
+ {
+  "name": "recordCalls: no call recorded",
+  "proof": "tests/src/browser/index.test.ts",
+  "tally": "1 failed | 1 passed (2)",
+  "failed": [
+   "src browser entry > records a document listener installed by an imported module"
+  ]
+ },
+ {
+  "name": "HostSnapshot: attributes before tokens",
+  "error": "pattern not found once: \t\tfor (const { target, value } of records) {\n\t\t\tif (target.category === 'token') target.element.classList.toggle(target.name, value !== undefined)\n\t\t}\n"
+ }
+]

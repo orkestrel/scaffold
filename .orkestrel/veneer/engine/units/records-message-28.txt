@@ -1,0 +1,19 @@
+Run J-BINDER round 3, open its audit, and open the contract isInstance campaign
+
+Round 3 makes the option resolver read the entity's attribute table (the prefix axis and
+`OPTION_PREFIX` go), aligns the two resolvers' parameter orders and their treatment of an
+`undefined` value, closes the teardown interleaving with a proved order (abort, release the
+claim, restore with attributes last, and a delegate that holds clicks during a restoration),
+moves the observer recorder into the shared browser fixture, declares the attribute-table and
+button-vocabulary types, and rewords the button selector sentences. Its red-first record,
+mutation rows, and a further report-only patch are retained; the Orchestrator's gates read
+green over the worktree. The audit's native lanes launch now and the Astra lane queues behind
+the contract fix unit on the same bench.
+
+The contract campaign (`.orkestrel/contract/`) records the `isInstance` narrowing defect the
+binder audit referred upstream: the published guard narrows to `object`; a workflow read the
+package, refuted the candidate signature from three lenses, and swept every fleet call site;
+the fix unit runs on Astra in the contract checkout, installed from its lockfile and green at
+its release tip. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

@@ -1,0 +1,10 @@
+[
+ {
+  "name": "recordCalls: restore leaves the wrapper",
+  "proof": "tests/src/browser/zzprobe.test.ts",
+  "tally": "1 failed (1)",
+  "failed": [
+   "recordCalls probe > records the receiver of each call to a prototype method, still calls it, and restores it"
+  ]
+ }
+]
