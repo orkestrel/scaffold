@@ -1,0 +1,7 @@
+#!/bin/bash
+# B-FORMS-CONTROL round 1 audit, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at /home/user/veneer-bfo.
+# Command as the analyst driver resolved it (the probe is the driver's at dispatch); the Orchestrator sized the cap (2100 s: the observed high mark of comparable lanes is ~25 min, plus slack).
+# Brief: .orkestrel/veneer/units/bfo-audit-analyst-brief.md (the lane brief copied unaltered to tmp/codex/bfo-audit-brief.md)  Claims: .orkestrel/veneer/units/bfo-audit-claims.md  Journal: tmp/codex/bfo-audit-analyst.jsonl  Last message: tmp/codex/bfo-audit-analyst-last.md
+cd /home/user/scaffold
+timeout 2100 codex exec --json -C /home/user/veneer-bfo --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message /home/user/scaffold/tmp/codex/bfo-audit-analyst-last.md "Your working directory is /home/user/veneer-bfo. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/bfo-audit-analyst-brief.md exactly. Rule on every numbered claim in /home/user/scaffold/.orkestrel/veneer/units/bfo-audit-claims.md, holding the objective lane. Make your final message the report the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/bfo-audit-analyst.jsonl 2> /home/user/scaffold/tmp/codex/bfo-audit-analyst.err
+echo "exit=$?" >> /home/user/scaffold/tmp/codex/bfo-audit-analyst.err

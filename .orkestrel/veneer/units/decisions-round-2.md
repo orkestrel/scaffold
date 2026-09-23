@@ -385,3 +385,12 @@ while `.btn` takes the `focus-ring` mixin's system-colour outline. Whether the f
 that mixin's forced-colours outline (a departure from the release in forced colours alone, read by
 the T2 forced-colours axis) is ruled once for the family. Carrier: B-FORMS-CLOSE, recorded in
 `ROADMAP.md` at the SELECT landing.
+
+## D38 — The floating density scale is specified for factors of 1 and above
+
+The FLOATING fix audit's reviewer derived that at a density factor below 1 (0.75, for example) the
+floated control's height and insets shrink while the `1.25` line height and the label's transform do
+not, so the value's line box meets the floated label's text. The guide claims the scale at factors
+of 1 and 2, which the proof reads. The section states the specified range as a limit rather than
+scaling the line height, which is relative to the text already. Carrier: the FLOATING round 3
+sentence in the density bullet.
