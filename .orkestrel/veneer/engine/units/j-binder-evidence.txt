@@ -1,0 +1,269 @@
+# J-BINDER terrain record — the J-TYPES state that landed on Veneer main as 1868007 (taken 2026-09-23 in the veneer-types worktree at its landing commit 86c9651, which main carries as 1868007 over the baseline's 30978a8)
+
+== grep -n "^export " src/browser/types.ts (the J-TYPES state that lands)
+2:export type ColorModeState = 'light' | 'dark'
+5:export interface ColorModeOptions {
+13:export interface ColorModeInterface {
+27:export interface ButtonDetail {
+32:export interface ButtonEventMap {
+37:export type ButtonHooks = EventHooks<ButtonEventMap>
+40:export interface ButtonOptions {
+46:export interface ButtonInterface {
+58:export interface DelegateOptions {
+64:export interface DelegateInterface {
+79:export type EventHooks<TMap> = { readonly [TKey in keyof TMap]?: (event: TMap[TKey]) => void }
+98:export type EventWire<TMap> = { readonly [TKey in keyof TMap]: `${TKey & string}.${string}` }
+101:export interface RegistryOptions {
+111:export interface RegistryInterface<TEngine extends object> {
+150:export type SnapshotCategory = 'attribute' | 'token' | 'property'
+153:export interface SnapshotTarget {
+163:export interface SnapshotInterface {
+191:export interface IsolationOptions {
+197:export interface IsolationInterface {
+214:export interface BackdropOptions {
+224:export interface BackdropInterface {
+259:export interface ScrollLockOptions {
+265:export interface ScrollLockInterface {
+283:export type PlacementPosition =
+299:export type PlacementSide = 'top' | 'right' | 'bottom' | 'left'
+302:export interface PlacementOptions {
+314:export interface PlacementInput {
+324:export interface PlacementInterface {
+352:export type SwipeDirection = 'left' | 'right'
+355:export interface SwipeOptions {
+363:export interface SwipeInterface {
+384:export type SanitizeAllowlist = Readonly<Record<string, ReadonlyArray<string | RegExp>>>
+387:export interface SanitizeOptions {
+402:export interface SetHTMLOptions {
+414:export interface SanitizeTargetInterface {
+429:export type TipContent = string | Element | ((trigger: HTMLElement) => string | Element | undefi
+432:export interface CollapseEventMap {
+444:export type CollapseHooks = EventHooks<CollapseEventMap>
+447:export interface CollapseOptions {
+459:export interface CollapseInterface {
+506:export interface DropdownDetail {
+514:export interface DropdownEventMap {
+526:export type DropdownHooks = EventHooks<DropdownEventMap>
+529:export interface DropdownOptions {
+553:export interface DropdownInterface {
+611:export interface TabDetail {
+617:export interface TabEventMap {
+629:export type TabHooks = EventHooks<TabEventMap>
+632:export interface TabOptions {
+640:export interface TabInterface {
+669:export interface ScrollSpyDetail {
+675:export interface ScrollSpyEventMap {
+681:export type ScrollSpyHooks = EventHooks<ScrollSpyEventMap>
+684:export interface ScrollSpyOptions {
+703:export interface ScrollSpyInterface {
+731:export interface DismissOptions {
+739:export interface ModalDetail {
+745:export interface ModalEventMap {
+759:export type ModalHooks = EventHooks<ModalEventMap>
+762:export interface ModalOptions {
+776:export interface ModalInterface {
+834:export interface OffcanvasDetail {
+840:export interface OffcanvasEventMap {
+854:export type OffcanvasHooks = EventHooks<OffcanvasEventMap>
+857:export interface OffcanvasOptions {
+871:export interface OffcanvasInterface {
+920:export interface TooltipEventMap {
+934:export type TooltipHooks = EventHooks<TooltipEventMap>
+937:export interface TooltipOptions {
+989:export interface TooltipInterface {
+1079:export interface PopoverEventMap {
+1093:export type PopoverHooks = EventHooks<PopoverEventMap>
+1104:export interface PopoverOptions extends TooltipOptions {
+1112:export interface PopoverInterface {
+1202:export interface AlertEventMap {
+1210:export type AlertHooks = EventHooks<AlertEventMap>
+1213:export interface AlertOptions {
+1221:export interface AlertInterface {
+1246:export interface ToastEventMap {
+1258:export type ToastHooks = EventHooks<ToastEventMap>
+1261:export interface ToastOptions {
+1275:export interface ToastInterface {
+1312:export interface CarouselDetail {
+1324:export interface CarouselEventMap {
+1332:export type CarouselHooks = EventHooks<CarouselEventMap>
+1335:export type CarouselRide = 'load' | 'interaction'
+1338:export interface CarouselOptions {
+1358:export interface CarouselInterface {
+
+== tests/src/browser/index.test.ts lines 1-26
+import { describe, expect, it } from 'vitest'
+import { recordListeners } from '../../setupBrowser.js'
+
+describe('src browser entry', () => {
+	it('exports the browser surface without registering document or window listeners', async () => {
+		let names: readonly string[] = []
+		const targets = await recordListeners(async () => {
+			names = Object.keys(await import('@src/browser')).sort()
+		})
+		expect(targets.filter((target) => target === document || target === window)).toEqual([])
+		expect(names).toStrictEqual([
+			'BUTTON_ACTIVE',
+			'BUTTON_SELECTOR',
+			'BUTTON_TOGGLE',
+			'Button',
+			'COLOR_MODE_ATTRIBUTE',
+			'COLOR_MODE_KEY',
+			'ColorMode',
+			'Delegate',
+			'bindEventMap',
+			'emitEvent',
+			'isButtonEvent',
+			'isButtonHost',
+			'isColorModeState',
+		])
+	})
+
+== rename bound: grep -n "isButtonHost\|BUTTON_TOGGLE\|emitEvent\|bindEventMap\|ButtonHooks" -r src tests guides
+src/browser/Button.ts:3:import { BUTTON_ACTIVE, BUTTON_TOGGLE } from './constants.js'
+src/browser/Button.ts:4:import { bindEventMap, emitEvent } from './helpers.js'
+src/browser/Button.ts:5:import { isButtonHost } from './validators.js'
+src/browser/Button.ts:37:		if (!isButtonHost(host)) {
+src/browser/Button.ts:56:		bindEventMap(host, options?.on, this.#controller.signal)
+src/browser/Button.ts:72:		emitEvent(this.#host, BUTTON_TOGGLE, { pressed })
+src/browser/constants.ts:8:export const BUTTON_TOGGLE = 'toggle.vn.button'
+src/browser/Delegate.ts:5:import { isButtonHost } from './validators.js'
+src/browser/Delegate.ts:60:		if (!isButtonHost(host) || !this.#root.contains(host)) return
+src/browser/helpers.ts:1:import type { ButtonHooks } from './types.js'
+src/browser/helpers.ts:2:import { BUTTON_TOGGLE } from './constants.js'
+src/browser/helpers.ts:14: * emitEvent(host, BUTTON_TOGGLE, { pressed: true })
+src/browser/helpers.ts:17:export function emitEvent<T>(host: HTMLElement, type: string, detail: T): void {
+src/browser/helpers.ts:30: * bindEventMap(host, { toggle: (event) => console.log(event.detail.pressed) }, controller.signal)
+src/browser/helpers.ts:33:export function bindEventMap(
+src/browser/helpers.ts:35:	hooks: ButtonHooks | undefined,
+src/browser/helpers.ts:41:			BUTTON_TOGGLE,
+src/browser/types.ts:37:export type ButtonHooks = EventHooks<ButtonEventMap>
+src/browser/types.ts:42:	readonly on?: ButtonHooks
+src/browser/validators.ts:33: * isButtonHost(document.createElement('button')) // true
+src/browser/validators.ts:36:export function isButtonHost(value: unknown): value is HTMLElement {
+tests/src/browser/Button.test.ts:2:import { Button, BUTTON_ACTIVE, BUTTON_TOGGLE } from '@src/browser'
+tests/src/browser/Button.test.ts:127:		expect(BUTTON_TOGGLE).toBe('toggle.vn.button')
+tests/src/browser/helpers.test.ts:2:import { bindEventMap, emitEvent } from '@src/browser'
+tests/src/browser/helpers.test.ts:8:describe('emitEvent', () => {
+tests/src/browser/helpers.test.ts:17:		emitEvent(host, 'completed', detail)
+tests/src/browser/helpers.test.ts:31:describe('bindEventMap', () => {
+tests/src/browser/helpers.test.ts:37:		bindEventMap(host, { toggle: hooks.handler }, controller.signal)
+tests/src/browser/helpers.test.ts:51:		bindEventMap(host, undefined, controller.signal)
+tests/src/browser/helpers.test.ts:52:		bindEventMap(host, {}, controller.signal)
+tests/src/browser/helpers.test.ts:53:		bindEventMap(host, { toggle: hooks.handler }, controller.signal)
+tests/src/browser/helpers.test.ts:59:		bindEventMap(host, { toggle: hooks.handler }, controller.signal)
+tests/src/browser/index.test.ts:14:			'BUTTON_TOGGLE',
+tests/src/browser/index.test.ts:20:			'bindEventMap',
+tests/src/browser/index.test.ts:21:			'emitEvent',
+tests/src/browser/index.test.ts:23:			'isButtonHost',
+tests/src/browser/validators.test.ts:1:import { isButtonEvent, isButtonHost, isColorModeState } from '@src/browser'
+tests/src/browser/validators.test.ts:18:describe('isButtonHost', () => {
+tests/src/browser/validators.test.ts:20:		expect(isButtonHost(build('button'))).toBe(true)
+tests/src/browser/validators.test.ts:21:		expect(isButtonHost(build('a'))).toBe(true)
+tests/src/browser/validators.test.ts:22:		expect(isButtonHost(null)).toBe(false)
+tests/src/browser/validators.test.ts:23:		expect(isButtonHost(undefined)).toBe(false)
+tests/src/browser/validators.test.ts:24:		expect(isButtonHost('button')).toBe(false)
+tests/src/browser/validators.test.ts:25:		expect(isButtonHost(document)).toBe(false)
+tests/src/browser/validators.test.ts:26:		expect(isButtonHost(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))).toBe(false)
+tests/src/browser/validators.test.ts:28:			isButtonHost(
+guides/veneer.md:27:| `BUTTON_TOGGLE`           | const     | Names the bubbling event dispatched after a button toggles.                                                                          |
+guides/veneer.md:31:| `ButtonHooks`             | type      | Configures the initial DOM event subscriptions for a button.                                                                         |
+guides/veneer.md:37:| `bindEventMap`            | function  | Binds button hooks to their DOM wire events until the signal aborts.                                                                 |
+guides/veneer.md:38:| `emitEvent`               | function  | Dispatches a bubbling, non-cancelable DOM event carrying the supplied detail.                                                        |
+guides/veneer.md:40:| `isButtonHost`            | function  | Checks whether a value is an HTML host in the current browser realm.                                                                 |
+guides/veneer.md:142:The `emitEvent` function dispatches a bubbling, non-cancelable event and cannot express a cancelable
+guides/veneer.md:143:one, and the `bindEventMap` function and the `Delegate` class are shaped around Button: the event
+guides/veneer.md:144:map, the selector, and the engine each name that one component. The `emitEvent` and `bindEventMap`
+
+== src/browser and tests/src/browser files
+src/browser:
+Button.ts
+ColorMode.ts
+Delegate.ts
+constants.ts
+helpers.ts
+index.ts
+types.ts
+validators.ts
+
+tests/src/browser:
+Button.test.ts
+ColorMode.test.ts
+Delegate.test.ts
+fixtures
+helpers.test.ts
+index.test.ts
+validators.test.ts
+
+== guide § Methods headings
+153:#### `ColorModeInterface`
+161:#### `ButtonInterface`
+168:#### `DelegateInterface`
+174:#### `RegistryInterface`
+182:#### `SnapshotInterface`
+189:#### `IsolationInterface`
+195:#### `BackdropInterface`
+203:#### `ScrollLockInterface`
+209:#### `PlacementInterface`
+216:#### `SwipeInterface`
+222:#### `SanitizeTargetInterface`
+228:#### `CollapseInterface`
+237:#### `DropdownInterface`
+247:#### `TabInterface`
+254:#### `ScrollSpyInterface`
+261:#### `ModalInterface`
+271:#### `OffcanvasInterface`
+280:#### `TooltipInterface`
+293:#### `PopoverInterface`
+306:#### `AlertInterface`
+313:#### `ToastInterface`
+321:#### `CarouselInterface`
+2574:#### `blockquote`
+2584:#### `btn`
+2877:#### `col`
+2892:#### `column-gap`
+2969:#### `container`
+3008:#### `display`
+3031:#### `figure`
+3037:#### `g`
+3114:#### `gap`
+3155:#### `gx`
+3196:#### `gy`
+3237:#### `h1`
+3248:#### `h2`
+3259:#### `h3`
+3270:#### `h4`
+3281:#### `h5`
+3291:#### `h6`
+3301:#### `img`
+3307:#### `lead`
+3313:#### `link`
+3417:#### `list-inline`
+3423:#### `mark`
+3431:#### `offset`
+3441:#### `reboot`
+3543:#### `row`
+3550:#### `row-gap`
+3591:#### `table`
+3669:#### `is-invalid`
+3676:#### `is-valid`
+3683:#### `was-validated`
+3696:#### `form-range`
+3729:#### `form`
+3736:#### `form-check`
+3755:#### `form-control`
+3804:#### `form-floating`
+3837:#### `form-select`
+3870:#### `input-group`
+3883:#### `invalid-feedback`
+3889:#### `invalid-tooltip`
+3897:#### `valid-feedback`
+3903:#### `valid-tooltip`
+3911:#### `card`
+3923:#### `breadcrumb`
+3930:#### `pagination`
+3948:#### `badge`
+3954:#### `progress`
+3964:#### `list-group`
+3974:#### `btn-close`
+3985:#### `placeholder`
+3993:#### `icon-link`

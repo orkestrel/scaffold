@@ -7,7 +7,11 @@ eleven components its detail, event map, hooks, options, and interface, with eve
 readonly, every state-changing verb returning `Promise<boolean>`, and an `@example` on every
 method. The guide's § Surface carries one row per export and § Methods one table per behavioural
 interface. The seed's declarations are unchanged except the `ColorModeInterface.toggle` summary,
-which states the post-destroy return. `SetHTMLOptions` and `SanitizeTargetInterface` mirror the
+which states the post-destroy return, and `ButtonHooks`, which becomes the `EventHooks` alias
+of its event map. Audited in two rounds (Astra objective, Opus 5.5 subjective, Sonnet checker):
+round 1 split the placement group per entity, made `fill` return the promise, restated four
+refusal lists from Bootstrap's source, and renamed ScrollSpy's active link to `link`; round 2
+carries two refusal sentences to J-TOOLTIP and J-DROPDOWN as their `types.ts` patches. `SetHTMLOptions` and `SanitizeTargetInterface` mirror the
 `setHTML` method the installed DOM library omits. J-TYPES, W0 of the J-ENGINE campaign (D43).
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
