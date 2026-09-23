@@ -1,0 +1,12 @@
+Push the J-TYPES landing and record the chain's reading against the baseline's tip
+
+The verifier's chain on Veneer `main` `f538d48` reads lint, typecheck, build, and every test
+sub-script green except the standing preflight row and one accordion row the baseline landed
+after the struck rows were measured, in the same Chromium 153 serialization class D45 ruled
+build-independent; `format:check` fails on `ROADMAP.md` at the baseline's own tip. Neither red
+is this landing's, so `main` is pushed (`72e97e2..f538d48`), the accordion row joins the
+standing rows, and both baseline-owned reds are recorded as requests to the baseline. The
+plan's marker and in-flight units move to the landing; J-BINDER round 2 is writing over the
+merged contracts. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
