@@ -1,0 +1,29 @@
+expand ramp gated at the neighbouring boundary | exit 1 | 6 failed | 1 passed | 33 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "expands the"
+the no-infix class gated at the sm boundary | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "carrying no infix"
+the dark class dropped from the dark list | exit 1 | 1 failed | 1 passed | 38 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "retunes every color"
+the toggler asset left at theme scope | exit 1 | 2 failed | 44 skipped (46) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts tests/src/styles/theme.test.ts -t "dark icon|dark icons"
+the scroll fallback missing | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "clamps the scrolling list"
+the nav link slot reassignment dropped | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "paints every link inside the list"
+the expanded offcanvas panel rule dropped | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "offcanvas panel"
+the expanded offcanvas header rule dropped | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "offcanvas panel"
+the toggler ring dropped | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "rings the focused toggler"
+the toggler forced ring omitted | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "under forced colors"
+the toggler transition written bare | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "collapses the toggler transition"
+the collapsed list menu rule dropped | exit 1 | 2 failed | 38 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "opens a menu in the column flow|expands the .sm. bar"
+a light class rule written | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "writes no rule for the light class"
+the brand hover rule dropped | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "hover slots"
+the text link rule dropped | exit 1 | 2 failed | 38 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "paints every link inside the list|hover slots"
+the text inset written as a literal | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "density factor"
+the dark icon rule dropped | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "dark icon"
+the bar padding slot declared on a wrapper scope | exit 1 | s:547:12)
+    at file:///tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/nb/stage/node_modules/vitest/dist/cli.js:11:13
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v22.22.2 | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "--bs-navbar-padding-y"
+a specimen drops the collapsed class | exit 1 | 1 failed | 1 passed (2) | npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/NavbarSection.test.ts
+a specimen drops the opened content show class | exit 1 | 1 failed | 1 passed (2) | npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/NavbarSection.test.ts
+the dark class specimen drops its class | exit 1 | 1 failed | 1 passed (2) | npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/NavbarSection.test.ts
+control, unmutated | exit 0 | 46 passed (46)
+control, unmutated section | exit 0 | 2 passed (2)

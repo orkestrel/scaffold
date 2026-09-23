@@ -1,0 +1,91 @@
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -153,19 +153,6 @@
+ 		url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"),
+ );
+ 
+-// The Bootstrap variable each image-valued dark entry is declared as, for the components that have
+-// not yet landed their own dark rule. Bootstrap 5.3.8 gives each of these no light counterpart at
+-// theme scope, so the dark scope in `_theme.scss` walks this map and the light scope declares none
+-// of them; a light island nested inside a dark one inherits the dark asset. Each keeps Bootstrap's
+-// own value until the component that paints it lands its canonical token on its own dark rule, as
+-// the check, select, and navbar partials do for the switch knob, the select caret, and the toggler
+-// icon, and `guides/veneer.md` under Tokens records the limit. A data URI cannot read a custom
+-// property, which is why the value is an asset rather than a token expression. The map is
+-// configurable so `tests/setupStyles.test.ts` can compile the shipped partials with a key `$dark`
+-// does not declare and read the `@error` `_theme.scss` raises for it.
+-$assets: (
+-) !default;
+-
+ @property --vn-factor-density {
+ 	syntax: '<number>';
+ 	inherits: true;
+--- a/src/styles/_theme.scss
++++ b/src/styles/_theme.scss
+@@ -1,4 +1,3 @@
+-@use 'sass:map';
+ @use 'tokens';
+ @use 'mixins' as *;
+ 
+@@ -15,14 +14,5 @@
+ 	[data-bs-theme='dark'] {
+ 		color-scheme: dark;
+ 		@include theme-tokens(tokens.$roles, tokens.$aliased, tokens.$dark);
+-		// Bootstrap declares each of these image-valued variables on its own component rules in dark
+-		// alone, so the light scope declares none of them and `tokens.$assets` names where each dark
+-		// value lands.
+-		@each $key, $name in tokens.$assets {
+-			@if not map.has-key(tokens.$dark, $key) {
+-				@error 'tokens.$assets names #{$key}, which tokens.$dark does not declare.';
+-			}
+-			#{$name}: #{map.get(tokens.$dark, $key)};
+-		}
+ 	}
+ }
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -599,15 +599,6 @@
+ 		expect(emitted).not.toContain('@media')
+ 		expect(emitted).not.toContain('.probe-down')
+ 	})
+-	it('refuses an asset key the dark map does not declare, and declares the alias for one it does', () => {
+-		const absent = "@use 'tokens' with ($assets: ('probe-absent': '--vn-probe'));\n@use 'theme';\n"
+-		const present =
+-			"@use 'tokens' with ($assets: ('select-indicator': '--vn-probe'));\n@use 'theme';\n"
+-		expect(() => compileString(absent, { loadPaths: ['src/styles'] })).toThrow(/probe-absent/u)
+-		expect(compileString(present, { loadPaths: ['src/styles'] }).css).toContain(
+-			'--vn-probe: url("data:image/svg+xml,',
+-		)
+-	})
+ 	it('splits a shorthand value into its top-level values, treating calc() as one value', () => {
+ 		expect(splitTopLevelValues('0 calc(1px + var(--gap)) 0 2px')).toEqual([
+ 			'0',
+--- a/tests/src/styles/theme.test.ts
++++ b/tests/src/styles/theme.test.ts
+@@ -132,15 +132,19 @@
+ 			})
+ 		}
+ 	})
+-	it(`carries the unlanded accordion's dark icons in the dark scope alone and leaves the landed components' to their own rules`, () => {
++	it("declares no component's image in the dark scope and leaves each one to its component's own dark rule", () => {
+ 		const specimen = requireValue(scene.mount('<div></div>').firstElementChild, 'No asset specimen')
+-		const unlanded = ['--bs-accordion-btn-icon', '--bs-accordion-btn-active-icon']
+-		for (const name of unlanded) expect(readStyle(specimen, name)).toBe('')
++		// Every component whose image Bootstrap retunes in dark alone has landed its own dark rule, so
++		// a plain element reads none of those images in either mode.
++		expect(COMPONENT_DARK_ASSETS).toEqual(
++			expect.arrayContaining([
++				'--bs-navbar-toggler-icon-bg',
++				'--bs-accordion-btn-icon',
++				'--bs-accordion-btn-active-icon',
++			]),
++		)
++		for (const name of COMPONENT_DARK_ASSETS) expect(readStyle(specimen, name)).toBe('')
+ 		document.documentElement.setAttribute('data-bs-theme', 'dark')
+-		for (const name of unlanded) expect(readStyle(specimen, name)).toContain('data:image/svg+xml')
+-		// The navbar ships its toggler icon on the icon's own dark rule, so a plain element in the dark
+-		// scope reads none of the landed components' images.
+-		expect(COMPONENT_DARK_ASSETS).toContain('--bs-navbar-toggler-icon-bg')
+ 		for (const name of COMPONENT_DARK_ASSETS) expect(readStyle(specimen, name)).toBe('')
+ 	})
+ })

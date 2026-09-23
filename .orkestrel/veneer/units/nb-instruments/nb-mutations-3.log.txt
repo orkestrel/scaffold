@@ -1,0 +1,3 @@
+the bar padding slot declared on a wrapper scope | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "navbar-padding-y. and moves"
+control, unmutated | exit 0 | 46 passed (46)
+control, unmutated section | exit 0 | 2 passed (2)
