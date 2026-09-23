@@ -394,3 +394,13 @@ not, so the value's line box meets the floated label's text. The guide claims th
 of 1 and 2, which the proof reads. The section states the specified range as a limit rather than
 scaling the line height, which is relative to the text already. Carrier: the FLOATING round 3
 sentence in the density bullet.
+
+## D39 — A declaration's priority is part of the value the ledger compares
+
+The CONTROL audit found the swatch loop writing `border: 0` where the release writes `border: 0
+!important`, and no gate reported it: `readCascadeBlocks` stores a declaration's value without its
+priority, so the cascade comparison and the ledger rows cannot see a dropped or added `!important`.
+The comparison carries the priority as part of the value text (`0 !important`), so a priority
+change reads as a departure the way any other value change does, and the ledger tables gain no
+column. Carrier: L2 LEDGER-PRIORITY on `opus`, after CONTROL lands; every row that comparison
+surfaces is that unit's to record or repair.
