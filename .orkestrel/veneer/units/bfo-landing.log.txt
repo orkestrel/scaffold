@@ -1,0 +1,69 @@
+## app/browser/Showcase.ts
+concatenated: ours=2 base=0 theirs=1 -> 3
+concatenated: ours=2 base=0 theirs=1 -> 3
+## app/browser/constants.ts
+concatenated: ours=73 base=0 theirs=68 -> 141
+## app/browser/index.ts
+concatenated: ours=1 base=0 theirs=1 -> 2
+## guides/veneer.md
+base-union: ours=6 base=3 theirs=4 -> 10
+table: ours=82 base=78 theirs=79 -> 83
+concatenated: ours=142 base=0 theirs=76 -> 218
+table: ours=26 base=29 theirs=33 -> 30
+table: ours=1 base=2 theirs=1 -> 0
+table: ours=1 base=2 theirs=1 -> 0
+table: ours=95 base=0 theirs=45 -> 135
+table: ours=155 base=145 theirs=146 -> 156
+concatenated: ours=1 base=0 theirs=1 -> 2
+## src/styles/_mixins.scss
+concatenated: ours=16 base=0 theirs=16 -> 32
+## src/styles/index.scss
+base-union: ours=0 base=1 theirs=2 -> 1
+## tests/app/browser/Showcase.test.ts
+concatenated: ours=2 base=0 theirs=1 -> 3
+concatenated: ours=2 base=0 theirs=1 -> 3
+concatenated: ours=2 base=0 theirs=1 -> 3
+## tests/app/browser/index.test.ts
+concatenated: ours=4 base=0 theirs=2 -> 6
+concatenated: ours=4 base=0 theirs=1 -> 5
+## tests/app/browser/integration.test.ts
+concatenated: ours=2 base=0 theirs=1 -> 3
+concatenated: ours=90 base=0 theirs=33 -> 123
+concatenated: ours=2 base=0 theirs=1 -> 3
+## tests/conformance.test.ts
+concatenated: ours=2 base=0 theirs=1 -> 3
+## tests/setup.test.ts
+concatenated: ours=2 base=0 theirs=1 -> 3
+concatenated: ours=2 base=0 theirs=1 -> 3
+concatenated: ours=4 base=0 theirs=1 -> 5
+## tests/setup.ts
+concatenated: ours=6 base=0 theirs=10 -> 16
+concatenated: ours=168 base=0 theirs=60 -> 228
+concatenated: ours=74 base=0 theirs=16 -> 90
+concatenated: ours=4 base=0 theirs=1 -> 5
+## tests/setupStyles.test.ts
+concatenated: ours=6 base=0 theirs=2 -> 8
+concatenated: ours=6 base=0 theirs=2 -> 8
+## tests/setupStyles.ts
+concatenated: ours=747 base=0 theirs=617 -> 1364
+=== continued: 4bd3230
+=== land-unit exit=0 head=4bd3230
+tests/setupBrowser.test.ts arrays resorted: 0
+tests/setupStyles.test.ts arrays resorted: 1
+tests/setup.test.ts arrays resorted: 1
+tests/app/browser/index.test.ts arrays resorted: 1
+tests/setupServer.test.ts arrays resorted: 0
+tests/conformance.test.ts arrays resorted: 0
+conformance listed resorted
+set literal 55 -> 56 added ['form-control']
+=== sort-inventories exit=0
+bfo integration applied
+=== integration exit=0
+Finished in 5486ms on 21 files using 4 threads.
+=== oxfmt exit=0
+=== format:check exit=0
+=== lint:check exit=0
+=== check exit=0
+fold 31 applied with CONTROL 4bd3230
+=== fold committed 33a3fb1
+=== session branch pushed

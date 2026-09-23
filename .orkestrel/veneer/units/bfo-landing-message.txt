@@ -1,0 +1,22 @@
+Ship the form-control baseline with its proof, showcase, and frames
+
+B-FORMS-CONTROL (`opus` on Opus 5, two rounds, and `builder` on Sonnet for the prose round) adds
+the `_form-control.scss` partial with every selector the `form-control` key records (the text,
+file, date, and color controls, their sizes, the plaintext form, the file button and its hover, the
+color swatches with the release's `border: 0 !important`), bound to the space, size, weight, line,
+motion, and focus tokens and routed through the D40 `control-type` and `control-border` mixins with
+the compile byte-identical; the form-control proof reads each rung of the evidence ladder
+(resolved, declared through the CSSOM with its priority, compiled in Node for the Gecko swatch,
+excluded for the prefixed file-button alias) and drives focus and hover; `FORM_CONTROL_CASES`
+binds tokens per property in the `InputGroupCase` shape and the Node case compares property by
+property; the showcase region carries the text, small, large, textarea, file, date, color,
+plaintext, disabled, and readonly specimens with their frames in every variant; the
+`validation.test.ts` patch reads the mark inset at the control's `1rem` type; the range journey
+starts from the readonly control because the installed traversal stops at the date control. The
+landing integration adds the `form-control` shipped key, bounds the floating text-control sentence
+to the text-control frames, names `.form-control` among the mixins' readers, and records the
+color-width, `FORM_RANGE_CASES`, and D40a carriers.
+
+Audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker` on Sonnet in each round;
+decisions D39 (carried by L2), D40, and D40a (carried by B-FORMS-RENAME).
+Records: `.orkestrel/veneer/units/bfo-*` and `b-forms-control-*` in the scaffold repository.
