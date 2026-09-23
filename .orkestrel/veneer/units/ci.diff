@@ -1,0 +1,18 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 3e25e0f..60a6d40 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -1039,9 +1039,10 @@ export const FORM_CHECK_COPY = Object.freeze({
+  *
+  * @remarks
+  * Each control carries a label of its own, so every one announces a name the journey can reach it
+- * by, and each `id` is unique to the showcase so a label names one control. The checked, disabled,
+- * and switch states are declared in the markup, so each renders at rest and needs no drive; the
+- * mixed state has no attribute, so the resting checkbox is the one a journey marks mixed.
++ * by, and each `id` attribute is unique to the showcase so a label names one control. The checked,
++ * disabled, and switch states are declared in the markup, so each renders at rest and needs no
++ * drive; the mixed state has no attribute, so the resting checkbox is the one a journey marks
++ * mixed.
+  *
+  * The radio pair sits in a form of its own. A radio's group spans its form, so a copy of the
+  * specimen lifted beside it for a frame forms a group of its own rather than unchecking the pair the
