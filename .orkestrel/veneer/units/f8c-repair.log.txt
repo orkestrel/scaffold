@@ -1,4 +1,0 @@
-0 of 20 planned paths drifted from the plan. Audit compared bytes at 18, existence at 1, and nothing at 1.
-vite.config.ts replaced (21 lines added).
-2 written, 19 unchanged, 0 removed in ..
-repair exit=0

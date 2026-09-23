@@ -1,4 +1,0 @@
-candidates 527 true
-tests/setup.css ok bytes=144 layers=theme, reset, base, elements, components, utilities | utilities container=false col-1=false px-8=false base=false warnings=0
-tests/fixtures/tailwind/preflight.css ok bytes=4674 layers=theme, reset, base, elements, components, utilities | theme, base, components, utilities | utilities container=false col-1=false px-8=false base=true warnings=0
-tests/fixtures/tailwind/unexcluded.css ok bytes=1663 layers=properties | theme, reset, base, elements, components, utilities container=true col-1=true px-8=true base=false warnings=0
