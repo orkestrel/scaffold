@@ -1,0 +1,27 @@
+Land the input group classes and the validation feedback keys as a Bootstrap 5.3.8 baseline
+
+Unit B-FORMS-GROUP on Opus over three rounds, audited by analyst on Astra,
+reviewer on Opus 5.5, and checker on Sonnet, its fix round by analyst on
+Astra and reviewer on Opus 5.5, its prose round by checker on Sonnet.
+
+- src/styles/components/_input-group.scss emits every recorded input-group
+  selector and the feedback and tooltip selectors the release records under
+  the group, the sizes through one @each over the pair (D30), the sized
+  select's end padding as four of the select's inline steps (D33), the
+  focus lift that puts a focused control's ring over the grouped button
+  (D29), the corner and overlap rules with their feedback and tooltip
+  exclusions, and the toolbar rule the deferral table withheld; the two
+  dropdown-toggle rules stay deferred to the disclosure family.
+- tests/src/styles/components/input-group.test.ts reads every treatment in
+  the browser against the size and floating case tables in the styles
+  setup, with the addon's token bindings read per property; the Input group
+  showcase section, six resting scenarios, and the focus page frame over the
+  grouped button; the compatibility rows, the listed entries, and the ledger
+  tables for input-group and the four feedback keys; the five Forms deferral
+  rows retired and the two Disclosure rows added.
+- The validation proof reads a focused valid child of a group at the lift
+  the release gives it; the tooltip specimens and the one-line seam over a
+  styled control are B-FORMS-CLOSE's and B-FORMS-CONTROL's (D31).
+
+Records: .orkestrel/veneer/units/bfg-* and b-forms-group-* in the scaffold
+repository.
