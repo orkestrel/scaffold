@@ -49,7 +49,7 @@ index 0000000..8f939bc
 +}
 diff --git a/src/styles/components/_navbar.scss b/src/styles/components/_navbar.scss
 new file mode 100644
-index 0000000..9f25ec0
+index 0000000..56d1b71
 --- /dev/null
 +++ b/src/styles/components/_navbar.scss
 @@ -0,0 +1,235 @@
@@ -123,7 +123,7 @@ index 0000000..9f25ec0
 +		flex-direction: column;
 +	}
 +
-+	// A link carrying the `show` class paints as the current link.
++	// A link carrying `show` is the toggle of an open menu, and it paints as the current link.
 +	.navbar-nav .nav-link.active,
 +	.navbar-nav .nav-link.show {
 +		color: var(--bs-navbar-active-color);
@@ -290,10 +290,10 @@ index 0000000..9f25ec0
 +}
 diff --git a/tests/app/browser/sections/NavbarSection.test.ts b/tests/app/browser/sections/NavbarSection.test.ts
 new file mode 100644
-index 0000000..5117cb6
+index 0000000..42f0449
 --- /dev/null
 +++ b/tests/app/browser/sections/NavbarSection.test.ts
-@@ -0,0 +1,159 @@
+@@ -0,0 +1,151 @@
 +import type { SectionInterface } from '@app/browser'
 +import { NAVBAR_COPY, NAVBAR_SPECIMENS, NavbarSection, SpecimenSection } from '@app/browser'
 +import { requireValue } from '@orkestrel/test'
@@ -301,7 +301,7 @@ index 0000000..5117cb6
 +import { describe, expect, it } from 'vitest'
 +
 +describe('NavbarSection', () => {
-+	it('renders every navbar form and every state set in markup through the shared section contract', () => {
++	it('renders every navbar form and every state class in markup through the shared section contract', () => {
 +		const host = mount(build('div'))
 +		const section: SectionInterface = new NavbarSection(host)
 +		try {
@@ -417,14 +417,6 @@ index 0000000..5117cb6
 +			// The dark forms sit on a card carrying the dark mode, so their light text has a surface.
 +			for (const bar of region.querySelectorAll('.navbar-dark, .navbar[data-bs-theme="dark"]'))
 +				expect(bar.parentElement?.matches('.card[data-bs-theme="dark"]')).toBe(true)
-+			// The card's dark scope alone paints a plain bar's brand white, so the class bar sets its own
-+			// scheme to light, and the white it shows over the card is the class's paint.
-+			const inverted = requireValue(
-+				region.querySelector('[data-specimen="Navbar inverted class"] .navbar'),
-+				'No class bar',
-+			)
-+			expect(inverted.classList.contains('navbar-dark')).toBe(true)
-+			expect(inverted.getAttribute('data-bs-theme')).toBe('light')
 +			for (const bar of region.querySelectorAll('nav.navbar'))
 +				expect(bar.getAttribute('aria-label')).not.toBeNull()
 +			expect(Object.isFrozen(NAVBAR_COPY)).toBe(true)
@@ -455,7 +447,7 @@ index 0000000..5117cb6
 +})
 diff --git a/tests/src/styles/components/navbar.test.ts b/tests/src/styles/components/navbar.test.ts
 new file mode 100644
-index 0000000..324808a
+index 0000000..9454c1e
 --- /dev/null
 +++ b/tests/src/styles/components/navbar.test.ts
 @@ -0,0 +1,621 @@
@@ -484,7 +476,6 @@ index 0000000..324808a
 +	extractShadowLayers,
 +	NAVBAR_COLOR_CASES,
 +	NAVBAR_DARK_CASES,
-+	NAVBAR_DARK_SPELLING_CASES,
 +	NAVBAR_EXPAND_CASES,
 +	NAVBAR_LENGTH_CASES,
 +	NAVBAR_MARKUP,
@@ -858,39 +849,40 @@ index 0000000..324808a
 +		expect(list.getBoundingClientRect().height).toBe(100)
 +	})
 +
-+	it.each(NAVBAR_DARK_SPELLING_CASES)(
-+		'retunes every color and toggler slot to the release value under $name',
-+		({ selector, markup }) => {
-+			const host = scene.mount(`<nav class="navbar">${NAVBAR_MARKUP}</nav>${markup}`)
-+			const [plain, dark] = [...host.querySelectorAll(':scope > .navbar')]
-+			const light = requireValue(plain, 'No plain bar')
-+			const retuned = requireValue(dark, 'No dark bar')
-+			// The spelling's bar is the recorded dark rule's subject and the plain bar is not.
-+			expect([light.matches(selector), retuned.matches(selector)]).toEqual([false, true])
-+			for (const { property, value } of NAVBAR_DARK_CASES) {
-+				const reading = readToken(retuned, property)
-+				const matched = property.endsWith('-bg') ? reading === value : matchesColor(reading, value)
-+				expect({ property, matched }).toEqual({ property, matched: true })
-+				expect({ property, moved: readToken(light, property) !== reading }).toEqual({
-+					property,
-+					moved: true,
-+				})
-+			}
-+			// The slots reach the bar's consumers: the brand, a link, the toggler's edge, and the icon.
-+			const icon = requireValue(retuned.querySelector('.navbar-toggler-icon'), 'No icon')
-+			expect(readStyle(icon, 'background-image')).toBe(
-+				requireValue(NAVBAR_DARK_CASES.at(-1), 'No icon row').value,
-+			)
-+			for (const [target, property, slot] of [
-+				['.navbar-brand', 'color', '--bs-navbar-brand-color'],
-+				['a[href="#plain"]', 'color', '--bs-navbar-color'],
-+				['.navbar-toggler', 'border-top-color', '--bs-navbar-toggler-border-color'],
-+			] as const) {
-+				const element = requireValue(retuned.querySelector(target), `No ${target}`)
-+				expect(matchesColor(readStyle(element, property), readToken(retuned, slot))).toBe(true)
-+			}
++	it.each([
++		{ name: 'the dark class', markup: `<nav class="navbar navbar-dark">${NAVBAR_MARKUP}</nav>` },
++		{
++			name: "the bar's own dark attribute",
++			markup: `<nav class="navbar" data-bs-theme="dark">${NAVBAR_MARKUP}</nav>`,
 +		},
-+	)
++	])('retunes every color and toggler slot to the release value under $name', ({ markup }) => {
++		const host = scene.mount(`<nav class="navbar">${NAVBAR_MARKUP}</nav>${markup}`)
++		const [plain, dark] = [...host.querySelectorAll(':scope > .navbar')]
++		const light = requireValue(plain, 'No plain bar')
++		const retuned = requireValue(dark, 'No dark bar')
++		for (const { property, value } of NAVBAR_DARK_CASES) {
++			const reading = readToken(retuned, property)
++			const matched = property.endsWith('-bg') ? reading === value : matchesColor(reading, value)
++			expect({ property, matched }).toEqual({ property, matched: true })
++			expect({ property, moved: readToken(light, property) !== reading }).toEqual({
++				property,
++				moved: true,
++			})
++		}
++		// The slots reach the bar's consumers: the brand, a link, the toggler's edge, and the icon.
++		const icon = requireValue(retuned.querySelector('.navbar-toggler-icon'), 'No icon')
++		expect(readStyle(icon, 'background-image')).toBe(
++			requireValue(NAVBAR_DARK_CASES.at(-1), 'No icon row').value,
++		)
++		for (const [selector, property, slot] of [
++			['.navbar-brand', 'color', '--bs-navbar-brand-color'],
++			['a[href="#plain"]', 'color', '--bs-navbar-color'],
++			['.navbar-toggler', 'border-top-color', '--bs-navbar-toggler-border-color'],
++		] as const) {
++			const element = requireValue(retuned.querySelector(selector), `No ${selector}`)
++			expect(matchesColor(readStyle(element, property), readToken(retuned, slot))).toBe(true)
++		}
++	})
 +
 +	it('paints the dark icon on an icon inside a dark scope, and declares no icon on a plain element there', () => {
 +		const host = scene.mount(
