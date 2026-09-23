@@ -1,0 +1,14 @@
+Outline the focused page link and close control under forced colours
+
+B-PASSIVE-CLOSE-B (`opus` on Opus 5, one round) includes the `forced-ring` mixin in the
+`.page-link:focus` and `.btn-close:focus` rules, which keep the release's `outline: 0` and shadow
+ring and gain a system-highlight outline where forced colours paint no shadow (D37, R10), with the
+close partial taking the mixins module it did not load before; reads each outline under
+`stageMedia({ forced: true })` by its style and its width against a gauge sized by the focus width
+token, each case red before its include and green after it; and lands the guide's pagination and
+close sentences and the § Additions rows for the two outline declarations under the `btn-close`
+and `pagination` keys the ledger measures.
+
+Audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker` on Sonnet. Decision D37 and the
+close verdict's R10. Records: `.orkestrel/veneer/units/bpb-*` and `b-passive-close-b-*` in the
+scaffold repository.

@@ -1,0 +1,19 @@
+Show the form label specimens with their capture rows
+
+B-FORMS-LABEL-SHOW (`opus` on Opus 5, two rounds) adds the `FormLabelSection` region with the
+stacked label and its help text, the horizontal label beside its control at the resting, large,
+and small sizes, and the legend of a group, each row in a fluid container so the grid's negative
+gutter stays inside the page (ruling E); constructs the region between the floating and range
+regions in the alphabetical order D35 fixes and re-exports it from the browser barrel; declares
+the five capture subjects and the resting `CASCADE_KEYS` rows that read the label's margin, the
+horizontal label's padding, the sized labels' font size, and the legend's margin through the
+`legend.col-form-label` selector, with the registry check widened to admit a class led by its
+element and to refuse a bare element; and moves the floating and range journey starts past the
+date control the installed traversal stops at. The section proof reads each label's association
+through its control's accessible name and the help text's description pairing, and the landing
+integration gives the `for`, `id`, `aria-describedby`, and `legend` tokens their nouns.
+
+Audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker` on Sonnet; the integration edit
+verified by `checker`. Decisions D35 and the label verdict's rulings E, I, and K; the § Tests stem
+table takes no forms row because its population is the CL13 counterpart set. Records:
+`.orkestrel/veneer/units/bfw-*` and `b-forms-label-show-*` in the scaffold repository.
