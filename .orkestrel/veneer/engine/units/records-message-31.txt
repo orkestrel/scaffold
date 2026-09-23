@@ -1,0 +1,15 @@
+Run J-BINDER round 4 and the contract fix round 2, and open both audits
+
+J-BINDER round 4 lands the restoration handoff inside the snapshot (a restoring snapshot
+publishes its pending originals per element and target, a snapshot saved during that window
+takes them and the restoring one skips the target), drops the delegate's hold, states the
+teardown contract on the interfaces, renames the attribute-table and recorder types, declares
+the parser map, and corrects the guide's grouped-option sentence, with four new restoration
+proofs red first; the Orchestrator's gates read green and its audit's native lanes and Astra
+lane are running. The contract fix round 2 corrects the comment's reason and the remark's two
+sentences and pins the constraint with the parity and refusal assertions; its stop was on a
+wrong criterion in the brief, ruled in the report; the Orchestrator's gates, the
+constraint-mutation check, and both probes read green, and its round-2 audit runs on the
+objective lane and the checker. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

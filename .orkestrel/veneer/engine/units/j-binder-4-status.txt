@@ -1,0 +1,19 @@
+ M guides/veneer.md
+ M src/browser/Button.ts
+ M src/browser/ColorMode.ts
+ M src/browser/Delegate.ts
+ A src/browser/HostSnapshot.ts
+ D src/browser/Snapshot.ts
+ M src/browser/constants.ts
+ M src/browser/helpers.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/setupBrowser.ts
+ M tests/src/browser/Button.test.ts
+ M tests/src/browser/ColorMode.test.ts
+ M tests/src/browser/Delegate.test.ts
+ R tests/src/browser/Snapshot.test.ts -> tests/src/browser/HostSnapshot.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/validators.test.ts
