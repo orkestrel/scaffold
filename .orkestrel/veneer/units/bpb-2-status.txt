@@ -1,5 +1,0 @@
- M guides/veneer.md
- M src/styles/components/_close.scss
- M src/styles/components/_pagination.scss
- M tests/src/styles/components/close.test.ts
- M tests/src/styles/components/pagination.test.ts

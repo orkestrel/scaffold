@@ -1,9 +1,0 @@
-Show the caption opt-out as a table specimen
-
-F7b CAPTION-SPECIMEN (`builder` on Sonnet, one round) adds the `Caption at bottom` specimen to the
-Table region directly after `Caption at top`, carrying the `caption-bottom` class F6 FOUNDATION
-landed as Veneer's own opt-out that returns a caption to the bottom placement, and lists it in the
-section proof's name and class literals.
-
-Verified by `checker` on Sonnet. Records: `.orkestrel/veneer/units/f7b-*` in the scaffold
-repository.

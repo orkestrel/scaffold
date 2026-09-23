@@ -1,8 +1,0 @@
-Give the check specimens' id token its noun
-
-CLOSE-ID (`builder` on Sonnet, one round) writes "each `id` attribute is unique to the showcase" in
-the `FORM_CHECK_SPECIMENS` doc block, the form the label specimens' block carries, closing the
-carrier the B-FORMS-LABEL-SHOW audit recorded for the family close's token-noun sweep.
-
-Verified by `checker` on Sonnet. Records: `.orkestrel/veneer/units/ci-*` and `close-id-*` in the
-scaffold repository.
