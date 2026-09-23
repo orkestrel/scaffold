@@ -1,0 +1,22 @@
+Ship the split toggle and the grouped dropdown toggle corners with their proofs and guide rows
+
+The button-group key ships the split toggle: its three-quarter inline padding at the resting
+density and after a sized button or inside a sized group, the caret margin each direction's split
+rule clears, and the squared trailing corners of a split toggle that leads its group; the
+input-group key ships the corner rules a dropdown toggle keeps or loses by its position from the
+end, with and without the `has-validation` class. The Button group and Input group regions gain
+the split and toggle specimens with every state set in markup and each toggle announcing the
+`aria-expanded="false"` state. The styles proofs read every padding form, caret margin, and corner
+against the official inventory with failing-first controls, an empty split toggle under the
+`.dropstart` wrapper included, and the case tables for the split forms, the caret margins, the
+toggle corners, and the specimen forms live in the setup file, bound to the inventory and the
+capture registry and frozen at every level. The registry carries the split and toggle capture rows,
+and the guide's button-group, input-group, and dropdown sections carry the rules with a noun after
+every token.
+
+B-COLLAPSE wave 2, unit TOGGLES: a first round and a fix round on `opus`, each audited by
+`analyst` on Astra, `reviewer` on Opus 5.5, and `checker`, and a mechanical round on `builder`
+audited by `analyst` on Astra and `checker`.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
