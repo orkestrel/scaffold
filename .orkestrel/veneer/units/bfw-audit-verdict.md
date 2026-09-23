@@ -20,4 +20,4 @@ Round: rounds 1 and 2 of `bfw` (`b-forms-label-show-brief.md`, `-brief-2.md`; re
 - **The `FORM_CHECK_SPECIMENS` doc block's bare `id` token** (`app/browser/constants.ts` around line 1041) predates the unit. Carrier: B-PASSIVE-CLOSE-B, recorded in `ROADMAP.md` § Carriers at the bfw fold.
 - **`npm run check`** exited 0 in the analyst's lane.
 
-VERDICT: FAIL 8; outside the claims: none — fixed at landing as an integration edit
+VERDICT: FAIL 8; outside the claims: none — fixed at landing as an integration edit, verified PASS in `bfw-landing-checker-verdict.md`
