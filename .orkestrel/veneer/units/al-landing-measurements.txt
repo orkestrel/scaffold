@@ -1,0 +1,4 @@
+ALERT landing (f31f24c over a658879) — the Orchestrator's readings
+
+- al-fast-gates.log.txt: every gate exit 0 except `test:conformance` exit 1 at 16:34:09 UTC: the case "records official Button behavior and matches each named fixture step" timed out at 10100 ms (tests/conformance.test.ts around line 171), with six writing units live in their worktrees (ca, ud, upl, ac, tg, nb) and the load average above 10.
+- al-conformance-rerun.log.txt: `npm run test:conformance` re-run alone by the Orchestrator at 16:35:14 UTC (load 12.13 at start, 11.35 at exit): exit 0, `Tests  22 passed (22)`. The timeout is a load reading, not the landing's; the chain's own conformance run is the authoritative one (al-landing-gates.log.txt when retained).
