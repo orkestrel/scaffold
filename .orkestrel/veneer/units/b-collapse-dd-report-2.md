@@ -285,7 +285,7 @@ Observations from the runs:
 
 **`git apply --check`.** The patch was reverse-applied in the validation copy, leaving the tree at
 `c3ac297` plus the owned files. Then
-`git -C /home/user/veneer-dd/tmp/probe/base apply --check /home/user/veneer-dd//home/user/scaffold/.orkestrel/veneer/units/dd-shared-2.patch`
+`git -C /home/user/veneer-dd/tmp/probe/base apply --check /home/user/scaffold/.orkestrel/veneer/units/dd-shared-2.patch`
 printed nothing and exited 0 (`logs/apply-check.log.txt`). The patch's file list is the Shared row
 exactly: `src/styles/index.scss`, `tests/conformance.test.ts`, `tests/setupServer.test.ts`,
 `tests/setup.ts`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`,

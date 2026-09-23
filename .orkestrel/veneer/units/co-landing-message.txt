@@ -1,0 +1,18 @@
+Ship the collapse key with its hidden, shown, and closing states and its section
+
+The collapse partial writes the hidden panel, the shown panel, the closing box on each axis, and
+their transitions in the components layer ahead of the button group, with the closing duration a
+literal the motion factor does not rescale. The proof reads each state in the browser, the clip
+under an inline height with a hit test past the panel's edge, the zero-height box on a panel
+carrying no inline height, the horizontal compound against a nested element, each transition at
+rest and under the staged preference, the doubled motion factor, and every state inside a dark
+island; the section renders the panels with each state set in markup and no inline style. The
+Tailwind recipe fences and the consumer fixtures exclude the collapse name, whose Tailwind
+utility would hide every shown panel. The registry gains the resting rows, and the guide gains the
+section, the rows, the plugin row, the § Tailwind sentences, and the § Tests link. The unit
+COLLAPSE ran over two rounds on opus and builder in /home/user/veneer-co from 87ff1d0, audited by
+the objective lane on Opus 5.5 (the Codex bench dark), the subjective lane, and a checker, with a
+landing check on the regenerated patch.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
