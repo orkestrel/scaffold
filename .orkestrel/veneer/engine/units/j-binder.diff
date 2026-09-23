@@ -1,0 +1,1780 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 2dc34bd..eeb021a 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -23,8 +23,9 @@ publishes the color-mode controller. The token values those names carry are in 
+ | `AppError`                | class     | Describes a programmer error with a machine-readable code and optional context.                                                      |
+ | `isAppError`              | function  | Checks whether a value belongs to the application's error class.                                                                     |
+ | `BUTTON_ACTIVE`           | const     | Names the class that carries a button's pressed state.                                                                               |
++| `BUTTON_PRESSED`          | const     | Names the attribute that announces a button's pressed state to assistive technology.                                                 |
+ | `BUTTON_SELECTOR`         | const     | Selects hosts activated by delegated button clicks.                                                                                  |
+-| `BUTTON_TOGGLE`           | const     | Names the bubbling event dispatched after a button toggles.                                                                          |
++| `BUTTON_EVENTS`           | const     | Names the bubbling event a button dispatches after it toggles, keyed by the verb it mirrors.                                         |
+ | `Button`                  | class     | Toggles a host's pressed state and restores its original state on destruction.                                                       |
+ | `ButtonDetail`            | interface | Describes the pressed state after a button toggles.                                                                                  |
+ | `ButtonEventMap`          | interface | Maps a button's completed toggle to its DOM event.                                                                                   |
+@@ -34,17 +35,29 @@ publishes the color-mode controller. The token values those names carry are in 
+ | `Delegate`                | class     | Activates data-attribute button hosts through a root's delegated click listener.                                                     |
+ | `DelegateInterface`       | interface | Owns delegated activation and the button engines it constructs.                                                                      |
+ | `DelegateOptions`         | interface | Configures the root for delegated button activation.                                                                                 |
+-| `bindEventMap`            | function  | Binds button hooks to their DOM wire events until the signal aborts.                                                                 |
+-| `emitEvent`               | function  | Dispatches a bubbling, non-cancelable DOM event carrying the supplied detail.                                                        |
++| `bindEventMap`            | function  | Binds an entity's hooks to the wire events its table names until the signal aborts.                                                  |
++| `emitEvent`               | function  | Dispatches a bubbling DOM event carrying the supplied detail and mirrors each detail field as an own property of the event.          |
+ | `isButtonEvent`           | function  | Checks whether a DOM event carries a boolean pressed state.                                                                          |
+-| `isButtonHost`            | function  | Checks whether a value is an HTML host in the current browser realm.                                                                 |
++| `isHost`                  | function  | Checks whether a value is an HTML host in the current browser realm.                                                                 |
++| `generateId`              | function  | Generates an element id from a prefix and a random suffix.                                                                           |
++| `readTarget`              | function  | Returns the first HTML element a trigger's `data-bs-target` selector, or its `href` fragment, names in its document.                 |
++| `readTargets`             | function  | Returns the HTML elements a trigger's `data-bs-target` selector, or its `href` fragment, names in its document.                      |
++| `reflow`                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                             |
++| `resolveOptions`          | function  | Resolves an entity's options from its defaults, `data-bs-config`, its declared `data-bs-*` attributes, and the constructor object.   |
++| `settleAnimations`        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                 |
++| `TARGET_ATTRIBUTE`        | const     | Names the attribute a trigger carries its target selector in.                                                                        |
++| `LINK_ATTRIBUTE`          | const     | Names the attribute whose fragment names a trigger's target when the target attribute names none.                                    |
++| `CONFIG_ATTRIBUTE`        | const     | Names the attribute that carries an engine's options as one JSON record.                                                             |
++| `OPTION_PREFIX`           | const     | Opens the name of the attribute that carries one declared option, which the option's key completes.                                  |
+ | `EventHooks`              | type      | Maps each event of an entity's event map to an optional listener bound until the entity is destroyed.                                |
+ | `EventWire`               | type      | Maps each event of an entity's event map to the wire name its bubbling DOM event carries.                                            |
+ | `RegistryOptions`         | interface | Configures the ownership record one engine class keeps for its hosts.                                                                |
+ | `RegistryInterface`       | interface | Records which engine owns each host, one record per engine class.                                                                    |
++| `Registry`                | class     | Records which engine owns each host, keyed weakly so a discarded host leaves no record behind.                                       |
+ | `SnapshotCategory`        | type      | Names the kinds of host state a snapshot records: an attribute, a class token, or an inline property.                                |
+ | `SnapshotTarget`          | interface | Describes one piece of host state a snapshot records before an engine first writes it.                                               |
+ | `SnapshotInterface`       | interface | Records host state before an engine writes it and writes that state back on restore.                                                 |
++| `Snapshot`                | class     | Records host state before an engine first writes it, and writes that state back on restore.                                          |
+ | `IsolationOptions`        | interface | Configures where focus returns when an isolation ends.                                                                               |
+ | `IsolationInterface`      | interface | Makes every element outside a host inert while the isolation lives.                                                                  |
+ | `BackdropOptions`         | interface | Configures the backdrop element a modal or an offcanvas panel places behind itself.                                                  |
+@@ -131,20 +144,10 @@ A button's destruction restores the active membership and the `aria-pressed` val
+ construction, removes the `class` attribute when the host carried none and the toggle left the list
+ empty, and keeps every class token a consumer added.
+ 
+-The delegate acquires a host on its first delegated click and reuses that engine on later clicks. A
+-host removed from the root, or moved outside it, keeps its toggled state until the next click that
+-reaches the root or the delegate's destruction, whichever comes first, and is restored and released
+-then. A host reinserted before that click keeps its engine and its state. A host reinserted after
+-its release is acquired again, with a fresh engine, on its next delegated click. The delegate reads
+-no disabled state: a `disabled` host, a `.disabled` host, and an `aria-disabled="true"` host are
+-acquired and toggled like any other, which is what Bootstrap's data API does with the click it
+-receives.
+-
+-The `emitEvent` function dispatches a bubbling, non-cancelable event and cannot express a cancelable
+-one, and the `bindEventMap` function and the `Delegate` class are shaped around Button: the event
+-map, the selector, and the engine each name that one component. The `emitEvent` and `bindEventMap`
+-functions and the `Delegate` class are mechanisms with one consumer, so they stay that shape until the
+-first engine component carrying a cancelable pre-change event lands.
++The delegate acquires, drives, and releases button hosts as § Engine states under Delegation. The
++delegate reads no disabled state: a `disabled` host, a `.disabled` host, and an
++`aria-disabled="true"` host are acquired and toggled like any other, which is what Bootstrap's data
++API does with the click it receives.
+ 
+ ## Methods
+ 
+@@ -364,6 +367,97 @@ isColorModeState('dark') // true
+ isColorModeState('auto') // false
+ ```
+ 
++## Engine
++
++The browser entry drives Bootstrap's markup on the platform's own mechanisms; its TypeScript
++follows Veneer's design rather than Bootstrap's JavaScript. Bootstrap's class tokens, `data-bs-*`
++attribute names, selectors, and wire event names are the engine's defaults, and each one is a
++constant in the browser entry, such as `BUTTON_ACTIVE`, `BUTTON_SELECTOR`, `TARGET_ATTRIBUTE`,
++`OPTION_PREFIX`, and `BUTTON_EVENTS`. Importing the entry installs no listener: you construct each
++engine yourself, or you construct a `Delegate` instance and it acquires engines from the data
++attributes. A TypeScript member keeps Veneer's naming, and where it departs from Bootstrap's name
++the departure is stated with the member: `destroy` replaces `dispose`, and the static `find` method
++replaces `getInstance`.
++
++The `resolveOptions` function merges an engine's options. The engine's defaults come first, then the
++keys it declares inside the host's `data-bs-config` JSON, then its declared `data-bs-*` attributes,
++then the object you pass to the constructor, each overriding the one before, and an explicit
++`false` or `0` survives every layer. A declared key is a one-word option key, which is Bootstrap's
++key verbatim, and its attribute is the `OPTION_PREFIX` constant followed by the key. An undeclared
++key is ignored, a `data-bs-config` value that is not a JSON record is ignored as Bootstrap ignores
++it, and a declared value that fails coercion throws an `AppError` carrying the engine's
++`{ENTITY}_OPTION_INVALID` code, the attribute's name, and the host's tag. Each declared key is
++coerced by the parser the engine declares for it rather than by Bootstrap's `normalizeData`
++function, so a key a boolean parser reads also accepts `1` and `0`. The `Button` class declares no
++key, as Bootstrap's Button declares no option, and reads its options from the constructor alone.
++
++### Events
++
++An engine dispatches its wire events on its host as bubbling `CustomEvent` instances through the
++`emitEvent` function. The engine passes the cancelable flag, and the function returns `false` when a
++listener's `preventDefault` call prevented a cancelable event, which is how an engine refuses a
++change a listener prevented; a listener's return value refuses nothing. Each field of a plain-record
++detail, such as Bootstrap's `relatedTarget`, travels in the event's `detail` and is also defined as
++an own property of the event, so a listener reads `event.relatedTarget` as it reads it under
++Bootstrap. The `toggle.vn.button` event has no Bootstrap counterpart, so it keeps its Veneer name
++and is not cancelable.
++
++An engine's wire table, such as `BUTTON_EVENTS`, maps each key of its event map to the wire name its
++event carries. The `on` option takes hooks keyed the same way, and the `bindEventMap` function binds
++them to the wire names until the engine is destroyed. An event under a bound name whose payload
++fails the engine's event guard, such as the `isButtonEvent` function, reaches no hook.
++
++### Delegation
++
++The `Delegate` class is the engine's only data API. It listens for clicks on its root, the document
++unless you pass another, and reads each route from a constant: a click inside a host the
++`BUTTON_SELECTOR` constant matches drives that host's button. That is the engine the static `find`
++method returns, whoever constructed it, or an engine the delegate constructs and acquires when the
++host has none. The delegate prevents the click's default action, as Bootstrap's data API does. A
++host under nested delegate roots is driven once per click, by whichever delegate hears the click
++first.
++
++While the delegate owns an engine it observes its root, and at the observer delivery that follows a
++removal it restores and releases every host it acquired that the root no longer contains, whether
++the host left the document or moved outside the root. A host removed and reinserted within one task
++keeps its engine and its state, because the root contains it again when the delivery arrives. A
++host reinserted after its release is acquired again, with a fresh engine, on its next delegated
++click. Destruction removes the listener and the observer and restores every host the delegate still
++owns; an engine you constructed stays yours.
++
++A trigger names the element it controls by the attribute the `TARGET_ATTRIBUTE` constant names, or
++by the fragment of the attribute the `LINK_ATTRIBUTE` constant names when the target attribute is
++absent, empty, or a bare `#`. The `readTarget` and `readTargets` functions resolve that selector as
++Bootstrap's `getSelector` function does, escaping each id through `CSS.escape`, and return only
++HTML elements.
++
++### Ownership and restoration
++
++Each engine class keeps one `Registry` instance, so a host carries at most one engine of each class.
++Construction validates the host, then claims it before binding any hook, and a second engine of the
++same class on the same host throws an `AppError` carrying the class's `{ENTITY}_HOST_OWNED` code,
++such as `BUTTON_HOST_OWNED`. The static `find` method returns the live engine that owns a host.
++Destruction releases the claim, so the host can take a fresh engine afterwards.
++
++Each engine keeps one `Snapshot` instance. It records every attribute, class token, and inline
++property the engine writes before the first write, and destruction writes each recorded value back:
++a value recorded as absent is removed, and a `class` attribute the engine's writes created is
++removed when no token remains in it. State the snapshot never recorded keeps every edit you made.
++
++### Motion
++
++The `settleAnimations` function waits for an element's transitions. It reads the element's own
++animations, leaves infinite and paused animations out, and resolves when each running animation
++finishes, is cancelled, or leaves with its element. It re-reads the list after each round, so a
++transition that starts when another finishes is awaited as well. No timer and no emulated
++`transitionend` event stand in for the animation. A transition of zero length creates no animation,
++so under reduced motion the wait resolves in a microtask. Aborting the signal the function takes
++resolves the wait at once.
++
++A class or dimension written on an element whose style the browser has not computed starts no
++transition. The `reflow` function forces that computation, so the write that follows it in the same
++task transitions from the element's present state.
++
+ ## Styles
+ 
+ Veneer publishes its cascade through a standalone stylesheet subpath, `./styles`. The
+diff --git a/src/browser/Button.ts b/src/browser/Button.ts
+index 4c832c2..9bd2dab 100644
+--- a/src/browser/Button.ts
++++ b/src/browser/Button.ts
+@@ -1,8 +1,10 @@
+ import type { ButtonInterface, ButtonOptions } from './types.js'
+ import { AppError } from '@src/core'
+-import { BUTTON_ACTIVE, BUTTON_TOGGLE } from './constants.js'
++import { BUTTON_ACTIVE, BUTTON_EVENTS, BUTTON_PRESSED } from './constants.js'
+ import { bindEventMap, emitEvent } from './helpers.js'
+-import { isButtonHost } from './validators.js'
++import { Registry } from './Registry.js'
++import { Snapshot } from './Snapshot.js'
++import { isButtonEvent, isHost } from './validators.js'
+ 
+ /**
+  * Toggles a host's pressed state and restores its original state on destruction.
+@@ -19,22 +21,20 @@ import { isButtonHost } from './validators.js'
+  * ```
+  */
+ export class Button implements ButtonInterface {
+-	static readonly #hosts = new WeakSet<HTMLElement>()
++	static readonly #registry = new Registry<Button>({ code: 'BUTTON_HOST_OWNED' })
+ 	readonly #host: HTMLElement
+-	readonly #active: boolean
+-	readonly #classified: boolean
+-	readonly #attribute: string | null
++	readonly #snapshot = new Snapshot()
+ 	readonly #controller = new AbortController()
+ 
+ 	/**
+-	 * Captures the host's managed state and binds initial hooks.
++	 * Claims the host, records its managed state, and binds initial hooks.
+ 	 *
+ 	 * @param host - The HTML element to own.
+ 	 * @param options - The initial event subscriptions.
+ 	 * @throws Thrown when the host is not an HTMLElement or already has a live owner.
+ 	 */
+ 	constructor(host: HTMLElement, options?: ButtonOptions) {
+-		if (!isButtonHost(host)) {
++		if (!isHost(host)) {
+ 			let tag: string | undefined
+ 			try {
+ 				const value: unknown = host
+@@ -44,17 +44,25 @@ export class Button implements ButtonInterface {
+ 			}
+ 			throw new AppError('Button requires an HTMLElement host', 'BUTTON_HOST_INVALID', { tag })
+ 		}
+-		if (Button.#hosts.has(host)) {
+-			throw new AppError('Button host already has a live owner', 'BUTTON_HOST_OWNED', {
+-				tag: host.tagName,
+-			})
+-		}
++		Button.#registry.claim(host, this)
+ 		this.#host = host
+-		this.#active = host.classList.contains(BUTTON_ACTIVE)
+-		this.#classified = host.hasAttribute('class')
+-		this.#attribute = host.getAttribute('aria-pressed')
+-		bindEventMap(host, options?.on, this.#controller.signal)
+-		Button.#hosts.add(host)
++		this.#snapshot.save({ category: 'token', element: host, name: BUTTON_ACTIVE })
++		this.#snapshot.save({ category: 'attribute', element: host, name: BUTTON_PRESSED })
++		bindEventMap(host, BUTTON_EVENTS, isButtonEvent, options?.on, this.#controller.signal)
++	}
++
++	/**
++	 * Returns the live button that owns a host, mirroring Bootstrap's `getInstance`.
++	 *
++	 * @param host - The element to look up.
++	 * @returns The owning button, or undefined when no live button owns the host.
++	 * @example
++	 * ```ts
++	 * Button.find(host)?.toggle()
++	 * ```
++	 */
++	static find(host: HTMLElement): ButtonInterface | undefined {
++		return Button.#registry.find(host)
+ 	}
+ 
+ 	get host(): HTMLElement {
+@@ -68,18 +76,15 @@ export class Button implements ButtonInterface {
+ 	toggle(): boolean {
+ 		if (this.#controller.signal.aborted) return this.pressed
+ 		const pressed = this.#host.classList.toggle(BUTTON_ACTIVE)
+-		this.#host.setAttribute('aria-pressed', String(pressed))
+-		emitEvent(this.#host, BUTTON_TOGGLE, { pressed })
++		this.#host.setAttribute(BUTTON_PRESSED, String(pressed))
++		emitEvent(this.#host, BUTTON_EVENTS.toggle, { pressed }, false)
+ 		return pressed
+ 	}
+ 
+ 	destroy(): void {
+ 		if (this.#controller.signal.aborted) return
+ 		this.#controller.abort()
+-		this.#host.classList.toggle(BUTTON_ACTIVE, this.#active)
+-		if (!this.#classified && this.#host.classList.length === 0) this.#host.removeAttribute('class')
+-		if (this.#attribute === null) this.#host.removeAttribute('aria-pressed')
+-		else this.#host.setAttribute('aria-pressed', this.#attribute)
+-		Button.#hosts.delete(this.#host)
++		this.#snapshot.restore()
++		Button.#registry.release(this.#host, this)
+ 	}
+ }
+diff --git a/src/browser/ColorMode.ts b/src/browser/ColorMode.ts
+index fc62026..741cd2d 100644
+--- a/src/browser/ColorMode.ts
++++ b/src/browser/ColorMode.ts
+@@ -10,7 +10,7 @@ import { isColorModeState } from './validators.js'
+  * that reading back and releases the root. Applying a mode writes the attribute for either mode,
+  * so a root nested inside an island of the other mode opens its own island rather than inheriting
+  * the one around it. After destruction, applying a mode writes neither the root nor storage, and
+- * toggling writes nothing and returns the root's live mode.
++ * a `toggle` call writes nothing and returns the mode the root carries.
+  *
+  * @example
+  * ```ts
+diff --git a/src/browser/Delegate.ts b/src/browser/Delegate.ts
+index 64aa9a1..a836d9b 100644
+--- a/src/browser/Delegate.ts
++++ b/src/browser/Delegate.ts
+@@ -1,16 +1,18 @@
+-import type { DelegateInterface, DelegateOptions } from './types.js'
+-import { isAppError } from '@src/core'
++import type { ButtonInterface, DelegateInterface, DelegateOptions } from './types.js'
+ import { Button } from './Button.js'
+ import { BUTTON_SELECTOR } from './constants.js'
+-import { isButtonHost } from './validators.js'
++import { isHost } from './validators.js'
+ 
+ /**
+  * Activates data-attribute button hosts through a root's delegated click listener.
+  *
+  * @remarks
+  * Construction installs the listener. Importing the browser barrel installs nothing.
+- * Hosts with another live button owner are left to that owner.
+- * Destruction releases the listener and restores every host this delegate acquired.
++ * A click drives the engine the host's class finds for it, whoever constructed that engine, and
++ * acquires a new one only when the host has none; a host under nested roots is driven once per
++ * click. While the delegate owns an engine it observes its root, and at each observer delivery it
++ * destroys and releases every engine whose host the root no longer contains.
++ * Destruction releases the listener and the observer and restores every host this delegate acquired.
+  *
+  * @example
+  * ```ts
+@@ -19,10 +21,11 @@ import { isButtonHost } from './validators.js'
+  * ```
+  */
+ export class Delegate implements DelegateInterface {
++	static readonly #driven = new WeakMap<Event, WeakSet<HTMLElement>>()
+ 	readonly #root: ParentNode
+ 	readonly #controller = new AbortController()
+-	#buttons = new WeakMap<HTMLElement, Button>()
+-	readonly #owned = new Set<Button>()
++	readonly #observer = new MutationObserver(() => this.#release())
++	readonly #owned = new Set<ButtonInterface>()
+ 
+ 	/**
+ 	 * Binds native clicks on the supplied root.
+@@ -43,33 +46,46 @@ export class Delegate implements DelegateInterface {
+ 	destroy(): void {
+ 		if (this.#controller.signal.aborted) return
+ 		this.#controller.abort()
+-		for (const button of this.#owned) button.destroy()
++		this.#observer.disconnect()
++		for (const engine of this.#owned) engine.destroy()
+ 		this.#owned.clear()
+-		this.#buttons = new WeakMap()
+ 	}
+ 
++	// Routes a click inside a `data-bs-toggle="button"` host to that host's button engine.
+ 	#activate(event: Event): void {
+-		for (const button of this.#owned) {
+-			if (this.#root.contains(button.host)) continue
+-			button.destroy()
+-			this.#buttons.delete(button.host)
+-			this.#owned.delete(button)
+-		}
+ 		if (!(event.target instanceof Element)) return
+ 		const host = event.target.closest(BUTTON_SELECTOR)
+-		if (!isButtonHost(host) || !this.#root.contains(host)) return
++		if (!isHost(host) || !this.#root.contains(host) || !this.#mark(event, host)) return
+ 		event.preventDefault()
+-		let button = this.#buttons.get(host)
+-		if (!button) {
+-			try {
+-				button = new Button(host)
+-			} catch (error) {
+-				if (isAppError(error) && error.code === 'BUTTON_HOST_OWNED') return
+-				throw error
+-			}
+-			this.#buttons.set(host, button)
+-			this.#owned.add(button)
++		const engine = Button.find(host) ?? this.#acquire(new Button(host))
++		engine.toggle()
++	}
++
++	// Marks one click for one host across every delegate, and reports whether this call marked it,
++	// so a host under nested roots is driven once per click.
++	#mark(event: Event, host: HTMLElement): boolean {
++		const hosts = Delegate.#driven.get(event) ?? new WeakSet<HTMLElement>()
++		if (hosts.has(host)) return false
++		Delegate.#driven.set(event, hosts.add(host))
++		return true
++	}
++
++	// Owns a constructed engine and observes the root while any engine is owned.
++	#acquire(engine: ButtonInterface): ButtonInterface {
++		if (this.#owned.size === 0) {
++			this.#observer.observe(this.#root, { childList: true, subtree: true })
++		}
++		this.#owned.add(engine)
++		return engine
++	}
++
++	// Destroys and releases every owned engine whose host the root no longer contains.
++	#release(): void {
++		for (const engine of this.#owned) {
++			if (this.#root.contains(engine.host)) continue
++			engine.destroy()
++			this.#owned.delete(engine)
+ 		}
+-		button.toggle()
++		if (this.#owned.size === 0) this.#observer.disconnect()
+ 	}
+ }
+diff --git a/src/browser/Registry.ts b/src/browser/Registry.ts
+new file mode 100644
+index 0000000..39af400
+--- /dev/null
++++ b/src/browser/Registry.ts
+@@ -0,0 +1,47 @@
++import type { RegistryInterface, RegistryOptions } from './types.js'
++import { AppError } from '@src/core'
++
++/**
++ * Records which engine owns each host, keyed weakly so a discarded host leaves no record behind.
++ *
++ * @typeParam TEngine - The engine the record holds.
++ * @remarks
++ * Each engine class keeps one registry, so one host can carry one engine of each class. The class
++ * claims the host after validating it and before binding any hook, and releases it on destruction.
++ *
++ * @example
++ * ```ts
++ * const registry = new Registry<object>({ code: 'COLLAPSE_HOST_OWNED' })
++ * const engine = {}
++ * registry.claim(host, engine)
++ * registry.release(host, engine)
++ * ```
++ */
++export class Registry<TEngine extends object> implements RegistryInterface<TEngine> {
++	readonly #code: string
++	readonly #owners = new WeakMap<HTMLElement, TEngine>()
++
++	/**
++	 * Keeps the error code a second claim throws.
++	 *
++	 * @param options - The code a claim on an owned host throws.
++	 */
++	constructor(options: RegistryOptions) {
++		this.#code = options.code
++	}
++
++	claim(host: HTMLElement, engine: TEngine): void {
++		if (this.#owners.has(host)) {
++			throw new AppError('Host already has a live owner', this.#code, { tag: host.tagName })
++		}
++		this.#owners.set(host, engine)
++	}
++
++	find(host: HTMLElement): TEngine | undefined {
++		return this.#owners.get(host)
++	}
++
++	release(host: HTMLElement, engine: TEngine): boolean {
++		return this.#owners.get(host) === engine && this.#owners.delete(host)
++	}
++}
+diff --git a/src/browser/Snapshot.ts b/src/browser/Snapshot.ts
+new file mode 100644
+index 0000000..cc78021
+--- /dev/null
++++ b/src/browser/Snapshot.ts
+@@ -0,0 +1,80 @@
++import type { SnapshotInterface, SnapshotTarget } from './types.js'
++
++/**
++ * Records host state before an engine first writes it, and writes that state back on restore.
++ *
++ * @remarks
++ * A recording holds an attribute's value, whether a class token is present, or an inline property's
++ * value and priority, and treats absence as a value of its own. The first token recorded on an
++ * element also records whether the element carried a `class` attribute, so restoring removes an
++ * attribute the engine's writes created when no token remains in it.
++ *
++ * @example
++ * ```ts
++ * const snapshot = new Snapshot()
++ * snapshot.save({ category: 'attribute', element: host, name: 'aria-expanded' })
++ * host.setAttribute('aria-expanded', 'true')
++ * snapshot.restore()
++ * ```
++ */
++export class Snapshot implements SnapshotInterface {
++	#records: ReadonlyArray<{
++		readonly target: SnapshotTarget
++		readonly value: string | undefined
++		readonly priority: string
++	}> = []
++	#classes: ReadonlyMap<HTMLElement, boolean> = new Map()
++
++	save(target: SnapshotTarget): void {
++		const { category, element, name } = target
++		const recorded = this.#records.some(
++			(record) =>
++				record.target.category === category &&
++				record.target.element === element &&
++				record.target.name === name,
++		)
++		if (recorded) return
++		let value: string | undefined
++		let priority = ''
++		switch (category) {
++			case 'attribute':
++				value = element.getAttribute(name) ?? undefined
++				break
++			case 'token':
++				value = element.classList.contains(name) ? name : undefined
++				if (!this.#classes.has(element)) {
++					this.#classes = new Map([...this.#classes, [element, element.hasAttribute('class')]])
++				}
++				break
++			case 'property':
++				value = element.style.getPropertyValue(name) || undefined
++				priority = element.style.getPropertyPriority(name)
++				break
++		}
++		this.#records = [...this.#records, { target: { category, element, name }, value, priority }]
++	}
++
++	restore(): void {
++		for (const { target, value, priority } of this.#records) {
++			const { category, element, name } = target
++			switch (category) {
++				case 'attribute':
++					if (value === undefined) element.removeAttribute(name)
++					else element.setAttribute(name, value)
++					break
++				case 'token':
++					element.classList.toggle(name, value !== undefined)
++					break
++				case 'property':
++					if (value === undefined) element.style.removeProperty(name)
++					else element.style.setProperty(name, value, priority)
++					break
++			}
++		}
++		for (const [element, classed] of this.#classes) {
++			if (!classed && element.classList.length === 0) element.removeAttribute('class')
++		}
++		this.#records = []
++		this.#classes = new Map()
++	}
++}
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index e3b92cb..72a9e74 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -1,14 +1,33 @@
++import type { ButtonEventMap, EventWire } from './types.js'
++
+ /** Names the Bootstrap color-mode attribute. */
+ export const COLOR_MODE_ATTRIBUTE = 'data-bs-theme'
+ 
+ /** Names the storage key for the chosen color mode. */
+ export const COLOR_MODE_KEY = 'color-mode'
+ 
+-/** Names the bubbling event dispatched after a button toggles. */
+-export const BUTTON_TOGGLE = 'toggle.vn.button'
++/** Names the bubbling event a button dispatches after it toggles, keyed by the verb it mirrors. */
++export const BUTTON_EVENTS: EventWire<ButtonEventMap> = Object.freeze({
++	toggle: 'toggle.vn.button',
++})
+ 
+ /** Selects hosts activated by delegated button clicks. */
+ export const BUTTON_SELECTOR = '[data-bs-toggle="button"]'
+ 
+ /** Names the class that carries a button's pressed state. */
+ export const BUTTON_ACTIVE = 'active'
++
++/** Names the attribute that announces a button's pressed state to assistive technology. */
++export const BUTTON_PRESSED = 'aria-pressed'
++
++/** Names the attribute a trigger carries its target selector in. */
++export const TARGET_ATTRIBUTE = 'data-bs-target'
++
++/** Names the attribute whose fragment names a trigger's target when the target attribute names none. */
++export const LINK_ATTRIBUTE = 'href'
++
++/** Names the attribute that carries an engine's options as one JSON record. */
++export const CONFIG_ATTRIBUTE = 'data-bs-config'
++
++/** Opens the name of the attribute that carries one declared option, which the option's key completes. */
++export const OPTION_PREFIX = 'data-bs-'
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 5752607..de699fe 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -1,48 +1,255 @@
+-import type { ButtonHooks } from './types.js'
+-import { BUTTON_TOGGLE } from './constants.js'
+-import { isButtonEvent } from './validators.js'
++import type { EventHooks, EventWire } from './types.js'
++import type { Guard, Parser } from '@orkestrel/contract'
++import { AppError } from '@src/core'
++import { isRecord, parseJSONAs } from '@orkestrel/contract'
++import { CONFIG_ATTRIBUTE, LINK_ATTRIBUTE, OPTION_PREFIX, TARGET_ATTRIBUTE } from './constants.js'
++import { isHost } from './validators.js'
+ 
+ /**
+- * Dispatches a bubbling, non-cancelable DOM event carrying the supplied detail.
++ * Dispatches a bubbling DOM event carrying the supplied detail and mirrors each detail field as an own property of the event.
+  *
+  * @param host - The element receiving the event.
+  * @param type - The event's wire name.
+- * @param detail - The completed operation's payload.
+- * @returns Nothing; listeners run synchronously during dispatch.
++ * @param detail - The operation's payload.
++ * @param cancelable - If `true`, a listener's `preventDefault` call refuses the operation; if `false`, it changes nothing.
++ * @returns True if no listener prevented the event; false otherwise. Listeners run synchronously during dispatch.
++ * @remarks
++ * Bootstrap hydrates its event fields, such as `relatedTarget`, onto the event itself, so each field
++ * of a plain-record detail is defined on the event as well as carried in `detail`.
+  * @example
+  * ```ts
+- * emitEvent(host, BUTTON_TOGGLE, { pressed: true })
++ * if (!emitEvent(host, 'show.bs.collapse', undefined, true)) return false
+  * ```
+  */
+-export function emitEvent<T>(host: HTMLElement, type: string, detail: T): void {
+-	host.dispatchEvent(new CustomEvent(type, { bubbles: true, cancelable: false, detail }))
++export function emitEvent<T>(
++	host: HTMLElement,
++	type: string,
++	detail: T,
++	cancelable: boolean,
++): boolean {
++	const event = new CustomEvent(type, { bubbles: true, cancelable, detail })
++	if (isRecord(detail)) {
++		for (const [key, value] of Object.entries(detail)) {
++			Object.defineProperty(event, key, { configurable: true, enumerable: true, value })
++		}
++	}
++	return host.dispatchEvent(event)
+ }
+ 
+ /**
+- * Binds button hooks to their DOM wire events until the signal aborts.
++ * Binds an entity's hooks to the wire events its table names until the signal aborts.
+  *
+  * @param host - The element receiving events.
++ * @param wire - The entity's wire table, mapping each event-map key to its DOM event name.
++ * @param guard - The check each delivered event passes before its hook runs.
+  * @param hooks - The initial subscriptions, when supplied.
+  * @param signal - The lifetime shared by the subscriptions.
+  * @returns Nothing; an aborted signal leaves no subscriptions.
++ * @remarks
++ * An event under a bound name that fails the guard, such as a consumer's own event carrying another
++ * payload, reaches no hook.
+  * @example
+  * ```ts
+- * bindEventMap(host, { toggle: (event) => console.log(event.detail.pressed) }, controller.signal)
++ * bindEventMap(host, BUTTON_EVENTS, isButtonEvent, options?.on, controller.signal)
+  * ```
+  */
+-export function bindEventMap(
++export function bindEventMap<TKey extends string, TEvent extends Event>(
+ 	host: HTMLElement,
+-	hooks: ButtonHooks | undefined,
++	wire: EventWire<Record<TKey, TEvent>>,
++	guard: Guard<TEvent>,
++	hooks: EventHooks<Record<TKey, TEvent>> | undefined,
+ 	signal: AbortSignal,
+ ): void {
+-	const toggle = hooks?.toggle
+-	if (toggle) {
++	if (hooks === undefined) return
++	for (const key in wire) {
++		const hook = hooks[key]
++		if (hook === undefined) continue
+ 		host.addEventListener(
+-			BUTTON_TOGGLE,
++			wire[key],
+ 			(event) => {
+-				if (isButtonEvent(event)) toggle(event)
++				if (guard(event)) hook(event)
+ 			},
+ 			{ signal },
+ 		)
+ 	}
+ }
++
++/**
++ * Waits for every running finite animation on an element to finish, cancel, or leave with the element.
++ *
++ * @param element - The element whose own animations and transitions are read.
++ * @param signal - The lifetime of the wait; aborting it resolves the wait at once.
++ * @returns Resolves once no running finite animation remains, or once the signal aborts.
++ * @remarks
++ * The wait reads `getAnimations()`, leaves infinite and paused animations out, and awaits each
++ * animation's `finished` promise, treating a rejection as settled because a cancelled or removed
++ * transition rejects it. It re-reads the list after each round, so a transition that starts when
++ * another finishes is awaited too. An element with no running animation settles in a microtask,
++ * which is the reduced-motion case: a zero-length transition creates no animation.
++ * @example
++ * ```ts
++ * await settleAnimations(panel, controller.signal)
++ * ```
++ */
++export async function settleAnimations(element: Element, signal: AbortSignal): Promise<void> {
++	const controller = new AbortController()
++	const aborted = new Promise<void>((resolve) => {
++		signal.addEventListener('abort', () => resolve(), { once: true, signal: controller.signal })
++	})
++	try {
++		while (!signal.aborted) {
++			const running = element
++				.getAnimations()
++				.filter(
++					(animation) =>
++						animation.playState === 'running' &&
++						animation.effect?.getComputedTiming().endTime !== Infinity,
++				)
++			if (running.length === 0) return
++			await Promise.race([
++				Promise.allSettled(running.map((animation) => animation.finished)),
++				aborted,
++			])
++		}
++	} finally {
++		controller.abort()
++	}
++}
++
++/**
++ * Forces a layout read, so a class or dimension write that follows starts its transition in the same task.
++ *
++ * @param element - The element whose layout is read.
++ * @returns Nothing; the layout read is the effect.
++ * @remarks
++ * A freshly inserted element has no computed style to transition from until something reads it,
++ * so a class written in the same task otherwise applies with no transition.
++ * @example
++ * ```ts
++ * reflow(panel)
++ * panel.classList.add('collapsing')
++ * ```
++ */
++export function reflow(element: Element): void {
++	element.getBoundingClientRect()
++}
++
++/**
++ * Returns the HTML elements a trigger's `data-bs-target` selector, or its `href` fragment, names in its document.
++ *
++ * @param trigger - The element carrying the selector.
++ * @returns The matching HTML elements in document order; an empty list when the trigger names no selector.
++ * @throws Thrown when the selector is not valid CSS, as the platform's `SyntaxError`.
++ * @remarks
++ * This is Bootstrap's `getSelector`, reading the `TARGET_ATTRIBUTE` and `LINK_ATTRIBUTE` constants.
++ * The target attribute wins unless it is empty or a bare `#`; the link attribute counts only when it
++ * carries a `#` or starts with `.`, and a full URL keeps its fragment. Each id in each
++ * comma-separated selector is escaped through `CSS.escape`, so an id carrying a character such as
++ * `.` or `/` still resolves.
++ * @example
++ * ```ts
++ * const panels = readTargets(trigger)
++ * ```
++ */
++export function readTargets(trigger: Element): readonly HTMLElement[] {
++	let selector = trigger.getAttribute(TARGET_ATTRIBUTE)
++	if (selector === null || selector === '' || selector === '#') {
++		const href = trigger.getAttribute(LINK_ATTRIBUTE)
++		if (href === null || (!href.includes('#') && !href.startsWith('.'))) return []
++		const fragment =
++			href.includes('#') && !href.startsWith('#') ? `#${href.split('#')[1] ?? ''}` : href
++		selector = fragment === '#' ? '' : fragment.trim()
++	}
++	if (selector === '') return []
++	const escaped = selector
++		.split(',')
++		.map((part) => part.replace(/#([^\s"#']+)/g, (_match, id: string) => `#${CSS.escape(id)}`))
++		.join(',')
++	return Array.from(trigger.ownerDocument.querySelectorAll(escaped)).filter(isHost)
++}
++
++/**
++ * Returns the first HTML element a trigger's `data-bs-target` selector, or its `href` fragment, names in its document.
++ *
++ * @param trigger - The element carrying the selector.
++ * @returns The first matching HTML element, or undefined when none matches or the trigger names no selector.
++ * @throws Thrown when the selector is not valid CSS, as the platform's `SyntaxError`.
++ * @remarks
++ * The selector is read exactly as `readTargets` reads it.
++ * @example
++ * ```ts
++ * const modal = readTarget(trigger)
++ * ```
++ */
++export function readTarget(trigger: Element): HTMLElement | undefined {
++	return readTargets(trigger)[0]
++}
++
++/**
++ * Generates an element id from a prefix and a random suffix.
++ *
++ * @param prefix - The id's leading word, such as `tooltip`.
++ * @returns The prefix, a hyphen, and a fourteen-character base-36 suffix drawn from 64 random bits.
++ * @remarks
++ * The suffix comes from `crypto.getRandomValues`, which a page served without a secure context
++ * still publishes.
++ * @example
++ * ```ts
++ * tip.id = generateId('tooltip')
++ * ```
++ */
++export function generateId(prefix: string): string {
++	const suffix = Array.from(crypto.getRandomValues(new Uint32Array(2)), (value) =>
++		value.toString(36).padStart(7, '0'),
++	).join('')
++	return `${prefix}-${suffix}`
++}
++
++/**
++ * Resolves an entity's options from its defaults, `data-bs-config`, its declared `data-bs-*` attributes, and the constructor object.
++ *
++ * @param element - The host whose attributes are read.
++ * @param code - The error code a value that fails coercion throws, such as `COLLAPSE_OPTION_INVALID`.
++ * @param defaults - The entity's default options.
++ * @param parsers - The declared keys, each mapped to the parser that coerces its attribute or config value.
++ * @param options - The constructor object, when supplied.
++ * @returns A new options object; an explicit `false` or `0` survives every layer.
++ * @throws Thrown when a declared attribute, or a declared key inside `data-bs-config`, fails coercion, as an `AppError` carrying the code, the attribute's name, and the host's tag.
++ * @remarks
++ * Each layer overrides the one before it. A declared key is an entity's one-word option key, which
++ * is Bootstrap's key verbatim, and its attribute is the `OPTION_PREFIX` constant followed by the
++ * key. An undeclared key is ignored in both places. A `CONFIG_ATTRIBUTE` value that is not a JSON
++ * record is ignored, as Bootstrap ignores it.
++ * @example
++ * ```ts
++ * const resolved = resolveOptions(host, 'COLLAPSE_OPTION_INVALID', defaults, { toggle: parseBoolean }, options)
++ * ```
++ */
++export function resolveOptions<T extends object>(
++	element: HTMLElement,
++	code: string,
++	defaults: T,
++	parsers: { readonly [TKey in keyof T]?: Parser<T[TKey]> },
++	options: Partial<T> | undefined,
++): T {
++	const text = element.getAttribute(CONFIG_ATTRIBUTE)
++	const config = text === null ? undefined : parseJSONAs(text, isRecord)
++	const declared: Partial<T> = {}
++	for (const key in parsers) {
++		const parse = parsers[key]
++		const name = `${OPTION_PREFIX}${key}`
++		const attribute = element.getAttribute(name)
++		const source =
++			attribute ?? (config !== undefined && Object.hasOwn(config, key) ? config[key] : undefined)
++		if (parse === undefined || source === undefined) continue
++		const value = parse(source)
++		if (value === undefined) {
++			throw new AppError('Option value fails coercion', code, {
++				attribute: attribute === null ? CONFIG_ATTRIBUTE : name,
++				tag: element.tagName,
++			})
++		}
++		declared[key] = value
++	}
++	return { ...defaults, ...declared, ...options }
++}
+diff --git a/src/browser/index.ts b/src/browser/index.ts
+index 2f5a03c..d2f8b5a 100644
+--- a/src/browser/index.ts
++++ b/src/browser/index.ts
+@@ -2,6 +2,8 @@ export * from './types.js'
+ export * from './constants.js'
+ export * from './helpers.js'
+ export * from './validators.js'
++export * from './Registry.js'
++export * from './Snapshot.js'
+ export * from './ColorMode.js'
+ export * from './Button.js'
+ export * from './Delegate.js'
+diff --git a/src/browser/validators.ts b/src/browser/validators.ts
+index 5907012..95bc03c 100644
+--- a/src/browser/validators.ts
++++ b/src/browser/validators.ts
+@@ -30,10 +30,10 @@ export const isColorModeState: Guard<ColorModeState> = literalOf('light', 'dark'
+  * a host that publishes no DOM.
+  * @example
+  * ```ts
+- * isButtonHost(document.createElement('button')) // true
++ * isHost(document.createElement('button')) // true
+  * ```
+  */
+-export function isButtonHost(value: unknown): value is HTMLElement {
++export function isHost(value: unknown): value is HTMLElement {
+ 	return isInstance(value, HTMLElement)
+ }
+ 
+diff --git a/tests/src/browser/Button.test.ts b/tests/src/browser/Button.test.ts
+index 999200b..c222614 100644
+--- a/tests/src/browser/Button.test.ts
++++ b/tests/src/browser/Button.test.ts
+@@ -1,5 +1,5 @@
+ import type { ButtonDetail } from '@src/browser'
+-import { Button, BUTTON_ACTIVE, BUTTON_TOGGLE } from '@src/browser'
++import { Button, BUTTON_ACTIVE, BUTTON_EVENTS } from '@src/browser'
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder } from '@orkestrel/test'
+@@ -124,7 +124,8 @@ describe('Button', () => {
+ 		)
+ 		const button = new Button(host, { on: { toggle: hooks.handler } })
+ 		onTestFinished(() => button.destroy())
+-		expect(BUTTON_TOGGLE).toBe('toggle.vn.button')
++		expect(BUTTON_EVENTS).toStrictEqual({ toggle: 'toggle.vn.button' })
++		expect(Object.isFrozen(BUTTON_EVENTS)).toBe(true)
+ 		expect(button.toggle()).toBe(true)
+ 		expect(hooks.count).toBe(1)
+ 		expect(events.count).toBe(1)
+@@ -263,6 +264,23 @@ describe('Button', () => {
+ 		})
+ 	})
+ 
++	it('finds the live engine by its host and forgets it after destruction', () => {
++		const host = build('button')
++		const other = build('button')
++		expect(Button.find(host)).toBeUndefined()
++		const button = new Button(host)
++		onTestFinished(() => button.destroy())
++		expect(Button.find(host)).toBe(button)
++		expect(Button.find(other)).toBeUndefined()
++		button.destroy()
++		expect(Button.find(host)).toBeUndefined()
++		const replacement = new Button(host)
++		onTestFinished(() => replacement.destroy())
++		expect(Button.find(host)).toBe(replacement)
++		button.destroy()
++		expect(Button.find(host)).toBe(replacement)
++	})
++
+ 	it('preserves destruction performed by a listener during a toggle', () => {
+ 		const host = build('button')
+ 		const button = new Button(host, { on: { toggle: () => button.destroy() } })
+diff --git a/tests/src/browser/ColorMode.test.ts b/tests/src/browser/ColorMode.test.ts
+index eb2b6dc..984477a 100644
+--- a/tests/src/browser/ColorMode.test.ts
++++ b/tests/src/browser/ColorMode.test.ts
+@@ -154,7 +154,7 @@ describe('ColorMode', () => {
+ 		expect(root.getAttribute('data-bs-theme')).toBe('dark')
+ 	})
+ 
+-	it('writes nothing after destruction of a root that carried an attribute, and toggles to the live mode', () => {
++	it('writes nothing after destruction of a root that carried an attribute, and its toggle returns the mode the root carries', () => {
+ 		const root = build('div')
+ 		root.setAttribute('data-bs-theme', 'light')
+ 		const controller = new ColorMode({ root, storage: sessionStorage })
+@@ -177,7 +177,7 @@ describe('ColorMode', () => {
+ 		expect(sessionStorage.getItem('color-mode')).toBe('light')
+ 	})
+ 
+-	it('writes nothing after destruction of a root that carried no attribute, and toggles to the live mode', () => {
++	it('writes nothing after destruction of a root that carried no attribute, and its toggle returns the mode the root carries', () => {
+ 		const root = build('div')
+ 		const controller = new ColorMode({ root, storage: sessionStorage })
+ 		controller.apply('light')
+diff --git a/tests/src/browser/Delegate.test.ts b/tests/src/browser/Delegate.test.ts
+index 61bf56e..67ddc81 100644
+--- a/tests/src/browser/Delegate.test.ts
++++ b/tests/src/browser/Delegate.test.ts
+@@ -30,7 +30,7 @@ describe('Delegate', () => {
+ 		expect(host.classList.contains('active')).toBe(false)
+ 		expect(host.getAttribute('aria-pressed')).toBe('false')
+ 		expect(events.count).toBe(2)
+-		expect(() => new Button(host)).toThrow('Button host already has a live owner')
++		expect(() => new Button(host)).toThrow(expect.objectContaining({ code: 'BUTTON_HOST_OWNED' }))
+ 		delegate.destroy()
+ 		expect(host.hasAttribute('aria-pressed')).toBe(false)
+ 	})
+@@ -53,7 +53,7 @@ describe('Delegate', () => {
+ 		expect(host.hasAttribute('aria-pressed')).toBe(false)
+ 	})
+ 
+-	it('leaves a consumer-owned host to its owner without a listener error', () => {
++	it('drives the engine a consumer constructed and leaves it to that consumer on destruction', () => {
+ 		const root = mount(build('div'))
+ 		onTestFinished(() => root.remove())
+ 		const host = build('button', { attributes: { 'data-bs-toggle': 'button' } })
+@@ -78,16 +78,17 @@ describe('Delegate', () => {
+ 		const click = new MouseEvent('click', { bubbles: true, cancelable: true })
+ 		expect(host.dispatchEvent(click)).toBe(false)
+ 		expect(errors.calls).toEqual([])
+-		expect(events.count).toBe(1)
+-		expect(button.pressed).toBe(true)
+-		expect(host.getAttribute('aria-pressed')).toBe('true')
+-		delegate.destroy()
+-		expect(button.pressed).toBe(true)
+-		expect(button.toggle()).toBe(false)
+ 		expect(events.count).toBe(2)
++		expect(button.pressed).toBe(false)
++		expect(host.getAttribute('aria-pressed')).toBe('false')
++		delegate.destroy()
++		expect(button.pressed).toBe(false)
++		expect(host.getAttribute('aria-pressed')).toBe('false')
++		expect(button.toggle()).toBe(true)
++		expect(events.count).toBe(3)
+ 	})
+ 
+-	it('leaves nested-root activation to the delegate that owns the host without a listener error', () => {
++	it('toggles a host under nested roots once per click and restores it with the delegate that acquired it', () => {
+ 		const root = mount(build('div'))
+ 		onTestFinished(() => root.remove())
+ 		const nested = build('div')
+@@ -254,7 +255,9 @@ describe('Delegate', () => {
+ 		expect(link.toggle()).toBe(false)
+ 	})
+ 
+-	it('restores removed hosts on a later unrelated click and releases their ownership', () => {
++	// The delegate releases at the observer delivery that follows a removal. That delivery is a
++	// microtask queued by the removal itself, so one awaited microtask turn lets it run first.
++	it('restores removed hosts at the observer delivery after their removal and releases their ownership', async () => {
+ 		const root = mount(build('div'))
+ 		onTestFinished(() => root.remove())
+ 		const host = build('button', { attributes: { 'data-bs-toggle': 'button' } })
+@@ -263,8 +266,7 @@ describe('Delegate', () => {
+ 			attributes: { 'data-bs-toggle': 'button', 'aria-pressed': 'mixed' },
+ 		})
+ 		const absent = build('button', { attributes: { 'data-bs-toggle': 'button' } })
+-		const elsewhere = build('span')
+-		root.append(host, removed, absent, elsewhere)
++		root.append(host, removed, absent)
+ 		const delegate = new Delegate({ root })
+ 		onTestFinished(() => delegate.destroy())
+ 		host.click()
+@@ -272,10 +274,9 @@ describe('Delegate', () => {
+ 		absent.click()
+ 		removed.remove()
+ 		absent.remove()
+-		expect(removed.isConnected).toBe(false)
+ 		expect(removed.getAttribute('aria-pressed')).toBe('false')
+ 		expect(absent.getAttribute('aria-pressed')).toBe('true')
+-		elsewhere.click()
++		await Promise.resolve()
+ 		expect(removed.classList.contains('active')).toBe(true)
+ 		expect(removed.getAttribute('aria-pressed')).toBe('mixed')
+ 		expect(absent.classList.contains('active')).toBe(false)
+@@ -289,26 +290,23 @@ describe('Delegate', () => {
+ 		expect(host.hasAttribute('aria-pressed')).toBe(false)
+ 	})
+ 
+-	it('releases a connected host moved outside the root on a later unrelated click', () => {
++	it('releases a connected host moved outside the root at the observer delivery after the move', async () => {
+ 		const container = mount(build('div'))
+ 		onTestFinished(() => container.remove())
+ 		const root = build('div')
+-		const elsewhere = build('span')
+ 		const host = build('button', {
+ 			classes: 'active',
+ 			attributes: { 'data-bs-toggle': 'button', 'aria-pressed': 'mixed' },
+ 		})
+ 		container.append(root)
+-		root.append(host, elsewhere)
++		root.append(host)
+ 		const delegate = new Delegate({ root })
+ 		onTestFinished(() => delegate.destroy())
+ 		host.click()
+-		expect(host.classList.contains('active')).toBe(false)
+ 		expect(host.getAttribute('aria-pressed')).toBe('false')
+ 		container.append(host)
++		await Promise.resolve()
+ 		expect(host.isConnected).toBe(true)
+-		expect(root.contains(host)).toBe(false)
+-		elsewhere.click()
+ 		expect(host.classList.contains('active')).toBe(true)
+ 		expect(host.getAttribute('aria-pressed')).toBe('mixed')
+ 		const replacement = new Button(host)
+@@ -318,31 +316,29 @@ describe('Delegate', () => {
+ 		expect(host.getAttribute('aria-pressed')).toBe('false')
+ 	})
+ 
+-	it('keeps the engine and the state of a host reinserted before the next root click', () => {
++	it('keeps the engine and the state of a host removed and reinserted in one task', async () => {
+ 		const root = mount(build('div'))
+ 		onTestFinished(() => root.remove())
+ 		const host = build('button', { attributes: { 'data-bs-toggle': 'button' } })
+-		const elsewhere = build('span')
+-		root.append(host, elsewhere)
++
++		root.append(host)
+ 		const delegate = new Delegate({ root })
+ 		onTestFinished(() => delegate.destroy())
+ 		host.click()
+-		expect(host.getAttribute('aria-pressed')).toBe('true')
+ 		host.remove()
+ 		root.append(host)
+-		elsewhere.click()
++		await Promise.resolve()
+ 		expect(host.classList.contains('active')).toBe(true)
+ 		expect(host.getAttribute('aria-pressed')).toBe('true')
+-		expect(() => new Button(host)).toThrow('Button host already has a live owner')
++		expect(() => new Button(host)).toThrow(expect.objectContaining({ code: 'BUTTON_HOST_OWNED' }))
+ 		host.click()
+ 		expect(host.getAttribute('aria-pressed')).toBe('false')
+ 		delegate.destroy()
+ 		expect(host.hasAttribute('aria-pressed')).toBe(false)
+-		expect(host.classList.contains('active')).toBe(false)
+ 		expect(host.hasAttribute('class')).toBe(false)
+ 	})
+ 
+-	it('reacquires a pruned host after reinsertion', () => {
++	it('acquires a released host again with a fresh engine after reinsertion', async () => {
+ 		const root = mount(build('div'))
+ 		onTestFinished(() => root.remove())
+ 		const host = build('button', { attributes: { 'data-bs-toggle': 'button' } })
+@@ -351,7 +347,7 @@ describe('Delegate', () => {
+ 		onTestFinished(() => delegate.destroy())
+ 		host.click()
+ 		host.remove()
+-		root.click()
++		await Promise.resolve()
+ 		expect(host.hasAttribute('aria-pressed')).toBe(false)
+ 		root.append(host)
+ 		host.click()
+diff --git a/tests/src/browser/Registry.test.ts b/tests/src/browser/Registry.test.ts
+new file mode 100644
+index 0000000..931894f
+--- /dev/null
++++ b/tests/src/browser/Registry.test.ts
+@@ -0,0 +1,62 @@
++import { Registry } from '@src/browser'
++import { isAppError } from '@src/core'
++import { attempt } from '@orkestrel/contract'
++import { build } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('Registry', () => {
++	it('records the claiming engine and finds it by host', () => {
++		const registry = new Registry<object>({ code: 'PROBE_HOST_OWNED' })
++		const host = build('div')
++		const other = build('div')
++		const engine = {}
++		expect(registry.find(host)).toBeUndefined()
++		registry.claim(host, engine)
++		expect(registry.find(host)).toBe(engine)
++		expect(registry.find(other)).toBeUndefined()
++	})
++
++	it('refuses a second claim with the configured code and keeps the first owner', () => {
++		const registry = new Registry<object>({ code: 'PROBE_HOST_OWNED' })
++		const host = build('section')
++		const owner = {}
++		registry.claim(host, owner)
++		const refused = attempt(() => registry.claim(host, {}))
++		expect(refused).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
++		expect(refused).toMatchObject({
++			error: { code: 'PROBE_HOST_OWNED', context: { tag: 'SECTION' } },
++		})
++		expect(attempt(() => registry.claim(host, owner))).toMatchObject({
++			success: false,
++			error: { code: 'PROBE_HOST_OWNED' },
++		})
++		expect(registry.find(host)).toBe(owner)
++	})
++
++	it('releases only for the engine that holds the claim, then admits a new claim', () => {
++		const registry = new Registry<object>({ code: 'PROBE_HOST_OWNED' })
++		const host = build('div')
++		const owner = {}
++		const stranger = {}
++		expect(registry.release(host, owner)).toBe(false)
++		registry.claim(host, owner)
++		expect(registry.release(host, stranger)).toBe(false)
++		expect(registry.find(host)).toBe(owner)
++		expect(registry.release(host, owner)).toBe(true)
++		expect(registry.release(host, owner)).toBe(false)
++		expect(registry.find(host)).toBeUndefined()
++		registry.claim(host, stranger)
++		expect(registry.find(host)).toBe(stranger)
++	})
++
++	it('keeps one record per registry, so separate registries claim one host independently', () => {
++		const first = new Registry<object>({ code: 'FIRST_HOST_OWNED' })
++		const second = new Registry<object>({ code: 'SECOND_HOST_OWNED' })
++		const host = build('div')
++		const engine = {}
++		first.claim(host, engine)
++		second.claim(host, engine)
++		expect(first.release(host, engine)).toBe(true)
++		expect(second.find(host)).toBe(engine)
++	})
++})
+diff --git a/tests/src/browser/Snapshot.test.ts b/tests/src/browser/Snapshot.test.ts
+new file mode 100644
+index 0000000..a53bf60
+--- /dev/null
++++ b/tests/src/browser/Snapshot.test.ts
+@@ -0,0 +1,90 @@
++import { Snapshot } from '@src/browser'
++import { build } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('Snapshot', () => {
++	it('writes back a present attribute and removes an absent one', () => {
++		const host = build('button', { attributes: { 'aria-expanded': 'false' } })
++		const snapshot = new Snapshot()
++		snapshot.save({ category: 'attribute', element: host, name: 'aria-expanded' })
++		snapshot.save({ category: 'attribute', element: host, name: 'aria-controls' })
++		host.setAttribute('aria-expanded', 'true')
++		host.setAttribute('aria-controls', 'panel')
++		snapshot.restore()
++		expect(host.getAttribute('aria-expanded')).toBe('false')
++		expect(host.hasAttribute('aria-controls')).toBe(false)
++	})
++
++	it('restores an empty attribute distinctly from an absent one', () => {
++		const host = build('div', { attributes: { hidden: '' } })
++		const snapshot = new Snapshot()
++		snapshot.save({ category: 'attribute', element: host, name: 'hidden' })
++		host.removeAttribute('hidden')
++		snapshot.restore()
++		expect(host.getAttribute('hidden')).toBe('')
++	})
++
++	it('restores class token membership and keeps every token the snapshot never recorded', () => {
++		const host = build('div', { classes: 'collapse show' })
++		const snapshot = new Snapshot()
++		snapshot.save({ category: 'token', element: host, name: 'show' })
++		snapshot.save({ category: 'token', element: host, name: 'collapsing' })
++		host.classList.remove('show')
++		host.classList.add('collapsing', 'consumer')
++		snapshot.restore()
++		expect(Array.from(host.classList)).toEqual(['collapse', 'consumer', 'show'])
++	})
++
++	it('removes the class attribute it found absent when restoring leaves the list empty', () => {
++		const bare = build('div')
++		const edited = build('div')
++		const empty = build('div', { attributes: { class: '' } })
++		const snapshot = new Snapshot()
++		for (const element of [bare, edited, empty]) {
++			snapshot.save({ category: 'token', element, name: 'show' })
++			element.classList.add('show')
++		}
++		edited.classList.add('consumer')
++		snapshot.restore()
++		expect(bare.hasAttribute('class')).toBe(false)
++		expect(edited.getAttribute('class')).toBe('consumer')
++		expect(empty.getAttribute('class')).toBe('')
++	})
++
++	it('restores an inline property with its priority and removes one it found absent', () => {
++		const host = build('div')
++		host.style.setProperty('height', '10px', 'important')
++		const snapshot = new Snapshot()
++		snapshot.save({ category: 'property', element: host, name: 'height' })
++		snapshot.save({ category: 'property', element: host, name: 'anchor-name' })
++		host.style.setProperty('height', '40px')
++		host.style.setProperty('anchor-name', '--vn-probe')
++		host.style.setProperty('width', '20px')
++		snapshot.restore()
++		expect(host.style.getPropertyValue('height')).toBe('10px')
++		expect(host.style.getPropertyPriority('height')).toBe('important')
++		expect(host.style.getPropertyValue('anchor-name')).toBe('')
++		expect(host.style.getPropertyValue('width')).toBe('20px')
++	})
++
++	it('keeps the first recording of a target saved twice', () => {
++		const host = build('button', { attributes: { 'aria-pressed': 'mixed' } })
++		const snapshot = new Snapshot()
++		snapshot.save({ category: 'attribute', element: host, name: 'aria-pressed' })
++		host.setAttribute('aria-pressed', 'true')
++		snapshot.save({ category: 'attribute', element: host, name: 'aria-pressed' })
++		host.setAttribute('aria-pressed', 'false')
++		snapshot.restore()
++		expect(host.getAttribute('aria-pressed')).toBe('mixed')
++	})
++
++	it('forgets its records on restore, so a later restore keeps every edit', () => {
++		const host = build('button', { attributes: { 'aria-pressed': 'mixed' } })
++		const snapshot = new Snapshot()
++		snapshot.save({ category: 'attribute', element: host, name: 'aria-pressed' })
++		snapshot.restore()
++		host.setAttribute('aria-pressed', 'true')
++		snapshot.restore()
++		expect(host.getAttribute('aria-pressed')).toBe('true')
++	})
++})
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index bcce2c3..25efb00 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -1,63 +1,406 @@
+-import type { ButtonDetail } from '@src/browser'
+-import { bindEventMap, emitEvent } from '@src/browser'
++import type { ButtonDetail, CollapseHooks, DropdownDetail } from '@src/browser'
++import {
++	BUTTON_EVENTS,
++	bindEventMap,
++	emitEvent,
++	generateId,
++	isButtonEvent,
++	readTarget,
++	readTargets,
++	reflow,
++	resolveOptions,
++	settleAnimations,
++} from '@src/browser'
++import { isAppError } from '@src/core'
++import { attempt, parseBoolean, parseNumber, parseString } from '@orkestrel/contract'
+ import { createRecorder } from '@orkestrel/test'
+-import { build } from '@orkestrel/test/browser'
+-import { describe, expect, it, onTestFinished } from 'vitest'
++import { build, mount } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it, onTestFinished } from 'vitest'
+ import { recordEvents } from '../../setupBrowser.js'
+ 
+ describe('emitEvent', () => {
+-	it('dispatches the supplied type and detail synchronously through the parent', () => {
++	it('dispatches a bubbling non-cancelable event whose prevention changes nothing', () => {
+ 		const root = build('div')
+ 		const host = build('button')
+ 		root.append(host)
+ 		const controller = new AbortController()
+ 		onTestFinished(() => controller.abort())
+ 		const events = recordEvents(root, 'completed', controller.signal)
++		root.addEventListener('completed', (event) => event.preventDefault(), {
++			signal: controller.signal,
++		})
+ 		const detail = { pressed: false }
+-		emitEvent(host, 'completed', detail)
++		expect(emitEvent(host, 'completed', detail, false)).toBe(true)
+ 		expect(events.count).toBe(1)
+ 		const reading = events.calls[0]?.[0]
+ 		const event = reading?.event
+-		expect(event).toBeInstanceOf(CustomEvent)
+ 		if (!(event instanceof CustomEvent)) throw new Error('Expected a custom event')
+ 		expect(event.type).toBe('completed')
+ 		expect(event.detail).toBe(detail)
+ 		expect(reading?.target).toBe(host)
+ 		expect(event.bubbles).toBe(true)
+ 		expect(event.cancelable).toBe(false)
++		expect(event.defaultPrevented).toBe(false)
++	})
++
++	it('dispatches a cancelable event and returns false when a listener prevents it', () => {
++		const root = build('div')
++		const host = build('button')
++		root.append(host)
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		const events = recordEvents(root, 'show.bs.dropdown', controller.signal)
++		expect(emitEvent(host, 'show.bs.dropdown', undefined, true)).toBe(true)
++		root.addEventListener('show.bs.dropdown', (event) => event.preventDefault(), {
++			signal: controller.signal,
++		})
++		expect(emitEvent(host, 'show.bs.dropdown', undefined, true)).toBe(false)
++		expect(events.calls.map(([reading]) => reading.event.cancelable)).toEqual([true, true])
++		expect(events.calls.map(([reading]) => reading.event.defaultPrevented)).toEqual([false, true])
++	})
++
++	it('mirrors each detail field as an own property a document listener reads', () => {
++		const host = mount(build('button'))
++		onTestFinished(() => host.remove())
++		const click = new MouseEvent('click')
++		const detail: DropdownDetail = { relatedTarget: host, clickEvent: click }
++		const readings = createRecorder<readonly [unknown, unknown, boolean]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		document.addEventListener(
++			'hide.bs.dropdown',
++			(event) =>
++				readings.handler(
++					Object.getOwnPropertyDescriptor(event, 'relatedTarget')?.value,
++					Object.getOwnPropertyDescriptor(event, 'clickEvent')?.value,
++					Object.hasOwn(event, 'detail'),
++				),
++			{ signal: controller.signal },
++		)
++		emitEvent(host, 'hide.bs.dropdown', detail, true)
++		expect(readings.calls).toEqual([[host, click, false]])
+ 	})
+ })
+ 
+ describe('bindEventMap', () => {
+-	it('binds typed toggle hooks and releases them on abort', () => {
+-		const host = build('button')
++	it('binds the hooks of a non-Button map to their wire names and releases them on abort', () => {
++		const host = build('div')
+ 		const controller = new AbortController()
+ 		onTestFinished(() => controller.abort())
+-		const hooks = createRecorder<readonly [CustomEvent<ButtonDetail>]>()
+-		bindEventMap(host, { toggle: hooks.handler }, controller.signal)
+-		const event = new CustomEvent('toggle.vn.button', { detail: { pressed: false } })
+-		host.dispatchEvent(event)
+-		expect(hooks.calls).toEqual([[event]])
++		const shown = createRecorder<readonly [CustomEvent<undefined>]>()
++		const hidden = createRecorder<readonly [CustomEvent<undefined>]>()
++		const hooks: CollapseHooks = { shown: shown.handler, hidden: hidden.handler }
++		bindEventMap(
++			host,
++			{
++				show: 'show.bs.collapse',
++				shown: 'shown.bs.collapse',
++				hide: 'hide.bs.collapse',
++				hidden: 'hidden.bs.collapse',
++			},
++			(value: unknown): value is CustomEvent<undefined> => value instanceof CustomEvent,
++			hooks,
++			controller.signal,
++		)
++		const first = new CustomEvent<undefined>('shown.bs.collapse')
++		const second = new CustomEvent<undefined>('hidden.bs.collapse')
++		host.dispatchEvent(new CustomEvent('show.bs.collapse'))
++		host.dispatchEvent(first)
++		host.dispatchEvent(second)
++		host.dispatchEvent(new Event('shown.bs.collapse'))
++		host.dispatchEvent(new CustomEvent('shown'))
++		expect(shown.calls).toEqual([[first]])
++		expect(hidden.calls).toEqual([[second]])
+ 		controller.abort()
+-		host.dispatchEvent(event)
+-		expect(hooks.count).toBe(1)
++		host.dispatchEvent(first)
++		expect(shown.count).toBe(1)
+ 	})
+ 
+-	it('ignores absent hooks, aborted subscriptions, unrelated names, and malformed events', () => {
++	it('binds nothing for absent hooks or an aborted signal', () => {
+ 		const host = build('button')
+ 		const controller = new AbortController()
+ 		onTestFinished(() => controller.abort())
+ 		const hooks = createRecorder<readonly [CustomEvent<ButtonDetail>]>()
+-		bindEventMap(host, undefined, controller.signal)
+-		bindEventMap(host, {}, controller.signal)
+-		bindEventMap(host, { toggle: hooks.handler }, controller.signal)
+-		host.dispatchEvent(new Event('toggle.vn.button'))
+-		host.dispatchEvent(new CustomEvent('toggle.vn.button', { detail: { pressed: 'true' } }))
+-		host.dispatchEvent(new CustomEvent('toggle', { detail: { pressed: true } }))
++		bindEventMap(host, BUTTON_EVENTS, isButtonEvent, undefined, controller.signal)
++		bindEventMap(host, BUTTON_EVENTS, isButtonEvent, {}, controller.signal)
++		host.dispatchEvent(new CustomEvent('toggle.vn.button', { detail: { pressed: true } }))
+ 		expect(hooks.count).toBe(0)
+ 		controller.abort()
+-		bindEventMap(host, { toggle: hooks.handler }, controller.signal)
++		bindEventMap(host, BUTTON_EVENTS, isButtonEvent, { toggle: hooks.handler }, controller.signal)
+ 		host.dispatchEvent(new CustomEvent('toggle.vn.button', { detail: { pressed: true } }))
+ 		expect(hooks.count).toBe(0)
+ 	})
+ })
++
++describe('settleAnimations', () => {
++	beforeAll(() => {
++		const sheet = mount(
++			build('style', {
++				text: `.vn-probe-motion { width: 10px; height: 10px; transition: width 40ms linear, height 40ms linear; }
++.vn-probe-motion.wide { width: 60px; }
++.vn-probe-motion.tall { height: 60px; }
++.vn-probe-motion.slow { transition-duration: 10s; }
++.vn-probe-motion.instant { transition-duration: 0s; }
++@keyframes vn-probe-fade { to { opacity: 0.5; } }
++.vn-probe-motion.endless { animation: vn-probe-fade 40ms infinite; }
++.vn-probe-motion.held { animation: vn-probe-fade 40ms paused; }`,
++			}),
++		)
++		return () => sheet.remove()
++	})
++
++	it('resolves after a running transition finishes', async () => {
++		const element = mount(build('div', { classes: 'vn-probe-motion' }))
++		onTestFinished(() => element.remove())
++		reflow(element)
++		element.classList.add('wide')
++		const [animation] = element.getAnimations()
++		expect(animation).toBeInstanceOf(CSSTransition)
++		await settleAnimations(element, new AbortController().signal)
++		expect(animation?.playState).toBe('finished')
++		expect(element.getAnimations()).toEqual([])
++	})
++
++	it('re-reads the list and waits for a transition that starts when the first one finishes', async () => {
++		const element = mount(build('div', { classes: 'vn-probe-motion' }))
++		onTestFinished(() => element.remove())
++		reflow(element)
++		element.classList.add('wide')
++		const [first] = element.getAnimations()
++		const chained = first?.finished.then(() => element.classList.add('tall'))
++		await settleAnimations(element, new AbortController().signal)
++		await chained
++		expect(element.getAnimations()).toEqual([])
++		expect(getComputedStyle(element).height).toBe('60px')
++	})
++
++	it('treats a cancelled transition as settled', async () => {
++		const element = mount(build('div', { classes: 'vn-probe-motion slow' }))
++		onTestFinished(() => element.remove())
++		reflow(element)
++		element.classList.add('wide')
++		const [animation] = element.getAnimations()
++		const settling = settleAnimations(element, new AbortController().signal)
++		animation?.cancel()
++		await expect(settling).resolves.toBeUndefined()
++		expect(animation?.playState).toBe('idle')
++	})
++
++	it('treats a transition whose element is removed midway as settled', async () => {
++		const element = mount(build('div', { classes: 'vn-probe-motion slow' }))
++		reflow(element)
++		element.classList.add('wide')
++		const [animation] = element.getAnimations()
++		const settling = settleAnimations(element, new AbortController().signal)
++		element.remove()
++		await expect(settling).resolves.toBeUndefined()
++		expect(animation?.playState).toBe('idle')
++	})
++
++	it('resolves in a microtask when the element has no running animation', async () => {
++		const element = mount(build('div', { classes: 'vn-probe-motion instant' }))
++		onTestFinished(() => element.remove())
++		reflow(element)
++		element.classList.add('wide')
++		expect(element.getAnimations()).toEqual([])
++		const settled = createRecorder<readonly []>()
++		void settleAnimations(element, new AbortController().signal).then(settled.handler)
++		await Promise.resolve()
++		expect(settled.count).toBe(1)
++	})
++
++	it('leaves infinite and paused animations out', async () => {
++		const endless = mount(build('div', { classes: 'vn-probe-motion endless' }))
++		const held = mount(build('div', { classes: 'vn-probe-motion held' }))
++		onTestFinished(() => endless.remove())
++		onTestFinished(() => held.remove())
++		expect(endless.getAnimations().map((animation) => animation.playState)).toEqual(['running'])
++		expect(held.getAnimations().map((animation) => animation.playState)).toEqual(['paused'])
++		const settled = createRecorder<readonly []>()
++		void settleAnimations(endless, new AbortController().signal).then(settled.handler)
++		void settleAnimations(held, new AbortController().signal).then(settled.handler)
++		await Promise.resolve()
++		expect(settled.count).toBe(2)
++	})
++
++	it('resolves at once when the signal aborts, leaving the transition running', async () => {
++		const element = mount(build('div', { classes: 'vn-probe-motion slow' }))
++		onTestFinished(() => element.remove())
++		reflow(element)
++		element.classList.add('wide')
++		const [animation] = element.getAnimations()
++		const controller = new AbortController()
++		const settling = settleAnimations(element, controller.signal)
++		controller.abort()
++		await settling
++		expect(animation?.playState).toBe('running')
++		const aborted = createRecorder<readonly []>()
++		void settleAnimations(element, controller.signal).then(aborted.handler)
++		await Promise.resolve()
++		expect(aborted.count).toBe(1)
++	})
++})
++
++describe('reflow', () => {
++	it('lets a class change on a freshly inserted element start its transition in the same task', () => {
++		const sheet = mount(
++			build('style', {
++				text: '.vn-probe-reflow { width: 10px; transition: width 40ms linear; } .vn-probe-reflow.wide { width: 60px; }',
++			}),
++		)
++		onTestFinished(() => sheet.remove())
++		const control = mount(build('div', { classes: 'vn-probe-reflow' }))
++		onTestFinished(() => control.remove())
++		control.classList.add('wide')
++		expect(control.getAnimations()).toEqual([])
++		const element = mount(build('div', { classes: 'vn-probe-reflow' }))
++		onTestFinished(() => element.remove())
++		reflow(element)
++		element.classList.add('wide')
++		expect(element.getAnimations().map((animation) => animation.constructor)).toEqual([
++			CSSTransition,
++		])
++	})
++})
++
++describe('readTarget', () => {
++	it('resolves the data-bs-target selector, escaping an id that carries a special character', () => {
++		const panel = mount(build('div', { attributes: { id: 'panel.one' } }))
++		onTestFinished(() => panel.remove())
++		expect(readTarget(build('button', { attributes: { 'data-bs-target': '#panel.one' } }))).toBe(
++			panel,
++		)
++	})
++
++	it('falls back to the href fragment when the target is absent or a bare hash', () => {
++		const panel = mount(build('div', { attributes: { id: 'panel.two' } }))
++		const listed = mount(build('div', { classes: 'vn-probe-listed' }))
++		onTestFinished(() => panel.remove())
++		onTestFinished(() => listed.remove())
++		expect(readTarget(build('a', { attributes: { href: '#panel.two' } }))).toBe(panel)
++		expect(
++			readTarget(build('a', { attributes: { href: 'https://example.com/page#panel.two' } })),
++		).toBe(panel)
++		expect(
++			readTarget(build('a', { attributes: { 'data-bs-target': '#', href: '#panel.two' } })),
++		).toBe(panel)
++		expect(readTarget(build('a', { attributes: { href: '.vn-probe-listed' } }))).toBe(listed)
++	})
++
++	it('returns undefined when no selector resolves to an HTML element', () => {
++		const svg = mount(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))
++		svg.setAttribute('id', 'vn-probe-vector')
++		onTestFinished(() => svg.remove())
++		expect(readTarget(build('button'))).toBeUndefined()
++		expect(readTarget(build('a', { attributes: { href: '#' } }))).toBeUndefined()
++		expect(readTarget(build('a', { attributes: { href: 'https://example.com/page' } }))).toBe(
++			undefined,
++		)
++		expect(readTarget(build('a', { attributes: { href: '#vn-probe-absent' } }))).toBeUndefined()
++		expect(
++			readTarget(build('button', { attributes: { 'data-bs-target': '#vn-probe-vector' } })),
++		).toBeUndefined()
++	})
++})
++
++describe('readTargets', () => {
++	it('returns every HTML element a selector list names, in document order', () => {
++		const first = mount(build('div', { attributes: { id: 'vn-probe-first' } }))
++		const second = mount(build('div', { attributes: { id: 'vn-probe-second' } }))
++		const svg = mount(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))
++		svg.classList.add('vn-probe-many')
++		first.classList.add('vn-probe-many')
++		second.classList.add('vn-probe-many')
++		onTestFinished(() => first.remove())
++		onTestFinished(() => second.remove())
++		onTestFinished(() => svg.remove())
++		const trigger = build('button', {
++			attributes: { 'data-bs-target': '#vn-probe-second, #vn-probe-first' },
++		})
++		expect(readTargets(trigger)).toEqual([first, second])
++		expect(
++			readTargets(build('button', { attributes: { 'data-bs-target': '.vn-probe-many' } })),
++		).toEqual([first, second])
++		expect(readTargets(build('button'))).toEqual([])
++	})
++})
++
++describe('generateId', () => {
++	it('appends a random suffix to the prefix and returns a different id on each call', () => {
++		const ids = Array.from({ length: 64 }, () => generateId('tooltip'))
++		expect(new Set(ids).size).toBe(64)
++		expect(ids.filter((id) => !/^tooltip-[0-9a-z]{14}$/.test(id))).toEqual([])
++	})
++})
++
++describe('resolveOptions', () => {
++	it('merges the defaults, the config attribute, the declared attributes, and the constructor object in that order', () => {
++		const host = build('div', {
++			attributes: {
++				'data-bs-config': '{"toggle":false,"delay":5,"label":"config","parent":"config"}',
++				'data-bs-delay': '0',
++				'data-bs-label': 'attribute',
++				'data-bs-parent': 'attribute',
++			},
++		})
++		expect(
++			resolveOptions(
++				host,
++				'PROBE_OPTION_INVALID',
++				{ toggle: true, delay: 300, label: 'default', title: 'default' },
++				{ toggle: parseBoolean, delay: parseNumber, label: parseString, title: parseString },
++				{ label: 'constructor' },
++			),
++		).toStrictEqual({ toggle: false, delay: 0, label: 'constructor', title: 'default' })
++	})
++
++	it('ignores a config attribute that is not a JSON record', () => {
++		expect(
++			resolveOptions(
++				build('div', { attributes: { 'data-bs-config': '{toggle' } }),
++				'PROBE_OPTION_INVALID',
++				{ toggle: true },
++				{ toggle: parseBoolean },
++				undefined,
++			),
++		).toStrictEqual({ toggle: true })
++		expect(
++			resolveOptions(
++				build('div', { attributes: { 'data-bs-config': '[false]' } }),
++				'PROBE_OPTION_INVALID',
++				{ toggle: true },
++				{ toggle: parseBoolean },
++				undefined,
++			),
++		).toStrictEqual({ toggle: true })
++	})
++
++	it('throws the entity code for a declared attribute or config key that fails coercion', () => {
++		const attribute = attempt(() =>
++			resolveOptions(
++				build('div', { attributes: { 'data-bs-delay': 'soon' } }),
++				'PROBE_OPTION_INVALID',
++				{ delay: 300 },
++				{ delay: parseNumber },
++				undefined,
++			),
++		)
++		expect(attribute).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
++		expect(attribute).toMatchObject({
++			error: { code: 'PROBE_OPTION_INVALID', context: { attribute: 'data-bs-delay', tag: 'DIV' } },
++		})
++		const config = attempt(() =>
++			resolveOptions(
++				build('div', { attributes: { 'data-bs-config': '{"delay":"soon"}' } }),
++				'PROBE_OPTION_INVALID',
++				{ delay: 300 },
++				{ delay: parseNumber },
++				undefined,
++			),
++		)
++		expect(config).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
++		expect(config).toMatchObject({
++			error: { code: 'PROBE_OPTION_INVALID', context: { attribute: 'data-bs-config', tag: 'DIV' } },
++		})
++	})
++})
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index 48b10fa..97be607 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -10,18 +10,31 @@ describe('src browser entry', () => {
+ 		expect(targets.filter((target) => target === document || target === window)).toEqual([])
+ 		expect(names).toStrictEqual([
+ 			'BUTTON_ACTIVE',
++			'BUTTON_EVENTS',
++			'BUTTON_PRESSED',
+ 			'BUTTON_SELECTOR',
+-			'BUTTON_TOGGLE',
+ 			'Button',
+ 			'COLOR_MODE_ATTRIBUTE',
+ 			'COLOR_MODE_KEY',
++			'CONFIG_ATTRIBUTE',
+ 			'ColorMode',
+ 			'Delegate',
++			'LINK_ATTRIBUTE',
++			'OPTION_PREFIX',
++			'Registry',
++			'Snapshot',
++			'TARGET_ATTRIBUTE',
+ 			'bindEventMap',
+ 			'emitEvent',
++			'generateId',
+ 			'isButtonEvent',
+-			'isButtonHost',
+ 			'isColorModeState',
++			'isHost',
++			'readTarget',
++			'readTargets',
++			'reflow',
++			'resolveOptions',
++			'settleAnimations',
+ 		])
+ 	})
+ 
+diff --git a/tests/src/browser/validators.test.ts b/tests/src/browser/validators.test.ts
+index ac10607..a81a1bc 100644
+--- a/tests/src/browser/validators.test.ts
++++ b/tests/src/browser/validators.test.ts
+@@ -1,4 +1,4 @@
+-import { isButtonEvent, isButtonHost, isColorModeState } from '@src/browser'
++import { isButtonEvent, isColorModeState, isHost } from '@src/browser'
+ import { build } from '@orkestrel/test/browser'
+ import { describe, expect, it } from 'vitest'
+ 
+@@ -15,17 +15,17 @@ describe('isColorModeState', () => {
+ 	})
+ })
+ 
+-describe('isButtonHost', () => {
++describe('isHost', () => {
+ 	it('accepts HTML elements and rejects foreign shapes and hostile prototypes', () => {
+-		expect(isButtonHost(build('button'))).toBe(true)
+-		expect(isButtonHost(build('a'))).toBe(true)
+-		expect(isButtonHost(null)).toBe(false)
+-		expect(isButtonHost(undefined)).toBe(false)
+-		expect(isButtonHost('button')).toBe(false)
+-		expect(isButtonHost(document)).toBe(false)
+-		expect(isButtonHost(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))).toBe(false)
++		expect(isHost(build('button'))).toBe(true)
++		expect(isHost(build('a'))).toBe(true)
++		expect(isHost(null)).toBe(false)
++		expect(isHost(undefined)).toBe(false)
++		expect(isHost('button')).toBe(false)
++		expect(isHost(document)).toBe(false)
++		expect(isHost(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))).toBe(false)
+ 		expect(
+-			isButtonHost(
++			isHost(
+ 				new Proxy(
+ 					{},
+ 					{
