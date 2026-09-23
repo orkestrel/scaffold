@@ -17,6 +17,24 @@ This folder keeps only what the open units still read; git history archives ever
   `units/b-passive-baseline.md` bind every B unit, and `units/b-forms-terrain-report.md`,
   `units/b-passive-terrain-report.md`, and `units/f8-terrain-report.md` are the terrain records
   their briefs point at.
+- The live units: B-PASSIVE-A (`veneer-ba`, `units/b-passive-a-brief-3.md`, fix-audited,
+  `units/ba-fix-3-audit-verdict.md`) landed on the session branch as `8281b79` with its integration
+  edits (`units/ba-integration-edit.py`, the D22 regroup `units/ba-ledger-regroup.py`) and is under
+  its verification sequence (`units/verify-ba.sh`: refresh, portfolio regeneration, chain) before
+  fold 19 and the push to `main`. F8c SERVICE under D19: F8c-A READERS was audited
+  (`units/f8c-a-audit-verdict.md`), D23 amended rulings 1 and 3, the Orchestrator regenerated the
+  root configuration (checkpoint `5099318`, `units/f8c-repair.log.txt`), and the fix round
+  `units/f8c-a-brief-3.md` runs on `opus`; its audit (`analyst` on Astra,
+  `units/f8c-a-fix-3-audit-analyst-brief.md`) and the deciding `test:setup` re-run follow, then
+  F8c-B MOVE. Their audit claims, lane briefs, verdicts, and reports sit beside them as each round
+  runs.
+- `units/decisions-round-2.md` carries the user's rulings D2 to D13 verbatim.
+- `f8-design-verdict.md` (amended by `f8c-design-verdict.md`), `b-passive-design-verdict.md`,
+  `b-sweep-design-verdict.md`, and `b-forms-design-verdict.md` are the
+  design rulings the live units execute; `units/b-passive-family.md` and
+  `units/b-passive-baseline.md` bind every B unit, and `units/b-forms-terrain-report.md`,
+  `units/b-passive-terrain-report.md`, and `units/f8-terrain-report.md` are the terrain records
+  their briefs point at.
 - The live units, each in its own worktree from Veneer commit `3a9202a` unless named otherwise,
   have returned from their fix rounds and are under their fix audits (`analyst` on Astra alone,
   the writer having been Opus): `units/b-passive-a-brief-3.md` (`veneer-ba`, claims
@@ -55,10 +73,18 @@ This folder keeps only what the open units still read; git history archives ever
   Set-literal, `ButtonSection` exclusion, and `CAPTURE_KEYS` spread rewrites as exact integration
   edits, scoped gates, one verifier chain at the family's close, the deciding journey re-run alone,
   the roadmap fold, and the push to `main`.
-- Closed on the session branch and on `main`, their artifacts pruned with a promotion record in
-  the prune commit: B-SWEEP (`71b7388`), B-FORMS-VALIDATION (`d4f78e5`, roadmap fold 13 at
-  `e0d04ba`), J1 JOURNEY-BUDGET (`fc228f2`), B-PASSIVE-D (`bcf938c`, fold 14 at `06eb3c1`), and
-  B-PASSIVE-B (`7b922b6`, fold 15 at `16b2590`).
+- Closed on the session branch and on `main`: B-PASSIVE-E (`70a7487`, fold 16 at `7981fd1`),
+  B-FORMS-RANGE (`376255a`, fold 17 at `49548e2`), and B-PASSIVE-C (`6cce83f`, fold 18 at
+  `808cf53`), their artifacts retained under `units/` until the family's prune. Closed and pruned
+  with a promotion record in the prune commit: B-SWEEP (`71b7388`), B-FORMS-VALIDATION (`d4f78e5`,
+  roadmap fold 13 at `e0d04ba`), J1 JOURNEY-BUDGET (`fc228f2`), B-PASSIVE-D (`bcf938c`, fold 14 at
+  `06eb3c1`), and B-PASSIVE-B (`7b922b6`, fold 15 at `16b2590`).
+- Landing procedure as run from E on: `units/land-unit.sh` (diff3 with `units/resolve-diff3.py`),
+  the inventory sorter `units/sort-inventories.py` (sorted literal arrays and the shipped-key Set),
+  the unit's integration edits, the ledger merge, then the verification sequence (refresh loop,
+  portfolio regeneration per variant with the plain journey, the authoritative chain), the roadmap
+  fold, and the push. The regeneration precedes the chain because the portfolio guard requires
+  every registered frame once any frame is present.
 - Closed on the session branch and on `main`, their artifacts pruned with a promotion record in
   the prune commit: F8a (`0783b2b`), L1 (`ec816c5`), F5b, F5c, F6, F7, F5d, F5e, F5a, F4, F3, and
   the Test releases; `veneer-audit-verdict.md` and `cl13-verdict.md` are the verdicts those briefs cited.
