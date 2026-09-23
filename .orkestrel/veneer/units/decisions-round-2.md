@@ -440,3 +440,25 @@ comments name `.form-control`, `.form-select`, and `.input-group-text` as the re
 B-FORMS-RENAME on `builder`, after CONTROL lands, over `src/styles/_mixins.scss`,
 `src/styles/components/_form-control.scss`, `_form-select.scss`, `_input-group.scss`, and every
 test or guide sentence naming either mixin; the compile before and after is byte-identical.
+
+## D41 — The baseline closes before the engine (the user, 2026-09-23)
+
+The user's ruling, verbatim: "My expectation is that what we will be closing is the baseline for
+bootstrap parity and tailwindcss compatibility, and then next we will be tackling the replacement
+of bootstrap JavaScript with our own typescript package closely using native browser systems and
+without dependencies except orkestrel packages where needed and after careful consideration of all
+and each, and looking at the elements and mailbox projects for ideas and lessons learned."
+
+As read: the campaign's `B` families close the cascade, the showcase, the proofs, and the ledger for
+every recorded key, with each state class rendered statically, and the Tailwind compatibility
+proofs stay green over them. The plugin obligations (Collapse, Dropdown, Tab, ScrollSpy, Modal,
+Offcanvas, Tooltip, Popover, Alert, Toast, Carousel) and the `Backdrop`, `FocusTrap`,
+`ScrollBarHelper`, `Swipe`, `Sanitizer`, and `TemplateFactory` utilities leave the `B` families and
+form the `J` phase (J-ENGINE), which follows the baseline: Veneer's own TypeScript engine over
+native browser systems, no runtime dependency outside `@orkestrel/*`, each candidate package ruled
+on before it enters, and Elements and Mailbox read for mechanisms and lessons. `scrollspy` has no
+cascade, so it is deferred to J-ENGINE with an owner rather than shipped as a key. E-VUE follows
+J-ENGINE, because the adapter wraps the engine. Exit criterion item 4 stays and closes with
+J-ENGINE. Carriers: the roadmap fold 47 re-sequences the phase table, the family queue, and the
+three engine carrier rows; the `B-COLLAPSE … B-SCROLLSPY` design brief carries the ruling to its
+lanes.
