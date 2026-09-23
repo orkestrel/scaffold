@@ -1,0 +1,611 @@
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 936b68c..576cd34 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -73,11 +73,10 @@ import {
+ 	CASCADE_KEYS,
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
++	DRIVEN_KEYS,
+ 	FOCUS_RING,
+-	FORM_FLOATING_KEYS,
+ 	isVariantName,
+ 	UNDER_BAR,
+-	VALIDATION_KEYS,
+ } from '../../setup.js'
+ import {
+ 	applyTheme,
+@@ -376,6 +375,9 @@ describe('journey', () => {
+ 			await waitForAnimations(host)
+ 			rings.set(name, readRing(host))
+ 			if (name === 'Primary') {
++				// The focus frame is a page frame: the ring paints outside the host's border box and
++				// an element frame crops it away. Its declared region is the host, so a reader of a
++				// page frame over 8000 pixels tall is pointed at the part the scenario claims.
+ 				if (VARIANT === LIGHT) await FRAMES.page('primary-focus', host)
+ 				framed = host.matches(':focus-visible')
+ 			}
+@@ -473,6 +475,10 @@ describe('journey', () => {
+ 	})
+ 
+ 	it('repaints a host under the pointer while it is hovered and while it is held', async () => {
++		// The hover and the active frame are element frames of the driven host rather than page
++		// frames: staging the pane for a page frame moves the pointer off the specimen, and the frame
++		// would carry the resting fill under a name that claims otherwise, while the element frame
++		// keeps the pointer on it.
+ 		// Each frame's own state is read again after the shot and collected here, because a capture
+ 		// stages the pane: a frame labelled `hover` has to be proven to have been taken while the
+ 		// pointer was still on the host, and the collection names which frame was not.
+@@ -732,8 +738,15 @@ describe('journey', () => {
+ 
+ 	it('paints a validation focus ring on the passing and the failing text control, in the variant this run renders', async () => {
+ 		await applyTheme(VARIANT)
++		// The resting paint of every validation specimen is already a cascade scenario, so the focus
++		// ring is the one state left to drive. Only the text controls are driven, because the ring the
++		// partial paints is one rule reaching every host it styles. The rows are the driven rows whose
++		// subject the validation table declares.
++		const declared = new Set(VALIDATION_SPECIMENS.map((specimen) => specimen.name))
++		const keys = DRIVEN_KEYS.filter((key) => declared.has(key.subject))
++		expect(keys).not.toStrictEqual([])
+ 		const rings = new Map<string, number | undefined>()
+-		for (const key of VALIDATION_KEYS) {
++		for (const key of keys) {
+ 			const specimen = readSpecimen(mounted.host, key.subject)
+ 			const host = requireValue(specimen.querySelector('input'), `No control in ${key.subject}`)
+ 			// A text control matches `:focus-visible` whenever it holds focus, which is what lets
+@@ -746,11 +759,12 @@ describe('journey', () => {
+ 			await waitForAnimations(host)
+ 			rings.set(key.subject, readRing(host))
+ 			// A page frame, for the reason the Button focus scenario is one: the ring paints outside
+-			// the control's border box and an element frame crops it away.
++			// the control's border box and an element frame crops it away. The declared region is the
++			// control, so a reader of a tall page frame is pointed at the part the scenario claims.
+ 			await FRAMES.page(key.scenario, host)
+ 		}
+ 		ARTIFACT.push(JSON.stringify({ reading: 'validation ring', mode: VARIANT, rings: [...rings] }))
+-		expect([...rings.keys()]).toStrictEqual(VALIDATION_KEYS.map((key) => key.subject))
++		expect([...rings.keys()]).toStrictEqual(keys.map((key) => key.subject))
+ 		expect([...rings.values()].filter((ratio) => typeof ratio !== 'number')).toStrictEqual([])
+ 		// The passing and the failing ring are painted over different role triplets, so one reading
+ 		// answering for both would be the state binding collapsed to a single color.
+@@ -763,7 +777,8 @@ describe('journey', () => {
+ 		// drive are hover and focus. Each frame is a page frame whose declared region is the strip:
+ 		// the focus ring paints outside the driven page's border box, so an element frame of that
+ 		// page crops the chrome the scenario claims, and the lift a driven page needs is legible
+-		// only beside the pages it lifts over.
++		// only beside the pages it lifts over. The release writes no rule for the held pointer, so a
++		// frame named for it would carry the hover paint and claim otherwise.
+ 		const framed: Array<readonly [string, boolean]> = []
+ 		const stacked: Array<readonly [string, string]> = []
+ 		for (const mode of [LIGHT, DARK]) {
+@@ -863,6 +878,10 @@ describe('journey', () => {
+ 	})
+ 
+ 	it('lifts the checked label of the grouped alignment control over the border it shares', async () => {
++		// The group lifts a hovered and a pressed child by the same step it lifts the checked one, and
++		// the `tests/src/styles/components/button-group.test.ts` file drives and reads each of those
++		// states, so no hover frame and no active frame is shot here: a second frame of the same lift
++		// would be one image registered twice.
+ 		await applyTheme(VARIANT)
+ 		const specimen = readSpecimen(mounted.host, 'Check group')
+ 		const checked = requireValue(
+@@ -1022,7 +1041,14 @@ describe('journey', () => {
+ 			),
+ 			'The "Form control readonly" specimen renders no .form-control',
+ 		)
+-		for (const key of FORM_FLOATING_KEYS) {
++		// The filled, textarea, select, disabled, and plaintext specimens render their label floated
++		// at rest, so the one state left to drive is focus on the empty field: its label floats and
++		// its text moves down only while it holds focus. The rows are the driven rows whose subject
++		// the floating table declares.
++		const declared = new Set(FORM_FLOATING_SPECIMENS.map((specimen) => specimen.name))
++		const keys = DRIVEN_KEYS.filter((key) => declared.has(key.subject))
++		expect(keys).not.toStrictEqual([])
++		for (const key of keys) {
+ 			const specimen = readSpecimen(mounted.host, key.subject)
+ 			const control = requireValue(
+ 				specimen.querySelector('.form-floating > .form-control'),
+@@ -1502,8 +1528,11 @@ describe('journey', () => {
+ 				Number.parseFloat(readStyle(button, 'border-left-width')),
+ 			1,
+ 		)
+-		// The traversal starts from the `Input group addons` specimen's control rather than from
+-		// the document's own start, for the reason the range slider case states.
++		// The drive reaches the control of the specimen that holds a button rather than one that holds
++		// an addon alone: the addon is static and already sits under the positioned control at rest,
++		// so a lift over it changes no pixel. The traversal starts from the `Input group addons`
++		// specimen's control rather than from the document's own start, for the reason the range
++		// slider case states.
+ 		const preceding = requireValue(
+ 			readSpecimen(mounted.host, 'Input group addons').querySelector<HTMLElement>('.form-control'),
+ 			'The "Input group addons" specimen renders no .form-control',
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index d1b6d27..20c2ca8 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -1,32 +1,21 @@
+-import type { ButtonReading } from './setup.js'
++import type { ButtonReading, CaptureSubject } from './setup.js'
+ import { describe, expect, it } from 'vitest'
+ import * as setup from './setup.js'
+ import {
+-	BUTTON_GROUP_KEYS,
+-	BUTTON_KEYS,
+ 	buildStem,
+ 	CAPTURE_KEYS,
+ 	CAPTURE_SCENARIOS,
+ 	CASCADE_KEYS,
+-	CLOSE_KEYS,
+ 	collectTokenNodes,
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
++	DRIVEN_KEYS,
+ 	FOCUS_RING,
+-	FORM_CHECK_KEYS,
+-	FORM_FLOATING_KEYS,
+-	FORM_CONTROL_KEYS,
+-	FORM_RANGE_KEYS,
+-	INPUT_GROUP_KEYS,
+-	FORM_SELECT_KEYS,
+ 	isVariantName,
+-	LIST_GROUP_KEYS,
+ 	normalizeSelectorText,
+-	PAGINATION_KEYS,
+ 	readingToProjection,
+ 	SHOWCASE_KEYS,
+ 	UNDER_BAR,
+-	VALIDATION_KEYS,
+ } from './setup.js'
+ 
+ // The readings one activation produces on each side of the comparison, written here rather than read
+@@ -59,28 +48,17 @@ describe('shared setup', () => {
+ 	it('exports the token prefix, the capture registry, the case matrices, the walks, and the reduction', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
+-				'BUTTON_GROUP_KEYS',
+-				'BUTTON_KEYS',
+ 				'CAPTURE_CONTROLS',
+ 				'CAPTURE_KEYS',
+ 				'CAPTURE_SCENARIOS',
+ 				'CASCADE_KEYS',
+-				'CLOSE_KEYS',
+ 				'CONTRAST_BAR',
+ 				'DISABLED_OPACITY',
++				'DRIVEN_KEYS',
+ 				'FOCUS_RING',
+-				'FORM_CHECK_KEYS',
+-				'FORM_CONTROL_KEYS',
+-				'FORM_FLOATING_KEYS',
+-				'FORM_RANGE_KEYS',
+-				'FORM_SELECT_KEYS',
+-				'INPUT_GROUP_KEYS',
+-				'LIST_GROUP_KEYS',
+-				'PAGINATION_KEYS',
+ 				'SHOWCASE_KEYS',
+ 				'TOKEN_PREFIX',
+ 				'UNDER_BAR',
+-				'VALIDATION_KEYS',
+ 				'buildStem',
+ 				'collectTokenNodes',
+ 				'isVariantName',
+@@ -90,22 +68,7 @@ describe('shared setup', () => {
+ 		)
+ 	})
+ 	it('registers one scenario per photographed frame, each naming the subject it shows', () => {
+-		expect(CAPTURE_KEYS).toStrictEqual([
+-			...SHOWCASE_KEYS,
+-			...BUTTON_KEYS,
+-			...CASCADE_KEYS,
+-			...VALIDATION_KEYS,
+-			...PAGINATION_KEYS,
+-			...BUTTON_GROUP_KEYS,
+-			...FORM_RANGE_KEYS,
+-			...LIST_GROUP_KEYS,
+-			...CLOSE_KEYS,
+-			...FORM_CHECK_KEYS,
+-			...INPUT_GROUP_KEYS,
+-			...FORM_FLOATING_KEYS,
+-			...FORM_SELECT_KEYS,
+-			...FORM_CONTROL_KEYS,
+-		])
++		expect(CAPTURE_KEYS).toStrictEqual([...SHOWCASE_KEYS, ...CASCADE_KEYS, ...DRIVEN_KEYS])
+ 		expect(CAPTURE_SCENARIOS).toStrictEqual(CAPTURE_KEYS.map((key) => key.scenario))
+ 		expect(new Set(CAPTURE_SCENARIOS).size).toBe(CAPTURE_SCENARIOS.length)
+ 		expect(CAPTURE_KEYS.filter((key) => key.subject.length === 0)).toStrictEqual([])
+@@ -132,17 +95,50 @@ describe('shared setup', () => {
+ 			CAPTURE_SCENARIOS.filter((scenario) => !/^[a-z\d]+(?:-[a-z\d]+)*$/u.test(scenario)),
+ 		).toStrictEqual([])
+ 	})
+-	it('drives a state only for a specimen the resting registry already photographs', () => {
+-		// A driven row is the same specimen under a pointer or under focus, so its subject has to
+-		// be one the resting table already names: a state frame of a specimen no frame shows at
+-		// rest could not be read against anything.
++	it('names each driven row for one state beyond rest on a specimen the resting registry photographs', () => {
++		expect(DRIVEN_KEYS).not.toStrictEqual([])
++		// A driven row is one specimen in one state, so its scenario is the subject's own stem
++		// followed by one state word. A bare stem is the resting frame under a second name, `rest` is
++		// the resting table's own state, and a scenario opening with another subject's stem sorts
++		// beside a specimen its frame does not show.
++		expect(
++			DRIVEN_KEYS.filter((key) => {
++				const stem = `${buildStem(key.subject)}-`
++				const state = key.scenario.slice(stem.length)
++				return !key.scenario.startsWith(stem) || !/^[a-z]+$/u.test(state) || state === 'rest'
++			}),
++		).toStrictEqual([])
++		// Each subject is one the resting table photographs, so a state frame is read against the
++		// resting frame of the same specimen. The subjects exempt here take no resting row, each for
++		// the reason beside it.
++		const exempt = new Set<CaptureSubject>([
++			// The Button journeys read the resting paint of every painted host in both modes, and the
++			// arrival frame photographs the Buttons region at the head of the document, so the Button
++			// family registers only the states it drives.
++			'Primary',
++			'Toggle',
++			// The check group renders its control checked at rest, so its checked frame is the
++			// resting reading of that specimen: a resting row beside it would photograph the same
++			// state twice.
++			'Check group',
++		])
+ 		const resting = new Set(CASCADE_KEYS.map((key) => key.subject))
+-		expect(LIST_GROUP_KEYS.filter((key) => !resting.has(key.subject))).toStrictEqual([])
+-		// The state follows the subject's own stem, which is what sorts a driven frame beside the
+-		// resting frame of the same specimen.
+ 		expect(
+-			LIST_GROUP_KEYS.filter((key) => !key.scenario.startsWith(`${buildStem(key.subject)}-`)),
++			DRIVEN_KEYS.filter((key) => !resting.has(key.subject) && !exempt.has(key.subject)),
++		).toStrictEqual([])
++		// An exemption holds only while its subject has driven rows and no resting row, so a subject
++		// that gains a resting row, or loses its driven rows, reddens here rather than keeping a
++		// reason that no longer applies.
++		expect(
++			[...exempt].filter(
++				(subject) => resting.has(subject) || !DRIVEN_KEYS.some((key) => key.subject === subject),
++			),
+ 		).toStrictEqual([])
++		// The checkbox drives reach the states no attribute declares, and the mixed state is a
++		// property rather than a pointer or a focus, so the checkbox rows are named outright.
++		expect(
++			DRIVEN_KEYS.filter((key) => key.subject === 'Form check box').map((key) => key.scenario),
++		).toStrictEqual(['form-check-box-focus', 'form-check-box-indeterminate'])
+ 	})
+ 	it('describes each photographed cascade key by its specimen, its element, and its property', () => {
+ 		expect(CASCADE_KEYS).not.toStrictEqual([])
+@@ -282,18 +278,4 @@ describe('shared setup', () => {
+ 		expect(projection.mutations).not.toBe(TOGGLED.mutations)
+ 		expect(projection.clicks).not.toBe(TOGGLED.clicks)
+ 	})
+-	it('drives the check states only on the resting checkbox the registry already photographs', () => {
+-		// The check drives reach states no attribute declares, so each is the resting checkbox
+-		// under a drive: its subject is one the resting table names, and its state follows the
+-		// subject's own stem.
+-		const resting = new Set(CASCADE_KEYS.map((key) => key.subject))
+-		expect(FORM_CHECK_KEYS.filter((key) => !resting.has(key.subject))).toStrictEqual([])
+-		expect(FORM_CHECK_KEYS.map((key) => key.scenario)).toStrictEqual([
+-			'form-check-box-focus',
+-			'form-check-box-indeterminate',
+-		])
+-		expect(
+-			FORM_CHECK_KEYS.filter((key) => !key.scenario.startsWith(`${buildStem(key.subject)}-`)),
+-		).toStrictEqual([])
+-	})
+ })
+diff --git a/tests/setup.ts b/tests/setup.ts
+index bce36de..69a3738 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -319,36 +319,13 @@ export const SHOWCASE_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'showcase', subject: 'Showcase' }),
+ ])
+ 
+-/**
+- * Lists the Button scenarios a journey photographs, each naming the specimen it drives.
+- *
+- * @remarks
+- * Each scenario is photographed at the scope its own paint needs, and each scope was measured
+- * rather than assumed. The focus scenario is a page frame because the ring paints outside the
+- * host's border box and an element frame crops it away; its declared region names the host, so a
+- * reader of an 8000-pixel page frame is pointed at the part the scenario claims. Hover, active,
+- * and pressed are element frames of the driven host: staging the pane for a page frame moves the
+- * pointer off the specimen and the frame would carry the resting fill under a name that claims
+- * otherwise, while the element frame keeps the pointer on it. Each of those journeys reads the
+- * state again after its own shot.
+- *
+- * A disabled frame and an outline frame are not registered: neither drives a state the resting
+- * page does not already show.
+- */
+-export const BUTTON_KEYS: readonly CaptureKey[] = Object.freeze([
+-	Object.freeze({ scenario: 'primary-focus', subject: 'Primary' }),
+-	Object.freeze({ scenario: 'primary-hover', subject: 'Primary' }),
+-	Object.freeze({ scenario: 'primary-active', subject: 'Primary' }),
+-	Object.freeze({ scenario: 'toggle-pressed', subject: 'Toggle' }),
+-])
+-
+ /**
+  * Lists every resting cascade key a journey photographs, each with the specimen that renders it, the
+  * selector the frame's declared region is read on, and the property the key's own rule sets.
+  *
+  * @remarks
+- * A family appends its resting rows here as it lands, and a scenario that drives a state sits in
+- * that family's own list. A key is addressed by its specimen label rather than by its class,
++ * A family appends its resting rows here as it lands, and a scenario that drives or reads a state
++ * sits in {@link DRIVEN_KEYS}. A key is addressed by its specimen label rather than by its class,
+  * because one class answers for several specimens: the Layout table alone renders several
+  * containers.
+  *
+@@ -386,8 +363,8 @@ export const BUTTON_KEYS: readonly CaptureKey[] = Object.freeze([
+  *
+  * A hover or focus frame is registered for none of these keys. The showcase renders each key at rest and
+  * the journey reads each key at rest, so a pointer state would be a claim about a paint no journey
+- * here drives. That is what separates these from the Button scenarios, where the pointer journey
+- * drives hover and active and reads each one back after its own shot.
++ * here drives. That is what separates these from the rows of {@link DRIVEN_KEYS}, where a journey
++ * drives the state its scenario names before it shoots the frame.
+  *
+  * A specimen whose resting frame paints nothing is declined. The grow spinners are the case: their
+  * resting frame is the animation's own first step, `transform: scale(0)` at `opacity: 0`, so the
+@@ -1089,217 +1066,46 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ ])
+ 
+ /**
+- * Lists the Validation scenarios a journey drives rather than finds, each naming the specimen it
+- * focuses.
++ * Lists every scenario a journey photographs a subject in a state for, each naming the specimen the
++ * state is driven on or read from, in the order the families landed.
+  *
+  * @remarks
+- * The resting paint of every validation specimen is already a cascade scenario, so the only state
+- * left to drive is the focus ring. It is a page frame for the reason the Button focus scenario is
+- * one: the ring paints outside the control's border box and an element frame crops it away, and
+- * the declared region names the control so a reader of a tall page frame is pointed at the part
+- * the scenario claims. Only the text controls are driven, because the ring the partial paints is
+- * one rule reaching every host it styles.
++ * A row's scenario is its subject's stem followed by the state its frame shows, and that state is
++ * one no resting frame photographs: a state the journey drives beyond rest — hover, focus, a press,
++ * or a property no attribute declares — or a reading of a state a specimen renders at rest when that
++ * specimen takes no resting frame of its own. A state the showcase renders at rest on a
++ * specimen the resting table photographs is not registered here, because its frame would be the
++ * resting frame under a second name.
++ *
++ * These rows sit apart from {@link CASCADE_KEYS} because the journey places every row of that
++ * table at rest and the table carries one row per subject: a driven state registered there would
++ * photograph the resting specimen under a name claiming otherwise. A subject repeats here, once for
++ * each state its family drives. The family is not stored on a row; it is the specimen table that
++ * declares the row's subject. The journey case that shoots each frame states the scope the frame
++ * is shot at and why. A family appends its rows here as it lands.
+  */
+-export const VALIDATION_KEYS: readonly CaptureKey[] = Object.freeze([
++export const DRIVEN_KEYS: readonly CaptureKey[] = Object.freeze([
++	Object.freeze({ scenario: 'primary-focus', subject: 'Primary' }),
++	Object.freeze({ scenario: 'primary-hover', subject: 'Primary' }),
++	Object.freeze({ scenario: 'primary-active', subject: 'Primary' }),
++	Object.freeze({ scenario: 'toggle-pressed', subject: 'Toggle' }),
+ 	Object.freeze({ scenario: 'valid-control-focus', subject: 'Valid control' }),
+ 	Object.freeze({ scenario: 'invalid-control-focus', subject: 'Invalid control' }),
+-])
+-
+-/**
+- * Lists the Pagination scenarios a journey drives, each naming the page strip it drives inside.
+- *
+- * @remarks
+- * These are the states the resting page does not already show: hover and focus each repaint one
+- * page and lift it over the neighbour whose border it shares. The active page and the disabled
+- * pages are class states the showcase renders at rest, so each is photographed by its own cascade
+- * row under a scenario whose stem already names the state, and a driven frame for either would be
+- * the resting frame under a second name. The release writes no rule for the held pointer, so a
+- * frame named for it would carry the hover paint and claim otherwise.
+- *
+- * Each frame is the whole strip rather than the driven page alone: the lift is legible only beside
+- * the pages it lifts over, and the page's own crop carries none of them.
+- */
+-export const PAGINATION_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'page-strip-hover', subject: 'Page strip' }),
+ 	Object.freeze({ scenario: 'page-strip-focus', subject: 'Page strip' }),
+-])
+-
+-/**
+- * Lists the grouped-control scenarios a journey photographs, each naming the specimen it reads or
+- * drives.
+- *
+- * @remarks
+- * The check group is the one button group specimen whose own state a frame can claim, so it takes a
+- * checked scenario and a focus scenario rather than the resting frame every other grouped specimen
+- * takes. The checked frame is an element frame, and the journey copies the specimen to the
+- * document's start before placing it, the way `CASCADE_KEYS` states its own copy: an element frame
+- * taken where the showcase renders this specimen comes back blank. A radio's name is document-wide,
+- * so the journey renames the copy's `.btn-check` inputs and the `for` attribute of each label before
+- * the copy enters the page, because a copy carrying the original's name would uncheck the specimen
+- * the frame is about. The focus frame is a page frame, for the reason the Button focus scenario is
+- * one: the ring paints outside the label's border box and an element frame crops it away, and its
+- * declared region names the label so a reader of a tall page frame is pointed at the part the
+- * scenario claims.
+- *
+- * A hover scenario and an active scenario are registered for neither: the group lifts a hovered and
+- * a pressed child by the same step it lifts the checked one, and
+- * `tests/src/styles/components/button-group.test.ts` drives and reads each of those states. A
+- * second frame of the same lift would be one image registered twice.
+- */
+-export const BUTTON_GROUP_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'check-group-checked', subject: 'Check group' }),
+ 	Object.freeze({ scenario: 'check-group-focus', subject: 'Check group' }),
+-])
+-
+-/**
+- * Lists the Form range focus scenario a journey photographs as a frame of the whole page.
+- *
+- * @remarks
+- * The scenario is a page frame for the reason `CASCADE_KEYS` records: an element frame taken where
+- * the showcase renders these specimens comes back blank, and the Form range region is the last one
+- * the showcase constructs. `range` and `range-disabled` already name the `Range` subject inside
+- * `CASCADE_KEYS`, and that list refuses a repeated subject, so this scenario carries its own list
+- * rather than a third `CASCADE_KEYS` row.
+- */
+-export const FORM_RANGE_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'range-focus', subject: 'Range' }),
+-])
+-
+-/**
+- * Lists the scenarios a journey drives a list-group action into a state for, each naming the
+- * specimen that carries the host.
+- *
+- * @remarks
+- * A cascade scenario photographs its specimen at rest, so a rule that only paints under a pointer
+- * or under focus reaches no frame there. These rows are those rules: the journey drives the state,
+- * shoots an element frame of the specimen lifted to the document's start, and reads the state back
+- * after its own shot.
+- *
+- * The lift and the element frame are both measured rather than chosen. A page frame scrolls the
+- * document under a pointer that does not move with it, so the hover frame comes back at the resting
+- * fill and the reading after the shot reports the host unhovered. An element frame taken where the
+- * showcase renders this specimen comes back blank at the 390-wide variants, which is the reading the
+- * cascade scenarios lift their copies to avoid. A copy answers to the same accessible name as the
+- * original and the pointer verbs resolve a control by that name, so the journey moves the rendered
+- * specimen itself and puts it back in a `finally` block.
+- *
+- * The subject repeats across the rows of one specimen, which is why they sit here rather than in
+- * {@link CASCADE_KEYS}: that table holds one resting reading per specimen and refuses a second row
+- * naming the same one. Each family that paints an interaction state gets its own list, so two
+- * families adding rows never write one another's.
+- */
+-export const LIST_GROUP_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'list-group-actions-hover', subject: 'List group actions' }),
+ 	Object.freeze({ scenario: 'list-group-actions-focus', subject: 'List group actions' }),
+ 	Object.freeze({ scenario: 'list-group-actions-active', subject: 'List group actions' }),
+-])
+-
+-/**
+- * Lists the close scenarios a journey drives before it photographs them.
+- *
+- * @remarks
+- * The recorded hover and focus treatments move an opacity the resting page never shows, and each
+- * scenario is photographed at the scope its own paint needs. The hover scenario is an element frame
+- * of the whole specimen lifted to the document's start: the section renders near the foot of the
+- * page, and a pointer placed there does not survive the staging a shot takes. The focus scenario is
+- * a page frame whose declared region is the control, because the recorded focus shadow paints
+- * outside the control's border box and an element frame crops it away. The journey reads each
+- * state again after its own shot. Neither can sit in {@link CASCADE_KEYS}: that list carries one
+- * row per subject and the journey places every row of it at rest, so a driven state registered
+- * there would photograph the resting control under a name claiming otherwise.
+- */
+-export const CLOSE_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'close-control-hover', subject: 'Close control' }),
+ 	Object.freeze({ scenario: 'close-control-focus', subject: 'Close control' }),
+-])
+-
+-/**
+- * Lists the check scenarios a journey drives before it photographs them, each naming the resting
+- * checkbox specimen it drives.
+- *
+- * @remarks
+- * Every other check state is one the markup declares, so each is a resting specimen photographed by
+- * its own {@link CASCADE_KEYS} row. These are the states no attribute reaches. The focus
+- * scenario is a page frame, for the reason the Button focus scenario is one: the ring paints outside
+- * the box and an element frame crops it away, and its declared region names the specimen's row so a
+- * reader of a tall page frame is pointed at the part the scenario claims. Focus arrives by keyboard
+- * traversal, which is what earns `:focus-visible`. The indeterminate scenario is an element frame of
+- * the specimen lifted to the document's start, the placement the resting scenarios use: the mixed
+- * state is a property, so the journey sets it on the lifted control, and a copy of the specimen
+- * does not carry it. The journey reads each state again after its own shot.
+- */
+-export const FORM_CHECK_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'form-check-box-focus', subject: 'Form check box' }),
+ 	Object.freeze({ scenario: 'form-check-box-indeterminate', subject: 'Form check box' }),
+-])
+-
+-/**
+- * Lists the input group focus scenario a journey drives through the keyboard and photographs as a
+- * frame of the whole page.
+- *
+- * @remarks
+- * Focus is the one state the group paints that the resting page does not show: the focused control
+- * lifts to `z-index: 5`, which puts the ring it wears over the grouped button beside it, because that
+- * button rests at `z-index: 2`. The scenario drives the control of the specimen that holds a button
+- * rather than one that holds an addon alone: the addon is static and already sits under the
+- * positioned control at rest, so a lift over it changes no pixel. The scenario is a page frame for
+- * the reason the Button focus scenario is one: the ring paints outside the control's border box and
+- * an element frame crops it away, and the declared region names the specimen so a reader of a tall
+- * page frame is pointed at the part the scenario claims. The resting frame of the same specimen
+- * already sits in {@link CASCADE_KEYS}, and that list refuses a second row naming one subject, so
+- * this scenario carries its own list.
+- */
+-export const INPUT_GROUP_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'input-group-button-focus', subject: 'Input group button' }),
+-])
+-
+-/**
+- * Lists the floating-label scenario a journey drives by keyboard before it photographs the page.
+- *
+- * @remarks
+- * The resting paint of every floating specimen is already a cascade scenario, and the filled,
+- * textarea, select, disabled, and plaintext specimens render their label floated at rest, so the one
+- * state left to drive is focus on the empty field: the label floats and the text moves down only
+- * while the field holds focus. The journey reaches the field by its label through keyboard traversal
+- * and waits for the label's transition to settle before the shot. It is a page frame, for the reason
+- * the Button focus scenario is one: the focused field's ring paints outside its border box and an
+- * element frame crops it away, and the declared region names the field so a reader of a tall page
+- * frame is pointed at the part the scenario claims. The empty field already names its subject inside
+- * {@link CASCADE_KEYS}, and that list refuses a repeated subject, so this scenario carries its own
+- * list.
+- */
+-export const FORM_FLOATING_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'form-floating-empty-focus', subject: 'Form floating empty' }),
+-])
+-
+-/**
+- * Lists the Form select focus scenario a journey photographs as a frame of the whole page.
+- *
+- * @remarks
+- * The ring paints outside the select's border box, so an element frame crops it away, and the
+- * declared region names the select so a reader of a tall page frame is pointed at the part the
+- * scenario claims; that is the reason the Button focus scenario is a page frame too. The journey
+- * reaches the select through keyboard traversal, which is what earns `:focus-visible`.
+- * `form-select-base` already names the `Form select base` subject inside {@link CASCADE_KEYS}, and
+- * that list refuses a repeated subject, so the driven scenario carries its own list.
+- */
+-export const FORM_SELECT_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'form-select-base-focus', subject: 'Form select base' }),
+-])
+-
+-/**
+- * Lists the Form control focus scenario a journey photographs as a frame of the whole page.
+- *
+- * @remarks
+- * The scenario is a page frame for the reason the Button focus scenario is one: the ring paints
+- * outside the control's border box and an element frame crops it away, and the declared region
+- * names the control so a reader of a tall page frame is pointed at the part the scenario claims.
+- * The journey reaches the control through keyboard traversal, which is what earns
+- * `:focus-visible`. The `form-control-text` scenario already names the `Form control text`
+- * subject inside {@link CASCADE_KEYS}, and that list refuses a repeated subject, so this scenario
+- * carries its own list.
+- */
+-export const FORM_CONTROL_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'form-control-text-focus', subject: 'Form control text' }),
+ ])
+ 
+@@ -1310,22 +1116,14 @@ export const FORM_CONTROL_KEYS: readonly CaptureKey[] = Object.freeze([
+  * The list is derived from the registry tables rather than written beside them, so a scenario the
+  * journey reaches and a scenario the portfolio registers cannot drift apart. The journey's own
+  * placement is what proves a registered scenario was reached.
++ *
++ * The spread is fixed: the arrival frame, then the resting table, then the driven table. A family
++ * landing appends its rows to one of those tables and leaves this list as it is.
+  */
+ export const CAPTURE_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	...SHOWCASE_KEYS,
+-	...BUTTON_KEYS,
+ 	...CASCADE_KEYS,
+-	...VALIDATION_KEYS,
+-	...PAGINATION_KEYS,
+-	...BUTTON_GROUP_KEYS,
+-	...FORM_RANGE_KEYS,
+-	...LIST_GROUP_KEYS,
+-	...CLOSE_KEYS,
+-	...FORM_CHECK_KEYS,
+-	...INPUT_GROUP_KEYS,
+-	...FORM_FLOATING_KEYS,
+-	...FORM_SELECT_KEYS,
+-	...FORM_CONTROL_KEYS,
++	...DRIVEN_KEYS,
+ ])
+ 
+ /**
