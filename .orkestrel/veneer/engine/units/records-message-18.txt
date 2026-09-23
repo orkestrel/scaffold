@@ -1,0 +1,13 @@
+Reconcile the J-TYPES round-5 audit, brief round 6, and commit rounds on the unit branches
+
+The round-5 verdict breaks claim 4 on the `ScrollSpySelectorMap.link` collision and the
+`auto` token's sentence, and carries the subjective lane's F1 to F4 (composite selectors,
+fixed-token sentences, `selector` beside `selectors`, the backdrop pass-through), the scroll
+lock's token moving to the modal, the `dataAttributes` sentence, and the bounds into
+`j-types-brief-6.md`; the offcanvas resize query and the scroll lock's scratch attributes are
+ruled excluded. R19 gains the derived own-token-part rule in both verdicts. The subjective
+lane's verdict is retained from the transcript. Round 5 is committed on `unit/types` as
+`b9adebf` and J-BINDER round 1 on `unit/binder` as `402c7db`. The plan's markers, in-flight
+units, cascade line, and carried findings are refreshed. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
