@@ -1,0 +1,142 @@
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -270,3 +270,24 @@
+ 	}
+ 	return Object.freeze(resolved)
+ }
++
++/**
++ * Reads the tag name of a value that is an element, for the context of an invalid-host error.
++ *
++ * @param value - The value an engine refused as its host.
++ * @returns The element's tag name, or undefined when the value is not an element or reading it throws.
++ * @remarks
++ * A hostile value, such as a proxy whose prototype trap throws, reads as undefined rather than
++ * replacing the engine's own error with its throw.
++ * @example
++ * ```ts
++ * readTag(document.createElementNS('http://www.w3.org/2000/svg', 'svg')) // 'svg'
++ * ```
++ */
++export function readTag(value: unknown): string | undefined {
++	try {
++		return value instanceof Element ? value.tagName : undefined
++	} catch {
++		return undefined
++	}
++}
+--- a/src/browser/Button.ts
++++ b/src/browser/Button.ts
+@@ -2,7 +2,7 @@
+ import { AppError } from '@src/core'
+ import { instanceOf } from '@orkestrel/contract'
+ import { BUTTON_CLASSES, BUTTON_EVENTS, BUTTON_SELECTORS } from './constants.js'
+-import { bindEventMap, emitEvent, resolveVocabulary } from './helpers.js'
++import { bindEventMap, emitEvent, readTag, resolveVocabulary } from './helpers.js'
+ import { HostSnapshot } from './HostSnapshot.js'
+ import { Registry } from './Registry.js'
+ import { isButtonEvent, isClassToken, isSelector } from './validators.js'
+@@ -39,14 +39,9 @@
+ 	 */
+ 	constructor(host: HTMLElement, options?: ButtonOptions) {
+ 		if (!instanceOf(HTMLElement)(host)) {
+-			let tag: string | undefined
+-			try {
+-				const value: unknown = host
+-				if (value instanceof Element) tag = value.tagName
+-			} catch {
+-				tag = undefined
+-			}
+-			throw new AppError('Button requires an HTMLElement host', 'BUTTON_HOST_INVALID', { tag })
++			throw new AppError('Button requires an HTMLElement host', 'BUTTON_HOST_INVALID', {
++				tag: readTag(host),
++			})
+ 		}
+ 		this.#classes = resolveVocabulary(
+ 			'BUTTON_OPTION_INVALID',
+--- a/src/browser/Collapse.ts
++++ b/src/browser/Collapse.ts
+@@ -16,6 +16,7 @@
+ import {
+ 	bindEventMap,
+ 	emitEvent,
++	readTag,
+ 	readTargets,
+ 	reflow,
+ 	resolveOptions,
+@@ -77,14 +78,9 @@
+ 	 */
+ 	constructor(host: HTMLElement, options?: CollapseOptions) {
+ 		if (!instanceOf(HTMLElement)(host)) {
+-			let tag: string | undefined
+-			try {
+-				const value: unknown = host
+-				if (value instanceof Element) tag = value.tagName
+-			} catch {
+-				tag = undefined
+-			}
+-			throw new AppError('Collapse requires an HTMLElement host', 'COLLAPSE_HOST_INVALID', { tag })
++			throw new AppError('Collapse requires an HTMLElement host', 'COLLAPSE_HOST_INVALID', {
++				tag: readTag(host),
++			})
+ 		}
+ 		this.#classes = resolveVocabulary(
+ 			'COLLAPSE_OPTION_INVALID',
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -7,6 +7,7 @@
+ 	isButtonEvent,
+ 	isClassToken,
+ 	isSelector,
++	readTag,
+ 	readTarget,
+ 	readTargets,
+ 	reflow,
+@@ -266,6 +267,27 @@
+ 	})
+ })
+ 
++describe('readTag', () => {
++	it('reads an element tag name and returns undefined for any other value', () => {
++		expect(readTag(build('div'))).toBe('DIV')
++		expect(readTag(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))).toBe('svg')
++		expect(readTag(null)).toBeUndefined()
++		expect(readTag({ tagName: 'DIV' })).toBeUndefined()
++		expect(
++			readTag(
++				new Proxy(
++					{},
++					{
++						getPrototypeOf() {
++							throw new Error('Unreadable')
++						},
++					},
++				),
++			),
++		).toBeUndefined()
++	})
++})
++
+ describe('readTarget', () => {
+ 	it('resolves the data-bs-target selector, escaping an id that carries a special character', () => {
+ 		const panel = mount(build('div', { attributes: { id: 'panel.one' } }))
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -34,6 +34,7 @@
+ 			'isColorModeState',
+ 			'isSelector',
+ 			'parseElement',
++			'readTag',
+ 			'readTarget',
+ 			'readTargets',
+ 			'reflow',
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -55,6 +55,7 @@
+ | `HostSnapshot`                            | class     | Records host state before an engine first writes it, and writes that state back on restore.                                                            |
+ | `settleAnimations`                        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                                   |
+ | `reflow`                                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                                               |
++| `readTag`                                 | function  | Reads the tag name of a value that is an element, for the context of an invalid-host error.                                                            |
+ | `readTarget`                              | function  | Returns the first HTML element a trigger's target attribute, or its `href` fragment, names in its document.                                            |
+ | `readTargets`                             | function  | Returns the HTML elements a trigger's target attribute, or its `href` fragment, names in its document.                                                 |
+ | `TARGET_ATTRIBUTE`                        | const     | Names the attribute a trigger carries its target selector in by default, Bootstrap's attribute name.                                                   |

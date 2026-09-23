@@ -1,0 +1,67 @@
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -124,10 +124,10 @@
+ 	readonly carousel?: Pick<CarouselOptions, 'classes' | 'attributes' | 'selectors'>
+ }
+ 
+-/** Owns delegated activation and the button engines it constructs. */
++/** Owns delegated activation and the engines it constructs. */
+ export interface DelegateInterface {
+ 	readonly root: ParentNode
+-	/** Releases the click listener and destroys every owned button engine. */
++	/** Releases the click listener and destroys every engine it owns. */
+ 	destroy(): void
+ }
+ 
+--- a/src/browser/Delegate.ts
++++ b/src/browser/Delegate.ts
+@@ -22,7 +22,7 @@
+ import { isAttributeName, isClassToken, isSelector } from './validators.js'
+ 
+ /**
+- * Activates data-attribute button hosts through a root's delegated click listener.
++ * Activates data-attribute hosts through a root's delegated click listener.
+  *
+  * @remarks
+  * Construction validates and copies each entity group, then installs the listener. Importing the
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -36,8 +36,8 @@
+ | `ButtonInterface`                         | interface | Controls the `pressed` token and the `aria-pressed` attribute on a host.                                                                               |
+ | `ButtonOptions`                           | interface | Configures a button's markup vocabulary, hooks, and lifetime.                                                                                          |
+ | `ButtonVocabulary`                        | interface | Carries a button's resolved markup vocabulary: each group with every key present.                                                                      |
+-| `Delegate`                                | class     | Activates data-attribute button hosts through a root's delegated click listener.                                                                       |
+-| `DelegateInterface`                       | interface | Owns delegated activation and the button engines it constructs.                                                                                        |
++| `Delegate`                                | class     | Activates data-attribute hosts through a root's delegated click listener.                                                                              |
++| `DelegateInterface`                       | interface | Owns delegated activation and the engines it constructs.                                                                                               |
+ | `DelegateOptions`                         | interface | Configures the root of delegated activation and the markup vocabulary of each entity it routes.                                                        |
+ | `bindEventMap`                            | function  | Binds an entity's hooks to the wire events its table names until the signal aborts.                                                                    |
+ | `emitEvent`                               | function  | Dispatches a bubbling DOM event carrying the supplied detail.                                                                                          |
+@@ -221,9 +221,9 @@
+ 
+ #### `DelegateInterface`
+ 
+-| Method    | Summary                                                             |
+-| --------- | ------------------------------------------------------------------- |
+-| `destroy` | Releases the click listener and destroys every owned button engine. |
++| Method    | Summary                                                        |
++| --------- | -------------------------------------------------------------- |
++| `destroy` | Releases the click listener and destroys every engine it owns. |
+ 
+ #### `RegistryInterface`
+ 
+@@ -536,9 +536,11 @@
+ constructs receives the same groups. A replaced selector is not an alias, so the default selector
+ then routes nothing. The driven engine is the one the static `find` method of the `Button` class
+ returns, whoever constructed it, or an engine the delegate constructs and acquires when the host has
+-none; an engine you constructed keeps its own groups. The delegate prevents the click's default
+-action, as Bootstrap's data API does. A host under nested delegate roots is driven once per click
+-for each entity whose selector matches, by whichever delegate hears the click first.
++none; an engine you constructed keeps its own groups. The button route prevents the click's
++default action, as Bootstrap's data API does. The `collapse` option carries the collapse's groups
++the same way, and § Components states its route under Collapse. A host under nested delegate
++roots is driven once per click for each entity whose selector matches, by whichever delegate
++hears the click first.
+ 
+ While the delegate owns an engine it observes its root, and at the observer delivery that follows a
+ removal it restores and releases every host it acquired that the root no longer contains, whether
