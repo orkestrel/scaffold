@@ -1,0 +1,10 @@
+Fold the disclosure landing into the roadmap
+
+The B-COLLAPSE … B-SCROLLSPY routing row records the DROPDOWN, NAV, and COLLAPSE landings with
+their audit lanes and the plugin rows the guide now carries for Collapse, Dropdown, Tab, and
+ScrollSpy. The navigation carrier row stays, because the navbar keys are still deferred, and the
+guide's showcase helper clause does not apply to keys that render in regions of their own.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
+
