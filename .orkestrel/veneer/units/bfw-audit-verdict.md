@@ -15,9 +15,9 @@ Round: rounds 1 and 2 of `bfw` (`b-forms-label-show-brief.md`, `-brief-2.md`; re
 
 ## Rulings on the referrals
 
-- **The § Tests stem table.** The table lists the stems the CL13 round shot against the Bootstrap 5.3.8 counterpart portfolio, as its introduction states, and no forms key added after that round has a row in it. The label key takes none either. The stem rows `bfw` returned are not landed; `bfl`'s guide integration carries the § Showcase sentence alone, and its brief drops the "Tests rows" clause before dispatch.
+- **The § Tests stem table.** The table's completeness is already carried: `ROADMAP.md` § Carriers records that the table omits the scenarios the earlier units registered and that B-PASSIVE-CLOSE adds every registered stem once or derives the table from the registry under a parity check. The label rows join that pass with the other forms keys rather than landing alone, so the stem rows `bfw` returned are not landed by `bfl`; `bfl`'s guide integration carries the § Showcase sentence alone, and its brief drops the "Tests rows" clause before dispatch (the brief's stated reason, the CL13 population, is superseded by this carrier reading; its instruction is unchanged).
 - **Ruling E's date control in the legend row.** The ruling stands: the legend specimen is a date control by design, and the two-Tab start with the focus assertion is the least machinery the installed walk allows. Recorded as an observation; no unit.
-- **The `FORM_CHECK_SPECIMENS` doc block's bare `id` token** (`app/browser/constants.ts` around line 1041) predates the unit. Carrier: B-PASSIVE-CLOSE-B, recorded in `ROADMAP.md` § Carriers at the bfw fold.
+- **The `FORM_CHECK_SPECIMENS` doc block's bare `id` token** (`app/browser/constants.ts` around line 1041) predates the unit. Carrier: B-PASSIVE-CLOSE, beside its guide-wide token-noun sweep, recorded in `ROADMAP.md` § Carriers at the bfw fold.
 - **`npm run check`** exited 0 in the analyst's lane.
 
 VERDICT: FAIL 8; outside the claims: none — fixed at landing as an integration edit, verified PASS in `bfw-landing-checker-verdict.md`
