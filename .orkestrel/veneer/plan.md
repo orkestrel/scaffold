@@ -17,6 +17,20 @@ This folder keeps only what the open units still read; git history archives ever
   `units/b-passive-baseline.md` bind every B unit, and `units/b-forms-terrain-report.md`,
   `units/b-passive-terrain-report.md`, and `units/f8-terrain-report.md` are the terrain records
   their briefs point at.
+- The live unit: F8c-B MOVE (`veneer-f8b`, `units/f8c-b-brief.md`, `opus`, dispatched from the
+  checkpoint `b9c0b0a` that holds F8c-A READERS as accepted after its round-3 audit,
+  `units/f8c-a-fix-3-audit-verdict.md`); it carries D24 (the forbidden-runtime scan's exemption for
+  the service tree) and the round-3 claim 8 (readiness refuses a remote endpoint). Its audit
+  (`analyst` on Astra and `reviewer` on Opus), the Orchestrator's chain in the worktree, and the
+  landing of F8c on `main` follow. Their audit claims, lane briefs, verdicts, and reports sit
+  beside them as each round runs.
+- `units/decisions-round-2.md` carries the user's rulings D2 to D13 verbatim.
+- `f8-design-verdict.md` (amended by `f8c-design-verdict.md`), `b-passive-design-verdict.md`,
+  `b-sweep-design-verdict.md`, and `b-forms-design-verdict.md` are the
+  design rulings the live units execute; `units/b-passive-family.md` and
+  `units/b-passive-baseline.md` bind every B unit, and `units/b-forms-terrain-report.md`,
+  `units/b-passive-terrain-report.md`, and `units/f8-terrain-report.md` are the terrain records
+  their briefs point at.
 - The live units: B-PASSIVE-A (`veneer-ba`, `units/b-passive-a-brief-3.md`, fix-audited,
   `units/ba-fix-3-audit-verdict.md`) landed on the session branch as `8281b79` with its integration
   edits (`units/ba-integration-edit.py`, the D22 regroup `units/ba-ledger-regroup.py`) and is under
@@ -73,12 +87,12 @@ This folder keeps only what the open units still read; git history archives ever
   Set-literal, `ButtonSection` exclusion, and `CAPTURE_KEYS` spread rewrites as exact integration
   edits, scoped gates, one verifier chain at the family's close, the deciding journey re-run alone,
   the roadmap fold, and the push to `main`.
-- Closed on the session branch and on `main`: B-PASSIVE-E (`70a7487`, fold 16 at `7981fd1`),
-  B-FORMS-RANGE (`376255a`, fold 17 at `49548e2`), and B-PASSIVE-C (`6cce83f`, fold 18 at
-  `808cf53`), their artifacts retained under `units/` until the family's prune. Closed and pruned
-  with a promotion record in the prune commit: B-SWEEP (`71b7388`), B-FORMS-VALIDATION (`d4f78e5`,
-  roadmap fold 13 at `e0d04ba`), J1 JOURNEY-BUDGET (`fc228f2`), B-PASSIVE-D (`bcf938c`, fold 14 at
-  `06eb3c1`), and B-PASSIVE-B (`7b922b6`, fold 15 at `16b2590`).
+- Closed on the session branch and on `main`, their artifacts pruned with a promotion record in
+  the prune commit: the whole passive family — B-PASSIVE-D (`bcf938c`, fold 14 at `06eb3c1`), B
+  (`7b922b6`, fold 15 at `16b2590`), E (`70a7487`, fold 16 at `7981fd1`), C (`6cce83f`, fold 18 at
+  `808cf53`), A (`62ff1a6`, fold 19 at `2c10329`), and B-SWEEP (`71b7388`) — with B-FORMS-VALIDATION
+  (`d4f78e5`, fold 13 at `e0d04ba`), B-FORMS-RANGE (`376255a`, fold 17 at `49548e2`), and J1
+  JOURNEY-BUDGET (`fc228f2`); every landed worktree is removed and `veneer-f8b` alone remains.
 - Landing procedure as run from E on: `units/land-unit.sh` (diff3 with `units/resolve-diff3.py`),
   the inventory sorter `units/sort-inventories.py` (sorted literal arrays and the shipped-key Set),
   the unit's integration edits, the ledger merge, then the verification sequence (refresh loop,

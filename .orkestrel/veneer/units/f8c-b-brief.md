@@ -44,8 +44,8 @@ and `importCompiler()`; `PASSING_READINESS`, `CANDIDATE_FLOOR`, `STAGE_TIMEOUT`,
 `variables`, `declarations`), `CASCADE_PATH`, `collectSharedNames(names, others)`,
 `collectImportantNames(reader)`, `collectInlineSources(source)`, `FORBIDDEN_RUNTIME`,
 `scanForbiddenSource`. `tests/setupStyles.ts`: `NEUTRAL_MARKUP`, `collectFencedBlocks`,
-`collectTypeSelectors`, `readPreflightDepartures`, `VENEER_GUIDE_PATH`. `tests/setup.ts`:
-`WORKSPACE_ROOT` (confirm the export name with `grep -n "WORKSPACE_ROOT" tests/setup*.ts`). The
+`collectTypeSelectors`, `readPreflightDepartures`, `VENEER_GUIDE_PATH`. `tests/setupServer.ts`:
+`WORKSPACE_ROOT` (around line 348, `fileURLToPath(new URL('../', import.meta.url))`). The
 proofs to move: `tests/tailwind/profiles.test.ts` (imports `guides/veneer.md?raw`,
 `fixtures/tailwind/consumer.css?raw`, `setup.css?inline|?raw`, `fixtures/tailwind/preflight.css`,
 `fixtures/tailwind/unexcluded.css`), `tests/tailwind/shared.test.ts` (→ `consumer.test.ts`; imports
