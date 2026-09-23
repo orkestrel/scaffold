@@ -17,6 +17,11 @@ This folder keeps only what the open units still read; git history archives ever
   `units/b-passive-baseline.md` bind every B unit, and `units/b-forms-terrain-report.md`,
   `units/b-passive-terrain-report.md`, and `units/f8-terrain-report.md` are the terrain records
   their briefs point at.
+- The live B-FORMS units, each in its own worktree from Veneer `main` (`2c10329`) with its own
+  `node_modules`: B-FORMS-GROUP (`veneer-bfg`, `units/b-forms-group-brief.md`, `opus`) and
+  B-FORMS-CHECK (`veneer-bfc`, `units/b-forms-check-brief.md`, `opus`), in parallel; each is audited
+  (`analyst` on Astra, `reviewer` on Opus, `checker` where mechanical) and landed serially through
+  the landing procedure recorded later in this file.
 - The live unit: F8c-B MOVE (`veneer-f8b`, `units/f8c-b-brief.md`, `opus`, dispatched from the
   checkpoint `b9c0b0a` that holds F8c-A READERS as accepted after its round-3 audit,
   `units/f8c-a-fix-3-audit-verdict.md`); it carries D24 (the forbidden-runtime scan's exemption for
