@@ -1,0 +1,150 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 396db7a..cd0bcab 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -839,7 +839,9 @@ case sets a published property.
+ 
+ The focus ring is the recorded quarter-rem shadow at a quarter of the palette blue, written as a mix
+ over that token because a partial declares no literal color. It replaces the native outline rather
+-than sitting beside it, which is why the rule clears the outline at the same site.
++than sitting beside it, which is why the rule clears the outline at the same site. Under forced
++colors the focused page's rule also writes an outline in the system highlight color through the
++`forced-ring` mixin, because forced colors paint no shadow ring. § Additions records it.
+ 
+ Stacking decides whose chrome paints over the edge two pages share. Adjacent pages share one border,
+ because every page after the first pulls itself one border width towards the page before it. A
+@@ -1639,7 +1641,9 @@ recorded value.
+ 
+ Each state reads its own opacity variable: `0.5` at rest, `0.75` under the pointer, `1` on focus,
+ and `0.25` when `disabled`. Focus removes the outline and paints the recorded shadow, which is what
+-separates this control from the focus ring the button class wears. A control is `disabled` through
++separates this control from the focus ring the button class wears. Under forced colors the focused
++control's rule also writes an outline in the system highlight color through the `forced-ring` mixin,
++because forced colors paint no shadow ring. § Additions records it. A control is `disabled` through
+ the `disabled` attribute and through the `disabled` class alike, and each form removes pointer
+ events and text selection beside dimming the control.
+ 
+@@ -3627,6 +3631,8 @@ at that query. The `Reason` cell is the only cell no measurement fixes.
+ | `form-select`  | `.form-select:focus { outline }`                              | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
+ | `form-check`   | `.form-check-input:focus { outline }`                         | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
+ | `form-range`   | `.form-range:focus { outline }`                               | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline on the host, because the shadow the thumb wears elsewhere is not painted there.                            |
++| `btn-close`    | `.btn-close:focus { outline }`                                | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
++| `pagination`   | `.page-link:focus { outline }`                                | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
+ 
+ ### Outside the ledger
+ 
+diff --git a/src/styles/components/_close.scss b/src/styles/components/_close.scss
+index 036c114..770e1e2 100644
+--- a/src/styles/components/_close.scss
++++ b/src/styles/components/_close.scss
+@@ -1,3 +1,5 @@
++@use '../mixins' as *;
++
+ @layer components {
+ 	// The close control ships Bootstrap's recorded surface. Its text color routes through the
+ 	// palette token that already holds black byte for byte, and its radius through the base radius
+@@ -39,6 +41,7 @@
+ 		outline: 0;
+ 		box-shadow: var(--bs-btn-close-focus-shadow);
+ 		opacity: var(--bs-btn-close-focus-opacity);
++		@include forced-ring;
+ 	}
+ 
+ 	.btn-close:disabled,
+diff --git a/src/styles/components/_pagination.scss b/src/styles/components/_pagination.scss
+index c5daeba..26e3225 100644
+--- a/src/styles/components/_pagination.scss
++++ b/src/styles/components/_pagination.scss
+@@ -78,6 +78,7 @@ $sizes: (
+ 		background-color: var(--bs-pagination-focus-bg);
+ 		outline: 0;
+ 		box-shadow: var(--bs-pagination-focus-box-shadow);
++		@include forced-ring;
+ 	}
+ 
+ 	// The state reads the same on the link itself and on its item, which is what lets the markup
+diff --git a/tests/src/styles/components/close.test.ts b/tests/src/styles/components/close.test.ts
+index 92a3e5b..281ca25 100644
+--- a/tests/src/styles/components/close.test.ts
++++ b/tests/src/styles/components/close.test.ts
+@@ -8,7 +8,9 @@ import {
+ 	readRootToken,
+ 	readStyle,
+ 	readToken,
++	releaseMedia,
+ 	releasePointer,
++	stageMedia,
+ 	waitForAnimations,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+@@ -24,6 +26,7 @@ import {
+ 
+ afterEach(async () => {
+ 	await releasePointer()
++	await releaseMedia()
+ 	document.documentElement.removeAttribute('data-bs-theme')
+ 	scene.clear()
+ })
+@@ -122,6 +125,27 @@ describe('close control states', () => {
+ 		expect(readStyle(control, 'opacity')).toBe('0.5')
+ 	})
+ 
++	it('outlines the focused control at the focus width under forced colors, where its shadow ring is not painted', async () => {
++		const control = mountClose()
++		const host = requireValue(control.parentElement, 'No control host')
++		host.insertAdjacentHTML(
++			'beforeend',
++			'<div id="focus-gauge" style="width: var(--vn-focus-width)"></div>',
++		)
++		const gauge = requireValue(host.querySelector('#focus-gauge'), 'No focus gauge')
++		control.focus()
++		expect(control.matches(':focus')).toBe(true)
++		expect(readStyle(control, 'outline-style')).toBe('none')
++		// A color reading cannot fail under forced colors, because the installed color reader
++		// resolves each side through a probe whose color forced colors also replace, so the outline
++		// is read by its style and its width rather than by its paint.
++		await stageMedia({ forced: true })
++		expect(readStyle(control, 'outline-style')).toBe('solid')
++		expect(readPixels(control, 'outline-width')).toBe(readPixels(gauge, 'width'))
++		await releaseMedia()
++		expect(readStyle(control, 'outline-style')).toBe('none')
++	})
++
+ 	it('refuses a disabled control through the attribute and through the class alike', async () => {
+ 		const attributed = mountClose()
+ 		attributed.disabled = true
+diff --git a/tests/src/styles/components/pagination.test.ts b/tests/src/styles/components/pagination.test.ts
+index 4913267..8d39a66 100644
+--- a/tests/src/styles/components/pagination.test.ts
++++ b/tests/src/styles/components/pagination.test.ts
+@@ -178,6 +178,30 @@ describe('pagination classes', () => {
+ 		expect(readStyle(link, 'box-shadow')).toBe('none')
+ 	})
+ 
++	it('outlines the focused page at the focus width under forced colors, where its shadow ring is not painted', async () => {
++		const list = mountPagination(PAGINATION_MARKUP)
++		const host = requireValue(list.parentElement, 'No pagination host')
++		host.insertAdjacentHTML(
++			'beforeend',
++			'<div id="focus-gauge" style="width: var(--vn-focus-width)"></div>',
++		)
++		const link = requireValue(list.querySelectorAll('.page-link')[1], 'No page link')
++		if (!(link instanceof HTMLElement)) throw new Error('The page link is not an element')
++		const gauge = requireValue(host.querySelector('#focus-gauge'), 'No focus gauge')
++		link.focus()
++		await pressKeys('{ArrowRight}')
++		expect(link.matches(':focus-visible')).toBe(true)
++		expect(readStyle(link, 'outline-style')).toBe('none')
++		// A color reading cannot fail under forced colors, because the installed color reader
++		// resolves each side through a probe whose color forced colors also replace, so the outline
++		// is read by its style and its width rather than by its paint.
++		await stageMedia({ forced: true })
++		expect(readStyle(link, 'outline-style')).toBe('solid')
++		expect(readPixels(link, 'outline-width')).toBe(readPixels(gauge, 'width'))
++		await releaseMedia()
++		expect(readStyle(link, 'outline-style')).toBe('none')
++	})
++
+ 	it.each(PAGINATION_PARENT_CASES)('paints $direct and $parent alike', ({ direct, parent }) => {
+ 		const marker = direct.slice('.page-link.'.length)
+ 		const list = mountPagination(PAGINATION_MARKUP)
