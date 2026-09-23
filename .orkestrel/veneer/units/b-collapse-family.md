@@ -62,7 +62,8 @@ proof `tests/app/browser/sections/<Name>Section.test.ts` exist per partial and p
    after `InputGroupSection` in the barrel order (R18 names); every recorded selector rendered by a
    specimen, with these exceptions recorded here: the `.collapsing` classes render no specimen (rule 2); the `.navbar-expand-* .offcanvas` rules are proved
    without a specimen until the Offcanvas unit of B-MODAL … B-CAROUSEL supplies one (R10), and the
-   `navbar-expand-xl` and `-xxl` expanded states have no frame under the 390 and 1280 variants (R16).
+   `navbar-expand-xxl` expanded state has no frame under the 390 and 1280 variants (R16, corrected at
+   the NAVBAR audit, D3: the `xl` bar expands at 1280).
 10. **Room for positioned parts (R4).** A shown menu sits inside a wrapper that reserves its room in
     its own direction; the wrapper is the registered resting subject; the journey's hanging-key
     branch is not changed.

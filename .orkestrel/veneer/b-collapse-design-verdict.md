@@ -82,8 +82,10 @@ Family record: `units/b-collapse-family.md`.
   `forced-ring` beside their shadow ring, each an `### Additions` row under
   `@media (forced-colors: active)` (the D37 and `.page-link` precedent).
 - **R16 Breakpoints.** Boundary readings run through `visitBreakpoint` at the boundary and one
-  pixel below; the journey's variants stay 390 and 1280, so the `navbar-expand-xl` and `-xxl`
-  expanded states have no frame and the navbar section records that limit. (The analyst's added
+  pixel below; the journey's variants stay 390 and 1280, so the `navbar-expand-xxl`
+  expanded state has no frame and the navbar section records that limit. (Corrected 2026-09-23 at
+  the NAVBAR audit, D3: the `xl` boundary is 1200 px, so the `navbar-expand-xl` bar expands at the
+  1280 variant and has a frame; the text before the correction named it too.) (The analyst's added
   1400 variants are refused: a variant is a family-wide cost, and the proofs carry the reading.)
 - **R17 Guide wording.** One `### … classes` heading per component (Collapse covers `collapsing`);
   the § Surface sentence reads "they stay that shape until the first engine component carrying a
