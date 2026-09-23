@@ -1,0 +1,306 @@
+Preparing worktree (detached HEAD a658879)
+HEAD is now at a658879 Merge origin/main (the engine session removed the kickoff prompt) into the session branch before the disclosure push
+
+added 192 packages, and audited 193 packages in 3s
+
+42 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+ci exit=0
+a658879 Merge origin/main (the engine session removed the kickoff prompt) into the session branch before the disclosure push
+npm notice run @orkestrel/veneer@0.0.1 build:src:styles
+npm notice run vite build --config configs/src/vite.styles.config.ts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  156.66 kB │ gzip: 20.23 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+[32m✓ built in 705ms[39m
+build:src:styles exit=0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/form-select.test.ts tests/src/styles/components/validation.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer-base
+
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:20 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+··xx·········xx······12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:37:21 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mModule "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+········x·····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/form-select.test.ts:249:2 > form select classes > reads its spacing from the space scale and its corners from the radius scale, so both factors rescale it
+AssertionError: expected 'calc(100% - 12px) 50%, 12px 50%' to match /^right 12px 50%,/u
+
+[32m- Expected:[39m
+/^right 12px 50%,/u
+
+[31m+ Received:[39m
+"calc(100% - 12px) 50%, 12px 50%"
+
+ ❯ tests/src/styles/components/form-select.test.ts:277:50
+    275|   // The caret sits the horizontal padding in from the end edge, so it…
+    276|   // position lists one value per image layer, and the caret is the fi…
+    277|   expect(readStyle(plain, 'background-position')).toMatch(/^right 12px…
+       |                                                  ^
+    278|   // The size classes move the block padding, the start padding, and t…
+    279|   // end padding the caret needs.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:55:2 > validation classes > carries the 'valid' mark on a validated text control and on a single-value select
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:55:2 > validation classes > carries the 'invalid' mark on a validated text control and on a single-value select
+AssertionError: expected 'calc(100% - 9px) 50%' to be 'right 9px 50%' // Object.is equality
+
+Expected: [32m"[7mright[27m 9px 50%"[39m
+Received: [31m"[7mcalc(100% -[27m 9px[7m)[27m 50%"[39m
+
+ ❯ tests/src/styles/components/validation.test.ts:77:53
+     75|    // control's own 16px type, the release's own reading; a retuned co…
+     76|    // reports here.
+     77|    expect(readStyle(control, 'background-position')).toBe('right 9px 5…
+       |                                                     ^
+     78|    expect(readToken(single, '--bs-form-select-bg-icon')).toBe(`url("${…
+     79|    expect(readPixels(single, 'padding-right')).toBe(66)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:280:2 > validation classes > reaches every host through the 'valid' scope as well as through the state class
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:280:2 > validation classes > reaches every host through the 'invalid' scope as well as through the state class
+AssertionError: expected 'calc(100% - 9px) 9px' to be 'right 9px top 9px' // Object.is equality
+
+Expected: [32m"[7mright 9px top[27m 9px"[39m
+Received: [31m"[7mcalc(100% - 9px)[27m 9px"[39m
+
+ ❯ tests/src/styles/components/validation.test.ts:335:50
+    333|    expect(matchesColor(readStyle(control, 'border-top-color'), border)…
+    334|    expect(readStyle(control, 'background-image')).toBe(`url("${image}"…
+    335|    expect(readStyle(area, 'background-position')).toBe('right 9px top …
+       |                                                  ^
+    336|    expect(matchesColor(readStyle(choice, 'border-top-color'), border))…
+    337|    expect(readToken(choice, '--bs-form-select-bg-icon')).toBe(`url("${…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 30 passed (35)
+   Start at  12:37:18
+   Duration  3.37s (transform 0ms, setup 392ms, import 41ms, tests 1.65s, environment 0ms)
+
+styles files exit=1
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer-base
+
+·x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and records every property the profile moves
+AssertionError: expected [ …(195) ] to deeply equal [ …(199) ]
+
+- Expected
++ Received
+
+@@ -118,21 +118,21 @@
+    "samp | border-bottom-style | none | solid",
+    "samp | border-left-style | none | solid",
+    "samp | border-right-style | none | solid",
+    "samp | border-top-style | none | solid",
+    "samp | tab-size | 8 | 4",
+-   "select | background-color | rgb(239, 239, 239) | rgba(0, 0, 0, 0)",
++   "select | background-color | rgb(255, 255, 255) | rgba(0, 0, 0, 0)",
+    "select | border-bottom-color | rgb(118, 118, 118) | oklch(0.208 0.042 265.755)",
+    "select | border-bottom-width | 1px | 0px",
+    "select | border-left-color | rgb(118, 118, 118) | oklch(0.208 0.042 265.755)",
+    "select | border-left-width | 1px | 0px",
+    "select | border-right-color | rgb(118, 118, 118) | oklch(0.208 0.042 265.755)",
+    "select | border-right-width | 1px | 0px",
+    "select | border-top-color | rgb(118, 118, 118) | oklch(0.208 0.042 265.755)",
+    "select | border-top-width | 1px | 0px",
+    "select | color | rgb(0, 0, 0) | oklch(0.208 0.042 265.755)",
+-   "select | height | 20px | 18px",
++   "select | height | 23px | 21px",
+    "select | tab-size | 8 | 4",
+    "select | text-decoration-color | rgb(0, 0, 0) | oklch(0.208 0.042 265.755)",
+    "small | border-bottom-style | none | solid",
+    "small | border-left-style | none | solid",
+    "small | border-right-style | none | solid",
+@@ -162,17 +162,13 @@
+    "svg | border-left-style | none | solid",
+    "svg | border-right-style | none | solid",
+    "svg | border-top-style | none | solid",
+    "svg | display | inline | block",
+    "svg | tab-size | 8 | 4",
+-   "table | border-bottom-color | rgb(128, 128, 128) | oklch(0.208 0.042 265.755)",
+    "table | border-bottom-style | none | solid",
+-   "table | border-left-color | rgb(128, 128, 128) | oklch(0.208 0.042 265.755)",
+    "table | border-left-style | none | solid",
+-   "table | border-right-color | rgb(128, 128, 128) | oklch(0.208 0.042 265.755)",
+    "table | border-right-style | none | solid",
+-   "table | border-top-color | rgb(128, 128, 128) | oklch(0.208 0.042 265.755)",
+    "table | border-top-style | none | solid",
+    "table | tab-size | 8 | 4",
+    "textarea | background-color | rgb(255, 255, 255) | rgba(0, 0, 0, 0)",
+    "textarea | border-bottom-color | rgb(118, 118, 118) | oklch(0.208 0.042 265.755)",
+    "textarea | border-bottom-width | 1px | 0px",
+
+ ❯ tests/service/tailwind/preflight.test.ts:150:32
+    148|    .map((row) => `${row.tag} | ${row.property} | ${row.standalone} | $…
+    149|    .sort()
+    150|   expect([...measured].sort()).toEqual(recorded)
+       |                                ^
+    151|  })
+    152| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  12:37:23
+   Duration  2.15s (transform 206ms, setup 1000ms, import 75ms, tests 918ms, environment 0ms)
+
+preflight exit=1
+worktree remove exit=0
