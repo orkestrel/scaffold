@@ -1,0 +1,5 @@
+TOGGLES round 2, the Orchestrator's readings settling the lanes' command sub-clauses (2026-09-23, after 18:30 UTC)
+
+Claim 1: `git -C /home/user/veneer-tg rev-parse a658879:<path>` for app/browser/constants.ts, guides/veneer.md, tests/setup.ts, tests/setupStyles.test.ts, and tests/setupStyles.ts reads 18b0a6da, 605d1a55, 8ec9f251, daef14f5, and bbe11e6e; each equals the `index` base hash in tg-shared-2.patch. `git -C /home/user/veneer-tg apply --check /home/user/scaffold/.orkestrel/veneer/units/tg-shared-2.patch` exit 0.
+Claim 6: the owned files' modification times in /home/user/veneer-tg (UTC): _button-group.scss 17:47:08, _input-group.scss 16:35:46, ButtonGroupSection.test.ts 17:53:33, InputGroupSection.test.ts 17:48:21, button-group.test.ts 17:59:09, input-group.test.ts 17:53:33; every one precedes the gate run's start at 18:11:06, so the gates were taken after the last edit.
+Ruling: claims 1 and 6 hold; the checker's and the reviewer's UNRESOLVED sub-clauses close on these readings.

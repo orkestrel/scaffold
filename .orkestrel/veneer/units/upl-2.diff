@@ -29,11 +29,11 @@ index 2848b95..2d25732 100644
 +		overflow: auto;
 +	}
  }
-diff --git a/home/user/veneer-upl/app/browser/sections/PositionSection.ts b/home/user/veneer-upl/app/browser/sections/PositionSection.ts
+diff --git a/app/browser/sections/PositionSection.ts b/app/browser/sections/PositionSection.ts
 new file mode 100644
 index 0000000..9abd024
 --- /dev/null
-+++ b/home/user/veneer-upl/app/browser/sections/PositionSection.ts
++++ b/app/browser/sections/PositionSection.ts
 @@ -0,0 +1,22 @@
 +import { POSITION_COPY, POSITION_SPECIMENS } from '../constants.js'
 +import { SpecimenSection } from './SpecimenSection.js'
@@ -57,11 +57,11 @@ index 0000000..9abd024
 +		super(host, POSITION_COPY, POSITION_SPECIMENS)
 +	}
 +}
-diff --git a/home/user/veneer-upl/app/browser/sections/SizingSection.ts b/home/user/veneer-upl/app/browser/sections/SizingSection.ts
+diff --git a/app/browser/sections/SizingSection.ts b/app/browser/sections/SizingSection.ts
 new file mode 100644
 index 0000000..632b09d
 --- /dev/null
-+++ b/home/user/veneer-upl/app/browser/sections/SizingSection.ts
++++ b/app/browser/sections/SizingSection.ts
 @@ -0,0 +1,22 @@
 +import { SIZING_COPY, SIZING_SPECIMENS } from '../constants.js'
 +import { SpecimenSection } from './SpecimenSection.js'
@@ -85,11 +85,11 @@ index 0000000..632b09d
 +		super(host, SIZING_COPY, SIZING_SPECIMENS)
 +	}
 +}
-diff --git a/home/user/veneer-upl/app/browser/sections/VisibilitySection.ts b/home/user/veneer-upl/app/browser/sections/VisibilitySection.ts
+diff --git a/app/browser/sections/VisibilitySection.ts b/app/browser/sections/VisibilitySection.ts
 new file mode 100644
 index 0000000..e1e49c2
 --- /dev/null
-+++ b/home/user/veneer-upl/app/browser/sections/VisibilitySection.ts
++++ b/app/browser/sections/VisibilitySection.ts
 @@ -0,0 +1,22 @@
 +import { VISIBILITY_COPY, VISIBILITY_SPECIMENS } from '../constants.js'
 +import { SpecimenSection } from './SpecimenSection.js'
@@ -113,11 +113,11 @@ index 0000000..e1e49c2
 +		super(host, VISIBILITY_COPY, VISIBILITY_SPECIMENS)
 +	}
 +}
-diff --git a/home/user/veneer-upl/src/styles/components/_position.scss b/home/user/veneer-upl/src/styles/components/_position.scss
+diff --git a/src/styles/components/_position.scss b/src/styles/components/_position.scss
 new file mode 100644
 index 0000000..fc30de4
 --- /dev/null
-+++ b/home/user/veneer-upl/src/styles/components/_position.scss
++++ b/src/styles/components/_position.scss
 @@ -0,0 +1,35 @@
 +@use '../mixins' as *;
 +
@@ -154,11 +154,11 @@ index 0000000..fc30de4
 +		}
 +	}
 +}
-diff --git a/home/user/veneer-upl/src/styles/utilities/_position.scss b/home/user/veneer-upl/src/styles/utilities/_position.scss
+diff --git a/src/styles/utilities/_position.scss b/src/styles/utilities/_position.scss
 new file mode 100644
 index 0000000..cb17b48
 --- /dev/null
-+++ b/home/user/veneer-upl/src/styles/utilities/_position.scss
++++ b/src/styles/utilities/_position.scss
 @@ -0,0 +1,41 @@
 +@use '../mixins' as *;
 +
@@ -201,11 +201,11 @@ index 0000000..cb17b48
 +		);
 +	}
 +}
-diff --git a/home/user/veneer-upl/src/styles/utilities/_sizing.scss b/home/user/veneer-upl/src/styles/utilities/_sizing.scss
+diff --git a/src/styles/utilities/_sizing.scss b/src/styles/utilities/_sizing.scss
 new file mode 100644
 index 0000000..9a9d032
 --- /dev/null
-+++ b/home/user/veneer-upl/src/styles/utilities/_sizing.scss
++++ b/src/styles/utilities/_sizing.scss
 @@ -0,0 +1,33 @@
 +@use '../mixins' as *;
 +
@@ -240,11 +240,11 @@ index 0000000..9a9d032
 +		@include utility(min-vh, min-height, $down, $infix);
 +	}
 +}
-diff --git a/home/user/veneer-upl/src/styles/utilities/_visibility.scss b/home/user/veneer-upl/src/styles/utilities/_visibility.scss
+diff --git a/src/styles/utilities/_visibility.scss b/src/styles/utilities/_visibility.scss
 new file mode 100644
 index 0000000..0608a86
 --- /dev/null
-+++ b/home/user/veneer-upl/src/styles/utilities/_visibility.scss
++++ b/src/styles/utilities/_visibility.scss
 @@ -0,0 +1,16 @@
 +@use '../mixins' as *;
 +
@@ -262,11 +262,11 @@ index 0000000..0608a86
 +		);
 +	}
 +}
-diff --git a/home/user/veneer-upl/src/styles/utilities/_visually-hidden.scss b/home/user/veneer-upl/src/styles/utilities/_visually-hidden.scss
+diff --git a/src/styles/utilities/_visually-hidden.scss b/src/styles/utilities/_visually-hidden.scss
 new file mode 100644
 index 0000000..6f8dc0b
 --- /dev/null
-+++ b/home/user/veneer-upl/src/styles/utilities/_visually-hidden.scss
++++ b/src/styles/utilities/_visually-hidden.scss
 @@ -0,0 +1,29 @@
 +@layer utilities {
 +	// The release writes this helper with `!important` on every declaration, so it sits in the
@@ -297,11 +297,11 @@ index 0000000..6f8dc0b
 +		}
 +	}
 +}
-diff --git a/home/user/veneer-upl/tests/app/browser/sections/PositionSection.test.ts b/home/user/veneer-upl/tests/app/browser/sections/PositionSection.test.ts
+diff --git a/tests/app/browser/sections/PositionSection.test.ts b/tests/app/browser/sections/PositionSection.test.ts
 new file mode 100644
 index 0000000..eaccce6
 --- /dev/null
-+++ b/home/user/veneer-upl/tests/app/browser/sections/PositionSection.test.ts
++++ b/tests/app/browser/sections/PositionSection.test.ts
 @@ -0,0 +1,242 @@
 +import type { SectionInterface } from '@app/browser'
 +import { POSITION_COPY, POSITION_SPECIMENS, PositionSection, SpecimenSection } from '@app/browser'
@@ -545,11 +545,11 @@ index 0000000..eaccce6
 +		}
 +	})
 +})
-diff --git a/home/user/veneer-upl/tests/app/browser/sections/SizingSection.test.ts b/home/user/veneer-upl/tests/app/browser/sections/SizingSection.test.ts
+diff --git a/tests/app/browser/sections/SizingSection.test.ts b/tests/app/browser/sections/SizingSection.test.ts
 new file mode 100644
 index 0000000..a7ec78b
 --- /dev/null
-+++ b/home/user/veneer-upl/tests/app/browser/sections/SizingSection.test.ts
++++ b/tests/app/browser/sections/SizingSection.test.ts
 @@ -0,0 +1,175 @@
 +import type { SectionInterface } from '@app/browser'
 +import { SIZING_COPY, SIZING_SPECIMENS, SizingSection, SpecimenSection } from '@app/browser'
@@ -726,11 +726,11 @@ index 0000000..a7ec78b
 +		}
 +	})
 +})
-diff --git a/home/user/veneer-upl/tests/app/browser/sections/VisibilitySection.test.ts b/home/user/veneer-upl/tests/app/browser/sections/VisibilitySection.test.ts
+diff --git a/tests/app/browser/sections/VisibilitySection.test.ts b/tests/app/browser/sections/VisibilitySection.test.ts
 new file mode 100644
 index 0000000..13b196f
 --- /dev/null
-+++ b/home/user/veneer-upl/tests/app/browser/sections/VisibilitySection.test.ts
++++ b/tests/app/browser/sections/VisibilitySection.test.ts
 @@ -0,0 +1,121 @@
 +import type { SectionInterface } from '@app/browser'
 +import {
@@ -853,11 +853,11 @@ index 0000000..13b196f
 +		}
 +	})
 +})
-diff --git a/home/user/veneer-upl/tests/src/styles/components/position.test.ts b/home/user/veneer-upl/tests/src/styles/components/position.test.ts
+diff --git a/tests/src/styles/components/position.test.ts b/tests/src/styles/components/position.test.ts
 new file mode 100644
 index 0000000..e255fa8
 --- /dev/null
-+++ b/home/user/veneer-upl/tests/src/styles/components/position.test.ts
++++ b/tests/src/styles/components/position.test.ts
 @@ -0,0 +1,121 @@
 +import { TOKEN_NAMES } from '@src/core'
 +import { requireValue } from '@orkestrel/test'
@@ -980,11 +980,11 @@ index 0000000..e255fa8
 +		).toBe('1')
 +	})
 +})
-diff --git a/home/user/veneer-upl/tests/src/styles/utilities/position.test.ts b/home/user/veneer-upl/tests/src/styles/utilities/position.test.ts
+diff --git a/tests/src/styles/utilities/position.test.ts b/tests/src/styles/utilities/position.test.ts
 new file mode 100644
 index 0000000..e17d438
 --- /dev/null
-+++ b/home/user/veneer-upl/tests/src/styles/utilities/position.test.ts
++++ b/tests/src/styles/utilities/position.test.ts
 @@ -0,0 +1,227 @@
 +import { TOKEN_NAMES } from '@src/core'
 +import { requireValue } from '@orkestrel/test'
@@ -1213,11 +1213,11 @@ index 0000000..e17d438
 +		expect(readPixels(box, 'top')).toBe(9)
 +	})
 +})
-diff --git a/home/user/veneer-upl/tests/src/styles/utilities/sizing.test.ts b/home/user/veneer-upl/tests/src/styles/utilities/sizing.test.ts
+diff --git a/tests/src/styles/utilities/sizing.test.ts b/tests/src/styles/utilities/sizing.test.ts
 new file mode 100644
 index 0000000..0df9595
 --- /dev/null
-+++ b/home/user/veneer-upl/tests/src/styles/utilities/sizing.test.ts
++++ b/tests/src/styles/utilities/sizing.test.ts
 @@ -0,0 +1,140 @@
 +import { TOKEN_NAMES } from '@src/core'
 +import { requireValue } from '@orkestrel/test'
@@ -1359,11 +1359,11 @@ index 0000000..0df9595
 +		expect(readPixels(box, 'width')).toBe(9)
 +	})
 +})
-diff --git a/home/user/veneer-upl/tests/src/styles/utilities/visibility.test.ts b/home/user/veneer-upl/tests/src/styles/utilities/visibility.test.ts
+diff --git a/tests/src/styles/utilities/visibility.test.ts b/tests/src/styles/utilities/visibility.test.ts
 new file mode 100644
 index 0000000..fa1eb79
 --- /dev/null
-+++ b/home/user/veneer-upl/tests/src/styles/utilities/visibility.test.ts
++++ b/tests/src/styles/utilities/visibility.test.ts
 @@ -0,0 +1,81 @@
 +import { requireValue } from '@orkestrel/test'
 +import { findRule, readStyle } from '@orkestrel/test/browser'
@@ -1446,11 +1446,11 @@ index 0000000..fa1eb79
 +		expect(readStyle(element, 'visibility')).toBe('visible')
 +	})
 +})
-diff --git a/home/user/veneer-upl/tests/src/styles/utilities/visually-hidden.test.ts b/home/user/veneer-upl/tests/src/styles/utilities/visually-hidden.test.ts
+diff --git a/tests/src/styles/utilities/visually-hidden.test.ts b/tests/src/styles/utilities/visually-hidden.test.ts
 new file mode 100644
 index 0000000..78107f3
 --- /dev/null
-+++ b/home/user/veneer-upl/tests/src/styles/utilities/visually-hidden.test.ts
++++ b/tests/src/styles/utilities/visually-hidden.test.ts
 @@ -0,0 +1,146 @@
 +import { requireValue } from '@orkestrel/test'
 +import { readName, readPixels, readStyle, traverseAccessible } from '@orkestrel/test/browser'
