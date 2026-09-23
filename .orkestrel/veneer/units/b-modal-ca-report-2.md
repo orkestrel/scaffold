@@ -394,7 +394,7 @@ step:
 The patch path is absolute because `git -C` resolves a relative patch path from the directory it
 changes into.
 
-Apply it with `git -C /home/user/veneer-ca apply tmp/units/ca-shared-2.patch`. It carries every
+Apply it with `git -C /home/user/veneer-ca apply /home/user/scaffold/.orkestrel/veneer/units/ca-shared-2.patch`. It carries every
 round-1 hunk plus the round-2 edits in `app/browser/constants.ts` and `guides/veneer.md`.
 
 ## Deviations and settled choices
