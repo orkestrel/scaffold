@@ -1,0 +1,2 @@
+RED  exit=1 | a trigger reads its first panel alone | tests/src/browser/Collapse.test.ts -t "collapses a trigger naming several panels only when none of them is shown" | 1 failed | 24 skipped (25)
+RED  exit=1 | the triggers are read once | tests/src/browser/Collapse.test.ts -t "shows through the transition token" | 1 failed | 24 skipped (25)
