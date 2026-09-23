@@ -376,3 +376,12 @@ a comment, an empty `@layer` statement, or another `@import`, and Vite runs that
 Tailwind plugin sees the file. The guide's § Tailwind paragraph states the plugin's rule as the
 cause, cites the spec sections as the rule the plugin follows for valid at-rules, and keeps the
 import-first closing clause. Carrier: F8c-B round 5. Amends D25 and D25a.
+
+## D37 — The forms controls' focus indicator under forced colours is a family ruling
+
+`.form-select:focus` and `.form-range` write `outline: 0` with a `box-shadow` ring, as the release
+does, so under forced colours the shadow does not paint and the control shows no focus indicator,
+while `.btn` takes the `focus-ring` mixin's system-colour outline. Whether the forms controls take
+that mixin's forced-colours outline (a departure from the release in forced colours alone, read by
+the T2 forced-colours axis) is ruled once for the family. Carrier: B-FORMS-CLOSE, recorded in
+`ROADMAP.md` at the SELECT landing.
