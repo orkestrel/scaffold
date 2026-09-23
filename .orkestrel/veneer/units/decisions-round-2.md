@@ -404,3 +404,16 @@ The comparison carries the priority as part of the value text (`0 !important`), 
 change reads as a departure the way any other value change does, and the ledger tables gain no
 column. Carrier: L2 LEDGER-PRIORITY on `opus`, after CONTROL lands; every row that comparison
 surfaces is that unit's to record or repair.
+
+## D40 — The form text controls share the type and border declarations through two mixins
+
+The SELECT landing tripped the duplication floor (D32): `.form-select` and `.input-group-text`
+share six declarations, and `.form-control` shares them with both, because the release derives
+each from its `$input-*` variables. That is shared structure rather than coincidence, so
+`src/styles/_mixins.scss` carries `control-type` (`font-size: var(--vn-size-3); font-weight:
+var(--vn-weight-body); line-height: var(--vn-line-body); color: var(--bs-body-color);`) and
+`control-border` (`border: var(--bs-border-width) solid var(--bs-border-color); border-radius:
+var(--bs-border-radius);`), each emitting its run where the partial wrote it, so every partial
+compiles byte-identical to its block form. The floor stays at D32's values. Carriers: B-FORMS-MIXIN
+routes `_form-select.scss` and `_input-group.scss`; the CONTROL fix round routes
+`_form-control.scss` with the identical mixin text in its own tree, and the landing keeps one copy.
