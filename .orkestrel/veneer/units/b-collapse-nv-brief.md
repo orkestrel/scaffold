@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5 (the alias serves `claude-opus-5`), reached as a native Claude subagent in the
-worktree `/home/user/veneer-nv` (branch `unit/nv` from `BASE_SHA`). The executor that opens this
+worktree `/home/user/veneer-nv` (branch `unit/nv` from `87ff1d0`). The executor that opens this
 brief is that subagent.
 
 ## Objective
@@ -50,14 +50,14 @@ vocabulary in `node_modules/@orkestrel/contract/dist/src/core/index.d.cts`). A h
 wait, recorder, or deferred whose job an installed export does is a defect; the checker probes the
 diff for a new exported symbol against those entries.
 
-**Host.** Linux, `bash`; the worktree `/home/user/veneer-nv` (branch `unit/nv` from `BASE_SHA`);
+**Host.** Linux, `bash`; the worktree `/home/user/veneer-nv` (branch `unit/nv` from `87ff1d0`);
 npm 11 on `PATH` through
 `export PATH="/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/npm11/node_modules/.bin:$PATH"`
 (run it first in every shell; the manifest's `devEngines` pin refuses npm 10); network reachable;
 Chromium installed; no sandbox; a `CAPTURE=1` journey run of one variant takes about two minutes and
 is the Orchestrator's observation, not this unit's criterion.
 
-**Measurements.** Taken by the staging script at `BASE_SHA` in the worktree before the unit starts
+**Measurements.** Taken by the staging script at `87ff1d0` in the worktree before the unit starts
 (`npm ci --ignore-scripts` and `npm run build:src` exit 0; the log sits beside this brief as
 `nv-stage.log.txt`). The unit runs `npm run test:conformance` and the scoped styles project over its
 sibling proofs first and records the exits; a red reading at the baseline is a standing condition to
@@ -70,7 +70,7 @@ specified it.
 restored by `scaffold repair`: never edit them; the policy sweep reads every comment and every
 authored Markdown file for the banned terms in `.claude/rules/writing.md` § Substitutions and
 enforces the mirror law (a `tests/src/styles/components/<stem>.test.ts` mirrors
-`src/styles/components/_<stem>.scss`). `git status --porcelain` is empty at `BASE_SHA`. The
+`src/styles/components/_<stem>.scss`). `git status --porcelain` is empty at `87ff1d0`. The
 sibling wave-1 units run in their own worktrees on disjoint files; a shared file is report-only for
 every one of them.
 
@@ -99,7 +99,7 @@ and `tests/app/browser/index.test.ts` (the region and export enumerations), `tes
 compatibility component set), `app/browser/constants.ts` (`<KEY>_COPY`, `<KEY>_SPECIMENS`),
 `app/browser/Showcase.ts` and `app/browser/index.ts` (the section), `guides/veneer.md` (every
 section, row, and sentence the unit adds or changes, ruling 12), `ROADMAP.md`. For each, the unit
-returns an exact patch (a unified diff against `BASE_SHA`, or the appended rows verbatim with the
+returns an exact patch (a unified diff against `87ff1d0`, or the appended rows verbatim with the
 anchor line they follow) in its report and edits nothing there.
 
 **Off-limits.** Every other unit's owned files (COLLAPSE: `_collapse.scss`, `collapse.test.ts`,
@@ -158,7 +158,7 @@ Orchestrator's runs at landing.
 
 ## Review evidence
 
-`git -C /home/user/veneer-nv diff BASE_SHA` and `git -C /home/user/veneer-nv status --porcelain`,
+`git -C /home/user/veneer-nv diff 87ff1d0` and `git -C /home/user/veneer-nv status --porcelain`,
 captured by the Orchestrator at hand-back as `nv.diff` and `nv-status.txt`, plus the report and
 the regenerated frames of the Orchestrator's capture run (the rendered surface's primary evidence;
 source is corroboration).
