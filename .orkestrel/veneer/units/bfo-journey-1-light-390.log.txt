@@ -1,0 +1,95 @@
+
+> @orkestrel/veneer@0.0.1 test:journey
+> vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:light-390*
+
+
+ RUN  v4.1.11 /home/user/veneer-bfo
+
+··················x········x···x·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:896:2 > journey > reaches the range slider through the keyboard and leaves its ring to the thumb
+Error: Interactive target "Range value" is not reachable through forward Tab traversal: BUTTON:Dark mode > BUTTON:Primary > BUTTON:Secondary > BUTTON:Tertiary > BUTTON:Success > BUTTON:Info > BUTTON:Warning > BUTTON:Danger > BUTTON:Light > BUTTON:Dark > BUTTON:Outline primary > BUTTON:Outline secondary > BUTTON:Outline tertiary > BUTTON:Outline success > BUTTON:Outline info > BUTTON:Outline warning > BUTTON:Outline danger > BUTTON:Outline light > BUTTON:Outline dark > BUTTON:Link > BUTTON:Small > BUTTON:Large > A:Anchor > BUTTON:Selected > BUTTON:Toggle > BUTTON:Pressed > BUTTON:Label > A:Return to content > INPUT: > BUTTON:Reboot button > INPUT: > SELECT:First choice
+Second  > SELECT:Grouped choice > TEXTAREA: > INPUT: > IFRAME: > SUMMARY:More information > A:Primary link > A:Secondary link > A:Success link > A:Info link > A:Warning link > A:Danger link > A:Light link > A:Dark link > A:Body emphasis link > A:Opaque anchor > A:Link opacity 10% > A:Link opacity 25% > A:Link opacity 50% > A:Link opacity 75% > A:Link opacity 100% > A:Hover link opacity 1 > A:Hover link opacity 2 > A:Hover link opacity 5 > A:Hover link opacity 7 > A:Hover link opacity 1 > A:Offset 1 > A:Offset 2 > A:Offset 3 > A:Hover offset 1 > A:Hover offset 2 > A:Hover offset 3 > A:Primary underline > A:Secondary underline > A:Success underline > A:Info underline > A:Warning underline > A:Danger underline > A:Light underline > A:Dark underline > A:Link underline > A:Resting icon link > A:Shifting icon link > A:Underline opacity 0% > A:Underline opacity 10 > A:Underline opacity 25 > A:Underline opacity 50 > A:Underline opacity 75 > A:Underline opacity 10 > A:Hover underline opac > A:Hover underline opac > A:Hover underline opac > A:Hover underline opac > A:Hover underline opac > A:Hover underline opac > DIV:Material shipments
+M > DIV:Material shipments
+M > DIV:Material shipments
+M > DIV:Material shipments
+M > DIV:Material shipments
+M > DIV:Material shipments
+M > INPUT: > INPUT: > SELECT:Northworks > SELECT:Unassigned > INPUT: > INPUT: > INPUT: > INPUT: > INPUT: > A:Previous page > A:Page 1 > A:Page 2 > A:Page 3 > A:Next page > A:Step 1 > A:Step 2 > A:Compact 1 > A:Compact 2 > A:Roomy 1 > A:Roomy 2 > BUTTON:Row menu > BUTTON:Row cut > BUTTON:Row copy > BUTTON:Row paste > BUTTON:Column cut > BUTTON:Column copy > BUTTON:Column paste > INPUT: > BUTTON:Joined cut > BUTTON:Joined cut all > BUTTON:Joined copy > BUTTON:Joined copy all > BUTTON:Stacked cut > BUTTON:Stacked cut all > BUTTON:Stacked copy > BUTTON:Stacked copy all > INPUT: > BUTTON:Compact cut > BUTTON:Compact copy > BUTTON:Roomy cut > BUTTON:Roomy copy > BUTTON:Wrapping cut > BUTTON:Wrapping cut all > BUTTON:Wrapping copy > BUTTON:Wrapping copy all > BUTTON:Wrapping paste > BUTTON:Wrapping paste all > INPUT: > INPUT: > INPUT: > TEXTAREA: > INPUT: > INPUT:
+ ❯ driveTraversal node_modules/@orkestrel/test/dist/src/browser/index.js:890:7
+ ❯ tests/app/browser/integration.test.ts:907:18
+    905|    'The "Range disabled" specimen renders no .form-range',
+    906|   )
+    907|   const reached = await traverseAccessible(readName(control))
+       |                  ^
+    908|   expect(reached).toBe(control)
+    909|   expect(control.matches(':focus-visible')).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:1269:2 > portfolio > expands one filename per scenario and variant, and places every registered scenario
+AssertionError: expected [ 'active-page', …(95) ] to strictly equal [ 'active-page', …(96) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -76,11 +76,10 @@[39m
+[2m    "primary-focus",[22m
+[2m    "primary-hover",[22m
+[2m    "progress-base",[22m
+[2m    "range",[22m
+[2m    "range-disabled",[22m
+[32m-   "range-focus",[39m
+[2m    "role-links",[22m
+[2m    "showcase",[22m
+[2m    "small-border-spinner",[22m
+[2m    "small-group",[22m
+[2m    "small-pagination",[22m
+
+ ❯ tests/app/browser/integration.test.ts:1287:39
+    1285|   // Every registered scenario was reached, none twice, and none unreg…
+    1286|   // refuses a scenario it does not carry, so this pairs that refusal …
+    1287|   expect([...FRAMES.scenarios].sort()).toStrictEqual([...CAPTURE_SCENA…
+       |                                       ^
+    1288|  })
+    1289|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:1396:2 > portfolio > reads every frame this variant left in the portfolio directory inside its declared region
+AssertionError: expected [ 'active-page', …(95) ] to strictly equal [ 'active-page', …(96) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -76,11 +76,10 @@[39m
+[2m    "primary-focus",[22m
+[2m    "primary-hover",[22m
+[2m    "progress-base",[22m
+[2m    "range",[22m
+[2m    "range-disabled",[22m
+[32m-   "range-focus",[39m
+[2m    "role-links",[22m
+[2m    "showcase",[22m
+[2m    "small-border-spinner",[22m
+[2m    "small-group",[22m
+[2m    "small-pagination",[22m
+
+ ❯ tests/app/browser/integration.test.ts:1406:37
+    1404|    FRAMES.placements.map((placement) => [placement.scenario, placement…
+    1405|   )
+    1406|   expect([...regions.keys()].sort()).toStrictEqual([...CAPTURE_SCENARI…
+       |                                     ^
+    1407|   const expanded = CAPTURE_SCENARIOS.map((scenario) => `${scenario}--$…
+    1408|   const present: string[] = []
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 30 passed (33)
+   Start at  05:14:34
+   Duration  86.34s (transform 0ms, setup 227ms, import 148ms, tests 75.03s, environment 0ms)
+
