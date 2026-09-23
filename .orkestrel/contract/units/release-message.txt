@@ -1,0 +1,14 @@
+Narrow isInstance to the constructor's instance type and release 0.0.18
+
+`isInstance` now takes the constructor constraint `instanceOf` carries and narrows `value` to
+`InstanceType<C>`; its intersected return type narrowed to `object` and over-narrowed the false
+branch. The body is unchanged, so runtime behaviour is unchanged. Compile-time proofs pin the
+narrowing for a concrete, an abstract, an argument-taking, and a generic class, the false
+branch of a nullable base against a derived and against a structurally identical subclass, the
+parity of the parameter constraint with `instanceOf`, and the refusal of a non-constructor, the
+bare `AnyConstructor`, and a `Function`-typed value. The remark states the narrowing, the
+constraint, the last-construct-signature reading, and the `Object` limit. Every fleet consumer
+wraps the guard in an explicit predicate or a boolean, so none changes. Audited by Opus 5.5 on
+the objective lane, Astra on the subjective lane, and the checker, over two rounds.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
