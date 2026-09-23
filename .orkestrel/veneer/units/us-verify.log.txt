@@ -1,0 +1,42 @@
+=== oxfmt exit=0 changed: 0
+=== format:check exit=0 (15:01:46)
+=== lint:check exit=0 (15:01:48)
+=== check exit=0 (15:02:20)
+=== test:policy exit=0 (15:02:28)
+=== test:guides exit=0 (15:02:32)
+=== test:setup exit=0 (15:02:53)
+=== build:src exit=0 (15:03:07)
+=== scoped styles (mixins, gap) exit=0 (15:03:23)
+=== test:service exit=0 (15:04:03)
+=== Layout section proof exit=0 (15:04:30)
+=== us fast gates done
+=== build:src exit=0
+=== test:conformance exit=0
+=== test:setup exit=0
+=== test:app exit=0
+=== capture light-1280 exit=0 (15:09:49) load 11.19
+=== capture dark-1280 exit=0 (15:12:42) load 10.91
+=== capture light-390 exit=0 (15:15:04) load 9.46
+=== capture dark-390 exit=0 (15:17:21) load 7.53
+=== test:journey exit=0 (15:19:23) load 13.86
+1036
+=== npm install exit=0 (15:19:24)
+=== format:check exit=0 (15:19:32)
+=== lint:check exit=0 (15:19:34)
+=== check exit=0 (15:19:50)
+=== build exit=0 (15:20:03)
+=== test:src:core exit=0 (15:20:04)
+=== test:src:browser exit=0 (15:20:16)
+=== test:src:styles exit=0 (15:21:48)
+=== test:app exit=0 (15:22:07)
+=== test:journey exit=0 (15:24:17)
+=== test:policy exit=0 (15:24:21)
+=== test:config exit=0 (15:24:28)
+=== test:setup exit=0 (15:24:45)
+=== test:setup:browser exit=0 (15:25:07)
+=== test:conformance exit=0 (15:25:22)
+=== test:guides exit=0 (15:25:25)
+=== test:distribution exit=0 (15:25:46)
+=== test:service exit=0 (15:25:57)
+=== gates done (15:25:57)
+=== verify done (15:25:57)
