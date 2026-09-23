@@ -1,0 +1,24 @@
+[
+ {
+  "name": "HostSnapshot: the pending targets never unpublished (rerun with the throwing write)",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\t} finally {\n",
+    "replace": "\t\t} finally {\n\t\t\treturn\n"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: a nested restore withdraws every entry on the element",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\t\tfor (const { target } of records) {\n\t\t\t\tHostSnapshot.#withdraw(\n\t\t\t\t\ttarget.element,\n\t\t\t\t\tHostSnapshot.#key(target.category, target.name),\n\t\t\t\t\tinvocation,\n\t\t\t\t)\n\t\t\t}\n",
+    "replace": "\t\t\tfor (const { target } of records) HostSnapshot.#pending.delete(target.element)\n"
+   }
+  ]
+ }
+]

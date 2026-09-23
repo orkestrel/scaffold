@@ -1,0 +1,18 @@
+[
+ {
+  "name": "HostSnapshot: the pending targets never unpublished (rerun with the throwing write)",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 12 passed (13)",
+  "failed": [
+   "HostSnapshot > withdraws every target it has not written back when a write throws, so a later save reads the element"
+  ]
+ },
+ {
+  "name": "HostSnapshot: a nested restore withdraws every entry on the element",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 12 passed (13)",
+  "failed": [
+   "HostSnapshot > keeps the outer restoration writing its own targets when a reaction re-enters restore on the same snapshot"
+  ]
+ }
+]
