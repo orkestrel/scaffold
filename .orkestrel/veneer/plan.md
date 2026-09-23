@@ -103,8 +103,8 @@ the merge result. Its in-flight work at this reading: the J-ENGINE design round 
 Veneer file owned; its pending shared changes: none recorded. Move this marker at every boundary the
 protocol names.
 
-**In flight (this session).** The disclosure landing: DROPDOWN (`76b7b81`), NAV (`d926de6`), and
-COLLAPSE (`fb131ff`) on the session branch over `e4e6a40`, fast gates green, the verification chain
+**In flight (this session).** The disclosure landing: DROPDOWN (`4476fb0`), NAV (`c43fc7b`), and
+COLLAPSE (`f3624fc`) on the session branch over `e4e6a40`, fast gates green, the verification chain
 and the landing check running, the fold and the push pending. UTIL-DISPLAY (`/home/user/veneer-ud`)
 and UTIL-PLACEMENT (`/home/user/veneer-upl`) on `opus` from `e4e6a40`. ALERT round 2 returned and
 in audit (`/home/user/veneer-al`). CAROUSEL round 2 on `opus` (`/home/user/veneer-ca`). CONDITIONS
