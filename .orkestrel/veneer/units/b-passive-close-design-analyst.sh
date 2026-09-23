@@ -1,0 +1,7 @@
+#!/bin/bash
+# B-PASSIVE-CLOSE design round, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at /home/user/veneer.
+# Command in the form the analyst driver resolved for the CONTROL round-2 lane (the bfl audit lane round-tripped at 11:12 with session 01a0cdef-d4cf-7c32-99a7-f9ea389343e0); the bench copy tmp/codex/b-passive-close-design-brief.md is byte-identical to the retained brief this launcher names; the Orchestrator sized the cap (2100 s: the label design lane ran under 30 min over a comparable brief, plus slack).
+# Brief: .orkestrel/veneer/units/b-passive-close-design-brief.md  Terrain: .orkestrel/veneer/units/b-passive-close-terrain-report.md  Journal: tmp/codex/b-passive-close-design-analyst.jsonl  Last message: tmp/codex/b-passive-close-design-analyst-last.md
+cd /home/user/scaffold
+timeout 2100 codex exec --json -C /home/user/veneer --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message /home/user/scaffold/tmp/codex/b-passive-close-design-analyst-last.md "Your working directory is /home/user/veneer. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/b-passive-close-design-brief.md exactly, holding the objective lane. Make your final message the proposal the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/b-passive-close-design-analyst.jsonl 2> /home/user/scaffold/tmp/codex/b-passive-close-design-analyst.err
+echo "exit=$?" >> /home/user/scaffold/tmp/codex/b-passive-close-design-analyst.err
