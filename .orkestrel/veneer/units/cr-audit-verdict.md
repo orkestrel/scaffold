@@ -19,4 +19,4 @@ Round: `cr` round 1 (`close-registry-brief.md`; report `close-registry-report.md
 
 The integration edit is `cr-probe-cr-integration.py` with its diff `cr-integration.diff`, verified by the landing checker (`cr-landing-checker-verdict.md`).
 
-VERDICT: FAIL 6 (fixed at landing as an integration edit); outside the claims: F1 — fixed in the same edit
+VERDICT: FAIL 6 (fixed at landing as an integration edit); outside the claims: F1 — fixed in the same edit, verified in `cr-landing-checker-verdict.md` (its claim-4 line-length conjunct dropped on record for a string literal)
