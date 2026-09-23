@@ -1,0 +1,22 @@
+Retire the rounding fixture, key the range table per property, and pin the literal-declaration reading
+
+B-FORMS-CLOSE-TABLES (`opus` on Opus 5, one round) retires `INPUT_GROUP_ROUNDING` with its doc
+block, import, loads, exports entry, and freeze expectations, and binds the input-group corner
+proofs to the radius the control and select carry outside a group through the `input-border`
+mixin, which the inert fixture had masked; declares `FormRangeCase` and reshapes
+`FORM_RANGE_CASES` to a property-keyed `reads` map with each reduced-motion twin its own row under
+its condition, the Node case comparing per property and excluding from its written-key equality a
+block under a condition the inventory records for no rule of the key (R9), which the additions
+ledger holds; exports one `collectDeclarationReads` helper from `tests/setupServer.ts` that the
+text-control, input-group, and range Node cases share (R7), with its own proof; runs the retained
+literal-declaration probe (a `letter-spacing` plant on `.form-control`: the Node binding case and
+the browser proof green, the conformance additions case red with the exact `declaration` line, the
+hash restored) and pins the reading with an in-memory conformance case over the real cascade (R4);
+and names the additions gate as the reporter in the `FORM_CONTROL_CASES` remark. The landing
+integration replaces the § Input group classes paragraph on the consumer radius with the shipped
+radius, border, and floating rules (D31, R12).
+
+Audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker` on Sonnet; the prose findings
+(a count and a bare field token) are applied as the lanes' exact text at integration. Decisions D31
+and the close verdict's R4, R7, R9, R11, and R12. Records: `.orkestrel/veneer/units/bft-*` and
+`b-forms-close-tables-*` in the scaffold repository.
