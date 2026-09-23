@@ -1,0 +1,11 @@
+Reconcile the J-TYPES round-8 audit, correct the offcanvas departure, and brief round 9
+
+The round-8 audit broke two claims: the tab's list-group item sat in both the wrapper and
+the link selectors, so the tab gains an `entry` key and each composition names it; and the
+offcanvas departure both the round-6 ruling and the plan's carried row stated does not exist,
+because Bootstrap's resize handler hides only a panel it showed, so the listener becomes a
+lifetime listener and the real departure, Bootstrap's load-time adoption of shown markup, is
+recorded for J-OFFCANVAS. Four bounds are adopted. Round 9 carries every ruling on the same
+writer; every lane verdict, report, diff, and gate log is retained. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
