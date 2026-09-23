@@ -157,3 +157,56 @@ a code use inside `tests/setupStyles.test.ts` after the four-site rename, or aga
 no-unused-vars configuration than the one `.oxlintrc.json` and `tsconfig.json` carry here; the
 `Object.keys(setup).sort()` inventory assertion at line 309 compares against string literals only
 and does not read the import binding, so keeping the binding does not serve that assertion.
+
+## Round 2
+
+### The two sites
+
+1. `tests/setupStyles.ts`, `BUTTON_OUTLINE_CASES` derivation: the `.map` callback now skips the
+   tuple's mode member and uses the outer `mode` the `.filter` already matched —
+   `.filter(([, candidate]) => candidate === mode).map(([role, , fill, , active, focus]) =>
+   Object.freeze([role, mode, fill, active, focus] as const))`. No parameter shadows `mode` now.
+2. `tests/setupStyles.test.ts`: `VENEER_GUIDE_PATH` removed from the `./setupStyles.js` named
+   import list (was line 146, between `TYPE_TEXT_CASES` and `collectFencedBlocks`); the
+   `'VENEER_GUIDE_PATH'` string in the export-name inventory (line 309, now unrenumbered by this
+   one-line removal) stays.
+
+### Gate exits
+
+- `npx oxfmt --config .oxfmtrc.json --write` over the two files: ran, no residual diff.
+- `npx oxfmt --config .oxfmtrc.json --check` over the nine owned files: exit 0 ("All matched files
+  use the correct format.").
+- `npx oxlint --config .oxlintrc.json --deny-warnings` over the owned TypeScript files: exit 0 (no
+  output; the round-1 `no-shadow` warning and `no-unused-vars` error are both gone).
+- `npm run check`: exit 0 (`tsc --noEmit`, `check:src:core`, `check:src:browser`,
+  `check:src:styles`, `check:app:browser` all clean; the round-1 `TS6133` is gone).
+- `npm run build:src`: exit 0 (`dist/src/browser/index.js` 10.29 kB gzip 3.36 kB;
+  `dist/src/styles/index.css` 132.67 kB gzip 17.20 kB).
+- `npm run test:setup`: exit 0, 4 test files passed, 231 tests passed.
+- `npm run test:conformance`: exit 0, 1 test file passed, 17 tests passed.
+- `npm run test:guides`: exit 0, 1 test file passed, 18 tests passed.
+- `npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot
+  tests/src/styles/components/button.test.ts tests/src/styles/components/pagination.test.ts
+  tests/src/styles/components/placeholder.test.ts`: exit 0, 3 test files passed, 88 tests passed.
+
+### `git status --porcelain`
+
+```
+ M package-lock.json
+ M src/styles/components/_button.scss
+ M src/styles/components/_pagination.scss
+ M src/styles/components/_placeholder.scss
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/setupStyles.test.ts
+ M tests/setupStyles.ts
+ M tests/src/styles/components/button.test.ts
+```
+
+Matches round 1's set exactly (`package-lock.json` remains the pre-existing install normalization
+this unit never touched).
+
+### Deviations
+
+None. Both obligations applied exactly as specified; every gate the round-1 brief's § Execution
+names, and every round-2 acceptance criterion, exits 0.
