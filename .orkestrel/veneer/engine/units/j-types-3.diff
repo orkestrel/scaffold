@@ -1,0 +1,75 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 2dc34bd..bd498c6 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -61,6 +61,7 @@ publishes the color-mode controller. The token values those names carry are in 
+ | `SwipeInterface`          | interface | Reports horizontal touch and pen swipes on a host through pointer events.                                                            |
+ | `SanitizeAllowlist`       | type      | Maps each element name to the attributes sanitized tip markup keeps on it, mirroring Bootstrap's `allowList` option.                 |
+ | `SanitizeOptions`         | interface | Configures how tip markup is sanitized before it is written.                                                                         |
++| `SanitizerConfig`         | interface | Mirrors the HTML standard's dictionary that lists the elements and attributes the platform sanitizer keeps.                          |
+ | `SetHTMLOptions`          | interface | Mirrors the WHATWG dictionary the platform's `setHTML` method reads its sanitizer from.                                              |
+ | `SanitizeTargetInterface` | interface | Describes a node whose `setHTML` method parses markup through a sanitizer.                                                           |
+ | `TipContent`              | type      | Describes the content of a tip slot: text, an element moved in, or a function of the trigger returning either.                       |
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index c6912ba..779fca0 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -393,6 +393,24 @@ export interface SanitizeOptions {
+ 	readonly filter?: (html: string) => string
+ }
+ 
++/**
++ * Mirrors the HTML standard's dictionary that lists the elements and attributes the platform sanitizer keeps.
++ *
++ * @remarks
++ * The HTML standard names this dictionary `SanitizerConfig`. The mirror carries only its `elements`,
++ * `attributes`, and `dataAttributes` fields, the ones the tip sanitizer sets. TypeScript 6.0.3
++ * declares the dictionary globally, but the declaration rollup compiles with TypeScript 5.9.3, whose DOM
++ * library declares no sanitizer types, so the public contract declares its own mirror.
++ */
++export interface SanitizerConfig {
++	/** Lists the element names the sanitized markup keeps, mirroring the dictionary's `elements` field. */
++	readonly elements?: readonly string[]
++	/** Lists the attribute names every kept element keeps, mirroring the dictionary's `attributes` field. */
++	readonly attributes?: readonly string[]
++	/** If `true`, keeps every `data-*` attribute; if `false`, drops each one, mirroring the dictionary's `dataAttributes` field. Default: dropped when `attributes` is given. */
++	readonly dataAttributes?: boolean
++}
++
+ /**
+  * Mirrors the WHATWG dictionary the platform's `setHTML` method reads its sanitizer from.
+  *
+@@ -400,26 +418,27 @@ export interface SanitizeOptions {
+  * The HTML standard gives the dictionary this name, and TypeScript's DOM library does not declare it.
+  */
+ export interface SetHTMLOptions {
+-	/** Carries the sanitizer the markup is parsed through. Default: the platform's safe default sanitizer. */
+-	readonly sanitizer?: Sanitizer
++	/** Carries the configuration the markup is sanitized through. Default: the platform's safe baseline. */
++	readonly sanitizer?: SanitizerConfig
+ }
+ 
+ /**
+  * Describes a node whose `setHTML` method parses markup through a sanitizer.
+  *
+  * @remarks
+- * The DOM library of TypeScript 6.0.3 declares `Sanitizer` and `setHTMLUnsafe` and omits `setHTML`,
+- * so a guard narrows an element to this contract before the tip content is written.
++ * The DOM library of TypeScript 6.0.3 omits `setHTML`, so a guard narrows an element to this contract
++ * before the tip content is written. The declaration rollup's compiler declares no platform `Sanitizer`
++ * interface, so the contract carries the `SanitizerConfig` dictionary rather than a sanitizer object.
+  */
+ export interface SanitizeTargetInterface {
+ 	/**
+ 	 * Replaces the node's children with the markup the sanitizer keeps, mirroring the platform's `setHTML` method.
+ 	 *
+ 	 * @param html - The markup to parse.
+-	 * @param options - The sanitizer to parse it through.
++	 * @param options - The sanitizer configuration to parse it through.
+ 	 * @example
+ 	 * ```ts
+-	 * target.setHTML('<b>Saved</b>', { sanitizer: new Sanitizer() })
++	 * target.setHTML('<b>Saved</b>', { sanitizer: { elements: ['b'] } })
+ 	 * ```
+ 	 */
+ 	setHTML(html: string, options?: SetHTMLOptions): void
