@@ -43,6 +43,12 @@ for m in pattern.finditer(text):
         o_rows, o_rest = split_rows(ours); t_rows, t_rest = split_rows(theirs)
         if o_rest is not None and t_rest is not None:
             merged = o_rows + t_rows + ['])'] + o_rest + ['])'] + t_rest; kind = 'interleaved'
+        elif o_rest is not None:
+            # Ours closed the array and went on to later declarations; theirs only appended rows to
+            # the same open array, so its rows go before ours' closer, never after ours' later rows.
+            merged = o_rows + theirs + ['])'] + o_rest; kind = 'inserted-before-closer'
+        elif t_rest is not None:
+            merged = ours + t_rows + ['])'] + t_rest; kind = 'appended-then-closed'
         else:
             merged = ours + theirs; kind = 'concatenated'
     elif not base:

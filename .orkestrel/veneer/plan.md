@@ -17,6 +17,26 @@ This folder keeps only what the open units still read; git history archives ever
   `units/b-passive-baseline.md` bind every B unit, and `units/b-forms-terrain-report.md`,
   `units/b-passive-terrain-report.md`, and `units/f8-terrain-report.md` are the terrain records
   their briefs point at.
+- The live units, each in its own worktree from Veneer commit `3a9202a` unless named otherwise,
+  have returned from their fix rounds and are under their fix audits (`analyst` on Astra alone,
+  the writer having been Opus): `units/b-passive-a-brief-3.md` (`veneer-ba`, claims
+  `units/ba-fix-3-audit-claims.md`), `units/b-passive-c-brief-3.md` (`veneer-bc`, claims
+  `units/bc-fix-3-audit-claims.md`); B-FORMS-RANGE (`veneer-bfr`, `units/b-forms-range-brief-5.md`)
+  is audited and lands next; B-PASSIVE-E landed on the session branch as `70a7487` (its cascade
+  rows moved back into `CASCADE_KEYS` after the merge misplaced them; `units/resolve-diff3.py`
+  carries the rule) and folds to `main` under its chain. F8b SHARED-PREFLIGHT (`veneer-f8b`,
+  checkpointed at `d9c03a2`) folded into F8c SERVICE under D19: F8c-A READERS
+  (`units/f8c-a-brief.md`, `f8c-a-brief-2.md`, report `units/f8c-a-report.md`) is under audit
+  (`analyst` on Astra, `reviewer` on Opus; claims `units/f8c-a-audit-claims.md`); the Orchestrator
+  regenerates the root configuration next, then dispatches F8c-B MOVE. Their audit claims, lane
+  briefs, verdicts, and reports sit beside them as each round runs.
+- `units/decisions-round-2.md` carries the user's rulings D2 to D13 verbatim.
+- `f8-design-verdict.md` (amended by `f8c-design-verdict.md`), `b-passive-design-verdict.md`,
+  `b-sweep-design-verdict.md`, and `b-forms-design-verdict.md` are the
+  design rulings the live units execute; `units/b-passive-family.md` and
+  `units/b-passive-baseline.md` bind every B unit, and `units/b-forms-terrain-report.md`,
+  `units/b-passive-terrain-report.md`, and `units/f8-terrain-report.md` are the terrain records
+  their briefs point at.
 - The live units, each in its own worktree from Veneer commit `3a9202a` unless named otherwise, are
   in their fix rounds after one audit round each (analyst on Astra, reviewer on Opus, checker on
   Sonnet): `units/b-passive-a-brief-2.md` (`veneer-ba`), `units/b-passive-b-brief-2.md`
@@ -35,9 +55,10 @@ This folder keeps only what the open units still read; git history archives ever
   Set-literal, `ButtonSection` exclusion, and `CAPTURE_KEYS` spread rewrites as exact integration
   edits, scoped gates, one verifier chain at the family's close, the deciding journey re-run alone,
   the roadmap fold, and the push to `main`.
-- Closed on the session branch and on `main` (gate chain `units/bfv-gates.log.txt`, every gate exit 0
-  after the roadmap repad): B-SWEEP (`71b7388`) and B-FORMS-VALIDATION (`d4f78e5`, roadmap fold 13 at
-  `e0d04ba`); J1 JOURNEY-BUDGET (`units/j1-journey-budget-brief.md`) lands next.
+- Closed on the session branch and on `main`, their artifacts pruned with a promotion record in
+  the prune commit: B-SWEEP (`71b7388`), B-FORMS-VALIDATION (`d4f78e5`, roadmap fold 13 at
+  `e0d04ba`), J1 JOURNEY-BUDGET (`fc228f2`), B-PASSIVE-D (`bcf938c`, fold 14 at `06eb3c1`), and
+  B-PASSIVE-B (`7b922b6`, fold 15 at `16b2590`).
 - Closed on the session branch and on `main`, their artifacts pruned with a promotion record in
   the prune commit: F8a (`0783b2b`), L1 (`ec816c5`), F5b, F5c, F6, F7, F5d, F5e, F5a, F4, F3, and
   the Test releases; `veneer-audit-verdict.md` and `cl13-verdict.md` are the verdicts those briefs cited.
