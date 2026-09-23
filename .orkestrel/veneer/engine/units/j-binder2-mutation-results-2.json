@@ -1,0 +1,88 @@
+[
+ {
+  "name": "Delegate: no drop of destroyed engines at a click",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 19 passed (20)",
+  "failed": [
+   "Delegate > drops an engine a consumer destroyed at the next delivery or click and stops observing its root"
+  ]
+ },
+ {
+  "name": "Delegate: no drop of destroyed engines at a delivery",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 19 passed (20)",
+  "failed": [
+   "Delegate > drops an engine a consumer destroyed at the next delivery or click and stops observing its root"
+  ]
+ },
+ {
+  "name": "Delegate: routes by the default selector",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 19 passed (20)",
+  "failed": [
+   "Delegate > routes by a replaced trigger selector alone and constructs each engine with its group"
+  ]
+ },
+ {
+  "name": "Delegate: engines constructed without the group",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 19 passed (20)",
+  "failed": [
+   "Delegate > routes by a replaced trigger selector alone and constructs each engine with its group"
+  ]
+ },
+ {
+  "name": "Delegate: the button selectors group not resolved",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "2 failed | 18 passed (20)",
+  "failed": [
+   "Delegate > routes by a replaced trigger selector alone and constructs each engine with its group",
+   "Delegate > refuses a button group value that is not a class token or a selector at construction"
+  ]
+ },
+ {
+  "name": "Delegate: observer never observes",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "5 failed | 15 passed (20)",
+  "failed": [
+   "Delegate > restores removed hosts at the observer delivery after their removal and releases their ownership",
+   "Delegate > releases a connected host moved outside the root at the observer delivery after the move",
+   "Delegate > releases and restores a host reinserted after the observer delivered its removal",
+   "Delegate > acquires a released host again with a fresh engine after reinsertion",
+   "Delegate > drops an engine a consumer destroyed at the next delivery or click and stops observing its root"
+  ]
+ },
+ {
+  "name": "Delegate: releases every owned engine at delivery, contained or not",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "2 failed | 18 passed (20)",
+  "failed": [
+   "Delegate > restores removed hosts at the observer delivery after their removal and releases their ownership",
+   "Delegate > keeps the engine and the state of a host removed and reinserted in the same synchronous run, before the observer delivers"
+  ]
+ },
+ {
+  "name": "Delegate: no per-click mark",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 19 passed (20)",
+  "failed": [
+   "Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it"
+  ]
+ },
+ {
+  "name": "Delegate: never drives a found engine",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "9 failed | 11 passed (20)",
+  "failed": [
+   "Delegate > toggles a child click host, prevents its default, and reuses its engine",
+   "Delegate > reuses a fragment-rooted engine across clicks",
+   "Delegate > drives the engine a consumer constructed and leaves it to that consumer on destruction",
+   "Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it",
+   "Delegate > acquires and toggles a native disabled host on a dispatched click",
+   "Delegate > keeps toggling a host through its engine after the disabled class arrives",
+   "Delegate > acquires and toggles a host already carrying the disabled class, and restores it",
+   "Delegate > acquires and toggles an aria-disabled anchor, and leaves the attribute alone",
+   "Delegate > keeps the engine and the state of a host removed and reinserted in the same synchronous run, before the observer delivers"
+  ]
+ }
+]

@@ -1,0 +1,339 @@
+[
+ {
+  "name": "HostSnapshot: an empty attribute read as absent",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "1 failed | 6 passed (7)",
+  "failed": [
+   "HostSnapshot > restores an empty attribute distinctly from an absent one"
+  ]
+ },
+ {
+  "name": "HostSnapshot: token restore rewrites the whole class list",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "tally": "2 failed | 5 passed (7)",
+  "failed": [
+   "HostSnapshot > restores class token membership and keeps every token the snapshot never recorded",
+   "HostSnapshot > removes the class attribute it found absent when restoring leaves the list empty"
+  ]
+ },
+ {
+  "name": "Registry: claim records the registry instead of the engine",
+  "proof": "tests/src/browser/Registry.test.ts",
+  "tally": "4 failed (4)",
+  "failed": [
+   "Registry > records the claiming engine and finds it by host",
+   "Registry > refuses a second claim with the configured code and keeps the first owner",
+   "Registry > releases only for the engine that holds the claim, then admits a new claim",
+   "Registry > keeps one record per registry, so separate registries claim one host independently"
+  ]
+ },
+ {
+  "name": "Registry: one record shared by every registry",
+  "proof": "tests/src/browser/Registry.test.ts",
+  "tally": "1 failed | 3 passed (4)",
+  "failed": [
+   "Registry > keeps one record per registry, so separate registries claim one host independently"
+  ]
+ },
+ {
+  "name": "emitEvent: always cancelable",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "emitEvent > dispatches a bubbling non-cancelable event whose prevention changes nothing"
+  ]
+ },
+ {
+  "name": "bindEventMap: listeners ignore the signal",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "2 failed | 23 passed (25)",
+  "failed": [
+   "bindEventMap > binds the hooks of a non-Button map to their wire names and releases them on abort",
+   "bindEventMap > binds nothing for absent hooks or an aborted signal"
+  ]
+ },
+ {
+  "name": "settleAnimations: an idle element waits for a timer",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "2 failed | 23 passed (25)",
+  "failed": [
+   "settleAnimations > resolves in a microtask when the element has no running animation",
+   "settleAnimations > leaves infinite and paused animations out"
+  ]
+ },
+ {
+  "name": "BUTTON_EVENTS: table not frozen",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 36 passed (37)",
+  "failed": [
+   "Button > dispatches the completed state once as a bubbling non-cancelable event"
+  ]
+ },
+ {
+  "name": "BUTTON_CLASSES: table not frozen",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 36 passed (37)",
+  "failed": [
+   "Button > publishes frozen default tables that name the cascade token and Bootstrap selector"
+  ]
+ },
+ {
+  "name": "COLOR_MODE_ATTRIBUTES: table not frozen",
+  "proof": "tests/src/browser/ColorMode.test.ts",
+  "tally": "1 failed | 15 passed (16)",
+  "failed": [
+   "ColorMode > toggles, persists, and writes the light attribute"
+  ]
+ },
+ {
+  "name": "isClassToken: whitespace admitted",
+  "proof": "tests/src/browser/validators.test.ts",
+  "tally": "1 failed | 7 passed (8)",
+  "failed": [
+   "isClassToken > accepts one non-empty token and refuses whitespace, emptiness, and non-strings"
+  ]
+ },
+ {
+  "name": "isAttributeName: every string admitted",
+  "proof": "tests/src/browser/validators.test.ts",
+  "tally": "2 failed | 6 passed (8)",
+  "failed": [
+   "isAttributeName > accepts the names the platform writes and refuses the names it rejects",
+   "isAttributeName > agrees with setAttribute on every name it reads"
+  ]
+ },
+ {
+  "name": "isSelector: the selector support query instead of a parse",
+  "proof": "tests/src/browser/validators.test.ts",
+  "tally": "2 failed | 6 passed (8)",
+  "failed": [
+   "isSelector > accepts selector lists and compound negations and refuses what fails to parse",
+   "isSelector > accepts a selector list the selector support query refuses"
+  ]
+ },
+ {
+  "name": "emitEvent: detail fields mirrored as own properties",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "emitEvent > carries the detail in the detail member alone, defining no own property on the event"
+  ]
+ },
+ {
+  "name": "readTargets: the default target attribute read in place of the table",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "readTargets > reads the target attribute the table names and not the default one"
+  ]
+ },
+ {
+  "name": "resolveOptions: the data-bs-config layer restored",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "resolveOptions > merges the defaults, the declared attributes, and the constructor object in that order"
+  ]
+ },
+ {
+  "name": "resolveOptions: constructor object applied before the attributes",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "2 failed | 23 passed (25)",
+  "failed": [
+   "resolveOptions > merges the defaults, the declared attributes, and the constructor object in that order",
+   "resolveOptions > keeps a constructor false and 0 over the attributes and the defaults"
+  ]
+ },
+ {
+  "name": "resolveOptions: falsy constructor values dropped",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "resolveOptions > keeps a constructor false and 0 over the attributes and the defaults"
+  ]
+ },
+ {
+  "name": "resolveOptions: the prefix parameter ignored",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "resolveOptions > reads each declared key under the prefix it is given and not under the default prefix"
+  ]
+ },
+ {
+  "name": "resolveOptions: an array literal unwrapped before coercion",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "resolveOptions > throws the entity code for a declared attribute that fails coercion, an array literal included"
+  ]
+ },
+ {
+  "name": "resolveVocabulary: defaults returned without a frozen copy",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "resolveVocabulary > returns a frozen copy of the defaults when no group is supplied"
+  ]
+ },
+ {
+  "name": "resolveVocabulary: undeclared keys admitted",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "resolveVocabulary > replaces each supplied key, keeps each absent key, and ignores an undeclared key"
+  ]
+ },
+ {
+  "name": "resolveVocabulary: the guard skipped",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "tally": "1 failed | 24 passed (25)",
+  "failed": [
+   "resolveVocabulary > throws the entity code naming the key when a supplied value fails the guard"
+  ]
+ },
+ {
+  "name": "Button: the classes group ignored",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "2 failed | 35 passed (37)",
+  "failed": [
+   "Button > writes, tests, and restores only the pressed token its classes group names",
+   "Button > refuses a group value that is not a class token or a selector before claiming the host"
+  ]
+ },
+ {
+  "name": "Button: the classes group kept by reference",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "2 failed | 35 passed (37)",
+  "failed": [
+   "Button > writes, tests, and restores only the pressed token its classes group names",
+   "Button > refuses a group value that is not a class token or a selector before claiming the host"
+  ]
+ },
+ {
+  "name": "Button: the selectors group not validated",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 36 passed (37)",
+  "failed": [
+   "Button > refuses a group value that is not a class token or a selector before claiming the host"
+  ]
+ },
+ {
+  "name": "Button: the host claimed before the groups are validated",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 36 passed (37)",
+  "failed": [
+   "Button > refuses a group value that is not a class token or a selector before claiming the host"
+  ]
+ },
+ {
+  "name": "Button: the signal ignored",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 36 passed (37)",
+  "failed": [
+   "Button > destroys the button when its signal aborts, and at construction when it arrived aborted"
+  ]
+ },
+ {
+  "name": "Button: an already-aborted signal ignored",
+  "proof": "tests/src/browser/Button.test.ts",
+  "tally": "1 failed | 36 passed (37)",
+  "failed": [
+   "Button > destroys the button when its signal aborts, and at construction when it arrived aborted"
+  ]
+ },
+ {
+  "name": "ColorMode: the attributes group ignored",
+  "proof": "tests/src/browser/ColorMode.test.ts",
+  "tally": "2 failed | 14 passed (16)",
+  "failed": [
+   "ColorMode > reads, writes, and restores only the attribute its attributes group names",
+   "ColorMode > refuses an attributes group value that is not an attribute name before writing"
+  ]
+ },
+ {
+  "name": "ColorMode: attribute names not validated",
+  "proof": "tests/src/browser/ColorMode.test.ts",
+  "tally": "1 failed | 15 passed (16)",
+  "failed": [
+   "ColorMode > refuses an attributes group value that is not an attribute name before writing"
+  ]
+ },
+ {
+  "name": "Delegate: no prune at activation",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 19 passed (20)",
+  "failed": [
+   "Delegate > drops an engine a consumer destroyed at the next activation and stops observing its root"
+  ]
+ },
+ {
+  "name": "Delegate: routes by the default selector",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 19 passed (20)",
+  "failed": [
+   "Delegate > routes by a replaced trigger selector alone and constructs each engine with its group"
+  ]
+ },
+ {
+  "name": "Delegate: engines constructed without the group",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 19 passed (20)",
+  "failed": [
+   "Delegate > routes by a replaced trigger selector alone and constructs each engine with its group"
+  ]
+ },
+ {
+  "name": "Delegate: the button selectors group not resolved",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "2 failed | 18 passed (20)",
+  "failed": [
+   "Delegate > routes by a replaced trigger selector alone and constructs each engine with its group",
+   "Delegate > refuses a button group value that is not a class token or a selector at construction"
+  ]
+ },
+ {
+  "name": "Delegate: observer never observes",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "4 failed | 16 passed (20)",
+  "failed": [
+   "Delegate > restores removed hosts at the observer delivery after their removal and releases their ownership",
+   "Delegate > releases a connected host moved outside the root at the observer delivery after the move",
+   "Delegate > releases and restores a host reinserted after the observer delivered its removal",
+   "Delegate > acquires a released host again with a fresh engine after reinsertion"
+  ]
+ },
+ {
+  "name": "Delegate: releases every owned engine at delivery, contained or not",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "2 failed | 18 passed (20)",
+  "failed": [
+   "Delegate > restores removed hosts at the observer delivery after their removal and releases their ownership",
+   "Delegate > keeps the engine and the state of a host removed and reinserted in the same synchronous run, before the observer delivers"
+  ]
+ },
+ {
+  "name": "Delegate: no per-click mark",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "1 failed | 19 passed (20)",
+  "failed": [
+   "Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it"
+  ]
+ },
+ {
+  "name": "Delegate: never drives a found engine",
+  "proof": "tests/src/browser/Delegate.test.ts",
+  "tally": "9 failed | 11 passed (20)",
+  "failed": [
+   "Delegate > toggles a child click host, prevents its default, and reuses its engine",
+   "Delegate > reuses a fragment-rooted engine across clicks",
+   "Delegate > drives the engine a consumer constructed and leaves it to that consumer on destruction",
+   "Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it",
+   "Delegate > acquires and toggles a native disabled host on a dispatched click",
+   "Delegate > keeps toggling a host through its engine after the disabled class arrives",
+   "Delegate > acquires and toggles a host already carrying the disabled class, and restores it",
+   "Delegate > acquires and toggles an aria-disabled anchor, and leaves the attribute alone",
+   "Delegate > keeps the engine and the state of a host removed and reinserted in the same synchronous run, before the observer delivers"
+  ]
+ }
+]

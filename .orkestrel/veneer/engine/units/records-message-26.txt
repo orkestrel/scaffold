@@ -1,0 +1,14 @@
+Run J-BINDER round 2 and open its audit round
+
+Round 2 adapts the shared mechanisms to the landed contracts: `HostSnapshot` for `Snapshot`,
+`instanceOf(HTMLElement)` for the deleted `isHost`, the frozen default tables and one
+`resolveVocabulary` resolver with three total guards, `emitEvent` without mirroring under the
+`.vn.` wire, `readTargets` over the effective attribute table, `resolveOptions` without the
+JSON layer, the delegate routing by its resolved group and dropping destroyed engines at each
+click and delivery, the button's `signal`, and the guide's engine subsections with a new
+Vocabulary table. Its red-first record and mutation table are retained with the instrument, and
+its report-only patches for the app consumers and the roadmap sit beside them. The
+Orchestrator's gates read green over the worktree; the audit runs on Astra, Opus 5.5, and the
+checker on `j-binder-audit-claims-2.md`. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
