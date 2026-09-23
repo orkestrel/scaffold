@@ -1,0 +1,30 @@
+=== build:src exit=0
+=== test:conformance exit=0
+=== test:setup exit=0
+=== test:app exit=0
+=== capture light-1280 exit=0 (04:31:07) load 1.56
+=== capture dark-1280 exit=0 (04:32:55) load 1.37
+=== capture light-390 exit=0 (04:34:33) load 1.16
+=== capture dark-390 exit=0 (04:36:19) load 2.40
+=== test:journey exit=0 (04:38:13) load 11.18
+776
+=== npm install exit=0 (04:38:30)
+=== format:check exit=0 (04:38:35)
+=== lint:check exit=0 (04:38:37)
+=== check exit=0 (04:38:52)
+=== build exit=0 (04:39:03)
+=== test:src:core exit=0 (04:39:04)
+=== test:src:browser exit=0 (04:39:18)
+=== test:src:styles exit=0 (04:40:35)
+=== test:app exit=0 (04:40:51)
+=== test:journey exit=0 (04:42:33)
+=== test:policy exit=0 (04:42:36)
+=== test:config exit=0 (04:42:42)
+=== test:setup exit=0 (04:42:55)
+=== test:setup:browser exit=0 (04:43:17)
+=== test:conformance exit=0 (04:43:27)
+=== test:guides exit=0 (04:43:29)
+=== test:distribution exit=0 (04:43:47)
+=== test:service exit=0 (04:43:56)
+=== gates done (04:43:56)
+=== verify done (04:43:56)
