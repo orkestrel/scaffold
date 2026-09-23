@@ -16,7 +16,7 @@ R = sys.argv[1] + '/ROADMAP.md'
 edit(
 	R,
 	"and a mechanical round on `builder` audited by `analyst` and `checker`)",
-	"and a mechanical round on `builder` audited by `analyst` and `checker`); UTIL-PLACEMENT landed as `ac96f81` (the position, sizing, visibility, and visually-hidden keys with the Position, Sizing, and Visibility regions after Flex, the focused start control in the browser setup, and the offset names on the Tailwind exclusion line; a first round and a fix round on `opus`, each audited by `analyst` on Astra, `reviewer` on Opus 5.5, and `checker`, and a mechanical round and an evidence round on `builder`, each audited by `analyst` and `checker`; the guide's file table and obligation ledger merged three-way from the unit's base at the landing; its page-wide frames read after the `@orkestrel/test` 0.0.21 clip-edge repair)",
+	"and a mechanical round on `builder` audited by `analyst` and `checker`); UTIL-PLACEMENT landed as `ac96f81` (the position, sizing, visibility, and visually-hidden keys with the Position, Sizing, and Visibility regions after Flex, the focused start control in the browser setup, and the offset names on the Tailwind exclusion line; a first round and a fix round on `opus`, each audited by `analyst` on Astra, `reviewer` on Opus 5.5, and `checker`, and a mechanical round and an evidence round on `builder`, each audited by `analyst` and `checker`; the guide's file table and obligation ledger merged three-way from the unit's base at the landing; its page-wide frames read after the `@orkestrel/test` 0.0.21 clip-edge repair, re-pinned as `ec87654`, and each frame-holding specimen ends on the band `5d7f3b9` adds below its frame)",
 )
 print('fold-63: B-UTILITIES routing row updated')
 edit(
