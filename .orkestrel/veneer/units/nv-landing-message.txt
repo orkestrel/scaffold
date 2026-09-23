@@ -11,7 +11,7 @@ card header tabs and pills take the release markup. The registry gains the resti
 hover and focus frames, the case tables bind the partial to the inventory with the navbar-owned
 links withheld, and the guide gains the section, the rows, the Tab and ScrollSpy plugin rows, the
 navbar deferral rows, and the card classes rewrite; DROPDOWN's Nav deferral row drops here, where
-the partial that writes the tab menu lands. The unit NAV ran over two rounds on opus in
+the partial that writes the tab menu lands. The unit NAV ran over a first round and a fix round on opus in
 /home/user/veneer-nv from 87ff1d0, audited by the objective lane (Opus 5.5 in round 1 while the
 Codex bench was dark, Astra in round 2), the subjective lane, and a checker.
 
