@@ -1,0 +1,141 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index e67d698..82c1256 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -4925,7 +4925,10 @@ row. A shipped selector or variable row requires its official vocabulary less th
+ § Styles to be present in the built cascade; no deferred name may be present, and each must belong
+ to the official inventory of a component with a CSS row. The conformance component list includes a
+ key exactly when its selector and variable rows are shipped. Those CSS rows carry a dash in Proof,
+-as do source and engine obligations the Button interaction recording cannot drive. Transition, dismissal, sanitizer, and selector
++as do source and engine obligations the Button interaction recording cannot drive. A `plugin` row's
++Proof cell names instead the test file that proves the obligation, as a path from the workspace
++root ending in `.test.ts`, after its engine unit ships; the conformance proof requires that file to
++exist, and a row of any other kind refuses the file form. Transition, dismissal, sanitizer, and selector
+ engine rows record shared engine scope; they do not claim that Button dispatches transition events.
+ The jQuery rows retain the source inventory while the exclusion that follows limits the claim.
+ 
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index b8ac08b..c45414a 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -67,6 +67,7 @@ import {
+ 	filterComparableBlocks,
+ 	isAdditionCategory,
+ 	isDeparture,
++	isProofFile,
+ 	matchSelectorKey,
+ 	matchShippedKey,
+ 	normalizeDeclarationValue,
+@@ -529,6 +530,7 @@ describe('server setup', () => {
+ 			'indexRecordingKeys',
+ 			'isAdditionCategory',
+ 			'isDeparture',
++			'isProofFile',
+ 			'matchSelectorKey',
+ 			'matchShippedKey',
+ 			'matchesOracleEvents',
+@@ -966,6 +968,49 @@ describe('server setup', () => {
+ 		})
+ 	})
+ 
++	describe('proof cell naming a test file', () => {
++		const fixture: OracleFixture = {
++			version: 'unused',
++			component: 'unused',
++			browser: 'unused',
++			steps: [],
++			excluded: [],
++		}
++
++		it('reads undefined for a plugin row whose Proof names an existing file', () => {
++			const row = readCompatibility().find((candidate) => candidate.category === 'plugin')
++			if (row === undefined) throw new Error('Missing plugin obligation')
++			expect(
++				scanOracleObligation({ ...row, proof: 'tests/setupServer.test.ts' }, fixture),
++			).toBeUndefined()
++		})
++
++		it('reads a missing proof file finding for a plugin row whose Proof names a missing file', () => {
++			const row = readCompatibility().find((candidate) => candidate.category === 'plugin')
++			if (row === undefined) throw new Error('Missing plugin obligation')
++			expect(
++				scanOracleObligation({ ...row, proof: 'tests/src/browser/absent.test.ts' }, fixture),
++			).toBe(
++				`Compatibility row ${row.component} | ${row.category} | ${row.obligation} | tests/src/browser/absent.test.ts: missing proof file`,
++			)
++		})
++
++		it("refuses a file proof outside a plugin row as a plugin row's", () => {
++			const row = readCompatibility().find((candidate) => candidate.proof === 'button.click.toggle')
++			if (row === undefined) throw new Error('Missing Button click obligation')
++			expect(scanOracleObligation({ ...row, proof: 'tests/setupServer.test.ts' }, fixture)).toBe(
++				`Compatibility row ${row.component} | ${row.category} | ${row.obligation} | tests/setupServer.test.ts: a file proof is a plugin row's`,
++			)
++		})
++
++		it('accepts a test file path and refuses a recording step name or a non-test path', () => {
++			expect(isProofFile('tests/src/browser/Collapse.test.ts')).toBe(true)
++			expect(isProofFile('button.click.toggle')).toBe(false)
++			expect(isProofFile('tests/setup.ts')).toBe(false)
++			expect(isProofFile('src/browser/Collapse.test.ts')).toBe(false)
++		})
++	})
++
+ 	it('reads compatibility rows from a written guide and rejects missing columns and invalid statuses', () => {
+ 		const scratch = createScratch()
+ 		try {
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 8939260..5824b30 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -2813,12 +2813,24 @@ export function matchesOracleEvents(step: OracleStep, binding: OracleBinding): b
+ }
+ 
+ /**
+- * Scans one guide obligation for disagreement with its named live oracle step.
++ * Checks whether a Proof cell names a test file rather than a recording step.
++ * @param proof - The Proof cell's text.
++ * @returns True when `proof` is a path from the workspace root ending in `.test.ts`; false
++ * otherwise.
++ */
++export function isProofFile(proof: string): boolean {
++	return /^tests\/[^\s`]+\.test\.ts$/u.test(proof)
++}
++
++/**
++ * Scans one guide obligation for disagreement with its named live oracle step, or, for a Proof
++ * cell naming a test file, for that file's absence.
+  * @param row - The guide row to check.
+  * @param fixture - The official recording to compare.
+  * @param bindings - The entries to select the row's predicate from. Default: the
+  * {@link ORACLE_BINDINGS} constant.
+- * @returns A row-specific failure, or undefined when the obligation agrees or has no drive.
++ * @returns A row-specific failure, or undefined when the obligation agrees, the named proof file
++ * exists, or the row has no drive.
+  *
+  * @remarks
+  * The table is a parameter so a proof can drive an entry the shipped table does not carry. Every
+@@ -2828,6 +2840,10 @@ export function matchesOracleEvents(step: OracleStep, binding: OracleBinding): b
+  * An `event` entry naming no required events refuses by name rather than through its predicate.
+  * The predicate would report the recording as contradicting the obligation, which sends a reader
+  * to the browser for a fault that is in the table.
++ *
++ * A Proof cell naming a test file skips the recording step lookup entirely: it is refused outside
++ * a `plugin` row, and inside one it is judged only by that file's existence, resolved against
++ * {@link WORKSPACE_ROOT}.
+  */
+ export function scanOracleObligation(
+ 	row: CompatibilityRow,
+@@ -2836,6 +2852,12 @@ export function scanOracleObligation(
+ ): string | undefined {
+ 	if (row.proof === undefined) return undefined
+ 	const label = `Compatibility row ${row.component} | ${row.category} | ${row.obligation} | ${row.proof}`
++	if (isProofFile(row.proof)) {
++		if (row.category !== 'plugin') return `${label}: a file proof is a plugin row's`
++		return existsSync(resolve(WORKSPACE_ROOT, row.proof))
++			? undefined
++			: `${label}: missing proof file`
++	}
+ 	const step = fixture.steps.find((candidate) => candidate.name === row.proof)
+ 	if (row.component !== fixture.component || step === undefined)
+ 		return `${label}: missing recording step`

@@ -1,0 +1,546 @@
+diff --git a/src/styles/components/_button-group.scss b/src/styles/components/_button-group.scss
+index e1e59a6..e6bc549 100644
+--- a/src/styles/components/_button-group.scss
++++ b/src/styles/components/_button-group.scss
+@@ -1,3 +1,9 @@
++// Names each button size the split toggle follows, with the inline step that size's buttons pad
++// by. A split toggle pads at three quarters of that step, the multiple the release writes, so each
++// size reads the same Veneer space token its buttons read and follows the density factor. The
++// release writes the small size before the large one, and the list keeps that order.
++$sizes: (('sm', var(--vn-space-4)), ('lg', var(--vn-space-8)));
++
+ @layer components {
+ 	.btn-group,
+ 	.btn-group-vertical {
+@@ -46,9 +52,11 @@
+ 	}
+ 
+ 	// The radius is reset on the physical side each child sits on, so a group keeps one rounded
+-	// outline whatever the document's writing direction. `.dropdown-toggle` is excluded because a
+-	// split toggle keeps its own trailing corners, and Disclosure ships the rules that shape it.
++	// outline whatever the document's writing direction. A dropdown toggle is excluded because its
++	// hidden menu follows it, so it is often the visible end of the group while not its last child;
++	// a split toggle leading its group is squared, because the button it splits from follows it.
+ 	.btn-group > .btn:not(:last-child):not(.dropdown-toggle),
++	.btn-group > .btn.dropdown-toggle-split:first-child,
+ 	.btn-group > .btn-group:not(:last-child) > .btn {
+ 		border-top-right-radius: 0;
+ 		border-bottom-right-radius: 0;
+@@ -63,6 +71,36 @@
+ 		border-bottom-left-radius: 0;
+ 	}
+ 
++	// A split toggle carries the caret alone, so it pads at three quarters of its button's inline
++	// step and drops the caret's margin in every direction the release turns it. The dropdown partial
++	// writes each wrapper's caret under the wrapper class, which outweighs the plain split rule, so
++	// each wrapper takes a split rule of its own.
++	.dropdown-toggle-split {
++		padding-right: calc(var(--vn-space-6) * 0.75);
++		padding-left: calc(var(--vn-space-6) * 0.75);
++	}
++
++	.dropdown-toggle-split::after,
++	.dropup .dropdown-toggle-split::after,
++	.dropend .dropdown-toggle-split::after {
++		margin-left: 0;
++	}
++
++	.dropstart .dropdown-toggle-split::before {
++		margin-right: 0;
++	}
++
++	// Each size writes the form after a button carrying the size class and the form inside a group
++	// carrying it, as the release's own extend of the group twin does, because a sized split can
++	// sit in either position.
++	@each $size, $step in $sizes {
++		.btn-#{$size} + .dropdown-toggle-split,
++		.btn-group-#{$size} > .btn + .dropdown-toggle-split {
++			padding-right: calc(#{$step} * 0.75);
++			padding-left: calc(#{$step} * 0.75);
++		}
++	}
++
+ 	.btn-group-vertical {
+ 		flex-direction: column;
+ 		align-items: flex-start;
+diff --git a/src/styles/components/_input-group.scss b/src/styles/components/_input-group.scss
+index 3fe0e3c..37b2bcb 100644
+--- a/src/styles/components/_input-group.scss
++++ b/src/styles/components/_input-group.scss
+@@ -82,10 +82,12 @@ $sizes: (
+ 
+ 	// Inner corners are squared after the size rules, which each set all four corners, so a sized
+ 	// child keeps its radius on the group's outer edge alone. A group reporting validation keeps a
+-	// feedback element as its last child, so the squaring counts one child further from the end.
+-	// The dropdown-toggle forms of both rules belong to Disclosure and stay deferred.
++	// feedback element as its last child, so the squaring counts one child further from the end. A
++	// dropdown toggle is followed by its hidden menu, so it is squared only while at least one more
++	// child follows that menu, and it keeps its trailing corners where it is the row's visible end.
+ 	.input-group:not(.has-validation)
+ 		> :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),
++	.input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n + 3),
+ 	.input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-control,
+ 	.input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-select {
+ 		border-top-right-radius: 0;
+@@ -94,6 +96,7 @@ $sizes: (
+ 
+ 	.input-group.has-validation
+ 		> :nth-last-child(n + 3):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),
++	.input-group.has-validation > .dropdown-toggle:nth-last-child(n + 4),
+ 	.input-group.has-validation > .form-floating:nth-last-child(n + 3) > .form-control,
+ 	.input-group.has-validation > .form-floating:nth-last-child(n + 3) > .form-select {
+ 		border-top-right-radius: 0;
+diff --git a/tests/app/browser/sections/ButtonGroupSection.test.ts b/tests/app/browser/sections/ButtonGroupSection.test.ts
+index 7d7632c..2447f60 100644
+--- a/tests/app/browser/sections/ButtonGroupSection.test.ts
++++ b/tests/app/browser/sections/ButtonGroupSection.test.ts
+@@ -11,6 +11,7 @@ import {
+ import { requireValue } from '@orkestrel/test'
+ import { build, mount, readName } from '@orkestrel/test/browser'
+ import { describe, expect, it } from 'vitest'
++import { BUTTON_GROUP_SPLIT_FORMS } from '../../../setupStyles.js'
+ 
+ describe('ButtonGroupSection', () => {
+ 	it('renders a specimen for every grouped variant through the shared section contract', () => {
+@@ -34,6 +35,10 @@ describe('ButtonGroupSection', () => {
+ 				'Small group',
+ 				'Large group',
+ 				'Wrapping toolbar',
++				'Split button',
++				'Split button small',
++				'Split button large',
++				'Split dropstart',
+ 			])
+ 			// The declared markup is read back through the same parser the section renders it with,
+ 			// because a boolean attribute written bare comes back with an empty value and a
+@@ -98,9 +103,18 @@ describe('ButtonGroupSection', () => {
+ 				'.btn-group-vertical > .btn-group:not(:first-child) > .btn',
+ 				'.btn-group-vertical > .btn-check:checked + .btn',
+ 				'.btn-group > .btn.dropdown-toggle:not(:last-child)',
++				'.btn-group > .btn.dropdown-toggle-split:first-child',
+ 				'.btn-group-sm > .btn',
+ 				'.btn-group-lg > .btn',
+ 				'.btn-toolbar > .btn-group',
++				'.dropdown-toggle-split',
++				'.dropup .dropdown-toggle-split',
++				'.dropend .dropdown-toggle-split',
++				'.dropstart .dropdown-toggle-split',
++				'.btn-sm + .dropdown-toggle-split',
++				'.btn-group-sm > .btn + .dropdown-toggle-split',
++				'.btn-lg + .dropdown-toggle-split',
++				'.btn-group-lg > .btn + .dropdown-toggle-split',
+ 			])
+ 				expect({ selector, present: region.querySelector(selector) !== null }).toEqual({
+ 					selector,
+@@ -117,8 +131,12 @@ describe('ButtonGroupSection', () => {
+ 		const section: SectionInterface = new ButtonGroupSection(host)
+ 		try {
+ 			const region = requireValue(host.querySelector('section'), 'No Button group region')
++			const specimen = requireValue(
++				region.querySelector('[data-specimen="Horizontal group"]'),
++				'No Horizontal group specimen',
++			)
+ 			const toggle = requireValue(
+-				region.querySelector('.btn-group > .btn.dropdown-toggle'),
++				specimen.querySelector('.btn-group > .btn.dropdown-toggle'),
+ 				'No grouped dropdown toggle',
+ 			)
+ 			// The exclusion reaches a child only where that child is not the last one, so the toggle
+@@ -128,11 +146,63 @@ describe('ButtonGroupSection', () => {
+ 			expect(following.classList.contains('btn')).toBe(true)
+ 			expect(following.classList.contains('dropdown-toggle')).toBe(false)
+ 			expect(toggle.getAttribute('aria-expanded')).toBe('false')
+-			// Disclosure owns the split toggle and the behavior behind it, so the specimen renders
+-			// neither the split markup nor a menu, and the toggle opens nothing.
+-			expect(region.querySelector('.dropdown-toggle-split')).toBeNull()
+-			expect(region.querySelector('.dropdown-menu')).toBeNull()
+-			expect(toggle.getAttribute('data-bs-toggle')).toBeNull()
++			// The specimen shows the exclusion alone, so it renders neither a split toggle nor a menu.
++			expect(specimen.querySelector('.dropdown-toggle-split')).toBeNull()
++			expect(specimen.querySelector('.dropdown-menu')).toBeNull()
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('renders each split toggle form in the specimen that names it, closed and followed by its closed menu', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ButtonGroupSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Button group region')
++			// Each split specimen carries the forms its name claims, so a registered frame of one of
++			// them shows the rule the capture registry reads on it. Each form reaches a toggle no other
++			// form in its specimen reaches, so the frame shows every rule on a toggle of its own: a size
++			// class on a sized group's own button would bring the button-size form onto the toggle the
++			// group's form reaches.
++			for (const { name, selectors } of BUTTON_GROUP_SPLIT_FORMS) {
++				const specimen = requireValue(
++					region.querySelector(`[data-specimen="${name}"]`),
++					`No ${name} specimen`,
++				)
++				for (const selector of selectors)
++					expect({ name, selector, present: specimen.querySelector(selector) !== null }).toEqual({
++						name,
++						selector,
++						present: true,
++					})
++				const reached = selectors.flatMap((selector) => [...specimen.querySelectorAll(selector)])
++				expect({ name, shared: reached.length - new Set(reached).size }).toEqual({
++					name,
++					shared: 0,
++				})
++			}
++			const toggles = [...region.querySelectorAll('.dropdown-toggle-split')]
++			expect(toggles).not.toStrictEqual([])
++			// A split toggle carries the caret alone, so it has no content and announces its name
++			// through its label; every class is set in markup, so each toggle is closed, its menu is
++			// hidden, and no toggle names a script to open it.
++			for (const toggle of toggles) {
++				expect(toggle.childNodes).toHaveLength(0)
++				expect(readName(toggle)).not.toBe('')
++				expect(toggle.getAttribute('aria-expanded')).toBe('false')
++				expect(toggle.getAttribute('data-bs-toggle')).toBeNull()
++				const menu = requireValue(toggle.nextElementSibling, 'No menu after the split toggle')
++				expect(menu.classList.contains('dropdown-menu')).toBe(true)
++				expect(menu.classList.contains('show')).toBe(false)
++			}
++			// The dropstart toggle leads its group, so the button it splits from follows its menu: that
++			// button is what the squared trailing corners of a leading split toggle meet.
++			const leading = requireValue(
++				region.querySelector('[data-specimen="Split dropstart"] .dropdown-toggle-split'),
++				'No leading split toggle',
++			)
++			expect(leading.nextElementSibling?.nextElementSibling?.matches('.btn:last-child')).toBe(true)
+ 		} finally {
+ 			section.destroy()
+ 			host.remove()
+diff --git a/tests/app/browser/sections/InputGroupSection.test.ts b/tests/app/browser/sections/InputGroupSection.test.ts
+index 6d19f15..f4c3050 100644
+--- a/tests/app/browser/sections/InputGroupSection.test.ts
++++ b/tests/app/browser/sections/InputGroupSection.test.ts
+@@ -8,6 +8,7 @@ import {
+ import { requireValue } from '@orkestrel/test'
+ import { build, isRendered, mount, readName, readStates } from '@orkestrel/test/browser'
+ import { beforeAll, describe, expect, it } from 'vitest'
++import { CASCADE_KEYS } from '../../../setup.js'
+ 
+ // The tooltip specimens claim a revealed tooltip, and the reveal is the published cascade's rule,
+ // so the cascade has to be in the document before a visibility reading means anything.
+@@ -37,6 +38,8 @@ describe('InputGroupSection', () => {
+ 				'Input group validation',
+ 				'Input group valid tooltip',
+ 				'Input group invalid tooltip',
++				'Input group dropdown',
++				'Input group dropdown validated',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				INPUT_GROUP_SPECIMENS.map(({ markup }) => markup),
+@@ -58,6 +61,8 @@ describe('InputGroupSection', () => {
+ 				['Input group validation', 1],
+ 				['Input group valid tooltip', 2],
+ 				['Input group invalid tooltip', 2],
++				['Input group dropdown', 1],
++				['Input group dropdown validated', 1],
+ 			])
+ 			expect(
+ 				region.querySelector('[data-specimen="Input group large"] .input-group-lg'),
+@@ -115,6 +120,58 @@ describe('InputGroupSection', () => {
+ 		}
+ 	})
+ 
++	it('renders a squared and a kept dropdown toggle in each dropdown specimen, closed and followed by its closed menu', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new InputGroupSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Input group region')
++			// The leading toggle of each specimen answers to the toggle rule its group's count names,
++			// and the trailing toggle, the row's visible end, answers to neither, so each specimen
++			// shows a squared toggle beside a kept one under the same group. The capture registry
++			// holds the squaring rule each toggle specimen's frame reads, so every specimen rendering
++			// a toggle is read against its own registered row.
++			const subjects = [...region.querySelectorAll('[data-specimen]')]
++				.filter((specimen) => specimen.querySelector('.dropdown-toggle') !== null)
++				.map((specimen) => specimen.getAttribute('data-specimen'))
++			const rows = CASCADE_KEYS.filter(({ subject }) => subjects.includes(subject))
++			expect(subjects).not.toStrictEqual([])
++			expect(rows.map(({ subject }) => subject)).toEqual(subjects)
++			for (const { subject, selector } of rows) {
++				const group = requireValue(
++					region.querySelector(`[data-specimen="${subject}"] > .input-group`),
++					`No group in ${subject}`,
++				)
++				const toggles = [...group.querySelectorAll(':scope > .dropdown-toggle')]
++				expect(toggles.map((toggle) => toggle.matches(selector))).toEqual([true, false])
++				for (const toggle of toggles) {
++					expect(toggle.getAttribute('aria-expanded')).toBe('false')
++					expect(toggle.getAttribute('data-bs-toggle')).toBeNull()
++					const menu = requireValue(
++						toggle.nextElementSibling,
++						`No menu after a toggle in ${subject}`,
++					)
++					expect(menu.classList.contains('dropdown-menu')).toBe(true)
++					expect(menu.classList.contains('show')).toBe(false)
++					expect(isRendered(menu)).toBe(false)
++				}
++			}
++			// The validated twin ends with the feedback its count steps over, and describes its
++			// control with that feedback.
++			const validated = requireValue(
++				region.querySelector('[data-specimen="Input group dropdown validated"] > .input-group'),
++				'No validated dropdown group',
++			)
++			const feedback = requireValue(validated.lastElementChild, 'No last child')
++			expect(feedback.classList.contains('invalid-feedback')).toBe(true)
++			const control = requireValue(validated.querySelector('.form-control'), 'No control')
++			expect(control.getAttribute('aria-describedby')).toBe(feedback.id)
++			expect(readStates(control)).toEqual(['described'])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
+ 	it('releases the region and preserves adjacent content on repeated destruction', () => {
+ 		const host = mount(build('div'))
+ 		const neighbor = build('p', { text: 'Existing content' })
+diff --git a/tests/src/styles/components/button-group.test.ts b/tests/src/styles/components/button-group.test.ts
+index 4ad03af..2c079d4 100644
+--- a/tests/src/styles/components/button-group.test.ts
++++ b/tests/src/styles/components/button-group.test.ts
+@@ -13,10 +13,12 @@ import { page } from 'vitest/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
+ import {
++	BUTTON_GROUP_CARET_CASES,
+ 	BUTTON_GROUP_CHECK_MARKUP,
+ 	BUTTON_GROUP_CORNERS,
+ 	BUTTON_GROUP_MARKUP,
+ 	BUTTON_GROUP_RADIUS_CASES,
++	BUTTON_GROUP_SPLIT_CASES,
+ 	BUTTON_GROUP_STACK_CASES,
+ 	splitTopLevelList,
+ 	TEXT_MODES,
+@@ -202,10 +204,10 @@ describe('button group radius', () => {
+ 		}
+ 	})
+ 
+-	// The exclusion is why a split toggle keeps its trailing corners where every other non-last
+-	// child loses them, and a positive reading alone cannot show it: the case pairs a plain child
+-	// with a `.dropdown-toggle` sibling at the same position and reads the pair apart. Each
+-	// direction carries its own exclusion, and the trailing pair a direction clears is its own.
++	// The exclusion is why a split toggle further in keeps its trailing corners where every other
++	// non-last child loses them, and a positive reading alone cannot show it: the case pairs a
++	// plain child with a `.dropdown-toggle` sibling at the same position and reads the pair apart.
++	// Each direction carries its own exclusion, and the trailing pair a direction clears is its own.
+ 	it.each(['btn-group', 'btn-group-vertical'])(
+ 		'leaves a dropdown toggle of a %s its trailing corners where a plain child loses them',
+ 		(name) => {
+@@ -260,6 +262,158 @@ describe('button group radius', () => {
+ 	})
+ })
+ 
++describe('button group split toggle', () => {
++	// Each toggle is read against the action button beside it, whose padding the Button family's own
++	// size rules write, so the three-quarter step is held to a second mechanism rather than to a
++	// number written in this test. The sized groups carry no size class on their buttons, which is
++	// what leaves the group's own selector the only rule that can resize their toggles.
++	it('pads each split toggle at three quarters of the inline padding its button size reads', () => {
++		const host = scene.mount(
++			BUTTON_GROUP_SPLIT_CASES.map(
++				({ label, group, button }) =>
++					`<div class="${group}"><button type="button" class="${button}">${label} action</button><button type="button" class="${button} dropdown-toggle dropdown-toggle-split" aria-expanded="false" aria-label="${label} options"></button></div>`,
++			).join(''),
++		)
++		const toggles = [...host.querySelectorAll('.dropdown-toggle-split')]
++		const readings = BUTTON_GROUP_SPLIT_CASES.map(({ label }, index) => {
++			const toggle = requireValue(toggles[index], `No ${label} toggle`)
++			const action = requireValue(toggle.previousElementSibling, 'No action before the toggle')
++			const step = readPixels(action, 'padding-left')
++			expect(readPixels(toggle, 'padding-left'), `${label} leading`).toBeCloseTo(step * 0.75, 2)
++			expect(readPixels(toggle, 'padding-right'), `${label} trailing`).toBeCloseTo(step * 0.75, 2)
++			// The block padding is the button's own: the split rule writes the inline sides alone.
++			expect(readPixels(toggle, 'padding-top'), `${label} block`).toBe(
++				readPixels(action, 'padding-top'),
++			)
++			return { label, pixels: Math.round(readPixels(toggle, 'padding-left') * 1000) / 1000 }
++		})
++		// The release's own values at the resting density. A sized form falling back to the base rule
++		// reads the base value instead of its row's.
++		expect(readings).toEqual(
++			BUTTON_GROUP_SPLIT_CASES.map(({ label, pixels }) => ({ label, pixels })),
++		)
++	})
++
++	it('rescales the split toggle padding with the density factor', () => {
++		const { label, group, button, pixels } = requireValue(
++			BUTTON_GROUP_SPLIT_CASES.find((entry) => entry.label === 'Base'),
++			'No base split case',
++		)
++		const host = scene.mount(
++			`<div class="${group}"><button type="button" class="${button}">${label} action</button><button type="button" class="${button} dropdown-toggle dropdown-toggle-split" aria-expanded="false" aria-label="${label} options"></button></div>`,
++		)
++		const toggle = requireValue(host.querySelector('.dropdown-toggle-split'), 'No split toggle')
++		const padding = readPixels(toggle, 'padding-left')
++		expect(padding).toBeCloseTo(pixels, 2)
++		// The factor is set on the document element, because that is where the space token computes.
++		try {
++			document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++			expect(readPixels(toggle, 'padding-left')).toBeCloseTo(padding * 2, 2)
++			expect(readPixels(toggle, 'padding-right')).toBeCloseTo(padding * 2, 2)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++
++	// Each toggle in this case carries text, because the release's `:empty` rule already drops the
++	// `margin-left` value of an empty toggle's `::after` caret, and a reading on an empty toggle
++	// under the plain, `.dropup`, or `.dropend` wrapper could not tell the split rule from that one.
++	// The `.dropstart` caret is a `::before` pseudo-element whose `margin-right` value the `:empty`
++	// rule leaves, so the split rule alone clears it on an empty toggle too, which the following case
++	// reads on an empty pair. The plain toggle beside each split one is the reading the split rule
++	// moves.
++	it.each(BUTTON_GROUP_CARET_CASES)(
++		'drops the caret $margin on the $pseudo of a split toggle in a $group wrapper',
++		({ group, pseudo, margin }) => {
++			const host = scene.mount(
++				`<div class="${group}"><button type="button" class="btn btn-outline-secondary dropdown-toggle" aria-expanded="false">Plain caret</button></div><div class="${group}"><button type="button" class="btn btn-outline-secondary">Split action</button><button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" aria-expanded="false">Split caret</button></div>`,
++			)
++			const plain = requireValue(
++				host.querySelector('.dropdown-toggle:not(.dropdown-toggle-split)'),
++				'No plain toggle',
++			)
++			const split = requireValue(host.querySelector('.dropdown-toggle-split'), 'No split toggle')
++			expect(readStyle(split, 'display', pseudo)).toBe('inline-block')
++			expect(readPixels(plain, margin, pseudo)).toBeCloseTo(
++				0.255 * readPixels(plain, 'font-size'),
++				2,
++			)
++			expect(readPixels(split, margin, pseudo)).toBe(0)
++		},
++	)
++
++	it('clears the caret margin of an empty split toggle in a dropstart wrapper, where the empty-toggle rule leaves it', () => {
++		const host = scene.mount(
++			`<div class="btn-group dropstart"><button type="button" class="btn btn-outline-secondary dropdown-toggle" aria-expanded="false" aria-label="Plain caret"></button></div><div class="btn-group dropstart"><button type="button" class="btn btn-outline-secondary">Split action</button><button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" aria-expanded="false" aria-label="Split caret"></button></div>`,
++		)
++		const plain = requireValue(
++			host.querySelector('.dropdown-toggle:not(.dropdown-toggle-split)'),
++			'No plain toggle',
++		)
++		const split = requireValue(host.querySelector('.dropdown-toggle-split'), 'No split toggle')
++		expect(readPixels(plain, 'margin-right', '::before')).toBeCloseTo(
++			0.255 * readPixels(plain, 'font-size'),
++			2,
++		)
++		expect(readPixels(split, 'margin-right', '::before')).toBe(0)
++	})
++
++	// The release clears a toggle's trailing corners only where it is not the last child, and a
++	// dropdown toggle is excluded from that rule, so a split toggle leading its group would keep
++	// corners that meet the button after it. The first-child rule is what squares them; the split
++	// toggle further in, followed by its hidden menu, is the reading that keeps them.
++	it('squares the trailing corners of a split toggle that opens its group, where a split toggle further in keeps them', () => {
++		const host = scene.mount(
++			'<button type="button" class="btn btn-outline-secondary">Ungrouped</button>' +
++				'<div class="btn-group dropstart"><button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" aria-expanded="false" aria-label="Leading options"></button><ul class="dropdown-menu"><li><a class="dropdown-item" href="#leading-choice">Leading choice</a></li></ul><button type="button" class="btn btn-outline-secondary">Leading action</button></div>' +
++				'<div class="btn-group"><button type="button" class="btn btn-outline-secondary">Trailing action</button><button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" aria-expanded="false" aria-label="Trailing options"></button><ul class="dropdown-menu"><li><a class="dropdown-item" href="#trailing-choice">Trailing choice</a></li></ul></div>',
++		)
++		const base = readPixels(
++			requireValue(host.querySelector(':scope > .btn'), 'No ungrouped button'),
++			'border-top-left-radius',
++		)
++		expect(base).toBeGreaterThan(0)
++		const groups = [...host.querySelectorAll('.btn-group')]
++		const leading = requireValue(groups[0], 'No leading group')
++		const trailing = requireValue(groups[1], 'No trailing group')
++		const opener = requireValue(
++			leading.querySelector('.dropdown-toggle-split'),
++			'No leading toggle',
++		)
++		const action = requireValue(leading.querySelector(':scope > .btn:last-child'), 'No action')
++		expect(opener.matches(':first-child')).toBe(true)
++		expect(BUTTON_GROUP_CORNERS.map((corner) => readPixels(opener, corner))).toEqual([
++			base,
++			0,
++			0,
++			base,
++		])
++		// The hidden menu takes no room, so the action after it meets the toggle, pulls back over its
++		// border, and is squared on the side the two share.
++		expect(BUTTON_GROUP_CORNERS.map((corner) => readPixels(action, corner))).toEqual([
++			0,
++			base,
++			base,
++			0,
++		])
++		expect(action.getBoundingClientRect().left).toBeCloseTo(
++			opener.getBoundingClientRect().right - readPixels(opener, 'border-right-width'),
++			1,
++		)
++		const closer = requireValue(
++			trailing.querySelector('.dropdown-toggle-split'),
++			'No trailing toggle',
++		)
++		expect(closer.matches(':last-child')).toBe(false)
++		expect(BUTTON_GROUP_CORNERS.map((corner) => readPixels(closer, corner))).toEqual([
++			0,
++			base,
++			base,
++			0,
++		])
++	})
++})
++
+ describe('button group stacking', () => {
+ 	it('rests every grouped child at the page floor, so a lift has somewhere to lift from', () => {
+ 		const host = scene.mount(`<div class="btn-group">${BUTTON_GROUP_MARKUP}</div>`)
+diff --git a/tests/src/styles/components/input-group.test.ts b/tests/src/styles/components/input-group.test.ts
+index 3def642..baa01cd 100644
+--- a/tests/src/styles/components/input-group.test.ts
++++ b/tests/src/styles/components/input-group.test.ts
+@@ -18,6 +18,7 @@ import {
+ 	INPUT_GROUP_FLOATING_CASES,
+ 	INPUT_GROUP_MARKUP,
+ 	INPUT_GROUP_SIZE_CASES,
++	INPUT_GROUP_TOGGLE_CASES,
+ } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+@@ -248,6 +249,36 @@ describe('input group corners', () => {
+ 		).toEqual([0, 0, 0, 0])
+ 	})
+ 
++	// A dropdown toggle is excluded from the rule that squares every child but the last, because its
++	// menu follows it as a hidden sibling and the toggle is often the visible end of the row. The
++	// toggle rules count past that menu instead: a toggle with at least two children after it meets
++	// the control beside it and is squared, and a group reporting validation counts one child
++	// further, past its feedback. The same children in a group without the `has-validation` class
++	// are the reading that moves.
++	it('squares the trailing corners of a dropdown toggle that is not the visible end, with and without validation', () => {
++		const host = scene.mount(
++			INPUT_GROUP_TOGGLE_CASES.map(
++				({ group, markup }) => `<div class="${group}">${markup}</div>`,
++			).join('') +
++				'<button type="button" class="btn btn-outline-secondary">Ungrouped toggle reference</button>',
++		)
++		const radius = readPixels(
++			requireValue(host.querySelector(':scope > .btn'), 'No ungrouped button'),
++			'border-top-left-radius',
++		)
++		expect(radius).toBeGreaterThan(0)
++		const readings = [...host.querySelectorAll('.input-group')].map((group) =>
++			[...group.querySelectorAll(':scope > .dropdown-toggle')].map((toggle) =>
++				BUTTON_GROUP_CORNERS.map((corner) => readPixels(toggle, corner)),
++			),
++		)
++		expect(readings).toEqual(
++			INPUT_GROUP_TOGGLE_CASES.map(({ corners }) =>
++				corners.map((toggle) => toggle.map((kept) => kept * radius)),
++			),
++		)
++	})
++
+ 	it('squares the control or select inside a floating wrapper on the side its neighbour sits', () => {
+ 		// The last box holds the same control and select outside a group, whose corners are the radius
+ 		// each kind's kept corner is read against, and a span that resolves the `--bs-border-radius`
