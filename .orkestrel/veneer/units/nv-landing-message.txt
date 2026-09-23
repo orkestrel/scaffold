@@ -1,0 +1,19 @@
+Ship the nav key with its tabs, pills, underline, fill, and justified forms
+
+The nav partial writes every recorded nav rule in the components layer between the button group
+and the card: the base links with the hover pair, the focus ring through the forced-ring mixin,
+the disabled refusals, the tabs whose active tab overlaps the strip's bottom border by one border
+width, the tab menu offset, the pills, the underline, the fill and justified rows, and the panes.
+The proof reads each rule in the browser with one executed mutation per recorded selector, the
+section renders the base, tabs (with the release's open-menu markup as dropdown.js leaves it and
+a plain shown tab), pills, underline, fill, and justified specimens with no inline style, and the
+card header tabs and pills take the release markup. The registry gains the resting rows and the
+hover and focus frames, the case tables bind the partial to the inventory with the navbar-owned
+links withheld, and the guide gains the section, the rows, the Tab and ScrollSpy plugin rows, the
+navbar deferral rows, and the card classes rewrite; DROPDOWN's Nav deferral row drops here, where
+the partial that writes the tab menu lands. The unit NAV ran over two rounds on opus in
+/home/user/veneer-nv from 87ff1d0, audited by the objective lane (Opus 5.5 in round 1 while the
+Codex bench was dark, Astra in round 2), the subjective lane, and a checker.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

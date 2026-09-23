@@ -6,18 +6,18 @@ round-1 owned files uncommitted over `87ff1d0`). Brief: `tmp/units/dd-brief-3.md
 ## Outcome
 
 Every ruling in `dd-audit-verdict.md` § Rulings is closed. The owned files are edited in place, and
-the shared-file changes are one patch, `tmp/units/dd-shared-2.patch`, against `c3ac297` in the
+the shared-file changes are one patch, `/home/user/scaffold/.orkestrel/veneer/units/dd-shared-2.patch`, against `c3ac297` in the
 post-BPO form. On the validation copy (`c3ac297` plus the owned files plus the patch), every gate
 in the brief exits 0, every named mutation reddens a named case, and the unmutated controls are
 green. No stop condition fired.
 
-Instruments and logs are in `tmp/units/dd-instruments-2/`. The validation copy
+Instruments and logs are in `/home/user/scaffold/.orkestrel/veneer/units/dd-instruments-2/`. The validation copy
 `tmp/probe/base/` was deleted after the last reading.
 
 ## Touched files
 
 The owned source and proof files, as round-2 edits over round 1. The full round-1-to-round-2 delta
-is `tmp/units/dd-instruments-2/owned-round-delta.diff`.
+is `/home/user/scaffold/.orkestrel/veneer/units/dd-instruments-2/owned-round-delta.diff`.
 
 | File | Round-2 change |
 | --- | --- |
@@ -25,8 +25,8 @@ is `tmp/units/dd-instruments-2/owned-round-delta.diff`.
 | `tests/src/styles/components/dropdown.test.ts` | The `TEXT_MODES` case runs over the dark mode alone under its own title; the alignment case also reads an end menu with no placement attribute. |
 | `tests/app/browser/sections/DropdownSection.test.ts` | The containment case measures inside `visitBreakpoint` at 390 and at 1280, one case per width. |
 | `app/browser/sections/DropdownSection.ts` | Unchanged. |
-| `tmp/units/dd-shared-2.patch` | One unified diff against `c3ac297` over every shared file, the guide included. |
-| `tmp/units/dd-instruments-2/` | `sync-owned.sh`, `gates.sh`, `mutate.py`, `mutations.sh`, `journey.sh`, `apply-guide.py` with its inputs `section.md` and `r1-guide-added.txt`, `owned-round-delta.diff`, and `logs/`. |
+| `/home/user/scaffold/.orkestrel/veneer/units/dd-shared-2.patch` | One unified diff against `c3ac297` over every shared file, the guide included. |
+| `/home/user/scaffold/.orkestrel/veneer/units/dd-instruments-2/` | `sync-owned.sh`, `gates.sh`, `mutate.py`, `mutations.sh`, `journey.sh`, `apply-guide.py` with its inputs `section.md` and `r1-guide-added.txt`, `owned-round-delta.diff`, and `logs/`. |
 | `tmp/units/dd-2.diff`, `tmp/units/dd-2-status.txt` | Review evidence, as § Review evidence names it. |
 
 Diffstat of the owned files against `87ff1d0` (`git diff --no-index --stat /dev/null <file>`), all
@@ -39,7 +39,7 @@ app/browser/sections/DropdownSection.ts              |  20 +
 tests/app/browser/sections/DropdownSection.test.ts   | 218 +
 ```
 
-Diffstat of the patch (`git apply --stat tmp/units/dd-shared-2.patch`):
+Diffstat of the patch (`git apply --stat /home/user/scaffold/.orkestrel/veneer/units/dd-shared-2.patch`):
 
 ```text
  app/browser/Showcase.ts               |    2
@@ -58,7 +58,7 @@ Diffstat of the patch (`git apply --stat tmp/units/dd-shared-2.patch`):
  13 files changed, 786 insertions(+)
 ```
 
-Every hunk adds lines only: `grep -c '^-[^-]' tmp/units/dd-shared-2.patch` prints `0`.
+Every hunk adds lines only: `grep -c '^-[^-]' /home/user/scaffold/.orkestrel/veneer/units/dd-shared-2.patch` prints `0`.
 
 ## Findings: site, before, and after
 
@@ -171,7 +171,7 @@ read `false`. The `raised-column-flipped` mutation reddens the case.
 
 ## Failing first
 
-Each of the following commands is `python3 tmp/units/dd-instruments-2/mutate.py NAME [TAG]` in the
+Each of the following commands is `python3 /home/user/scaffold/.orkestrel/veneer/units/dd-instruments-2/mutate.py NAME [TAG]` in the
 validation copy. The copy carries the round-1 owned files for the "before" reading and the round-2
 files for the "after" reading. The printed line is the proof's own `Tests` line.
 
@@ -199,7 +199,7 @@ named beside it:
 
 Every mutation ran in the validation copy with the round-2 owned files and the patch applied.
 
-- **Script.** `tmp/units/dd-instruments-2/mutate.py`, driven by `mutations.sh`. It edits, rebuilds
+- **Script.** `/home/user/scaffold/.orkestrel/veneer/units/dd-instruments-2/mutate.py`, driven by `mutations.sh`. It edits, rebuilds
   the styles where a source or the built sheet changed, runs the proof, restores, and rebuilds.
 - **Summary.** `logs/mutations.log.txt`. Each row's own log is `logs/mutations/<name>.log.txt`.
 - **Proofs.**
@@ -285,7 +285,7 @@ Observations from the runs:
 
 **`git apply --check`.** The patch was reverse-applied in the validation copy, leaving the tree at
 `c3ac297` plus the owned files. Then
-`git -C /home/user/veneer-dd/tmp/probe/base apply --check /home/user/veneer-dd/tmp/units/dd-shared-2.patch`
+`git -C /home/user/veneer-dd/tmp/probe/base apply --check /home/user/scaffold/.orkestrel/veneer/units/dd-shared-2.patch`
 printed nothing and exited 0 (`logs/apply-check.log.txt`). The patch's file list is the Shared row
 exactly: `src/styles/index.scss`, `tests/conformance.test.ts`, `tests/setupServer.test.ts`,
 `tests/setup.ts`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`,
@@ -344,10 +344,10 @@ No stop. None of the deviation contract's stop conditions fired:
 
 ## Review evidence
 
-- `tmp/units/dd-shared-2.patch`.
+- `/home/user/scaffold/.orkestrel/veneer/units/dd-shared-2.patch`.
 - `tmp/units/dd-2.diff`: `git diff 87ff1d0` (empty) followed by
   `git diff --no-index /dev/null <path>` for each untracked owned file.
 - `tmp/units/dd-2-status.txt`: `git status --porcelain`, which lists the owned source and proof
   files as untracked and nothing else.
 - This report.
-- `tmp/units/dd-instruments-2/`, with the round delta `owned-round-delta.diff`.
+- `/home/user/scaffold/.orkestrel/veneer/units/dd-instruments-2/`, with the round delta `owned-round-delta.diff`.
