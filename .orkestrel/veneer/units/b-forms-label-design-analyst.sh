@@ -1,0 +1,7 @@
+#!/bin/bash
+# B-FORMS-LABEL design round, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at /home/user/veneer.
+# Command in the form the analyst driver resolved for the CONTROL round-2 lane (probe: codex-cli 0.155.1, `Logged in using ChatGPT`; the B-FORMS-CLOSE design lane round-tripped at 08:05:06 with session 01a0cd42-b946-7ec2-9d59-4388aa37f5b5); the bench copy tmp/codex/b-forms-label-design-brief.md is byte-identical to the retained brief this launcher names; the Orchestrator sized the cap (2100 s: the B-FORMS design lane ran ~25 min, plus slack).
+# Brief: .orkestrel/veneer/units/b-forms-label-design-brief.md (copied unaltered to tmp/codex/b-forms-label-design-brief.md)  Journal: tmp/codex/b-forms-label-design-analyst.jsonl  Last message: tmp/codex/b-forms-label-design-analyst-last.md
+cd /home/user/scaffold
+timeout 2100 codex exec --json -C /home/user/veneer --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message /home/user/scaffold/tmp/codex/b-forms-label-design-analyst-last.md "Your working directory is /home/user/veneer. Read and execute the design brief at /home/user/scaffold/.orkestrel/veneer/units/b-forms-label-design-brief.md exactly, holding the objective lane. Make your final message the proposal the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/b-forms-label-design-analyst.jsonl 2> /home/user/scaffold/tmp/codex/b-forms-label-design-analyst.err
+echo "exit=$?" >> /home/user/scaffold/tmp/codex/b-forms-label-design-analyst.err
