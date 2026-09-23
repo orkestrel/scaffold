@@ -1,0 +1,15 @@
+Close the passive family's code carriers: one loop per size list, the mode axis, the guide-path defaults
+
+B-PASSIVE-CLOSE-A (`builder` on Sonnet, verified by `checker` and the Orchestrator's reading) closes
+four carrier rows: the button, pagination, and placeholder size blocks each become one `@each` over
+a size list in the `_input-group.scss` form (D30), compiling byte-identical to the blocks they
+replace (the writer's `cmp` record, with a tuple-swap control that differs); the button case tables
+name the light-and-dark axis `mode` where they named it `theme`, keeping `theme` where it names the
+`data-bs-theme` attribute; the four ledger readers default their guide path to
+`VENEER_GUIDE_PATH` and the style proofs read the guide through `readVeneerGuide`; and a
+cross-reference comment reads "the following row" where it read "the row below".
+
+The guide sweep, the `MOTION` constant, the driven-key consolidation (D20), and the prose carriers
+stay with B-PASSIVE-CLOSE-B after the forms family lands.
+
+Records: `.orkestrel/veneer/units/b-passive-close-a-*` and `bpc-*` in the scaffold repository.

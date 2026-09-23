@@ -1,0 +1,23 @@
+Land the form select classes as a Bootstrap 5.3.8 baseline
+
+B-FORMS-SELECT ships the `form-select` key: the select, its caret read from the icon map, its focus,
+its list forms, its disabled surface, the Gecko focus-ring reset, its sizes through one `@each`
+(D30), its reduced-motion twin, and the dark caret rule reading `map.get(tokens.$dark,
+'select-indicator')` from `src/styles/components/_form-select.scss`, with the browser proof, the
+Node case-table proof, the `Form select` showcase section and its proof, the capture scenarios, the
+§ Compatibility rows, the `listed` entry, the `#### form-select` ledger table, and the guide section.
+Round 1 was audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker`; the fix round
+(the split case titles, `light` and `dark` for the mode axis, the tokenized end padding, the dark
+caret sentence) by `analyst` on Astra and `reviewer` on Opus 5; the prose rounds on `builder` by
+`checker` and by the Orchestrator's reading. D36 (a generic type argument on a DOM query is not an
+assertion) and D37 (the forms controls' forced-colours focus indicator is a family ruling, carried
+by B-FORMS-CLOSE) were ruled in its audits.
+
+Integration edits: the shipped-key Set literal gains `form-select`; the barrel's forms block reads
+`form-select`, `form-check`, `form-range`, `form-floating`, `input-group`, `validation`; the ROADMAP
+rows carry D37 to B-FORMS-CLOSE, the guide-wide token-noun sweep to B-PASSIVE-CLOSE, and the fuller
+site list of the `select-indicator` removal to B-FORMS-ASSETS (D26). The floating select's line
+height reading and the bare-controls sentence follow in the FLOATING-SELECT unit on the session
+branch.
+
+Records: `.orkestrel/veneer/units/b-forms-select-*` and `bfs-*` in the scaffold repository.
