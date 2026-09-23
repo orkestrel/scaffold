@@ -218,3 +218,13 @@ properties?)` parameter, which keep their names. `StageManager` composes `create
 `@orkestrel/test` for its release order, so `destroy` after a failed `open` releases what was
 acquired and `destroy` on a never-opened stage is a no-op. Amends F8c rulings 1 and 3. Carrier:
 F8c-A-3 (`units/f8c-a-brief-3.md`); F8c-B consumes the new names.
+
+## D24 — The forbidden-runtime scan and the service tree
+
+The conformance case `imports no forbidden runtime package from source, application, or tests`
+excludes the service setup module (`tests/setupService.ts`), its proof, and `tests/service/**` from
+its population, because those files drive the installed Tailwind compiler as their subject (D19); the
+bundle case and the manifest case keep proving that the published entries and the manifest carry no
+Tailwind requirement. Lint's `import/no-dynamic-require` refuses a variable specifier, so the service
+module's literal import is the only lint-clean form. Carrier: F8c-B MOVE, which owns
+`tests/conformance.test.ts` for the exemption.

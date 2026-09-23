@@ -16,6 +16,13 @@ for f in ['tests/setupBrowser.test.ts','tests/setupStyles.test.ts','tests/setup.
     s2=pat.sub(fix, s)
     if s2!=s: open(p,'w').write(s2)
     print(f, 'arrays resorted:', n)
+# the conformance proof's component list is compared against the guide's sorted shipped set
+cp=f'{root}/tests/conformance.test.ts'; c=open(cp).read()
+m=re.search(r"(const listed(?::[^=]*)? = \[)(\n(?:\s*'[^']*',\n)+)(\s*\])", c)
+if m:
+    items=re.findall(r"'([^']*)'", m.group(2)); indent=re.match(r"\n(\s*)", m.group(2)).group(1)
+    if items!=sorted(items):
+        c=c[:m.start(2)]+'\n'+''.join(f"{indent}'{x}',\n" for x in sorted(items))+c[m.end(2):]; open(cp,'w').write(c); print('conformance listed resorted')
 p=f'{root}/tests/setupServer.test.ts'; t=open(p).read().split('\n')
 i=next(k for k,l in enumerate(t) if 'new Set([' in l and k>1200)
 j=next(k for k in range(i,len(t)) if t[k].strip().startswith(']),'))
