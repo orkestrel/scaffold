@@ -1,0 +1,1912 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index e9c2ac3..2b94b4d 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -9,6 +9,7 @@ import { ButtonSection } from './sections/ButtonSection.js'
+ import { CardSection } from './sections/CardSection.js'
+ import { CloseSection } from './sections/CloseSection.js'
+ import { ContentSection } from './sections/ContentSection.js'
++import { FormFloatingSection } from './sections/FormFloatingSection.js'
+ import { FormRangeSection } from './sections/FormRangeSection.js'
+ import { LayoutSection } from './sections/LayoutSection.js'
+ import { LinkSection } from './sections/LinkSection.js'
+@@ -96,6 +97,7 @@ export class Showcase implements ShowcaseInterface {
+ 			new PlaceholderSection(this.#main),
+ 			new ProgressSection(this.#main),
+ 			new SpinnerSection(this.#main),
++			new FormFloatingSection(this.#main),
+ 			new FormRangeSection(this.#main),
+ 			new CardSection(this.#main),
+ 			new ListGroupSection(this.#main),
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 60fa372..74530cd 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -1298,3 +1298,53 @@ export const CLOSE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 		})
+ 	}),
+ )
++
++/** Holds the Form floating section's visible copy and accessible name. */
++export const FORM_FLOATING_COPY = Object.freeze({
++	region: 'Form floating',
++	paragraph:
++		'Compare each floating label at rest and floated: over an empty field, a filled one, a textarea, a select, a disabled field, and a read-only value.',
++})
++
++/**
++ * Lists the floating-label specimens the section renders, in render order.
++ *
++ * @remarks
++ * Each control carries a placeholder, because a control reports itself empty only when it has one,
++ * and the label is what names it, so the journey reaches the empty field by that name through
++ * keyboard traversal. The filled field, the textarea, and the plaintext value carry their text in
++ * the markup, so each renders its label floated with no drive; the disabled field is a filled
++ * textarea, which shows the disabled label and the disabled backdrop in one frame.
++ */
++export const FORM_FLOATING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Form floating empty',
++		markup:
++			'<div class="form-floating"><input type="email" class="form-control" id="floating-email" placeholder="dispatch@example.com"><label for="floating-email">Email address</label></div>',
++	}),
++	Object.freeze({
++		name: 'Form floating filled',
++		markup:
++			'<div class="form-floating"><input type="text" class="form-control" id="floating-city" placeholder="City" value="Lisbon"><label for="floating-city">Delivery city</label></div>',
++	}),
++	Object.freeze({
++		name: 'Form floating textarea',
++		markup:
++			'<div class="form-floating"><textarea class="form-control" id="floating-notes" placeholder="Notes">Leave the parcel at the side door.</textarea><label for="floating-notes">Delivery notes</label></div>',
++	}),
++	Object.freeze({
++		name: 'Form floating select',
++		markup:
++			'<div class="form-floating"><select class="form-select" id="floating-carrier"><option selected="">Northworks Freight</option><option>Harbor Line</option></select><label for="floating-carrier">Carrier</label></div>',
++	}),
++	Object.freeze({
++		name: 'Form floating disabled',
++		markup:
++			'<div class="form-floating"><textarea class="form-control" id="floating-archive" placeholder="Notes" disabled="">Archived at the depot.</textarea><label for="floating-archive">Archived notes</label></div>',
++	}),
++	Object.freeze({
++		name: 'Form floating plaintext',
++		markup:
++			'<div class="form-floating"><input type="email" class="form-control-plaintext" id="floating-account" placeholder="dispatch@example.com" value="dispatch@example.com" readonly=""><label for="floating-account">Account email</label></div>',
++	}),
++])
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 5074716..bd32940 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -18,6 +18,7 @@ export * from './sections/PlaceholderSection.js'
+ export * from './sections/ProgressSection.js'
+ export * from './sections/SpinnerSection.js'
+ export * from './sections/FormRangeSection.js'
++export * from './sections/FormFloatingSection.js'
+ export * from './sections/BadgeSection.js'
+ export * from './sections/BreadcrumbSection.js'
+ export * from './sections/CloseSection.js'
+diff --git a/app/browser/sections/FormFloatingSection.ts b/app/browser/sections/FormFloatingSection.ts
+new file mode 100644
+index 0000000..dc0fc5b
+--- /dev/null
++++ b/app/browser/sections/FormFloatingSection.ts
+@@ -0,0 +1,20 @@
++import { FORM_FLOATING_COPY, FORM_FLOATING_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared floating-label specimens into a named region.
++ * @example
++ * ```ts
++ * const section = new FormFloatingSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class FormFloatingSection extends SpecimenSection {
++	/**
++	 * Mounts the Form floating region and its specimens.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, FORM_FLOATING_COPY, FORM_FLOATING_SPECIMENS)
++	}
++}
+diff --git a/guides/veneer.md b/guides/veneer.md
+index deaa97e..7cf33f9 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -176,84 +176,85 @@ override of the same declaration that leaves the shipped `0.25rem` in place.
+ 
+ The following files carry the axis.
+ 
+-| File                                       | Role                                                                                                                                                                       |
+-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `src/styles/elements/_button.scss`         | The bare button and its same-element states in the elements layer.                                                                                                         |
+-| `src/styles/components/_button.scss`       | The Button class vocabulary and state relationships in the components layer.                                                                                               |
+-| `src/styles/components/_type.scss`         | The heading, display, lead, small, mark, and initialism classes in the components layer.                                                                                   |
+-| `src/styles/components/_list.scss`         | The unstyled and inline list classes in the components layer.                                                                                                              |
+-| `src/styles/components/_quote.scss`        | The quotation class, its last-child rule, and its footer in the components layer.                                                                                          |
+-| `src/styles/components/_link.scss`         | The link color, opacity, offset, and underline classes in the components layer.                                                                                            |
+-| `src/styles/components/_container.scss`    | The container family, its breakpoint caps, and navigation combinators in the components layer.                                                                             |
+-| `src/styles/components/_grid.scss`         | The row, column, and offset families and their gutters in the components layer.                                                                                            |
+-| `src/styles/components/_table.scss`        | The table classes, state layers, caption class, and responsive wrappers in the components layer.                                                                           |
+-| `src/styles/components/_image.scss`        | The image and figure classes in the components layer.                                                                                                                      |
+-| `src/styles/components/_icon-link.scss`    | The icon link, its icon combinator, and its hover and focus shifts in the components layer.                                                                                |
+-| `src/styles/components/_breadcrumb.scss`   | The breadcrumb trail, its item inset, its divider, and the current page in the components layer.                                                                           |
+-| `src/styles/components/_badge.scss`        | The badge box, its empty collapse, and its offset inside a button in the components layer.                                                                                 |
+-| `src/styles/components/_close.scss`        | The close control, its states, and its opt-in inversion in the components layer.                                                                                           |
+-| `src/styles/components/_progress.scss`     | The progress track, its stacked form, and the bar families in the components layer.                                                                                        |
+-| `src/styles/components/_spinner.scss`      | The border and grow spinners, their small twins, and their keyframes in the components layer.                                                                              |
+-| `src/styles/components/_placeholder.scss`  | The placeholder, its height floors, its button box, and the glow and wave animations in the components layer.                                                              |
+-| `src/styles/components/_button-group.scss` | The button group, its vertical twin, their joining relationships, and the toolbar in the components layer, read by `tests/src/styles/components/button-group.test.ts`.     |
+-| `src/styles/components/_ratio.scss`        | The aspect-ratio box, its pseudo-element, and the named aspects in the components layer.                                                                                   |
+-| `src/styles/components/_vr.scss`           | The vertical rule in the components layer.                                                                                                                                 |
+-| `src/styles/components/_card.scss`         | The card box, its caps and body, the image and overlay placements, the header navigations, and the card group in the components layer.                                     |
+-| `src/styles/components/_list-group.scss`   | The list-group box, its item joins, action states, numbering, flush edges, horizontal ramp, and contextual roles in the components layer.                                  |
+-| `src/styles/components/_form-range.scss`   | The range control, its engine-specific thumb and track rules, and their states in the components layer.                                                                    |
+-| `src/styles/components/_validation.scss`   | The validation scope, state classes, feedback, and tooltips in the components layer, read by `tests/src/styles/components/validation.test.ts`.                             |
+-| `src/styles/components/_pagination.scss`   | The pagination strip, its page links, their states, and the size classes in the components layer.                                                                          |
+-| `src/styles/_reset.scss`                   | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.                                                                                 |
+-| `src/styles/elements/_html.scss`           | The document baseline in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_body.scss`           | The body baseline in the elements layer.                                                                                                                                   |
+-| `src/styles/elements/_heading.scss`        | The heading family text treatment in the elements layer.                                                                                                                   |
+-| `src/styles/elements/_p.scss`              | The p text treatment in the elements layer.                                                                                                                                |
+-| `src/styles/elements/_hr.scss`             | The hr text treatment in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_a.scss`              | The a text treatment in the elements layer.                                                                                                                                |
+-| `src/styles/elements/_ul.scss`             | The ul text treatment in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_ol.scss`             | The ol text treatment in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_dl.scss`             | The dl text treatment in the elements layer.                                                                                                                               |
+-| `src/styles/elements/_blockquote.scss`     | The blockquote text treatment in the elements layer.                                                                                                                       |
+-| `src/styles/elements/_address.scss`        | The address text treatment in the elements layer.                                                                                                                          |
+-| `src/styles/elements/_abbr.scss`           | The abbr text treatment in the elements layer.                                                                                                                             |
+-| `src/styles/elements/_strong.scss`         | The strong text treatment in the elements layer.                                                                                                                           |
+-| `src/styles/elements/_small.scss`          | The small text treatment in the elements layer.                                                                                                                            |
+-| `src/styles/elements/_mark.scss`           | The mark text treatment in the elements layer.                                                                                                                             |
+-| `src/styles/elements/_sub.scss`            | The sub text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_sup.scss`            | The sup text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_code.scss`           | The code text treatment in the elements layer.                                                                                                                             |
+-| `src/styles/elements/_pre.scss`            | The pre text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_kbd.scss`            | The kbd text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_samp.scss`           | The samp text treatment in the elements layer.                                                                                                                             |
+-| `src/styles/elements/_var.scss`            | The var text treatment in the elements layer.                                                                                                                              |
+-| `src/styles/elements/_b.scss`              | The b family and its mandated pairs in the elements layer.                                                                                                                 |
+-| `src/styles/elements/_figure.scss`         | The figure family and its mandated pairs in the elements layer.                                                                                                            |
+-| `src/styles/elements/_img.scss`            | The img family and its mandated pairs in the elements layer.                                                                                                               |
+-| `src/styles/elements/_svg.scss`            | The svg family and its mandated pairs in the elements layer.                                                                                                               |
+-| `src/styles/elements/_table.scss`          | The table family and its mandated pairs in the elements layer.                                                                                                             |
+-| `src/styles/elements/_tr.scss`             | The tr family and its mandated pairs in the elements layer.                                                                                                                |
+-| `src/styles/elements/_label.scss`          | The label family and its mandated pairs in the elements layer.                                                                                                             |
+-| `src/styles/elements/_input.scss`          | The input family and its mandated pairs in the elements layer.                                                                                                             |
+-| `src/styles/elements/_select.scss`         | The select family and its mandated pairs in the elements layer.                                                                                                            |
+-| `src/styles/elements/_optgroup.scss`       | The optgroup family and its mandated pairs in the elements layer.                                                                                                          |
+-| `src/styles/elements/_textarea.scss`       | The textarea family and its mandated pairs in the elements layer.                                                                                                          |
+-| `src/styles/elements/_fieldset.scss`       | The fieldset family and its mandated pairs in the elements layer.                                                                                                          |
+-| `src/styles/elements/_output.scss`         | The output family and its mandated pairs in the elements layer.                                                                                                            |
+-| `src/styles/elements/_iframe.scss`         | The iframe family and its mandated pairs in the elements layer.                                                                                                            |
+-| `src/styles/elements/_details.scss`        | The details family and its mandated pairs in the elements layer.                                                                                                           |
+-| `src/styles/elements/_progress.scss`       | The progress family and its mandated pairs in the elements layer.                                                                                                          |
+-| `src/styles/utilities/_gap.scss`           | The gutter and row-gap step utilities in the utilities layer.                                                                                                              |
+-| `src/styles/index.scss`                    | The compilation barrel.                                                                                                                                                    |
+-| `src/styles/index.ts`                      | The side-effect entry, and the build's library entry.                                                                                                                      |
+-| `configs/src/vite.styles.config.ts`        | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                 |
+-| `configs/src/tsconfig.styles.json`         | The check-only TypeScript project.                                                                                                                                         |
+-| `tests/setupStyles.ts`                     | The cascade readers, the normalizer, the case tables, and the retained value lists.                                                                                        |
+-| `tests/setupServer.ts`                     | The Node-only readers: the installed and built cascade, the guide's compatibility, deferral, and ledger tables, the cascade comparison, and the elements-layer tag reader. |
+-| `tests/src/styles/`                        | The browser proofs of the shipped cascade.                                                                                                                                 |
+-| `configs/src/vite.tailwind.config.ts`      | The Tailwind test wrapper, and the plugin deriving the candidate class names.                                                                                              |
+-| `tests/setup.css`                          | The `tailwind` profile the Tailwind proofs execute, and the home of the exclusion line.                                                                                    |
+-| `tests/fixtures/tailwind/`                 | The `preflight` profile and the unexcluded instrument.                                                                                                                     |
+-| `tests/tailwind/`                          | The browser proofs of the Tailwind profiles.                                                                                                                               |
++| File                                        | Role                                                                                                                                                                              |
++| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `src/styles/elements/_button.scss`          | The bare button and its same-element states in the elements layer.                                                                                                                |
++| `src/styles/components/_button.scss`        | The Button class vocabulary and state relationships in the components layer.                                                                                                      |
++| `src/styles/components/_type.scss`          | The heading, display, lead, small, mark, and initialism classes in the components layer.                                                                                          |
++| `src/styles/components/_list.scss`          | The unstyled and inline list classes in the components layer.                                                                                                                     |
++| `src/styles/components/_quote.scss`         | The quotation class, its last-child rule, and its footer in the components layer.                                                                                                 |
++| `src/styles/components/_link.scss`          | The link color, opacity, offset, and underline classes in the components layer.                                                                                                   |
++| `src/styles/components/_container.scss`     | The container family, its breakpoint caps, and navigation combinators in the components layer.                                                                                    |
++| `src/styles/components/_grid.scss`          | The row, column, and offset families and their gutters in the components layer.                                                                                                   |
++| `src/styles/components/_table.scss`         | The table classes, state layers, caption class, and responsive wrappers in the components layer.                                                                                  |
++| `src/styles/components/_image.scss`         | The image and figure classes in the components layer.                                                                                                                             |
++| `src/styles/components/_icon-link.scss`     | The icon link, its icon combinator, and its hover and focus shifts in the components layer.                                                                                       |
++| `src/styles/components/_breadcrumb.scss`    | The breadcrumb trail, its item inset, its divider, and the current page in the components layer.                                                                                  |
++| `src/styles/components/_badge.scss`         | The badge box, its empty collapse, and its offset inside a button in the components layer.                                                                                        |
++| `src/styles/components/_close.scss`         | The close control, its states, and its opt-in inversion in the components layer.                                                                                                  |
++| `src/styles/components/_progress.scss`      | The progress track, its stacked form, and the bar families in the components layer.                                                                                               |
++| `src/styles/components/_spinner.scss`       | The border and grow spinners, their small twins, and their keyframes in the components layer.                                                                                     |
++| `src/styles/components/_placeholder.scss`   | The placeholder, its height floors, its button box, and the glow and wave animations in the components layer.                                                                     |
++| `src/styles/components/_button-group.scss`  | The button group, its vertical twin, their joining relationships, and the toolbar in the components layer, read by `tests/src/styles/components/button-group.test.ts`.            |
++| `src/styles/components/_ratio.scss`         | The aspect-ratio box, its pseudo-element, and the named aspects in the components layer.                                                                                          |
++| `src/styles/components/_vr.scss`            | The vertical rule in the components layer.                                                                                                                                        |
++| `src/styles/components/_card.scss`          | The card box, its caps and body, the image and overlay placements, the header navigations, and the card group in the components layer.                                            |
++| `src/styles/components/_list-group.scss`    | The list-group box, its item joins, action states, numbering, flush edges, horizontal ramp, and contextual roles in the components layer.                                         |
++| `src/styles/components/_form-range.scss`    | The range control, its engine-specific thumb and track rules, and their states in the components layer.                                                                           |
++| `src/styles/components/_form-floating.scss` | The floating container, the floated geometry of its controls, the label and its transforms, the textarea backdrop, and the disabled and plaintext labels in the components layer. |
++| `src/styles/components/_validation.scss`    | The validation scope, state classes, feedback, and tooltips in the components layer, read by `tests/src/styles/components/validation.test.ts`.                                    |
++| `src/styles/components/_pagination.scss`    | The pagination strip, its page links, their states, and the size classes in the components layer.                                                                                 |
++| `src/styles/_reset.scss`                    | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.                                                                                        |
++| `src/styles/elements/_html.scss`            | The document baseline in the elements layer.                                                                                                                                      |
++| `src/styles/elements/_body.scss`            | The body baseline in the elements layer.                                                                                                                                          |
++| `src/styles/elements/_heading.scss`         | The heading family text treatment in the elements layer.                                                                                                                          |
++| `src/styles/elements/_p.scss`               | The p text treatment in the elements layer.                                                                                                                                       |
++| `src/styles/elements/_hr.scss`              | The hr text treatment in the elements layer.                                                                                                                                      |
++| `src/styles/elements/_a.scss`               | The a text treatment in the elements layer.                                                                                                                                       |
++| `src/styles/elements/_ul.scss`              | The ul text treatment in the elements layer.                                                                                                                                      |
++| `src/styles/elements/_ol.scss`              | The ol text treatment in the elements layer.                                                                                                                                      |
++| `src/styles/elements/_dl.scss`              | The dl text treatment in the elements layer.                                                                                                                                      |
++| `src/styles/elements/_blockquote.scss`      | The blockquote text treatment in the elements layer.                                                                                                                              |
++| `src/styles/elements/_address.scss`         | The address text treatment in the elements layer.                                                                                                                                 |
++| `src/styles/elements/_abbr.scss`            | The abbr text treatment in the elements layer.                                                                                                                                    |
++| `src/styles/elements/_strong.scss`          | The strong text treatment in the elements layer.                                                                                                                                  |
++| `src/styles/elements/_small.scss`           | The small text treatment in the elements layer.                                                                                                                                   |
++| `src/styles/elements/_mark.scss`            | The mark text treatment in the elements layer.                                                                                                                                    |
++| `src/styles/elements/_sub.scss`             | The sub text treatment in the elements layer.                                                                                                                                     |
++| `src/styles/elements/_sup.scss`             | The sup text treatment in the elements layer.                                                                                                                                     |
++| `src/styles/elements/_code.scss`            | The code text treatment in the elements layer.                                                                                                                                    |
++| `src/styles/elements/_pre.scss`             | The pre text treatment in the elements layer.                                                                                                                                     |
++| `src/styles/elements/_kbd.scss`             | The kbd text treatment in the elements layer.                                                                                                                                     |
++| `src/styles/elements/_samp.scss`            | The samp text treatment in the elements layer.                                                                                                                                    |
++| `src/styles/elements/_var.scss`             | The var text treatment in the elements layer.                                                                                                                                     |
++| `src/styles/elements/_b.scss`               | The b family and its mandated pairs in the elements layer.                                                                                                                        |
++| `src/styles/elements/_figure.scss`          | The figure family and its mandated pairs in the elements layer.                                                                                                                   |
++| `src/styles/elements/_img.scss`             | The img family and its mandated pairs in the elements layer.                                                                                                                      |
++| `src/styles/elements/_svg.scss`             | The svg family and its mandated pairs in the elements layer.                                                                                                                      |
++| `src/styles/elements/_table.scss`           | The table family and its mandated pairs in the elements layer.                                                                                                                    |
++| `src/styles/elements/_tr.scss`              | The tr family and its mandated pairs in the elements layer.                                                                                                                       |
++| `src/styles/elements/_label.scss`           | The label family and its mandated pairs in the elements layer.                                                                                                                    |
++| `src/styles/elements/_input.scss`           | The input family and its mandated pairs in the elements layer.                                                                                                                    |
++| `src/styles/elements/_select.scss`          | The select family and its mandated pairs in the elements layer.                                                                                                                   |
++| `src/styles/elements/_optgroup.scss`        | The optgroup family and its mandated pairs in the elements layer.                                                                                                                 |
++| `src/styles/elements/_textarea.scss`        | The textarea family and its mandated pairs in the elements layer.                                                                                                                 |
++| `src/styles/elements/_fieldset.scss`        | The fieldset family and its mandated pairs in the elements layer.                                                                                                                 |
++| `src/styles/elements/_output.scss`          | The output family and its mandated pairs in the elements layer.                                                                                                                   |
++| `src/styles/elements/_iframe.scss`          | The iframe family and its mandated pairs in the elements layer.                                                                                                                   |
++| `src/styles/elements/_details.scss`         | The details family and its mandated pairs in the elements layer.                                                                                                                  |
++| `src/styles/elements/_progress.scss`        | The progress family and its mandated pairs in the elements layer.                                                                                                                 |
++| `src/styles/utilities/_gap.scss`            | The gutter and row-gap step utilities in the utilities layer.                                                                                                                     |
++| `src/styles/index.scss`                     | The compilation barrel.                                                                                                                                                           |
++| `src/styles/index.ts`                       | The side-effect entry, and the build's library entry.                                                                                                                             |
++| `configs/src/vite.styles.config.ts`         | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                        |
++| `configs/src/tsconfig.styles.json`          | The check-only TypeScript project.                                                                                                                                                |
++| `tests/setupStyles.ts`                      | The cascade readers, the normalizer, the case tables, and the retained value lists.                                                                                               |
++| `tests/setupServer.ts`                      | The Node-only readers: the installed and built cascade, the guide's compatibility, deferral, and ledger tables, the cascade comparison, and the elements-layer tag reader.        |
++| `tests/src/styles/`                         | The browser proofs of the shipped cascade.                                                                                                                                        |
++| `configs/src/vite.tailwind.config.ts`       | The Tailwind test wrapper, and the plugin deriving the candidate class names.                                                                                                     |
++| `tests/setup.css`                           | The `tailwind` profile the Tailwind proofs execute, and the home of the exclusion line.                                                                                           |
++| `tests/fixtures/tailwind/`                  | The `preflight` profile and the unexcluded instrument.                                                                                                                            |
++| `tests/tailwind/`                           | The browser proofs of the Tailwind profiles.                                                                                                                                      |
+ 
+ The barrel's `@use` rules name the `_tokens.scss` and `_theme.scss` partials and the element
+ partials under the `elements/`, `components/`, and `utilities/` directories; the `_mixins.scss` partial reaches the build through the
+@@ -776,6 +777,72 @@ so its rendered evidence is open, and its contrast ratio is uncompared for this
+ `readRing` reads the chrome the focused element itself wears and this ring sits on a part Chromium
+ withholds.
+ 
++### Form floating classes
++
++The floating-label key ships the container, the floated geometry of the text control, the plaintext
++control, and the select inside it, the label with its transforms under focus, when filled, and when
++autofilled, the reduced-motion twin of the label transition, the textarea label backdrop, and the
++disabled and plaintext labels. The component partial loads after the range partial in the components
++layer. The validation rules the release records against the container ship from the validation
++partial, and the input-group rules it records there belong to the input-group family.
++
++The label sits over its control and fills the container. At rest its inset matches the control's
++own, so the label's text sits where the control's text would, and its transparent border matches the
++control's border width for the same reason. Keyboard focus, a value, or an autofill scales the label
++to `0.85` of its size from its top-left corner and lifts it, and the control's text moves down to
++the floated top inset beneath it. A select's label and a plaintext control's label are floated at
++rest. The label's text is the body color at `0.65` alpha, so it reads as a hint over the control
++rather than as the control's value. A control reports itself empty through `:placeholder-shown` only
++when it carries a placeholder, so each floating control carries one, and the partial hides the
++placeholder text so the label alone names the control at rest.
++
++A textarea's text scrolls under its floated label, so the label paints a backdrop behind its own
++text on the body surface whenever the textarea is focused or filled, and on the secondary surface
++when the textarea is `disabled`. The plaintext control draws its border on the block axis alone, and
++its label does the same. The label of a `disabled` control paints `--vn-gray-600`, which holds the
++release's own gray in both color modes.
++
++These are the key's recorded departures.
++
++- **The insets read the density scale.** The resting inset of the label and the control, the
++  select's start inset, the floated bottom inset, and the backdrop's inset read `--vn-space-8`,
++  `--vn-space-6`, `--vn-space-5`, and `--vn-space-3`, the tokens that resolve to the release's
++  lengths. No token resolves to the control's `3.5rem` height or to the `1.625rem` floated top
++  inset, so both stay the release's literals, and so do the line height, the backdrop's `em` height,
++  the stacking, and the transform. A `--vn-factor-density` retune therefore moves the insets and
++  leaves the height and the floated top inset in place: at a factor of 2 an empty control's resting
++  insets outgrow the declared height, and that control grows past the height a filled one keeps.
++- **The disabled label reads the gray token.** The release compiles `#6c757d`; the partial writes
++  `var(--vn-gray-600)`, which resolves to that color and holds it in both modes.
++- **The height is written as one sum.** The release writes
++  `calc(3.5rem + calc(var(--bs-border-width) * 2))`; Sass flattens the nested call to
++  `calc(3.5rem + var(--bs-border-width) * 2)`, which computes the same height.
++
++The transform and its origin are the release's own bytes in the source, so the comparison records no
++difference there. The build spells the trailing `translateX(0.15rem)` as the equivalent
++`translate(0.15rem)` in the published stylesheet, and the resolved matrix the proof reads is the
++release's. The border width, the body color, the body and secondary surfaces, and the backdrop
++radius read the `--bs-*` variables the release names, so each declaration matches the release's own
++text and moves with a consumer's retune of that variable.
++
++[The floating label classes](../tests/src/styles/components/form-floating.test.ts) reads the
++resolved treatment in the browser: the container's positioning, each control's height and insets at
++rest, under keyboard focus, and after typing, the label's position, fade, transform, and origin in
++each of those states, the backdrop's geometry and its `disabled` surface, the plaintext label's
++border, the disabled label's gray, and the transition at rest and under the staged reduced-motion
++preference, beside the density, radius, and color-mode readings and a retune of each `--bs-*`
++variable the family reads. Each limit that bounds what the proof can claim is recorded beside the
++reading it bounds. No script can put a control into the autofilled state, so the autofill rules have
++no resolved reading, and the proof reads the declarations the cascade authors for them, which is
++compiled-contract evidence rather than a rendered proof. The class-qualified disabled label rule
++paints what the bare disabled rule already paints, so it takes the same declaration reading.
++Chromium resets the line height of a select that keeps its native appearance to `normal`, so the
++select's floated line height is read as a declaration until the select family ships the rule that
++removes that appearance. The control's own border, radius, and paint belong to the `.form-control`
++and `.form-select` rules, which this tree does not ship yet, so the frames the capture journey
++writes show the floated geometry over the bare controls; the reading of the floated label against a
++styled control waits on those families.
++
+ ### Card classes
+ 
+ The card key ships whole: the card box, its header and footer caps, the body and its title family,
+@@ -2613,6 +2680,32 @@ the declaration.
+ | `btn-close` | `.btn-close.disabled` | `-webkit-user-select`  | —         | `none`          | —                              | dropped   |
+ | `btn-close` | `.btn-close.disabled` | `-moz-user-select`     | —         | `none`          | —                              | dropped   |
+ 
++#### `form-floating`
++
++| Component       | Selector                                                           | Property         | Condition | Bootstrap 5.3.8                                   | Veneer                                      | Departure |
++| --------------- | ------------------------------------------------------------------ | ---------------- | --------- | ------------------------------------------------- | ------------------------------------------- | --------- |
++| `form-floating` | `.form-floating > .form-control`                                   | `height`         | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(3.5rem + var(--bs-border-width) * 2)` | declared  |
++| `form-floating` | `.form-floating > .form-control`                                   | `min-height`     | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(3.5rem + var(--bs-border-width) * 2)` | declared  |
++| `form-floating` | `.form-floating > .form-control-plaintext`                         | `height`         | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(3.5rem + var(--bs-border-width) * 2)` | declared  |
++| `form-floating` | `.form-floating > .form-control-plaintext`                         | `min-height`     | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(3.5rem + var(--bs-border-width) * 2)` | declared  |
++| `form-floating` | `.form-floating > .form-select`                                    | `height`         | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(3.5rem + var(--bs-border-width) * 2)` | declared  |
++| `form-floating` | `.form-floating > .form-select`                                    | `min-height`     | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(3.5rem + var(--bs-border-width) * 2)` | declared  |
++| `form-floating` | `.form-floating > label`                                           | `padding`        | —         | `1rem 0.75rem`                                    | `var(--vn-space-8) var(--vn-space-6)`       | tokenized |
++| `form-floating` | `.form-floating > .form-control`                                   | `padding`        | —         | `1rem 0.75rem`                                    | `var(--vn-space-8) var(--vn-space-6)`       | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext`                         | `padding`        | —         | `1rem 0.75rem`                                    | `var(--vn-space-8) var(--vn-space-6)`       | tokenized |
++| `form-floating` | `.form-floating > .form-control:focus`                             | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                         | tokenized |
++| `form-floating` | `.form-floating > .form-control:not(:placeholder-shown)`           | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                         | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext:focus`                   | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                         | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext:not(:placeholder-shown)` | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                         | tokenized |
++| `form-floating` | `.form-floating > .form-control:-webkit-autofill`                  | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                         | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext:-webkit-autofill`        | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                         | tokenized |
++| `form-floating` | `.form-floating > .form-select`                                    | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                         | tokenized |
++| `form-floating` | `.form-floating > .form-select`                                    | `padding-left`   | —         | `0.75rem`                                         | `var(--vn-space-6)`                         | tokenized |
++| `form-floating` | `.form-floating > textarea:focus ~ label::after`                   | `inset`          | —         | `1rem 0.375rem`                                   | `var(--vn-space-8) var(--vn-space-3)`       | tokenized |
++| `form-floating` | `.form-floating > textarea:not(:placeholder-shown) ~ label::after` | `inset`          | —         | `1rem 0.375rem`                                   | `var(--vn-space-8) var(--vn-space-3)`       | tokenized |
++| `form-floating` | `.form-floating > :disabled ~ label`                               | `color`          | —         | `#6c757d`                                         | `var(--vn-gray-600)`                        | tokenized |
++| `form-floating` | `.form-floating > .form-control:disabled ~ label`                  | `color`          | —         | `#6c757d`                                         | `var(--vn-gray-600)`                        | tokenized |
++
+ ### Additions
+ 
+ Each row names one name this cascade emits that the official inventory lacks, attributed to the
+@@ -2945,6 +3038,7 @@ must add a forced-colors axis before this reading closes.
+ | list-group    | selector       | Every official `.list-group` selector ships in the components layer, the horizontal ramp and the contextual roles included; resolved behavior is proved in `tests/src/styles/components/list-group.test.ts`.                                                            | —                     | shipped  |
+ | list-group    | variable       | Every official `--bs-list-group-*` custom property is declared on `.list-group` and retuned by each contextual role; each one is read beside the property it drives in `tests/src/styles/components/list-group.test.ts`.                                                | —                     | shipped  |
+ | form-range    | selector       | The `.form-range` family ships in the components layer, its focus and disabled states included; the host's resolved geometry and the thumb and track declarations are proved in `tests/src/styles/components/form-range.test.ts`.                                       | —                     | shipped  |
++| form-floating | selector       | The `.form-floating` family ships in the components layer, the floated label, the textarea backdrop, and the disabled and plaintext labels included; resolved geometry, paint, and motion are proved in `tests/src/styles/components/form-floating.test.ts`.            | —                     | shipped  |
+ | progress      | selector       | Every official `.progress` selector ships in the components layer, the stacked track and the striped and animated bars included; resolved geometry and motion are proved in `tests/src/styles/components/progress.test.ts`.                                             | —                     | shipped  |
+ | progress      | variable       | Every official `--bs-progress-*` custom property is declared on the track, and a wrapper override retunes the bar it drives; both are proved in `tests/src/styles/components/progress.test.ts`.                                                                         | —                     | shipped  |
+ | spinner       | selector       | Every official `.spinner-border` and `.spinner-grow` selector ships in the components layer; resolved box, paint, and animation are proved in `tests/src/styles/components/spinner.test.ts`.                                                                            | —                     | shipped  |
+@@ -3164,6 +3258,7 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the ratio classes](../tests/src/styles/components/ratio.test.ts),
+ [the vertical rule](../tests/src/styles/components/vr.test.ts),
+ [the range classes](../tests/src/styles/components/form-range.test.ts),
++[the floating label classes](../tests/src/styles/components/form-floating.test.ts),
+ [the gutter utilities](../tests/src/styles/utilities/gap.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+diff --git a/src/styles/components/_form-floating.scss b/src/styles/components/_form-floating.scss
+new file mode 100644
+index 0000000..0edceff
+--- /dev/null
++++ b/src/styles/components/_form-floating.scss
+@@ -0,0 +1,132 @@
++@use '../mixins' as *;
++
++@layer components {
++	// The floating label ships Bootstrap's recorded surface. A space value routes through the
++	// density token that already resolves to it, so the resting inset, the label inset, the select's
++	// start inset, the floated bottom inset, and the textarea backdrop's inset read `--vn-space-*`.
++	// The control's height, its line height, the floated top inset, the backdrop's `em` height, the
++	// stacking, and the label's transform stay literal: no published Veneer scale resolves to the
++	// recorded value, and the transform and its origin are the release's own bytes. Every value the
++	// release writes as a `--bs-*` variable reads that variable, so a consumer retuning the border
++	// width, the body color, the body surface, or the base radius moves this family with the rest of
++	// the cascade.
++	//
++	// The control's own border and paint are `.form-control` and `.form-select` rules; this partial
++	// writes only the geometry the floating container changes about them. The validation and
++	// input-group rules the release records against this container belong to those families.
++	.form-floating {
++		position: relative;
++	}
++
++	.form-floating > .form-control,
++	.form-floating > .form-control-plaintext,
++	.form-floating > .form-select {
++		height: calc(3.5rem + calc(var(--bs-border-width) * 2));
++		min-height: calc(3.5rem + calc(var(--bs-border-width) * 2));
++		line-height: 1.25;
++	}
++
++	// The label sits over the control's own padding box and fills it, so its text lines up with the
++	// control's text at rest. Its border is transparent and exists for the box model: it matches the
++	// control's border width, which is what keeps the two texts on one line.
++	.form-floating > label {
++		position: absolute;
++		top: 0;
++		left: 0;
++		z-index: 2;
++		max-width: 100%;
++		height: 100%;
++		padding: var(--vn-space-8) var(--vn-space-6);
++		overflow: hidden;
++		color: rgba(var(--bs-body-color-rgb), 0.65);
++		text-align: start;
++		text-overflow: ellipsis;
++		white-space: nowrap;
++		pointer-events: none;
++		border: var(--bs-border-width) solid transparent;
++		transform-origin: 0 0;
++		@include transition((opacity 0.1s ease-in-out, transform 0.1s ease-in-out));
++	}
++
++	.form-floating > .form-control,
++	.form-floating > .form-control-plaintext {
++		padding: var(--vn-space-8) var(--vn-space-6);
++	}
++
++	// A control reports itself empty through `:placeholder-shown` only when it carries a
++	// placeholder, so the placeholder text is hidden and the label alone names the control at rest.
++	.form-floating > .form-control::placeholder,
++	.form-floating > .form-control-plaintext::placeholder {
++		color: transparent;
++	}
++
++	.form-floating > .form-control:focus,
++	.form-floating > .form-control:not(:placeholder-shown),
++	.form-floating > .form-control-plaintext:focus,
++	.form-floating > .form-control-plaintext:not(:placeholder-shown) {
++		padding-top: 1.625rem;
++		padding-bottom: var(--vn-space-5);
++	}
++
++	// An engine that does not know `:-webkit-autofill` drops a whole selector list naming it, so the
++	// autofilled control takes rules of its own rather than joining the group before it. Each
++	// selector is its own rule because the build rewrites a list naming the pseudo-class into one
++	// `:is()` selector, which is a selector the release does not write.
++	.form-floating > .form-control:-webkit-autofill {
++		padding-top: 1.625rem;
++		padding-bottom: var(--vn-space-5);
++	}
++
++	.form-floating > .form-control-plaintext:-webkit-autofill {
++		padding-top: 1.625rem;
++		padding-bottom: var(--vn-space-5);
++	}
++
++	.form-floating > .form-select {
++		padding-top: 1.625rem;
++		padding-bottom: var(--vn-space-5);
++		padding-left: var(--vn-space-6);
++	}
++
++	.form-floating > .form-control:focus ~ label,
++	.form-floating > .form-control:not(:placeholder-shown) ~ label,
++	.form-floating > .form-control-plaintext ~ label,
++	.form-floating > .form-select ~ label {
++		transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
++	}
++
++	.form-floating > .form-control:-webkit-autofill ~ label {
++		transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
++	}
++
++	// A textarea's text scrolls under its floated label, so the label paints a backdrop behind its
++	// own text in the control's surface. The backdrop sits inside the label's inset and behind the
++	// label's text.
++	.form-floating > textarea:focus ~ label::after,
++	.form-floating > textarea:not(:placeholder-shown) ~ label::after {
++		position: absolute;
++		inset: var(--vn-space-8) var(--vn-space-3);
++		z-index: -1;
++		height: 1.5em;
++		content: '';
++		background-color: var(--bs-body-bg);
++		border-radius: var(--bs-border-radius);
++	}
++
++	.form-floating > textarea:disabled ~ label::after {
++		background-color: var(--bs-secondary-bg);
++	}
++
++	// The plaintext control draws its border on the block axis alone, so its label does too.
++	.form-floating > .form-control-plaintext ~ label {
++		border-width: var(--bs-border-width) 0;
++	}
++
++	// The release writes the class-qualified twin beside the bare disabled rule, and both ship. The
++	// gray entry is the one that resolves to the release's own disabled label color, and it holds one
++	// value in both color modes, as the release's literal does.
++	.form-floating > :disabled ~ label,
++	.form-floating > .form-control:disabled ~ label {
++		color: var(--vn-gray-600);
++	}
++}
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index d063caf..de49cba 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -59,6 +59,7 @@
+ @use 'components/spinner';
+ @use 'components/placeholder';
+ @use 'components/form-range';
++@use 'components/form-floating';
+ @use 'components/card';
+ @use 'components/list-group';
+ @use 'components/breadcrumb';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index 6271d2e..27019ce 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -6,6 +6,7 @@ import {
+ 	BUTTON_SPECIMENS,
+ 	CLOSE_SPECIMENS,
+ 	CONTENT_SPECIMENS,
++	FORM_FLOATING_SPECIMENS,
+ 	FORM_RANGE_SPECIMENS,
+ 	CARD_SPECIMENS,
+ 	LINK_SPECIMENS,
+@@ -93,6 +94,7 @@ describe('Showcase', () => {
+ 				'Placeholder',
+ 				'Progress',
+ 				'Spinner',
++				'Form floating',
+ 				'Form range',
+ 				'Card',
+ 				'List group',
+@@ -118,6 +120,7 @@ describe('Showcase', () => {
+ 					...PLACEHOLDER_SPECIMENS,
+ 					...PROGRESS_SPECIMENS,
+ 					...SPINNER_SPECIMENS,
++					...FORM_FLOATING_SPECIMENS,
+ 					...FORM_RANGE_SPECIMENS,
+ 					...CARD_SPECIMENS,
+ 					...LIST_GROUP_SPECIMENS,
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 446f160..8e19045 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -32,8 +32,11 @@ describe('app browser entry', () => {
+ 			'CardSection',
+ 			'CloseSection',
+ 			'ContentSection',
++			'FORM_FLOATING_COPY',
++			'FORM_FLOATING_SPECIMENS',
+ 			'FORM_RANGE_COPY',
+ 			'FORM_RANGE_SPECIMENS',
++			'FormFloatingSection',
+ 			'FormRangeSection',
+ 			'LAYOUT_COPY',
+ 			'LAYOUT_SPECIMENS',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 54d7834..1e888eb 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -46,6 +46,7 @@ import {
+ 	CARD_SPECIMENS,
+ 	CLOSE_SPECIMENS,
+ 	CONTENT_SPECIMENS,
++	FORM_FLOATING_SPECIMENS,
+ 	FORM_RANGE_SPECIMENS,
+ 	LAYOUT_SPECIMENS,
+ 	LINK_SPECIMENS,
+@@ -68,6 +69,7 @@ import {
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+ 	FOCUS_RING,
++	FORM_FLOATING_KEYS,
+ 	isVariantName,
+ 	UNDER_BAR,
+ 	VALIDATION_KEYS,
+@@ -931,6 +933,53 @@ describe('journey', () => {
+ 		JOURNAL.record('focus', readName(control), readStyle(control, 'outline-style'))
+ 	})
+ 
++	it('floats the empty field label under keyboard focus and photographs the floated field', async () => {
++		await applyTheme(VARIANT)
++		for (const key of FORM_FLOATING_KEYS) {
++			const specimen = readSpecimen(mounted.host, key.subject)
++			const control = requireValue(
++				specimen.querySelector('.form-floating > .form-control'),
++				`The "${key.subject}" specimen renders no floating control`,
++			)
++			const label = requireValue(
++				specimen.querySelector('.form-floating > label'),
++				`The "${key.subject}" specimen renders no floating label`,
++			)
++			const resting = readStyle(label, 'transform')
++			expect(resting).toBe('none')
++			expect(control.matches(':placeholder-shown')).toBe(true)
++			const reached = await traverseAccessible(readName(control))
++			expect(reached).toBe(control)
++			expect(control.matches(':focus-visible')).toBe(true)
++			// The label transitions its transform, so the shot waits for it to settle rather than
++			// photographing the label part of the way up.
++			await waitForAnimations(label)
++			const floated = readStyle(label, 'transform')
++			expect(floated).not.toBe(resting)
++			// The whole page is photographed because the focused field's outline paints outside its
++			// border box and an element frame crops it away; the declared region is the field.
++			await FRAMES.page(key.scenario, control)
++			// The state is read again after the shot, so a frame the capture took after focus left
++			// the field would report the resting label here.
++			expect(document.activeElement).toBe(control)
++			expect(readStyle(label, 'transform')).toBe(floated)
++			expect(readStyle(control, 'padding-top')).not.toBe(readStyle(control, 'padding-bottom'))
++			ARTIFACT.push(
++				JSON.stringify({
++					reading: 'floating focus',
++					mode: VARIANT,
++					name: readName(control),
++					resting,
++					floated,
++				}),
++			)
++			JOURNAL.record('focus', readName(control), floated)
++			reached.blur()
++			await waitForAnimations(label)
++			expect(readStyle(label, 'transform')).toBe(resting)
++		}
++	})
++
+ 	it('drives one list-group action to hover, focus, and press, and photographs each state', async () => {
+ 		await applyTheme(VARIANT)
+ 		await waitForAnimations(document.body)
+@@ -1262,6 +1311,7 @@ describe('portfolio', () => {
+ 				CARD_SPECIMENS,
+ 				CLOSE_SPECIMENS,
+ 				CONTENT_SPECIMENS,
++				FORM_FLOATING_SPECIMENS,
+ 				FORM_RANGE_SPECIMENS,
+ 				LAYOUT_SPECIMENS,
+ 				LINK_SPECIMENS,
+diff --git a/tests/app/browser/sections/FormFloatingSection.test.ts b/tests/app/browser/sections/FormFloatingSection.test.ts
+new file mode 100644
+index 0000000..fedfb99
+--- /dev/null
++++ b/tests/app/browser/sections/FormFloatingSection.test.ts
+@@ -0,0 +1,100 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	FORM_FLOATING_COPY,
++	FORM_FLOATING_SPECIMENS,
++	FormFloatingSection,
++	SpecimenSection,
++} from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readName, readStates } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('FormFloatingSection', () => {
++	it('renders every floating control through the shared section contract, each named by its label', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new FormFloatingSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Form floating region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Form floating')
++			expect(region.querySelector('p')?.textContent).toBe(FORM_FLOATING_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Form floating empty',
++				'Form floating filled',
++				'Form floating textarea',
++				'Form floating select',
++				'Form floating disabled',
++				'Form floating plaintext',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				FORM_FLOATING_SPECIMENS.map(({ markup }) => markup),
++			)
++			// Each specimen is one container holding one control and the label after it, which is the
++			// sibling order every floating rule selects the label through.
++			const containers = [...region.querySelectorAll('.form-floating')]
++			expect(containers).toHaveLength(rendered.length)
++			const controls = containers.map((container) =>
++				requireValue(container.firstElementChild, 'No floating control'),
++			)
++			expect(
++				containers.map((container) => container.lastElementChild?.tagName.toLowerCase()),
++			).toEqual(containers.map(() => 'label'))
++			// The label names its control, so the journey reaches the empty field by that name, and no
++			// two controls share one.
++			expect(controls.map((control) => readName(control))).toEqual([
++				'Email address',
++				'Delivery city',
++				'Delivery notes',
++				'Carrier',
++				'Archived notes',
++				'Account email',
++			])
++			// A text control reports itself empty only when it carries a placeholder, so each one does,
++			// and only the empty field shows it.
++			const fields = controls.filter(
++				(control) => control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement,
++			)
++			expect(fields.filter((control) => !control.hasAttribute('placeholder'))).toEqual([])
++			expect(fields.filter((control) => control.matches(':placeholder-shown'))).toEqual([
++				controls[0],
++			])
++			// The disabled and read-only states are declared in the markup, so their frames need no
++			// drive.
++			expect(controls.map((control) => readStates(control))).toEqual([
++				[],
++				[],
++				[],
++				[],
++				['disabled'],
++				['readonly'],
++			])
++			expect(Object.isFrozen(FORM_FLOATING_COPY)).toBe(true)
++			expect(Object.isFrozen(FORM_FLOATING_SPECIMENS)).toBe(true)
++			expect(FORM_FLOATING_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases the region and preserves adjacent content on repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new FormFloatingSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Form floating region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 31d5b4d..39b8462 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -101,6 +101,7 @@ describe('Bootstrap component oracle', () => {
+ 			'container',
+ 			'display',
+ 			'figure',
++			'form-floating',
+ 			'form-range',
+ 			'g',
+ 			'gx',
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 432b791..24ad5e3 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -13,6 +13,7 @@ import {
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+ 	FOCUS_RING,
++	FORM_FLOATING_KEYS,
+ 	FORM_RANGE_KEYS,
+ 	isVariantName,
+ 	LIST_GROUP_KEYS,
+@@ -64,6 +65,7 @@ describe('shared setup', () => {
+ 				'CONTRAST_BAR',
+ 				'DISABLED_OPACITY',
+ 				'FOCUS_RING',
++				'FORM_FLOATING_KEYS',
+ 				'FORM_RANGE_KEYS',
+ 				'LIST_GROUP_KEYS',
+ 				'PAGINATION_KEYS',
+@@ -90,6 +92,7 @@ describe('shared setup', () => {
+ 			...FORM_RANGE_KEYS,
+ 			...LIST_GROUP_KEYS,
+ 			...CLOSE_KEYS,
++			...FORM_FLOATING_KEYS,
+ 		])
+ 		expect(CAPTURE_SCENARIOS).toStrictEqual(CAPTURE_KEYS.map((key) => key.scenario))
+ 		expect(new Set(CAPTURE_SCENARIOS).size).toBe(CAPTURE_SCENARIOS.length)
+diff --git a/tests/setup.ts b/tests/setup.ts
+index d4f2c74..a7823ee 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -102,6 +102,12 @@ export type CaptureSubject =
+ 	| 'Horizontal group'
+ 	| 'Large group'
+ 	| 'Nested groups'
++	| 'Form floating disabled'
++	| 'Form floating empty'
++	| 'Form floating filled'
++	| 'Form floating plaintext'
++	| 'Form floating select'
++	| 'Form floating textarea'
+ 	| 'Glowing placeholder'
+ 	| 'Card base'
+ 	| 'Card group'
+@@ -755,6 +761,42 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.breadcrumb-item.active',
+ 		property: 'color',
+ 	}),
++	Object.freeze({
++		scenario: 'form-floating-empty',
++		subject: 'Form floating empty',
++		selector: '.form-floating > .form-control:placeholder-shown ~ label',
++		property: 'transform',
++	}),
++	Object.freeze({
++		scenario: 'form-floating-filled',
++		subject: 'Form floating filled',
++		selector: '.form-floating > input.form-control:not(:placeholder-shown) ~ label',
++		property: 'transform',
++	}),
++	Object.freeze({
++		scenario: 'form-floating-textarea',
++		subject: 'Form floating textarea',
++		selector: '.form-floating > textarea.form-control',
++		property: 'padding-top',
++	}),
++	Object.freeze({
++		scenario: 'form-floating-select',
++		subject: 'Form floating select',
++		selector: '.form-floating > .form-select',
++		property: 'padding-top',
++	}),
++	Object.freeze({
++		scenario: 'form-floating-disabled',
++		subject: 'Form floating disabled',
++		selector: '.form-floating > :disabled ~ label',
++		property: 'color',
++	}),
++	Object.freeze({
++		scenario: 'form-floating-plaintext',
++		subject: 'Form floating plaintext',
++		selector: '.form-floating > .form-control-plaintext ~ label',
++		property: 'border-left-width',
++	}),
+ ])
+ 
+ /**
+@@ -882,6 +924,25 @@ export const CLOSE_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'close-control-focus', subject: 'Close control' }),
+ ])
+ 
++/**
++ * Lists the floating-label scenario a journey drives by keyboard before it photographs the page.
++ *
++ * @remarks
++ * The resting paint of every floating specimen is already a cascade scenario, and the filled,
++ * textarea, select, disabled, and plaintext specimens render their label floated at rest, so the one
++ * state left to drive is focus on the empty field: the label floats and the text moves down only
++ * while the field holds focus. The journey reaches the field by its label through keyboard traversal
++ * and waits for the label's transition to settle before the shot. It is a page frame, for the reason
++ * the Button focus scenario is one: the focused field's ring paints outside its border box and an
++ * element frame crops it away, and the declared region names the field so a reader of a tall page
++ * frame is pointed at the part the scenario claims. The empty field already names its subject inside
++ * {@link CASCADE_KEYS}, and that list refuses a repeated subject, so this scenario carries its own
++ * list.
++ */
++export const FORM_FLOATING_KEYS: readonly CaptureKey[] = Object.freeze([
++	Object.freeze({ scenario: 'form-floating-empty-focus', subject: 'Form floating empty' }),
++])
++
+ /**
+  * Lists every scenario the showcase portfolio registers, in capture order.
+  *
+@@ -900,6 +961,7 @@ export const CAPTURE_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	...FORM_RANGE_KEYS,
+ 	...LIST_GROUP_KEYS,
+ 	...CLOSE_KEYS,
++	...FORM_FLOATING_KEYS,
+ ])
+ 
+ /**
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 32e4a9e..7b1b680 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -277,30 +277,30 @@ describe('scanStyleBlocks', () => {
+ })
+ 
+ describe('findDuplication', () => {
+-	it('reports a whole four-declaration block one partial copies into another, naming each site and every declaration', () => {
++	it('reports a whole five-declaration block one partial copies into another, naming each site and every declaration', () => {
+ 		const scratch = createScratch()
+ 		try {
+ 			scratch.write(
+ 				'_origin.scss',
+-				'.origin {\n\tmargin: 0;\n\tcolor: inherit;\n\tpadding: 0;\n\tborder: 0;\n}',
++				'.origin {\n\tmargin: 0;\n\tcolor: inherit;\n\tpadding: 0;\n\tborder: 0;\n\tinset: auto;\n}',
+ 			)
+ 			scratch.write(
+ 				'components/_echo.scss',
+-				'// The origin partial writes this block too.\n.echo {\n\tmargin: 0;\n\tcolor: inherit;\n\tpadding: 0;\n\tborder: 0;\n}',
++				'// The origin partial writes this block too.\n.echo {\n\tmargin: 0;\n\tcolor: inherit;\n\tpadding: 0;\n\tborder: 0;\n\tinset: auto;\n}',
+ 			)
+ 			expect(findDuplication(scanStyleBlocks(scratch.path).shared)).toEqual([
+ 				{
+ 					left: {
+ 						path: '_origin.scss',
+ 						line: 1,
+-						declarations: ['margin: 0', 'color: inherit', 'padding: 0', 'border: 0'],
++						declarations: ['margin: 0', 'color: inherit', 'padding: 0', 'border: 0', 'inset: auto'],
+ 					},
+ 					right: {
+ 						path: 'components/_echo.scss',
+ 						line: 2,
+-						declarations: ['margin: 0', 'color: inherit', 'padding: 0', 'border: 0'],
++						declarations: ['margin: 0', 'color: inherit', 'padding: 0', 'border: 0', 'inset: auto'],
+ 					},
+-					declarations: ['margin: 0', 'color: inherit', 'padding: 0', 'border: 0'],
++					declarations: ['margin: 0', 'color: inherit', 'padding: 0', 'border: 0', 'inset: auto'],
+ 				},
+ 			])
+ 		} finally {
+@@ -308,33 +308,33 @@ describe('findDuplication', () => {
+ 		}
+ 	})
+ 
+-	it('refuses a three-declaration overlap between two six-declaration blocks, and reports it after a fourth is shared', () => {
++	it('refuses a four-declaration overlap between two eight-declaration blocks, and reports it after a fifth is shared', () => {
+ 		const scratch = createScratch()
+ 		try {
+ 			scratch.write(
+-				'_left6.scss',
+-				'.left6 { margin: 0; color: inherit; padding: 0; border: 0; inset: auto; opacity: 1; }',
++				'_left8.scss',
++				'.left8 { margin: 0; color: inherit; padding: 0; border: 0; inset: auto; opacity: 1; width: auto; height: auto; }',
+ 			)
+ 			scratch.write(
+-				'_right6.scss',
+-				'.right6 { margin: 0; color: inherit; padding: 0; width: auto; height: auto; z-index: 1; }',
++				'_right8.scss',
++				'.right8 { margin: 0; color: inherit; padding: 0; border: 0; display: block; overflow: hidden; position: relative; z-index: 1; }',
+ 			)
+ 			expect(findDuplication(scanStyleBlocks(scratch.path).shared)).toEqual([])
+ 			scratch.write(
+-				'_right6.scss',
+-				'.right6 { margin: 0; color: inherit; padding: 0; border: 0; width: auto; height: auto; }',
++				'_right8.scss',
++				'.right8 { margin: 0; color: inherit; padding: 0; border: 0; inset: auto; display: block; overflow: hidden; position: relative; }',
+ 			)
+ 			expect(
+ 				findDuplication(scanStyleBlocks(scratch.path).shared).map(
+ 					(overlap) => overlap.declarations,
+ 				),
+-			).toEqual([['margin: 0', 'color: inherit', 'padding: 0', 'border: 0']])
++			).toEqual([['margin: 0', 'color: inherit', 'padding: 0', 'border: 0', 'inset: auto']])
+ 		} finally {
+ 			scratch.destroy()
+ 		}
+ 	})
+ 
+-	it('refuses a whole two-declaration copy and a whole three-declaration copy, while the sweep still reports both', () => {
++	it('refuses a whole two-declaration copy, a whole three-declaration copy, and a whole four-declaration copy, while the sweep still reports every one', () => {
+ 		const scratch = createScratch()
+ 		try {
+ 			scratch.write('_duo.scss', '.duo { margin: 0; color: inherit; }')
+@@ -344,6 +344,11 @@ describe('findDuplication', () => {
+ 				'components/_trioecho.scss',
+ 				'.trioecho { padding: 0; border: 0; inset: auto; }',
+ 			)
++			scratch.write('_quad.scss', '.quad { opacity: 1; width: auto; height: auto; z-index: 1; }')
++			scratch.write(
++				'components/_quadecho.scss',
++				'.quadecho { opacity: 1; width: auto; height: auto; z-index: 1; }',
++			)
+ 			const sweep = scanStyleBlocks(scratch.path)
+ 			expect(
+ 				sweep.shared.map((overlap) => [
+@@ -353,6 +358,11 @@ describe('findDuplication', () => {
+ 				]),
+ 			).toEqual([
+ 				['_duo.scss', 'components/_duoecho.scss', ['margin: 0', 'color: inherit']],
++				[
++					'_quad.scss',
++					'components/_quadecho.scss',
++					['opacity: 1', 'width: auto', 'height: auto', 'z-index: 1'],
++				],
+ 				['_trio.scss', 'components/_trioecho.scss', ['padding: 0', 'border: 0', 'inset: auto']],
+ 			])
+ 			expect(findDuplication(sweep.shared)).toEqual([])
+@@ -361,27 +371,27 @@ describe('findDuplication', () => {
+ 		}
+ 	})
+ 
+-	it('refuses a four-declaration overlap tied at half of an eight-declaration block, and reports it after that block narrows to seven', () => {
++	it('refuses a five-declaration overlap tied at half of a ten-declaration block, and reports it after that block narrows to nine', () => {
+ 		const scratch = createScratch()
+ 		try {
+ 			scratch.write(
+-				'_eightleft.scss',
+-				'.eightleft { margin: 0; color: inherit; padding: 0; border: 0; inset: auto; opacity: 1; width: auto; height: auto; }',
++				'_tenleft.scss',
++				'.tenleft { margin: 0; color: inherit; padding: 0; border: 0; inset: auto; opacity: 1; width: auto; height: auto; z-index: 1; display: block; }',
+ 			)
+ 			scratch.write(
+-				'_eightright.scss',
+-				'.eightright { margin: 0; color: inherit; padding: 0; border: 0; display: block; overflow: hidden; position: relative; z-index: 1; }',
++				'_tenright.scss',
++				'.tenright { margin: 0; color: inherit; padding: 0; border: 0; inset: auto; overflow: hidden; position: relative; float: none; clear: none; gap: 0; }',
+ 			)
+ 			expect(findDuplication(scanStyleBlocks(scratch.path).shared)).toEqual([])
+ 			scratch.write(
+-				'_eightright.scss',
+-				'.eightright { margin: 0; color: inherit; padding: 0; border: 0; display: block; overflow: hidden; position: relative; }',
++				'_tenright.scss',
++				'.tenright { margin: 0; color: inherit; padding: 0; border: 0; inset: auto; overflow: hidden; position: relative; float: none; clear: none; }',
+ 			)
+ 			expect(
+ 				findDuplication(scanStyleBlocks(scratch.path).shared).map(
+ 					(overlap) => overlap.declarations,
+ 				),
+-			).toEqual([['margin: 0', 'color: inherit', 'padding: 0', 'border: 0']])
++			).toEqual([['margin: 0', 'color: inherit', 'padding: 0', 'border: 0', 'inset: auto']])
+ 		} finally {
+ 			scratch.destroy()
+ 		}
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 300f0bb..b92c442 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -665,16 +665,17 @@ export function scanStyleBlocks(
+  * @returns Every reported intersection that repeats a block rather than agreeing with it by
+  * accident, in the sweep's order.
+  * @remarks
+- * An intersection qualifies under either arm. The relative arm takes an overlap of at least 4
++ * An intersection qualifies under either arm. The relative arm takes an overlap of at least 5
+  * declarations that is more than half of whichever block writes fewer, so one block is most of the
+- * other; a whole copy of a two- or three-declaration rule sits under that floor and passes as a
+- * coincidence, which is the recorded boundary. The absolute arm takes an overlap of at least 6
++ * other; a whole copy of a two-, three-, or four-declaration rule sits under that floor and passes
++ * as a coincidence, which is the recorded boundary. The absolute arm takes an overlap of at least 6
+  * declarations, a width no accidental agreement here reaches, the largest overlap two partials
+- * wrote independently being 3 declarations measured across `src/styles` and the family partials on
+- * 2026-09-22. `scanStyleBlocks` keeps reporting every intersection, so an auditor reads the refused
+- * ones in its result. Two partials that each record the same external value agree by coincidence
+- * rather than sharing one decision, so both copies stay inline; a reported intersection is a
+- * repeated block, and the repair moves it into `_mixins.scss`.
++ * wrote independently being 4 declarations measured across `src/styles` on 2026-09-23 (the floating
++ * label against the ratio child and the hidden check input). `scanStyleBlocks` keeps reporting
++ * every intersection, so an auditor reads the refused ones in its result. Two partials that each
++ * record the same external value agree by coincidence rather than sharing one decision, so both
++ * copies stay inline; a reported intersection is a repeated block, and the repair moves it into
++ * `_mixins.scss`.
+  * @example
+  * ```ts
+  * // [] when every intersection the sweep reported is a coincidence, and after a repeated block moves into _mixins.scss
+@@ -685,7 +686,7 @@ export function findDuplication(shared: readonly StyleOverlap[]): readonly Style
+ 	return shared.filter((overlap) => {
+ 		const count = overlap.declarations.length
+ 		const smallest = Math.min(overlap.left.declarations.length, overlap.right.declarations.length)
+-		return (count >= 4 && count * 2 > smallest) || count >= 6
++		return (count >= 5 && count * 2 > smallest) || count >= 6
+ 	})
+ }
+ 
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 490c69a..70e77c2 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -50,6 +50,8 @@ import {
+ 	CUSTOMIZATION_RECIPE,
+ 	ELEMENT_TAGS,
+ 	FILL_ONLY_RECIPE,
++	FORM_FLOATING_CASES,
++	FORM_FLOATING_MARKUP,
+ 	FORM_ICON_CASES,
+ 	FORM_RANGE_CASES,
+ 	FORM_RANGE_MARKUP,
+@@ -195,6 +197,8 @@ describe('styles setup', () => {
+ 				'CUSTOMIZATION_RECIPE',
+ 				'ELEMENT_TAGS',
+ 				'FILL_ONLY_RECIPE',
++				'FORM_FLOATING_CASES',
++				'FORM_FLOATING_MARKUP',
+ 				'FORM_ICON_CASES',
+ 				'FORM_RANGE_CASES',
+ 				'FORM_RANGE_MARKUP',
+@@ -2176,3 +2180,94 @@ describe('passive component case tables', () => {
+ 		}
+ 	})
+ })
++
++describe('floating label case table', () => {
++	it('binds every floating selector to the inventory, to its condition, and to the tokens it reads', () => {
++		const rules = requireValue(
++			readOracleInventory().components['form-floating'],
++			'The inventory records no floating-label key',
++		).rules
++		// The key's own rules open on the container's class. The rest of what the inventory records
++		// under this key opens on the input-group or validation class, and each of those families
++		// writes its own, so the population is split on the opening class and both halves are held.
++		const owned = rules.filter((rule) => rule.selector.startsWith('.form-floating'))
++		const foreign = rules.filter((rule) => !rule.selector.startsWith('.form-floating'))
++		expect(
++			foreign.filter(
++				(rule) =>
++					!rule.selector.startsWith('.input-group') && !rule.selector.startsWith('.was-validated'),
++			),
++		).toEqual([])
++		const recorded = [...new Set(owned.map((rule) => rule.selector))]
++		expect(FORM_FLOATING_CASES.map((entry) => entry.selector)).toEqual(recorded)
++		// A rule and its reduced-motion twin carry one selector, so each entry is keyed by the
++		// condition beside it: keyed by selector alone, a twin the partial stopped emitting would read
++		// as written because the resting rule carries the same selector.
++		const keyed = owned.map((rule) =>
++			rule.condition === undefined ? rule.selector : `${rule.selector} ${rule.condition}`,
++		)
++		const written = new Map<string, string>()
++		for (const block of readCascadeBlocks(compileExpandedCascade())) {
++			if (!block.selector.startsWith('.form-floating')) continue
++			const key =
++				block.condition === undefined ? block.selector : `${block.selector} ${block.condition}`
++			const declarations = [...block.declarations]
++				.map(([property, value]) => `${property}: ${value}`)
++				.join('; ')
++			written.set(key, `${written.get(key) ?? ''}${declarations}; `)
++		}
++		expect([...written.keys()].sort()).toEqual([...new Set(keyed)].sort())
++		// An empty list is the claim that the selector reads no custom property at all, so a selector
++		// with no name to look for is held to that rather than passing for want of one.
++		const untokenized: string[] = []
++		for (const entry of FORM_FLOATING_CASES) {
++			const declarations = requireValue(
++				written.get(entry.selector),
++				`The compiled cascade writes no ${entry.selector} rule`,
++			)
++			expect([...entry.reads].filter((name) => !declarations.includes(`var(${name})`))).toEqual([])
++			const reads: readonly string[] = entry.reads
++			for (const [, name] of declarations.matchAll(/var\((--[\w-]+)/gu))
++				if (name !== undefined && !reads.includes(name))
++					untokenized.push(`${entry.selector} ${name}`)
++		}
++		expect(untokenized).toEqual([])
++		expect(Object.isFrozen(FORM_FLOATING_CASES)).toBe(true)
++		for (const entry of FORM_FLOATING_CASES) {
++			expect(Object.isFrozen(entry)).toBe(true)
++			expect(Object.isFrozen(entry.reads)).toBe(true)
++		}
++	})
++	it('names the undrivable autofill rules and the shadowed disabled twin as the declaration-read rows', () => {
++		// The rows a resolved reading cannot separate are named rather than inferred, so a row that
++		// drifts to the declaration reading without a cause reddens here.
++		expect(
++			FORM_FLOATING_CASES.filter((entry) => !entry.rendered).map((entry) => entry.selector),
++		).toEqual([
++			'.form-floating > .form-control:-webkit-autofill',
++			'.form-floating > .form-control-plaintext:-webkit-autofill',
++			'.form-floating > .form-control:-webkit-autofill ~ label',
++			'.form-floating > .form-control:disabled ~ label',
++		])
++	})
++	it('carries every floated host, the disabled select, and the bare pair in the floating markup', () => {
++		// The markup is the proofs' own fixture, so each host a rendered row needs is held here: the
++		// empty and filled controls, both textareas and the disabled one, the select and its disabled
++		// twin, the plaintext control, and the bare pair outside the container.
++		expect(FORM_FLOATING_MARKUP.match(/class="form-floating"/gu)).toHaveLength(9)
++		expect(FORM_FLOATING_MARKUP.match(/<textarea /gu)).toHaveLength(3)
++		expect(FORM_FLOATING_MARKUP.match(/<select class="form-select"/gu)).toHaveLength(2)
++		expect(FORM_FLOATING_MARKUP).toContain('class="form-control-plaintext"')
++		expect(FORM_FLOATING_MARKUP).toContain(
++			'<select class="form-select" id="floating-depot" disabled>',
++		)
++		expect(FORM_FLOATING_MARKUP).toContain(
++			'<div><input type="text" class="form-control" id="bare-entry"',
++		)
++		// A control with no placeholder never matches `:placeholder-shown`, so every text control
++		// carries one.
++		expect(FORM_FLOATING_MARKUP.match(/<(?:input|textarea) /gu)?.length).toBe(
++			FORM_FLOATING_MARKUP.match(/ placeholder="/gu)?.length,
++		)
++	})
++})
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 7615ca3..24b7a94 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -3727,3 +3727,164 @@ export const CLOSE_MARK =
+ 
+ /** Holds the recorded inversion the opt-in class and the dark theme scope both carry. */
+ export const CLOSE_INVERSION = 'invert(1) grayscale(100%) brightness(200%)'
++
++/**
++ * Pins every selector the floating-label key emits against the custom properties its declarations
++ * read and against the reading that answers for it.
++ *
++ * @remarks
++ * The rows are the key's own selectors, each one opening on `.form-floating`, in the order the
++ * official inventory records them. The input-group and validation rules the inventory also records
++ * under this key open on the class of the family that writes them, and this table carries none of
++ * them.
++ *
++ * `rendered` is the ladder a proof takes. True names a rule whose removal a resolved reading on a
++ * mounted element reports on its own. False names a rule no such reading separates: the autofill
++ * rules answer to a state a script cannot put a control into, and the class-qualified disabled label
++ * rule paints what the bare disabled rule already paints. A false row is read as the declaration the
++ * cascade authors, which is compiled-contract evidence rather than a rendered proof.
++ *
++ * `reads` names the custom properties the selector's declarations carry, across every rule the
++ * selector heads. An empty list is the claim that the selector writes no `var()` at all.
++ */
++export const FORM_FLOATING_CASES = Object.freeze([
++	Object.freeze({ selector: '.form-floating', rendered: true, reads: Object.freeze([]) }),
++	Object.freeze({
++		selector: '.form-floating > .form-control',
++		rendered: true,
++		reads: Object.freeze(['--bs-border-width', '--vn-space-8', '--vn-space-6']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control-plaintext',
++		rendered: true,
++		reads: Object.freeze(['--bs-border-width', '--vn-space-8', '--vn-space-6']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-select',
++		rendered: true,
++		reads: Object.freeze(['--bs-border-width', '--vn-space-5', '--vn-space-6']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > label',
++		rendered: true,
++		reads: Object.freeze([
++			'--vn-space-8',
++			'--vn-space-6',
++			'--bs-body-color-rgb',
++			'--bs-border-width',
++		]),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control::placeholder',
++		rendered: true,
++		reads: Object.freeze([]),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control-plaintext::placeholder',
++		rendered: true,
++		reads: Object.freeze([]),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control:focus',
++		rendered: true,
++		reads: Object.freeze(['--vn-space-5']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control:not(:placeholder-shown)',
++		rendered: true,
++		reads: Object.freeze(['--vn-space-5']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control-plaintext:focus',
++		rendered: true,
++		reads: Object.freeze(['--vn-space-5']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control-plaintext:not(:placeholder-shown)',
++		rendered: true,
++		reads: Object.freeze(['--vn-space-5']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control:-webkit-autofill',
++		rendered: false,
++		reads: Object.freeze(['--vn-space-5']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control-plaintext:-webkit-autofill',
++		rendered: false,
++		reads: Object.freeze(['--vn-space-5']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control:focus ~ label',
++		rendered: true,
++		reads: Object.freeze([]),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control:not(:placeholder-shown) ~ label',
++		rendered: true,
++		reads: Object.freeze([]),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control-plaintext ~ label',
++		rendered: true,
++		reads: Object.freeze(['--bs-border-width']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-select ~ label',
++		rendered: true,
++		reads: Object.freeze([]),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control:-webkit-autofill ~ label',
++		rendered: false,
++		reads: Object.freeze([]),
++	}),
++	Object.freeze({
++		selector: '.form-floating > textarea:focus ~ label::after',
++		rendered: true,
++		reads: Object.freeze(['--vn-space-8', '--vn-space-3', '--bs-body-bg', '--bs-border-radius']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > textarea:not(:placeholder-shown) ~ label::after',
++		rendered: true,
++		reads: Object.freeze(['--vn-space-8', '--vn-space-3', '--bs-body-bg', '--bs-border-radius']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > textarea:disabled ~ label::after',
++		rendered: true,
++		reads: Object.freeze(['--bs-secondary-bg']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > :disabled ~ label',
++		rendered: true,
++		reads: Object.freeze(['--vn-gray-600']),
++	}),
++	Object.freeze({
++		selector: '.form-floating > .form-control:disabled ~ label',
++		rendered: false,
++		reads: Object.freeze(['--vn-gray-600']),
++	}),
++])
++
++/**
++ * Holds the floating-label markup the proofs mount: every control the key floats a label over,
++ * beside a bare control and label pair outside the container.
++ *
++ * @remarks
++ * Each control carries a placeholder, because `:placeholder-shown` reports an empty control only
++ * when it has one, and each announces its own name through its label, so a traversal reaches the
++ * control it names and no other. The empty input and the empty textarea are the controls a proof
++ * focuses and fills; the disabled select is the host that separates the bare disabled label rule
++ * from its class-qualified twin, because a select carries no `.form-control` class.
++ */
++export const FORM_FLOATING_MARKUP =
++	'<div class="form-floating"><input type="email" class="form-control" id="floating-empty" placeholder="dispatch@example.com"><label for="floating-empty">Empty address</label></div>' +
++	'<div class="form-floating"><input type="text" class="form-control" id="floating-filled" placeholder="City" value="Lisbon"><label for="floating-filled">Filled city</label></div>' +
++	'<div class="form-floating"><textarea class="form-control" id="floating-notes" placeholder="Notes">Leave the parcel at the side door.</textarea><label for="floating-notes">Filled notes</label></div>' +
++	'<div class="form-floating"><textarea class="form-control" id="floating-draft" placeholder="Notes"></textarea><label for="floating-draft">Empty notes</label></div>' +
++	'<div class="form-floating"><textarea class="form-control" id="floating-archive" placeholder="Notes" disabled>Archived at the depot.</textarea><label for="floating-archive">Disabled notes</label></div>' +
++	'<div class="form-floating"><input type="text" class="form-control" id="floating-code" placeholder="Code" disabled><label for="floating-code">Disabled code</label></div>' +
++	'<div class="form-floating"><select class="form-select" id="floating-carrier"><option selected>Northworks Freight</option><option>Harbor Line</option></select><label for="floating-carrier">Carrier</label></div>' +
++	'<div class="form-floating"><select class="form-select" id="floating-depot" disabled><option selected>Riverside</option></select><label for="floating-depot">Disabled depot</label></div>' +
++	'<div class="form-floating"><input type="email" class="form-control-plaintext" id="floating-account" placeholder="dispatch@example.com" value="dispatch@example.com" readonly><label for="floating-account">Account email</label></div>' +
++	'<div><input type="text" class="form-control" id="bare-entry" placeholder="Bare"><label for="bare-entry">Bare entry</label></div>'
+diff --git a/tests/src/styles/components/form-floating.test.ts b/tests/src/styles/components/form-floating.test.ts
+new file mode 100644
+index 0000000..a3a6036
+--- /dev/null
++++ b/tests/src/styles/components/form-floating.test.ts
+@@ -0,0 +1,515 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import {
++	commitInput,
++	matchesColor,
++	readPixels,
++	readStates,
++	readStyle,
++	readToken,
++	releaseMedia,
++	stageMedia,
++	traverseAccessible,
++	typeAccessible,
++	waitForAnimations,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
++import { normalizeSelectorText } from '../../../setup.js'
++import { FORM_FLOATING_CASES, FORM_FLOATING_MARKUP } from '../../../setupStyles.js'
++
++const MOTION = '(prefers-reduced-motion: reduce)'
++// The release's floated transform, `scale(0.85) translateY(-0.5rem) translateX(0.15rem)`, as the
++// engine resolves it at a 16px root: the translation is scaled with the label, so the offsets are
++// 0.85 of 2.4px and of -8px.
++const FLOATED = 'matrix(0.85, 0, 0, 0.85, 2.04, -6.8)'
++
++afterEach(async () => {
++	await releaseMedia()
++	if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
++	scene.clear()
++})
++
++describe('form floating geometry', () => {
++	it('makes the container the positioning box and sizes each floated control to the recorded height', () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const containers = [...host.querySelectorAll('.form-floating')]
++		expect(containers.map((element) => readStyle(element, 'position'))).toEqual(
++			containers.map(() => 'relative'),
++		)
++		// The height is the release's 3.5rem plus the two border widths the control carries, so a
++		// 16px root and a 1px border resolve it to 58px. The line height is unitless, so it resolves
++		// against the control's own text, which inherits the body size.
++		for (const id of ['floating-empty', 'floating-notes', 'floating-carrier', 'floating-account']) {
++			const control = requireValue(host.querySelector(`#${id}`), `No ${id} control`)
++			expect(readPixels(control, 'height')).toBe(58)
++			expect(readPixels(control, 'min-height')).toBe(58)
++		}
++		for (const id of ['floating-empty', 'floating-notes', 'floating-account']) {
++			const control = requireValue(host.querySelector(`#${id}`), `No ${id} control`)
++			expect(readPixels(control, 'line-height')).toBeCloseTo(
++				readPixels(control, 'font-size') * 1.25,
++				3,
++			)
++		}
++		// Chromium resets the line height of a select that keeps its native appearance to `normal`,
++		// whatever an author rule declares; the `.form-select` rule that removes that appearance
++		// belongs to the select family, which this tree does not ship yet. Until it does, the
++		// declaration the select shares with the text controls is read where the cascade authors it.
++		const select = requireValue(host.querySelector('#floating-carrier'), 'No select')
++		expect(readStyle(select, 'line-height')).toBe('normal')
++		const sized = requireValue(
++			collectLayer('components').find(
++				(rule) =>
++					rule instanceof CSSStyleRule &&
++					rule.selectorText
++						.split(',')
++						.map((part) => normalizeSelectorText(part))
++						.includes('.form-floating > .form-select') &&
++					rule.style.getPropertyValue('line-height') !== '',
++			),
++			'No sized select rule',
++		)
++		expect(sized instanceof CSSStyleRule && sized.style.getPropertyValue('line-height')).toBe(
++			'1.25',
++		)
++		// The bare pair sits outside any container, so it keeps the control's intrinsic height and a
++		// label in flow: a partial that stopped scoping these rules to the container would report the
++		// floated geometry here.
++		const bare = requireValue(host.querySelector('#bare-entry'), 'No bare control')
++		const label = requireValue(host.querySelector('label[for="bare-entry"]'), 'No bare label')
++		expect(readStyle(requireValue(bare.parentElement, 'No bare wrapper'), 'position')).toBe(
++			'static',
++		)
++		expect(readPixels(bare, 'height')).not.toBe(58)
++		expect(readStyle(label, 'position')).toBe('static')
++		expect(readStyle(label, 'transform')).toBe('none')
++	})
++
++	it('rests the label over the control with the recorded inset, fade, origin, and transparent border', () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const control = requireValue(host.querySelector('#floating-empty'), 'No empty control')
++		const label = requireValue(host.querySelector('label[for="floating-empty"]'), 'No empty label')
++		const container = requireValue(control.parentElement, 'No container')
++		expect(readStyle(label, 'position')).toBe('absolute')
++		expect(readPixels(label, 'top')).toBe(0)
++		expect(readPixels(label, 'left')).toBe(0)
++		expect(readStyle(label, 'z-index')).toBe('2')
++		expect(readPixels(label, 'height')).toBe(container.getBoundingClientRect().height)
++		expect(readStyle(label, 'max-width')).toBe('100%')
++		expect(readPixels(label, 'padding-top')).toBe(16)
++		expect(readPixels(label, 'padding-bottom')).toBe(16)
++		expect(readPixels(label, 'padding-left')).toBe(12)
++		expect(readPixels(label, 'padding-right')).toBe(12)
++		// The control's own inset is the label's, which is what puts the two texts on one line.
++		expect(readPixels(control, 'padding-top')).toBe(16)
++		expect(readPixels(control, 'padding-left')).toBe(12)
++		expect(readStyle(label, 'overflow-x')).toBe('hidden')
++		expect(readStyle(label, 'text-overflow')).toBe('ellipsis')
++		expect(readStyle(label, 'white-space')).toBe('nowrap')
++		expect(readStyle(label, 'text-align')).toBe('start')
++		expect(readStyle(label, 'pointer-events')).toBe('none')
++		for (const side of ['top', 'right', 'bottom', 'left']) {
++			expect(readPixels(label, `border-${side}-width`)).toBe(1)
++			expect(readStyle(label, `border-${side}-style`)).toBe('solid')
++			expect(readStyle(label, `border-${side}-color`)).toBe('rgba(0, 0, 0, 0)')
++		}
++		// The fade is the label's own text at 0.65 of the body color, not an element opacity: the
++		// element stays opaque, so a label painting at full strength reports its alpha here.
++		expect(readStyle(label, 'opacity')).toBe('1')
++		expect(
++			matchesColor(
++				readStyle(label, 'color'),
++				`rgba(${readToken(label, '--bs-body-color-rgb')}, 0.65)`,
++			),
++		).toBe(true)
++		expect(readStyle(label, 'transform')).toBe('none')
++		expect(readStyle(label, 'transform-origin')).toBe('0px 0px')
++	})
++
++	it('hides the placeholder behind the label inside the container and nowhere else', () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		for (const id of ['floating-empty', 'floating-account']) {
++			const control = requireValue(host.querySelector(`#${id}`), `No ${id} control`)
++			expect(readStyle(control, 'color', '::placeholder')).toBe('rgba(0, 0, 0, 0)')
++		}
++		const bare = requireValue(host.querySelector('#bare-entry'), 'No bare control')
++		expect(readStyle(bare, 'color', '::placeholder')).not.toBe('rgba(0, 0, 0, 0)')
++	})
++})
++
++describe('form floating states', () => {
++	it('floats the label and moves the text down when the keyboard reaches an empty control', async () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const control = requireValue(host.querySelector('#floating-empty'), 'No empty control')
++		const label = requireValue(host.querySelector('label[for="floating-empty"]'), 'No empty label')
++		expect(readPixels(control, 'padding-bottom')).toBe(16)
++		const reached = await traverseAccessible('Empty address')
++		expect(reached).toBe(control)
++		expect(reached.matches(':focus-visible')).toBe(true)
++		expect(reached.matches(':placeholder-shown')).toBe(true)
++		expect(readStates(reached)).toEqual([])
++		await waitForAnimations(label)
++		// The top inset is the release's literal and the bottom inset reads the density token, so the
++		// pair holds the text under the floated label.
++		expect(readPixels(control, 'padding-top')).toBe(26)
++		expect(readPixels(control, 'padding-bottom')).toBe(10)
++		expect(readStyle(label, 'transform')).toBe(FLOATED)
++		expect(readStyle(label, 'transform-origin')).toBe('0px 0px')
++		expect(readStyle(label, 'opacity')).toBe('1')
++		reached.blur()
++		await waitForAnimations(label)
++		expect(readPixels(control, 'padding-top')).toBe(16)
++		expect(readStyle(label, 'transform')).toBe('none')
++	})
++
++	it('keeps the label floated over a filled control after focus leaves it, and rests it again when emptied', async () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const control = requireValue(host.querySelector('#floating-empty'), 'No empty control')
++		const label = requireValue(host.querySelector('label[for="floating-empty"]'), 'No empty label')
++		if (!(control instanceof HTMLInputElement)) throw new Error('The empty control is no input')
++		await typeAccessible('Empty address', 'dock@example.com')
++		control.blur()
++		await waitForAnimations(label)
++		expect(control.value).toBe('dock@example.com')
++		expect(control.matches(':focus')).toBe(false)
++		expect(control.matches(':placeholder-shown')).toBe(false)
++		expect(readPixels(control, 'padding-top')).toBe(26)
++		expect(readPixels(control, 'padding-bottom')).toBe(10)
++		expect(readStyle(label, 'transform')).toBe(FLOATED)
++		commitInput(control, '')
++		await waitForAnimations(label)
++		expect(readPixels(control, 'padding-top')).toBe(16)
++		expect(readStyle(label, 'transform')).toBe('none')
++		// The control the markup renders filled floats its label on arrival, with no drive at all.
++		const filled = requireValue(host.querySelector('#floating-filled'), 'No filled control')
++		const floated = requireValue(
++			host.querySelector('label[for="floating-filled"]'),
++			'No filled label',
++		)
++		expect(readPixels(filled, 'padding-top')).toBe(26)
++		expect(readStyle(floated, 'transform')).toBe(FLOATED)
++	})
++
++	it('floats the select label and pads the select for it at rest', () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const control = requireValue(host.querySelector('#floating-carrier'), 'No select')
++		const label = requireValue(host.querySelector('label[for="floating-carrier"]'), 'No label')
++		expect(readPixels(control, 'padding-top')).toBe(26)
++		expect(readPixels(control, 'padding-bottom')).toBe(10)
++		expect(readPixels(control, 'padding-left')).toBe(12)
++		expect(readStyle(label, 'transform')).toBe(FLOATED)
++	})
++
++	it('floats the plaintext label at rest and draws its border on the block axis alone', async () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const control = requireValue(host.querySelector('#floating-account'), 'No plaintext control')
++		const label = requireValue(host.querySelector('label[for="floating-account"]'), 'No label')
++		if (!(control instanceof HTMLInputElement)) throw new Error('The plaintext control is no input')
++		expect(readStates(control)).toContain('readonly')
++		expect(readStyle(label, 'transform')).toBe(FLOATED)
++		expect(readPixels(label, 'border-top-width')).toBe(1)
++		expect(readPixels(label, 'border-bottom-width')).toBe(1)
++		expect(readPixels(label, 'border-left-width')).toBe(0)
++		expect(readPixels(label, 'border-right-width')).toBe(0)
++		expect(readPixels(control, 'padding-top')).toBe(26)
++		// Cleared, the plaintext control rests its inset while its label stays floated, and the
++		// keyboard reaching it moves the inset again: that is the focus rule answering, apart from
++		// the filled one.
++		commitInput(control, '')
++		expect(readPixels(control, 'padding-top')).toBe(16)
++		expect(readStyle(label, 'transform')).toBe(FLOATED)
++		const reached = await traverseAccessible('Account email')
++		expect(reached).toBe(control)
++		expect(readPixels(control, 'padding-top')).toBe(26)
++		expect(readPixels(control, 'padding-bottom')).toBe(10)
++	})
++})
++
++describe('form floating textarea backdrop', () => {
++	it('paints the backdrop behind a filled textarea label inside the label inset', () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const label = requireValue(host.querySelector('label[for="floating-notes"]'), 'No label')
++		expect(readStyle(label, 'content', '::after')).toBe('""')
++		expect(readStyle(label, 'position', '::after')).toBe('absolute')
++		expect(readPixels(label, 'top', '::after')).toBe(16)
++		expect(readPixels(label, 'bottom', '::after')).toBe(16)
++		expect(readPixels(label, 'left', '::after')).toBe(6)
++		expect(readPixels(label, 'right', '::after')).toBe(6)
++		// The height is 1.5em of the label's own text, which is what an `em` literal buys: it follows
++		// the text size rather than the root.
++		expect(readPixels(label, 'height', '::after')).toBeCloseTo(
++			readPixels(label, 'font-size') * 1.5,
++			3,
++		)
++		expect(readStyle(label, 'z-index', '::after')).toBe('-1')
++		expect(
++			matchesColor(
++				readStyle(label, 'background-color', '::after'),
++				readToken(label, '--bs-body-bg'),
++			),
++		).toBe(true)
++		expect(readPixels(label, 'border-top-left-radius', '::after')).toBe(6)
++		// The input's label carries no backdrop, because the rule names a textarea.
++		const input = requireValue(host.querySelector('label[for="floating-filled"]'), 'No label')
++		expect(readStyle(input, 'content', '::after')).toBe('none')
++	})
++
++	it('paints no backdrop behind an empty textarea label until the keyboard reaches it', async () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const control = requireValue(host.querySelector('#floating-draft'), 'No draft')
++		const label = requireValue(host.querySelector('label[for="floating-draft"]'), 'No label')
++		if (!(control instanceof HTMLTextAreaElement)) throw new Error('The draft is no textarea')
++		expect(readStyle(label, 'content', '::after')).toBe('none')
++		const reached = await traverseAccessible('Empty notes')
++		expect(reached).toBe(control)
++		expect(control.matches(':placeholder-shown')).toBe(true)
++		expect(readStyle(label, 'content', '::after')).toBe('""')
++		expect(readPixels(label, 'top', '::after')).toBe(16)
++		control.blur()
++		expect(readStyle(label, 'content', '::after')).toBe('none')
++		// A committed value holds the backdrop without focus.
++		commitInput(control, 'Ring twice.')
++		expect(readStyle(label, 'content', '::after')).toBe('""')
++	})
++
++	it('paints the disabled backdrop on the secondary surface', () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const control = requireValue(host.querySelector('#floating-archive'), 'No archive')
++		const label = requireValue(host.querySelector('label[for="floating-archive"]'), 'No label')
++		expect(readStates(control)).toContain('disabled')
++		const paint = readStyle(label, 'background-color', '::after')
++		expect(matchesColor(paint, readToken(label, '--bs-secondary-bg'))).toBe(true)
++		expect(matchesColor(paint, readToken(label, '--bs-body-bg'))).toBe(false)
++	})
++})
++
++describe('form floating disabled labels', () => {
++	it('grays the label of a disabled control in both modes, the select included', () => {
++		const host = scene.mount(
++			`<div><div>${FORM_FLOATING_MARKUP}</div><div data-bs-theme="dark">${FORM_FLOATING_MARKUP}</div></div>`,
++		)
++		const gray = readToken(host, TOKEN_NAMES.gray[600])
++		expect(matchesColor(gray, '#6c757d')).toBe(true)
++		// The select carries no `.form-control`, so its label answers to the bare disabled rule
++		// alone: a partial that dropped that rule leaves this label at the resting fade.
++		for (const id of ['floating-code', 'floating-archive', 'floating-depot']) {
++			const labels = [...host.querySelectorAll(`label[for="${id}"]`)]
++			expect(labels).toHaveLength(2)
++			for (const label of labels) expect(matchesColor(readStyle(label, 'color'), gray)).toBe(true)
++		}
++		for (const label of host.querySelectorAll('label[for="floating-empty"]'))
++			expect(matchesColor(readStyle(label, 'color'), gray)).toBe(false)
++		// The class-qualified twin paints what the bare rule already paints, so no resolved reading
++		// separates it; its declaration is read where the cascade authors it.
++		const twin = collectLayer('components').filter(
++			(rule) =>
++				rule instanceof CSSStyleRule &&
++				rule.selectorText
++					.split(',')
++					.map((part) => normalizeSelectorText(part))
++					.includes('.form-floating > .form-control:disabled ~ label'),
++		)
++		expect(twin).toHaveLength(1)
++		expect(
++			twin.filter(
++				(rule) =>
++					!(rule instanceof CSSStyleRule) ||
++					rule.style.getPropertyValue('color') !== `var(${TOKEN_NAMES.gray[600]})`,
++			),
++		).toEqual([])
++	})
++})
++
++describe('form floating motion', () => {
++	it('transitions the label opacity and transform and collapses both under reduced motion', async () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const label = requireValue(host.querySelector('label[for="floating-empty"]'), 'No label')
++		expect(readStyle(label, 'transition-property')).toBe('opacity, transform')
++		expect(readStyle(label, 'transition-duration')).toBe('0.1s, 0.1s')
++		expect(readStyle(label, 'transition-timing-function')).toBe('ease-in-out, ease-in-out')
++		expect(collectMediaConditions(collectLayer('components'), '.form-floating > label')).toEqual([
++			MOTION,
++		])
++		await stageMedia({ motion: false })
++		expect(matchMedia(MOTION).matches).toBe(true)
++		expect(readStyle(label, 'transition-property')).toBe('none')
++		expect(readStyle(label, 'transition-duration')).toBe('0s')
++		await releaseMedia()
++		expect(readStyle(label, 'transition-duration')).toBe('0.1s, 0.1s')
++	})
++})
++
++describe('form floating tokens', () => {
++	it('rescales every tokenized inset with the density factor and leaves the literal ones', () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const empty = requireValue(host.querySelector('#floating-empty'), 'No empty control')
++		const label = requireValue(host.querySelector('label[for="floating-empty"]'), 'No label')
++		const filled = requireValue(host.querySelector('#floating-filled'), 'No filled control')
++		const select = requireValue(host.querySelector('#floating-carrier'), 'No select')
++		const notes = requireValue(host.querySelector('label[for="floating-notes"]'), 'No notes')
++		expect(readToken(label, TOKEN_NAMES.space[8])).toBe('calc(1rem * 1)')
++		// The factor is set on the document element because that is where the token computes: a
++		// factor set on the control itself would leave the already-computed length untouched.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect(readPixels(label, 'padding-top')).toBe(32)
++			expect(readPixels(label, 'padding-left')).toBe(24)
++			expect(readPixels(empty, 'padding-top')).toBe(32)
++			expect(readPixels(empty, 'padding-left')).toBe(24)
++			expect(readPixels(filled, 'padding-bottom')).toBe(20)
++			expect(readPixels(select, 'padding-left')).toBe(24)
++			expect(readPixels(notes, 'top', '::after')).toBe(32)
++			expect(readPixels(notes, 'left', '::after')).toBe(12)
++			// The floated top inset, the height, and the backdrop's `em` height are the release's
++			// literals, which no factor moves.
++			expect(readPixels(filled, 'padding-top')).toBe(26)
++			expect(readPixels(filled, 'height')).toBe(58)
++			// That split is the limit the guide records: the resting insets grow while the declared
++			// height holds, so at this factor they outgrow it and the empty control grows past the
++			// height the filled one keeps.
++			expect(
++				readPixels(empty, 'padding-top') + readPixels(empty, 'padding-bottom'),
++			).toBeGreaterThan(58)
++			expect(readPixels(empty, 'height')).toBeGreaterThan(58)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++		expect(readPixels(label, 'padding-top')).toBe(16)
++		expect(readPixels(filled, 'padding-bottom')).toBe(10)
++	})
++
++	it('reads the border width, the body color, and the backdrop surface and radius from the Bootstrap globals', () => {
++		const host = scene.mount(`<div>${FORM_FLOATING_MARKUP}</div>`)
++		const scope = requireValue(host.querySelector(':scope > div'), 'No fixture wrapper')
++		if (!(scope instanceof HTMLElement)) throw new Error('The fixture wrapper is no element')
++		const control = requireValue(host.querySelector('#floating-empty'), 'No empty control')
++		const label = requireValue(host.querySelector('label[for="floating-empty"]'), 'No label')
++		const notes = requireValue(host.querySelector('label[for="floating-notes"]'), 'No notes')
++		const plaintext = requireValue(host.querySelector('label[for="floating-account"]'), 'No label')
++		const globals = Object.freeze([
++			Object.freeze({ name: '--bs-border-width', value: '3px' }),
++			Object.freeze({ name: '--bs-body-color-rgb', value: '10, 20, 30' }),
++			Object.freeze({ name: '--bs-body-bg', value: 'rgb(40, 50, 60)' }),
++			Object.freeze({ name: '--bs-border-radius', value: '9px' }),
++		])
++		// Each global is set on an ancestor, which is where a consumer retunes a Bootstrap variable,
++		// and each declaration reading it follows: a rule writing the release's compiled value
++		// instead would stay where it was.
++		for (const { name, value } of globals) scope.style.setProperty(name, value)
++		try {
++			expect(readPixels(control, 'height')).toBe(62)
++			expect(readPixels(label, 'border-top-width')).toBe(3)
++			expect(readPixels(plaintext, 'border-top-width')).toBe(3)
++			expect(readPixels(plaintext, 'border-left-width')).toBe(0)
++			expect(readStyle(label, 'color')).toBe('rgba(10, 20, 30, 0.65)')
++			expect(readStyle(notes, 'background-color', '::after')).toBe('rgb(40, 50, 60)')
++			expect(readPixels(notes, 'border-top-left-radius', '::after')).toBe(9)
++		} finally {
++			for (const { name } of globals) scope.style.removeProperty(name)
++		}
++		expect(readPixels(control, 'height')).toBe(58)
++		// The radius reaches the backdrop through `--bs-border-radius`, which the cascade declares
++		// over the base radius token, so the published radius factor moves it too.
++		expect(readPixels(notes, 'border-top-left-radius', '::after')).toBe(6)
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.radius, '2')
++		try {
++			expect(readPixels(notes, 'border-top-left-radius', '::after')).toBe(12)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.radius)
++		}
++	})
++
++	it('retunes the label fade and the backdrop with the color mode and holds the disabled gray', () => {
++		const host = scene.mount(
++			`<div><div>${FORM_FLOATING_MARKUP}</div><div data-bs-theme="dark">${FORM_FLOATING_MARKUP}</div></div>`,
++		)
++		const [lightFade, darkFade] = host.querySelectorAll('label[for="floating-empty"]')
++		const [lightBackdrop, darkBackdrop] = host.querySelectorAll('label[for="floating-notes"]')
++		const [lightGray, darkGray] = host.querySelectorAll('label[for="floating-code"]')
++		expect(readStyle(requireValue(lightFade, 'No light label'), 'color')).not.toBe(
++			readStyle(requireValue(darkFade, 'No dark label'), 'color'),
++		)
++		expect(
++			readStyle(requireValue(lightBackdrop, 'No light notes'), 'background-color', '::after'),
++		).not.toBe(
++			readStyle(requireValue(darkBackdrop, 'No dark notes'), 'background-color', '::after'),
++		)
++		expect(readStyle(requireValue(lightGray, 'No light code'), 'color')).toBe(
++			readStyle(requireValue(darkGray, 'No dark code'), 'color'),
++		)
++	})
++})
++
++describe('form floating cascade', () => {
++	it('authors every case selector in the components layer with the custom properties it reads', () => {
++		const rules = collectLayer('components').filter((rule) => rule instanceof CSSStyleRule)
++		const missing: string[] = []
++		for (const entry of FORM_FLOATING_CASES) {
++			const declared = rules
++				.filter((rule) =>
++					rule.selectorText
++						.split(',')
++						.map((part) => normalizeSelectorText(part))
++						.includes(entry.selector),
++				)
++				.map((rule) => rule.style.cssText)
++				.join(' ')
++			if (declared.length === 0) missing.push(entry.selector)
++			expect([...entry.reads].filter((name) => !declared.includes(`var(${name})`))).toEqual([])
++		}
++		expect(missing).toEqual([])
++	})
++
++	it('keeps the undrivable autofill rules as the release writes them, each in a rule of its own', () => {
++		// No script can put a control into the autofilled state, so these rules have no resolved
++		// reading on this host; the declarations the cascade authors are what this reads, which is
++		// compiled-contract evidence rather than a rendered proof.
++		const rules = collectLayer('components').filter((rule) => rule instanceof CSSStyleRule)
++		const autofill = FORM_FLOATING_CASES.filter((entry) => entry.selector.includes('autofill'))
++		expect(autofill).toHaveLength(3)
++		// The floated transform the autofill rule declares is held to the one the focus rule declares,
++		// whose resolved matrix the state cases read. The build spells the release's trailing
++		// `translateX()` as the equivalent `translate()`, so the comparison is between two rules of
++		// one build rather than against the source text.
++		const floated = requireValue(
++			rules.find((rule) =>
++				rule.selectorText
++					.split(',')
++					.map((part) => normalizeSelectorText(part))
++					.includes('.form-floating > .form-control:focus ~ label'),
++			),
++			'No focused label rule',
++		).style.getPropertyValue('transform')
++		expect(floated).toMatch(/^scale\(0\.85\) translateY\(-0\.5rem\) translate(?:X)?\(0\.15rem\)$/u)
++		// Each autofill selector heads exactly one rule, which is what keeps the build from folding it
++		// into a list an engine that does not know the pseudo-class would drop whole.
++		expect(
++			autofill.map(
++				(entry) =>
++					rules.filter((rule) => normalizeSelectorText(rule.selectorText) === entry.selector)
++						.length,
++			),
++		).toEqual(autofill.map(() => 1))
++		const declarations = autofill.map(
++			(entry) =>
++				requireValue(
++					rules.find((rule) => normalizeSelectorText(rule.selectorText) === entry.selector),
++					`No ${entry.selector} rule`,
++				).style,
++		)
++		expect(
++			declarations.map((style) => [
++				style.getPropertyValue('padding-top'),
++				style.getPropertyValue('padding-bottom'),
++				style.getPropertyValue('transform'),
++			]),
++		).toEqual(
++			autofill.map((entry) =>
++				entry.selector.endsWith('~ label')
++					? ['', '', floated]
++					: ['1.625rem', `var(${TOKEN_NAMES.space[5]})`, ''],
++			),
++		)
++	})
++})

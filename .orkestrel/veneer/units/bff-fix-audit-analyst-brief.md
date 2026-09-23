@@ -1,16 +1,17 @@
-# Audit lane — `analyst` on GPT-6 Astra, objective lane, B-FORMS-CHECK round 2 (the fix round)
+# Audit lane — `analyst` on GPT-6 Astra, objective lane, B-FORMS-FLOATING round 2 (the fix round)
 
 `analyst` route on GPT-6 Astra (`gpt-6-astra`), `codex exec --sandbox read-only` rooted at
-`/home/user/veneer-bfc`. You hold the **objective** lane over the claims in
-`.orkestrel/veneer/units/bfc-fix-audit-claims.md`, which names the evidence and the unknowns;
-this is a fix round audited by one lane on an engine that did not write it. The design is
-`/home/user/veneer-bfc/tmp/units/b-forms-design-verdict.md`; the unit's briefs
-`/home/user/veneer-bfc/tmp/units/b-forms-check-brief.md`, `b-forms-check-brief-2.md`, and
-`b-forms-check-brief-3.md`; the round-1 reconciliation
-`/home/user/scaffold/.orkestrel/veneer/units/bfc-audit-verdict.md`; the rulings D26 and D28 in
-`/home/user/scaffold/.orkestrel/veneer/units/decisions-round-2.md`; the release
-`node_modules/bootstrap/dist/css/bootstrap.css`; the guide `guides/veneer.md`. Law:
-`/home/user/scaffold/AGENTS.md` and `/home/user/scaffold/.claude/rules/{styles,tests,names,architecture,documentation,writing}.md`.
+`/home/user/veneer-bff`. You hold the **objective** lane over the claims in
+`/home/user/scaffold/.orkestrel/veneer/units/bff-fix-audit-claims.md`, which names the evidence and
+the unknowns; this is a fix round audited by the engine that did not write it, with the subjective
+lane running blind beside you. The design is
+`/home/user/veneer-bff/tmp/units/b-forms-design-verdict.md`; the unit's briefs
+`/home/user/veneer-bff/tmp/units/b-forms-floating-brief.md` and `b-forms-floating-brief-2.md`; the
+round-1 reconciliation `/home/user/scaffold/.orkestrel/veneer/units/bff-audit-verdict.md`; the
+rulings D32, D34, and D35 in `/home/user/scaffold/.orkestrel/veneer/units/decisions-round-2.md`; the
+release `node_modules/bootstrap/dist/css/bootstrap.css` and its source under
+`node_modules/bootstrap/scss/`; the guide `guides/veneer.md`. Law: `/home/user/scaffold/AGENTS.md`
+and `/home/user/scaffold/.claude/rules/{styles,tests,names,architecture,documentation,writing}.md`.
 Perform the audit directly and spawn nothing. Bound: rule within 25 minutes.
 
 Standing conditions: the sandbox runs no Vitest project and no browser; `npm run check` is allowed;
