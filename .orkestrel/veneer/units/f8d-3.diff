@@ -1,0 +1,592 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7d2b51e..6ed60e5 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -251,7 +251,7 @@ The following files carry the axis.
+ | `configs/src/vite.styles.config.ts`         | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
+ | `configs/src/tsconfig.styles.json`          | The check-only TypeScript project.                                                                                                                                                                                                                 |
+ | `tests/setupStyles.ts`                      | The cascade readers, the normalizer, the guide table and fence readers, the case tables, and the retained value lists.                                                                                                                             |
+-| `tests/setupServer.ts`                      | The Node-only readers: the installed and built cascades and the guide, the compiled-stylesheet reader, the guide's compatibility, deferral, and ledger rows, the cascade comparisons, and the elements-layer tag reader.                           |
++| `tests/setupServer.ts`                      | The Node-only readers: the installed and built cascades and the guide, the compiled-stylesheet reader, the shared-name readings, the guide's compatibility, deferral, and ledger rows, the cascade comparisons, and the elements-layer tag reader. |
+ | `tests/setupService.ts`                     | The service setup: the readiness that verifies the compiler, the built cascade, the pinned Chromium, and the candidate list; the paths of the Tailwind profiles and fixtures; the profile compiler; and the stage that reads what a page resolves. |
+ | `tests/src/styles/`                         | The browser proofs of the shipped cascade.                                                                                                                                                                                                         |
+ | `tests/setup.css`                           | The `tailwind` profile the service proofs compile, and the home of the exclusion line.                                                                                                                                                             |
+@@ -403,15 +403,18 @@ Nothing writes the shared set down either. [The consumer pairing](../tests/servi
+ derives it per run as the class names the built cascade and the unexcluded instrument both declare,
+ and asserts that `container`, `table`, `col-1`, `caption-top`, and `caption-bottom` are among them,
+ so a derivation that reached an empty stylesheet cannot read as a clean result. It then holds the
+-exclusion line equal to the derived names for which Veneer does not declare with `!important`
+-every longhand Tailwind's rule for that name declares, which states the rule as an equality: a
+-name that joins the set joins the line, and a name that gains an `!important` declaration for
+-every longhand Tailwind's rule for it declares leaves the line. The importance branch runs over the
+-names Veneer declares important on some longhand. No shipped shared name is important, so that
+-branch is driven by a planted important declaration for one shared name, and it reads what the
+-rule claims: with the exclusion line dropped and Tailwind's
+-own rule on the page, the element resolves, for every property that rule declares, what it resolves
+-under the cascade and the plant alone.
++exclusion line equal to the derived names that the rule stated with the exclusion line keeps on
++the line, which states that rule as an equality: a name that joins the set joins the line, and a
++name that gains the `!important` declarations the rule asks for leaves the line. The proof reads
++Tailwind's longhands from the unexcluded instrument and Veneer's importance from the built cascade,
++each as Chromium expands it, so a shorthand counts as the longhands it sets. The importance branch
++runs over the shared names that rule lets leave the line. No shipped shared name is important, so
++that branch is driven by planted `!important` declarations on the `grid-column-start` and
++`grid-column-end` longhands Tailwind's `col-1` rule declares, and it reads what the rule claims:
++with the exclusion line dropped and Tailwind's own rule on the page, the element resolves, for
++every property that rule declares, what it resolves under the cascade and the plant alone. The
++partial-importance plant makes only the `grid-column-start` longhand important, and the equality
++still holds with the `col-1` class on the line.
+ 
+ The workspace executes the profiles from `tests/setup.css` for the `tailwind` profile and
+ `tests/fixtures/tailwind/preflight.css` for the `preflight` profile. Those profiles scan a
+diff --git a/tests/service/tailwind/consumer.test.ts b/tests/service/tailwind/consumer.test.ts
+index ca88957..f0bd82d 100644
+--- a/tests/service/tailwind/consumer.test.ts
++++ b/tests/service/tailwind/consumer.test.ts
+@@ -5,7 +5,7 @@ import { TOKEN_PREFIX } from '../../setup.js'
+ import {
+ 	collectImportantNames,
+ 	collectInlineSources,
+-	collectSelectorClasses,
++	collectRuleLonghands,
+ 	collectSharedNames,
+ 	readBuiltCascade,
+ 	readVeneerGuide,
+@@ -39,6 +39,9 @@ const cascade = new SheetReader(readBuiltCascade())
+ // declare, derived per run rather than written down.
+ const shared = collectSharedNames(new SheetReader(instrumentProfile).names, cascade.names)
+ 
++// The exclusion line the executed recipe writes, which the equality holds against the shared set.
++const exclusion = collectInlineSources(consumerSource).find((source) => source.excluded)
++
+ beforeAll(async () => {
+ 	await stage.open()
+ }, STAGE_TIMEOUT)
+@@ -114,11 +117,12 @@ describe('the consumer pairing', () => {
+ 
+ 	it('derives the shared class names, and mounts an element for every one of them', async () => {
+ 		for (const name of CANDIDATE_FLOOR) expect(shared).toContain(name)
+-		// The exclusion line names exactly the shared names Veneer declares normally. A name whose
+-		// Veneer declaration is important wins by importance in any layer order and leaves the
+-		// line; a name Veneer declares normally has to be on it.
+-		const important = collectImportantNames(cascade)
+-		const [exclusion] = collectInlineSources(consumerSource).filter((source) => source.excluded)
++		// The exclusion line names exactly the shared names whose Veneer importance does not cover
++		// every longhand Tailwind's rule for the name declares. A name covered on every one of those
++		// longhands wins by importance in any layer order and leaves the line; any other shared name
++		// has to be on it.
++		const longhands = collectRuleLonghands(await stage.expand(instrumentProfile), shared)
++		const important = collectImportantNames(await stage.expand(readBuiltCascade()), longhands)
+ 		const excluded = requireValue(
+ 			exclusion,
+ 			'The consumer profile declares no exclusion line',
+@@ -168,35 +172,37 @@ describe('the consumer pairing', () => {
+ 	})
+ 
+ 	it('keeps an important shared declaration whatever the recipe withholds', async () => {
+-		// This is the other half of the shared-name rule: a name Veneer declares with `!important`
+-		// wins by importance in any layer order, so the recipe need not withhold it. Every shared
+-		// name the cascade ships today is a normal declaration, so the plant is what drives the
+-		// branch — one important declaration for a shared name, which is what a release shipping
+-		// such a name would land in a layer of its own.
+-		const planted = '@layer components { .col-1 { grid-column-start: 5 !important } }'
+-		const important = collectImportantNames(new SheetReader(`${readBuiltCascade()}\n${planted}`))
+-		const branch = shared.filter((name) => important.includes(name))
++		// This is the other half of the shared-name rule: a name Veneer declares with `!important` on
++		// every longhand Tailwind's rule for it declares wins by importance in any layer order, so the
++		// recipe need not withhold it. Every shared name the cascade ships today is a normal
++		// declaration, so the plant is what drives the branch: importance on the
++		// `grid-column-start` and `grid-column-end` longhands Tailwind's `col-1` rule declares, in a
++		// layer of its own the way a release shipping such a declaration would land it.
++		const planted =
++			'@layer components { .col-1 { grid-column-start: 5 !important; grid-column-end: 5 !important } }'
++		const longhands = collectRuleLonghands(await stage.expand(instrumentProfile), shared)
++		const declared = requireValue(longhands.get('col-1'), 'The instrument declares no col-1 rule')
++		expect(declared).toEqual(['grid-column-start', 'grid-column-end'])
++		const branch = collectImportantNames(
++			await stage.expand(`${readBuiltCascade()}\n${planted}`),
++			longhands,
++		)
+ 		expect(branch).toContain('col-1')
+ 		// The reading is the longhands Tailwind's own rule for each of these names declares, as
+ 		// Chromium expands them. Dropping the exclusion line also moves the names outside the
+ 		// branch, `.container` among them, and an element's used width follows its container, so a
+ 		// reading of every longhand would report the ancestor moving rather than this rule losing.
+-		const properties = [
+-			...new Set(
+-				(await stage.expand(instrumentProfile)).flatMap((rule) =>
+-					collectSelectorClasses(rule.selector).some((name) => branch.includes(name))
+-						? rule.properties
+-						: [],
+-				),
+-			),
+-		]
+-		expect(properties).toContain('grid-column-start')
++		const properties = [...new Set(branch.flatMap((name) => longhands.get(name) ?? []))]
+ 		await stage.mount(consumerMarkup)
+ 		await stage.load(planted)
+ 		const standalone: Array<ReadonlyMap<string, string>> = []
+ 		for (const name of branch) {
+ 			standalone.push(...(await stage.read(`[class~="${name}"]`, properties)))
+ 		}
++		// Each reading has to carry the longhands the plant made important, or the comparison that
++		// follows runs over nothing.
++		for (const snapshot of standalone)
++			expect(declared.filter((property) => !snapshot.has(property))).toEqual([])
+ 		expect(standalone).not.toEqual([])
+ 		// The instrument is the recipe with its exclusion line dropped, so Tailwind's own rule for
+ 		// each of these names is on the page, and the element still resolves, for every property
+@@ -217,6 +223,26 @@ describe('the consumer pairing', () => {
+ 		).toEqual([])
+ 	})
+ 
++	it('keeps a shared name on the line while its importance covers only some of the longhands Tailwind declares', async () => {
++		// Tailwind's `col-1` rule declares the `grid-column-start` and `grid-column-end` longhands,
++		// and the plant makes the `grid-column-start` longhand important, so Tailwind's rule would
++		// still win the `grid-column-end` longhand: the name is not important under the rule, and
++		// the equality still needs it on the exclusion line.
++		const planted = '@layer components { .col-1 { grid-column-start: 5 !important } }'
++		const longhands = collectRuleLonghands(await stage.expand(instrumentProfile), shared)
++		const important = collectImportantNames(
++			await stage.expand(`${readBuiltCascade()}\n${planted}`),
++			longhands,
++		)
++		expect(important).not.toContain('col-1')
++		const excluded = requireValue(
++			exclusion,
++			'The consumer profile declares no exclusion line',
++		).names
++		expect(excluded).toContain('col-1')
++		expect([...excluded].sort()).toEqual(shared.filter((name) => !important.includes(name)).sort())
++	})
++
+ 	it('moves a shared name when the exclusion line is dropped', async () => {
+ 		// The equality the preceding case reads is only worth something if the reading can see a
+ 		// Tailwind rule winning, and the instrument is the same profile without the one line that
+diff --git a/tests/service/tailwind/preflight.test.ts b/tests/service/tailwind/preflight.test.ts
+index ec0a597..fa36ac0 100644
+--- a/tests/service/tailwind/preflight.test.ts
++++ b/tests/service/tailwind/preflight.test.ts
+@@ -1,4 +1,4 @@
+-import type { StageRule } from '../../setupService.js'
++import type { LonghandRule } from '../../setupServer.js'
+ import { requireValue } from '@orkestrel/test'
+ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+ import { readBuiltCascade, readVeneerGuide, SheetReader } from '../../setupServer.js'
+@@ -33,7 +33,7 @@ const overlap = collectTypeSelectors(reset.flatMap((layer) => layer.selectors)).
+ // declares, as Chromium expands them. Both are the engine's answer, so they are read after the
+ // stage opens.
+ let properties: readonly string[] = []
+-let treated: readonly StageRule[] = []
++let treated: readonly LonghandRule[] = []
+ 
+ beforeAll(async () => {
+ 	await stage.open()
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index c91f7d4..e01a27c 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -2,6 +2,7 @@
+ // exports, read against this workspace's own installed dependency tree.
+ 
+ import type {
++	LonghandRule,
+ 	OracleBinding,
+ 	OracleFixture,
+ 	OracleInventory,
+@@ -33,6 +34,7 @@ import {
+ 	ORACLE_BINDINGS,
+ 	ORACLE_TIMEOUT,
+ 	LAYER_COMPONENTS,
++	SHARED_LONGHANDS,
+ 	SheetReader,
+ 	SpecifierReader,
+ 	WORKSPACE_ROOT,
+@@ -47,6 +49,7 @@ import {
+ 	collectLedger,
+ 	collectMandatedRelatives,
+ 	indexRecordingKeys,
++	collectRuleLonghands,
+ 	collectSelectorClasses,
+ 	collectSharedNames,
+ 	collectShippedComponents,
+@@ -486,6 +489,7 @@ describe('server setup', () => {
+ 			'LEDGER_SHIPPED',
+ 			'ORACLE_BINDINGS',
+ 			'ORACLE_TIMEOUT',
++			'SHARED_LONGHANDS',
+ 			'SheetReader',
+ 			'SpecifierReader',
+ 			'WORKSPACE_ROOT',
+@@ -499,6 +503,7 @@ describe('server setup', () => {
+ 			'collectKeyframeNames',
+ 			'collectLedger',
+ 			'collectMandatedRelatives',
++			'collectRuleLonghands',
+ 			'collectSelectorClasses',
+ 			'collectSharedNames',
+ 			'collectShippedComponents',
+@@ -549,6 +554,9 @@ describe('server setup', () => {
+ 			'scanStyleBlocks',
+ 			'splitTopLevelCompounds',
+ 		])
++		expect(Object.isFrozen(SHARED_LONGHANDS)).toBe(true)
++		for (const properties of Object.values(SHARED_LONGHANDS))
++			expect(Object.isFrozen(properties)).toBe(true)
+ 	})
+ 
+ 	it('pins the copied inventory release and digests and reads its component vocabulary', () => {
+@@ -2378,20 +2386,89 @@ describe('collectSharedNames', () => {
+ 	})
+ })
+ 
++describe('collectRuleLonghands', () => {
++	it('unions the properties of every rule whose selector names the class, in the order the names are given', () => {
++		const rules: readonly LonghandRule[] = [
++			{
++				selector: '.col-1',
++				properties: ['grid-column-start', 'grid-column-end'],
++				important: [],
++			},
++			{ selector: '.table', properties: ['border-top-width'], important: [] },
++			{ selector: '.row > .col-1', properties: ['margin-top'], important: [] },
++			{
++				selector: '.col-1.active',
++				properties: ['grid-column-start', 'color'],
++				important: ['color'],
++			},
++			{ selector: '[title=".col-1"]', properties: ['padding-top'], important: [] },
++		]
++		expect([...collectRuleLonghands(rules, ['table', 'col-1', 'caption-top', 'table'])]).toEqual([
++			['table', ['border-top-width']],
++			['col-1', ['grid-column-start', 'grid-column-end', 'margin-top', 'color']],
++			['caption-top', []],
++		])
++		expect([...collectRuleLonghands(rules, [])]).toEqual([])
++		expect([...collectRuleLonghands([], ['col-1'])]).toEqual([['col-1', []]])
++	})
++})
++
+ describe('collectImportantNames', () => {
+-	it('reports a name one important declaration writes, even where another rule declares it normally', () => {
+-		const reader = new SheetReader(
+-			[
+-				'.btn { color: red !important }',
+-				'.btn { margin: 0 }',
+-				'.card { margin: 0 }',
+-				'@layer utilities { .tag.pill { color: red !important } }',
+-				'@keyframes spin { from { opacity: 0 !important } }',
+-				'.panel { @media (width > 0px) { color: red !important } }',
+-			].join('\n'),
+-		)
+-		expect(collectImportantNames(reader)).toEqual(['btn', 'tag', 'pill', 'panel'])
+-		expect(collectImportantNames(new SheetReader('.card { margin: 0 }'))).toEqual([])
++	it('reports a name whose importance covers every longhand it has to cover, across the rules naming it', () => {
++		expect(
++			collectImportantNames(
++				[
++					{
++						selector: '.table',
++						properties: ['border-top-width', 'color'],
++						important: ['border-top-width', 'color'],
++					},
++					{
++						selector: '.col-1',
++						properties: ['grid-column-start'],
++						important: ['grid-column-start'],
++					},
++					{ selector: '.col-1', properties: ['grid-column-end'], important: [] },
++					{
++						selector: '.row > .col-1',
++						properties: ['grid-column-end'],
++						important: ['grid-column-end'],
++					},
++				],
++				new Map(Object.entries(SHARED_LONGHANDS)),
++			),
++		).toEqual(['col-1', 'table'])
++		expect(collectImportantNames([], new Map())).toEqual([])
++	})
++
++	it('keeps a name out whose importance covers only some of its longhands or another longhand, or that declares its longhands normally', () => {
++		expect(
++			collectImportantNames(
++				[
++					{
++						selector: '.col-1',
++						properties: ['grid-column-start'],
++						important: ['grid-column-start'],
++					},
++					{ selector: '.table', properties: ['color'], important: ['color'] },
++					// A rule declaring every longhand the `table` name has to cover, each normally, so a
++					// reading that counts declared longhands rather than important ones reports the
++					// `table` name.
++					{ selector: '.table', properties: ['border-top-width'], important: [] },
++					{
++						selector: '.caption-top',
++						properties: ['caption-side'],
++						important: ['caption-side'],
++					},
++					{
++						selector: '[title=".col-1"]',
++						properties: ['grid-column-end'],
++						important: ['grid-column-end'],
++					},
++				],
++				new Map(Object.entries(SHARED_LONGHANDS)),
++			),
++		).toEqual([])
+ 	})
+ })
+ 
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index e86d26d..ba7d451 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -6,8 +6,8 @@
+ // from `tests/conformance.test.ts`, the `distribution` project from `tests/distribution.test.ts`,
+ // and the `setup` project from `tests/setupServer.test.ts` and `tests/setupStyles.test.ts`, each of
+ // which reads the installed cascade through `readBootstrapCascade`, and from
+-// `tests/setupService.ts`, which reads the built cascade through `SheetReader`. A helper added here
+-// runs under every one of them.
++// `tests/setupService.ts`, which reads the built cascade through `SheetReader` and returns the rules
++// its stage expands as `LonghandRule` values. A helper added here runs under every one of them.
+ 
+ import type { ESTree } from 'vite'
+ import type { Locator } from 'playwright'
+@@ -508,6 +508,21 @@ export const LEDGER_INVENTORY: OracleInventory = Object.freeze({
+ /** Names the shipped keys the planted inventory carries. */
+ export const LEDGER_SHIPPED: readonly string[] = Object.freeze(['btn', 'reboot', 'table'])
+ 
++/**
++ * Maps each planted shared name onto the longhands Tailwind's rule for it declares, the input the
++ * {@link collectImportantNames} proofs read as the longhands each name has to cover.
++ *
++ * @remarks
++ * The `col-1` entry carries the longhands of a shorthand, the `table` entry a single longhand, and
++ * the `caption-top` entry none, so a proof reading it meets partial cover, full cover, and the empty
++ * list that must never count as covered.
++ */
++export const SHARED_LONGHANDS: Readonly<Record<string, readonly string[]>> = Object.freeze({
++	'col-1': Object.freeze(['grid-column-start', 'grid-column-end']),
++	table: Object.freeze(['border-top-width']),
++	'caption-top': Object.freeze([]),
++})
++
+ /**
+  * Reads whether written text names a departure this ledger records.
+  * @param text - The guide cell's text.
+@@ -1698,25 +1713,85 @@ export function collectSharedNames(
+ }
+ 
+ /**
+- * Collects the class names a stylesheet declares with `!important`.
++ * Carries one style rule of a parsed sheet as the longhand property names it declares, with the
++ * ones it declares important.
++ *
++ * @remarks
++ * The shared-name readings take this shape rather than a reader's declarations because a shorthand
++ * is expanded by the engine that resolves it. The stage in the `tests/setupService.ts` module
++ * returns this shape for each rule it expands in Chromium, so the longhands it carries are the
++ * ones a page resolves.
++ */
++export interface LonghandRule {
++	/** Holds the selector of the rule, as Chromium serializes it for an expanded rule. */
++	readonly selector: string
++	/** Holds each longhand property name the rule declares, in Chromium order for an expanded rule. */
++	readonly properties: readonly string[]
++	/** Holds each of those property names the rule declares with `!important`, in the same order. */
++	readonly important: readonly string[]
++}
++
++/**
++ * Collects, for each class name, the longhands the rules naming it declare.
++ *
++ * @param rules - The expanded rules to read, such as a compiled Tailwind instrument's.
++ * @param names - The class names to report, such as the shared names.
++ * @returns One entry per name, in the order the names are given, each holding the union of the
++ *   properties of every rule whose selector names that class, once each, in first-seen order. A
++ *   name no rule names holds an empty list.
++ *
++ * @remarks
++ * A selector names a class when {@link collectSelectorClasses} reads it there, so a rule for a
++ * compound or a descendant selector counts toward every class it writes.
++ */
++export function collectRuleLonghands(
++	rules: readonly LonghandRule[],
++	names: readonly string[],
++): ReadonlyMap<string, readonly string[]> {
++	const longhands = new Map<string, readonly string[]>()
++	for (const name of names) {
++		if (longhands.has(name)) continue
++		const properties: string[] = []
++		for (const rule of rules) {
++			if (!collectSelectorClasses(rule.selector).includes(name)) continue
++			for (const property of rule.properties) {
++				if (!properties.includes(property)) properties.push(property)
++			}
++		}
++		longhands.set(name, properties)
++	}
++	return longhands
++}
++
++/**
++ * Collects the class names a stylesheet declares with `!important` on every longhand another
++ * stylesheet's rule for that name declares.
+  *
+- * @param reader - The reading to take the names from, such as the built cascade's.
+- * @returns Each name once, at the first important declaration that writes it.
++ * @param rules - The expanded rules whose importance is read, such as the built cascade's.
++ * @param longhands - The longhands each name has to cover, such as {@link collectRuleLonghands}
++ *   returns for the shared names over the compiled Tailwind instrument.
++ * @returns Each name of `longhands` that is covered, in the map's order.
+  *
+  * @remarks
+  * This is the other half of the shared-name rule, which runs per property rather than per name: a
+  * shared name leaves the exclusion line only where every longhand Tailwind's rule for that name
+  * declares carries an `!important` declaration here, and a name important on some other longhand
+- * still needs the line. A name declared important in one rule and normally in another is reported,
+- * because one important declaration is what the cascade resolves to.
+- */
+-export function collectImportantNames(reader: SheetReader): readonly string[] {
++ * still needs the line. The importance is the union over every rule whose selector names the
++ * class, so a longhand declared important in one rule and normally in another counts as covered,
++ * because one important declaration is what the cascade resolves to. A name with no longhand to
++ * cover is not reported, because no importance was read for it.
++ */
++export function collectImportantNames(
++	rules: readonly LonghandRule[],
++	longhands: ReadonlyMap<string, readonly string[]>,
++): readonly string[] {
+ 	const names: string[] = []
+-	for (const declaration of reader.declarations) {
+-		if (!declaration.important) continue
+-		for (const name of collectSelectorClasses(declaration.selector)) {
+-			if (!names.includes(name)) names.push(name)
+-		}
++	for (const [name, properties] of longhands) {
++		const important = rules.flatMap((rule) =>
++			collectSelectorClasses(rule.selector).includes(name) ? rule.important : [],
++		)
++		if (properties.length > 0 && properties.every((property) => important.includes(property)))
++			names.push(name)
+ 	}
+ 	return names
+ }
+diff --git a/tests/setupService.test.ts b/tests/setupService.test.ts
+index 8c80037..fac3847 100644
+--- a/tests/setupService.test.ts
++++ b/tests/setupService.test.ts
+@@ -348,12 +348,16 @@ describe('StageManager', () => {
+ 			expect(named?.get('--vn-color-primary-base')).not.toBe('')
+ 		})
+ 
+-		it('expands each rule to the longhand names Chromium assigns, nested rules included, without applying the sheet', async () => {
++		it('expands each rule to the longhand names Chromium assigns and the ones it declares important, nested rules included, without applying the sheet', async () => {
+ 			await owned.mount('<hr>')
+ 			const [ruled] = await owned.read('hr', ['border-top-width'])
+ 			expect(ruled?.get('border-top-width')).not.toBe('0px')
+-			const [rule, nested] = await owned.expand(
+-				'hr { border: 0 solid }\n@layer base { @media (min-width: 1px) { p { margin: 0 } } }',
++			const [rule, flagged, nested] = await owned.expand(
++				[
++					'hr { border: 0 solid }',
++					'.vn-stage-probe { grid-column: 5 !important; margin-top: 0; color: red !important }',
++					'@layer base { @media (min-width: 1px) { p { margin: 0 } } }',
++				].join('\n'),
+ 			)
+ 			expect(rule?.selector).toBe('hr')
+ 			expect(rule?.properties).toEqual(
+@@ -365,9 +369,18 @@ describe('StageManager', () => {
+ 				]),
+ 			)
+ 			expect(rule?.properties).not.toContain('border')
++			expect(rule?.important).toEqual([])
++			// A shorthand written with `!important` marks each longhand it sets, so the importance a
++			// shared-name reading compares is per longhand whichever form the sheet writes.
++			expect(flagged).toEqual({
++				selector: '.vn-stage-probe',
++				properties: ['margin-top', 'grid-column-start', 'grid-column-end', 'color'],
++				important: ['grid-column-start', 'grid-column-end', 'color'],
++			})
+ 			expect(nested).toEqual({
+ 				selector: 'p',
+ 				properties: ['margin-top', 'margin-right', 'margin-bottom', 'margin-left'],
++				important: [],
+ 			})
+ 			// The parsed sheet never reaches the page, so the mounted rule keeps the style the
+ 			// cascade gives it.
+diff --git a/tests/setupService.ts b/tests/setupService.ts
+index 0a7a50e..7a49b49 100644
+--- a/tests/setupService.ts
++++ b/tests/setupService.ts
+@@ -13,6 +13,7 @@ import type { TeardownInterface } from '@orkestrel/test'
+ import type { PlaywrightProviderOptions } from '@vitest/browser-playwright'
+ import type { Browser, ElementHandle, Page } from 'playwright'
+ import type { PluginCreator } from 'postcss'
++import type { LonghandRule } from './setupServer.js'
+ import { createTeardown, requireValue } from '@orkestrel/test'
+ import { createScratch } from '@orkestrel/test/server'
+ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+@@ -55,14 +56,6 @@ export interface ReadinessOptions {
+ 	readonly compiler?: () => Promise<PluginCreator<never>>
+ }
+ 
+-/** Carries the longhand property names Chromium assigns one style rule of a parsed sheet. */
+-export interface StageRule {
+-	/** Holds the selector of the rule, as Chromium serializes it. */
+-	readonly selector: string
+-	/** Holds each property name the declaration block of the rule enumerates, in Chromium order. */
+-	readonly properties: readonly string[]
+-}
+-
+ /** Locates the candidate list under a workspace root, the path the `@source` rule in `tests/setup.css` names. */
+ export const CANDIDATES_PATH = 'tmp/tailwind/candidates.txt'
+ 
+@@ -443,27 +436,36 @@ export class StageManager {
+ 	 * applying the sheet.
+ 	 *
+ 	 * @param css - The stylesheet text, such as the rules a profile's `base` layer declares.
+-	 * @returns One entry per style rule, in document order, nested rules included, each carrying the
+-	 *   longhand names the declaration block of the rule enumerates.
++	 * @returns One {@link LonghandRule} per style rule, in document order, nested rules included,
++	 *   each carrying the longhand names the declaration block of the rule enumerates and the ones
++	 *   whose priority Chromium reports as `important`.
+ 	 * @throws An `Error` when the stage is not open.
+ 	 *
+ 	 * @remarks
+ 	 * An authored shorthand is expanded by the engine that resolves it, so an authored
+ 	 * `border: 0 solid` declaration reports the width, style, and color of each side, and the
+-	 * population a computed comparison walks is the one a computed style carries. The sheet is a
+-	 * constructed one that is never adopted, so reading
+-	 * it moves nothing on the measured page.
++	 * population a computed comparison walks is the one a computed style carries. A shorthand written
++	 * with `!important` reports each longhand it sets as important. The sheet is a constructed one
++	 * that is never adopted, so reading it moves nothing on the measured page.
+ 	 */
+-	async expand(css: string): Promise<readonly StageRule[]> {
++	async expand(css: string): Promise<readonly LonghandRule[]> {
+ 		return this.#requirePage().evaluate((text) => {
+ 			const sheet = new CSSStyleSheet()
+ 			sheet.replaceSync(text)
+-			const rules: StageRule[] = []
++			const rules: LonghandRule[] = []
+ 			const queue: CSSRule[] = Array.from(sheet.cssRules)
+ 			for (let index = 0; index < queue.length; index += 1) {
+ 				const rule = queue[index]
+-				if (rule instanceof CSSStyleRule)
+-					rules.push({ selector: rule.selectorText, properties: Array.from(rule.style) })
++				if (rule instanceof CSSStyleRule) {
++					const properties = Array.from(rule.style)
++					rules.push({
++						selector: rule.selectorText,
++						properties,
++						important: properties.filter(
++							(name) => rule.style.getPropertyPriority(name) === 'important',
++						),
++					})
++				}
+ 				if (rule instanceof CSSGroupingRule)
+ 					queue.splice(index + 1, 0, ...Array.from(rule.cssRules))
+ 			}

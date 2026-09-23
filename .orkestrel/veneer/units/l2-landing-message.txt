@@ -1,0 +1,10 @@
+Hold every shared declaration's priority equal to the release's
+
+L2 LEDGER-PRIORITY (`builder` on Sonnet, D39 and D39a) adds a conformance case that reads the
+release's compiled CSS and the built cascade through `SheetReader` and reports every selector and
+property both declare whose priority differs, because the oracle fixture records values without
+their priority and the ledger's comparison cannot see a dropped or added `!important`; the case
+reads no mismatch at this tip, a plant that drops the `[hidden]` rule's priority reddens it with
+one line, and the guide's non-utility sentence names the proof.
+
+Records: `.orkestrel/veneer/units/l2-*` in the scaffold repository.
