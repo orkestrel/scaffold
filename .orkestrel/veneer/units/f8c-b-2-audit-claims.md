@@ -8,11 +8,11 @@ The F8c-B fix round's uncommitted writes in `/home/user/veneer-f8b` (branch `uni
 round-1 audit: reviewer 4(a), 4(b), § Scripts wording, R1, D25, R4, D27, deviation 3, analyst 2)
 over the round-1 writes ruled in `/home/user/scaffold/.orkestrel/veneer/units/f8c-b-audit-verdict.md`.
 Rounds so far: round 1 (analyst FAIL 1, 2, 11; reviewer FAIL 4, 5, 6, 7, 9, 11), this fix round.
-Review evidence: `.orkestrel/veneer/units/f8c-b-2.diff` (the whole diff against `b9c0b0a`,
+**Review evidence.** `/home/user/scaffold/.orkestrel/veneer/units/f8c-b-2.diff` (the whole diff against `b9c0b0a`,
 untracked `tests/service/**` added with `git add -N` so the diff renders them),
-`f8c-b-2-status.txt`, the round-1 diff `.orkestrel/veneer/units/f8c-b-1.diff` for the delta
-this round added, the report `.orkestrel/veneer/units/f8c-b-2-report.md`, and the mutation
-log `.orkestrel/veneer/units/f8c-b-2-mutations.log.txt` (instrument
+`f8c-b-2-status.txt`, the round-1 diff `/home/user/scaffold/.orkestrel/veneer/units/f8c-b-1.diff` for the delta
+this round added, the report `/home/user/scaffold/.orkestrel/veneer/units/f8c-b-2-report.md`, and the mutation
+log `/home/user/scaffold/.orkestrel/veneer/units/f8c-b-2-mutations.log.txt` (instrument
 `/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/f8cb2-mutate.py`).
 
 ## What the round decides
@@ -52,7 +52,7 @@ reader builds on its service proofs. `CONFIRMED` requires naming the attack that
 about a proof is ruled on the mutation named and whether the assertions distinguish it from the
 passing case. Rule every claim CONFIRMED, BROKEN, UNRESOLVED, or NOT-EVIDENCED with `file:line`.
 
-## Claims
+## Numbered falsifiable claims
 
 1. **The important-branch overclaim is closed** (reviewer 4(a)). The § Tailwind sentence ends
    "with the exclusion line dropped and Tailwind's own rule on the page, the element resolves, for

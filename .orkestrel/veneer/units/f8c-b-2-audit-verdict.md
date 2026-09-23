@@ -30,4 +30,4 @@ thread `01a0cc38-d4cb-7752-8aa7-71b0fdf716f1`, FAIL 4, 9, 11).
   style proofs through `readVeneerGuide`. Carrier: B-PASSIVE-CLOSE, recorded in `ROADMAP.md` at the
   F8c landing.
 
-VERDICT: FAIL 9, 11; 4 settled by the Orchestrator; outside the claims: none
+VERDICT: FAIL 9, 11; outside the claims: none

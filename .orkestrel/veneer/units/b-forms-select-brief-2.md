@@ -5,7 +5,7 @@ Successor to `tmp/units/b-forms-select-brief.md`. What changed and why: the audi
 `bfs-audit-reviewer-verdict.md`, FAIL 3, 6, 7, 10, F1 to F4, R1 to R5; `bfs-audit-checker-verdict.md`;
 reconciled in `bfs-audit-verdict.md`) found a recorded declaration no case reads, bare code tokens in
 the guide section, an incomplete D26 carrier list, an overclaiming partial comment, a density claim
-false for a validated select, two case titles that hide what they prove, and an inverted term pair;
+false for a validated select, case titles that hide what they prove (the recorded-declaration case and the keyboard-focus case), and an inverted term pair;
 the Orchestrator carries D30 (one `@each` for the size pair) and D36 (generic query arguments stand).
 The original brief stays in place unedited; its Objective, Context, Scope, Execution, Output, and
 Deviation contract bind here except where this brief states otherwise.

@@ -9,10 +9,10 @@ carrying eight findings from the round-1 audit: claim 3's per-property token bin
 scenario, D31's rounding TSDoc, and the report corrections) over the round-1 writes ruled in
 `/home/user/scaffold/.orkestrel/veneer/units/bfg-audit-verdict.md`. Rounds so far: round 1 (analyst
 FAIL 3, 4, 5, 6, 8, 10; reviewer FAIL 1, 6, 8, 10; checker nothing broken), this fix round. Review
-evidence: `.orkestrel/veneer/units/bfg-3.diff` (the whole diff against `2c10329`, the new
+evidence: `/home/user/scaffold/.orkestrel/veneer/units/bfg-3.diff` (the whole diff against `2c10329`, the new
 owned files rendered through `git add -N`), `bfg-3-status.txt`, the round-1 diff
-`.orkestrel/veneer/units/bfg-1.diff` for the delta this round added, the report
-`.orkestrel/veneer/units/bfg-3-report.md`, and the frames under
+`/home/user/scaffold/.orkestrel/veneer/units/bfg-1.diff` for the delta this round added, the report
+`/home/user/scaffold/.orkestrel/veneer/units/bfg-3-report.md`, and the frames under
 `/home/user/veneer-bfg/tmp/capture/states/` (`input-group-button-focus--<variant>.png` and the
 resting `input-group-button--<variant>.png`); the writer's plant, crop, and pixel scripts sit under
 `/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/bfg/`.
@@ -56,7 +56,7 @@ four feedback keys. `CONFIRMED` requires naming the attack that failed; a claim 
 ruled on the mutation named and whether the assertions distinguish it. Rule every claim CONFIRMED,
 BROKEN, UNRESOLVED, or NOT-EVIDENCED with `file:line`.
 
-## Claims
+## Numbered falsifiable claims
 
 1. **Claim 3 is repaired.** `INPUT_GROUP_CASES` names, per property, the token references that
    property's declaration must carry, and the N2 case reads each property's declaration against

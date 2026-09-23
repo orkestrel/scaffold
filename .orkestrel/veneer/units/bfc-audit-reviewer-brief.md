@@ -2,11 +2,11 @@
 
 `reviewer` on Opus (native subagent, clean context). You hold the **subjective** lane (API feel,
 naming, guide voice, the shape a consumer and a showcase reader meet) over the claims in
-`/home/user/scaffold/tmp/audit/bfc-audit-claims.md`, which names the evidence; the design is
+`/home/user/scaffold/.orkestrel/veneer/units/bfc-audit-claims.md`, which names the evidence; the design is
 `/home/user/veneer-bfc/tmp/units/b-forms-design-verdict.md`, the family record
 `/home/user/veneer-bfc/tmp/units/b-passive-family.md`, and the unit's brief `/home/user/veneer-bfc/tmp/units/b-forms-check-brief.md`. The subject
 tree is the worktree `/home/user/veneer-bfc` (uncommitted writes over `2c10329`); read the actual diff
-`/home/user/scaffold/tmp/audit/bfc.diff` and the status `/home/user/scaffold/tmp/audit/bfc-status.txt`, the report `/home/user/scaffold/tmp/audit/bfc-report.md`, and open the
+`/home/user/scaffold/.orkestrel/veneer/units/bfc.diff` and the status `/home/user/scaffold/.orkestrel/veneer/units/bfc-status.txt`, the report `/home/user/scaffold/.orkestrel/veneer/units/bfc-report.md`, and open the
 frames under `/home/user/veneer-bfc/tmp/capture/states/` the report names. Law: `/home/user/scaffold/AGENTS.md` and
 `/home/user/scaffold/.claude/rules/{names,tests,styles,browser,application,documentation,writing}.md`.
 Read-only; edit nothing, run nothing, spawn nothing. Use absolute paths.

@@ -6,10 +6,10 @@ The B-FORMS-SELECT unit's uncommitted writes in `/home/user/veneer-bfs` (detache
 Veneer `main` with the passive family, VALIDATION, and RANGE landed), written by `opus` from
 `/home/user/veneer-bfs/tmp/units/b-forms-select-brief.md` under the design
 `/home/user/veneer-bfs/tmp/units/b-forms-design-verdict.md` (rulings 1 to 7, 9, 10, 11). One round so
-far: this one. Review evidence: `.orkestrel/veneer/units/bfs.diff` (the whole diff against
+far: this one. **Review evidence.** `/home/user/scaffold/.orkestrel/veneer/units/bfs.diff` (the whole diff against
 `2c10329`; the new owned files were added with `git add -N` so the diff renders them),
-`bfs-status.txt`, the report `.orkestrel/veneer/units/bfs-report.md`, and the writer's ROADMAP
-patch `.orkestrel/veneer/units/bfs-roadmap.patch`; the frames sit under
+`bfs-status.txt`, the report `/home/user/scaffold/.orkestrel/veneer/units/bfs-report.md`, and the writer's ROADMAP
+patch `/home/user/scaffold/.orkestrel/veneer/units/bfs-roadmap.patch`; the frames sit under
 `/home/user/veneer-bfs/tmp/capture/states/` (the `form-select*` files) and are the primary evidence
 for every rendered claim, the source corroboration. The mutation instrument and its log:
 `/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/bfs/mutate-2.py` and
@@ -29,8 +29,8 @@ carried to B-FORMS-ASSETS under D26), D2 (the plain specimen named `Form select 
 Verified by the Orchestrator directly, not taken from the writer's report: the worktree base
 `2c10329`; `src/styles/index.scss:61` is `@use 'components/form-select';` directly before
 `@use 'components/form-range';` at line 62; `tests/conformance.test.ts:105` lists `'form-select'`;
-`ls tmp/capture/states | grep -c '^form-select'` returns 52 (7 scenarios × 4 variants as frames plus
-6 subjects × 4 variants as accessibility artifacts); `guides/veneer.md` has `### Form select classes`
+`ls tmp/capture/states | grep -c '^form-select'` returns 52 (a frame per scenario and variant, an
+accessibility artifact per resting subject and variant); `guides/veneer.md` has `### Form select classes`
 at line 723 before `### Form range classes` at 787, `#### \`form-select\`` at 2682 after the last
 table, `#### \`is-invalid\`` at 2538 and `#### \`is-valid\`` at 2546; `src/styles/_tokens.scss`
 carries `select-indicator` in `$dark` (line 103), `$icons` (line 143), and `$assets` (line 162), the
@@ -62,7 +62,7 @@ failed; a claim about a proof is ruled on the mutation named and whether the ass
 it from the passing case. Rule every claim CONFIRMED, BROKEN, UNRESOLVED, or NOT-EVIDENCED with
 `file:line`.
 
-## Claims
+## Numbered falsifiable claims
 
 1. **The partial emits the key as recorded.** `src/styles/components/_form-select.scss` opens
    `@layer components` and emits every selector the inventory records under `form-select` that is

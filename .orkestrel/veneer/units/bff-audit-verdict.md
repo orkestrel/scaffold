@@ -50,4 +50,4 @@ B-FORMS-FLOOR (D32), which both lanes confirmed.
   record — bounding the sentence to the installed exports removes the claim the probe would test.
 - **D34** (the height and floated top inset scale with density): the fix round.
 
-VERDICT: FAIL 2, 6; outside the claims: F1, F2, F3; R1 → D35, R4 → carrier, R5 → fix round, R6 dropped
+VERDICT: FAIL 2, 6; outside the claims: F1, F2, F3

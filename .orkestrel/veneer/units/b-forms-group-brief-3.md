@@ -4,8 +4,8 @@ Successor to `tmp/units/b-forms-group-brief-2.md` (itself the successor of `b-fo
 What changed and why: the audit round (`/home/user/scaffold/.orkestrel/veneer/units/bfg-audit-analyst-verdict.md`,
 FAIL 3, 4, 5, 6, 8, 10; `bfg-audit-reviewer-verdict.md`, FAIL 1, 6, 8, 10, F1, R1 to R4;
 `bfg-audit-checker-verdict.md`; reconciled in `bfg-audit-verdict.md`) found a proof that binds
-tokens per selector rather than per property, two per-variant blocks without an `@each`, two case
-matrices declared inline, a false tooltip sentence, and a focus claim the paint order makes invisible;
+tokens per selector rather than per property, the `-lg` and `-sm` blocks without an `@each`, the sizes
+and corner matrices declared inline, a false tooltip sentence, and a focus claim the paint order makes invisible;
 the Orchestrator ruled D29 (the focus scenario drives the grouped button), D30 (one `@each` for the
 size pair), D31 (the tooltip and rounding carriers), and D33 (the sized select's end padding idiom).
 The earlier briefs stay in place unedited; their Objective, Context, Scope, Execution, Output, and

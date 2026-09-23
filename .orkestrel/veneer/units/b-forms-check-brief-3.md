@@ -3,8 +3,8 @@
 Successor to `tmp/units/b-forms-check-brief-2.md` (itself the successor of `b-forms-check-brief.md`).
 What changed and why: the audit round (`/home/user/scaffold/.orkestrel/veneer/units/bfc-audit-analyst-verdict.md`,
 FAIL 2, 8, 10; `bfc-audit-reviewer-verdict.md`, FAIL 1, 2, 5, 10, F1 to F3, R1; `bfc-audit-checker-verdict.md`,
-FAIL 8; reconciled in `bfc-audit-verdict.md`) found one proof gap, one partial-structure defect, three
-guide defects, a vocabulary defect in a case table, a false clause in a compatibility row, an incomplete
+FAIL 8; reconciled in `bfc-audit-verdict.md`) found a proof gap, a partial-structure defect, the guide's
+focus-bullet, mode-tally, and print-sentence defects, a vocabulary defect in a case table, a false clause in a compatibility row, an incomplete
 ROADMAP patch, and an inaccurately described plant; the Orchestrator ruled D28 (a light island nested
 inside a dark island keeps the dark knob) and carries it here. The earlier briefs stay in place
 unedited; their Objective, Context, Scope, Execution, Output, and Deviation contract bind here except

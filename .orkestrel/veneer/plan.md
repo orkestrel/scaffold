@@ -127,3 +127,26 @@ This folder keeps only what the open units still read; git history archives ever
 A unit's report, audit lanes, verdict, instruments, and gate evidence are retained here while it
 runs and pruned in the commit that follows its acceptance, with the promotion record in that
 commit's message.
+
+## Process corrections (2026-09-23, the conventions audit)
+
+- A fix round runs both lanes on its claims file (`analyst` on Astra and `reviewer` on Opus, blind),
+  at least one on an engine that did not write the round; a single-lane fix audit is a deviation.
+  The CHECK, GROUP, and F8c-B fix rounds take their subjective lane before their landing is pushed to
+  `main`.
+- The landing chain is the verifier's evidence, never a lane claim: a claims file carries no "Gates"
+  claim; a lane runs the scoped command it can run and reports its exit code as evidence for the
+  claim that names it.
+- A reviewer lane's targets are numbered claims in the round's shared claims file, never a
+  "beyond the claims" paragraph in the lane brief.
+- A brief's Evidence and Measurements rows paste the command and its output; a derivation is an
+  Unknown the unit measures first.
+- A file sits in one Scope row: Shared means the unit returns a patch, so a shared file is not also
+  off-limits.
+- A retained artifact names retained paths in full (`/home/user/scaffold/.orkestrel/veneer/units/…`);
+  the journal and last-message paths stay under `tmp/codex/` as the launch record.
+- The round verdict's terminal line keeps the fixed shape; referral routing and settlements sit in
+  the body. A round accepts on a PASS terminal line after reconciliation drops the claims-file
+  faults on the record; a FAIL that stands needs a fix round.
+- An Orchestrator ruling appended to a lane's returned verdict is a defect: the ruling goes to the
+  round verdict file, and the lane file stays as returned.

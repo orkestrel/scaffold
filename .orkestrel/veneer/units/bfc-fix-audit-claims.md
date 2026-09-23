@@ -8,9 +8,9 @@ carrying ten findings from the round-1 audit: claim 2's proof gap, claim 8's `@e
 prose defects, F1 to F3, D28, and the swap-plant note) over the round-1 writes ruled in
 `/home/user/scaffold/.orkestrel/veneer/units/bfc-audit-verdict.md`. Rounds so far: round 1 (analyst
 FAIL 2, 8, 10; reviewer FAIL 1, 2, 5, 10; checker FAIL 8), this fix round. Review evidence:
-`.orkestrel/veneer/units/bfc-3.diff` (the whole diff against `2c10329`, the new owned files
-rendered through `git add -N`), `bfc-3-status.txt`, the round-1 diff `.orkestrel/veneer/units/bfc-1.diff`
-for the delta this round added, and the report `.orkestrel/veneer/units/bfc-3-report.md`; the
+`/home/user/scaffold/.orkestrel/veneer/units/bfc-3.diff` (the whole diff against `2c10329`, the new owned files
+rendered through `git add -N`), `bfc-3-status.txt`, the round-1 diff `/home/user/scaffold/.orkestrel/veneer/units/bfc-1.diff`
+for the delta this round added, and the report `/home/user/scaffold/.orkestrel/veneer/units/bfc-3-report.md`; the
 writer's plant and reading scripts sit under
 `/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/bfc3/`.
 
@@ -46,7 +46,7 @@ requires naming the attack that failed; a claim about a proof is ruled on the mu
 whether the assertions distinguish it from the passing case. Rule every claim CONFIRMED, BROKEN,
 UNRESOLVED, or NOT-EVIDENCED with `file:line`.
 
-## Claims
+## Numbered falsifiable claims
 
 1. **Claim 2 is repaired.** The case `dims a disabled box and its label, whether the attribute or a
    disabled fieldset disables it` mounts a host that matches `[disabled]` and not `:disabled`,

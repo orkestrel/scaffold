@@ -46,8 +46,9 @@ analyst's execution and the landing chain). Every lane ran; none returned empty.
   fixture's TSDoc is restated in the present tense by the fix round.
 - **Reviewer R4** → D33: the sized select's end padding in a group is written
   `calc(var(--vn-space-6) * 4)`, the release's `$form-select-padding-x * 4`, in the idiom SELECT's
-  own `calc(var(--vn-space-6) * 3)` uses; the fix round changes it, and the observation goes to
-  SELECT's claims.
+  own `calc(var(--vn-space-6) * 3)` uses. Carrier: the GROUP fix round.
+- **Reviewer R4, the density-clearance question** (whether the select's caret stays clear of the
+  text at factor 2): carried as a numbered claim of the SELECT audit round, which confirmed it.
 - **Analyst, attacked and held**: `.btn-group > .btn:focus` overrides `.input-group .btn:focus` for
   a button nested in a button group inside an input group, as in the release; the report's "none"
   observation is corrected in the successor report. No code change.
@@ -58,4 +59,4 @@ analyst's execution and the landing chain). Every lane ran; none returned empty.
 
 None: every finding a lane raised has a carrier.
 
-VERDICT: FAIL 3, 4, 5, 6, 8, 10; outside the claims: F1; R1 → D29, R2 → D30, R3 → D31, R4 → D33
+VERDICT: FAIL 3, 4, 5, 6, 8, 10; outside the claims: F1

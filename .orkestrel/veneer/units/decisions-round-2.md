@@ -229,7 +229,7 @@ Tailwind requirement. Lint's `import/no-dynamic-require` refuses a variable spec
 module's literal import is the only lint-clean form. Carrier: F8c-B MOVE, which owns
 `tests/conformance.test.ts` for the exemption.
 
-## D25 — The import-placement sentence
+## D25 — The import-placement sentence (amended by D25a)
 
 The guide's § Tailwind states the rule a consumer follows as the CSS syntax rule it rests on — an
 `@import` rule is valid only ahead of every rule other than `@charset` and `@layer` statements — with
@@ -239,6 +239,13 @@ rule: a processor that follows the syntax drops a late import and the cascade im
 consumer loses. No test asserts the plugin's behaviour, because asserting it needs `postcss-import`,
 which the tree does not declare; the F8c-B analyst lane's executed probe (retained in its verdict)
 is the evidence that the consequence holds in Vite 7.
+
+## D25a — The import-placement citation
+
+D25's citation is CSS Cascading and Inheritance Level 5 § Importing Style Sheets (`#at-import`) and
+§ Declaring Without Styles (`#layer-empty`), the two sections that state the `@import` placement
+rule; § Layer Ordering states no such rule and CSS Syntax Level 3 defines no `@import` section.
+Verified against `https://www.w3.org/TR/css-cascade-5/` on 2026-09-23.
 
 ## D26 — The theme scope's select caret and switch knob
 
@@ -300,12 +307,13 @@ is an observation handed to B-FORMS-SELECT's audit claims.
 
 ## D32 — The duplication gate's relative arm moves its floor to five declarations
 
-`findDuplication` in `tests/setupServer.ts` takes, under its relative arm, an overlap of at least 4
-declarations that is more than half of the smaller block. The floating label block shares
-`position: absolute`, `top: 0`, `left: 0`, and `height: 100%` with `.ratio > *` and four
-declarations with the hidden check input in `_button.scss`, each side recording the release's own
-values, which `.claude/rules/styles.md` calls a coincidence to keep inline. The relative arm's floor
-moves to 5 (`count >= 5 && count * 2 > smallest`); the absolute arm stays at 6; the TSDoc records the
+The relative arm of the `findDuplication` function in the `tests/setupServer.ts` module takes an
+overlap of at least 5 declarations that is more than half of the smaller block
+(`count >= 5 && count * 2 > smallest`), and the absolute arm stays at 6. The `.form-floating > label`
+block shares `position: absolute`, `top: 0`, `left: 0`, and `height: 100%` with the `.ratio > *`
+block and `position: absolute`, `overflow: hidden`, `white-space: nowrap`, and `pointer-events: none`
+with the hidden check input block in the `_button.scss` partial, each side recording the release's
+own values, which `.claude/rules/styles.md` calls a coincidence to keep inline; the TSDoc records the
 2026-09-23 measurement (the largest overlap two partials wrote independently is 4, the floating label
 against the ratio child and the hidden check input) and states that a whole copy of a two-, three-,
 or four-declaration rule sits under the floor; the proof's boundary cases move with it. Carrier:
@@ -333,13 +341,6 @@ non-negative at factor 2 and every inset and the height scale together; the ledg
 properties read `tokenized`; the guide's density sentence follows. The backdrop's `1.5em` height and
 the `1.25` line height stay literal (each is relative already). Carrier: the FLOATING fix round.
 
-## D25a — The import-placement citation
-
-D25's citation is CSS Cascading and Inheritance Level 5 § Importing Style Sheets (`#at-import`) and
-§ Declaring Without Styles (`#layer-empty`), the two sections that state the `@import` placement
-rule; § Layer Ordering states no such rule and CSS Syntax Level 3 defines no `@import` section.
-Verified against `https://www.w3.org/TR/css-cascade-5/` on 2026-09-23.
-
 ## D35 — The barrel loads the forms partials in the release's order, validation last
 
 `src/styles/index.scss` loads `validation` at line 55, before the forms partials that landed after
@@ -351,9 +352,11 @@ floating shorthand's value instead of keeping the validation icon's room, and a 
 `.form-check-input.is-valid` keeps the focus tint instead of the validation border. The barrel's forms
 block takes the release's order (`form-control`, `form-select`, `form-check`, `form-range`,
 `form-floating`, `input-group`, `validation`, each present partial in that sequence), and a Node
-case reads the barrel and asserts that subsequence. Carrier: the FLOATING fix round moves the
-`validation` line after `form-floating` and adds the case with the floating `is-invalid`
-`padding-right` reading; each later landing keeps the order the case asserts. The showcase's
+case reads the barrel and asserts that subsequence. Carrier: the FLOATING fix round writes the block
+its tree holds in that order (`form-range`, `form-floating`, `validation`) and adds the case with the
+floating `is-invalid` `padding-right` reading; each later landing (GROUP's `input-group` line before
+`validation`, then CONTROL's and SELECT's and CHECK's lines ahead of `form-range`) is the
+Orchestrator's integration edit that keeps the full sequence, and the case asserts it on every landing. The showcase's
 construction order stays alphabetical by section class (the family's convention); the barrel, the
 guide sections, and the barrel-order case follow the release.
 

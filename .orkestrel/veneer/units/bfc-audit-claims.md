@@ -7,9 +7,9 @@ Veneer `main` with the passive family, VALIDATION, and RANGE landed), written by
 `/home/user/veneer-bfc/tmp/units/b-forms-check-brief.md` and finished under its successor
 `b-forms-check-brief-2.md` (which added the dispatch template's rows and changed no obligation),
 under the design `/home/user/veneer-bfc/tmp/units/b-forms-design-verdict.md` (rulings 1 to 7, 9,
-10, 11). One round so far: this one. Review evidence: `/home/user/scaffold/tmp/audit/bfc.diff` (the
+10, 11). One round so far: this one. **Review evidence.** `/home/user/scaffold/.orkestrel/veneer/units/bfc.diff` (the
 whole diff against `2c10329`; the new owned files were added with `git add -N` so the diff renders
-them), `bfc-status.txt`, and the report `/home/user/scaffold/tmp/audit/bfc-report.md`; the frames
+them), `bfc-status.txt`, and the report `/home/user/scaffold/.orkestrel/veneer/units/bfc-report.md`; the frames
 sit under `/home/user/veneer-bfc/tmp/capture/states/` (the `form-check*` files) and are the
 primary evidence for every rendered claim, the source corroboration.
 
@@ -66,7 +66,7 @@ requires naming the attack you tried that failed; a claim you cannot decide is `
    length, `50%`, `brightness(90%)`, `opacity: 0.5`, and the background positions are literal; no
    token was added. Rule by compiling the partial (`npx sass`) and comparing its declarations against
    the release's, and by the `dist` grep the report describes.
-2. **The proof reads what it claims** (`tests/src/styles/components/form-check.test.ts`, 23 cases).
+2. **The proof reads what it claims** (`tests/src/styles/components/form-check.test.ts`).
    Each row of the report's coverage matrix names a case that reads the selector's treatment; the
    eight mutation plants each redden the case named for the defect (a wrong URI; a missing dark rule
    reddening the selector check, the dark-switch glyph row, and the dark knobs case; a `0.25rem`

@@ -39,4 +39,4 @@ analyst and the reviewer agree claim by claim.
 - **R5** (reviewer): the guide-wide token-noun sweep → carrier B-PASSIVE-CLOSE, in the ROADMAP patch.
 - **D30**: `.form-select-sm` and `.form-select-lg` take one `@each`. Fix round.
 
-VERDICT: FAIL 3, 6, 7, 10; outside the claims: F1, F2, F3, F4; R1 → D36, R2, R3, R5 → carriers
+VERDICT: FAIL 3, 6, 7, 10; outside the claims: F1, F2, F3, F4

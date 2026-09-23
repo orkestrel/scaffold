@@ -8,8 +8,8 @@ Veneer `main` with the passive family, VALIDATION, and RANGE landed), written by
 `b-forms-group-brief-2.md` (which added the dispatch template's rows and changed no obligation),
 under the design `/home/user/veneer-bfg/tmp/units/b-forms-design-verdict.md` (rulings 1 to 3, 5 to
 11; ruling 8 names the deferral rows this unit retires and adds). One round so far: this one.
-Review evidence: `.orkestrel/veneer/units/bfg.diff` (the whole diff against `2c10329`,
-untracked files as additions), `bfg-status.txt`, the report `.orkestrel/veneer/units/bfg-report.md`;
+**Review evidence.** `/home/user/scaffold/.orkestrel/veneer/units/bfg.diff` (the whole diff against `2c10329`,
+untracked files as additions), `bfg-status.txt`, the report `/home/user/scaffold/.orkestrel/veneer/units/bfg-report.md`;
 the frames sit under `/home/user/veneer-bfg/tmp/capture/states/` (the `input-group*` files) and are
 the primary evidence for every rendered claim, the source corroboration.
 
@@ -78,7 +78,7 @@ CONTROL, and SELECT, which build on this partial, and every consumer of the next
 3. **The proof reads what it claims** (`tests/src/styles/components/input-group.test.ts`, 19 cases:
    L1 to L3, O1, O2, C1 to C3, A1 to A3, S1, S2, K1 to K3, and the setup cases N1 to N3 in
    `tests/setupStyles.test.ts`). Each row of the report's coverage matrix names a case that reads the
-   selector's treatment; the twelve mutation plants each redden the cases the report's table names
+   selector's treatment; the mutation plants each redden the cases the report's table names
    and nothing else, with the unplanted partial as the negative control (`19 passed`, `86 passed`),
    and `mutate3.py` re-ran the corner mutations after the C2 and C3 rework; the corner cases read
    against `INPUT_GROUP_ROUNDING` (a `@layer elements` radius fixture standing in for the CONTROL

@@ -51,4 +51,4 @@ Lanes that ran on `bfc-audit-claims.md`, blind to each other: `analyst` on GPT-6
 
 None: every finding a lane raised has a carrier.
 
-VERDICT: FAIL 2, 5, 8, 10; outside the claims: F1, F2, F3, the swap-plant note; R1 → D28
+VERDICT: FAIL 2, 5, 8, 10; outside the claims: F1, F2, F3, the swap-plant note

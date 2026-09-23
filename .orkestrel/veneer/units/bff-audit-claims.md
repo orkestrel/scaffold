@@ -9,9 +9,9 @@ Veneer `main` with the passive family, VALIDATION, and RANGE landed), written by
 B-FORMS-FLOOR unit's writes in the same worktree (`builder`, from
 `/home/user/veneer-bff/tmp/units/b-forms-floor-brief.md`, ruling D32: `findDuplication`'s relative
 arm moves its floor to five declarations). One round so far: this one. Review evidence:
-`.orkestrel/veneer/units/bff.diff` (the whole diff against `2c10329`, both units; the new
+`/home/user/scaffold/.orkestrel/veneer/units/bff.diff` (the whole diff against `2c10329`, both units; the new
 owned files rendered through `git add -N`), `bff-status.txt`, the reports
-`.orkestrel/veneer/units/bff-report.md` (FLOATING) and `bff-floor-report.md` (FLOOR); the
+`/home/user/scaffold/.orkestrel/veneer/units/bff-report.md` (FLOATING) and `bff-floor-report.md` (FLOOR); the
 frames sit under `/home/user/veneer-bff/tmp/capture/states/` (the `form-floating*` files) and are
 the primary evidence for every rendered claim, the source corroboration. The mutation instrument is
 `/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/mutate.py`.
@@ -68,7 +68,7 @@ failed; a claim about a proof is ruled on the mutation named and whether the ass
 it from the passing case. Rule every claim CONFIRMED, BROKEN, UNRESOLVED, or NOT-EVIDENCED with
 `file:line`.
 
-## Claims
+## Numbered falsifiable claims
 
 1. **The partial emits the key's own selectors as recorded.** `src/styles/components/_form-floating.scss`
    emits every inventory selector under `form-floating` that opens on `.form-floating` (the
