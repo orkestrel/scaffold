@@ -1,0 +1,39 @@
+=== nb diff3 apply of nb-shared-3.patch and nb-offlimits-3.patch on d0c1eff 20:14:05
+UU app/browser/Showcase.ts
+UU app/browser/constants.ts
+UU app/browser/index.ts
+UU guides/veneer.md
+UU src/styles/_tokens.scss
+UU tests/app/browser/Showcase.test.ts
+UU tests/app/browser/integration.test.ts
+UU tests/conformance.test.ts
+UU tests/setup.ts
+UU tests/setupStyles.test.ts
+UU tests/setupStyles.ts
+--- conflict map
+app/browser/Showcase.ts:129 ours 6 ['\t\t\tnew AlertSection(this.#main),'] theirs 1 ['\t\t\tnew NavbarSection(this.#main),']
+app/browser/constants.ts:2068 ours 240 [''] theirs 67 ['']
+app/browser/index.ts:33 ours 6 ["export * from './sections/AlertSection.js'"] theirs 1 ["export * from './sections/NavbarSection.js'"]
+guides/veneer.md:1607 ours 6 ['key records, the split toggle included, ship from the partia'] theirs 2 ['key records ship from the partials that write them, the tab ']
+guides/veneer.md:2601 ours 82 ['| Name                                                      '] theirs 32 ['| Name                                                      ']
+guides/veneer.md:3160 ours 40 ['The theme scopes declare `--bs-carousel-indicator-active-bg`'] theirs 18 ['`--bs-carousel-indicator-active-bg`, `--bs-carousel-caption-']
+guides/veneer.md:5016 ours 2 ['| `accordion`    | `.accordion-button:focus { outline }`    '] theirs 1 ['| `navbar`       | `.navbar-toggler:focus { outline }`      ']
+guides/veneer.md:5228 ours 3 ['| dropdown         | selector       | Every official `.dropd'] theirs 1 ['| dropdown         | selector       | Every official `.dropd']
+guides/veneer.md:5238 ours 7 ['| alert            | selector       | Every official `.alert'] theirs 2 ['| navbar           | selector       | Every official `.navba']
+src/styles/_tokens.scss:115 ours 5 ['// The forms and accordion glyphs Bootstrap paints in the li'] theirs 2 ['// The forms glyphs and the navbar toggler icon at their lig']
+src/styles/_tokens.scss:128 ours 7 ['// `--bs-*` variable the component rule reads, never by reac'] theirs 3 ['// `--bs-*` variable the component rule reads, never by reac']
+src/styles/_tokens.scss:169 ours 7 ['\t// $accordion-button-icon'] theirs 3 ['\t// $navbar-light-toggler-icon-bg']
+src/styles/_tokens.scss:196 ours 5 ["\t'toggler-icon': '--bs-navbar-toggler-icon-bg',"] theirs 2 ["\t'accordion-icon': '--bs-accordion-btn-icon',"]
+tests/app/browser/Showcase.test.ts:126 ours 6 ["\t\t\t\t'Alert',"] theirs 1 ["\t\t\t\t'Navbar',"]
+tests/app/browser/Showcase.test.ts:170 ours 6 ['\t\t\t\t\t...ALERT_SPECIMENS,'] theirs 1 ['\t\t\t\t\t...NAVBAR_SPECIMENS,']
+tests/app/browser/integration.test.ts:1828 ours 53 [''] theirs 74 ['']
+tests/conformance.test.ts:377 ours 6 ['\t// sequence, the nav partial joins the block at the release'] theirs 2 ['\t// sequence, and the nav and navbar partials join the block']
+tests/setup.ts:230 ours 27 ["\t| 'Captioned carousel'"] theirs 11 ["\t| 'Navbar expanded'"]
+tests/setup.ts:1319 ours 175 ['\tObject.freeze({'] theirs 66 ['\tObject.freeze({']
+tests/setup.ts:1612 ours 4 ["\tObject.freeze({ scenario: 'captioned-carousel-hover', subje"] theirs 2 ["\tObject.freeze({ scenario: 'navbar-collapsed-focus', subject"]
+tests/setupStyles.test.ts:2323 ours 11 ['\t\t// The map carries a glyph for every form control and acco'] theirs 5 ['\t\t// The map carries a glyph for every form control the rele']
+tests/setupStyles.test.ts:3567 ours 112 [''] theirs 157 ['']
+tests/setupStyles.ts:3026 ours 3 ["\t'--bs-accordion-btn-icon',"] theirs 1 ["\t'--bs-navbar-toggler-icon-bg',"]
+tests/setupStyles.ts:6531 ours 192 [''] theirs 329 ['']
+--- guide blocks naming the dropdown on both sides
+--- done 20:14:05
