@@ -1,0 +1,26 @@
+Outline the focused forms controls under forced colours and bind the validated colour width
+
+B-FORMS-CLOSE-FORCED (`opus` on Opus 5 for the code rounds and `builder` on Sonnet for the prose
+round) extracts the forced branch of `focus-ring` into
+a `forced-ring` mixin that emits the system-highlight outline inside the forced-colours media
+block and takes its caller's content, so `focus-ring` compiles byte-identical for every button
+block; includes it in the `.form-control:focus`, `.form-select:focus`, `.form-check-input:focus`,
+and `.form-range:focus` rules, which keep the release's `outline: 0` and shadow ring and gain a
+system-highlight outline where forced colours paint no shadow (D37, R3), with the plaintext
+control excluded because the release draws no indicator there in any mode (R3a); binds the
+validated colour control's width to `--vn-space-24` so the resting and validated controls retune
+together under a density change (R2); reads each control's outline under
+`stageMedia({ forced: true })`, the validated control's outline surviving the validation rules
+(R3b), and the validated minus resting width at density 1 and 2 and under a direct token override;
+moves the mixin proof's forced case onto the installed axis (R8); and lands the guide's width
+cells as `tokenized`, the Additions rows for the four forced outlines, the forms sections' forced
+colours sentences, the `focus-ring` paragraph naming `forced-ring`, the plaintext limit, and the
+§ Compatibility sentence stating the installed axis; the prose round states the forced-colours
+reason as the installed color reader's probe replacement, names the density case's swatches by
+role, and moves the single-block Node case to `tests/conformance.test.ts` beside the other cases
+over the built cascade.
+
+Audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker` on Sonnet in each code round,
+and by `checker` on Sonnet for the prose round. Decisions D37 and
+the close verdict's R2, R3, R3a, R3b, R8, R11, and R12. Records: `.orkestrel/veneer/units/bff-*`
+and `b-forms-close-forced-*` in the scaffold repository.
