@@ -17,9 +17,16 @@ prune commit's message is the promotion record for what that commit removed.
   `b-sweep-design-verdict.md`, `b-forms-design-verdict.md`, `b-forms-close-design-verdict.md`
   (the close's units, its rulings R1 to R12, and its exit criterion), `b-forms-label-design-verdict.md`
   (the `form` key's rulings A to L, with D re-baselined by the B-FORMS-LABEL-CASCADE round-2 audit),
-  and `b-passive-close-design-verdict.md` (the family close's units CLOSE-REGISTRY, CLOSE-MOTION,
-  CLOSE-GUIDE, CLOSE-ID, and CLOSE-VERIFY, its rulings R1 to R11, and its exit criterion) are the
-  design rulings the live units execute. `units/decisions-round-2.md` carries the user's rulings D2
+  `b-passive-close-design-verdict.md` (the family close's units CLOSE-REGISTRY, CLOSE-MOTION,
+  CLOSE-GUIDE, CLOSE-ID, and CLOSE-VERIFY, its rulings R1 to R11, and its exit criterion),
+  `b-collapse-design-verdict.md` (the disclosure family's units COLLAPSE, DROPDOWN, NAV, ACCORDION,
+  TOGGLES, NAVBAR, and VERIFY under D41, R1 to R19, with `units/b-collapse-family.md`), and
+  `b-utilities-design-verdict.md` (UTIL-SPACER, the eight mechanism units, and UTIL-VERIFY, R1 to
+  R17, with `units/b-utilities-family.md`) are the design rulings the live units execute; the
+  B-MODAL … B-CAROUSEL and B-CROSS design rounds run on their briefs `units/b-modal-design-brief.md`
+  and `units/b-cross-design-brief.md` with the terrains `units/b-modal-terrain-report.md` and
+  `units/b-cross-terrain-report.md`; `units/j-engine-research-report.md` and
+  `units/j-engine-orkestrel-report.md` are the J-ENGINE phase's absorption records. `units/decisions-round-2.md` carries the user's rulings D2
   to D13 verbatim and the Orchestrator's rulings from D14 on. `units/b-passive-family.md` and
   `units/b-passive-baseline.md` bind every B unit. `units/b-forms-terrain-report.md`,
   `units/b-forms-close-terrain-report.md`, `units/b-forms-label-terrain-report.md`,
@@ -34,7 +41,11 @@ prune commit's message is the promotion record for what that commit removed.
   units as `b-forms-close-<unit>-*` with `bfs-*`, `bft-*`, and `bff-*` for their rounds, the label
   units as `b-forms-label-<unit>-*` with `bfw-*` and `bfl-*`, the family close's units as
   `close-<unit>-*` with `cr-*`, `cm-*`, `cg-*`, and `ci-*`, and the caption unit as
-  `f7b-*`; `f8b-*` and `f8c-*` for the F8 SERVICE line) until the unit lands on Veneer `main`, and
+  `f7b-*`; the disclosure family's units as `b-collapse-<unit>-*` with `co-*`, `dd-*`, `nv-*`,
+  `ac-*`, `tg-*`, and `nb-*`, the utilities family's as `b-utilities-<unit>-*` with `us-*`, `up-*`,
+  `ut-*`, `uf-*`, `usp-*`, `ud-*`, `upl-*`, `ufl-*`, and `ue-*`, and the passive carrier units as
+  `b-passive-order-*` with `bpo-*`, `b-passive-prose-*` with `bpp-*`, and
+  `b-passive-order-guide-*` with `bpog-*`) until the unit lands on Veneer `main`, and
   the prune commit that follows the landing removes them. A landing's integration edit is retained
   as `units/<unit>-probe-<unit>-integration*.py` with its `units/<unit>-integration.diff` and the
   landing checker's brief and verdict, in the same set.
@@ -49,6 +60,10 @@ prune commit's message is the promotion record for what that commit removed.
   chain log as `units/<unit>-verify-stopped.log.txt` beside the reason.
 - `units/x-retention-carry-brief.md` and `units/x-retention-carry-distillate.md` are the carry
   register X-RETENTION reads.
+- The Codex bench is dark on quota from 2026-09-23 13:34 UTC (ROADMAP § Standing conditions); every
+  objective lane runs on Opus 5.5 as `reviewer` told it holds that lane, with a
+  `<unit>-audit-objective-brief.md` beside the `analyst` brief it substitutes for, until the bench
+  round-trips again.
 
 ## Landing procedure
 
