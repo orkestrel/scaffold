@@ -1,0 +1,10 @@
+light-1280 box: 0 10431 1279 3 rows=3 (mtime 2026-09-23 06:36:58)
+light-1280 crop: y0=10423 w=1279 h=55 k=1 -> focus-light-1280.png
+dark-1280 box: 0 10431 1279 3 rows=3 (mtime 2026-09-23 06:39:14)
+dark-1280 crop: y0=10423 w=1279 h=55 k=1 -> focus-dark-1280.png
+light-390 box: 0 11454 389 3 rows=3 (mtime 2026-09-23 06:41:20)
+light-390 crop: y0=11446 w=389 h=55 k=2 -> focus-light-390.png
+dark-390 box: 0 11454 389 3 rows=3 (mtime 2026-09-23 06:43:24)
+dark-390 crop: y0=11446 w=389 h=55 k=2 -> focus-dark-390.png
+
+Orchestrator reading (2026-09-23 06:55 UTC): each crop shows the focused text control with its placeholder "Enter your full name", the rounded border tinted toward the focus colour, and the ring painted outside the border box on every side; the light crops carry the light-mode blue ring and the dark crops the dark-mode focus tint over the dark surface, the same pair the button focus frames carry (FOCUS_RING). The page frames' declared region is the control, and these crops are the legible reading of that region the round-1 reviewer asked for (claim 7).
