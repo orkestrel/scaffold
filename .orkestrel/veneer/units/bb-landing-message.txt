@@ -1,0 +1,27 @@
+Land the button group and toolbar classes as a Bootstrap 5.3.8 baseline
+
+Unit B-PASSIVE-B on Opus over two rounds, audited by analyst on Astra,
+reviewer on Opus, and checker on Sonnet, the fix round by analyst on
+Astra.
+
+- src/styles/components/_button-group.scss emits every recorded button
+  group, vertical group, and toolbar selector in the components layer,
+  with no module load it does not read; the split-toggle rules stay
+  deferred to Disclosure.
+- The proof reads the flex direction, the child growth, the overlapped
+  borders, every outer and joined corner including the dropdown-toggle
+  exclusion in both directions, the hover, focus, active, written-active,
+  and checked and unchecked-focus lifts, and the toolbar wrapping, binding
+  the active member of each stacking list through the cascade where a
+  rendered press cannot separate it from a hover.
+- The showcase gains the Button group region with a dropdown-toggle child
+  ahead of plain children and one wrapping toolbar; BUTTON_GROUP_KEYS
+  registers the checked and focus frames, its remark stating the copy
+  and the renaming the clone needs.
+- The guide gains Button group classes and Button toolbar classes, the
+  Files row naming the proof, the compatibility rows, and the departure
+  rows under Tokens; the shipped-key literal and the Button variant
+  exclusion are the integration edits the audit named.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
