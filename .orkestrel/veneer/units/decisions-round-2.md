@@ -256,3 +256,14 @@ layer across the linked cascade followed by the loaded profile; the sheet sequen
 `stage.open` (the cascade linked first) and `stage.load` (the profile appended), not observed. The
 limit is stated in the profiles proof's case comment and in the guide's sentence on the order line.
 No stage member is added for it.
+
+## D28 — A light island nested inside a dark island keeps the dark switch knob
+
+The dark knob rule `[data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus)`
+joins its parts with descendant combinators, so a resting switch inside `[data-bs-theme='light']`
+nested inside `[data-bs-theme='dark']` reads the dark knob. The release carries the same rule shape
+(`bootstrap.css:2501`), so Veneer matches the release's limit and adds no light-scope reset. The
+CHECK fix unit mounts that nesting once, reads `background-image` against the light and dark knob
+URIs, records the reading in its report, and states the limit in one sentence of
+`### Form check classes`. A light-knob reading is a deviation the unit reports without changing
+prose. D26 keeps the § Tokens paragraph rewrite. Carrier: the CHECK fix round.
