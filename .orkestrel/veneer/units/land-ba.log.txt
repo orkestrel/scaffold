@@ -1,0 +1,83 @@
+=== ba worktree status before commit
+ M app/browser/Showcase.ts
+ M app/browser/constants.ts
+ M app/browser/index.ts
+ M guides/ledger/departures.md
+ M guides/veneer.md
+ M src/styles/index.scss
+ M tests/app/browser/Showcase.test.ts
+ M tests/app/browser/index.test.ts
+ M tests/app/browser/integration.test.ts
+ M tests/conformance.test.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+ M tests/setupStyles.test.ts
+ M tests/setupStyles.ts
+?? app/browser/sections/BadgeSection.ts
+?? app/browser/sections/BreadcrumbSection.ts
+?? app/browser/sections/CloseSection.ts
+?? src/styles/components/_badge.scss
+?? src/styles/components/_breadcrumb.scss
+?? src/styles/components/_close.scss
+?? tests/app/browser/sections/BadgeSection.test.ts
+?? tests/app/browser/sections/BreadcrumbSection.test.ts
+?? tests/app/browser/sections/CloseSection.test.ts
+?? tests/src/styles/components/badge.test.ts
+?? tests/src/styles/components/breadcrumb.test.ts
+?? tests/src/styles/components/close.test.ts
+=== ba committed as d137c98 on unit/ba
+Auto-merging app/browser/Showcase.ts
+CONFLICT (content): Merge conflict in app/browser/Showcase.ts
+Auto-merging app/browser/constants.ts
+CONFLICT (content): Merge conflict in app/browser/constants.ts
+Auto-merging app/browser/index.ts
+CONFLICT (content): Merge conflict in app/browser/index.ts
+CONFLICT (modify/delete): guides/ledger/departures.md deleted in HEAD and modified in d137c98 (Land the badge, breadcrumb, and close classes as a Bootstrap 5.3.8 baseline).  Version d137c98 (Land the badge, breadcrumb, and close classes as a Bootstrap 5.3.8 baseline) of guides/ledger/departures.md left in tree.
+Auto-merging guides/veneer.md
+CONFLICT (content): Merge conflict in guides/veneer.md
+Auto-merging src/styles/index.scss
+CONFLICT (content): Merge conflict in src/styles/index.scss
+Auto-merging tests/app/browser/Showcase.test.ts
+CONFLICT (content): Merge conflict in tests/app/browser/Showcase.test.ts
+Auto-merging tests/app/browser/index.test.ts
+CONFLICT (content): Merge conflict in tests/app/browser/index.test.ts
+Auto-merging tests/app/browser/integration.test.ts
+CONFLICT (content): Merge conflict in tests/app/browser/integration.test.ts
+Auto-merging tests/conformance.test.ts
+CONFLICT (content): Merge conflict in tests/conformance.test.ts
+Auto-merging tests/setup.test.ts
+CONFLICT (content): Merge conflict in tests/setup.test.ts
+Auto-merging tests/setup.ts
+CONFLICT (content): Merge conflict in tests/setup.ts
+Auto-merging tests/setupBrowser.test.ts
+CONFLICT (content): Merge conflict in tests/setupBrowser.test.ts
+Auto-merging tests/setupBrowser.ts
+Auto-merging tests/setupStyles.test.ts
+CONFLICT (content): Merge conflict in tests/setupStyles.test.ts
+Auto-merging tests/setupStyles.ts
+CONFLICT (content): Merge conflict in tests/setupStyles.ts
+error: could not apply d137c98... Land the badge, breadcrumb, and close classes as a Bootstrap 5.3.8 baseline
+hint: After resolving the conflicts, mark them with
+hint: "git add/rm <pathspec>", then run
+hint: "git cherry-pick --continue".
+hint: You can instead skip this commit with "git cherry-pick --skip".
+hint: To abort and get back to the state before "git cherry-pick",
+hint: run "git cherry-pick --abort".
+=== CONFLICT; resolve by hand, then git cherry-pick --continue
+UU app/browser/Showcase.ts
+UU app/browser/constants.ts
+UU app/browser/index.ts
+DU guides/ledger/departures.md
+UU guides/veneer.md
+UU src/styles/index.scss
+UU tests/app/browser/Showcase.test.ts
+UU tests/app/browser/index.test.ts
+UU tests/app/browser/integration.test.ts
+UU tests/conformance.test.ts
+UU tests/setup.test.ts
+UU tests/setup.ts
+UU tests/setupBrowser.test.ts
+UU tests/setupStyles.test.ts
+UU tests/setupStyles.ts

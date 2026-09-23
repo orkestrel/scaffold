@@ -12,13 +12,8 @@ def edit(path, pairs):
         assert s.count(old)==1, (path, old[:60], s.count(old))
         s=s.replace(old,new)
     open(path,'w').write(s)
-# 1. Showcase.test.ts
-edit(f'{root}/tests/app/browser/Showcase.test.ts', [
- ("\tBREADCRUMB_SPECIMENS,\n\tBUTTON_SPECIMENS,", "\tBREADCRUMB_SPECIMENS,\n\tBUTTON_COPY,\n\tBUTTON_SPECIMENS,"),
- ("import { BUTTON_CLASS, mountShowcase } from '../../setupBrowser.js'", "import { BUTTON_CLASS, mountShowcase, readSubject } from '../../setupBrowser.js'"),
- ("\t\t\tconst specimens = [...host.querySelectorAll(`.${BUTTON_CLASS}`)]\n",
-  "\t\t\t// The Button specimens are the Buttons region's own hosts. A markup section can render the\n\t\t\t// button class as the composition its own key selects, the way the Badge section renders a\n\t\t\t// badge inside a button, and that host is a specimen of the markup section rather than of\n\t\t\t// the Button table.\n\t\t\tconst specimens = [\n\t\t\t\t...readSubject(host, BUTTON_COPY.region).querySelectorAll(`.${BUTTON_CLASS}`),\n\t\t\t]\n"),
-])
+# 1. Showcase.test.ts: the B landing already scoped the Button specimen query to the Buttons region
+#    (`section[aria-label="${BUTTON_COPY.region}"] .${BUTTON_CLASS}`), so the unit's returned patch is satisfied.
 # 2. ButtonSection.test.ts census
 edit(f'{root}/tests/app/browser/sections/ButtonSection.test.ts', [
  ("(name) => !name.startsWith('btn-group') && name !== 'btn-check' && name !== 'btn-toolbar',",
