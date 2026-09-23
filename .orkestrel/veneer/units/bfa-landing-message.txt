@@ -1,0 +1,11 @@
+Leave the select caret and the switch knob to their own dark rules
+
+B-FORMS-ASSETS (`builder` on Sonnet, D26) removes `select-indicator` and `switch-knob` from the
+`$assets` map, so the dark theme scope no longer declares `--bs-form-select-bg-img` and
+`--bs-form-switch-bg`: the select and check partials declare each on the release's own dark
+component rule, and a light island nested inside a dark one keeps the dark caret and knob as the
+release does. `COMPONENT_DARK_ASSETS` names the two variables for the theme and tokens proofs, the
+select proof's dark-caret case and the guide's three sentences follow, and a plant that re-adds an
+entry reddens the theme case.
+
+Records: `.orkestrel/veneer/units/b-forms-assets-*` and `bfa-*` in the scaffold repository.

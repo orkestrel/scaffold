@@ -1,0 +1,217 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index dddeace..07401b0 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1021,8 +1021,9 @@ of the `$icons` map in the `src/styles/_tokens.scss` file into the `--bs-form-ch
+ restating the paint around it. The resting knob is the one glyph the release repaints by mode, so
+ the partial declares its dark value on the release's own dark rule,
+ `[data-bs-theme='dark'] .form-switch .form-check-input:not(:checked):not(:focus)`, reading the
+-`switch-knob` entry of the `$dark` map: a declaration on the control outranks any value a theme
+-scope passes down to it. The descendant rule also reaches a resting switch inside a light island
++`switch-knob` entry of the `$dark` map: the theme scopes declare nothing for that variable, so the
++control's own rules decide the knob in both modes. The descendant rule also reaches a resting
++switch inside a light island
+ nested in a dark one, as the release's own rule does, and the partial adds no light-scope reset.
+ Retune one control's glyph by declaring the variable on that control.
+ 
+@@ -1081,9 +1082,9 @@ The caret is the release's own glyph. A data URI cannot read a custom property,
+ from the maps in the `src/styles/_tokens.scss` file at compile time: the
+ `--bs-form-select-bg-img` property on the `.form-select` class takes the icon map's
+ `select-indicator` entry, and the release's own `[data-bs-theme='dark'] .form-select` rule takes
+-the dark map's entry of the same name. Both declarations sit on the element, so each outranks the
+-value the dark theme scope also declares for that variable, and the component rules decide the
+-caret in both modes. The dark rule matches any select under a dark scope, so a light island nested
++the dark map's entry of the same name. Both declarations sit on the element, and the dark theme
++scope declares nothing for that variable, so the component rules decide the caret in both modes.
++The dark rule matches any select under a dark scope, so a light island nested
+ inside a dark one keeps the dark caret, as it does in the official cascade. The image reads the
+ `--bs-form-select-bg-img` property and then the `--bs-form-select-bg-icon` property, so retune the
+ caret on the select itself and add a mark through the second property, which is how the validation
+@@ -2007,14 +2008,15 @@ for each is a `mask-image` treatment in the unit that owns the component. `--bs-
+ belongs to the `btn` vocabulary instead, so § Departures measures it, and its rows there record the
+ empty light-scope declaration this cascade writes against the filter the release records.
+ 
+-Bootstrap also retunes `--bs-form-switch-bg`, `--bs-navbar-toggler-icon-bg`,
+-`--bs-accordion-btn-icon`, and `--bs-accordion-btn-active-icon` under a dark component selector,
+-and declares no light counterpart at theme scope. Veneer declares each in its dark scope with
+-Bootstrap's own value. A light island nested inside a dark one therefore inherits the dark asset,
+-and the component unit that owns each one closes that. The dark scope declares
+-`--bs-form-select-bg-img` the same way, and no `.form-select` element paints that value: the
+-select's own rules declare the caret on the element, and § Form select classes states which caret
+-each one paints.
++Bootstrap also retunes `--bs-navbar-toggler-icon-bg`, `--bs-accordion-btn-icon`, and
++`--bs-accordion-btn-active-icon` under a dark component selector, and declares no light
++counterpart at theme scope. Veneer declares each in its dark scope with Bootstrap's own value. A
++light island nested inside a dark one therefore inherits the dark asset, and the component unit
++that owns each one closes that.
++
++`--bs-form-select-bg-img` and `--bs-form-switch-bg` are declared on the select's and the switch's
++own dark rules by their partials instead, so a light island nested inside a dark one keeps the
++dark caret and knob the same way the release does.
+ 
+ ### Customization
+ 
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 6478944..7577415 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -150,17 +150,17 @@ $icons: (
+ 		url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e"),
+ );
+ 
+-// The Bootstrap variable each image-valued dark entry is declared as. Bootstrap 5.3.8 gives each of
+-// these no light counterpart at theme scope, so the dark scope in `_theme.scss` walks this map and
+-// the light scope declares none of them; a light island nested inside a dark one inherits the dark
+-// asset. Each keeps Bootstrap's own value until the component that paints it lands its canonical
+-// token, and `guides/veneer.md` under Tokens records the limit. A data URI cannot read a custom
+-// property, which is why the value is an asset rather than a token expression. The map is
+-// configurable so `tests/setupStyles.test.ts` can compile the shipped partials with a key `$dark`
+-// does not declare and read the `@error` `_theme.scss` raises for it.
++// The Bootstrap variable each image-valued dark entry is declared as, for the components that have
++// not yet landed their own dark rule. Bootstrap 5.3.8 gives each of these no light counterpart at
++// theme scope, so the dark scope in `_theme.scss` walks this map and the light scope declares none
++// of them; a light island nested inside a dark one inherits the dark asset. Each keeps Bootstrap's
++// own value until the component that paints it lands its canonical token on its own dark rule, as
++// the check and select partials do for the switch knob and the select caret, and
++// `guides/veneer.md` under Tokens records the limit. A data URI cannot read a custom property,
++// which is why the value is an asset rather than a token expression. The map is configurable so
++// `tests/setupStyles.test.ts` can compile the shipped partials with a key `$dark` does not declare
++// and read the `@error` `_theme.scss` raises for it.
+ $assets: (
+-	'select-indicator': '--bs-form-select-bg-img',
+-	'switch-knob': '--bs-form-switch-bg',
+ 	'toggler-icon': '--bs-navbar-toggler-icon-bg',
+ 	'accordion-icon': '--bs-accordion-btn-icon',
+ 	'accordion-active-icon': '--bs-accordion-btn-active-icon',
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 35ac3ef..9c0861b 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -48,6 +48,7 @@ import {
+ 	CLOSE_MARK,
+ 	CLOSE_SELECTORS,
+ 	CLOSE_STATE_CASES,
++	COMPONENT_DARK_ASSETS,
+ 	CONTAINER_CLASS_CASES,
+ 	CONTAINER_WIDTH_CASES,
+ 	CUSTOMIZATION_RECIPE,
+@@ -216,6 +217,7 @@ describe('styles setup', () => {
+ 				'CLOSE_MARK',
+ 				'CLOSE_SELECTORS',
+ 				'CLOSE_STATE_CASES',
++				'COMPONENT_DARK_ASSETS',
+ 				'CONTAINER_CLASS_CASES',
+ 				'CONTAINER_WIDTH_CASES',
+ 				'CUSTOMIZATION_RECIPE',
+@@ -1668,6 +1670,12 @@ describe('styles setup', () => {
+ 			[],
+ 		)
+ 	})
++	it('freezes the component-owned dark assets and names each inside the Bootstrap dark scope', () => {
++		expect(Object.isFrozen(COMPONENT_DARK_ASSETS)).toBe(true)
++		expect(
++			COMPONENT_DARK_ASSETS.filter((name) => !BOOTSTRAP_DARK_VARIABLES.includes(name)),
++		).toEqual([])
++	})
+ 	it('records for every retained row the value Bootstrap declares for its alias at root', () => {
+ 		const cascade = readBootstrapCascade()
+ 		const root = new Map(extractBootstrapVariables(cascade, 'root'))
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 6428215..e50ba8f 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -2805,6 +2805,15 @@ export const THEME_DARK_ADDITIONS: readonly string[] = Object.freeze([
+ 	'--bs-primary-rgb',
+ ])
+ 
++/**
++ * Holds the image-valued dark variables a shipped component declares on its own dark rule, which
++ * the dark theme scope therefore no longer carries (D26).
++ */
++export const COMPONENT_DARK_ASSETS: readonly string[] = Object.freeze([
++	'--bs-form-select-bg-img',
++	'--bs-form-switch-bg',
++])
++
+ /**
+  * Records each color-valued token Veneer retains from Bootstrap, the alias it answers, and the
+  * value Bootstrap declares for that alias.
+diff --git a/tests/src/styles/components/form-select.test.ts b/tests/src/styles/components/form-select.test.ts
+index 0f6a92f..fd24768 100644
+--- a/tests/src/styles/components/form-select.test.ts
++++ b/tests/src/styles/components/form-select.test.ts
+@@ -175,7 +175,7 @@ describe('form select classes', () => {
+ 		}
+ 	})
+ 
+-	it('paints the dark caret on the element inside a dark scope, over the one the theme scope declares', () => {
++	it('paints the dark caret on the element inside a dark scope', () => {
+ 		const container = scene.mount(`<div>${ISLANDS}</div>`)
+ 		const recorded = new Map(
+ 			FORM_SELECT_CASES.filter((entry) => entry.property === CARET).map((entry) => [
+@@ -197,10 +197,8 @@ describe('form select classes', () => {
+ 			`${light}, none`,
+ 			`${dark}, none`,
+ 		])
+-		// The dark scope declares the caret variable on itself as well. The select's own rules declare
+-		// it on the element, and a declaration on the element outranks an inherited one, so a wrapper
+-		// retuning the variable reaches neither mode's caret. A cascade that dropped the component
+-		// rules and kept the theme scope's declaration alone would read the wrapper's value here.
++		// The select's own rules declare the caret variable on the element in both modes, so a
++		// wrapper retuning the variable reaches neither mode's caret.
+ 		for (const island of islands) island.style.setProperty(CARET, 'none')
+ 		try {
+ 			expect(selects.map((select) => readStyle(select, 'background-image'))).toStrictEqual([
+diff --git a/tests/src/styles/theme.test.ts b/tests/src/styles/theme.test.ts
+index 8a63554..6f95873 100644
+--- a/tests/src/styles/theme.test.ts
++++ b/tests/src/styles/theme.test.ts
+@@ -4,6 +4,7 @@ import { ColorMode } from '@src/browser'
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../setupBrowser.js'
++import { COMPONENT_DARK_ASSETS } from '../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	document.documentElement.removeAttribute('data-bs-theme')
+@@ -131,10 +132,11 @@ describe('theme scopes', () => {
+ 			})
+ 		}
+ 	})
+-	it('carries the dark-only component assets in the dark scope alone', () => {
++	it(`carries the unlanded components' dark assets in the dark scope alone and leaves the landed components' to their own rules`, () => {
+ 		const specimen = requireValue(scene.mount('<div></div>').firstElementChild, 'No asset specimen')
+-		expect(readStyle(specimen, '--bs-form-select-bg-img')).toBe('')
++		expect(readStyle(specimen, '--bs-navbar-toggler-icon-bg')).toBe('')
+ 		document.documentElement.setAttribute('data-bs-theme', 'dark')
+-		expect(readStyle(specimen, '--bs-form-select-bg-img')).toContain('data:image/svg+xml')
++		expect(readStyle(specimen, '--bs-navbar-toggler-icon-bg')).toContain('data:image/svg+xml')
++		for (const name of COMPONENT_DARK_ASSETS) expect(readStyle(specimen, name)).toBe('')
+ 	})
+ })
+diff --git a/tests/src/styles/tokens.test.ts b/tests/src/styles/tokens.test.ts
+index 225bb17..980e5e9 100644
+--- a/tests/src/styles/tokens.test.ts
++++ b/tests/src/styles/tokens.test.ts
+@@ -22,6 +22,7 @@ import {
+ 	BOOTSTRAP_DARK_VARIABLES,
+ 	BOOTSTRAP_ROOT_VARIABLES,
+ 	CALIBRATED_TIERS,
++	COMPONENT_DARK_ASSETS,
+ 	collectReferenceRows,
+ 	collectTokenNames,
+ 	collectTripletGroups,
+@@ -138,8 +139,12 @@ describe('token cascade', () => {
+ 		expect(canonical.length).toBeGreaterThan(0)
+ 		expect(canonical.filter((name) => !dark.includes(name))).toEqual([])
+ 		expect(dark.filter((name) => name.startsWith('--vn-') && !light.includes(name))).toEqual([])
++		// The component-owned assets are declared on the component's own dark rule rather than the
++		// theme scope, so the dark scope's list excludes them.
+ 		expect([...dark.filter((name) => name.startsWith('--bs-'))].sort()).toEqual(
+-			[...BOOTSTRAP_DARK_VARIABLES, ...THEME_DARK_ADDITIONS].sort(),
++			[...BOOTSTRAP_DARK_VARIABLES, ...THEME_DARK_ADDITIONS]
++				.filter((name) => !COMPONENT_DARK_ASSETS.includes(name))
++				.sort(),
+ 		)
+ 	})
+ 	it('resolves each calibrated role tier to the color Elements renders for it', () => {
