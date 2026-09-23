@@ -27,6 +27,10 @@ The campaign ends when: `@orkestrel/contract` publishes a version whose `isInsta
 
 At `743e4a3`, installed from the lockfile (`npm ci --ignore-scripts`, marker written): `npm run check` exits 0; `npm run test:src` passes 19 files, 1350 tests (`units/contract-baseline-gates.log.txt`).
 
+## Coordination with the baseline session
+
+The baseline session read this campaign at scaffold `07b2ff80` and recorded (its `779223fb`) that `@orkestrel/test` depends on `@orkestrel/contract` at runtime, so its T4 harness release follows contract in layer order: it carries the re-pin to `^0.0.18` when that version is on the registry at its release time, else a re-pin release follows; Veneer re-pins both packages in one commit where both are published, so it never installs two copies of contract, and the session landing second regenerates the lockfile with npm. This campaign therefore publishes 0.0.18 as soon as its audit passes, records the registry read-back here and in the engine plan's marker, and Veneer's re-pin waits for the test release only where that release is imminent at the re-pin.
+
 ## Landing procedure
 
 The fix lands on the contract's `main` by a direct commit after the audit and the verifier chain (`npm run format:check`, `lint:check`, `check`, `build`, `test`, then `test:distribution`), the version bump in the same release commit as `orkestrel-publish` § Rule on the bump states for a runtime change to a published surface, the push, then the upload with the user's one-time code at the keyboard, then the registry read back. Veneer's re-pin follows in its own commit on Veneer `main`.

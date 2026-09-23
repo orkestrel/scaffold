@@ -1,0 +1,15 @@
+Reconcile the contract isInstance audit and brief its fix round
+
+The audit's objective lane on Opus 5.5 and subjective lane on Astra agree: the signature, the
+body, the emitted declaration, the proofs' binding, and every consumer hold; the internal
+comment's typing reason is false (the Orchestrator's probe compiles the body without the
+`isFunction` check under the constraint, so the check stays for runtime behaviour), the
+remark's false-branch sentence overstates (a structurally identical subclass narrows its base
+out, measured against the built declaration), the `Function` sentence is wrong (`Function`
+admits no primitive; only `Object` does), and the proofs do not pin the constraint (a
+`=> unknown` constraint passes them all). Round 2 on Astra carries the three sentences and the
+parity and refusal assertions; the objective lane on Opus 5.5 and the checker audit it, and the
+release follows. The baseline's release coordination is recorded in the contract plan.
+J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
