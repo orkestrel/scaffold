@@ -1,0 +1,64 @@
+{
+ "restored": true,
+ "results": [
+  {
+   "name": "M0 inherited source (hunks reversed)",
+   "exit": 1,
+   "summary": "Tests  2 failed | 12 passed (14)",
+   "failingLines": [
+    157,
+    166,
+    180,
+    188
+   ]
+  },
+  {
+   "name": "A apply guard removed",
+   "exit": 1,
+   "summary": "Tests  2 failed | 12 passed (14)",
+   "failingLines": [
+    157,
+    166,
+    180,
+    188
+   ]
+  },
+  {
+   "name": "B toggle guard removed",
+   "exit": 1,
+   "summary": "Tests  2 failed | 12 passed (14)",
+   "failingLines": [
+    157,
+    168,
+    180,
+    190
+   ]
+  },
+  {
+   "name": "C storage written before the apply guard",
+   "exit": 1,
+   "summary": "Tests  2 failed | 12 passed (14)",
+   "failingLines": [
+    157,
+    167,
+    180,
+    189
+   ]
+  },
+  {
+   "name": "D second-call guard in destroy removed",
+   "exit": 1,
+   "summary": "Tests  4 failed | 10 passed (14)",
+   "failingLines": [
+    98,
+    107,
+    144,
+    154,
+    157,
+    176,
+    180,
+    194
+   ]
+  }
+ ]
+}
