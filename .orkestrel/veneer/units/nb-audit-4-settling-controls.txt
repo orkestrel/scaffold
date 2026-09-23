@@ -1,0 +1,8 @@
+=== stage build 20:38:18
+patches applied
+=== controls 20:38:18
+expand-readings-row-deleted exit=1 | AssertionError: expected [ 390 ] to deeply equal [ 390, 1280 ] | - Expected | + Received | ❯ tests/setupStyles.test.ts:3303:66
+dark-consumers-row-deleted exit=1 | AssertionError: expected [ …(2) ] to deeply equal [ …(3) ] | - Expected | + Received | ❯ tests/setupStyles.test.ts:3319:5
+paint-moves-row-deleted exit=1 | AssertionError: expected [ { …(2) }, { …(2) }, { …(2) } ] to deeply equal [ { …(2) }, { …(2) }, { …(2) }, …(1) ] | - Expected | + Received | ❯ tests/setupStyles.test.ts:3330:87
+unmutated exit=0 | 
+=== done 20:38:36

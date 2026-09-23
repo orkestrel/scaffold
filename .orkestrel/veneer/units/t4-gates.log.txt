@@ -1,0 +1,93 @@
+=== HEAD 936bc4a dirty: 3 (20:45:02)
+Finished in 1420ms on 3 files using 4 threads.
+=== oxfmt exit=0
+
+> @orkestrel/test@0.0.20 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 3094ms on 60 files using 4 threads.
+=== format:check exit=0 (20:45:07)
+
+> @orkestrel/test@0.0.20 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+=== lint:check exit=0 (20:45:08)
+
+> @orkestrel/test@0.0.20 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/test@0.0.20 check:src
+> npm run check:src:core && npm run check:src:browser && npm run check:src:server
+
+
+> @orkestrel/test@0.0.20 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/test@0.0.20 check:src:browser
+> tsc --noEmit -p configs/src/tsconfig.browser.json
+
+
+> @orkestrel/test@0.0.20 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+
+=== check exit=0 (20:45:17)
+
+ RUN  v4.1.11 /home/user/test
+
+Port 63315 is in use, trying another one...
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·····------------------------------------------------------------------------------------------------------------------------------
+
+ Test Files  1 passed (1)
+      Tests  5 passed | 336 skipped (341)
+   Start at  20:45:18
+   Duration  9.33s (transform 0ms, setup 182ms, import 292ms, tests 807ms, environment 0ms)
+
+=== scoped browser (clipsOverflow, measureContent) exit=0 (20:45:28)
+
+> @orkestrel/test@0.0.20 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/test[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mTest[2m > [22mkeeps every compared summary and example equal to its source
+[31m[1mAssertionError[22m: expected [ { spec: 'guides/test.md', …(1) } ] to deeply equal [][39m
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/test.md",
++     "text": "summary function clipsOverflow: guide \"Reports whether an element clips its descendants' overflow at its own padding box: a computed `overflow-y` other than `visible`, or a paint containment.\" source \"Reports whether an element clips its descendants' overflow at its own padding box.\"",
++   },
++ ]
+
+[36m [2m❯[22m tests/guides.test.ts:[2m279:75[22m[39m
+    [90m277|[39m    // authority with `--to guide`, or guide authority with `--to sourc…
+    [90m278|[39m    it('keeps every compared summary and example equal to its source', …
+    [90m279|[39m     expect(report.drift.filter((finding) => finding.spec === entry.spe…
+    [90m   |[39m                                                                           [31m^[39m
+    [90m280|[39m    })
+    [90m281|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m50 passed[39m[22m[90m (51)[39m
+[2m   Start at [22m 20:45:29
+[2m   Duration [22m 1.34s[2m (transform 199ms, setup 52ms, import 864ms, tests 256ms, environment 0ms)[22m
+
+=== test:guides exit=1 (20:45:31)
+=== t4 gates done (20:45:31)
