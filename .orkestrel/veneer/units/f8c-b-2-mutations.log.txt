@@ -1,0 +1,44 @@
+== r1-important-color: tests/service/tailwind/consumer.test.ts via npm run test:service
+mutated exit 1; Test Files  1 failed | 2 passed (3) / Tests  1 failed | 16 passed (17) / Test Files  1 failed | 2 passed (3) / Tests  1 failed | 16 passed (17)
+  FAIL  |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > keeps an important shared declaration whatever the recipe withholds
+  FAIL  |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > keeps an important shared declaration whatever the recipe withholds
+  |    → expected [ 'grid-column-start: auto became 1' ] to deeply equal []
+  | AssertionError: expected [ 'grid-column-start: auto became 1' ] to deeply equal []
+  | - Expected
+  | + Received
+  | + [
+  | +   "grid-column-start: auto became 1",
+  | + ]
+  | AssertionError: expected [ 'grid-column-start: auto became 1' ] to deeply equal []
+  | - Expected
+  | + Received
+  | + [
+  | +   "grid-column-start: auto became 1",
+  | + ]
+sha256 before ecdc26d744de6ad49c0f745ffa5b5e53dcb1cfa4b8e9537930cb371216e8c243
+sha256 after  ecdc26d744de6ad49c0f745ffa5b5e53dcb1cfa4b8e9537930cb371216e8c243 (equal)
+reverted exit 0; Test Files  3 passed (3) / Tests  17 passed (17) / Test Files  3 passed (3) / Tests  17 passed (17)
+== paths-consumer-swapped: tests/setupService.ts via npm run test:setup
+mutated exit 1; Test Files  1 failed | 3 passed (4) / Tests  1 failed | 201 passed (202) / Test Files  1 failed | 3 passed (4) / Tests  1 failed | 201 passed (202)
+  FAIL  |setup| tests/setupService.test.ts > TAILWIND_PATHS > locates each Tailwind profile and fixture the service proofs read, as a file under the workspace root
+  FAIL  |setup| tests/setupService.test.ts > TAILWIND_PATHS > locates each Tailwind profile and fixture the service proofs read, as a file under the workspace root
+  | - Expected
+  | + Received
+  | +   "consumer tests/fixtures/tailwind/unexcluded.css",
+  | - Expected
+  | + Received
+  | +   "consumer tests/fixtures/tailwind/unexcluded.css",
+sha256 before b0f68c90da35b48afe1a643fa0e65e6179948795d70be1f941bd6d37773dfcc6
+sha256 after  b0f68c90da35b48afe1a643fa0e65e6179948795d70be1f941bd6d37773dfcc6 (equal)
+reverted exit 0; Test Files  4 passed (4) / Tests  202 passed (202) / Test Files  4 passed (4) / Tests  202 passed (202)
+== guide-loader-cwd-relative: tests/setupServer.ts via npm run test:setup
+mutated exit 1; Test Files  1 failed | 3 passed (4) / Tests  1 failed | 201 passed (202) / Test Files  1 failed | 3 passed (4) / Tests  1 failed | 201 passed (202)
+  FAIL  |setup| tests/setupServer.test.ts > server setup > reads the Veneer guide anchored at the workspace root rather than the working directory
+  FAIL  |setup| tests/setupServer.test.ts > server setup > reads the Veneer guide anchored at the workspace root rather than the working directory
+  |    → ENOENT: no such file or directory, open 'guides/veneer.md'
+  | Error: ENOENT: no such file or directory, open 'guides/veneer.md'
+  | Error: ENOENT: no such file or directory, open 'guides/veneer.md'
+  | Serialized Error: { errno: -2, code: 'ENOENT', syscall: 'open', path: 'guides/veneer.md' }
+sha256 before 14c7aa23c9959721aa4f0a9979b52cd66cfe380e37f6bb27d71a66915cfa1514
+sha256 after  14c7aa23c9959721aa4f0a9979b52cd66cfe380e37f6bb27d71a66915cfa1514 (equal)
+reverted exit 0; Test Files  4 passed (4) / Tests  202 passed (202) / Test Files  4 passed (4) / Tests  202 passed (202)
