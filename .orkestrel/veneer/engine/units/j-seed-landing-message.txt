@@ -1,0 +1,10 @@
+Refuse ColorMode writes after destruction
+
+`ColorMode.apply` and `toggle` wrote the root's attribute and storage after `destroy()`, against
+the construction ruling's refusal of post-`destroy` mutation (the design verdict's R16). Each now
+returns early on the destroyed reading `#original === undefined`, `toggle` reports the mode the
+root carries, and no second flag is added. The proof reddened on the inherited source (2 failed of
+14) and passes after the repair in Chromium 153.0.8010.12; the guide's § Surface sentence states
+the behaviour. J-SEED, W0 of the J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
