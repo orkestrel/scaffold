@@ -14,16 +14,18 @@ prune commit's message is the promotion record for what that commit removed.
 ## What the folder holds
 
 - `f8-design-verdict.md` (amended by `f8c-design-verdict.md`), `b-passive-design-verdict.md`,
-  `b-sweep-design-verdict.md`, and `b-forms-design-verdict.md` are the design rulings the live
-  units execute. `units/decisions-round-2.md` carries the user's rulings D2 to D13 verbatim and the
+  `b-sweep-design-verdict.md`, `b-forms-design-verdict.md`, and `b-forms-close-design-verdict.md`
+  (the close's four units, its rulings R1 to R12, and its exit criterion) are the design rulings the
+  live units execute. `units/decisions-round-2.md` carries the user's rulings D2 to D13 verbatim and the
   Orchestrator's rulings from D14 on. `units/b-passive-family.md` and `units/b-passive-baseline.md`
-  bind every B unit. `units/b-forms-terrain-report.md`, `units/f8-terrain-report.md`,
+  bind every B unit. `units/b-forms-terrain-report.md`, `units/b-forms-close-terrain-report.md`, `units/f8-terrain-report.md`,
   `units/f8-terrain-3-report.md`, and the `units/f8-tailwind-intersection.*` measurement are the
   terrain records the open briefs point at.
 - A live or unlanded unit's brief, report, audit claims, lane briefs, lane verdicts, round verdicts,
   launchers, diffs, status files, plant instruments, and logs sit under `units/` by unit prefix
-  (`b-forms-<key>-*` for the writing unit and `bf<letter>-*` for its audit rounds; `f8b-*` and
-  `f8c-*` for the F8 SERVICE line) until the unit lands on Veneer `main`, and the prune commit that
+  (`b-forms-<key>-*` for the writing unit and `bf<letter>-*` for its audit rounds, the close's
+  units as `b-forms-close-<unit>-*` with `bfs-*`, `bft-*`, `bff-*`, and `bfl-*` for their rounds;
+  `f8b-*` and `f8c-*` for the F8 SERVICE line) until the unit lands on Veneer `main`, and the prune commit that
   follows the landing removes them.
 - The landing instruments: `units/land-unit.sh` (diff3 through `units/resolve-diff3.py`,
   `units/resolve-hunks.py`, and `units/resolve-files-table.py`), `units/sort-inventories.py` (sorted
