@@ -1,0 +1,23 @@
+Render the validation tooltip specimens and read their room and stacking in the journey
+
+B-FORMS-CLOSE-SPECIMENS (`opus` on Opus 5, two rounds) adds `Input group valid tooltip` and
+`Input group invalid tooltip` to the Input group section: each a validated `.input-group
+.has-validation` whose control names its tooltip through `aria-describedby`, followed by a
+button-led group that is the room the tooltip hangs over, the overlap being the release's own
+positioning (R1); registers both as resting element frames in `CaptureSubject` and `CASCADE_KEYS`
+with the selector and `display` property each key reads; and has the journey read, for every key
+the release positions below its host's box (a geometry gate, not a class list), `display: block`
+in light and dark, the tooltip's bottom edge inside the frame, and the hit at the following
+button's centre as the tooltip, whose `z-index: 5` sits over the button's `z-index: 2`. The
+`CASCADE_KEYS` doc block and the rest case describe the population by its rule and name no member,
+the blank-frame measurement stays bound to its date and specimens, the input-group focus comment
+reads the shared-border model, the section proof asserts each specimen's association and
+visibility, and the Input group paragraph names the tooltip a passing or a failing group hangs
+over the row after it. The landing integration adds the § Input group classes sentences naming the
+frames and what the journey reads (R12).
+
+Audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker` on Sonnet in each round; the
+round-2 fixes carry the lanes' text (the doc block's tallies and predicate, the `limit` field, the
+`hit` value without a sentinel, the position-named group). Decisions D6, D31, and the close
+verdict's R1, R11, and R12. Records: `.orkestrel/veneer/units/bfs-*` and
+`b-forms-close-specimens-*` in the scaffold repository.
