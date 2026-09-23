@@ -1,0 +1,23 @@
+Ship the form key: the label partial, the tiered attribution ladder, and the split forms tables
+
+B-FORMS-LABEL-CASCADE (`opus` on Opus 5, the cascade round and the type-step round) adds the `_form-label.scss` partial with the
+label, help text, and horizontal label rules bound to the space, size, and line tokens the
+controls read (ruling D), loaded first among the forms partials; tiers the ledger's attribution
+ladder through the exported `matchSelectorKey` helper so a selector two shipped keys record goes
+to the most specific key (ruling A), which returns the forms rows the membership step handed to
+`form` and moves the `.row-gap-*` rows to `row-gap`; declares `FORM_LABEL_CASES` and a dedicated
+`FormFloatingCase` with per-property `reads` compared through the shared readers (rulings F, K);
+adds `form` to the shipped-key lists and the frozen `FORM_PARTIALS` record whose barrel-order
+case pins the release's forms sequence (rulings B, I); retires the three `.col-form-label*`
+deferral rows; proves the label, help text, and horizontal label in the browser, the horizontal
+label's line box level with its control at each size and under density, border-width, and
+line-height retunes (ruling L); and lands the guide's § Files row, `### Form label classes`, the
+forms sections in the release's order, the `col` and `row-gap` tables, the per-key forms tables,
+the Compatibility rows, and the § Showcase sentence B-FORMS-LABEL-SHOW returned (ruling H). The
+unsized horizontal label reads `--vn-size-3`, the control's type step, re-baselining ruling D on the
+unit's measurement that Veneer's body and control differ by a step, so its text sits level with the
+control's at each size; the stacked `.form-label` keeps inheriting the surrounding type.
+
+Audited by `analyst` on Astra, `reviewer` on Opus 5, and `checker` on Sonnet in each round.
+Decisions D20, D30, D35 and the label verdict's rulings A to L, with D re-baselined. Records: `.orkestrel/veneer/units/bfl-*` and
+`b-forms-label-cascade-*` in the scaffold repository.
