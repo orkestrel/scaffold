@@ -1,5 +1,0 @@
-The capture journey writes a resting element frame of the `Input group valid tooltip` specimen and
-one of the `Input group invalid tooltip` specimen. In each, the validated group's revealed tooltip
-hangs over the button-led group the specimen renders beneath that validated group. The journey
-reads that the tooltip ends inside the frame and paints over that group's button, because the
-tooltip rule writes `z-index: 5` and a grouped button rests at `z-index: 2`.
