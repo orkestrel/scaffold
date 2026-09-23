@@ -1,0 +1,1075 @@
+diff --git a/tests/src/styles/theme.test.ts b/tests/src/styles/theme.test.ts
+index 6f95873..cff2414 100644
+--- a/tests/src/styles/theme.test.ts
++++ b/tests/src/styles/theme.test.ts
+@@ -132,11 +132,15 @@ describe('theme scopes', () => {
+ 			})
+ 		}
+ 	})
+-	it(`carries the unlanded components' dark assets in the dark scope alone and leaves the landed components' to their own rules`, () => {
++	it(`carries the unlanded accordion's dark icons in the dark scope alone and leaves the landed components' to their own rules`, () => {
+ 		const specimen = requireValue(scene.mount('<div></div>').firstElementChild, 'No asset specimen')
+-		expect(readStyle(specimen, '--bs-navbar-toggler-icon-bg')).toBe('')
++		const unlanded = ['--bs-accordion-btn-icon', '--bs-accordion-btn-active-icon']
++		for (const name of unlanded) expect(readStyle(specimen, name)).toBe('')
+ 		document.documentElement.setAttribute('data-bs-theme', 'dark')
+-		expect(readStyle(specimen, '--bs-navbar-toggler-icon-bg')).toContain('data:image/svg+xml')
++		for (const name of unlanded) expect(readStyle(specimen, name)).toContain('data:image/svg+xml')
++		// The navbar ships its toggler icon on the icon's own dark rule, so a plain element in the dark
++		// scope reads none of the landed components' images.
++		expect(COMPONENT_DARK_ASSETS).toContain('--bs-navbar-toggler-icon-bg')
+ 		for (const name of COMPONENT_DARK_ASSETS) expect(readStyle(specimen, name)).toBe('')
+ 	})
+ })
+diff --git a/app/browser/sections/NavbarSection.ts b/app/browser/sections/NavbarSection.ts
+new file mode 100644
+index 0000000..8f939bc
+--- /dev/null
++++ b/app/browser/sections/NavbarSection.ts
+@@ -0,0 +1,20 @@
++import { NAVBAR_COPY, NAVBAR_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared navbar specimens into a named region.
++ * @example
++ * ```ts
++ * const section = new NavbarSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class NavbarSection extends SpecimenSection {
++	/**
++	 * Mounts the Navbar region and its specimens.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, NAVBAR_COPY, NAVBAR_SPECIMENS)
++	}
++}
+diff --git a/src/styles/components/_navbar.scss b/src/styles/components/_navbar.scss
+new file mode 100644
+index 0000000..9f25ec0
+--- /dev/null
++++ b/src/styles/components/_navbar.scss
+@@ -0,0 +1,235 @@
++@use 'sass:map';
++@use '../tokens';
++@use '../mixins' as *;
++
++@layer components {
++	// Every value here is Bootstrap 5.3.8's own, apart from the forced-colors focus outline. A length
++	// reads the Veneer scale token that already resolves to it, so the density factor reaches the bar,
++	// link, text, and toggler insets; the brand's inset keeps the release's literal, because no scale
++	// token resolves to it. A light color reads the emphasis channels the release reads, so the bar's
++	// text follows the mode it sits in, and a dark color is the release's literal written as a mix
++	// over the palette, because a partial declares no literal color of its own. The container
++	// combinators the release writes here ship from the container partial, which the inventory
++	// records them under.
++	.navbar {
++		--bs-navbar-padding-x: 0;
++		--bs-navbar-padding-y: var(--vn-space-4);
++		--bs-navbar-color: rgba(var(--bs-emphasis-color-rgb), 0.65);
++		--bs-navbar-hover-color: rgba(var(--bs-emphasis-color-rgb), 0.8);
++		--bs-navbar-disabled-color: rgba(var(--bs-emphasis-color-rgb), 0.3);
++		--bs-navbar-active-color: rgba(var(--bs-emphasis-color-rgb), 1);
++		--bs-navbar-brand-padding-y: 0.3125rem;
++		--bs-navbar-brand-margin-end: var(--vn-space-8);
++		--bs-navbar-brand-font-size: var(--vn-size-5);
++		--bs-navbar-brand-color: rgba(var(--bs-emphasis-color-rgb), 1);
++		--bs-navbar-brand-hover-color: rgba(var(--bs-emphasis-color-rgb), 1);
++		--bs-navbar-nav-link-padding-x: var(--vn-space-4);
++		--bs-navbar-toggler-padding-y: var(--vn-space-2);
++		--bs-navbar-toggler-padding-x: var(--vn-space-6);
++		--bs-navbar-toggler-font-size: var(--vn-size-5);
++		--bs-navbar-toggler-icon-bg: #{map.get(tokens.$icons, 'toggler-icon')};
++		--bs-navbar-toggler-border-color: rgba(var(--bs-emphasis-color-rgb), 0.15);
++		--bs-navbar-toggler-border-radius: var(--bs-border-radius);
++		// The ring width stays the release's literal: the published focus width is a narrower ring.
++		--bs-navbar-toggler-focus-width: 0.25rem;
++		--bs-navbar-toggler-transition: box-shadow 0.15s ease-in-out;
++		position: relative;
++		display: flex;
++		flex-wrap: wrap;
++		align-items: center;
++		justify-content: space-between;
++		padding: var(--bs-navbar-padding-y) var(--bs-navbar-padding-x);
++	}
++
++	.navbar-brand {
++		padding-top: var(--bs-navbar-brand-padding-y);
++		padding-bottom: var(--bs-navbar-brand-padding-y);
++		margin-right: var(--bs-navbar-brand-margin-end);
++		font-size: var(--bs-navbar-brand-font-size);
++		color: var(--bs-navbar-brand-color);
++		text-decoration: none;
++		white-space: nowrap;
++	}
++
++	.navbar-brand:hover,
++	.navbar-brand:focus {
++		color: var(--bs-navbar-brand-hover-color);
++	}
++
++	// The list retunes the nav link slots to the bar's own colors, so a link inside it paints from the
++	// navbar variables through the nav partial's rules. The link sits flush with the bar's edge until
++	// an expanded bar gives it the navbar's own inline padding.
++	.navbar-nav {
++		@include nav-list;
++		--bs-nav-link-padding-x: 0;
++		--bs-nav-link-color: var(--bs-navbar-color);
++		--bs-nav-link-hover-color: var(--bs-navbar-hover-color);
++		--bs-nav-link-disabled-color: var(--bs-navbar-disabled-color);
++		flex-direction: column;
++	}
++
++	// A link carrying the `show` class paints as the current link.
++	.navbar-nav .nav-link.active,
++	.navbar-nav .nav-link.show {
++		color: var(--bs-navbar-active-color);
++	}
++
++	// A menu in a collapsed bar opens in the column's flow and pushes the links after it down.
++	.navbar-nav .dropdown-menu {
++		position: static;
++	}
++
++	// The text takes the link's block inset, so it lines up with the links beside it.
++	.navbar-text {
++		padding-top: var(--vn-space-4);
++		padding-bottom: var(--vn-space-4);
++		color: var(--bs-navbar-color);
++	}
++
++	.navbar-text a,
++	.navbar-text a:hover,
++	.navbar-text a:focus {
++		color: var(--bs-navbar-active-color);
++	}
++
++	// The collapsible content takes a whole row of its own, so a collapsed bar wraps it under the
++	// brand and the toggler.
++	.navbar-collapse {
++		flex-grow: 1;
++		flex-basis: 100%;
++		align-items: center;
++	}
++
++	.navbar-toggler {
++		padding: var(--bs-navbar-toggler-padding-y) var(--bs-navbar-toggler-padding-x);
++		font-size: var(--bs-navbar-toggler-font-size);
++		line-height: 1;
++		color: var(--bs-navbar-color);
++		background-color: transparent;
++		border: var(--bs-border-width) solid var(--bs-navbar-toggler-border-color);
++		border-radius: var(--bs-navbar-toggler-border-radius);
++		// The mixin emits the reduced-motion twin the release records beside the transition.
++		@include transition(var(--bs-navbar-toggler-transition));
++	}
++
++	.navbar-toggler:hover {
++		text-decoration: none;
++	}
++
++	// The ring is a shadow in the toggler's own text color. Forced colors paint no shadow, so the
++	// toggler takes the system-highlight outline there.
++	.navbar-toggler:focus {
++		text-decoration: none;
++		outline: 0;
++		box-shadow: 0 0 0 var(--bs-navbar-toggler-focus-width);
++		@include forced-ring;
++	}
++
++	.navbar-toggler-icon {
++		display: inline-block;
++		width: 1.5em;
++		height: 1.5em;
++		vertical-align: middle;
++		background-image: var(--bs-navbar-toggler-icon-bg);
++		background-repeat: no-repeat;
++		background-position: center;
++		background-size: 100%;
++	}
++
++	// The list scrolls inside the height a consumer sets on it, and inside three quarters of the
++	// viewport until one is set.
++	.navbar-nav-scroll {
++		max-height: var(--bs-scroll-height, 75vh);
++		overflow-y: auto;
++	}
++
++	// Each expand class lays the bar out in one row from its boundary up: the links run in a row with
++	// the navbar's inline padding, a menu hangs over the content again, the collapsible content shows
++	// while its collapse class would hide it, and the toggler leaves. The class with no infix expands
++	// at every width. The offcanvas rules turn a panel into part of the row, and ship ahead of the
++	// panel's own partial. The `!important` flags are the release's own, so the expanded content and
++	// panel win over the hidden state their own classes write.
++	@include breakpoint-each using ($infix, $_boundary) {
++		.navbar-expand#{$infix} {
++			flex-wrap: nowrap;
++			justify-content: flex-start;
++		}
++
++		.navbar-expand#{$infix} .navbar-nav {
++			flex-direction: row;
++		}
++
++		.navbar-expand#{$infix} .navbar-nav .dropdown-menu {
++			position: absolute;
++		}
++
++		.navbar-expand#{$infix} .navbar-nav .nav-link {
++			padding-right: var(--bs-navbar-nav-link-padding-x);
++			padding-left: var(--bs-navbar-nav-link-padding-x);
++		}
++
++		.navbar-expand#{$infix} .navbar-nav-scroll {
++			overflow: visible;
++		}
++
++		.navbar-expand#{$infix} .navbar-collapse {
++			display: flex !important;
++			flex-basis: auto;
++		}
++
++		.navbar-expand#{$infix} .navbar-toggler {
++			display: none;
++		}
++
++		// The release resets the panel's motion to none, and its transition mixin records no
++		// reduced-motion twin beside a reset, so the declaration is written bare.
++		.navbar-expand#{$infix} .offcanvas {
++			position: static;
++			z-index: auto;
++			flex-grow: 1;
++			width: auto !important;
++			height: auto !important;
++			visibility: visible !important;
++			background-color: transparent !important;
++			border: 0 !important;
++			transform: none !important;
++			transition: none;
++		}
++
++		.navbar-expand#{$infix} .offcanvas .offcanvas-header {
++			display: none;
++		}
++
++		.navbar-expand#{$infix} .offcanvas .offcanvas-body {
++			display: flex;
++			flex-grow: 0;
++			padding: 0;
++			overflow-y: visible;
++		}
++	}
++
++	// The dark class and the dark attribute on the bar itself retune the bar's colors and toggler to
++	// the release's white literals. The release's light class emits no rule, so it has none here.
++	.navbar-dark,
++	.navbar[data-bs-theme='dark'] {
++		--bs-navbar-color: color-mix(in srgb, var(--vn-palette-white-base) 55%, transparent);
++		--bs-navbar-hover-color: color-mix(in srgb, var(--vn-palette-white-base) 75%, transparent);
++		--bs-navbar-disabled-color: color-mix(in srgb, var(--vn-palette-white-base) 25%, transparent);
++		--bs-navbar-active-color: var(--vn-palette-white-base);
++		--bs-navbar-brand-color: var(--vn-palette-white-base);
++		--bs-navbar-brand-hover-color: var(--vn-palette-white-base);
++		--bs-navbar-toggler-border-color: color-mix(
++			in srgb,
++			var(--vn-palette-white-base) 10%,
++			transparent
++		);
++		--bs-navbar-toggler-icon-bg: #{map.get(tokens.$dark, 'toggler-icon')};
++	}
++
++	// The release gives the icon a second value under its dark component rule. Declared on the icon,
++	// it outranks the value the bar carries, and like the release's own rule it matches any icon under
++	// a dark scope, a nested light island included.
++	[data-bs-theme='dark'] .navbar-toggler-icon {
++		--bs-navbar-toggler-icon-bg: #{map.get(tokens.$dark, 'toggler-icon')};
++	}
++}
+diff --git a/tests/app/browser/sections/NavbarSection.test.ts b/tests/app/browser/sections/NavbarSection.test.ts
+new file mode 100644
+index 0000000..58559eb
+--- /dev/null
++++ b/tests/app/browser/sections/NavbarSection.test.ts
+@@ -0,0 +1,161 @@
++import type { SectionInterface } from '@app/browser'
++import { NAVBAR_COPY, NAVBAR_SPECIMENS, NavbarSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readName } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('NavbarSection', () => {
++	it('renders every navbar form and every state set in markup through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new NavbarSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Navbar region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Navbar')
++			expect(region.querySelector('p')?.textContent).toBe(NAVBAR_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Navbar expanded',
++				'Navbar collapsed',
++				'Navbar opened',
++				'Navbar scroll',
++				'Navbar inverted',
++				'Navbar inverted class',
++				'Navbar expand sm',
++				'Navbar expand md',
++				'Navbar expand lg',
++				'Navbar expand xl',
++				'Navbar expand xxl',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				NAVBAR_SPECIMENS.map(({ markup }) => markup),
++			)
++			// Every rule the key ships without the pointer or the keyboard has a subject in the region,
++			// each expand step and each dark spelling included, because no script sets a state class
++			// here: a region rendering one spelling alone leaves the other rule photographed by nothing.
++			// The expanded offcanvas panel is the exception, because its own partial has not shipped.
++			for (const selector of [
++				'.navbar',
++				'.navbar > .container-fluid',
++				'.navbar-brand',
++				'.navbar-nav',
++				'.navbar-nav .nav-link.active',
++				'.navbar-nav .nav-link.show',
++				'.navbar-nav .dropdown-menu',
++				'.navbar-nav .dropdown-menu.show',
++				'.navbar-nav .nav-link.disabled',
++				'.navbar-text',
++				'.navbar-text a',
++				'.navbar-collapse',
++				'.navbar-collapse.collapse:not(.show)',
++				'.navbar-collapse.collapse.show',
++				'.navbar-toggler',
++				'.navbar-toggler.collapsed',
++				'.navbar-toggler:not(.collapsed)',
++				'.navbar-toggler-icon',
++				'.navbar-nav-scroll',
++				'.navbar-dark',
++				'.navbar[data-bs-theme="dark"]',
++				'[data-bs-theme="dark"] .navbar-toggler-icon',
++				...['', '-sm', '-md', '-lg', '-xl', '-xxl'].flatMap((infix) => [
++					`.navbar-expand${infix}`,
++					`.navbar-expand${infix} .navbar-nav`,
++					`.navbar-expand${infix} .navbar-nav .dropdown-menu`,
++					`.navbar-expand${infix} .navbar-nav .nav-link`,
++					`.navbar-expand${infix} .navbar-nav-scroll`,
++					`.navbar-expand${infix} .navbar-collapse`,
++					`.navbar-expand${infix} .navbar-toggler`,
++				]),
++			])
++				expect({ selector, rendered: region.querySelector(selector) !== null }).toEqual({
++					selector,
++					rendered: true,
++				})
++			expect(region.querySelector('.offcanvas')).toBeNull()
++			expect(region.querySelector('.navbar-light')).toBeNull()
++			// The journey reaches a link and a toggler by its accessible name, so a repeated label would
++			// resolve to whichever specimen came first and photograph the wrong one.
++			const named = [...region.querySelectorAll('a, button')]
++			const names = named.map((element) => readName(element))
++			expect(new Set(names).size).toBe(names.length)
++			expect(
++				[...region.querySelectorAll('a')].filter(
++					(element) => element.getAttribute('href') !== '#main',
++				),
++			).toEqual([])
++			// Each toggler names the content it controls and announces whether that content is open, and
++			// the collapsed class and the content's show class tell the same story in every bar.
++			for (const toggler of region.querySelectorAll('.navbar-toggler')) {
++				const target = requireValue(
++					region.querySelector(`#${toggler.getAttribute('aria-controls') ?? ''}`),
++					'No controlled content',
++				)
++				const open = target.classList.contains('show')
++				expect(target.matches('.collapse.navbar-collapse')).toBe(true)
++				expect(toggler.getAttribute('aria-expanded')).toBe(String(open))
++				expect(toggler.classList.contains('collapsed')).toBe(!open)
++				expect(toggler.getAttribute('type')).toBe('button')
++				expect(toggler.querySelector(':scope > .navbar-toggler-icon')).not.toBeNull()
++			}
++			// A menu is open exactly where its toggle carries the `show` class, as the dropdown script
++			// leaves it, and the only open menu lies in a collapsed bar's column rather than hanging from a
++			// row.
++			for (const toggle of region.querySelectorAll('.dropdown-toggle')) {
++				const menu = requireValue(toggle.nextElementSibling, 'No menu')
++				expect(menu.classList.contains('show')).toBe(toggle.classList.contains('show'))
++				expect(toggle.getAttribute('aria-expanded')).toBe(String(toggle.classList.contains('show')))
++			}
++			const open = [...region.querySelectorAll('.dropdown-menu.show')]
++			expect(open).not.toStrictEqual([])
++			for (const menu of open)
++				expect(menu.closest('.navbar')?.matches('[class*="navbar-expand"]')).toBe(false)
++			// The current link announces itself through the `aria-current` attribute, and every disabled
++			// link is announced and taken out of the tab order rather than being dimmed alone.
++			for (const element of region.querySelectorAll('.nav-link.active'))
++				expect(element.getAttribute('aria-current')).toBe('page')
++			for (const element of region.querySelectorAll('.nav-link.disabled')) {
++				expect(element.getAttribute('aria-disabled')).toBe('true')
++				expect(element.getAttribute('tabindex')).toBe('-1')
++			}
++			// The dark forms sit on a card carrying the dark mode, so their light text has a surface.
++			for (const bar of region.querySelectorAll('.navbar-dark, .navbar[data-bs-theme="dark"]'))
++				expect(bar.parentElement?.matches('.card[data-bs-theme="dark"]')).toBe(true)
++			// The card's dark scope alone paints a plain bar's brand white, so the class bar opens a
++			// light island with its own data-bs-theme attribute, and the white it shows over the card
++			// is the class's paint.
++			const inverted = requireValue(
++				region.querySelector('[data-specimen="Navbar inverted class"] .navbar'),
++				'No class bar',
++			)
++			expect(inverted.classList.contains('navbar-dark')).toBe(true)
++			expect(inverted.getAttribute('data-bs-theme')).toBe('light')
++			for (const bar of region.querySelectorAll('nav.navbar'))
++				expect(bar.getAttribute('aria-label')).not.toBeNull()
++			expect(Object.isFrozen(NAVBAR_COPY)).toBe(true)
++			expect(Object.isFrozen(NAVBAR_SPECIMENS)).toBe(true)
++			expect(NAVBAR_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++	it('releases the region and preserves adjacent content on repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new NavbarSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Navbar region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/src/styles/components/navbar.test.ts b/tests/src/styles/components/navbar.test.ts
+new file mode 100644
+index 0000000..c3c7fad
+--- /dev/null
++++ b/tests/src/styles/components/navbar.test.ts
+@@ -0,0 +1,612 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import {
++	hoverAccessible,
++	matchesColor,
++	readPixels,
++	readStyle,
++	readToken,
++	releaseMedia,
++	releasePointer,
++	stageMedia,
++	waitForAnimations,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { normalizeSelectorText } from '../../../setup.js'
++import {
++	collectLayer,
++	collectMediaConditions,
++	scene,
++	visitBreakpoint,
++} from '../../../setupBrowser.js'
++import {
++	extractShadowLayers,
++	NAVBAR_COLOR_CASES,
++	NAVBAR_DARK_CASES,
++	NAVBAR_DARK_CONSUMER_CASES,
++	NAVBAR_DARK_SPELLING_CASES,
++	NAVBAR_EXPAND_CASES,
++	NAVBAR_EXPAND_READINGS,
++	NAVBAR_LENGTH_CASES,
++	NAVBAR_MARKUP,
++	NAVBAR_PAINT_MOVE_CASES,
++	NAVBAR_SELECTORS,
++	REDUCED_MOTION,
++	splitTopLevelList,
++	TEXT_MODES,
++} from '../../../setupStyles.js'
++
++afterEach(async () => {
++	await releasePointer()
++	await releaseMedia()
++	scene.clear()
++})
++
++describe('navbar classes', () => {
++	it('lays the bar out as a wrapping row, writes no rule for the light class, and every shipped selector reaches the components layer', () => {
++		const host = scene.mount(`<nav class="navbar navbar-light">${NAVBAR_MARKUP}</nav>`)
++		const bar = requireValue(host.querySelector('.navbar'), 'No bar')
++		expect(readStyle(bar, 'position')).toBe('relative')
++		expect(readStyle(bar, 'display')).toBe('flex')
++		expect(readStyle(bar, 'flex-wrap')).toBe('wrap')
++		expect(readStyle(bar, 'align-items')).toBe('center')
++		expect(readStyle(bar, 'justify-content')).toBe('space-between')
++		const brand = requireValue(host.querySelector('.navbar-brand'), 'No brand')
++		expect(readStyle(brand, 'white-space')).toBe('nowrap')
++		expect(readStyle(brand, 'text-decoration-line')).toBe('none')
++		const icon = requireValue(host.querySelector('.navbar-toggler-icon'), 'No icon')
++		expect(readStyle(icon, 'display')).toBe('inline-block')
++		expect(readPixels(icon, 'width')).toBe(30)
++		expect(readPixels(icon, 'height')).toBe(30)
++		expect(readStyle(icon, 'vertical-align')).toBe('middle')
++		expect(readStyle(icon, 'background-repeat')).toBe('no-repeat')
++		expect(readStyle(icon, 'background-size')).toBe('100%')
++		// The layer reading answers for the names no resolved style reaches on its own: a state rule
++		// the partial stopped writing resolves to the resting treatment and reads normal, so the
++		// selectors are held against the rules the shipped cascade carries.
++		const rules = collectLayer('components')
++		const selected = new Set(
++			rules.flatMap((rule) =>
++				rule instanceof CSSStyleRule
++					? splitTopLevelList(rule.selectorText).map((selector) => normalizeSelectorText(selector))
++					: [],
++			),
++		)
++		expect(NAVBAR_SELECTORS.filter((selector) => !selected.has(selector))).toEqual([])
++		expect([...selected].filter((selector) => selector.includes('navbar-light'))).toEqual([])
++	})
++
++	it.each(NAVBAR_LENGTH_CASES)(
++		'reads $reads from $property and moves it only from the declaring $scope',
++		({ property, scope, target, reads, pixels }) => {
++			const host = scene.mount(
++				`<div><nav class="navbar navbar-expand" data-bar="expanded">${NAVBAR_MARKUP}</nav><nav class="navbar" data-bar="collapsed">${NAVBAR_MARKUP}</nav></div>`,
++			)
++			const wrapper = requireValue(host.querySelector<HTMLElement>('div'), 'No wrapper')
++			const element = requireValue(host.querySelector(target), `No ${target}`)
++			const declaring = requireValue(element.closest<HTMLElement>(scope), `No ${scope}`)
++			expect(readPixels(element, reads)).toBe(pixels)
++			// The class declares the property itself, so a declaration on an ancestor is outranked and
++			// the declaring element is where a consumer retunes it. Reading the shadowed wrapper first
++			// is what makes the declaring element's own override the thing under test.
++			wrapper.style.setProperty(property, '19px')
++			expect(readPixels(element, reads)).toBe(pixels)
++			declaring.style.setProperty(property, '19px')
++			expect(readPixels(element, reads)).toBe(19)
++		},
++	)
++
++	it.each(NAVBAR_COLOR_CASES)(
++		'paints $reads from $property at its alpha over the emphasis channels, and moves it only from the bar',
++		async ({ property, target, reads, alpha }) => {
++			const host = scene.mount(`<div><nav class="navbar">${NAVBAR_MARKUP}</nav></div>`)
++			const wrapper = requireValue(host.querySelector<HTMLElement>('div'), 'No wrapper')
++			const bar = requireValue(host.querySelector<HTMLElement>('.navbar'), 'No bar')
++			const element = requireValue(host.querySelector(target), `No ${target}`)
++			// The links and the toggler transition their paint, so the preference is staged first and
++			// every reading here is the settled value the declaration resolves to.
++			await stageMedia({ motion: false })
++			const channels = readToken(element, '--bs-emphasis-color-rgb')
++			expect(matchesColor(readStyle(element, reads), `rgba(${channels}, ${alpha})`)).toBe(true)
++			expect(matchesColor(readStyle(element, reads), 'rebeccapurple')).toBe(false)
++			wrapper.style.setProperty(property, 'rebeccapurple')
++			expect(matchesColor(readStyle(element, reads), 'rebeccapurple')).toBe(false)
++			bar.style.setProperty(property, 'rebeccapurple')
++			expect(matchesColor(readStyle(element, reads), 'rebeccapurple')).toBe(true)
++		},
++	)
++
++	it("paints every link inside the list from the bar's slots rather than the link's own, the current and open links included", async () => {
++		const host = scene.mount(
++			`<nav class="navbar">${NAVBAR_MARKUP}</nav><nav class="nav" aria-label="Loose links"><a class="nav-link" href="#loose">Loose</a><a class="nav-link disabled" aria-disabled="true" tabindex="-1" href="#stale">Stale</a></nav>`,
++		)
++		await stageMedia({ motion: false })
++		const bar = requireValue(host.querySelector<HTMLElement>('.navbar'), 'No bar')
++		const plain = requireValue(bar.querySelector('a[href="#plain"]'), 'No plain link')
++		const disabled = requireValue(bar.querySelector('a[href="#disabled"]'), 'No disabled link')
++		const active = requireValue(bar.querySelector('a[href="#active"]'), 'No active link')
++		const open = requireValue(bar.querySelector('a[href="#toggle"]'), 'No open toggle')
++		const loose = requireValue(host.querySelector('a[href="#loose"]'), 'No loose link')
++		const stale = requireValue(host.querySelector('a[href="#stale"]'), 'No loose disabled link')
++		// The list retunes the link slots the nav partial reads, so a link inside it paints from the
++		// bar's variables and the same link outside it paints from the link colors.
++		expect(matchesColor(readStyle(plain, 'color'), readToken(bar, '--bs-navbar-color'))).toBe(true)
++		expect(
++			matchesColor(readStyle(disabled, 'color'), readToken(bar, '--bs-navbar-disabled-color')),
++		).toBe(true)
++		expect(matchesColor(readStyle(loose, 'color'), readToken(loose, '--bs-link-color'))).toBe(true)
++		expect(matchesColor(readStyle(stale, 'color'), readToken(stale, '--bs-secondary-color'))).toBe(
++			true,
++		)
++		expect(matchesColor(readStyle(plain, 'color'), readStyle(loose, 'color'))).toBe(false)
++		expect(matchesColor(readStyle(disabled, 'color'), readStyle(stale, 'color'))).toBe(false)
++		// The current link and the open toggle take the active slot, and the plain link beside them
++		// takes neither.
++		for (const link of [active, open])
++			expect(
++				matchesColor(readStyle(link, 'color'), readToken(bar, '--bs-navbar-active-color')),
++			).toBe(true)
++		expect(matchesColor(readStyle(plain, 'color'), readStyle(active, 'color'))).toBe(false)
++		// The list sits flush with the bar's edge and keeps the release's block inset, and the text
++		// beside it takes that same inset.
++		const list = requireValue(bar.querySelector('.navbar-nav'), 'No list')
++		const text = requireValue(bar.querySelector('.navbar-text'), 'No text')
++		expect(readStyle(list, 'display')).toBe('flex')
++		expect(readStyle(list, 'flex-direction')).toBe('column')
++		expect(readPixels(list, 'padding-left')).toBe(0)
++		expect(readPixels(list, 'margin-bottom')).toBe(0)
++		expect(readStyle(list, 'list-style-type')).toBe('none')
++		expect(readPixels(plain, 'padding-left')).toBe(0)
++		expect(readPixels(text, 'padding-top')).toBe(readPixels(plain, 'padding-top'))
++		expect(readPixels(text, 'padding-bottom')).toBe(8)
++		expect(matchesColor(readStyle(text, 'color'), readToken(bar, '--bs-navbar-color'))).toBe(true)
++		const inline = requireValue(text.querySelector('a'), 'No text link')
++		expect(
++			matchesColor(readStyle(inline, 'color'), readToken(bar, '--bs-navbar-active-color')),
++		).toBe(true)
++		// A retune on the bar reaches every link through the list.
++		bar.style.setProperty('--bs-navbar-color', 'rebeccapurple')
++		expect(matchesColor(readStyle(plain, 'color'), 'rebeccapurple')).toBe(true)
++		expect(matchesColor(readStyle(loose, 'color'), 'rebeccapurple')).toBe(false)
++	})
++
++	it("repaints a hovered link, the brand, and the text's link from the bar's hover slots", async () => {
++		const host = scene.mount(`<nav class="navbar navbar-expand">${NAVBAR_MARKUP}</nav>`)
++		const bar = requireValue(host.querySelector<HTMLElement>('.navbar'), 'No bar')
++		const plain = requireValue(bar.querySelector('a[href="#plain"]'), 'No plain link')
++		const brand = requireValue(bar.querySelector<HTMLElement>('.navbar-brand'), 'No brand')
++		const inline = requireValue(bar.querySelector('.navbar-text a'), 'No text link')
++		await stageMedia({ motion: false })
++		const hover = readToken(bar, '--bs-navbar-hover-color')
++		expect(matchesColor(readStyle(plain, 'color'), hover)).toBe(false)
++		await hoverAccessible('link', 'Plain')
++		await waitForAnimations(plain)
++		expect(plain.matches(':hover')).toBe(true)
++		expect(matchesColor(readStyle(plain, 'color'), hover)).toBe(true)
++		// The brand's resting and hover slots share the release's value, so each is retuned on the
++		// bar to read the rule that consumes it.
++		bar.style.setProperty('--bs-navbar-brand-color', 'rebeccapurple')
++		bar.style.setProperty('--bs-navbar-brand-hover-color', 'teal')
++		expect(matchesColor(readStyle(brand, 'color'), 'rebeccapurple')).toBe(true)
++		await hoverAccessible('link', 'Brand')
++		expect(brand.matches(':hover')).toBe(true)
++		expect(matchesColor(readStyle(brand, 'color'), 'teal')).toBe(true)
++		await releasePointer()
++		brand.focus()
++		expect(brand.matches(':focus')).toBe(true)
++		expect(matchesColor(readStyle(brand, 'color'), 'teal')).toBe(true)
++		brand.blur()
++		// The text's link holds the active slot at rest, under the pointer, and under focus.
++		bar.style.setProperty('--bs-navbar-active-color', 'olive')
++		expect(matchesColor(readStyle(inline, 'color'), 'olive')).toBe(true)
++		await hoverAccessible('link', 'Account')
++		expect(inline.matches(':hover')).toBe(true)
++		expect(matchesColor(readStyle(inline, 'color'), 'olive')).toBe(true)
++	})
++
++	it.each(NAVBAR_EXPAND_CASES)(
++		'expands the $name bar at its boundary and collapses it one pixel below',
++		async ({ name, boundary, readings }) => {
++			const host = scene.mount(
++				`<nav class="navbar navbar-expand-${name}">${NAVBAR_MARKUP}</nav><nav class="navbar navbar-expand-${name}"><ul class="navbar-nav navbar-nav-scroll"><li class="nav-item"><a class="nav-link" href="#scroll">Scroll</a></li></ul></nav>`,
++			)
++			const [bar, scrolling] = [...host.querySelectorAll('.navbar')]
++			const content = requireValue(bar?.querySelector('.navbar-collapse'), 'No content')
++			const toggler = requireValue(bar?.querySelector('.navbar-toggler'), 'No toggler')
++			const list = requireValue(bar?.querySelector('.navbar-nav'), 'No list')
++			const menu = requireValue(bar?.querySelector('.dropdown-menu'), 'No menu')
++			const link = requireValue(bar?.querySelector('a[href="#plain"]'), 'No link')
++			const scroll = requireValue(scrolling?.querySelector('.navbar-nav-scroll'), 'No scroll')
++			for (const viewport of readings)
++				await visitBreakpoint(viewport, () => {
++					expect(window.innerWidth).toBe(viewport)
++					const reached = viewport >= boundary
++					expect({
++						viewport,
++						wrap: readStyle(requireValue(bar, 'No bar'), 'flex-wrap'),
++						content: readStyle(content, 'display'),
++						basis: readStyle(content, 'flex-basis'),
++						toggler: readStyle(toggler, 'display'),
++						direction: readStyle(list, 'flex-direction'),
++						menu: readStyle(menu, 'position'),
++						inset: readPixels(link, 'padding-left'),
++						overflow: readStyle(scroll, 'overflow-y'),
++					}).toEqual({
++						viewport,
++						wrap: reached ? 'nowrap' : 'wrap',
++						content: reached ? 'flex' : 'none',
++						basis: reached ? 'auto' : '100%',
++						toggler: reached ? 'none' : 'block',
++						direction: reached ? 'row' : 'column',
++						menu: reached ? 'absolute' : 'static',
++						inset: reached ? 8 : 0,
++						overflow: reached ? 'visible' : 'auto',
++					})
++				})
++		},
++	)
++
++	it('expands the bar carrying no infix at every width, the narrowest included', async () => {
++		const host = scene.mount(`<nav class="navbar navbar-expand">${NAVBAR_MARKUP}</nav>`)
++		const content = requireValue(host.querySelector('.navbar-collapse'), 'No content')
++		const toggler = requireValue(host.querySelector('.navbar-toggler'), 'No toggler')
++		const list = requireValue(host.querySelector('.navbar-nav'), 'No list')
++		for (const viewport of [375, 1401])
++			await visitBreakpoint(viewport, () => {
++				expect({
++					viewport,
++					content: readStyle(content, 'display'),
++					toggler: readStyle(toggler, 'display'),
++					direction: readStyle(list, 'flex-direction'),
++				}).toEqual({ viewport, content: 'flex', toggler: 'none', direction: 'row' })
++			})
++		// The class carrying no infix writes its rules under no condition at all.
++		const rules = collectLayer('components')
++		expect(collectMediaConditions(rules, '.navbar-expand .navbar-collapse')).toEqual([])
++		expect(collectMediaConditions(rules, '.navbar-expand-sm .navbar-collapse')).toHaveLength(1)
++	})
++
++	it('expands the sm through xl bars at the wide journey width and none at the narrow one, which leaves the xxl bar collapsed at both', async () => {
++		const host = scene.mount(
++			NAVBAR_EXPAND_CASES.map(
++				({ name }) =>
++					`<nav class="navbar navbar-expand-${name}" data-step="${name}">${NAVBAR_MARKUP}</nav>`,
++			).join(''),
++		)
++		const bars = [...host.querySelectorAll<HTMLElement>('[data-step]')]
++		for (const { viewport, expanded } of NAVBAR_EXPAND_READINGS)
++			expect(
++				await visitBreakpoint(viewport, () =>
++					bars.flatMap((bar) =>
++						readStyle(
++							requireValue(bar.querySelector('.navbar-toggler'), 'No toggler'),
++							'display',
++						) === 'none'
++							? [bar.dataset.step]
++							: [],
++					),
++				),
++			).toEqual(expanded)
++	})
++
++	it('wraps the opened content under the brand and the toggler and opens a menu in the column flow', () => {
++		const host = scene.mount(`<nav class="navbar">${NAVBAR_MARKUP}</nav>`)
++		const bar = requireValue(host.querySelector('.navbar'), 'No bar')
++		const content = requireValue(bar.querySelector('.navbar-collapse'), 'No content')
++		expect(readStyle(content, 'display')).toBe('none')
++		content.classList.add('show')
++		expect(readStyle(content, 'display')).toBe('block')
++		expect(readStyle(content, 'flex-grow')).toBe('1')
++		expect(readStyle(content, 'align-items')).toBe('center')
++		// The content takes a whole row, so it wraps under the brand and the toggler and spans the bar.
++		const brand = requireValue(bar.querySelector('.navbar-brand'), 'No brand')
++		const toggler = requireValue(bar.querySelector('.navbar-toggler'), 'No toggler')
++		const top = content.getBoundingClientRect().top
++		expect(top).toBeGreaterThanOrEqual(brand.getBoundingClientRect().bottom - 0.5)
++		expect(top).toBeGreaterThanOrEqual(toggler.getBoundingClientRect().bottom - 0.5)
++		expect(content.getBoundingClientRect().width).toBeCloseTo(bar.getBoundingClientRect().width, 0)
++		// The open menu lies in the column's flow, so the list grows around it and the text after the
++		// list starts below it rather than under it.
++		const list = requireValue(bar.querySelector('.navbar-nav'), 'No list')
++		const menu = requireValue(bar.querySelector('.dropdown-menu'), 'No menu')
++		expect(readStyle(menu, 'position')).toBe('static')
++		expect(list.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(
++			menu.getBoundingClientRect().bottom,
++		)
++	})
++
++	it('turns an offcanvas panel into part of the expanded row above the boundary, over the hidden state the panel carries inline', async () => {
++		const panel =
++			'<div class="offcanvas" style="visibility: hidden; transform: translateX(-100%); width: 200px; background-color: rgb(1, 2, 3); border: 3px solid rgb(1, 2, 3)"><div class="offcanvas-header">Header</div><div class="offcanvas-body" style="padding: 5px"><a href="#panel">Panel</a></div></div>'
++		const host = scene.mount(
++			`<nav class="navbar navbar-expand-lg" data-bar="ramp">${panel}</nav><nav class="navbar navbar-expand" data-bar="always">${panel}</nav>`,
++		)
++		const expanded = {
++			position: 'static',
++			grow: '1',
++			visibility: 'visible',
++			transform: 'none',
++			width: 'auto',
++			fill: 'rgba(0, 0, 0, 0)',
++			edge: 0,
++			header: 'none',
++			body: 'flex',
++			inset: 5,
++		}
++		// The body's inset is normal in the release, so the inline inset wins over it; every panel
++		// declaration the release marks important wins over the inline hidden state instead.
++		for (const viewport of [991, 992]) {
++			const reading = await visitBreakpoint(viewport, () =>
++				['ramp', 'always'].map((bar) => {
++					const scope = requireValue(host.querySelector(`[data-bar="${bar}"]`), `No ${bar} bar`)
++					const offcanvas = requireValue(scope.querySelector('.offcanvas'), 'No panel')
++					const header = requireValue(scope.querySelector('.offcanvas-header'), 'No header')
++					const body = requireValue(scope.querySelector('.offcanvas-body'), 'No body')
++					return {
++						position: readStyle(offcanvas, 'position'),
++						grow: readStyle(offcanvas, 'flex-grow'),
++						visibility: readStyle(offcanvas, 'visibility'),
++						transform: readStyle(offcanvas, 'transform'),
++						width: readStyle(offcanvas, 'width') === '200px' ? 'inline' : 'auto',
++						fill: readStyle(offcanvas, 'background-color'),
++						edge: readPixels(offcanvas, 'border-top-width'),
++						header: readStyle(header, 'display'),
++						body: readStyle(body, 'display'),
++						inset: readPixels(body, 'padding-top'),
++					}
++				}),
++			)
++			expect(reading).toEqual([
++				viewport >= 992
++					? expanded
++					: {
++							position: 'static',
++							grow: '0',
++							visibility: 'hidden',
++							transform: 'matrix(1, 0, 0, 1, -200, 0)',
++							width: 'inline',
++							fill: 'rgb(1, 2, 3)',
++							edge: 3,
++							header: 'block',
++							body: 'block',
++							inset: 5,
++						},
++				expanded,
++			])
++		}
++		const rules = collectLayer('components')
++		expect(collectMediaConditions(rules, '.navbar-expand-lg .offcanvas')).toHaveLength(1)
++		expect(collectMediaConditions(rules, '.navbar-expand .offcanvas')).toEqual([])
++	})
++
++	it('clamps the scrolling list to three quarters of the viewport until a height is set on it', () => {
++		const host = scene.mount(
++			`<nav class="navbar"><ul class="navbar-nav navbar-nav-scroll">${Array.from(
++				{ length: 40 },
++				(_, index) =>
++					`<li class="nav-item"><a class="nav-link" href="#row-${index}">Row ${index}</a></li>`,
++			).join('')}</ul></nav>`,
++		)
++		const list = requireValue(host.querySelector<HTMLElement>('.navbar-nav-scroll'), 'No list')
++		expect(readStyle(list, 'overflow-y')).toBe('auto')
++		expect(readPixels(list, 'max-height')).toBeCloseTo(window.innerHeight * 0.75, 0)
++		expect(list.getBoundingClientRect().height).toBeCloseTo(window.innerHeight * 0.75, 0)
++		expect(list.scrollHeight).toBeGreaterThan(list.clientHeight)
++		list.style.setProperty('--bs-scroll-height', '100px')
++		expect(readPixels(list, 'max-height')).toBe(100)
++		expect(list.getBoundingClientRect().height).toBe(100)
++	})
++
++	it.each(NAVBAR_DARK_SPELLING_CASES)(
++		'retunes every color and toggler slot to the release value under $name',
++		({ selector, markup }) => {
++			const host = scene.mount(`<nav class="navbar">${NAVBAR_MARKUP}</nav>${markup}`)
++			const [plain, dark] = [...host.querySelectorAll(':scope > .navbar')]
++			const light = requireValue(plain, 'No plain bar')
++			const retuned = requireValue(dark, 'No dark bar')
++			// The spelling's bar is the recorded dark rule's subject and the plain bar is not.
++			expect([light.matches(selector), retuned.matches(selector)]).toEqual([false, true])
++			for (const { property, value } of NAVBAR_DARK_CASES) {
++				const reading = readToken(retuned, property)
++				const matched = property.endsWith('-bg') ? reading === value : matchesColor(reading, value)
++				expect({ property, matched }).toEqual({ property, matched: true })
++				expect({ property, moved: readToken(light, property) !== reading }).toEqual({
++					property,
++					moved: true,
++				})
++			}
++			// The slots reach the bar's consumers: the brand, a link, the toggler's edge, and the icon.
++			const icon = requireValue(retuned.querySelector('.navbar-toggler-icon'), 'No icon')
++			expect(readStyle(icon, 'background-image')).toBe(
++				requireValue(NAVBAR_DARK_CASES.at(-1), 'No icon row').value,
++			)
++			for (const { target, reads, property } of NAVBAR_DARK_CONSUMER_CASES) {
++				const element = requireValue(retuned.querySelector(target), `No ${target}`)
++				expect(matchesColor(readStyle(element, reads), readToken(retuned, property))).toBe(true)
++			}
++		},
++	)
++
++	it('paints the dark icon on an icon inside a dark scope, and declares no icon on a plain element there', () => {
++		const host = scene.mount(
++			`<div data-bs-theme="dark"><div data-probe="dark"></div><span class="navbar-toggler-icon" data-icon="dark"></span><div data-bs-theme="light"><span class="navbar-toggler-icon" data-icon="island"></span></div></div><div data-bs-theme="light"><div data-probe="light"></div><nav class="navbar">${NAVBAR_MARKUP}</nav></div>`,
++		)
++		const dark = requireValue(NAVBAR_DARK_CASES.at(-1), 'No icon row').value
++		const [plain, bare, icon, island, light] = [
++			'[data-probe="dark"]',
++			'[data-probe="light"]',
++			'[data-icon="dark"]',
++			'[data-icon="island"]',
++			'.navbar .navbar-toggler-icon',
++		].map((selector) =>
++			readToken(
++				requireValue(host.querySelector(selector), `No ${selector}`),
++				'--bs-navbar-toggler-icon-bg',
++			),
++		)
++		// The dark value lives on the icon's own rule, so the dark scope itself carries no icon and an
++		// element that is not an icon reads nothing there, as it does in light.
++		expect(plain).toBe('')
++		expect(bare).toBe('')
++		expect(icon).toBe(dark)
++		// Like the release's own rule, it matches any icon under a dark scope, a nested light island
++		// included, and an icon in a light bar inherits the bar's light value.
++		expect(island).toBe(dark)
++		expect(light).toContain('data:image/svg+xml')
++		expect(light).not.toBe(dark)
++		expect(
++			readStyle(
++				requireValue(host.querySelector('.navbar .navbar-toggler-icon'), 'No light icon'),
++				'background-image',
++			),
++		).toBe(light)
++	})
++
++	it("rings the focused toggler in its own color at the bar's focus width", async () => {
++		const host = scene.mount(`<nav class="navbar">${NAVBAR_MARKUP}</nav>`)
++		const bar = requireValue(host.querySelector<HTMLElement>('.navbar'), 'No bar')
++		const toggler = requireValue(host.querySelector<HTMLElement>('.navbar-toggler'), 'No toggler')
++		// The toggler transitions its ring, so the preference is staged first and the ring is read at
++		// its settled spread.
++		await stageMedia({ motion: false })
++		expect(readStyle(toggler, 'box-shadow')).toBe('none')
++		toggler.focus()
++		expect(toggler.matches(':focus')).toBe(true)
++		expect(readStyle(toggler, 'outline-style')).toBe('none')
++		expect(readStyle(toggler, 'text-decoration-line')).toBe('none')
++		// The spread is the recorded quarter-rem ring, read as the painted layer rather than as the
++		// declared text, and the ring takes the toggler's own text color.
++		const [layer] = extractShadowLayers(readStyle(toggler, 'box-shadow'))
++		expect(requireValue(layer, 'No ring').lengths).toEqual([0, 0, 0, 4])
++		expect(matchesColor(requireValue(layer, 'No ring').color, readStyle(toggler, 'color'))).toBe(
++			true,
++		)
++		bar.style.setProperty('--bs-navbar-toggler-focus-width', '7px')
++		expect(
++			requireValue(extractShadowLayers(readStyle(toggler, 'box-shadow'))[0], 'No ring').lengths,
++		).toEqual([0, 0, 0, 7])
++		toggler.blur()
++		expect(readStyle(toggler, 'box-shadow')).toBe('none')
++	})
++
++	it('outlines the focused toggler at the focus width under forced colors, where its shadow ring is not painted', async () => {
++		const host = scene.mount(
++			`<nav class="navbar">${NAVBAR_MARKUP}</nav><div id="focus-gauge" style="width: var(--vn-focus-width)"></div>`,
++		)
++		const toggler = requireValue(host.querySelector<HTMLElement>('.navbar-toggler'), 'No toggler')
++		const gauge = requireValue(host.querySelector('#focus-gauge'), 'No focus gauge')
++		toggler.focus()
++		expect(readStyle(toggler, 'outline-style')).toBe('none')
++		// A color reading cannot fail under forced colors, because the installed color reader
++		// resolves each side through a probe whose color forced colors also replace, so the outline
++		// is read by its style and its width rather than by its paint.
++		await stageMedia({ forced: true })
++		expect(readStyle(toggler, 'outline-style')).toBe('solid')
++		expect(readPixels(toggler, 'outline-width')).toBe(readPixels(gauge, 'width'))
++		toggler.blur()
++		expect(readStyle(toggler, 'outline-style')).toBe('none')
++	})
++
++	it('collapses the toggler transition under the staged preference and gates it on that condition', async () => {
++		const host = scene.mount(`<nav class="navbar">${NAVBAR_MARKUP}</nav>`)
++		const toggler = requireValue(host.querySelector('.navbar-toggler'), 'No toggler')
++		expect(readStyle(toggler, 'transition-property')).toBe('box-shadow')
++		expect(readStyle(toggler, 'transition-duration')).toBe('0.15s')
++		expect(readStyle(toggler, 'transition-timing-function')).toBe('ease-in-out')
++		await stageMedia({ motion: false })
++		expect(readStyle(toggler, 'transition-duration')).toBe('0s')
++		await releaseMedia()
++		expect(readStyle(toggler, 'transition-duration')).toBe('0.15s')
++		// The staged reading proves what the browser resolves; this reads the rule the shipped
++		// cascade carries, so a partial that collapsed the transition through another property or
++		// under another condition reports here even while the resolved duration agreed.
++		const rules = collectLayer('components')
++		expect(collectMediaConditions(rules, '.navbar-toggler')).toEqual([REDUCED_MOTION])
++		const gated = rules.flatMap((rule) =>
++			rule instanceof CSSMediaRule && rule.conditionText === REDUCED_MOTION
++				? [...rule.cssRules].flatMap((nested) =>
++						nested instanceof CSSStyleRule && nested.selectorText === '.navbar-toggler'
++							? [nested.style]
++							: [],
++					)
++				: [],
++		)
++		const declarations = requireValue(gated[0], 'No gated toggler rule')
++		expect(gated).toHaveLength(1)
++		expect([...declarations].filter((name) => !name.startsWith('transition-'))).toEqual([])
++		expect(declarations.getPropertyValue('transition-property')).toBe('none')
++		// The offcanvas reset is a bare declaration the release gates on no condition.
++		expect(collectMediaConditions(rules, '.navbar-expand .offcanvas')).toEqual([])
++	})
++
++	it('drives the bar, link, text, and toggler insets from the density factor and leaves the brand inset fixed', () => {
++		const host = scene.mount(
++			`<nav class="navbar navbar-expand" data-bar="expanded">${NAVBAR_MARKUP}</nav><nav class="navbar" data-bar="collapsed">${NAVBAR_MARKUP}</nav>`,
++		)
++		const sites = [
++			['[data-bar="expanded"]', 'padding-top'],
++			['[data-bar="expanded"] a[href="#plain"]', 'padding-left'],
++			['[data-bar="collapsed"] a[href="#plain"]', 'padding-top'],
++			['[data-bar="collapsed"] .navbar-text', 'padding-top'],
++			['[data-bar="collapsed"] .navbar-toggler', 'padding-top'],
++			['[data-bar="collapsed"] .navbar-toggler', 'padding-left'],
++			['[data-bar="collapsed"] .navbar-brand', 'padding-top'],
++		].map(([selector = '', property = '']) => ({
++			element: requireValue(host.querySelector(selector), `No ${selector}`),
++			property,
++		}))
++		expect(sites.map(({ element, property }) => readPixels(element, property))).toEqual([
++			8, 8, 8, 8, 4, 12, 5,
++		])
++		// The factors are declared on the document element, where the scale tokens are, so an
++		// override on the bar itself would leave the already-resolved lengths untouched.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect(sites.map(({ element, property }) => readPixels(element, property))).toEqual([
++				16, 16, 16, 16, 8, 24, 5,
++			])
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++		expect(sites.map(({ element, property }) => readPixels(element, property))).toEqual([
++			8, 8, 8, 8, 4, 12, 5,
++		])
++	})
++
++	it.each(TEXT_MODES)(
++		"paints a plain bar's text from the emphasis channels of %s and holds the dark class on the release's whites",
++		async (mode) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}"><nav class="navbar" data-bar="plain">${NAVBAR_MARKUP}</nav><nav class="navbar navbar-dark" data-bar="dark">${NAVBAR_MARKUP}</nav></div>`,
++			)
++			await stageMedia({ motion: false })
++			const brand = requireValue(host.querySelector('[data-bar="plain"] .navbar-brand'), 'No brand')
++			const link = requireValue(
++				host.querySelector('[data-bar="plain"] a[href="#plain"]'),
++				'No link',
++			)
++			const channels = readToken(brand, '--bs-emphasis-color-rgb')
++			expect(matchesColor(readStyle(brand, 'color'), `rgb(${channels})`)).toBe(true)
++			expect(matchesColor(readStyle(link, 'color'), `rgba(${channels}, 0.65)`)).toBe(true)
++			const whites = requireValue(host.querySelector('[data-bar="dark"] .navbar-brand'), 'No brand')
++			expect(matchesColor(readStyle(whites, 'color'), 'rgb(255, 255, 255)')).toBe(true)
++		},
++	)
++
++	it('reads one plain bar paint in light and another in dark, and one dark-class paint in both', () => {
++		const light = scene.mount(
++			`<div data-bs-theme="light"><nav class="navbar">${NAVBAR_MARKUP}</nav><nav class="navbar navbar-dark">${NAVBAR_MARKUP}</nav></div>`,
++		)
++		const dark = scene.mount(
++			`<div data-bs-theme="dark"><nav class="navbar">${NAVBAR_MARKUP}</nav><nav class="navbar navbar-dark">${NAVBAR_MARKUP}</nav></div>`,
++		)
++		for (const { selector, moves } of NAVBAR_PAINT_MOVE_CASES) {
++			const lit = requireValue(light.querySelector(selector), `No light ${selector}`)
++			const dim = requireValue(dark.querySelector(selector), `No dark ${selector}`)
++			expect({ selector, moved: readStyle(lit, 'color') !== readStyle(dim, 'color') }).toEqual({
++				selector,
++				moved: moves,
++			})
++		}
++	})
++})

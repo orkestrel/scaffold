@@ -1,0 +1,3 @@
+NAVBAR round 3, the Orchestrator's readings settling the checker's command sub-clause (2026-09-23, 19:39 UTC):
+  git -C /home/user/veneer-nb apply --check nb-shared-3.patch: exit 0; nb-offlimits-3.patch: exit 0 (the retention reading at 19:36 UTC read the same, with every shared index base equal to the a658879 blob).
+  The report's counts ("three tables", "four controls", "two case-title-only mutations", "three inline tuple loops") are record-only; the report stays as audited.
