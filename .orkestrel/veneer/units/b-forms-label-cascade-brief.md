@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5 (native Claude subagent), sole writer in `/home/user/veneer-bfl` (a worktree
-detached at `BFF_LANDED_SHA`, the session branch tip after B-FORMS-CLOSE-FORCED landed, with
+detached at `a56ca7e`, the session branch tip after B-FORMS-CLOSE-FORCED landed, with
 `node_modules` installed by the Orchestrator). Perform the assignment directly and spawn nothing.
 Use absolute paths under `/home/user/veneer-bfl` for every command and file, and run every npm and
 npx command from `/home/user/veneer-bfl`. Do not commit, push, install, or run `git checkout`,
@@ -21,7 +21,7 @@ regrouped; `FORM_LABEL_CASES` and a dedicated `FormFloatingCase` carry per-prope
 shipped-key lists carry `form`; the `.col-form-label*` deferral rows are retired; the guide carries
 the § Files row, `### Form label classes`, the `form`, `col`, and moved-key ledger tables, the
 split per-key forms tables, the release-ordered forms sections, the Compatibility rows, and the
-Showcase and Tests rows `bfw` returns; and the gates in § Acceptance criteria are green.
+§ Showcase sentence `bfw` returned; and the gates in § Acceptance criteria are green.
 
 ## Context
 
@@ -77,10 +77,18 @@ first in every shell. Never run `corepack use`. Chromium is installed; the scope
 the shipped `legend` values, the `input-text` mixin's line-height token, and the compiled
 `--vn-space-*` and `--vn-size-*` values before writing the label proofs' expectations.
 
+**Guide text from `bfw`.** The § Showcase sentence, verbatim (rewrap at 100 columns):
+
+> A Validation region follows the Table region; a Form check, a Form control, a Form floating, a
+> Form label, a Form range, and a Form select region follow the Spinner region; and an Input group
+> region follows the Close region, each carrying that key's own specimens. The Form label region
+> carries a label above its control with the help text the control names as its description, and a
+> horizontal label level with the control beside it at each size and as the legend of a group.
+
 **Control identifiers.** Rulings A to L, D22, D30, D35, R6 are this brief's labels. Name a test
 for what it proves.
 
-**Standing conditions.** The tree is clean at `BFF_LANDED_SHA`. The pre-existing bare tokens in
+**Standing conditions.** The tree is clean at `a56ca7e`. The pre-existing bare tokens in
 `tests/setupServer.ts` (`@param blocks` on `collectValueGaps` and `collectAdditions`: "as
 {@link readCascadeBlocks} reads them") and `tests/setupStyles.ts` ("so `findRule` reaches") are
 this unit's to fix (carrier ruling of the `bft` round-2 verdict): write "as the
@@ -105,8 +113,9 @@ edits the criteria name, so the checker proves it with `git diff --color-moved=p
 `tmp/probe/` and retained under `tmp/units/`), `tmp/units/bfl-report.md`.
 
 **Shared (report-only).** `ROADMAP.md`, `README.md`, `tests/setup.ts`, `tests/setup.test.ts`,
-`app/**`, `tests/app/**` (`bfw` owns them; `bfw` returns the § Showcase sentence and the § Tests
-stem rows as exact text, which the Orchestrator hands you or lands at integration).
+`app/**`, `tests/app/**` (`bfw` owns them; `bfw` returned the § Showcase sentence quoted under
+**Guide text from `bfw`** in § Context; the § Tests stem table lists the stems the CL13 round shot
+against the counterpart portfolio and takes no forms row, so § Tests is off-limits).
 
 **Off-limits.** `src/styles/_tokens.scss`, `src/styles/_theme.scss`, `src/styles/_mixins.scss`,
 every other partial, `src/styles/elements/**`, `tests/fixtures/**`, the paths `scaffold repair`
@@ -120,7 +129,7 @@ expectation; the plant's comment and rows; the exports case; Owned); `tests/setu
 floating spread comparison; Owned); `form-floating.test.ts` (the joined-string half; Owned);
 `src/styles/index.scss` (no `form-label` line; Owned); `guides/veneer.md` (the deferral rows, the
 missing Compatibility rows, the pooled table, the moved rows' Component cells, the missing tables
-and section, § Showcase, § Tests; Owned); `ROADMAP.md` (the carrier rows; the Orchestrator's fold).
+and section, § Showcase; Owned); `ROADMAP.md` (the carrier rows; the Orchestrator's fold).
 Search bound: grep for `FORM_FLOATING_CASES`, `'form-floating'`, `floating-labels`,
 `col-form-label`, `.row-gap-0` over `src tests guides`.
 
@@ -209,9 +218,9 @@ section's paragraph order, and the exact label specimen markup in `FORM_LABEL_MA
    the measurement; the pooled `#### form-check` table is split into one `#### <key>` table per
    forms key in key sort order at its position; the forms `###` sections, Validation included,
    move into the release's order with `### Form label classes` first (D35), the moved blocks
-   byte-identical; the style-proof paragraph links `form-label.test.ts`; § Showcase and § Tests
-   carry the sentence and stem rows the Orchestrator supplies from `bfw` (or, where `bfw` has not
-   returned them, the sentence naming the regions in ruling E's order and the five stems).
+   byte-identical; the style-proof paragraph links `form-label.test.ts`; § Showcase carries the
+   sentence quoted under **Guide text from `bfw`** in § Context, replacing the sentence that names
+   the forms regions after the Spinner region; § Tests is unchanged.
 9. `npm run test:setup`, `npm run test:conformance` (the ledger equalities with the new tables,
    the deferral scan with the rows retired, the compatibility presence, the `listed` equality, the
    barrel order), `npm run test:guides`, and `npm run test:policy` exit 0.
