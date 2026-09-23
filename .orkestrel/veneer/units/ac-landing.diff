@@ -1,0 +1,1788 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index ffdf8cb..410658c 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -3,6 +3,7 @@ import type { SectionInterface, ShowcaseInterface } from './types.js'
+ import { ColorMode } from '@src/browser'
+ import { SHOWCASE_CONTROL, SHOWCASE_COPY } from './constants.js'
+ import { AlertSection } from './sections/AlertSection.js'
++import { AccordionSection } from './sections/AccordionSection.js'
+ import { ButtonGroupSection } from './sections/ButtonGroupSection.js'
+ import { BadgeSection } from './sections/BadgeSection.js'
+ import { BreadcrumbSection } from './sections/BreadcrumbSection.js'
+@@ -124,6 +125,7 @@ export class Showcase implements ShowcaseInterface {
+ 			new NavSection(this.#main),
+ 			new AlertSection(this.#main),
+ 			new CarouselSection(this.#main),
++			new AccordionSection(this.#main),
+ 		]
+ 	}
+ 
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index b308f75..b40052b 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -2063,3 +2063,41 @@ export const CAROUSEL_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 			'<div class="carousel"><div class="carousel-inner"><div class="carousel-item active carousel-item-start"><img class="img-fluid" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 800 400\'%3E%3Crect width=\'800\' height=\'400\' fill=\'%236c757d\'/%3E%3Cpath d=\'M0 400L260 180L480 320L640 220L800 400Z\' fill=\'%23495057\'/%3E%3C/svg%3E" alt="Lighthouse at dusk" width="800" height="400"></div><div class="carousel-item carousel-item-next carousel-item-start"><img class="img-fluid" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 800 400\'%3E%3Crect width=\'800\' height=\'400\' fill=\'%23fd7e14\'/%3E%3Cpath d=\'M0 400L260 180L480 320L640 220L800 400Z\' fill=\'%23ca6510\'/%3E%3C/svg%3E" alt="Lighthouse at sunset" width="800" height="400"></div></div></div>',
+ 	}),
+ ])
++/** Holds the Accordion section's visible copy and accessible name. */
++export const ACCORDION_COPY = Object.freeze({
++	region: 'Accordion',
++	paragraph:
++		'Compare an accordion whose first item is expanded above collapsed items with a flush accordion whose middle item is expanded, each state set as a class in markup.',
++})
++
++/**
++ * Lists the accordion specimens the section renders, in render order.
++ *
++ * @remarks
++ * Each state is a class written in the markup: an expanded button carries no `collapsed` class and
++ * its panel carries the `show` class, and a collapsed button carries the `collapsed` class over a
++ * panel without the `show` class. No specimen carries a trigger an engine would bind, because the
++ * classes are what this key ships and the plugin that moves an item between them is an engine
++ * obligation the guide's compatibility table records. Each button announces the state its classes
++ * set through the `aria-expanded` attribute and names its panel through the `aria-controls`
++ * attribute, so the tree reports the state the paint shows. Each header is the release's `h2`
++ * element, the level under the page's `h1` element, because a region carries no heading of its own.
++ *
++ * The `Accordion base` specimen is the release's own arrangement: the first item expanded, and the
++ * middle and last items collapsed, so the first item's top corners and the last item's bottom
++ * corners each render at rest. The `Accordion flush` specimen expands its middle item, so its first
++ * and last items rest collapsed against the flush rules that square every corner the ordinary group
++ * rounds.
++ */
++export const ACCORDION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Accordion base',
++		markup:
++			'<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" aria-expanded="true" aria-controls="accordion-delivery">Delivery windows</button></h2><div class="accordion-collapse collapse show" id="accordion-delivery"><div class="accordion-body">Parcels leave the Harbor Street depot at 08:00 and reach most addresses before noon.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="accordion-returns">Return policy</button></h2><div class="accordion-collapse collapse" id="accordion-returns"><div class="accordion-body">Unopened parcels go back free of charge within 30 days.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="accordion-warranty">Warranty terms</button></h2><div class="accordion-collapse collapse" id="accordion-warranty"><div class="accordion-body">Every appliance carries a two-year repair warranty.</div></div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Accordion flush',
++		markup:
++			'<div class="accordion accordion-flush"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="accordion-billing">Billing cycle</button></h2><div class="accordion-collapse collapse" id="accordion-billing"><div class="accordion-body">Accounts are billed on the first working day of each month.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" aria-expanded="true" aria-controls="accordion-invoices">Invoice copies</button></h2><div class="accordion-collapse collapse show" id="accordion-invoices"><div class="accordion-body">A copy of every invoice stays in the account history for seven years.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="accordion-refunds">Refund timing</button></h2><div class="accordion-collapse collapse" id="accordion-refunds"><div class="accordion-body">A refund reaches the original card within five working days.</div></div></div></div>',
++	}),
++])
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index b384ecd..4324feb 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -32,3 +32,4 @@ export * from './sections/DropdownSection.js'
+ export * from './sections/NavSection.js'
+ export * from './sections/AlertSection.js'
+ export * from './sections/CarouselSection.js'
++export * from './sections/AccordionSection.js'
+diff --git a/app/browser/sections/AccordionSection.ts b/app/browser/sections/AccordionSection.ts
+new file mode 100644
+index 0000000..dfcbb0c
+--- /dev/null
++++ b/app/browser/sections/AccordionSection.ts
+@@ -0,0 +1,20 @@
++import { ACCORDION_COPY, ACCORDION_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared accordion specimens into a named region.
++ * @example
++ * ```ts
++ * const section = new AccordionSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class AccordionSection extends SpecimenSection {
++	/**
++	 * Mounts the Accordion region and its specimens.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, ACCORDION_COPY, ACCORDION_SPECIMENS)
++	}
++}
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 46c1491..e67d698 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -481,6 +481,7 @@ The following files carry the axis.
+ | `src/styles/components/_validation.scss`    | The validation scope, state classes, feedback, and tooltips in the components layer, read by `tests/src/styles/components/validation.test.ts`.                                                                                                     |
+ | `src/styles/components/_pagination.scss`    | The pagination strip, its page links, their states, and the size classes in the components layer.                                                                                                                                                  |
+ | `src/styles/components/_collapse.scss`      | The hidden and shown panel, the closing box on each axis, and their transitions in the components layer, read by `tests/src/styles/components/collapse.test.ts`.                                                                                   |
++| `src/styles/components/_accordion.scss`     | The accordion group, its expanded and collapsed buttons with their chevrons, the boundary corners, the flush group, and the dark chevrons in the components layer, read by the `tests/src/styles/components/accordion.test.ts` proof.              |
+ | `src/styles/_reset.scss`                    | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.                                                                                                                                                         |
+ | `src/styles/elements/_html.scss`            | The document baseline in the elements layer.                                                                                                                                                                                                       |
+ | `src/styles/elements/_body.scss`            | The body baseline in the elements layer.                                                                                                                                                                                                           |
+@@ -1816,6 +1817,91 @@ list-group joins at each position a group takes inside a card, an `active` heade
+ resting link in the same navigation, and the group boundary at each viewport around it, on cards
+ carrying every cap and image the joined row squares.
+ 
++### Accordion classes
++
++The accordion key ships whole: the group and its published properties, the header button in its
++expanded and collapsed states with the chevron each state draws, the hover and focus lifts, the item
++borders and the corners of the boundary items, the body, and the flush group. The component partial
++loads between the card partial and the breadcrumb partial in the components layer, at the barrel's
++Bootstrap order.
++
++Each state is a class set in markup. A button without the `collapsed` class is the expanded one: it
++paints from the active slots, draws a line one border width deep along its bottom edge where it
++meets its panel, and turns its chevron half a revolution. A button carrying the `collapsed` class
++paints from the resting slots. Each panel carries the `accordion-collapse` class beside the
++`collapse` class, so the collapse key hides it until it carries the `show` class. No rule here sets
++or clears a class. The Collapse plugin that moves an item between the states, and whose `parent`
++option closes the other items of a group when one opens, is an engine obligation § Compatibility
++records under the J-ENGINE owner.
++
++Each published property is declared on the `.accordion` class. A declaration on an ancestor is
++outranked there, so the accordion itself is where a consumer retunes one. A color reads the
++compatibility variable Bootstrap itself names, so the item, the resting button, and the expanded
++button retune with the color mode.
++
++The button lays its label and its chevron out as one full-width row, and the chevron's automatic
++start margin pushes it to the row's end. The label's `text-align: left` declaration and that
++`margin-left` declaration are physical, as the release writes them.
++
++The group's outer corners belong to its boundary items. The first item rounds its top corners and
++the last item rounds its bottom corners, and each later item gives up its top border, so
++neighbouring items share one line. The button at each end rounds its own corners to the
++`--bs-accordion-inner-border-radius` value, the outer radius less the border width, so its fill
++stays inside the curve. The last button rounds its bottom corners only while it carries the
++`collapsed` class: an expanded last button meets its panel, and the panel takes the outer radius
++instead.
++
++The `accordion-flush` class runs the items edge to edge. It drops the side borders, the top border
++of the first item, and the bottom border of the last item, and it squares every corner of every
++item, button, and panel. Each flush corner rule ties on specificity with the boundary rule it
++overrides and follows it in the partial, which is why the collapsed button carries a flush selector
++of its own.
++
++A hovered button lifts to a `z-index` value of `2`, and a focused one lifts to a `z-index` value of
++`3`, so its ring paints over the borders the neighbouring items draw. The ring is the recorded
++quarter-rem shadow at a quarter of the palette blue, written as a mix over that token because a
++partial declares no literal color, and it answers to the `:focus` pseudo-class, as the release
++writes it. Under forced colors the same rule also writes an outline in the system highlight color
++through the `forced-ring` mixin, because forced colors paint no shadow ring.
++
++Each chevron is the release's own glyph, read out of the icon map in the `src/styles/_tokens.scss`
++file, because a data URI cannot read a custom property. The release's dark component rule gives the
++resting and the active chevron a second value, and the partial writes that rule with the same
++selector on the button's pseudo-element, where it outranks the light value the accordion declares.
++The dark theme scope declares neither chevron. Like the release's rule, the dark rule matches any
++button under a dark scope, so a light island nested inside a dark one keeps the dark chevrons.
++
++The button transition and the chevron transition carry Bootstrap's own `0.15s` and `0.2s` timings
++rather than the motion tokens the Button family reads, because this family ships the release's
++recorded surface. Each is written through the `transition` mixin, so the reduced-motion rule the
++release records beside it is emitted with it, and each duration resolves to a `0s` duration under
++that preference.
++
++These are the key's recorded departures.
++
++- **The block padding and the type size read Veneer's scales.** The button's and the body's block
++  padding read the `--vn-space-8` token and the button's type size reads the `--vn-size-3` token,
++  each of which already resolves to the release's `1rem` length, so the block padding rescales with
++  the `--vn-factor-density` factor. The inline padding and the chevron size keep the release's
++  `1.25rem` literal, because no space token resolves to that length, and the density factor leaves
++  them fixed.
++- **The focus ring mixes the palette blue.** The release writes the ring's color as a literal, and
++  the `--bs-accordion-btn-focus-box-shadow` property mixes the `--vn-palette-blue` token, which
++  carries that literal, at the same quarter strength.
++
++The Accordion region renders the release's own arrangement, the first item expanded above collapsed
++items, and a flush accordion whose middle item is expanded, so its first and last items rest
++collapsed. Each button announces its state through the `aria-expanded` attribute and names its panel
++through the `aria-controls` attribute.
++
++The `tests/src/styles/components/accordion.test.ts` proof reads each resolved treatment in the
++browser: the written selectors and the dark rule beside them, each published property beside the
++property it drives and retuned from the accordion itself, the expanded and collapsed paint with the
++inset line and the turned chevron, each state's own chevron, the boundary corners and the shared
++borders with a last item opened in markup, the flush group, the focus ring and the hover and focus
++lifts, the forced-colors outline, the dark chevrons against an empty theme scope, the light and dark
++modes, the density factor, and each transition at rest and under the staged preference.
++
+ ### Breadcrumb classes
+ 
+ The breadcrumb key ships whole: the trail, the inset between items, the divider each item after the
+@@ -2831,15 +2917,15 @@ cannot read a custom property; a `mask-image` treatment is outside the baseline.
+ its rows there record the empty light-scope declaration this cascade writes against the filter the
+ release records.
+ 
+-Bootstrap also retunes `--bs-navbar-toggler-icon-bg`, `--bs-accordion-btn-icon`, and
+-`--bs-accordion-btn-active-icon` under a dark component selector, and declares no light
+-counterpart at theme scope. Veneer declares each in its dark scope with Bootstrap's own value. A
+-light island nested inside a dark one therefore inherits the dark asset, and the component unit
+-that owns each one closes that.
++Bootstrap also retunes the `--bs-navbar-toggler-icon-bg` variable under a dark component selector,
++and declares no light counterpart at theme scope. Veneer declares it in its dark scope with
++Bootstrap's own value. A light island nested inside a dark one therefore inherits the dark asset,
++and the component unit that owns it closes that.
+ 
+-`--bs-form-select-bg-img` and `--bs-form-switch-bg` are declared on the select's and the switch's
+-own dark rules by their partials instead, so a light island nested inside a dark one keeps the
+-dark caret and knob the same way the release does.
++The `--bs-form-select-bg-img`, `--bs-form-switch-bg`, `--bs-accordion-btn-icon`, and
++`--bs-accordion-btn-active-icon` variables are declared on the select's, the switch's, and the
++accordion button's own dark rules by their partials instead, so a light island nested inside a dark
++one keeps the dark caret, knob, and chevrons the same way the release does.
+ 
+ ### Customization
+ 
+@@ -4301,6 +4387,15 @@ declaration.
+ | `card`    | `.card`  | `--bs-card-img-overlay-padding` | —         | `1rem`          | `var(--vn-space-8)` | tokenized |
+ | `card`    | `.card`  | `--bs-card-group-margin`        | —         | `0.75rem`       | `var(--vn-space-6)` | tokenized |
+ 
++#### `accordion`
++
++| Component   | Selector            | Property                              | Condition | Bootstrap 5.3.8                          | Veneer                                                                      | Departure |
++| ----------- | ------------------- | ------------------------------------- | --------- | ---------------------------------------- | --------------------------------------------------------------------------- | --------- |
++| `accordion` | `.accordion`        | `--bs-accordion-btn-padding-y`        | —         | `1rem`                                   | `var(--vn-space-8)`                                                         | tokenized |
++| `accordion` | `.accordion`        | `--bs-accordion-btn-focus-box-shadow` | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)` | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)` | tokenized |
++| `accordion` | `.accordion`        | `--bs-accordion-body-padding-y`       | —         | `1rem`                                   | `var(--vn-space-8)`                                                         | tokenized |
++| `accordion` | `.accordion-button` | `font-size`                           | —         | `1rem`                                   | `var(--vn-size-3)`                                                          | tokenized |
++
+ #### `breadcrumb`
+ 
+ | Component    | Selector      | Property                         | Condition | Bootstrap 5.3.8 | Veneer              | Departure |
+@@ -4587,6 +4682,7 @@ query. The `Reason` cell is the only cell no measurement fixes.
+ | `pagination`   | `.page-link:focus { outline }`                                | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
+ | `btn-close`    | `.btn-close:focus { outline }`                                | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
+ | `nav`          | `.nav-link:focus-visible { outline }`                         | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
++| `accordion`    | `.accordion-button:focus { outline }`                         | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
+ 
+ ### Outside the ledger
+ 
+@@ -4791,6 +4887,8 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | alert            | variable       | Every official `--bs-alert-*` custom property is declared on `.alert`, and each contextual role retunes it from that role's aliases; each one is read beside the property it drives in `tests/src/styles/components/alert.test.ts`.                                                                                                                                                                                                                              | —                     | shipped  |
+ | carousel         | selector       | Every official `.carousel` selector ships in the components layer, the fade variant, the controls and their marks, the indicators, the caption, and the dark class included; resolved geometry, states, and motion are proved in `tests/src/styles/components/carousel.test.ts`.                                                                                                                                                                                 | —                     | shipped  |
+ | carousel         | variable       | Every official `--bs-carousel-*` custom property is declared, by the theme scopes and by the opt-in `.carousel-dark` class; the dark class, a dark island, and a light island nested in a dark one are proved in `tests/src/styles/components/carousel.test.ts`.                                                                                                                                                                                                 | —                     | shipped  |
++| accordion        | selector       | Every official `.accordion` selector ships in the components layer, the expanded and collapsed buttons, the boundary item corners, the flush group, and each reduced-motion twin included; the `tests/src/styles/components/accordion.test.ts` proof reads resolved behavior.                                                                                                                                                                                    | —                     | shipped  |
++| accordion        | variable       | Every official `--bs-accordion-*` custom property is declared on the `.accordion` class, and the release's dark rule retunes the resting and the active chevron slots on the button's own pseudo-element; each one is read beside the property it drives in the `tests/src/styles/components/accordion.test.ts` proof.                                                                                                                                           | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+ | engine           | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                                                                                                                                                                                                                                                         | —                     | accepted |
+ | engine           | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                                                                                                                                                                                                                                                    | —                     | accepted |
+@@ -5007,6 +5105,7 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the alert classes](../tests/src/styles/components/alert.test.ts),
+ [the close classes](../tests/src/styles/components/close.test.ts),
+ [the collapse classes](../tests/src/styles/components/collapse.test.ts),
++[the accordion classes](../tests/src/styles/components/accordion.test.ts),
+ [the dropdown classes](../tests/src/styles/components/dropdown.test.ts),
+ [the carousel classes](../tests/src/styles/components/carousel.test.ts),
+ [the icon link classes](../tests/src/styles/components/icon-link.test.ts),
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 7577415..3822023 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -112,14 +112,14 @@ $dark: (
+ 		url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236ea8fe'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3e%3c/svg%3e"),
+ );
+ 
+-// The forms glyphs Bootstrap paints in one value across both modes, each as the escaped data URI
++// The forms and accordion glyphs Bootstrap paints in the light mode, each as the escaped data URI
+ // the release compiles its own variable to.
+ //
+ // A data URI cannot read a custom property, so a glyph is an asset rather than a token expression,
+ // and a Sass map entry is not a published token: a consumer retunes a glyph by declaring the
+-// `--bs-*` variable the component rule reads, never by reaching into this map. The mode-varying
+-// caret and unchecked knob are `$dark` entries instead, because the release gives each of those a
+-// second value under its dark component rule.
++// `--bs-*` variable the component rule reads, never by reaching into this map. The caret, the
++// unchecked knob, and the accordion chevrons also carry a `$dark` entry under the same key, because
++// the release gives each of those a second value under its dark component rule.
+ $icons: (
+ 	// $form-check-input-checked-bg-image
+ 	'check':
+@@ -148,6 +148,12 @@ $icons: (
+ 	// $form-feedback-icon-invalid
+ 	'invalid':
+ 		url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e"),
++	// $accordion-button-icon
++	'accordion-icon':
++		url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23212529' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e"),
++	// $accordion-button-active-icon
++	'accordion-active-icon':
++		url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23052c65' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e"),
+ );
+ 
+ // The Bootstrap variable each image-valued dark entry is declared as, for the components that have
+@@ -162,8 +168,6 @@ $icons: (
+ // and read the `@error` `_theme.scss` raises for it.
+ $assets: (
+ 	'toggler-icon': '--bs-navbar-toggler-icon-bg',
+-	'accordion-icon': '--bs-accordion-btn-icon',
+-	'accordion-active-icon': '--bs-accordion-btn-active-icon',
+ ) !default;
+ 
+ @property --vn-factor-density {
+diff --git a/src/styles/components/_accordion.scss b/src/styles/components/_accordion.scss
+new file mode 100644
+index 0000000..5a51191
+--- /dev/null
++++ b/src/styles/components/_accordion.scss
+@@ -0,0 +1,177 @@
++@use 'sass:map';
++@use '../tokens';
++@use '../mixins' as *;
++
++@layer components {
++	// Every value here is Bootstrap 5.3.8's own, apart from the forced-colors focus outline. A block
++	// padding reads the Veneer space token that already resolves to it, so the density factor reaches
++	// it; the inline padding and the chevron size keep the release's `1.25rem` length, because no
++	// space token resolves to that length. A color reads the compatibility variable Bootstrap itself
++	// names, and the focus ring mixes the palette blue that carries the release's literal, because a
++	// partial declares no literal color of its own. Each chevron is the release's own glyph, read out
++	// of the icon map because a data URI cannot read a custom property.
++	.accordion {
++		--bs-accordion-color: var(--bs-body-color);
++		--bs-accordion-bg: var(--bs-body-bg);
++		--bs-accordion-transition:
++			color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
++			box-shadow 0.15s ease-in-out, border-radius 0.15s ease;
++		--bs-accordion-border-color: var(--bs-border-color);
++		--bs-accordion-border-width: var(--bs-border-width);
++		--bs-accordion-border-radius: var(--bs-border-radius);
++		--bs-accordion-inner-border-radius: calc(var(--bs-border-radius) - (var(--bs-border-width)));
++		--bs-accordion-btn-padding-x: 1.25rem;
++		--bs-accordion-btn-padding-y: var(--vn-space-8);
++		--bs-accordion-btn-color: var(--bs-body-color);
++		--bs-accordion-btn-bg: var(--bs-accordion-bg);
++		--bs-accordion-btn-icon: #{map.get(tokens.$icons, 'accordion-icon')};
++		--bs-accordion-btn-icon-width: 1.25rem;
++		--bs-accordion-btn-icon-transform: rotate(-180deg);
++		--bs-accordion-btn-icon-transition: transform 0.2s ease-in-out;
++		--bs-accordion-btn-active-icon: #{map.get(tokens.$icons, 'accordion-active-icon')};
++		--bs-accordion-btn-focus-box-shadow: 0 0 0 0.25rem
++			color-mix(in srgb, var(--vn-palette-blue) 25%, transparent);
++		--bs-accordion-body-padding-x: 1.25rem;
++		--bs-accordion-body-padding-y: var(--vn-space-8);
++		--bs-accordion-active-color: var(--bs-primary-text-emphasis);
++		--bs-accordion-active-bg: var(--bs-primary-bg-subtle);
++	}
++
++	// The timing is the release's own rather than the motion tokens the `.btn` class reads, because
++	// this key ships the release's recorded surface. The `transition` mixin emits the reduced-motion
++	// twin the release records beside the button's transition and beside the chevron's.
++	.accordion-button {
++		position: relative;
++		display: flex;
++		align-items: center;
++		width: 100%;
++		padding: var(--bs-accordion-btn-padding-y) var(--bs-accordion-btn-padding-x);
++		font-size: var(--vn-size-3);
++		color: var(--bs-accordion-btn-color);
++		text-align: left;
++		background-color: var(--bs-accordion-btn-bg);
++		border: 0;
++		border-radius: 0;
++		overflow-anchor: none;
++		@include transition(var(--bs-accordion-transition));
++	}
++
++	// The classes are set in markup: a button without the `collapsed` class is the expanded one, and
++	// its inset rule draws the line between it and the panel under it.
++	.accordion-button:not(.collapsed) {
++		color: var(--bs-accordion-active-color);
++		background-color: var(--bs-accordion-active-bg);
++		box-shadow: inset 0 calc(-1 * var(--bs-accordion-border-width)) 0
++			var(--bs-accordion-border-color);
++	}
++
++	.accordion-button:not(.collapsed)::after {
++		background-image: var(--bs-accordion-btn-active-icon);
++		transform: var(--bs-accordion-btn-icon-transform);
++	}
++
++	.accordion-button::after {
++		flex-shrink: 0;
++		width: var(--bs-accordion-btn-icon-width);
++		height: var(--bs-accordion-btn-icon-width);
++		margin-left: auto;
++		content: '';
++		background-image: var(--bs-accordion-btn-icon);
++		background-repeat: no-repeat;
++		background-size: var(--bs-accordion-btn-icon-width);
++		@include transition(var(--bs-accordion-btn-icon-transition));
++	}
++
++	.accordion-button:hover {
++		z-index: 2;
++	}
++
++	// The focused button lifts over its neighbours so its ring paints over the borders they share.
++	// Forced colors paint no shadow, so the button takes the system-highlight outline there.
++	.accordion-button:focus {
++		z-index: 3;
++		outline: 0;
++		box-shadow: var(--bs-accordion-btn-focus-box-shadow);
++		@include forced-ring;
++	}
++
++	.accordion-header {
++		margin-bottom: 0;
++	}
++
++	.accordion-item {
++		color: var(--bs-accordion-color);
++		background-color: var(--bs-accordion-bg);
++		border: var(--bs-accordion-border-width) solid var(--bs-accordion-border-color);
++	}
++
++	// The group's outer corners belong to its boundary items, and each button at an end rounds its
++	// own corners inside the item's border so its fill does not cross the curve.
++	.accordion-item:first-of-type {
++		border-top-left-radius: var(--bs-accordion-border-radius);
++		border-top-right-radius: var(--bs-accordion-border-radius);
++	}
++
++	.accordion-item:first-of-type > .accordion-header .accordion-button {
++		border-top-left-radius: var(--bs-accordion-inner-border-radius);
++		border-top-right-radius: var(--bs-accordion-inner-border-radius);
++	}
++
++	// Each later item gives up its top border, so neighbouring items share one line.
++	.accordion-item:not(:first-of-type) {
++		border-top: 0;
++	}
++
++	.accordion-item:last-of-type {
++		border-bottom-right-radius: var(--bs-accordion-border-radius);
++		border-bottom-left-radius: var(--bs-accordion-border-radius);
++	}
++
++	// The last button rounds its bottom corners only while it is collapsed; an expanded last button
++	// meets its panel, and the panel takes the group's outer radius instead.
++	.accordion-item:last-of-type > .accordion-header .accordion-button.collapsed {
++		border-bottom-right-radius: var(--bs-accordion-inner-border-radius);
++		border-bottom-left-radius: var(--bs-accordion-inner-border-radius);
++	}
++
++	.accordion-item:last-of-type > .accordion-collapse {
++		border-bottom-right-radius: var(--bs-accordion-border-radius);
++		border-bottom-left-radius: var(--bs-accordion-border-radius);
++	}
++
++	.accordion-body {
++		padding: var(--bs-accordion-body-padding-y) var(--bs-accordion-body-padding-x);
++	}
++
++	// A flush group runs its items edge to edge: no side borders, no outer border at either end, and
++	// no rounded corner on an item, a button, or a panel. Each rule here ties the boundary rule it
++	// overrides on specificity and follows it, which is what the collapsed button's own selector is
++	// for.
++	.accordion-flush > .accordion-item {
++		border-right: 0;
++		border-left: 0;
++		border-radius: 0;
++	}
++
++	.accordion-flush > .accordion-item:first-child {
++		border-top: 0;
++	}
++
++	.accordion-flush > .accordion-item:last-child {
++		border-bottom: 0;
++	}
++
++	.accordion-flush > .accordion-item > .accordion-collapse,
++	.accordion-flush > .accordion-item > .accordion-header .accordion-button,
++	.accordion-flush > .accordion-item > .accordion-header .accordion-button.collapsed {
++		border-radius: 0;
++	}
++
++	// The release gives each chevron a second value under its dark component rule. Declared on the
++	// pseudo-element, it outranks the light value the accordion declares, and like the release's own
++	// rule it matches any button under a dark scope, a nested light island included.
++	[data-bs-theme='dark'] .accordion-button::after {
++		--bs-accordion-btn-icon: #{map.get(tokens.$dark, 'accordion-icon')};
++		--bs-accordion-btn-active-icon: #{map.get(tokens.$dark, 'accordion-active-icon')};
++	}
++}
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index b0c7732..2093e30 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -62,6 +62,7 @@
+ @use 'components/button-group';
+ @use 'components/nav';
+ @use 'components/card';
++@use 'components/accordion';
+ @use 'components/breadcrumb';
+ @use 'components/pagination';
+ @use 'components/badge';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index 947caf5..6303da7 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -1,5 +1,6 @@
+ import {
+ 	ALERT_SPECIMENS,
++	ACCORDION_SPECIMENS,
+ 	BUTTON_COPY,
+ 	BUTTON_GROUP_SPECIMENS,
+ 	BADGE_SPECIMENS,
+@@ -121,6 +122,7 @@ describe('Showcase', () => {
+ 				'Nav',
+ 				'Alert',
+ 				'Carousel',
++				'Accordion',
+ 			])
+ 			expect(
+ 				[...host.querySelectorAll('[data-specimen]')].map((element) =>
+@@ -157,6 +159,7 @@ describe('Showcase', () => {
+ 					...NAV_SPECIMENS,
+ 					...ALERT_SPECIMENS,
+ 					...CAROUSEL_SPECIMENS,
++					...ACCORDION_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+ 			expect(readPerception('Showcase')).toBe('Explore the color mode with the Dark mode control.')
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 8e3a347..c413272 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -7,8 +7,11 @@ describe('app browser entry', () => {
+ 	// what proves they are types.
+ 	it('exports the showcase surface, the specimen table, and the sections family', () => {
+ 		expect(Object.keys(entry).sort()).toStrictEqual([
++			'ACCORDION_COPY',
++			'ACCORDION_SPECIMENS',
+ 			'ALERT_COPY',
+ 			'ALERT_SPECIMENS',
++			'AccordionSection',
+ 			'AlertSection',
+ 			'BADGE_COPY',
+ 			'BADGE_SPECIMENS',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index a7598dd..8a1d6c4 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -40,6 +40,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, inject, it } from 'v
+ import { commands, page } from 'vitest/browser'
+ import {
+ 	ALERT_SPECIMENS,
++	ACCORDION_SPECIMENS,
+ 	BUTTON_GROUP_SPECIMENS,
+ 	BADGE_SPECIMENS,
+ 	BREADCRUMB_SPECIMENS,
+@@ -1821,6 +1822,58 @@ describe('journey', () => {
+ 		)
+ 		JOURNAL.record('hover', readName(tab), String(hovered.get('nav-tabs-hover')))
+ 	})
++
++	it('reaches a collapsed accordion button through the keyboard and lifts its ring over the items beside it', async () => {
++		await applyTheme(VARIANT)
++		const specimen = readSpecimen(mounted.host, 'Accordion base')
++		const [expanded, middle, last] = specimen.querySelectorAll<HTMLElement>('.accordion-button')
++		const preceding = requireValue(
++			expanded,
++			'The "Accordion base" specimen renders no expanded button',
++		)
++		const control = requireValue(middle, 'The "Accordion base" specimen renders no middle button')
++		const neighbour = requireValue(last, 'The "Accordion base" specimen renders no last button')
++		expect(control.classList.contains('collapsed')).toBe(true)
++		const resting = readStyle(control, 'box-shadow')
++		// Tab traversal reaches the middle button from the expanded button above it rather than from
++		// the document's own start, for the reason the range slider case states. The expanded item's
++		// panel holds no focusable content, so the middle button is the next stop.
++		preceding.focus()
++		const reached = await traverseAccessible(readName(control))
++		expect(reached).toBe(control)
++		expect(control.matches(':focus')).toBe(true)
++		// The ring carries a transition, so the reading and the frame follow it.
++		await waitForAnimations(control)
++		const ring = readStyle(control, 'box-shadow')
++		const lifted = readStyle(control, 'z-index')
++		// A page frame, for the reason the Button focus scenario is one: the ring paints outside the
++		// button's border box and over the items beside it, and an element frame crops it away. The
++		// declared region is the specimen, so a reader of the whole document is pointed at the group
++		// the frame claims.
++		await FRAMES.page('accordion-base-focus', specimen)
++		// The frame is held to the state it was shot in: a shot that moved focus away would drop the
++		// ring and the lift and report here rather than be written under a name claiming the focus.
++		expect(document.activeElement).toBe(control)
++		expect(readStyle(control, 'z-index')).toBe(lifted)
++		expect(lifted).toBe('3')
++		expect(readStyle(neighbour, 'z-index')).toBe('auto')
++		expect(resting).toBe('none')
++		expect(ring).not.toBe('none')
++		expect(readStyle(control, 'outline-style')).toBe('none')
++		control.blur()
++		await waitForAnimations(control)
++		expect(readStyle(control, 'box-shadow')).toBe('none')
++		ARTIFACT.push(
++			JSON.stringify({
++				reading: 'accordion focus',
++				mode: VARIANT,
++				name: readName(control),
++				lifted,
++				ring,
++			}),
++		)
++		JOURNAL.record('focus', readName(control), lifted)
++	})
+ })
+ 
+ describe('refusal', () => {
+@@ -1929,6 +1982,7 @@ describe('portfolio', () => {
+ 		const declared = new Set([
+ 			...[
+ 				ALERT_SPECIMENS,
++				ACCORDION_SPECIMENS,
+ 				BADGE_SPECIMENS,
+ 				BREADCRUMB_SPECIMENS,
+ 				BUTTON_SPECIMENS,
+diff --git a/tests/app/browser/sections/AccordionSection.test.ts b/tests/app/browser/sections/AccordionSection.test.ts
+new file mode 100644
+index 0000000..1e641e6
+--- /dev/null
++++ b/tests/app/browser/sections/AccordionSection.test.ts
+@@ -0,0 +1,183 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	ACCORDION_COPY,
++	ACCORDION_SPECIMENS,
++	AccordionSection,
++	SpecimenSection,
++} from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, isRendered, mount, readName, readPixels } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { readSpecimen } from '../../../setupBrowser.js'
++
++// Each specimen claims a state the published cascade renders from a class, so the cascade has to be
++// in the document before a reading of that state means anything.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('AccordionSection', () => {
++	it('renders an ordinary and a flush group and every resting state class in markup through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new AccordionSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Accordion region')
++			expect(region.getAttribute('aria-label')).toBe('Accordion')
++			expect(region.querySelector('p')?.textContent).toBe(ACCORDION_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Accordion base',
++				'Accordion flush',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				ACCORDION_SPECIMENS.map(({ markup }) => markup),
++			)
++			// Every rule the key ships without the pointer or the keyboard has a subject in the region,
++			// each boundary item and each state included, because no script sets a state class here: a
++			// region rendering one state alone leaves the other rule photographed by nothing. A chevron
++			// rule's subject is the button whose pseudo-element it paints.
++			for (const selector of [
++				'.accordion',
++				'.accordion-button',
++				'.accordion-button:not(.collapsed)',
++				'.accordion-button.collapsed',
++				'.accordion-header',
++				'.accordion-item',
++				'.accordion-item:first-of-type',
++				'.accordion-item:first-of-type > .accordion-header .accordion-button',
++				'.accordion-item:not(:first-of-type)',
++				'.accordion-item:last-of-type',
++				'.accordion-item:last-of-type > .accordion-header .accordion-button.collapsed',
++				'.accordion-item:last-of-type > .accordion-collapse',
++				'.accordion-body',
++				'.accordion-flush > .accordion-item',
++				'.accordion-flush > .accordion-item:first-child',
++				'.accordion-flush > .accordion-item:last-child',
++				'.accordion-flush > .accordion-item > .accordion-collapse',
++				'.accordion-flush > .accordion-item > .accordion-header .accordion-button',
++				'.accordion-flush > .accordion-item > .accordion-header .accordion-button.collapsed',
++			])
++				expect({ selector, rendered: region.querySelector(selector) !== null }).toEqual({
++					selector,
++					rendered: true,
++				})
++			expect(region.querySelector('[style]')).toBeNull()
++			// Each header is the release's own `h2` element, the level under the page's `h1` element,
++			// because a region carries no heading of its own.
++			const headers = [...region.querySelectorAll('.accordion-header')]
++			expect(headers).not.toStrictEqual([])
++			expect(new Set(headers.map((element) => element.tagName))).toEqual(new Set(['H2']))
++			// Each state is a class written in the markup, so no specimen carries a trigger an engine
++			// would bind: moving an item between the states is the plugin's obligation, not the key's.
++			expect(
++				region.querySelector('[data-bs-toggle], [data-bs-target], [data-bs-parent]'),
++			).toBeNull()
++			// The journey reaches a button by its accessible name, so a repeated label would resolve to
++			// whichever specimen came first and photograph the wrong one.
++			const buttons = [...region.querySelectorAll('.accordion-button')]
++			const names = buttons.map((element) => readName(element))
++			expect(new Set(names).size).toBe(names.length)
++			expect(Object.isFrozen(ACCORDION_COPY)).toBe(true)
++			expect(Object.isFrozen(ACCORDION_SPECIMENS)).toBe(true)
++			expect(ACCORDION_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	// The mutation this catches is a specimen whose markup disagrees with itself: a button that drops
++	// the `collapsed` class over a hidden panel, a panel that gains the `show` class under a collapsed
++	// button, or a button announcing a state its classes do not set each report here, in either
++	// specimen.
++	it('renders each item in the state its button announces, with the panel it names shown or hidden to match', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new AccordionSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Accordion region')
++			const states = ['Accordion base', 'Accordion flush'].map((name) =>
++				[...readSpecimen(region, name).querySelectorAll('.accordion-item')].map((item) => {
++					const button = requireValue(item.querySelector('.accordion-button'), 'No button')
++					const panel = requireValue(item.querySelector('.accordion-collapse'), 'No panel')
++					return [
++						button.getAttribute('aria-expanded'),
++						!button.classList.contains('collapsed'),
++						panel.classList.contains('show'),
++						button.getAttribute('aria-controls') === panel.id,
++						isRendered(requireValue(panel.querySelector('.accordion-body'), 'No body')),
++					]
++				}),
++			)
++			expect(states).toEqual([
++				[
++					['true', true, true, true, true],
++					['false', false, false, true, false],
++					['false', false, false, true, false],
++				],
++				[
++					['false', false, false, true, false],
++					['true', true, true, true, true],
++					['false', false, false, true, false],
++				],
++			])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	// The mutation this catches is a specimen that stops reaching the boundary rules: the ordinary
++	// group rounds its outer corners on its first and last items, and the flush group squares every
++	// one, so a specimen that lost its flush class or reordered its items reads the other group's
++	// corners.
++	it('rounds the ordinary group at its ends and squares the flush group throughout', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new AccordionSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Accordion region')
++			const corners = ['Accordion base', 'Accordion flush'].map((name) =>
++				[...readSpecimen(region, name).querySelectorAll('.accordion-item')].map((item) => [
++					readPixels(item, 'border-top-left-radius'),
++					readPixels(item, 'border-bottom-left-radius'),
++					readPixels(item, 'border-left-width'),
++				]),
++			)
++			expect(corners).toEqual([
++				[
++					[6, 0, 1],
++					[0, 0, 1],
++					[0, 6, 1],
++				],
++				[
++					[0, 0, 0],
++					[0, 0, 0],
++					[0, 0, 0],
++				],
++			])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases the region and preserves adjacent content on repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new AccordionSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Accordion region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index fa8d329..40725a5 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -96,6 +96,7 @@ describe('Bootstrap component oracle', () => {
+ 		const rows = readCompatibility()
+ 		const shipped = collectShippedComponents(rows)
+ 		const listed: readonly string[] = [
++			'accordion',
+ 			'alert',
+ 			'badge',
+ 			'blockquote',
+@@ -362,8 +363,9 @@ describe('Bootstrap source order', () => {
+ 	// stem, and it writes the collapse classes in its `transitions` partial, which Veneer writes as
+ 	// the `collapse` stem, so this case maps them the way the forms case maps its own renamed
+ 	// partials. The passive block and the helpers both load after every forms partial, in the release's own
+-	// sequence, and the nav partial joins the block at the release's position between the button
+-	// group and the card. The release also imports its helpers from one partial and declares its utilities
++	// sequence, the nav partial joins the block at the release's position between the button
++	// group and the card, and the accordion partial joins it between the card and the breadcrumb.
++	// The release also imports its helpers from one partial and declares its utilities
+ 	// as one map, in that order. A helper whose declarations are normal sits in the components
+ 	// layer in the release's helper order. A helper the release writes with `!important` sits in
+ 	// the utilities layer ahead of every utility partial, because the cascade reverses layer order
+@@ -386,6 +388,7 @@ describe('Bootstrap source order', () => {
+ 			'button-group',
+ 			'nav',
+ 			'card',
++			'accordion',
+ 			'breadcrumb',
+ 			'pagination',
+ 			'badge',
+@@ -410,6 +413,7 @@ describe('Bootstrap source order', () => {
+ 			'button-group',
+ 			'nav',
+ 			'card',
++			'accordion',
+ 			'breadcrumb',
+ 			'pagination',
+ 			'badge',
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 79a2d62..c7bc29b 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -231,6 +231,8 @@ export type CaptureSubject =
+ 	| 'Fading carousel'
+ 	| 'Inverted carousel'
+ 	| 'Advancing carousel'
++	| 'Accordion base'
++	| 'Accordion flush'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -1318,6 +1320,18 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.carousel-item-next.carousel-item-start',
+ 		property: 'transform',
+ 	}),
++	Object.freeze({
++		scenario: 'accordion-base',
++		subject: 'Accordion base',
++		selector: '.accordion-button:not(.collapsed)',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'accordion-flush',
++		subject: 'Accordion flush',
++		selector: '.accordion-flush > .accordion-item',
++		property: 'border-left-width',
++	}),
+ ])
+ 
+ /**
+@@ -1369,6 +1383,7 @@ export const DRIVEN_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'nav-tabs-hover', subject: 'Nav tabs' }),
+ 	Object.freeze({ scenario: 'captioned-carousel-hover', subject: 'Captioned carousel' }),
+ 	Object.freeze({ scenario: 'captioned-carousel-focus', subject: 'Captioned carousel' }),
++	Object.freeze({ scenario: 'accordion-base-focus', subject: 'Accordion base' }),
+ ])
+ 
+ /**
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 3b20972..b8ac08b 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1336,6 +1336,7 @@ describe('server setup', () => {
+ 		)
+ 		expect(new Set(rows.map((row) => row.component))).toEqual(
+ 			new Set([
++				'accordion',
+ 				'alert',
+ 				'badge',
+ 				'blockquote',
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 052d055..4e89ca3 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -35,6 +35,10 @@ import {
+ 	ALERT_ROLES,
+ 	ALERT_SELECTORS,
+ 	ALERT_SPACE_CASES,
++	ACCORDION_COLOR_CASES,
++	ACCORDION_LENGTH_CASES,
++	ACCORDION_MARKUP,
++	ACCORDION_SELECTORS,
+ 	BADGE_GEOMETRY_CASES,
+ 	BADGE_SELECTORS,
+ 	BOOTSTRAP_DARK_VARIABLES,
+@@ -211,6 +215,10 @@ describe('styles setup', () => {
+ 	it('exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
++				'ACCORDION_COLOR_CASES',
++				'ACCORDION_LENGTH_CASES',
++				'ACCORDION_MARKUP',
++				'ACCORDION_SELECTORS',
+ 				'ALERT_DISMISSIBLE_GEOMETRY',
+ 				'ALERT_ROLES',
+ 				'ALERT_SELECTORS',
+@@ -2121,11 +2129,11 @@ describe('reference map refusals', () => {
+ 		expect(FORM_ICON_CASES.map(({ state }) => state)).toEqual(['valid', 'invalid'])
+ 		expect(Object.isFrozen(FORM_ICON_CASES)).toBe(true)
+ 		for (const entry of FORM_ICON_CASES) expect(Object.isFrozen(entry)).toBe(true)
+-		// The map carries a glyph for every form control the release paints, and no shipped rule
+-		// reads most of them until the check and select partials land. Each value is compiled out of
+-		// the map itself and held against the release declaration that bakes it, named by its own
+-		// site, so a retinted or re-encoded glyph reports here rather than under the comment that
+-		// names its release variable.
++		// The map carries a glyph for every form control and accordion button the release paints,
++		// and no shipped rule reads most of them until the check and select partials land. Each
++		// value is compiled out of the map itself and held against the release declaration that
++		// bakes it, named by its own site, so a retinted or re-encoded glyph reports here rather
++		// than under the comment that names its release variable.
+ 		const images = new Map<string, string>()
+ 		parse(
+ 			compileString(
+@@ -2159,6 +2167,8 @@ describe('reference map refusals', () => {
+ 			'switch-focus': ['--bs-form-switch-bg at .form-switch .form-check-input:focus'],
+ 			'switch-checked': ['--bs-form-switch-bg at .form-switch .form-check-input:checked'],
+ 			'select-indicator': ['--bs-form-select-bg-img at .form-select'],
++			'accordion-icon': ['--bs-accordion-btn-icon at .accordion'],
++			'accordion-active-icon': ['--bs-accordion-btn-active-icon at .accordion'],
+ 			valid: [
+ 				'background-image at .was-validated .form-control:valid',
+ 				'--bs-form-select-bg-icon at .was-validated .form-select:valid:not([multiple]):not([size])',
+@@ -3295,3 +3305,114 @@ describe('nav case tables', () => {
+ 			for (const entry of cases) expect(Object.isFrozen(entry)).toBe(true)
+ 	})
+ })
++
++describe('accordion case tables', () => {
++	it('binds the accordion selectors, published properties, and markup to the inventory', () => {
++		// The list is the key's official vocabulary in the release's order, so a selector the partial
++		// is held to that the release does not record, or one the release records that the list
++		// omits, reddens here.
++		const recorded = oracle.components.accordion.selectors.map(({ selector }) => selector)
++		expect(ACCORDION_SELECTORS).toEqual([...new Set(recorded)])
++		expect(new Set(ACCORDION_SELECTORS).size).toBe(ACCORDION_SELECTORS.length)
++		// The release writes its dark icon rule through its color-mode mixin, and the inventory
++		// records that rule under the theme key with the resting and the active icon slots and
++		// nothing else, so the selector the accordion proof reads beside the list is the release's
++		// own.
++		expect(
++			oracle.components.theme.selectors
++				.filter(({ selector }) => selector.includes('.accordion'))
++				.map(({ selector, condition, declarations }) => [
++					selector,
++					condition,
++					declarations.map(({ property }) => property),
++				]),
++		).toEqual([
++			[
++				'[data-bs-theme=dark] .accordion-button::after',
++				undefined,
++				['--bs-accordion-btn-icon', '--bs-accordion-btn-active-icon'],
++			],
++		])
++		// Every row names a property the release declares on the accordion itself, and the value the
++		// release gives it: a length row carries the release's own length, and a color row names the
++		// variable the release reads.
++		const declared = new Map(Object.entries(oracle.components.accordion.properties))
++		const lengths = ACCORDION_LENGTH_CASES.map((entry) => ({
++			...entry,
++			site: declared.get(entry.property)?.[0],
++		}))
++		const colors = ACCORDION_COLOR_CASES.map((entry) => ({
++			...entry,
++			site: declared.get(entry.property)?.[0],
++		}))
++		for (const { property, site } of [...lengths, ...colors])
++			expect({ property, scope: site?.selector }).toEqual({ property, scope: '.accordion' })
++		const measured = lengths.filter(({ site }) => site?.value.endsWith('rem'))
++		expect(measured).not.toStrictEqual([])
++		expect(measured.map(({ site }) => Number.parseFloat(site?.value ?? '') * 16)).toEqual(
++			measured.map(({ pixels }) => pixels),
++		)
++		// The rows the release does not write in rem read the global border width and radius, whose
++		// resting lengths are one pixel and six, and the inner radius is the one less the other.
++		expect(
++			lengths
++				.filter(({ site }) => !site?.value.endsWith('rem'))
++				.map(({ property, site, pixels }) => [property, site?.value, pixels]),
++		).toEqual([
++			['--bs-accordion-border-width', 'var(--bs-border-width)', 1],
++			['--bs-accordion-border-radius', 'var(--bs-border-radius)', 6],
++			[
++				'--bs-accordion-inner-border-radius',
++				'calc(var(--bs-border-radius) - (var(--bs-border-width)))',
++				5,
++			],
++		])
++		expect(colors.map(({ site }) => site?.value)).toEqual(
++			colors.map(({ source }) => `var(${source})`),
++		)
++		// The published properties are closed over the tables and the readings named beside them:
++		// the transition slots are read by the motion case, the icon and its transform by the state
++		// cases, and the focus shadow by the focus case, because no length or color reading covers
++		// them. A property the release adds and no reading covers reddens.
++		expect(
++			[
++				...ACCORDION_LENGTH_CASES.map(({ property }) => property),
++				...ACCORDION_COLOR_CASES.map(({ property }) => property),
++				'--bs-accordion-transition',
++				'--bs-accordion-btn-icon',
++				'--bs-accordion-btn-icon-transform',
++				'--bs-accordion-btn-icon-transition',
++				'--bs-accordion-btn-active-icon',
++				'--bs-accordion-btn-focus-box-shadow',
++			].sort(),
++		).toEqual([...declared.keys()].sort())
++		// The shared markup carries the ordinary and the flush group and every state class the
++		// resolved readings address, and every button controls a panel of its own.
++		for (const fragment of [
++			'class="accordion"',
++			'class="accordion accordion-flush"',
++			'class="accordion-button"',
++			'class="accordion-button collapsed"',
++			'class="accordion-collapse collapse show"',
++			'class="accordion-collapse collapse"',
++		])
++			expect(ACCORDION_MARKUP).toContain(fragment)
++		// Every header is the release's own `h2` element, the level under the page's `h1` element.
++		const headers = [...ACCORDION_MARKUP.matchAll(/<(h\d) class="accordion-header">/gu)].map(
++			(match) => match[1],
++		)
++		expect(headers).not.toStrictEqual([])
++		expect(new Set(headers)).toEqual(new Set(['h2']))
++		const panels = [...ACCORDION_MARKUP.matchAll(/aria-controls="([^"]+)"/gu)].map(
++			(match) => match[1],
++		)
++		expect(new Set(panels).size).toBe(panels.length)
++		expect(panels.map((panel) => ACCORDION_MARKUP.includes(`id="${String(panel)}"`))).toEqual(
++			panels.map(() => true),
++		)
++		for (const cases of [ACCORDION_SELECTORS, ACCORDION_LENGTH_CASES, ACCORDION_COLOR_CASES])
++			expect(Object.isFrozen(cases)).toBe(true)
++		for (const cases of [ACCORDION_LENGTH_CASES, ACCORDION_COLOR_CASES])
++			for (const entry of cases) expect(Object.isFrozen(entry)).toBe(true)
++	})
++})
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index a28ae95..51f9661 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -2818,6 +2818,8 @@ export const THEME_DARK_ADDITIONS: readonly string[] = Object.freeze([
+ export const COMPONENT_DARK_ASSETS: readonly string[] = Object.freeze([
+ 	'--bs-form-select-bg-img',
+ 	'--bs-form-switch-bg',
++	'--bs-accordion-btn-icon',
++	'--bs-accordion-btn-active-icon',
+ ])
+ 
+ /**
+@@ -6177,3 +6179,194 @@ export const NAV_ROW_CASES = Object.freeze([
+ 			'<ul class="nav nav-justified"><li class="nav-item"><a class="nav-link" href="#short">Short</a></li><li class="nav-item"><button class="nav-link" type="button">A button several words long</button></li></ul><nav class="nav nav-justified" aria-label="Justified row"><a class="nav-link" href="#brief">Brief</a><a class="nav-link" href="#lengthy">A link several words long</a></nav>',
+ 	}),
+ ])
++
++/**
++ * Lists every official accordion selector the cascade ships, without repeating one, in the
++ * release's order.
++ *
++ * @remarks
++ * The release records the `.accordion-button` selector and the `.accordion-button::after` selector
++ * both unconditionally and under the reduced-motion query, and the list names each selector without
++ * its condition and without repeating it. The `tests/setupStyles.test.ts` proof holds the list
++ * against the inventory's accordion key in order, so a selector the release adds, drops, or moves
++ * reddens there. The release records its dark icon rule under the theme key rather than this one,
++ * so that selector is not listed here, and the `tests/src/styles/components/accordion.test.ts`
++ * proof reads it beside this list.
++ */
++export const ACCORDION_SELECTORS: readonly string[] = Object.freeze([
++	'.accordion',
++	'.accordion-button',
++	'.accordion-button:not(.collapsed)',
++	'.accordion-button:not(.collapsed)::after',
++	'.accordion-button::after',
++	'.accordion-button:hover',
++	'.accordion-button:focus',
++	'.accordion-header',
++	'.accordion-item',
++	'.accordion-item:first-of-type',
++	'.accordion-item:first-of-type > .accordion-header .accordion-button',
++	'.accordion-item:not(:first-of-type)',
++	'.accordion-item:last-of-type',
++	'.accordion-item:last-of-type > .accordion-header .accordion-button.collapsed',
++	'.accordion-item:last-of-type > .accordion-collapse',
++	'.accordion-body',
++	'.accordion-flush > .accordion-item',
++	'.accordion-flush > .accordion-item:first-child',
++	'.accordion-flush > .accordion-item:last-child',
++	'.accordion-flush > .accordion-item > .accordion-collapse',
++	'.accordion-flush > .accordion-item > .accordion-header .accordion-button',
++	'.accordion-flush > .accordion-item > .accordion-header .accordion-button.collapsed',
++])
++
++/**
++ * Supplies the accordion markup the resolved readings share: an ordinary accordion and a flush
++ * accordion, each with a first, a middle, and a last item.
++ *
++ * @remarks
++ * The ordinary accordion expands its first item and collapses its middle and last items, the
++ * release's own arrangement, so the first item's top corners, the border the later items share,
++ * and the last item's collapsed bottom corners each have a subject. The flush accordion expands its
++ * middle item, so its first and last items rest collapsed against the flush rules that square
++ * every corner the ordinary accordion rounds. Each state is a class in the markup, and every button
++ * announces a name of its own, because a pointer and the keyboard reach a button by that name.
++ */
++export const ACCORDION_MARKUP =
++	'<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" aria-expanded="true" aria-controls="panel-delivery">Delivery</button></h2><div class="accordion-collapse collapse show" id="panel-delivery"><div class="accordion-body">Parcels leave the depot at 08:00.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="panel-returns">Returns</button></h2><div class="accordion-collapse collapse" id="panel-returns"><div class="accordion-body">Unopened parcels go back free.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="panel-warranty">Warranty</button></h2><div class="accordion-collapse collapse" id="panel-warranty"><div class="accordion-body">Appliances carry two years of cover.</div></div></div></div><div class="accordion accordion-flush"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="panel-billing">Billing</button></h2><div class="accordion-collapse collapse" id="panel-billing"><div class="accordion-body">Accounts are billed monthly.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" aria-expanded="true" aria-controls="panel-invoices">Invoices</button></h2><div class="accordion-collapse collapse show" id="panel-invoices"><div class="accordion-body">Every invoice stays in the history.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="panel-refunds">Refunds</button></h2><div class="accordion-collapse collapse" id="panel-refunds"><div class="accordion-body">Refunds reach the card in five days.</div></div></div></div>'
++
++/** Pins one published accordion length to the element that consumes it and the length it resolves to. */
++export interface AccordionLengthCase {
++	/** Names the custom property the release declares on the `.accordion` class. */
++	readonly property: string
++	/** Holds the selector addressing the consuming element inside the {@link ACCORDION_MARKUP} constant. */
++	readonly target: string
++	/** Names the pseudo-element the property drives, and the `undefined` value for the element itself. */
++	readonly pseudo: string | undefined
++	/** Names the resolved property the reading takes on the consuming element. */
++	readonly reads: string
++	/** Holds the length the reading resolves to at the published factors, in pixels. */
++	readonly pixels: number
++}
++
++/**
++ * Pins each published accordion length against the element in the `ACCORDION_MARKUP` constant
++ * that consumes it, the property it drives there, and the length it resolves to at the published
++ * factors.
++ *
++ * @remarks
++ * The release declares every one of these on the `.accordion` class. The pixels are the release's
++ * own lengths, so a row whose property stopped driving its target reports the resting length it
++ * fell back to. The inner radius is the outer radius less the border width, the release's own
++ * derivation.
++ */
++export const ACCORDION_LENGTH_CASES: readonly AccordionLengthCase[] = Object.freeze([
++	Object.freeze({
++		property: '--bs-accordion-border-width',
++		target: '.accordion:not(.accordion-flush) > .accordion-item',
++		pseudo: undefined,
++		reads: 'border-left-width',
++		pixels: 1,
++	}),
++	Object.freeze({
++		property: '--bs-accordion-border-radius',
++		target: '.accordion:not(.accordion-flush) > .accordion-item',
++		pseudo: undefined,
++		reads: 'border-top-left-radius',
++		pixels: 6,
++	}),
++	Object.freeze({
++		property: '--bs-accordion-inner-border-radius',
++		target: '.accordion:not(.accordion-flush) .accordion-button',
++		pseudo: undefined,
++		reads: 'border-top-left-radius',
++		pixels: 5,
++	}),
++	Object.freeze({
++		property: '--bs-accordion-btn-padding-x',
++		target: '.accordion:not(.accordion-flush) .accordion-button.collapsed',
++		pseudo: undefined,
++		reads: 'padding-left',
++		pixels: 20,
++	}),
++	Object.freeze({
++		property: '--bs-accordion-btn-padding-y',
++		target: '.accordion:not(.accordion-flush) .accordion-button.collapsed',
++		pseudo: undefined,
++		reads: 'padding-top',
++		pixels: 16,
++	}),
++	Object.freeze({
++		property: '--bs-accordion-btn-icon-width',
++		target: '.accordion:not(.accordion-flush) .accordion-button.collapsed',
++		pseudo: '::after',
++		reads: 'width',
++		pixels: 20,
++	}),
++	Object.freeze({
++		property: '--bs-accordion-body-padding-x',
++		target: '.accordion:not(.accordion-flush) .accordion-body',
++		pseudo: undefined,
++		reads: 'padding-left',
++		pixels: 20,
++	}),
++	Object.freeze({
++		property: '--bs-accordion-body-padding-y',
++		target: '.accordion:not(.accordion-flush) .accordion-body',
++		pseudo: undefined,
++		reads: 'padding-top',
++		pixels: 16,
++	}),
++])
++
++/**
++ * Pins each published accordion color against the element in the `ACCORDION_MARKUP` constant that
++ * paints it, the property it paints, and the variable whose value the release gives it.
++ *
++ * @remarks
++ * The release declares every one of these on the `.accordion` class, and the `source` field is the
++ * variable its value reads, so a resting reading is compared with a second declaration that could
++ * disagree with it rather than with the property itself.
++ */
++export const ACCORDION_COLOR_CASES = Object.freeze([
++	Object.freeze({
++		property: '--bs-accordion-color',
++		target: '.accordion:not(.accordion-flush) > .accordion-item',
++		reads: 'color',
++		source: '--bs-body-color',
++	}),
++	Object.freeze({
++		property: '--bs-accordion-bg',
++		target: '.accordion:not(.accordion-flush) > .accordion-item',
++		reads: 'background-color',
++		source: '--bs-body-bg',
++	}),
++	Object.freeze({
++		property: '--bs-accordion-border-color',
++		target: '.accordion:not(.accordion-flush) > .accordion-item',
++		reads: 'border-left-color',
++		source: '--bs-border-color',
++	}),
++	Object.freeze({
++		property: '--bs-accordion-btn-color',
++		target: '.accordion:not(.accordion-flush) .accordion-button.collapsed',
++		reads: 'color',
++		source: '--bs-body-color',
++	}),
++	Object.freeze({
++		property: '--bs-accordion-btn-bg',
++		target: '.accordion:not(.accordion-flush) .accordion-button.collapsed',
++		reads: 'background-color',
++		source: '--bs-accordion-bg',
++	}),
++	Object.freeze({
++		property: '--bs-accordion-active-color',
++		target: '.accordion:not(.accordion-flush) .accordion-button:not(.collapsed)',
++		reads: 'color',
++		source: '--bs-primary-text-emphasis',
++	}),
++	Object.freeze({
++		property: '--bs-accordion-active-bg',
++		target: '.accordion:not(.accordion-flush) .accordion-button:not(.collapsed)',
++		reads: 'background-color',
++		source: '--bs-primary-bg-subtle',
++	}),
++])
+diff --git a/tests/src/styles/components/accordion.test.ts b/tests/src/styles/components/accordion.test.ts
+new file mode 100644
+index 0000000..8266e35
+--- /dev/null
++++ b/tests/src/styles/components/accordion.test.ts
+@@ -0,0 +1,494 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import {
++	hoverAccessible,
++	matchesColor,
++	readPixels,
++	readStyle,
++	readToken,
++	releaseMedia,
++	releasePointer,
++	stageMedia,
++	waitForAnimations,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
++import {
++	ACCORDION_COLOR_CASES,
++	ACCORDION_LENGTH_CASES,
++	ACCORDION_MARKUP,
++	ACCORDION_SELECTORS,
++	BUTTON_GROUP_CORNERS,
++	extractShadowLayers,
++	normalizeComplexSelector,
++	REDUCED_MOTION,
++	splitTopLevelList,
++	TEXT_MODES,
++	trimCSSWhitespace,
++} from '../../../setupStyles.js'
++
++afterEach(async () => {
++	await releasePointer()
++	await releaseMedia()
++	scene.clear()
++})
++
++describe('accordion classes', () => {
++	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
++	// release: the reading is every components-layer selector naming an accordion class, so a
++	// missing rule and an extra rule on the same classes each report here. The dark icon rule is
++	// the release's own, recorded under the theme key, so it is read beside the key's list.
++	it('writes the recorded accordion selectors and the dark icon rule, and no other rule on the accordion classes', () => {
++		const written = new Set(
++			collectLayer('components').flatMap((rule) =>
++				rule instanceof CSSStyleRule
++					? splitTopLevelList(rule.selectorText)
++							.map((part) => normalizeComplexSelector(trimCSSWhitespace(part)))
++							.filter((selector) => /\.accordion(?:-[\w-]+)?(?![\w-])/u.test(selector))
++					: [],
++			),
++		)
++		expect([...written].sort()).toEqual(
++			[...ACCORDION_SELECTORS, '[data-bs-theme="dark"] .accordion-button::after'].sort(),
++		)
++	})
++
++	// The mutation this catches is a transition written outside the mixin, or one that stopped
++	// reading its published slot: the reading is each rule's own declaration at rest and under the
++	// reduced-motion condition, so a literal written in place of the slot and a twin that kept its
++	// transition each report here beside the resolved readings the motion case takes.
++	it('declares the button and chevron transitions through their slots and no transition under the reduced-motion condition', () => {
++		const rules = collectLayer('components').flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule] : [],
++		)
++		expect(
++			['.accordion-button', '.accordion-button::after'].map((selector) =>
++				rules
++					.filter(
++						(rule) => normalizeComplexSelector(trimCSSWhitespace(rule.selectorText)) === selector,
++					)
++					.map((rule) => [
++						rule.parentRule instanceof CSSMediaRule ? rule.parentRule.conditionText : undefined,
++						rule.style.getPropertyValue('transition'),
++					]),
++			),
++		).toEqual([
++			[
++				[undefined, 'var(--bs-accordion-transition)'],
++				[REDUCED_MOTION, 'none'],
++			],
++			[
++				[undefined, 'var(--bs-accordion-btn-icon-transition)'],
++				[REDUCED_MOTION, 'none'],
++			],
++		])
++	})
++
++	it('lays each button out as a full-width row with its chevron at the end, and zeroes the header margin', () => {
++		const host = scene.mount(ACCORDION_MARKUP)
++		const item = requireValue(host.querySelector('.accordion-item'), 'No item')
++		const header = requireValue(item.querySelector('.accordion-header'), 'No header')
++		const button = requireValue(item.querySelector('.accordion-button'), 'No button')
++		expect(readPixels(header, 'margin-bottom')).toBe(0)
++		expect(readStyle(button, 'position')).toBe('relative')
++		expect(readStyle(button, 'display')).toBe('flex')
++		expect(readStyle(button, 'align-items')).toBe('center')
++		expect(readStyle(button, 'text-align')).toBe('left')
++		expect(readStyle(button, 'overflow-anchor')).toBe('none')
++		expect(readPixels(button, 'font-size')).toBe(16)
++		expect(readPixels(button, 'border-left-width')).toBe(0)
++		// The button spans the item's inner box, the width between the item's own side borders.
++		expect(button.getBoundingClientRect().width).toBeCloseTo(
++			item.getBoundingClientRect().width - 2 * readPixels(item, 'border-left-width'),
++			1,
++		)
++		expect(readStyle(item, 'border-left-style')).toBe('solid')
++		expect(readStyle(button, 'content', '::after')).toBe('""')
++		expect(readStyle(button, 'flex-shrink', '::after')).toBe('0')
++		expect(readPixels(button, 'height', '::after')).toBe(20)
++		expect(readStyle(button, 'background-repeat', '::after')).toBe('no-repeat')
++		expect(readStyle(button, 'background-size', '::after')).toBe('20px')
++		// The chevron's automatic start margin takes the row's free space, so it resolves to a
++		// positive length on a button whose label is shorter than the row.
++		expect(readPixels(button, 'margin-left', '::after')).toBeGreaterThan(0)
++	})
++
++	it.each(ACCORDION_LENGTH_CASES)(
++		'reads $reads from $property and moves it only from the accordion that declares it',
++		async ({ property, target, pseudo, reads, pixels }) => {
++			const host = scene.mount(`<div>${ACCORDION_MARKUP}</div>`)
++			const wrapper = requireValue(host.querySelector<HTMLElement>('div'), 'No wrapper')
++			const element = requireValue(host.querySelector(target), `No ${target}`)
++			const accordion = requireValue(element.closest<HTMLElement>('.accordion'), 'No accordion')
++			// The button transitions its corners, so the preference is staged first and every reading
++			// here is the settled value the declaration resolves to.
++			await stageMedia({ motion: false })
++			expect(readPixels(element, reads, pseudo)).toBe(pixels)
++			// The accordion declares the property itself, so a declaration on an ancestor is outranked
++			// and the accordion is where a consumer retunes it. Reading the shadowed wrapper first is
++			// what makes the accordion's own override the thing under test.
++			wrapper.style.setProperty(property, '19px')
++			expect(readPixels(element, reads, pseudo)).toBe(pixels)
++			accordion.style.setProperty(property, '19px')
++			expect(readPixels(element, reads, pseudo)).toBe(19)
++		},
++	)
++
++	it.each(ACCORDION_COLOR_CASES)(
++		'paints $reads from $property, the value $source gives it, and moves it only from the accordion that declares it',
++		async ({ property, target, reads, source }) => {
++			const host = scene.mount(`<div>${ACCORDION_MARKUP}</div>`)
++			const wrapper = requireValue(host.querySelector<HTMLElement>('div'), 'No wrapper')
++			const element = requireValue(host.querySelector(target), `No ${target}`)
++			const accordion = requireValue(element.closest<HTMLElement>('.accordion'), 'No accordion')
++			// The button transitions its paint, so the preference is staged first and every reading
++			// here is the settled value the declaration resolves to.
++			await stageMedia({ motion: false })
++			expect(matchesColor(readStyle(element, reads), readToken(element, source))).toBe(true)
++			expect(matchesColor(readStyle(element, reads), 'rebeccapurple')).toBe(false)
++			wrapper.style.setProperty(property, 'rebeccapurple')
++			expect(matchesColor(readStyle(element, reads), 'rebeccapurple')).toBe(false)
++			accordion.style.setProperty(property, 'rebeccapurple')
++			expect(matchesColor(readStyle(element, reads), 'rebeccapurple')).toBe(true)
++		},
++	)
++
++	// The mutation this catches is the `:not(.collapsed)` qualifier inverted or dropped: the expanded
++	// and the collapsed button sit in one group, so a rule that reached the other state paints the
++	// collapsed button with the active slots, and a rule that reached neither leaves the expanded
++	// button resting.
++	it('paints an expanded button from the active slots with its inset rule and turned chevron, and a collapsed button from the resting ones', async () => {
++		const host = scene.mount(ACCORDION_MARKUP)
++		const group = requireValue(host.querySelector('.accordion'), 'No accordion')
++		const expanded = requireValue(
++			group.querySelector('.accordion-button:not(.collapsed)'),
++			'No expanded button',
++		)
++		const collapsed = requireValue(
++			group.querySelector('.accordion-button.collapsed'),
++			'No collapsed button',
++		)
++		await stageMedia({ motion: false })
++		const active = [
++			readToken(expanded, '--bs-primary-text-emphasis'),
++			readToken(expanded, '--bs-primary-bg-subtle'),
++		]
++		const resting = [readToken(collapsed, '--bs-body-color'), readToken(collapsed, '--bs-body-bg')]
++		expect(
++			[expanded, collapsed].map((button) => [
++				matchesColor(readStyle(button, 'color'), requireValue(active[0], 'No active color')),
++				matchesColor(readStyle(button, 'background-color'), requireValue(active[1], 'No fill')),
++				matchesColor(readStyle(button, 'color'), requireValue(resting[0], 'No resting color')),
++				matchesColor(readStyle(button, 'background-color'), requireValue(resting[1], 'No bg')),
++			]),
++		).toEqual([
++			[true, true, false, false],
++			[false, false, true, true],
++		])
++		// The inset rule is one border width drawn along the button's bottom edge in the border
++		// color, with no blur and no spread, which is the line between the expanded button and its
++		// panel.
++		const layers = extractShadowLayers(readStyle(expanded, 'box-shadow'))
++		expect(layers.map(({ inset, lengths }) => ({ inset, lengths }))).toEqual([
++			{ inset: true, lengths: [0, -1, 0, 0] },
++		])
++		expect(
++			matchesColor(
++				requireValue(layers[0], 'No inset layer').color,
++				readToken(expanded, '--bs-border-color'),
++			),
++		).toBe(true)
++		expect(readStyle(collapsed, 'box-shadow')).toBe('none')
++		// The chevron turns half a revolution on the expanded button alone.
++		const turned = new DOMMatrix(readStyle(expanded, 'transform', '::after'))
++		expect([turned.a, turned.d].map((value) => Math.round(value))).toEqual([-1, -1])
++		expect(readStyle(collapsed, 'transform', '::after')).toBe('none')
++	})
++
++	// The mutation this catches is one icon slot read for both states: the release draws the resting
++	// chevron in the body text color and the expanded one in the primary emphasis color, so each
++	// state's image carries its own stroke.
++	it('draws the resting chevron on a collapsed button and the active chevron on an expanded one', () => {
++		const host = scene.mount(ACCORDION_MARKUP)
++		const group = requireValue(host.querySelector('.accordion'), 'No accordion')
++		const expanded = requireValue(
++			group.querySelector('.accordion-button:not(.collapsed)'),
++			'No expanded button',
++		)
++		const collapsed = requireValue(
++			group.querySelector('.accordion-button.collapsed'),
++			'No collapsed button',
++		)
++		const open = readStyle(expanded, 'background-image', '::after')
++		const shut = readStyle(collapsed, 'background-image', '::after')
++		expect(open).not.toBe(shut)
++		expect(open).toContain('data:image/svg+xml')
++		expect(open).toContain('052c65')
++		expect(shut).toContain('data:image/svg+xml')
++		expect(shut).toContain('212529')
++	})
++
++	// The mutation this catches is each seam rule dropped: the first item's top corners, the border
++	// each later item gives up, the last item's bottom corners, and the inner corners of the buttons
++	// at the two ends each read a length only its own rule gives.
++	it("rounds the group's outer corners on its boundary items, drops the top border of every later item, and squares the rest", async () => {
++		const host = scene.mount(ACCORDION_MARKUP)
++		// The button transitions its corners, so the class change later in this case is read settled.
++		await stageMedia({ motion: false })
++		const group = requireValue(host.querySelector('.accordion'), 'No accordion')
++		const items = [...group.querySelectorAll(':scope > .accordion-item')]
++		const buttons = items.map((item) =>
++			requireValue(item.querySelector('.accordion-button'), 'No item button'),
++		)
++		expect(items.map((item) => readPixels(item, 'border-top-width'))).toEqual([1, 0, 0])
++		expect(items.map((item) => readPixels(item, 'border-bottom-width'))).toEqual([1, 1, 1])
++		expect(
++			items.map((item) => BUTTON_GROUP_CORNERS.map((corner) => readPixels(item, corner))),
++		).toEqual([
++			[6, 6, 0, 0],
++			[0, 0, 0, 0],
++			[0, 0, 6, 6],
++		])
++		// The expanded first button rounds its top corners inside the item's border, and the
++		// collapsed last button rounds its bottom corners the same way.
++		expect(
++			buttons.map((button) => BUTTON_GROUP_CORNERS.map((corner) => readPixels(button, corner))),
++		).toEqual([
++			[5, 5, 0, 0],
++			[0, 0, 0, 0],
++			[0, 0, 5, 5],
++		])
++		// Opened in markup, the last button squares its bottom corners and its panel takes the
++		// group's outer radius instead, because the button meets the panel rather than the edge.
++		const last = requireValue(buttons[2], 'No last button')
++		const panel = requireValue(
++			requireValue(items[2], 'No last item').querySelector('.accordion-collapse'),
++			'No last panel',
++		)
++		last.classList.remove('collapsed')
++		panel.classList.add('show')
++		expect(BUTTON_GROUP_CORNERS.map((corner) => readPixels(last, corner))).toEqual([0, 0, 0, 0])
++		expect(BUTTON_GROUP_CORNERS.map((corner) => readPixels(panel, corner))).toEqual([0, 0, 6, 6])
++		expect(panel.getBoundingClientRect().height).toBeGreaterThan(0)
++	})
++
++	// The mutation this catches is each flush rule dropped: the flush group reads zero where the
++	// ordinary group beside it reads the border or the radius the dropped rule would leave.
++	it('squares every corner and drops the side and outer borders of a flush group', () => {
++		const host = scene.mount(ACCORDION_MARKUP)
++		const group = requireValue(host.querySelector('.accordion-flush'), 'No flush accordion')
++		const items = [...group.querySelectorAll(':scope > .accordion-item')]
++		expect(
++			items.map((item) =>
++				['top', 'right', 'bottom', 'left'].map((side) => readPixels(item, `border-${side}-width`)),
++			),
++		).toEqual([
++			[0, 0, 1, 0],
++			[0, 0, 1, 0],
++			[0, 0, 0, 0],
++		])
++		const radii = [
++			...items,
++			...group.querySelectorAll('.accordion-button'),
++			...group.querySelectorAll('.accordion-collapse'),
++		].flatMap((element) => BUTTON_GROUP_CORNERS.map((corner) => readPixels(element, corner)))
++		expect(radii).toHaveLength(36)
++		expect(radii.filter((radius) => radius !== 0)).toEqual([])
++		// The collapsed first and last buttons are the ones the boundary rules would round, so the
++		// flush group squares them against those rules rather than against a button nothing rounds.
++		const [first, , last] = group.querySelectorAll('.accordion-button')
++		expect(requireValue(first, 'No first button').classList.contains('collapsed')).toBe(true)
++		expect(requireValue(last, 'No last button').classList.contains('collapsed')).toBe(true)
++	})
++
++	it('rings a focused button with the published shadow, lifts it over its neighbours, and lifts a hovered one a step lower', async () => {
++		const host = scene.mount(ACCORDION_MARKUP)
++		const group = requireValue(host.querySelector('.accordion'), 'No accordion')
++		const [expanded, middle, last] = group.querySelectorAll<HTMLElement>('.accordion-button')
++		const button = requireValue(middle, 'No middle button')
++		await stageMedia({ motion: false })
++		expect(readStyle(button, 'z-index')).toBe('auto')
++		button.focus()
++		expect(button.matches(':focus')).toBe(true)
++		expect(readStyle(button, 'z-index')).toBe('3')
++		expect(readStyle(button, 'outline-style')).toBe('none')
++		// The spread is the recorded quarter-rem ring at a quarter of the release blue, read as the
++		// painted layer rather than as the declared text.
++		const ring = extractShadowLayers(readStyle(button, 'box-shadow'))
++		expect(ring.map(({ inset, lengths }) => ({ inset, lengths }))).toEqual([
++			{ inset: false, lengths: [0, 0, 0, 4] },
++		])
++		expect(
++			matchesColor(requireValue(ring[0], 'No ring layer').color, 'rgba(13, 110, 253, 0.25)'),
++		).toBe(true)
++		expect(readStyle(requireValue(last, 'No last button'), 'z-index')).toBe('auto')
++		// The focus rule follows the expanded rule, so a focused expanded button wears the ring in
++		// place of its inset rule.
++		const open = requireValue(expanded, 'No expanded button')
++		open.focus()
++		expect(extractShadowLayers(readStyle(open, 'box-shadow')).map(({ inset }) => inset)).toEqual([
++			false,
++		])
++		open.blur()
++		expect(readStyle(button, 'box-shadow')).toBe('none')
++		await hoverAccessible('button', 'Returns')
++		expect(button.matches(':hover')).toBe(true)
++		expect(readStyle(button, 'z-index')).toBe('2')
++	})
++
++	it('outlines the focused button at the focus width under forced colors, where its shadow ring is not painted', async () => {
++		const host = scene.mount(
++			`${ACCORDION_MARKUP}<div id="focus-gauge" style="width: var(--vn-focus-width)"></div>`,
++		)
++		const button = requireValue(
++			host.querySelector<HTMLElement>('.accordion-button.collapsed'),
++			'No collapsed button',
++		)
++		const gauge = requireValue(host.querySelector('#focus-gauge'), 'No focus gauge')
++		button.focus()
++		expect(readStyle(button, 'outline-style')).toBe('none')
++		// A color reading cannot fail under forced colors, because the installed color reader
++		// resolves each side through a probe whose color forced colors also replace, so the outline
++		// is read by its style and its width rather than by its paint.
++		await stageMedia({ forced: true })
++		expect(readStyle(button, 'outline-style')).toBe('solid')
++		expect(readPixels(button, 'outline-width')).toBe(readPixels(gauge, 'width'))
++		await releaseMedia()
++		expect(readStyle(button, 'outline-style')).toBe('none')
++	})
++
++	// The mutation this catches is the dark icon left at theme scope: the theme scope then carries
++	// the slot to every element in the island, and the accordion's own light declaration outranks it
++	// on the button, so the chevron paints the light stroke while a plain element reads a value.
++	it('draws the dark chevrons on a button inside a dark island and leaves the theme scope without them', () => {
++		const host = scene.mount(
++			`<div data-bs-theme="light" id="lit">${ACCORDION_MARKUP}</div><div data-bs-theme="dark" id="dim">${ACCORDION_MARKUP}<div id="plain"></div><div data-bs-theme="light" id="nested">${ACCORDION_MARKUP}</div></div>`,
++		)
++		const [lit, dim, nested] = ['lit', 'dim', 'nested'].map((scope) =>
++			['.accordion-button:not(.collapsed)', '.accordion-button.collapsed'].map((selector) =>
++				readStyle(
++					requireValue(host.querySelector(`#${scope} > .accordion ${selector}`), `No ${selector}`),
++					'background-image',
++					'::after',
++				),
++			),
++		)
++		expect(requireValue(dim, 'No dark reading').map((image) => image.includes('6ea8fe'))).toEqual([
++			true,
++			true,
++		])
++		expect(requireValue(lit, 'No light reading').map((image) => image.includes('6ea8fe'))).toEqual([
++			false,
++			false,
++		])
++		// The release's rule selects any button under a dark scope, so a light island nested inside a
++		// dark one keeps the dark chevrons the way the release does.
++		expect(nested).toEqual(dim)
++		const plain = requireValue(host.querySelector('#plain'), 'No plain element')
++		expect(readToken(plain, '--bs-accordion-btn-icon')).toBe('')
++		expect(readToken(plain, '--bs-accordion-btn-active-icon')).toBe('')
++	})
++
++	it.each(TEXT_MODES)(
++		'resolves the item, the collapsed button, and the expanded button from the %s theme',
++		async (mode) => {
++			const host = scene.mount(`<div data-bs-theme="${mode}">${ACCORDION_MARKUP}</div>`)
++			const item = requireValue(host.querySelector('.accordion-item'), 'No item')
++			const collapsed = requireValue(host.querySelector('.accordion-button.collapsed'), 'No btn')
++			const expanded = requireValue(
++				host.querySelector('.accordion-button:not(.collapsed)'),
++				'No expanded button',
++			)
++			await stageMedia({ motion: false })
++			expect(matchesColor(readStyle(item, 'color'), readToken(item, '--bs-body-color'))).toBe(true)
++			expect(
++				matchesColor(readStyle(collapsed, 'background-color'), readToken(item, '--bs-body-bg')),
++			).toBe(true)
++			expect(
++				matchesColor(
++					readStyle(expanded, 'background-color'),
++					readToken(item, '--bs-primary-bg-subtle'),
++				),
++			).toBe(true)
++		},
++	)
++
++	it('reads one item, button, and chevron paint in light and another in dark', async () => {
++		const light = scene.mount(`<div data-bs-theme="light">${ACCORDION_MARKUP}</div>`)
++		const dark = scene.mount(`<div data-bs-theme="dark">${ACCORDION_MARKUP}</div>`)
++		await stageMedia({ motion: false })
++		for (const [selector, property, pseudo] of [
++			['.accordion-item', 'background-color', undefined],
++			['.accordion-item', 'border-top-color', undefined],
++			['.accordion-button.collapsed', 'color', undefined],
++			['.accordion-button:not(.collapsed)', 'color', undefined],
++			['.accordion-button:not(.collapsed)', 'background-color', undefined],
++			['.accordion-button.collapsed', 'background-image', '::after'],
++		] as const) {
++			const lit = requireValue(light.querySelector(selector), `No light ${selector}`)
++			const dim = requireValue(dark.querySelector(selector), `No dark ${selector}`)
++			expect({ selector, property, value: readStyle(lit, property, pseudo) }).not.toEqual({
++				selector,
++				property,
++				value: readStyle(dim, property, pseudo),
++			})
++		}
++	})
++
++	it('drives the block padding of the button and the body from the density factor and leaves the inline padding and the chevron fixed', () => {
++		const host = scene.mount(ACCORDION_MARKUP)
++		const button = requireValue(host.querySelector('.accordion-button.collapsed'), 'No button')
++		const body = requireValue(
++			host.querySelector('.accordion-collapse.show > .accordion-body'),
++			'No body',
++		)
++		// The factors are declared on the document element, where the scale tokens are, so an
++		// override on the accordion itself would leave the already-resolved lengths untouched.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect(readPixels(button, 'padding-top')).toBe(32)
++			expect(readPixels(body, 'padding-top')).toBe(32)
++			expect(readPixels(button, 'padding-left')).toBe(20)
++			expect(readPixels(body, 'padding-left')).toBe(20)
++			expect(readPixels(button, 'width', '::after')).toBe(20)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++		expect(readPixels(button, 'padding-top')).toBe(16)
++		expect(readPixels(body, 'padding-top')).toBe(16)
++	})
++
++	// The mutation this catches is either transition written outside the mixin: the staged reading
++	// is taken on the same elements as the resting one, so a declaration that kept its duration
++	// under the preference reports here, and so does one that dropped its reduced-motion twin.
++	it('transitions the button paint and the chevron turn and collapses both under the reduced-motion preference', async () => {
++		const host = scene.mount(ACCORDION_MARKUP)
++		const button = requireValue(host.querySelector('.accordion-button'), 'No button')
++		const slots = [
++			['transition-property', undefined],
++			['transition-duration', undefined],
++			['transition-timing-function', undefined],
++			['transition-property', '::after'],
++			['transition-duration', '::after'],
++			['transition-timing-function', '::after'],
++		] as const
++		const recorded = [
++			'color, background-color, border-color, box-shadow, border-radius',
++			'0.15s, 0.15s, 0.15s, 0.15s, 0.15s',
++			'ease-in-out, ease-in-out, ease-in-out, ease-in-out, ease',
++			'transform',
++			'0.2s',
++			'ease-in-out',
++		]
++		expect(slots.map(([property, pseudo]) => readStyle(button, property, pseudo))).toEqual(recorded)
++		await stageMedia({ motion: false })
++		expect(readStyle(button, 'transition-duration')).toBe('0s')
++		expect(readStyle(button, 'transition-duration', '::after')).toBe('0s')
++		await waitForAnimations(button)
++		await releaseMedia()
++		expect(slots.map(([property, pseudo]) => readStyle(button, property, pseudo))).toEqual(recorded)
++		const rules = collectLayer('components')
++		for (const selector of ['.accordion-button', '.accordion-button::after'])
++			expect(collectMediaConditions(rules, selector)).toEqual([REDUCED_MOTION])
++	})
++})

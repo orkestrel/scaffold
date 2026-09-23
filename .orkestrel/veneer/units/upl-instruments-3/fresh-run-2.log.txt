@@ -1,0 +1,25 @@
+synced
+staged 07aecdfd42baf0c992d6bdc60c55cc4517c6b147
+apply-check shared at base exit=0
+apply-check unlisted at base exit=0
+apply shared exit=0
+apply unlisted exit=0
+format exit=0 :: All matched files use the correct format.
+lint exit=0 :: 
+check exit=0 :: 
+build exit=0 :: 
+styles exit=0 ::       Tests  42 passed (42)
+setup-styles exit=0 ::       Tests  110 passed (110)
+sections exit=0 ::       Tests  18 passed (18)
+conformance exit=0 ::       Tests  22 passed (22)
+service exit=0 ::       Tests  18 passed (18)
+guides exit=0 ::       Tests  19 passed (19)
+policy exit=0 ::       Tests  109 passed | 1 skipped (110)
+setup exit=0 ::       Tests  251 passed (251)
+setup-browser exit=0 ::       Tests  66 passed (66)
+reverse unlisted exit=0
+reverse shared exit=0
+tracked files other than the owned shell partial at base exit=0
+apply-check shared after return to base exit=0
+apply-check unlisted after return to base exit=0
+reapplied for the mutation runs exit=0

@@ -1,0 +1,19 @@
+ app/browser/Showcase.ts                            |   2 +
+ app/browser/constants.ts                           |  38 ++
+ app/browser/index.ts                               |   1 +
+ app/browser/sections/AccordionSection.ts           |  20 +
+ guides/veneer.md                                   | 115 ++++-
+ src/styles/_tokens.scss                            |  16 +-
+ src/styles/components/_accordion.scss              | 177 ++++++++
+ src/styles/index.scss                              |   1 +
+ tests/app/browser/Showcase.test.ts                 |   3 +
+ tests/app/browser/index.test.ts                    |   3 +
+ tests/app/browser/integration.test.ts              |  54 +++
+ .../app/browser/sections/AccordionSection.test.ts  | 183 ++++++++
+ tests/conformance.test.ts                          |   8 +-
+ tests/setup.ts                                     |  15 +
+ tests/setupServer.test.ts                          |   1 +
+ tests/setupStyles.test.ts                          | 131 +++++-
+ tests/setupStyles.ts                               | 193 ++++++++
+ tests/src/styles/components/accordion.test.ts      | 494 +++++++++++++++++++++
+ 18 files changed, 1434 insertions(+), 21 deletions(-)

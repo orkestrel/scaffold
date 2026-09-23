@@ -1,0 +1,19 @@
+Ship the accordion key with its section, proofs, and guide rows
+
+The accordion key ships whole in its own partial: the item, header, button, chevron, body, and
+flush families, the collapsed and opened button states, the boundary radii and borders, the
+focus and hover lift, the forced-colors ring, the reduced-motion branches through the transition
+mixin, and the dark glyphs, every value read from the tokens. The Accordion region constructs
+after Carousel with the base and flush specimens, each header the `h2` element under the page's
+`h1` element. The styles proof reads every selector, state, boundary, and density against the
+official inventory with a failing-first control, and the section proof reads the specimens and
+their state attributes. The registry carries the accordion capture rows, the guide carries the
+accordion ledger, file, and compatibility rows with a noun after every token, and the shared
+tables in the setup files carry the accordion cases.
+
+B-COLLAPSE wave 2, unit ACCORDION: a first round and a fix round on `opus`, each audited by `analyst` on Astra,
+`reviewer` on Opus 5.5, and `checker`; round 2 confirmed every code claim, and its report's bare
+tokens are recorded rather than reworked.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

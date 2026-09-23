@@ -1,0 +1,240 @@
+diff -ru '--exclude=node_modules' '--exclude=.git' tmp/probe/r2/app/browser/constants.ts tmp/probe/r3/app/browser/constants.ts
+--- tmp/probe/r2/app/browser/constants.ts	2026-09-23 18:47:24.162758076 +0000
++++ tmp/probe/r3/app/browser/constants.ts	2026-09-23 18:47:24.760201207 +0000
+@@ -1783,7 +1783,9 @@
+  * cap render inside the shell's `viewport` frame, whose height is bounded. Every box sized to the
+  * viewport renders inside a frame too, which clips what it overflows: the viewport sizes, and the
+  * width cap's viewport-wide box beside the height cap. So no box as wide as the viewport raises a
+- * scrollbar on the page.
++ * scrollbar on the page. The line inside the frame is half the frame's width, so a box the width
++ * cap does not hold runs past the line to the frame's edge, where the frame clips it, and the
++ * capped box stops at the line.
+  */
+ export const SIZING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -1813,7 +1815,7 @@
+ 	Object.freeze({
+ 		name: 'Maximum sizes',
+ 		markup:
+-			'<div class="viewport"><p><span class="placeholder vw-100 mw-100" aria-hidden="true"></span></p><div class="h-50"><span class="placeholder w-25 vh-100 mh-100" aria-hidden="true"></span></div></div>',
++			'<div class="viewport"><p class="w-50"><span class="placeholder vw-100 mw-100" aria-hidden="true"></span></p><div class="h-50"><span class="placeholder w-25 vh-100 mh-100" aria-hidden="true"></span></div></div>',
+ 	}),
+ 	Object.freeze({
+ 		name: 'Viewport sizes',
+diff -ru '--exclude=node_modules' '--exclude=.git' tmp/probe/r2/guides/veneer.md tmp/probe/r3/guides/veneer.md
+--- tmp/probe/r2/guides/veneer.md	2026-09-23 18:47:24.162803787 +0000
++++ tmp/probe/r3/guides/veneer.md	2026-09-23 18:47:24.760246291 +0000
+@@ -3337,6 +3337,12 @@
+ | `offset`  | `.offset-xl-0`  | `margin-left` | `@media (width >= 1200px)` | `0`             | `0%`   | declared  |
+ | `offset`  | `.offset-xxl-0` | `margin-left` | `@media (width >= 1400px)` | `0`             | `0%`   | declared  |
+ 
++#### `position`
++
++| Component  | Selector           | Property   | Condition | Bootstrap 5.3.8  | Veneer   | Departure |
++| ---------- | ------------------ | ---------- | --------- | ---------------- | -------- | --------- |
++| `position` | `.position-sticky` | `position` | —         | `-webkit-sticky` | `sticky` | declared  |
++
+ #### `reboot`
+ 
+ | Component | Selector      | Property                           | Condition                    | Bootstrap 5.3.8                                             | Veneer                                                          | Departure |
+@@ -3918,12 +3924,6 @@
+ | `placeholder` | `.placeholder-wave` | `mask-image`         | —         | `linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%)` | `linear-gradient(130deg, var(--vn-palette-black-base) 55%, rgba(var(--vn-palette-black-rgb), 0.8) 75%, var(--vn-palette-black-base) 95%)` | tokenized |
+ | `placeholder` | `.placeholder-wave` | `-webkit-mask-size`  | —         | `200% 100%`                                                           | —                                                                                                                                         | dropped   |
+ 
+-#### `position`
+-
+-| Component  | Selector           | Property   | Condition | Bootstrap 5.3.8  | Veneer   | Departure |
+-| ---------- | ------------------ | ---------- | --------- | ---------------- | -------- | --------- |
+-| `position` | `.position-sticky` | `position` | —         | `-webkit-sticky` | `sticky` | declared  |
+-
+ #### `icon-link`
+ 
+ | Component   | Selector           | Property                        | Condition | Bootstrap 5.3.8                                               | Veneer                                                        | Departure |
+@@ -4317,10 +4317,10 @@
+ | bottom           | selector       | Every official `.bottom-*` selector ships in the utilities layer; offsets resolved against the containing block are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                     | —                     | shipped  |
+ | start            | selector       | Every official `.start-*` selector ships in the utilities layer on the physical left edge; resolved offsets are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                         | —                     | shipped  |
+ | end              | selector       | Every official `.end-*` selector ships in the utilities layer on the physical right edge; resolved offsets are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                          | —                     | shipped  |
+-| translate-middle | selector       | Every official `.translate-middle` selector ships in the utilities layer; the centering on each axis is proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                                 | —                     | shipped  |
++| translate-middle | selector       | The official `.translate-middle`, `.translate-middle-x`, and `.translate-middle-y` selectors ship in the utilities layer; the centering on each axis is proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                 | —                     | shipped  |
+ | z                | selector       | Every official `.z-*` selector ships in the utilities layer; the stacking order of each level is proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                                        | —                     | shipped  |
+-| fixed            | selector       | The official `.fixed-top` and `.fixed-bottom` helpers ship in the components layer, reading `--vn-stack-fixed`; their placement and level are proved in `tests/src/styles/components/position.test.ts`.                                                                                                                                                                                                                                                          | —                     | shipped  |
+-| sticky           | selector       | Every official `.sticky-*` helper ships at every breakpoint infix in the components layer, reading `--vn-stack-sticky`; the sticking at each boundary is proved in `tests/src/styles/components/position.test.ts`.                                                                                                                                                                                                                                               | —                     | shipped  |
++| fixed            | selector       | The official `.fixed-top` and `.fixed-bottom` helpers ship in the components layer, reading the `--vn-stack-fixed` token; their placement and level are proved in `tests/src/styles/components/position.test.ts`.                                                                                                                                                                                                                                                | —                     | shipped  |
++| sticky           | selector       | Every official `.sticky-*` helper ships at every breakpoint infix in the components layer, reading the `--vn-stack-sticky` token; the sticking at each boundary is proved in `tests/src/styles/components/position.test.ts`.                                                                                                                                                                                                                                     | —                     | shipped  |
+ | visually-hidden  | selector       | The official `.visually-hidden` helper and its focusable form ship in the utilities layer ahead of every utility partial; the hidden box and the focus reveal are proved in `tests/src/styles/utilities/visually-hidden.test.ts`.                                                                                                                                                                                                                                | —                     | shipped  |
+ | visible          | selector       | The official `.visible` selector ships in the utilities layer; the resolved visibility is proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
+ | invisible        | selector       | The official `.invisible` selector ships in the utilities layer; the hidden paint and the kept box are proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                | —                     | shipped  |
+diff -ru '--exclude=node_modules' '--exclude=.git' tmp/probe/r2/tests/setupStyles.test.ts tmp/probe/r3/tests/setupStyles.test.ts
+--- tmp/probe/r2/tests/setupStyles.test.ts	2026-09-23 18:47:24.163483311 +0000
++++ tmp/probe/r3/tests/setupStyles.test.ts	2026-09-23 18:47:24.760753261 +0000
+@@ -110,21 +110,21 @@
+ 	PAGINATION_SIZE_CASES,
+ 	PAGINATION_STATE_CASES,
+ 	PLACEHOLDER_MARKUP,
+-	PLACEMENT_CONTAINER,
+ 	PLACEHOLDER_SELECTORS,
+ 	PLACEHOLDER_SIZE_CASES,
++	PLACEMENT_CONTAINER,
++	POSITION_ENTRY_CASES,
++	POSITION_VALUES,
+ 	PROGRESS_MARKUP,
+ 	PROGRESS_SELECTORS,
+ 	PROGRESS_VARIABLE_CASES,
+-	POSITION_ENTRY_CASES,
+-	POSITION_VALUES,
+ 	QUOTE_FOOTER_CASES,
+ 	RATIO_CASES,
+ 	REDUCED_MOTION,
+ 	REFERENCE_MARKUP,
+ 	RETAINED_COLOR_ALIASES,
+ 	RETAINED_LENGTH_ALIASES,
+-	SIZE_STEP_CASES,
++	SIZING_STEP_CASES,
+ 	SIZING_ENTRY_CASES,
+ 	SPINNER_SELECTORS,
+ 	SPINNER_SIZE_CASES,
+@@ -300,22 +300,22 @@
+ 				'PAGINATION_SIZE_CASES',
+ 				'PAGINATION_STATE_CASES',
+ 				'PLACEHOLDER_MARKUP',
+-				'PLACEMENT_BOX',
+-				'PLACEMENT_CONTAINER',
+ 				'PLACEHOLDER_SELECTORS',
+ 				'PLACEHOLDER_SIZE_CASES',
++				'PLACEMENT_BOX',
++				'PLACEMENT_CONTAINER',
++				'POSITION_ENTRY_CASES',
++				'POSITION_VALUES',
+ 				'PROGRESS_MARKUP',
+ 				'PROGRESS_SELECTORS',
+ 				'PROGRESS_VARIABLE_CASES',
+-				'POSITION_ENTRY_CASES',
+-				'POSITION_VALUES',
+ 				'QUOTE_FOOTER_CASES',
+ 				'RATIO_CASES',
+ 				'REDUCED_MOTION',
+ 				'REFERENCE_MARKUP',
+ 				'RETAINED_COLOR_ALIASES',
+ 				'RETAINED_LENGTH_ALIASES',
+-				'SIZE_STEP_CASES',
++				'SIZING_STEP_CASES',
+ 				'SIZING_ENTRY_CASES',
+ 				'SPINNER_SELECTORS',
+ 				'SPINNER_SIZE_CASES',
+@@ -350,6 +350,7 @@
+ 				'TEXT_UL_CASES',
+ 				'TEXT_VAR_CASES',
+ 				'THEME_DARK_ADDITIONS',
++				'TRANSLATION_BOX',
+ 				'TYPE_DISPLAY_CASES',
+ 				'TYPE_DISPLAY_TOKEN_CASES',
+ 				'TYPE_HEADING_CASES',
+@@ -1450,11 +1451,11 @@
+ 					declarations.map(({ value }) => value),
+ 				]),
+ 			).toEqual([
+-				...SIZE_STEP_CASES.map(({ step, value }) => [`.${key}-${step}`, [value]]),
++				...SIZING_STEP_CASES.map(({ step, value }) => [`.${key}-${step}`, [value]]),
+ 				[`.${key}-auto`, ['auto']],
+ 			])
+ 		}
+-		for (const { step, share, value } of [...SIZE_STEP_CASES, ...OFFSET_STEP_CASES]) {
++		for (const { step, share, value } of [...SIZING_STEP_CASES, ...OFFSET_STEP_CASES]) {
+ 			expect(Number.parseFloat(value) / 100).toBe(share)
+ 			expect(Number.parseFloat(step) / 100).toBe(share)
+ 		}
+@@ -1466,6 +1467,23 @@
+ 				]),
+ 			).toEqual(OFFSET_STEP_CASES.map(({ step, value }) => [`.${edge}-${step}`, [value]]))
+ 		}
++		// Each required offset edge is a distinct edge an unconditioned inventory rule names, so a
++		// table narrowed to fewer edges or widened past the inventory's set reddens here.
++		const requiredEdges = [...declared.keys()]
++			.map((selector) => /^\.(top|bottom|start|end)-/u.exec(selector))
++			.filter((match): match is RegExpExecArray => match !== null)
++			.map(([, edge]) => edge)
++		expect([...OFFSET_EDGES].sort()).toEqual([...new Set(requiredEdges)].sort())
++		// Each required viewport case is a distinct axis case the inventory names, so a table that
++		// drops or duplicates one reddens here.
++		const requiredViewportCases = ['vw-100', 'vh-100', 'min-vw-100', 'min-vh-100'].filter((name) =>
++			declared.has(`.${name}`),
++		)
++		expect([...VIEWPORT_SIZE_CASES.map(({ name }) => name)].sort()).toEqual(
++			[...requiredViewportCases].sort(),
++		)
++		expect(STICKY_SCROLLER.offset).toBeGreaterThan(0)
++		expect(STICKY_SCROLLER.style).toContain('overflow: auto')
+ 		// The sticky value is recorded after its prefixed alias, so each value is the last one its
+ 		// selector declares.
+ 		expect(
+@@ -1545,7 +1563,7 @@
+ 		for (const table of [
+ 			BREAKPOINT_INFIXES,
+ 			VIEWPORT_WIDTHS,
+-			SIZE_STEP_CASES,
++			SIZING_STEP_CASES,
+ 			SIZING_ENTRY_CASES,
+ 			VIEWPORT_SIZE_CASES,
+ 			POSITION_VALUES,
+@@ -1559,7 +1577,7 @@
+ 		])
+ 			expect(Object.isFrozen(table)).toBe(true)
+ 		for (const entry of [
+-			...SIZE_STEP_CASES,
++			...SIZING_STEP_CASES,
+ 			...SIZING_ENTRY_CASES,
+ 			...VIEWPORT_SIZE_CASES,
+ 			...OFFSET_STEP_CASES,
+diff -ru '--exclude=node_modules' '--exclude=.git' tmp/probe/r2/tests/setupStyles.ts tmp/probe/r3/tests/setupStyles.ts
+--- tmp/probe/r2/tests/setupStyles.ts	2026-09-23 18:47:24.163538890 +0000
++++ tmp/probe/r3/tests/setupStyles.ts	2026-09-23 18:47:24.760791054 +0000
+@@ -1861,6 +1861,9 @@
+ /** Holds the inline style of a box small enough that every offset step leaves it a distinct place. */
+ export const PLACEMENT_BOX = 'width: 20px; height: 10px'
+ 
++/** Carries the inline box the translation proofs read their offsets from. */
++export const TRANSLATION_BOX = 'width: 100px; height: 40px'
++
+ /**
+  * Holds the scroll container a sticky helper sticks against, with the offset each case scrolls it to.
+  *
+@@ -1880,14 +1883,14 @@
+  * The `value` field is the percentage the release records, and the `share` field is the fraction
+  * of the container it resolves. The `auto` step follows these in the map and takes no share.
+  */
+-export const SIZE_STEP_CASES = Object.freeze([
++export const SIZING_STEP_CASES = Object.freeze([
+ 	Object.freeze({ step: '25', value: '25%', share: 0.25 }),
+ 	Object.freeze({ step: '50', value: '50%', share: 0.5 }),
+ 	Object.freeze({ step: '75', value: '75%', share: 0.75 }),
+ 	Object.freeze({ step: '100', value: '100%', share: 1 }),
+ ])
+ 
+-/** Lists each sizing entry's class stem in the release's map order, with one class it writes. */
++/** Lists each sizing entry's class prefix in the release's map order, with one class it writes. */
+ export const SIZING_ENTRY_CASES = Object.freeze([
+ 	Object.freeze({ prefix: 'w', name: 'w-25' }),
+ 	Object.freeze({ prefix: 'mw', name: 'mw-100' }),
+@@ -1910,11 +1913,11 @@
+ /** Lists the position values in the release's list order. */
+ export const POSITION_VALUES = Object.freeze(['static', 'relative', 'absolute', 'fixed', 'sticky'])
+ 
+-/** Lists the offset entries' class stems in the release's map order. */
++/** Lists the offset entries' class prefixes in the release's map order. */
+ export const OFFSET_EDGES = Object.freeze(['top', 'bottom', 'start', 'end'])
+ 
+ /**
+- * Lists the offset steps in the release's map order.
++ * Lists the position offset steps in the release's map order.
+  *
+  * @remarks
+  * The `value` field is the offset the release records, and the `share` field is the fraction of
+@@ -1935,7 +1938,7 @@
+ 	Object.freeze({ level: '3', value: '3' }),
+ ])
+ 
+-/** Lists each position entry's class stem in the release's map order, with one class it writes. */
++/** Lists each position entry's class prefix in the release's map order, with one class it writes. */
+ export const POSITION_ENTRY_CASES = Object.freeze([
+ 	Object.freeze({ prefix: 'position', name: 'position-static' }),
+ 	Object.freeze({ prefix: 'top', name: 'top-0' }),
