@@ -417,3 +417,12 @@ var(--bs-border-radius);`), each emitting its run where the partial wrote it, so
 compiles byte-identical to its block form. The floor stays at D32's values. Carriers: B-FORMS-MIXIN
 routes `_form-select.scss` and `_input-group.scss`; the CONTROL fix round routes
 `_form-control.scss` with the identical mixin text in its own tree, and the landing keeps one copy.
+
+## D39a — The priority comparison runs over the release's compiled CSS
+
+The oracle fixture (`tests/fixtures/oracle/inventory.json`) records no declaration priority, so the
+ledger's value comparison cannot carry it without a new oracle shape. D39's rule holds through a
+conformance case instead: every (selector, property) pair the release's compiled CSS
+(`node_modules/bootstrap/dist/css/bootstrap.css`) and the built cascade both declare carries the
+same priority, read through `SheetReader`, and the case reports each mismatch. The ledger rows keep
+comparing values. Carrier: L2 LEDGER-PRIORITY on `builder`.
