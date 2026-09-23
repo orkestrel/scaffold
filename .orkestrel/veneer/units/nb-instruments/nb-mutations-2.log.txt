@@ -1,0 +1,6 @@
+the bar padding slot declared on a wrapper scope | exit 0 | 40 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "reads padding-top from .*navbar-padding-y"
+the current and open link rule dropped | exit 1 | 1 failed | 39 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "paints every link inside the list"
+the collapsible content rule dropped | exit 1 | 2 failed | 38 skipped (40) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts -t "opens a menu in the column flow|expands the .md. bar"
+the expanded content importance dropped | exit 1 | 1 failed | 21 skipped (22) | npm run test:conformance -- -t "carries the priority"
+control, unmutated | exit 0 | 46 passed (46)
+control, unmutated section | exit 0 | 2 passed (2)

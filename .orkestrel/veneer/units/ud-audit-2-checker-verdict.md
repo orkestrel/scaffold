@@ -1,0 +1,34 @@
+VERDICT: PASS
+
+Per-claim rulings for the UTIL-DISPLAY (`ud`) audit round 2, claims 1, 4, 7, and 8.
+
+**Claim 1 (Delta and scope) — CONFIRMED**
+- `ud-2-status.txt:1-12` lists exactly the twelve owned files as `??`, matching the claim's list, and nothing else.
+- `ud-2.diff` new-file hunks for `src/styles/utilities/_display.scss`, `_flex.scss`, `_vertical-align.scss`, `src/styles/components/_stacks.scss`, `app/browser/sections/DisplaySection.ts`, and `FlexSection.ts` are byte-identical to the same hunks in round 1's `ud.diff` (same `index` hashes and same body text at `ud-2.diff:1-243` vs `ud.diff:1-243`).
+- `ud-shared-2.patch` touches exactly the fifteen named files (`app/browser/Showcase.ts`, `constants.ts`, `index.ts`; `guides/veneer.md`; `src/styles/index.scss`; `tests/app/browser/Showcase.test.ts`, `index.test.ts`, `integration.test.ts`; `tests/conformance.test.ts`; `tests/setup.ts`, `setup.test.ts`; `tests/setupServer.test.ts`; `tests/fixtures/tailwind/markup.html`; `tests/setupStyles.ts`, `setupStyles.test.ts`) — counted directly against each `diff --git` header in `ud-shared-2.patch`, with no fifth file present.
+- The patch's hunks for `src/styles/index.scss`, `app/browser/index.ts`, `app/browser/Showcase.ts`, `tests/app/browser/Showcase.test.ts`, `index.test.ts`, `integration.test.ts`, `tests/conformance.test.ts`, `tests/setupServer.test.ts`, `tests/fixtures/tailwind/markup.html`, and the `CaptureStem`/`CaptureSubject` hunks of `tests/setup.ts` and `tests/setup.test.ts` (`ud-shared-2.patch:1-30`, `179-188`, `352-770`) are byte-identical to round 1's `ud-shared.patch` (same lines at `ud-shared.patch:1-13`, `166-406`, `426-618`), confirming the claim's "carried unchanged" assertion for the files the rulings do not name. No vendored file, sibling-unit file, `src/browser/**`, `src/core/**`, `package.json`, `README.md`, or `ROADMAP.md` line appears in either diff.
+- `ud-instruments-2/logs/apply-check.log.txt` (referenced in the report at `b-utilities-ud-report-2.md:364-371`) records `git apply --check exit=0` against `e4e6a40`, and the patch's `index` line count matches its `diff --git` count per the report's stated `grep` equality.
+
+**Claim 4 (Retained evidence, round-1 claims 2 and 6) — CONFIRMED**
+- `ud-instruments-2/logs/gates/conformance-verbose.log.txt:29-32` reads exactly `Tests 22 passed (22)`, naming the departures, stale-departure, additions, stale-additions, deferral, component-oracle, and source-order cases at lines 10-22.
+- `ud-instruments-2/logs/cascade-planted.log.txt:7-9,46` shows `EXTRA .d-probe|`, `SUMMARY inventory=343 present=343 missing=0 unimportant=0 customImportant=0 extra=1`, vitest exit=1, and `restored ... equal=true` for the `_display.scss` partial.
+- `ud-instruments-2/logs/cascade-clean.log.txt:7,16` shows `SUMMARY inventory=343 present=343 missing=0 unimportant=0 customImportant=0 extra=0`, vitest exit=0.
+- `ud-instruments-2/logs/tailwind/control-a.log.txt:92-96,159` reads `Tests 2 failed | 16 passed (18)` on the `derives the shared class names` and `keeps a shared name on the line` cases, with the `dist/src/styles/index.css` digest equal before/after.
+- `ud-instruments-2/logs/tailwind/control-b.log.txt:148-153,266-272` reads `Tests 4 failed | 14 passed (18)` on the recipe, shared-name (twice), and profile cases, with `tests/setup.css`, `consumer.css`, and `preflight.css` digests equal before/after (also independently confirmed in `control-b.digests.txt`).
+- `clean-before.log.txt:16-17` and `clean-after.log.txt:16-17` both read `Tests 18 passed (18)`, exit=0.
+- Mutation-to-failure distinction: each control's log shows the named mutation applied, the run failing on exactly the asserted cases, and the restore reading digest-equal — the proof's assertions visibly distinguish the mutated state from the clean state in every one of these logs.
+
+**Claim 7 (`CaptureStem` type) — CONFIRMED**
+- `ud-shared-2.patch:566-629` (`tests/setup.test.ts` and `tests/setup.ts` hunks) is byte-identical, line for line, to `ud-shared.patch:270-406` (round 1's corresponding hunks for the same files): the `CaptureStem` type drops a comma before hyphenating (`S extends ${infer Head},${infer Tail} ? CaptureStem<${Head}${Tail}> : ...`), matching `buildStem`'s run-time rule, with the typed constant `listed: CaptureStem<'Fill, grow, and shrink'> = 'fill-grow-and-shrink'` and its assertion in `setup.test.ts`. No runtime file in the delta references `CaptureStem`, so the claim's "no runtime behaviour changes" holds on the available diff evidence.
+
+**Claim 8 (Case tables' home) — CONFIRMED**
+- `ud-shared-2.patch:887-1052` (`tests/setupStyles.ts`) adds `DISPLAY_VALUES`, `ALIGN_VALUES`, `FLEX_ENTRY_CASES` (`{ prefix, property, values }` of `{ key, value }`), the `FlexRestingValue` interface, and `FLEX_RESTING_VALUES` (`{ flex: { declared: 'none', computed: '0 0 auto' } }`) directly after `GAP_STEP_CASES`, every level `Object.freeze`d, each carrying a TSDoc comment.
+- `ud-shared-2.patch:783-883` (`tests/setupStyles.test.ts`) imports the four exports, extends the sorted export-enumeration array, and adds the case `binds the display values, the vertical-alignment positions, and the flex entries to the inventory` directly after the gap-steps case, asserting against `readOracleInventory()`, the resting-value exclusion, and the freeze at every level.
+- `ud-instruments-2/logs/setup/` contains exactly the five named controls plus `control.log.txt`: `display-values-reordered.log.txt` (confirmed read, `1 failed | 109 passed (110)`, red on the binding case), `align-value-dropped.log.txt`, `flex-entry-value-changed.log.txt`, `flex-resting-written.log.txt`, `flex-table-unfrozen.log.txt` (confirmed read, same red signature), and `control.log.txt` (`110 passed (110)`) — matching the report's table at `b-utilities-ud-report-2.md:176-183` exactly, with digest-equal restores in every log.
+- `display.test.ts`, `flex.test.ts`, `vertical-align.test.ts` import the tables (confirmed in `ud-2.diff:642-647,795-804,1031-1036`) and the section proofs import `DISPLAY_VALUES`/`ALIGN_VALUES`/`FLEX_ENTRY_CASES` (`ud-2.diff:249-255,367-373`), restating no value list.
+
+Counts the report states, listed: `108` mutations record log (37 passed/6 passed styles+sections tallies per row); `22 passed (22)` conformance; `343` inventory sites; `18 passed (18)` service tests; `110 passed (110)` setup tests; `251 passed (251)` `test:setup`; `19 passed (19)` guides; `109 passed | 1 skipped (110)` policy; `1098` insertions/`0` deletions diffstat; `665 insertions(+), 10 deletions(-)` shared-patch shortstat.
+
+Findings outside the numbered claims, to the BROKEN standard: none. The `logs/record/` mutation-record table, the gate table, and the patch-check section all read consistently with the report's own text on the portions read for claims 1, 4, 7, and 8, and no contradiction was found between the report's prose and its cited logs within that scope.
+
+VERDICT: PASS

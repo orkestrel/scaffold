@@ -1,0 +1,1056 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index e63c6c5..f2b0a8f 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -9,6 +9,8 @@ import { ButtonSection } from './sections/ButtonSection.js'
+ import { CardSection } from './sections/CardSection.js'
+ import { CloseSection } from './sections/CloseSection.js'
+ import { ContentSection } from './sections/ContentSection.js'
++import { DisplaySection } from './sections/DisplaySection.js'
++import { FlexSection } from './sections/FlexSection.js'
+ import { FormCheckSection } from './sections/FormCheckSection.js'
+ import { FormControlSection } from './sections/FormControlSection.js'
+ import { FormFloatingSection } from './sections/FormFloatingSection.js'
+@@ -114,6 +116,8 @@ export class Showcase implements ShowcaseInterface {
+ 			new BreadcrumbSection(this.#main),
+ 			new CloseSection(this.#main),
+ 			new InputGroupSection(this.#main),
++			new DisplaySection(this.#main),
++			new FlexSection(this.#main),
+ 		]
+ 	}
+ 
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index ea224cf..f23a795 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -1704,3 +1704,151 @@ export const FORM_LABEL_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 			'<div class="container-fluid"><fieldset class="row"><legend class="col-5 col-form-label">Pickup</legend><div class="col-7"><input class="form-control" type="date" aria-label="Pickup date" value="2026-09-23"></div></fieldset></div>',
+ 	}),
+ ])
++
++/** Holds the Display section's visible copy and accessible name. */
++export const DISPLAY_COPY = Object.freeze({
++	region: 'Display',
++	paragraph:
++		'Display classes set the box an element generates at each breakpoint and in print, and vertical alignment places inline content on its line. Resize the viewport to compare the responsive classes.',
++})
++
++/**
++ * Lists the display and vertical-alignment specimens the section renders, in render order.
++ *
++ * @remarks
++ * A hidden subject shares its line with visible text, so every specimen shows content at every
++ * width: the responsive pair swaps one sentence for the other at the md boundary, and the print
++ * pair shows its screen half. The vertical-alignment line carries a display heading, so each
++ * position is read against a box taller than the text beside it.
++ */
++export const DISPLAY_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Display values',
++		markup:
++			'<p><span class="d-inline">Inline</span> <span class="d-inline-block">Inline block</span></p><div class="d-block">Block</div><div class="d-grid">Grid</div><div class="d-inline-grid">Inline grid</div><div class="d-table"><div class="d-table-row"><div class="d-table-cell">Table cell</div><div class="d-table-cell">Next cell</div></div></div><div class="d-flex gap-2"><span>Flex item</span><span>Next item</span></div><div class="d-inline-flex gap-2"><span>Inline flex item</span><span>Next item</span></div><p>A hidden element follows this sentence.<span class="d-none">Hidden</span></p>',
++	}),
++	Object.freeze({
++		name: 'Responsive display',
++		markup:
++			'<p><span class="d-inline d-md-none">Shown below the md boundary</span><span class="d-none d-md-inline">Shown at the md boundary and wider</span></p><div class="d-block d-md-flex gap-3"><div>Stacked below md</div><div>In a row from md</div></div>',
++	}),
++	Object.freeze({
++		name: 'Print display',
++		markup:
++			'<p><span class="d-inline-block d-print-none">Shown on screen, hidden in print</span> <span class="d-none d-print-inline">Shown in print only</span></p>',
++	}),
++	Object.freeze({
++		name: 'Vertical alignment',
++		markup:
++			'<p><span class="display-6">Aa</span> <span class="align-baseline">baseline</span> <span class="align-top">top</span> <span class="align-middle">middle</span> <span class="align-bottom">bottom</span> <span class="align-text-top">text-top</span> <span class="align-text-bottom">text-bottom</span></p>',
++	}),
++])
++
++/** Holds the Flex section's visible copy and accessible name. */
++export const FLEX_COPY = Object.freeze({
++	region: 'Flex',
++	paragraph:
++		'Flex classes set the direction, wrapping, and alignment of a container and the growth, shrinking, alignment, and order of an item, and the stacks lay out a centered row or a stretched column.',
++})
++
++/**
++ * Lists the flex, alignment, order, and stack specimens the section renders, in render order.
++ *
++ * @remarks
++ * Every item that demonstrates a class is labeled with that class's full name: the item carrying
++ * the class, or, where the class sits on the container, one item inside it. An item that only
++ * gives the demonstration something to act on keeps a prose label, such as the tall sibling in the
++ * aligned specimens and the items of each stack. The wrap specimens size their items with column
++ * classes so three items overflow one line at every width, and the aligned-content boxes take their
++ * height from the aspect-ratio class, because packing lines needs a container taller than its
++ * lines. The order specimen writes its items out of order, so the rendered sequence is the classes'
++ * own.
++ */
++export const FLEX_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Flex direction',
++		markup: ['flex-row', 'flex-row-reverse', 'flex-column', 'flex-column-reverse']
++			.map(
++				(name) =>
++					`<div class="d-flex ${name} gap-2"><span>${name}</span><span>Second</span><span>Third</span></div>`,
++			)
++			.join(''),
++	}),
++	Object.freeze({
++		name: 'Flex wrap',
++		markup: ['flex-wrap', 'flex-nowrap', 'flex-wrap-reverse']
++			.map(
++				(name) =>
++					`<div class="d-flex ${name}"><div class="col-5 flex-shrink-1">${name}</div><div class="col-5 flex-shrink-1">Second</div><div class="col-5 flex-shrink-1">Third</div></div>`,
++			)
++			.join(''),
++	}),
++	Object.freeze({
++		name: 'Justified content',
++		markup: ['start', 'end', 'center', 'between', 'around', 'evenly']
++			.map(
++				(key) =>
++					`<div class="d-flex justify-content-${key}"><span>justify-content-${key}</span><span>Item</span></div>`,
++			)
++			.join(''),
++	}),
++	Object.freeze({
++		name: 'Aligned items',
++		markup: ['start', 'end', 'center', 'baseline', 'stretch']
++			.map(
++				(key) =>
++					`<div class="d-flex align-items-${key} gap-2"><div class="display-6">Tall</div><div>align-items-${key}</div><div>Item</div></div>`,
++			)
++			.join(''),
++	}),
++	Object.freeze({
++		name: 'Aligned content',
++		markup: `<div class="row row-cols-2 row-cols-md-3 g-2">${[
++			'start',
++			'end',
++			'center',
++			'between',
++			'around',
++			'stretch',
++		]
++			.map(
++				(key) =>
++					`<div><div class="ratio ratio-4x3"><div class="d-flex flex-wrap align-content-${key}"><div class="col-6">align-content-${key}</div><div class="col-6">Item</div><div class="col-6">Item</div><div class="col-6">Item</div></div></div></div>`,
++			)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Aligned self',
++		markup: `<div class="d-flex flex-wrap gap-2"><div class="display-6">Tall</div>${[
++			'auto',
++			'start',
++			'end',
++			'center',
++			'baseline',
++			'stretch',
++		]
++			.map((key) => `<div class="align-self-${key}">align-self-${key}</div>`)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Fill, grow, and shrink',
++		markup:
++			'<div class="d-flex gap-2"><div class="flex-fill">flex-fill</div><div>Item</div><div class="flex-fill">flex-fill</div></div><div class="d-flex gap-2"><div class="flex-grow-0">flex-grow-0</div><div class="flex-grow-1">flex-grow-1</div><div class="flex-grow-0">flex-grow-0</div></div><div class="d-flex gap-2"><div class="col-8 flex-shrink-1">flex-shrink-1</div><div class="col-8 flex-shrink-0">flex-shrink-0</div></div>',
++	}),
++	Object.freeze({
++		name: 'Flex order',
++		markup: `<div class="d-flex flex-wrap gap-2">${['last', '2', 'first', '5', '0', '4', '1', '3']
++			.map((key) => `<div class="order-${key}">order-${key}</div>`)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Horizontal stack',
++		markup:
++			'<div class="hstack gap-3"><span class="display-6">Tall</span><div class="vr"></div><span>First item</span><div class="vr"></div><span>Second item</span></div>',
++	}),
++	Object.freeze({
++		name: 'Vertical stack',
++		markup:
++			'<div class="vstack gap-2 col-6"><div class="card card-body">First item</div><div class="card card-body">Second item</div><div class="card card-body">Third item</div></div>',
++	}),
++])
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 2154013..91b0927 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -27,3 +27,5 @@ export * from './sections/BadgeSection.js'
+ export * from './sections/BreadcrumbSection.js'
+ export * from './sections/CloseSection.js'
+ export * from './sections/InputGroupSection.js'
++export * from './sections/DisplaySection.js'
++export * from './sections/FlexSection.js'
+diff --git a/guides/veneer.md b/guides/veneer.md
+index cff0aa9..3636178 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -227,6 +227,7 @@ The following files carry the axis.
+ | `src/styles/components/_button-group.scss`  | The button group, its vertical twin, their joining relationships, and the toolbar in the components layer, read by `tests/src/styles/components/button-group.test.ts`.                                                                             |
+ | `src/styles/components/_ratio.scss`         | The aspect-ratio box, its pseudo-element, and the named aspects in the components layer.                                                                                                                                                           |
+ | `src/styles/components/_vr.scss`            | The vertical rule in the components layer.                                                                                                                                                                                                         |
++| `src/styles/components/_stacks.scss`        | The horizontal and vertical stack helpers in the components layer.                                                                                                                                                                                 |
+ | `src/styles/components/_card.scss`          | The card box, its caps and body, the image and overlay placements, the header navigations, and the card group in the components layer.                                                                                                             |
+ | `src/styles/components/_list-group.scss`    | The list-group box, its item joins, action states, numbering, flush edges, horizontal ramp, and contextual roles in the components layer.                                                                                                          |
+ | `src/styles/components/_form-label.scss`    | The form label, the help text, and the horizontal label at each size in the components layer, read by `tests/src/styles/components/form-label.test.ts`.                                                                                            |
+@@ -278,6 +279,9 @@ The following files carry the axis.
+ | `src/styles/elements/_details.scss`         | The details family and its mandated pairs in the elements layer.                                                                                                                                                                                   |
+ | `src/styles/elements/_progress.scss`        | The progress family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
+ | `src/styles/utilities/_gap.scss`            | The gutter and gap step utilities in the utilities layer.                                                                                                                                                                                          |
++| `src/styles/utilities/_vertical-align.scss` | The vertical-alignment utilities in the utilities layer.                                                                                                                                                                                           |
++| `src/styles/utilities/_display.scss`        | The display utilities and their print pass in the utilities layer.                                                                                                                                                                                 |
++| `src/styles/utilities/_flex.scss`           | The flex, alignment, and order utilities in the utilities layer.                                                                                                                                                                                   |
+ | `src/styles/index.scss`                     | The compilation barrel.                                                                                                                                                                                                                            |
+ | `src/styles/index.ts`                       | The side-effect entry, and the build's library entry.                                                                                                                                                                                              |
+ | `configs/src/vite.styles.config.ts`         | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
+@@ -443,7 +447,10 @@ each as Chromium expands it, so a shorthand counts as the longhands it sets. The
+ runs over the shared names that rule lets leave the line. The gap steps `gap-0` to `gap-5` are
+ shipped names off the line: Tailwind's rule for each declares the `gap` shorthand, which Chromium
+ expands to the `row-gap` and `column-gap` longhands, and Veneer declares the same shorthand with
+-`!important`. The proof asserts that the `gap-3` name is in the branch and reads what the rule
++`!important`. Every other shipped name off the line reads the same way; Tailwind's `order-first`
++rule declares the `order` longhand alone, and Veneer declares it with `!important`, so the
++`order-first` class resolves Veneer's `-1` rather than Tailwind's `-9999`. The proof asserts that
++the `gap-3` name is in the branch and reads what the rule
+ claims: with the exclusion line dropped and Tailwind's own rule on the page, every element carrying
+ a name in the branch resolves, for every property that rule declares, what it resolves under the
+ cascade alone. A planted rule drives the partial-importance case: it declares `!important` on the
+@@ -1768,6 +1775,65 @@ These are the keys' recorded departures.
+   beside `column-gap`; Veneer emits the standard property alone, because the managed Chromium and
+   Edge receipts this cascade is proved on resolve it and leave the alias redundant.
+ 
++### Display utilities
++
++The display key ships whole in the utilities layer from the `src/styles/utilities/_display.scss`
++partial, and the vertical-alignment key from the `src/styles/utilities/_vertical-align.scss`
++partial. The `.d-*` classes set the `display` property to each value the release lists, from
++`inline` to `none`, at every breakpoint infix, so the `.d-md-flex` class lays its element out as a
++flex container from the md boundary up. The `.align-*` classes set the `vertical-align` property to
++each position the release lists, at the empty infix alone, because the release's entry is not
++responsive.
++
++The display partial writes its key through the `utility` mixin that § Styles describes and walks
++the breakpoints once, then writes the release's print pass: one `@media print` block, after the
++walk, that writes every value again under the `-print` infix. Under the print medium, the
++`.d-print-none` class hides its element, and the `.d-print-block` class shows an element that the
++`.d-none` class hides on screen. The block follows the whole walk, so a print class beats every
++responsive class of the key, the widest included. No other partial writes a print condition.
++
++Every declaration carries the `!important` the release writes, and none reads a token, so neither
++the density factor nor the color mode moves a value. § Styles shows the escape from an important
++utility inside the utilities layer.
++
++The `tests/src/styles/utilities/display.test.ts` proof reads every value at every infix at its
++boundary and one pixel below it, the print pass under the staged print medium and the screen values
++after it, the order between infixes, a dark island and the density factor, the priority over a later
++unlayered rule, and the escape inside the utilities layer. The
++`tests/src/styles/utilities/vertical-align.test.ts` proof reads each value, each position on one
++line against a tall box and a text run, the absence of an infixed class, and the same priority and
++escape.
++
++### Flex utilities
++
++The flex keys ship whole in the utilities layer from the `src/styles/utilities/_flex.scss` partial:
++the `.flex-fill` class and the direction, grow, shrink, and wrap classes under the `flex` key, and
++the `.justify-content-*`, `.align-items-*`, `.align-content-*`, `.align-self-*`, and `.order-*`
++classes under their own keys, each at every breakpoint infix. The `.hstack` and `.vstack` stack
++helpers ship beside them from the `src/styles/components/_stacks.scss` partial.
++
++The partial walks the breakpoints once and writes every entry inside each infix in the release's map
++order, from the `flex` entry to the `order` entry. So at one infix a later entry beats an earlier
++one on a property both set: an element carrying the `.flex-fill` and `.flex-grow-0` classes resolves
++a `flex-grow` value of `0`. A wider infix beats every narrower one whichever entry each class
++belongs to: at a 768px viewport, an element carrying the `.flex-grow-0` and `.flex-md-fill` classes
++resolves a `flex-grow` value of `1`. Every declaration carries the `!important` the release writes,
++and none reads a token.
++
++The `.hstack` class lays its children out as a row centered on the cross axis, and the `.vstack`
++class lays them out as a column that fills and stretches inside a flex parent. Neither declares a
++gap; compose one with a gap utility, as the `.hstack` and `.gap-3` classes do together. The helpers
++sit in the `components` layer at the release's `_helpers.scss` position, and their declarations are
++normal, as the release writes them. So an important flex or display utility on the same element
++overrides each one, and so does an unlayered rule of your own.
++
++The `tests/src/styles/utilities/flex.test.ts` proof reads every value at every infix at its boundary
++and one pixel below it, a constrained layout per property moving at each boundary, the order between
++entries and between infixes, a dark island and the density factor, the priority over a later
++unlayered rule, and the escape inside the utilities layer. The
++`tests/src/styles/components/stacks.test.ts` proof reads each stack's layout, its composition with
++the gap utility, the flex and display utilities overriding it, and its layer.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -4007,6 +4073,16 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | row-gap          | selector       | Every official .row-gap step and breakpoint selector ships; resolved margins, padding, and row gaps are proved in tests/src/styles/utilities/gap.test.ts.                                                                                                                                                                                                                                                                                                        | —                     | shipped  |
+ | gap              | selector       | Every official `.gap-*` step and breakpoint selector ships; resolved row and column gaps are proved in the `tests/src/styles/utilities/gap.test.ts` proof.                                                                                                                                                                                                                                                                                                       | —                     | shipped  |
+ | column-gap       | selector       | Every official `.column-gap-*` step and breakpoint selector ships; resolved column gaps are proved in the `tests/src/styles/utilities/gap.test.ts` proof.                                                                                                                                                                                                                                                                                                        | —                     | shipped  |
++| align            | selector       | Every official `.align-*` vertical-alignment selector ships at the empty infix alone, as the release writes it; resolved values and each position on a line are proved in the `tests/src/styles/utilities/vertical-align.test.ts` proof.                                                                                                                                                                                                                         | —                     | shipped  |
++| d                | selector       | Every official `.d-*` value and breakpoint selector ships, the `.d-print-*` print pass included; resolved values at each boundary and under the print medium are proved in the `tests/src/styles/utilities/display.test.ts` proof.                                                                                                                                                                                                                               | —                     | shipped  |
++| flex             | selector       | Every official `.flex-*` fill, direction, grow, shrink, and wrap selector ships at every breakpoint infix; resolved values and constrained layouts are proved in the `tests/src/styles/utilities/flex.test.ts` proof.                                                                                                                                                                                                                                            | —                     | shipped  |
++| justify-content  | selector       | Every official `.justify-content-*` value and breakpoint selector ships; resolved values and constrained layouts are proved in the `tests/src/styles/utilities/flex.test.ts` proof.                                                                                                                                                                                                                                                                              | —                     | shipped  |
++| align-items      | selector       | Every official `.align-items-*` value and breakpoint selector ships; resolved values and constrained layouts are proved in the `tests/src/styles/utilities/flex.test.ts` proof.                                                                                                                                                                                                                                                                                  | —                     | shipped  |
++| align-content    | selector       | Every official `.align-content-*` value and breakpoint selector ships; resolved values and constrained layouts are proved in the `tests/src/styles/utilities/flex.test.ts` proof.                                                                                                                                                                                                                                                                                | —                     | shipped  |
++| align-self       | selector       | Every official `.align-self-*` value and breakpoint selector ships; resolved values and constrained layouts are proved in the `tests/src/styles/utilities/flex.test.ts` proof.                                                                                                                                                                                                                                                                                   | —                     | shipped  |
++| order            | selector       | Every official `.order-*` value and breakpoint selector ships; resolved values and the rendered sequence are proved in the `tests/src/styles/utilities/flex.test.ts` proof.                                                                                                                                                                                                                                                                                      | —                     | shipped  |
++| hstack           | selector       | The `.hstack` helper ships with normal declarations in the components layer; its centered row and its composition with the gap and flex utilities are proved in the `tests/src/styles/components/stacks.test.ts` proof.                                                                                                                                                                                                                                          | —                     | shipped  |
++| vstack           | selector       | The `.vstack` helper ships with normal declarations in the components layer; its stretched column and its composition with the gap and flex utilities are proved in the `tests/src/styles/components/stacks.test.ts` proof.                                                                                                                                                                                                                                      | —                     | shipped  |
+ | row              | selector       | Every `.row-gap-*` selector ships; resolved row gaps are proved in `tests/src/styles/utilities/gap.test.ts`.                                                                                                                                                                                                                                                                                                                                                     | —                     | shipped  |
+ | row              | selector       | The `.row` family ships with physical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                                                                                                                                                                                                                                                              | —                     | shipped  |
+ | row              | selector       | The `.row > *` family ships with physical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                                                                                                                                                                                                                                                          | —                     | shipped  |
+@@ -4183,7 +4259,8 @@ order. The Content region carries the text specimens, lists, quotations, code, m
+ tables, form controls, and interactive tags. Each helper key sits in the region whose subject it
+ belongs to rather than in a region of its own, which is how every other section is grouped: the icon
+ links sit in Links, the aspect-ratio boxes share Media with the image classes and the figure
+-classes, the vertical rule and the gap steps sit in Layout beside the gutters, and the list and quotation classes sit in Type. The
++classes, the vertical rule and the gap steps sit in Layout beside the gutters, the stacks sit in
++Flex beside the flex utilities, and the list and quotation classes sit in Type. The
+ showcase's own button drives the controller and announces the selected mode, and its entry
+ constructs a `Delegate` instance beside the showcase. The shell's own stylesheet reaches that button
+ through the `control` class the showcase sets on it, so no rule of the shell's reaches a specimen
+@@ -4232,6 +4309,8 @@ The application proofs drive the shell through its interface; see
+ [card specimens](../tests/app/browser/sections/CardSection.test.ts),
+ [close specimens](../tests/app/browser/sections/CloseSection.test.ts),
+ [content specimens](../tests/app/browser/sections/ContentSection.test.ts),
++[display specimens](../tests/app/browser/sections/DisplaySection.test.ts),
++[flex specimens](../tests/app/browser/sections/FlexSection.test.ts),
+ [form check specimens](../tests/app/browser/sections/FormCheckSection.test.ts),
+ [form control specimens](../tests/app/browser/sections/FormControlSection.test.ts),
+ [form floating specimens](../tests/app/browser/sections/FormFloatingSection.test.ts),
+@@ -4350,7 +4429,11 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the spinner classes](../tests/src/styles/components/spinner.test.ts),
+ [the list group classes](../tests/src/styles/components/list-group.test.ts),
+ [the validation classes](../tests/src/styles/components/validation.test.ts),
+-[the gutter and gap utilities](../tests/src/styles/utilities/gap.test.ts), and
++[the gutter and gap utilities](../tests/src/styles/utilities/gap.test.ts),
++[the display utilities](../tests/src/styles/utilities/display.test.ts),
++[the vertical-alignment utilities](../tests/src/styles/utilities/vertical-align.test.ts),
++[the flex utilities](../tests/src/styles/utilities/flex.test.ts),
++[the stack helpers](../tests/src/styles/components/stacks.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index 7cf86b2..aa35bf2 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -69,5 +69,9 @@
+ @use 'components/placeholder';
+ @use 'components/icon-link';
+ @use 'components/ratio';
++@use 'components/stacks';
+ @use 'components/vr';
++@use 'utilities/vertical-align';
++@use 'utilities/display';
++@use 'utilities/flex';
+ @use 'utilities/gap';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index a4c8d2d..ebfcda0 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -6,6 +6,8 @@ import {
+ 	BUTTON_SPECIMENS,
+ 	CLOSE_SPECIMENS,
+ 	CONTENT_SPECIMENS,
++	DISPLAY_SPECIMENS,
++	FLEX_SPECIMENS,
+ 	FORM_CHECK_SPECIMENS,
+ 	FORM_CONTROL_SPECIMENS,
+ 	FORM_FLOATING_SPECIMENS,
+@@ -111,6 +113,8 @@ describe('Showcase', () => {
+ 				'Breadcrumb',
+ 				'Close',
+ 				'Input group',
++				'Display',
++				'Flex',
+ 			])
+ 			expect(
+ 				[...host.querySelectorAll('[data-specimen]')].map((element) =>
+@@ -142,6 +146,8 @@ describe('Showcase', () => {
+ 					...BREADCRUMB_SPECIMENS,
+ 					...CLOSE_SPECIMENS,
+ 					...INPUT_GROUP_SPECIMENS,
++					...DISPLAY_SPECIMENS,
++					...FLEX_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+ 			expect(readPerception('Showcase')).toBe('Explore the color mode with the Dark mode control.')
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 736fc9b..9299ecf 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -32,6 +32,11 @@ describe('app browser entry', () => {
+ 			'CardSection',
+ 			'CloseSection',
+ 			'ContentSection',
++			'DISPLAY_COPY',
++			'DISPLAY_SPECIMENS',
++			'DisplaySection',
++			'FLEX_COPY',
++			'FLEX_SPECIMENS',
+ 			'FORM_CHECK_COPY',
+ 			'FORM_CHECK_SPECIMENS',
+ 			'FORM_CONTROL_COPY',
+@@ -44,6 +49,7 @@ describe('app browser entry', () => {
+ 			'FORM_RANGE_SPECIMENS',
+ 			'FORM_SELECT_COPY',
+ 			'FORM_SELECT_SPECIMENS',
++			'FlexSection',
+ 			'FormCheckSection',
+ 			'FormControlSection',
+ 			'FormFloatingSection',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 576cd34..02200fd 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -46,6 +46,8 @@ import {
+ 	CARD_SPECIMENS,
+ 	CLOSE_SPECIMENS,
+ 	CONTENT_SPECIMENS,
++	DISPLAY_SPECIMENS,
++	FLEX_SPECIMENS,
+ 	FORM_CHECK_SPECIMENS,
+ 	FORM_CONTROL_SPECIMENS,
+ 	FORM_FLOATING_SPECIMENS,
+@@ -1679,6 +1681,8 @@ describe('portfolio', () => {
+ 				CARD_SPECIMENS,
+ 				CLOSE_SPECIMENS,
+ 				CONTENT_SPECIMENS,
++				DISPLAY_SPECIMENS,
++				FLEX_SPECIMENS,
+ 				FORM_CHECK_SPECIMENS,
+ 				FORM_CONTROL_SPECIMENS,
+ 				FORM_FLOATING_SPECIMENS,
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index b9fc759..7375618 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -96,6 +96,10 @@ describe('Bootstrap component oracle', () => {
+ 		const rows = readCompatibility()
+ 		const shipped = collectShippedComponents(rows)
+ 		const listed: readonly string[] = [
++			'align',
++			'align-content',
++			'align-items',
++			'align-self',
+ 			'badge',
+ 			'blockquote',
+ 			'breadcrumb',
+@@ -107,8 +111,10 @@ describe('Bootstrap component oracle', () => {
+ 			'col',
+ 			'column-gap',
+ 			'container',
++			'd',
+ 			'display',
+ 			'figure',
++			'flex',
+ 			'form',
+ 			'form-check',
+ 			'form-control',
+@@ -125,6 +131,7 @@ describe('Bootstrap component oracle', () => {
+ 			'h4',
+ 			'h5',
+ 			'h6',
++			'hstack',
+ 			'icon-link',
+ 			'img',
+ 			'initialism',
+@@ -133,6 +140,7 @@ describe('Bootstrap component oracle', () => {
+ 			'invalid-tooltip',
+ 			'is-invalid',
+ 			'is-valid',
++			'justify-content',
+ 			'lead',
+ 			'link',
+ 			'list-group',
+@@ -140,6 +148,7 @@ describe('Bootstrap component oracle', () => {
+ 			'list-unstyled',
+ 			'mark',
+ 			'offset',
++			'order',
+ 			'pagination',
+ 			'placeholder',
+ 			'progress',
+@@ -153,6 +162,7 @@ describe('Bootstrap component oracle', () => {
+ 			'valid-feedback',
+ 			'valid-tooltip',
+ 			'vr',
++			'vstack',
+ 			'was-validated',
+ 		]
+ 		expect(
+@@ -452,6 +462,16 @@ describe('Bootstrap source order', () => {
+ 			'visually-hidden': 'utilities/visually-hidden',
+ 		}
+ 		const entryPaths: Readonly<Record<string, string>> = {
++			align: 'utilities/vertical-align',
++			'flex-direction': 'utilities/flex',
++			'flex-grow': 'utilities/flex',
++			'flex-shrink': 'utilities/flex',
++			'flex-wrap': 'utilities/flex',
++			'justify-content': 'utilities/flex',
++			'align-items': 'utilities/flex',
++			'align-content': 'utilities/flex',
++			'align-self': 'utilities/flex',
++			order: 'utilities/flex',
+ 			'row-gap': 'utilities/gap',
+ 			'column-gap': 'utilities/gap',
+ 		}
+@@ -464,7 +484,15 @@ describe('Bootstrap source order', () => {
+ 				/^@use '((?:components|utilities)\/[\w-]+)'/gmu,
+ 			),
+ 		].flatMap(([, path]) => (path === undefined ? [] : [path]))
+-		expect(loadedPaths).toContain('utilities/gap')
++		expect(loadedPaths).toEqual(
++			expect.arrayContaining([
++				'components/stacks',
++				'utilities/vertical-align',
++				'utilities/display',
++				'utilities/flex',
++				'utilities/gap',
++			]),
++		)
+ 		const components = helperOrder.filter((path) => path.startsWith('components/'))
+ 		expect(loadedPaths.filter((path) => components.includes(path))).toEqual(
+ 			components.filter((path) => loadedPaths.includes(path)),
+diff --git a/tests/fixtures/tailwind/markup.html b/tests/fixtures/tailwind/markup.html
+index b5f61ac..d4439f5 100644
+--- a/tests/fixtures/tailwind/markup.html
++++ b/tests/fixtures/tailwind/markup.html
+@@ -58,5 +58,40 @@
+ 		<div>Gap step 5</div>
+ 		<div>Neighbor</div>
+ 	</div>
++	<div class="d-flex flex-row">
++		<div class="order-first">Order First</div>
++		<div class="order-0">Order 0</div>
++		<div class="order-1">Order 1</div>
++		<div class="order-2">Order 2</div>
++		<div class="order-3">Order 3</div>
++		<div class="order-4">Order 4</div>
++		<div class="order-5">Order 5</div>
++		<div class="order-last">Order Last</div>
++	</div>
++	<div class="d-flex flex-row-reverse">
++		<div class="flex-grow-0">Fixed item</div>
++		<div class="flex-grow-1">Growing item</div>
++	</div>
++	<div class="d-flex flex-nowrap">
++		<div class="flex-shrink-0">Unshrinking item</div>
++		<div class="flex-shrink-1">Shrinking item</div>
++	</div>
++	<div class="d-flex flex-wrap">
++		<div>Wrapping item</div>
++		<div>Neighbor</div>
++	</div>
++	<div class="d-flex flex-wrap-reverse">
++		<div>Reversed wrapping item</div>
++		<div>Neighbor</div>
++	</div>
++	<p>
++		Aligned text
++		<span class="align-baseline">Aligned Baseline</span>
++		<span class="align-top">Aligned Top</span>
++		<span class="align-middle">Aligned Middle</span>
++		<span class="align-bottom">Aligned Bottom</span>
++		<span class="align-text-top">Aligned Text Top</span>
++		<span class="align-text-bottom">Aligned Text Bottom</span>
++	</p>
+ 	<button type="button" class="btn px-8">Action</button>
+ </div>
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index b20dfcf..df03c25 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -1,4 +1,4 @@
+-import type { ButtonReading, CaptureSubject } from './setup.js'
++import type { ButtonReading, CaptureStem, CaptureSubject } from './setup.js'
+ import { describe, expect, it } from 'vitest'
+ import * as setup from './setup.js'
+ import {
+@@ -162,6 +162,10 @@ describe('shared setup', () => {
+ 		expect(buildStem('Base')).toBe('base')
+ 		expect(buildStem('Responsive-sm')).toBe('responsive-sm')
+ 		expect(buildStem('  Caption at top  ')).toBe('caption-at-top')
++		// The type spells the stem a subject carrying commas reduces to, so a registry row for it
++		// typechecks only where the two readings agree.
++		const listed: CaptureStem<'Fill, grow, and shrink'> = 'fill-grow-and-shrink'
++		expect(buildStem('Fill, grow, and shrink')).toBe(listed)
+ 	})
+ 	it('reads a variant name as a theme followed by the viewport width it renders at', () => {
+ 		// The journey is handed its variant as a plain string by its own project, and every
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 768cce3..0db0be3 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -199,6 +199,20 @@ export type CaptureSubject =
+ 	| 'Waving placeholder'
+ 	| 'Gap steps'
+ 	| 'Responsive gap'
++	| 'Display values'
++	| 'Responsive display'
++	| 'Print display'
++	| 'Vertical alignment'
++	| 'Flex direction'
++	| 'Flex wrap'
++	| 'Justified content'
++	| 'Aligned items'
++	| 'Aligned content'
++	| 'Aligned self'
++	| 'Fill, grow, and shrink'
++	| 'Flex order'
++	| 'Horizontal stack'
++	| 'Vertical stack'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -228,12 +242,15 @@ export type CaptureState =
+  *
+  * @remarks
+  * This is {@link buildStem}'s rule at the type level, for the names this registry declares: each
+- * space becomes one hyphen and the rest is lowercased. Deriving the stems from the subjects rather
+- * than writing them out again is what keeps a subject and its stem one declaration.
++ * comma is dropped, each space becomes one hyphen, and the rest is lowercased, so a comma and the
++ * space after it become one hyphen as they do at run time. Deriving the stems from the subjects
++ * rather than writing them out again is what keeps a subject and its stem one declaration.
+  */
+-export type CaptureStem<S extends string = CaptureSubject> = S extends `${infer Head} ${infer Tail}`
+-	? `${Lowercase<Head>}-${CaptureStem<Tail>}`
+-	: Lowercase<S>
++export type CaptureStem<S extends string = CaptureSubject> = S extends `${infer Head},${infer Tail}`
++	? CaptureStem<`${Head}${Tail}`>
++	: S extends `${infer Head} ${infer Tail}`
++		? `${Lowercase<Head>}-${CaptureStem<Tail>}`
++		: Lowercase<S>
+ 
+ /**
+  * Names one registered scenario: a subject's stem, and the state a journey drives that subject to.
+@@ -1077,6 +1094,90 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.gap-md-3',
+ 		property: 'column-gap',
+ 	}),
++	Object.freeze({
++		scenario: 'display-values',
++		subject: 'Display values',
++		selector: '.d-inline-grid',
++		property: 'display',
++	}),
++	Object.freeze({
++		scenario: 'responsive-display',
++		subject: 'Responsive display',
++		selector: '.d-md-flex',
++		property: 'display',
++	}),
++	Object.freeze({
++		scenario: 'print-display',
++		subject: 'Print display',
++		selector: '.d-print-none',
++		property: 'display',
++	}),
++	Object.freeze({
++		scenario: 'vertical-alignment',
++		subject: 'Vertical alignment',
++		selector: '.align-middle',
++		property: 'vertical-align',
++	}),
++	Object.freeze({
++		scenario: 'flex-direction',
++		subject: 'Flex direction',
++		selector: '.flex-column',
++		property: 'flex-direction',
++	}),
++	Object.freeze({
++		scenario: 'flex-wrap',
++		subject: 'Flex wrap',
++		selector: '.flex-wrap',
++		property: 'flex-wrap',
++	}),
++	Object.freeze({
++		scenario: 'justified-content',
++		subject: 'Justified content',
++		selector: '.justify-content-between',
++		property: 'justify-content',
++	}),
++	Object.freeze({
++		scenario: 'aligned-items',
++		subject: 'Aligned items',
++		selector: '.align-items-center',
++		property: 'align-items',
++	}),
++	Object.freeze({
++		scenario: 'aligned-content',
++		subject: 'Aligned content',
++		selector: '.align-content-between',
++		property: 'align-content',
++	}),
++	Object.freeze({
++		scenario: 'aligned-self',
++		subject: 'Aligned self',
++		selector: '.align-self-center',
++		property: 'align-self',
++	}),
++	Object.freeze({
++		scenario: 'fill-grow-and-shrink',
++		subject: 'Fill, grow, and shrink',
++		selector: '.flex-grow-1',
++		property: 'flex-grow',
++	}),
++	Object.freeze({
++		scenario: 'flex-order',
++		subject: 'Flex order',
++		selector: '.order-first',
++		property: 'order',
++	}),
++	Object.freeze({
++		scenario: 'horizontal-stack',
++		subject: 'Horizontal stack',
++		selector: '.hstack',
++		property: 'align-items',
++	}),
++	Object.freeze({
++		scenario: 'vertical-stack',
++		subject: 'Vertical stack',
++		selector: '.vstack',
++		property: 'flex-direction',
++	}),
+ ])
+ 
+ /**
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 6a1b8fb..ca8f092 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1336,6 +1336,10 @@ describe('server setup', () => {
+ 		)
+ 		expect(new Set(rows.map((row) => row.component))).toEqual(
+ 			new Set([
++				'align',
++				'align-content',
++				'align-items',
++				'align-self',
+ 				'badge',
+ 				'blockquote',
+ 				'breadcrumb',
+@@ -1347,9 +1351,11 @@ describe('server setup', () => {
+ 				'col',
+ 				'column-gap',
+ 				'container',
++				'd',
+ 				'display',
+ 				'engine',
+ 				'figure',
++				'flex',
+ 				'form',
+ 				'form-check',
+ 				'form-control',
+@@ -1366,6 +1372,7 @@ describe('server setup', () => {
+ 				'h4',
+ 				'h5',
+ 				'h6',
++				'hstack',
+ 				'icon-link',
+ 				'img',
+ 				'initialism',
+@@ -1374,6 +1381,7 @@ describe('server setup', () => {
+ 				'invalid-tooltip',
+ 				'is-invalid',
+ 				'is-valid',
++				'justify-content',
+ 				'lead',
+ 				'link',
+ 				'list-group',
+@@ -1381,6 +1389,7 @@ describe('server setup', () => {
+ 				'list-unstyled',
+ 				'mark',
+ 				'offset',
++				'order',
+ 				'pagination',
+ 				'placeholder',
+ 				'progress',
+@@ -1394,6 +1403,7 @@ describe('server setup', () => {
+ 				'valid-feedback',
+ 				'valid-tooltip',
+ 				'vr',
++				'vstack',
+ 				'was-validated',
+ 			]),
+ 		)
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 0074679..eb879dc 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -30,6 +30,7 @@ import {
+ } from './setupServer.js'
+ import * as setup from './setupStyles.js'
+ import {
++	ALIGN_VALUES,
+ 	BADGE_GEOMETRY_CASES,
+ 	BADGE_SELECTORS,
+ 	BOOTSTRAP_DARK_VARIABLES,
+@@ -58,8 +59,11 @@ import {
+ 	CONTAINER_CLASS_CASES,
+ 	CONTAINER_WIDTH_CASES,
+ 	CUSTOMIZATION_RECIPE,
++	DISPLAY_VALUES,
+ 	ELEMENT_TAGS,
+ 	FILL_ONLY_RECIPE,
++	FLEX_ENTRY_CASES,
++	FLEX_RESTING_VALUES,
+ 	FORM_CHECK_ICON_CASES,
+ 	FORM_CHECK_MARKUP,
+ 	FORM_CHECK_SELECTORS,
+@@ -192,6 +196,7 @@ describe('styles setup', () => {
+ 	it('exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
++				'ALIGN_VALUES',
+ 				'BADGE_GEOMETRY_CASES',
+ 				'BADGE_SELECTORS',
+ 				'BOOTSTRAP_DARK_VARIABLES',
+@@ -230,8 +235,11 @@ describe('styles setup', () => {
+ 				'CONTAINER_CLASS_CASES',
+ 				'CONTAINER_WIDTH_CASES',
+ 				'CUSTOMIZATION_RECIPE',
++				'DISPLAY_VALUES',
+ 				'ELEMENT_TAGS',
+ 				'FILL_ONLY_RECIPE',
++				'FLEX_ENTRY_CASES',
++				'FLEX_RESTING_VALUES',
+ 				'FORM_CHECK_ICON_CASES',
+ 				'FORM_CHECK_MARKUP',
+ 				'FORM_CHECK_SELECTORS',
+@@ -1402,6 +1410,59 @@ describe('styles setup', () => {
+ 			expect(entry.pixels).toBe(Number.parseFloat(entry.value) * 16)
+ 		}
+ 	})
++	it('binds the display values, the vertical-alignment positions, and the flex entries to the inventory', () => {
++		const inventory = readOracleInventory()
++		// The rules the release writes at the empty infix outside every media block, in its order.
++		const display = (inventory.components.d?.rules ?? []).filter(
++			({ condition }) => condition === undefined,
++		)
++		expect(display.map(({ selector }) => selector)).toEqual(
++			DISPLAY_VALUES.map((value) => `.d-${value}`),
++		)
++		expect(display.flatMap(({ declarations }) => declarations)).toEqual(
++			DISPLAY_VALUES.map((value) => ({ property: 'display', value })),
++		)
++		const align = (inventory.components.align?.rules ?? []).filter(
++			({ condition, declarations }) =>
++				condition === undefined &&
++				declarations.every(({ property }) => property === 'vertical-align'),
++		)
++		expect(align.map(({ selector }) => selector)).toEqual(
++			ALIGN_VALUES.map((value) => `.align-${value}`),
++		)
++		expect(align.flatMap(({ declarations }) => declarations)).toEqual(
++			ALIGN_VALUES.map((value) => ({ property: 'vertical-align', value })),
++		)
++		const recorded = [...new Set(FLEX_ENTRY_CASES.map(({ prefix }) => prefix))].flatMap((prefix) =>
++			(inventory.components[prefix]?.rules ?? [])
++				.filter(({ condition }) => condition === undefined)
++				.flatMap(({ selector, declarations }) =>
++					declarations.map(({ property, value }) => [selector, property, value]),
++				),
++		)
++		expect(
++			FLEX_ENTRY_CASES.flatMap(({ prefix, property, values }) =>
++				values.map(({ key, value }) => [`.${prefix}-${key}`, property, value]),
++			),
++		).toEqual(recorded)
++		// Only an entry with one value rests on a declaration of its own, and that declaration is a
++		// value no rule of the property writes.
++		expect(Object.keys(FLEX_RESTING_VALUES)).toEqual(
++			FLEX_ENTRY_CASES.filter(({ values }) => values.length === 1).map(({ property }) => property),
++		)
++		for (const [property, { declared }] of Object.entries(FLEX_RESTING_VALUES))
++			expect(
++				recorded.filter(([, written, value]) => written === property && value === declared),
++			).toEqual([])
++		for (const table of [DISPLAY_VALUES, ALIGN_VALUES, FLEX_ENTRY_CASES, FLEX_RESTING_VALUES])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of FLEX_ENTRY_CASES) {
++			expect(Object.isFrozen(entry)).toBe(true)
++			expect(Object.isFrozen(entry.values)).toBe(true)
++			expect(entry.values.every((value) => Object.isFrozen(value))).toBe(true)
++		}
++		expect(Object.values(FLEX_RESTING_VALUES).every((value) => Object.isFrozen(value))).toBe(true)
++	})
+ 	it('pins the frozen container variants and payload widths against the retained scale', () => {
+ 		expect(CONTAINER_CLASS_CASES.map(({ name, boundary }) => [name, boundary])).toEqual([
+ 			['container', 0],
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index f82a361..fa05a43 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1839,6 +1839,165 @@ export const GAP_STEP_CASES = Object.freeze([
+ 	Object.freeze({ step: 5, value: '3rem', pixels: 48, token: TOKEN_NAMES.gap[5] }),
+ ])
+ 
++/** Lists the values the release's `display` utility writes, in the release's order. */
++export const DISPLAY_VALUES = Object.freeze([
++	'inline',
++	'inline-block',
++	'block',
++	'grid',
++	'inline-grid',
++	'table',
++	'table-row',
++	'table-cell',
++	'flex',
++	'inline-flex',
++	'none',
++])
++
++/** Lists the positions the release's vertical-alignment utility writes, in the release's order. */
++export const ALIGN_VALUES = Object.freeze([
++	'baseline',
++	'top',
++	'middle',
++	'bottom',
++	'text-bottom',
++	'text-top',
++])
++
++/**
++ * Pins each flex entry of the release's utility map, in the map's order, to the class prefix it
++ * writes, the property it sets, and each key beside the value that key writes.
++ *
++ * @remarks
++ * A computed style reports each of these values as written, so `value` is both the declaration a
++ * class carries and the reading a proof expects from it.
++ */
++export const FLEX_ENTRY_CASES = Object.freeze([
++	Object.freeze({
++		prefix: 'flex',
++		property: 'flex',
++		values: Object.freeze([Object.freeze({ key: 'fill', value: '1 1 auto' })]),
++	}),
++	Object.freeze({
++		prefix: 'flex',
++		property: 'flex-direction',
++		values: Object.freeze([
++			Object.freeze({ key: 'row', value: 'row' }),
++			Object.freeze({ key: 'column', value: 'column' }),
++			Object.freeze({ key: 'row-reverse', value: 'row-reverse' }),
++			Object.freeze({ key: 'column-reverse', value: 'column-reverse' }),
++		]),
++	}),
++	Object.freeze({
++		prefix: 'flex',
++		property: 'flex-grow',
++		values: Object.freeze([
++			Object.freeze({ key: 'grow-0', value: '0' }),
++			Object.freeze({ key: 'grow-1', value: '1' }),
++		]),
++	}),
++	Object.freeze({
++		prefix: 'flex',
++		property: 'flex-shrink',
++		values: Object.freeze([
++			Object.freeze({ key: 'shrink-0', value: '0' }),
++			Object.freeze({ key: 'shrink-1', value: '1' }),
++		]),
++	}),
++	Object.freeze({
++		prefix: 'flex',
++		property: 'flex-wrap',
++		values: Object.freeze([
++			Object.freeze({ key: 'wrap', value: 'wrap' }),
++			Object.freeze({ key: 'nowrap', value: 'nowrap' }),
++			Object.freeze({ key: 'wrap-reverse', value: 'wrap-reverse' }),
++		]),
++	}),
++	Object.freeze({
++		prefix: 'justify-content',
++		property: 'justify-content',
++		values: Object.freeze([
++			Object.freeze({ key: 'start', value: 'flex-start' }),
++			Object.freeze({ key: 'end', value: 'flex-end' }),
++			Object.freeze({ key: 'center', value: 'center' }),
++			Object.freeze({ key: 'between', value: 'space-between' }),
++			Object.freeze({ key: 'around', value: 'space-around' }),
++			Object.freeze({ key: 'evenly', value: 'space-evenly' }),
++		]),
++	}),
++	Object.freeze({
++		prefix: 'align-items',
++		property: 'align-items',
++		values: Object.freeze([
++			Object.freeze({ key: 'start', value: 'flex-start' }),
++			Object.freeze({ key: 'end', value: 'flex-end' }),
++			Object.freeze({ key: 'center', value: 'center' }),
++			Object.freeze({ key: 'baseline', value: 'baseline' }),
++			Object.freeze({ key: 'stretch', value: 'stretch' }),
++		]),
++	}),
++	Object.freeze({
++		prefix: 'align-content',
++		property: 'align-content',
++		values: Object.freeze([
++			Object.freeze({ key: 'start', value: 'flex-start' }),
++			Object.freeze({ key: 'end', value: 'flex-end' }),
++			Object.freeze({ key: 'center', value: 'center' }),
++			Object.freeze({ key: 'between', value: 'space-between' }),
++			Object.freeze({ key: 'around', value: 'space-around' }),
++			Object.freeze({ key: 'stretch', value: 'stretch' }),
++		]),
++	}),
++	Object.freeze({
++		prefix: 'align-self',
++		property: 'align-self',
++		values: Object.freeze([
++			Object.freeze({ key: 'auto', value: 'auto' }),
++			Object.freeze({ key: 'start', value: 'flex-start' }),
++			Object.freeze({ key: 'end', value: 'flex-end' }),
++			Object.freeze({ key: 'center', value: 'center' }),
++			Object.freeze({ key: 'baseline', value: 'baseline' }),
++			Object.freeze({ key: 'stretch', value: 'stretch' }),
++		]),
++	}),
++	Object.freeze({
++		prefix: 'order',
++		property: 'order',
++		values: Object.freeze([
++			Object.freeze({ key: 'first', value: '-1' }),
++			Object.freeze({ key: '0', value: '0' }),
++			Object.freeze({ key: '1', value: '1' }),
++			Object.freeze({ key: '2', value: '2' }),
++			Object.freeze({ key: '3', value: '3' }),
++			Object.freeze({ key: '4', value: '4' }),
++			Object.freeze({ key: '5', value: '5' }),
++			Object.freeze({ key: 'last', value: '6' }),
++		]),
++	}),
++])
++
++/**
++ * Describes the inline declaration a flex proof rests an element on, beside the value a computed
++ * style reports for it.
++ */
++export interface FlexRestingValue {
++	readonly declared: string
++	readonly computed: string
++}
++
++/**
++ * Holds the resting declaration for each flex property whose entry writes one value alone.
++ *
++ * @remarks
++ * A flex proof rests each element on an inline declaration its class must override, so no class
++ * reads as applied because its value is also the property's initial value. That declaration is the
++ * entry's next value, and an entry with one value has no next value, so it rests on a value the
++ * entry never writes.
++ */
++export const FLEX_RESTING_VALUES: Readonly<Record<string, FlexRestingValue>> = Object.freeze({
++	flex: Object.freeze({ declared: 'none', computed: '0 0 auto' }),
++})
++
+ /**
+  * Pins each named aspect ratio against the percentage its own name derives.
+  *

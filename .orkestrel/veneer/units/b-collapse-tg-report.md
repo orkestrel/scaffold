@@ -65,7 +65,7 @@ The rewritten partial comments, verbatim:
 
 Here is the exact patch, a unified diff against `a658879` over every shared file this unit
 changes:
-`/home/user/veneer-tg//home/user/scaffold/.orkestrel/veneer/units/tg-shared.patch`.
+`/home/user/scaffold/.orkestrel/veneer/units/tg-shared.patch`.
 
 ```text
 $ git apply --stat /home/user/scaffold/.orkestrel/veneer/units/tg-shared.patch
