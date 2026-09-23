@@ -1,0 +1,805 @@
+--- round-1/src/styles/utilities/_position.scss
++++ round-2/src/styles/utilities/_position.scss
+@@ -1,7 +1,7 @@
+ @use '../mixins' as *;
+ 
+ @layer utilities {
+-	// Stands in for the release's `$position-values` map, which the four edge entries share.
++	// Stands in for the release's `$position-values` map, which the edge entries share.
+ 	$edges: (
+ 		0: 0,
+ 		50: 50%,
+--- round-1/src/styles/utilities/_sizing.scss
++++ round-2/src/styles/utilities/_sizing.scss
+@@ -1,7 +1,7 @@
+ @use '../mixins' as *;
+ 
+ @layer utilities {
+-	// Stands in for the release's width and height maps, which share one set of steps.
++	// Stands in for the release's width and height maps, which share their steps.
+ 	$steps: (
+ 		25: 25%,
+ 		50: 50%,
+@@ -9,8 +9,8 @@
+ 		100: 100%,
+ 		auto: auto,
+ 	);
+-	// Stand in for the one-step maps of the maximum, viewport, and viewport-floor entries: the whole
+-	// container, the viewport's width, and the viewport's height.
++	// Stand in for the single-value maps of the maximum, viewport, and viewport-floor entries: the
++	// whole container, the viewport's width, and the viewport's height.
+ 	$whole: (
+ 		100: 100%,
+ 	);
+--- round-1/tests/app/browser/sections/PositionSection.test.ts
++++ round-2/tests/app/browser/sections/PositionSection.test.ts
+@@ -4,6 +4,7 @@
+ import { build, mount, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { beforeAll, describe, expect, it } from 'vitest'
+ import { visitBreakpoint } from '../../../setupBrowser.js'
++import { STACK_LEVEL_CASES, VIEWPORT_WIDTHS } from '../../../setupStyles.js'
+ 
+ // The frame and geometry cases read the specimens as the published cascade and the shell lay them
+ // out, so both stylesheets have to be in the document before a box is measured.
+@@ -59,7 +60,7 @@
+ 				[...region.querySelectorAll('[data-specimen="Stacking levels"] .card')].map((card) =>
+ 					[...card.classList].find((name) => name.startsWith('z-')),
+ 				),
+-			).toEqual(['z-n1', 'z-0', 'z-1', 'z-2', 'z-3'])
++			).toEqual(STACK_LEVEL_CASES.map(({ level }) => `z-${level}`))
+ 			expect(region.querySelector('[style]')).toBeNull()
+ 			expect(Object.isFrozen(POSITION_COPY)).toBe(true)
+ 			expect(Object.isFrozen(POSITION_SPECIMENS)).toBe(true)
+@@ -70,7 +71,7 @@
+ 		}
+ 	})
+ 
+-	it.each([390, 1280])(
++	it.each(VIEWPORT_WIDTHS)(
+ 		'contains a fixed descendant and a viewport-sized backdrop inside the frame at the %i variant',
+ 		async (width) => {
+ 			const host = mount(build('div'))
+--- round-1/tests/app/browser/sections/SizingSection.test.ts
++++ round-2/tests/app/browser/sections/SizingSection.test.ts
+@@ -4,6 +4,7 @@
+ import { build, mount, readPixels } from '@orkestrel/test/browser'
+ import { beforeAll, describe, expect, it } from 'vitest'
+ import { visitBreakpoint } from '../../../setupBrowser.js'
++import { SIZE_STEP_CASES, VIEWPORT_SIZE_CASES, VIEWPORT_WIDTHS } from '../../../setupStyles.js'
+ 
+ // The geometry case reads the specimens as the published cascade and the shell lay them out, so
+ // both stylesheets have to be in the document before a box is measured.
+@@ -35,11 +36,11 @@
+ 			// Every selector names a composition the specimens render, so the list of misses is empty.
+ 			expect(
+ 				[
+-					...['25', '50', '75', '100', 'auto'].flatMap((step) => [
++					...[...SIZE_STEP_CASES.map(({ step }) => step), 'auto'].flatMap((step) => [
+ 						`[data-specimen="Width steps"] p > .placeholder.w-${step}`,
+ 						`[data-specimen="Height steps"] .viewport .row.h-100 > .col > .placeholder.w-100.h-${step}`,
+ 					]),
+-					'[data-specimen="Maximum sizes"] p > .placeholder.vw-100.mw-100',
++					'[data-specimen="Maximum sizes"] .viewport > p > .placeholder.vw-100.mw-100',
+ 					'[data-specimen="Maximum sizes"] .viewport > .h-50 > .placeholder.vh-100.mh-100',
+ 					'[data-specimen="Viewport sizes"] .viewport .placeholder.vw-100',
+ 					'[data-specimen="Viewport sizes"] .viewport .placeholder.min-vw-100',
+@@ -47,6 +48,13 @@
+ 					'[data-specimen="Viewport sizes"] .viewport > .placeholder.min-vh-100',
+ 				].filter((selector) => region.querySelector(selector) === null),
+ 			).toEqual([])
++			// A box as wide as the viewport renders inside the shell's frame, which clips what it
++			// overflows, so the list of boxes outside a frame is empty.
++			expect(
++				[...region.querySelectorAll('.vw-100')].filter(
++					(element) => element.closest('.viewport') === null,
++				),
++			).toEqual([])
+ 			// Every box is a placeholder drawn for its size alone, so none of them is announced.
+ 			expect(
+ 				[...region.querySelectorAll('.placeholder')].every(
+@@ -63,7 +71,7 @@
+ 		}
+ 	})
+ 
+-	it.each([390, 1280])(
++	it.each(VIEWPORT_WIDTHS)(
+ 		'sizes the steps against their container and the viewport sizes against the viewport at the %i variant',
+ 		async (width) => {
+ 			const host = mount(build('div'))
+@@ -88,8 +96,8 @@
+ 					)
+ 					return {
+ 						page: document.documentElement.scrollWidth,
+-						widths: ['25', '50', '75', '100'].map(
+-							(step) =>
++						widths: SIZE_STEP_CASES.map(
++							({ step }) =>
+ 								readPixels(
+ 									requireValue(
+ 										host.querySelector(`[data-specimen="Width steps"] .w-${step}`),
+@@ -98,8 +106,8 @@
+ 									'width',
+ 								) / line.clientWidth,
+ 						),
+-						heights: ['25', '50', '75', '100'].map(
+-							(step) =>
++						heights: SIZE_STEP_CASES.map(
++							({ step }) =>
+ 								readPixels(
+ 									requireValue(
+ 										host.querySelector(`[data-specimen="Height steps"] .h-${step}`),
+@@ -118,16 +126,11 @@
+ 								box.clientHeight,
+ 							],
+ 						],
+-						viewport: [
+-							['.vw-100', 'width'],
+-							['.min-vw-100', 'width'],
+-							['.vh-100', 'height'],
+-							['.min-vh-100', 'height'],
+-						].map(([selector = '', property = '']) =>
++						viewport: VIEWPORT_SIZE_CASES.map(({ name, property }) =>
+ 							readPixels(
+ 								requireValue(
+-									host.querySelector(`[data-specimen="Viewport sizes"] ${selector}`),
+-									`No viewport size ${selector}`,
++									host.querySelector(`[data-specimen="Viewport sizes"] .${name}`),
++									`No viewport size .${name}`,
+ 								),
+ 								property,
+ 							),
+@@ -136,12 +139,14 @@
+ 					}
+ 				})
+ 				const [across, down] = reading.window
+-				expect(reading.widths).toEqual([0.25, 0.5, 0.75, 1])
+-				expect(reading.heights).toEqual([0.25, 0.5, 0.75, 1])
++				expect(reading.widths).toEqual(SIZE_STEP_CASES.map(({ share }) => share))
++				expect(reading.heights).toEqual(SIZE_STEP_CASES.map(({ share }) => share))
+ 				for (const [capped, limit] of reading.caps) expect(capped).toBe(limit)
+-				expect(reading.viewport).toEqual([across, across, down, down])
+-				// The viewport-sized boxes render inside the frame, which clips what they overflow, and
+-				// the capped box is held to its line, so none of them widens the page.
++				expect(reading.viewport).toEqual(
++					VIEWPORT_SIZE_CASES.map(({ property }) => (property === 'width' ? across : down)),
++				)
++				// Every viewport-sized box renders inside a frame, which clips what it overflows, and the
++				// capped box is held to its line besides, so none of them widens the page.
+ 				expect(reading.page).toBe(width)
+ 			} finally {
+ 				section.destroy()
+--- round-1/tests/app/browser/sections/VisibilitySection.test.ts
++++ round-2/tests/app/browser/sections/VisibilitySection.test.ts
+@@ -7,7 +7,8 @@
+ } from '@app/browser'
+ import { requireValue } from '@orkestrel/test'
+ import { build, mount, readName, readStyle, traverseAccessible } from '@orkestrel/test/browser'
+-import { beforeAll, describe, expect, it } from 'vitest'
++import { afterEach, beforeAll, describe, expect, it } from 'vitest'
++import { mountTraversalStart, scene } from '../../../setupBrowser.js'
+ 
+ // The reveal case reads the skip link as the published cascade lays it out, so the cascade has to be
+ // in the document before a box is measured.
+@@ -16,6 +17,10 @@
+ 	await import('../../../../app/browser/styles/index.scss')
+ })
+ 
++afterEach(() => {
++	scene.clear()
++})
++
+ describe('VisibilitySection', () => {
+ 	it('renders every declared specimen beside visible text through the shared section contract', () => {
+ 		const host = mount(build('div'))
+@@ -66,9 +71,9 @@
+ 	})
+ 
+ 	it('reveals the skip link while the keyboard holds focus on it, and hides it again after', async () => {
+-		// The traversal starts on a control of the case's own ahead of the region, so the first Tab
+-		// the keyboard sends lands on the region's first focusable element rather than on nothing.
+-		const start = mount(build('button', { text: 'Start', attributes: { type: 'button' } }))
++		// The traversal starts on a focused control of the case's own ahead of the region, so the
++		// first Tab the keyboard sends lands on the region's first focusable element.
++		mountTraversalStart()
+ 		const host = mount(build('div'))
+ 		const section: SectionInterface = new VisibilitySection(host)
+ 		try {
+@@ -81,7 +86,6 @@
+ 				1,
+ 				'absolute',
+ 			])
+-			start.focus()
+ 			const reached = await traverseAccessible('Skip to main content')
+ 			expect(reached).toBe(link)
+ 			expect(link.getBoundingClientRect().width).toBeGreaterThan(1)
+@@ -94,7 +98,6 @@
+ 		} finally {
+ 			section.destroy()
+ 			host.remove()
+-			start.remove()
+ 		}
+ 	})
+ 
+--- round-1/tests/src/styles/components/position.test.ts
++++ round-2/tests/src/styles/components/position.test.ts
+@@ -3,13 +3,7 @@
+ import { readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene, visitBreakpoint } from '../../../setupBrowser.js'
+-import { GRID_BREAKPOINT_CASES } from '../../../setupStyles.js'
+-
+-// A scroll container, the ground a sticky element sticks against, with the scroll offset each case
+-// sets on it: far enough past the element's resting place that an element left in the flow has
+-// scrolled out of the box.
+-const SCROLLER = 'height: 100px; overflow: auto'
+-const SCROLLED = 200
++import { GRID_BREAKPOINT_CASES, STICKY_SCROLLER } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	scene.clear()
+@@ -60,7 +54,7 @@
+ 			// The top helper rests 50px down the box and the box is scrolled past it; the bottom
+ 			// helper rests 500px down, below the box's lower edge, with the box unscrolled.
+ 			const host = scene.mount(
+-				`<div class="box top" style="${SCROLLER}"><div style="height: 50px"></div><div class="sticky${infix}-top" style="height: 10px"></div><div style="height: 500px"></div></div><div class="box bottom" style="${SCROLLER}"><div style="height: 500px"></div><div class="sticky${infix}-bottom" style="height: 10px"></div><div style="height: 50px"></div></div>`,
++				`<div class="box top" style="${STICKY_SCROLLER.style}"><div style="height: 50px"></div><div class="sticky${infix}-top" style="height: 10px"></div><div style="height: 500px"></div></div><div class="box bottom" style="${STICKY_SCROLLER.style}"><div style="height: 500px"></div><div class="sticky${infix}-bottom" style="height: 10px"></div><div style="height: 50px"></div></div>`,
+ 			)
+ 			const upper = requireValue(host.querySelector('.box.top'), 'No .box.top')
+ 			const lower = requireValue(host.querySelector('.box.bottom'), 'No .box.bottom')
+@@ -73,7 +67,7 @@
+ 			for (const viewport of readings) {
+ 				measured.push(
+ 					await visitBreakpoint(viewport, () => {
+-						upper.scrollTop = SCROLLED
++						upper.scrollTop = STICKY_SCROLLER.offset
+ 						lower.scrollTop = 0
+ 						return {
+ 							width: window.innerWidth,
+@@ -95,15 +89,15 @@
+ 					viewport >= boundary
+ 						? {
+ 								width: viewport,
+-								scrolled: SCROLLED,
++								scrolled: STICKY_SCROLLER.offset,
+ 								positions: ['sticky', 'sticky'],
+ 								offsets: [0, 0],
+ 							}
+ 						: {
+ 								width: viewport,
+-								scrolled: SCROLLED,
++								scrolled: STICKY_SCROLLER.offset,
+ 								positions: ['static', 'static'],
+-								offsets: [50 - SCROLLED, 100 - 510],
++								offsets: [50 - STICKY_SCROLLER.offset, 100 - 510],
+ 							},
+ 				),
+ 			)
+--- round-1/tests/src/styles/utilities/position.test.ts
++++ round-2/tests/src/styles/utilities/position.test.ts
+@@ -3,24 +3,16 @@
+ import { findRule, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
+-
+-// The position values in the release's list order.
+-const POSITION_VALUES = ['static', 'relative', 'absolute', 'fixed', 'sticky']
+-
+-// The edge steps with the share of the containing block each one offsets by.
+-const EDGE_STEPS = [
+-	{ step: '0', share: 0 },
+-	{ step: '50', share: 0.5 },
+-	{ step: '100', share: 1 },
+-]
+-
+-// A positioned container whose width and height are definite and differ from each other, so a step
+-// written as a length of the same number reads a different offset, and an offset read against the
+-// wrong axis reads a different one too.
+-const CONTAINER = 'position: relative; width: 400px; height: 200px'
+-
+-// A box small enough that every offset step leaves it a distinct place inside the container.
+-const BOX = 'width: 20px; height: 10px'
++import {
++	BREAKPOINT_INFIXES,
++	OFFSET_EDGES,
++	OFFSET_STEP_CASES,
++	PLACEMENT_BOX,
++	PLACEMENT_CONTAINER,
++	POSITION_ENTRY_CASES,
++	POSITION_VALUES,
++	STACK_LEVEL_CASES,
++} from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	scene.clear()
+@@ -29,7 +21,7 @@
+ describe('position utilities', () => {
+ 	it('resolves every position value', () => {
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}">${POSITION_VALUES.map((value) => `<div class="position-${value}"></div>`).join('')}</div>`,
++			`<div style="${PLACEMENT_CONTAINER}">${POSITION_VALUES.map((value) => `<div class="position-${value}"></div>`).join('')}</div>`,
+ 		)
+ 		expect(
+ 			POSITION_VALUES.map((value) =>
+@@ -43,7 +35,7 @@
+ 
+ 	it('offsets each edge by a share of the containing block', () => {
+ 		const host = scene.mount(
+-			`<div class="probe" style="${CONTAINER}">${EDGE_STEPS.map(({ step }) => ['top', 'bottom', 'start', 'end'].map((edge) => `<div class="position-absolute ${edge}-${step}" style="${BOX}"></div>`).join('')).join('')}</div>`,
++			`<div class="probe" style="${PLACEMENT_CONTAINER}">${OFFSET_STEP_CASES.map(({ step }) => OFFSET_EDGES.map((edge) => `<div class="position-absolute ${edge}-${step}" style="${PLACEMENT_BOX}"></div>`).join('')).join('')}</div>`,
+ 		)
+ 		const corner = requireValue(
+ 			host.querySelector('.probe'),
+@@ -52,8 +44,8 @@
+ 		// Each offset is read as the distance from the container's edge to the box's edge on the
+ 		// side the entry names.
+ 		expect(
+-			EDGE_STEPS.map(({ step }) =>
+-				['top', 'bottom', 'start', 'end'].map((edge) => {
++			OFFSET_STEP_CASES.map(({ step }) =>
++				OFFSET_EDGES.map((edge) => {
+ 					const box = requireValue(
+ 						host.querySelector(`.${edge}-${step}`),
+ 						`No .${edge}-${step}`,
+@@ -64,7 +56,9 @@
+ 					return corner.right - box.right
+ 				}),
+ 			),
+-		).toEqual(EDGE_STEPS.map(({ share }) => [200 * share, 200 * share, 400 * share, 400 * share]))
++		).toEqual(
++			OFFSET_STEP_CASES.map(({ share }) => [200 * share, 200 * share, 400 * share, 400 * share]),
++		)
+ 	})
+ 
+ 	it('keeps the start and end offsets on the physical left and right edges in a right-to-left scope', () => {
+@@ -72,7 +66,7 @@
+ 		// box written with no offset of its own lands at the right, and the `start` offset still
+ 		// places its twin at the left.
+ 		const host = scene.mount(
+-			`<div class="probe" dir="rtl" style="${CONTAINER}"><div class="position-absolute start-0" style="${BOX}"></div><div class="position-absolute end-0" style="${BOX}"></div><div class="position-absolute bare" style="${BOX}"></div></div>`,
++			`<div class="probe" dir="rtl" style="${PLACEMENT_CONTAINER}"><div class="position-absolute start-0" style="${PLACEMENT_BOX}"></div><div class="position-absolute end-0" style="${PLACEMENT_BOX}"></div><div class="position-absolute bare" style="${PLACEMENT_BOX}"></div></div>`,
+ 		)
+ 		const corner = requireValue(
+ 			host.querySelector('.probe'),
+@@ -95,7 +89,7 @@
+ 
+ 	it('centers a box on each axis with the translation entries', () => {
+ 		const host = scene.mount(
+-			`<div class="probe" style="${CONTAINER}"><div class="position-absolute top-50 start-50 translate-middle" style="width: 100px; height: 40px"></div><div class="position-absolute top-0 start-50 translate-middle-x" style="width: 100px; height: 40px"></div><div class="position-absolute top-50 start-0 translate-middle-y" style="width: 100px; height: 40px"></div></div>`,
++			`<div class="probe" style="${PLACEMENT_CONTAINER}"><div class="position-absolute top-50 start-50 translate-middle" style="width: 100px; height: 40px"></div><div class="position-absolute top-0 start-50 translate-middle-x" style="width: 100px; height: 40px"></div><div class="position-absolute top-50 start-0 translate-middle-y" style="width: 100px; height: 40px"></div></div>`,
+ 		)
+ 		const corner = requireValue(
+ 			host.querySelector('.probe'),
+@@ -117,61 +111,52 @@
+ 	})
+ 
+ 	it('stacks the levels in order where their boxes overlap', () => {
+-		const levels = ['n1', '0', '1', '2', '3']
+ 		// Each box covers the square an in-flow block fills, written in the reverse of the level
+ 		// order, so a box painting over the others does so by its level rather than by coming later
+ 		// in the document. The container opens a stacking context, so the lowest level paints under
+ 		// that in-flow block and every other level over it.
+ 		const host = scene.mount(
+-			`<div class="probe" style="${CONTAINER}; z-index: 0"><div class="flow" style="width: 50px; height: 50px"></div>${[
+-				...levels,
++			`<div class="probe" style="${PLACEMENT_CONTAINER}; z-index: 0"><div class="flow" style="width: 50px; height: 50px"></div>${[
++				...STACK_LEVEL_CASES,
+ 			]
+ 				.reverse()
+ 				.map(
+-					(level) =>
++					({ level }) =>
+ 						`<div class="position-absolute top-0 start-0 z-${level}" style="width: 50px; height: 50px"></div>`,
+ 				)
+ 				.join('')}</div>`,
+ 		)
+ 		expect(
+-			levels.map((level) =>
++			STACK_LEVEL_CASES.map(({ level }) =>
+ 				readStyle(requireValue(host.querySelector(`.z-${level}`), `No .z-${level}`), 'z-index'),
+ 			),
+-		).toEqual(['-1', '0', '1', '2', '3'])
++		).toEqual(STACK_LEVEL_CASES.map(({ value }) => value))
+ 		const corner = requireValue(
+ 			host.querySelector('.probe'),
+ 			'No container',
+ 		).getBoundingClientRect()
++		// Every level from zero up paints over the in-flow block, highest first, and the negative
++		// level paints under it, so taking the boxes out from the top reaches the block last.
++		const over = STACK_LEVEL_CASES.filter(({ value }) => Number(value) >= 0).reverse()
+ 		const hits: string[] = []
+-		for (const level of ['3', '2', '1', '0']) {
++		for (const { level } of over) {
+ 			hits.push(document.elementFromPoint(corner.left + 25, corner.top + 25)?.className ?? '')
+ 			requireValue(host.querySelector(`.z-${level}`), `No .z-${level}`).remove()
+ 		}
+ 		hits.push(document.elementFromPoint(corner.left + 25, corner.top + 25)?.className ?? '')
+ 		expect(hits).toEqual([
+-			'position-absolute top-0 start-0 z-3',
+-			'position-absolute top-0 start-0 z-2',
+-			'position-absolute top-0 start-0 z-1',
+-			'position-absolute top-0 start-0 z-0',
++			...over.map(({ level }) => `position-absolute top-0 start-0 z-${level}`),
+ 			'flow',
+ 		])
+ 	})
+ 
+ 	it('writes no breakpoint infix, so no position class answers to a boundary', () => {
++		expect(POSITION_ENTRY_CASES.filter(({ name }) => findRule(`.${name}`) === undefined)).toEqual(
++			[],
++		)
+ 		expect(
+-			[
+-				'position-static',
+-				'top-0',
+-				'bottom-0',
+-				'start-0',
+-				'end-0',
+-				'translate-middle',
+-				'z-0',
+-			].filter((name) => findRule(`.${name}`) === undefined),
+-		).toEqual([])
+-		expect(
+-			['position', 'top', 'bottom', 'start', 'end', 'translate-middle', 'z'].flatMap((prefix) =>
+-				['sm', 'md', 'lg', 'xl', 'xxl'].flatMap((infix) =>
++			POSITION_ENTRY_CASES.flatMap(({ prefix }) =>
++				BREAKPOINT_INFIXES.flatMap((infix) =>
+ 					findRule(`.${prefix}-${infix}-`) === undefined ? [] : [`${prefix}-${infix}`],
+ 				),
+ 			),
+@@ -180,7 +165,7 @@
+ 
+ 	it('keeps every offset independent of the density factor and inside a dark island', () => {
+ 		const host = scene.mount(
+-			`<div class="probe" data-bs-theme="dark" style="${CONTAINER}"><div class="position-absolute top-50 end-50" style="${BOX}"></div></div>`,
++			`<div class="probe" data-bs-theme="dark" style="${PLACEMENT_CONTAINER}"><div class="position-absolute top-50 end-50" style="${PLACEMENT_BOX}"></div></div>`,
+ 		)
+ 		const container = requireValue(host.querySelector('.probe'), 'No container')
+ 		const box = requireValue(host.querySelector('.top-50'), 'No offset box')
+@@ -203,7 +188,7 @@
+ 		// The release writes each entry's values in its map order, so where an element carries two
+ 		// values of one entry, the later value wins.
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}"><div class="position-absolute position-relative"></div><div class="translate-middle-x translate-middle" style="width: 100px; height: 40px"></div><div class="z-3 z-n1 position-relative"></div></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><div class="position-absolute position-relative"></div><div class="translate-middle-x translate-middle" style="width: 100px; height: 40px"></div><div class="z-3 z-n1 position-relative"></div></div>`,
+ 		)
+ 		expect(
+ 			readStyle(requireValue(host.querySelector('.position-absolute'), 'No pair'), 'position'),
+@@ -216,7 +201,7 @@
+ 
+ 	it('keeps every entry over a later unlayered consumer rule', () => {
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}"><div class="probe position-absolute top-50 start-0 translate-middle-y z-2"></div></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><div class="probe position-absolute top-50 start-0 translate-middle-y z-2"></div></div>`,
+ 		)
+ 		scene.load('.probe { position: static; top: 7px; left: 7px; transform: none; z-index: 9 }')
+ 		const box = requireValue(host.querySelector('.probe'), 'No probe')
+@@ -228,7 +213,7 @@
+ 
+ 	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}"><div class="position-absolute top-50"></div></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><div class="position-absolute top-50"></div></div>`,
+ 		)
+ 		const box = requireValue(host.querySelector('.top-50'), 'No offset box')
+ 		// An unlayered `!important` sorts after every layered one, so the shipped utility keeps its
+--- round-1/tests/src/styles/utilities/sizing.test.ts
++++ round-2/tests/src/styles/utilities/sizing.test.ts
+@@ -3,19 +3,13 @@
+ import { findRule, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene, visitBreakpoint } from '../../../setupBrowser.js'
+-
+-// The width and height steps in the release's map order, each with the share of its container it
+-// takes, and `auto` last, which takes none of its own.
+-const SIZE_STEPS = [
+-	{ step: '25', share: 0.25 },
+-	{ step: '50', share: 0.5 },
+-	{ step: '75', share: 0.75 },
+-	{ step: '100', share: 1 },
+-]
+-
+-// A container whose width and height are definite and differ from every viewport a case visits, so
+-// a step written as a length of the same number, or as a viewport unit, reads a different size.
+-const CONTAINER = 'width: 400px; height: 200px'
++import {
++	BREAKPOINT_INFIXES,
++	PLACEMENT_CONTAINER,
++	SIZE_STEP_CASES,
++	SIZING_ENTRY_CASES,
++	VIEWPORT_WIDTHS,
++} from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	scene.clear()
+@@ -24,9 +18,9 @@
+ describe('sizing utilities', () => {
+ 	it('resolves every width and height step against a container of definite size', () => {
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}">${SIZE_STEPS.map(({ step }) => `<div class="w-${step}"></div>`).join('')}</div><div style="${CONTAINER}; display: flex">${SIZE_STEPS.map(({ step }) => `<div class="h-${step}"></div>`).join('')}</div>`,
++			`<div style="${PLACEMENT_CONTAINER}">${SIZE_STEP_CASES.map(({ step }) => `<div class="w-${step}"></div>`).join('')}</div><div style="${PLACEMENT_CONTAINER}; display: flex">${SIZE_STEP_CASES.map(({ step }) => `<div class="h-${step}"></div>`).join('')}</div>`,
+ 		)
+-		for (const { step, share } of SIZE_STEPS) {
++		for (const { step, share } of SIZE_STEP_CASES) {
+ 			expect(
+ 				readPixels(requireValue(host.querySelector(`.w-${step}`), `No .w-${step}`), 'width'),
+ 			).toBe(400 * share)
+@@ -48,7 +42,7 @@
+ 
+ 	it('caps an element at its container with the maximum sizes', () => {
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}"><div class="mw-100" style="width: 1000px"></div><div class="mh-100" style="height: 1000px"></div></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><div class="mw-100" style="width: 1000px"></div><div class="mh-100" style="height: 1000px"></div></div>`,
+ 		)
+ 		expect(readPixels(requireValue(host.querySelector('.mw-100'), 'No .mw-100'), 'width')).toBe(400)
+ 		expect(readPixels(requireValue(host.querySelector('.mh-100'), 'No .mh-100'), 'height')).toBe(
+@@ -56,11 +50,11 @@
+ 		)
+ 	})
+ 
+-	it.each([390, 1280])(
++	it.each(VIEWPORT_WIDTHS)(
+ 		'reads the viewport sizes against the %i viewport rather than against the container',
+ 		async (width) => {
+ 			const host = scene.mount(
+-				`<div style="${CONTAINER}"><div class="vw-100 vh-100"></div><div class="min-vw-100 min-vh-100" style="width: 10px; height: 10px"></div></div>`,
++				`<div style="${PLACEMENT_CONTAINER}"><div class="vw-100 vh-100"></div><div class="min-vw-100 min-vh-100" style="width: 10px; height: 10px"></div></div>`,
+ 			)
+ 			const reading = await visitBreakpoint(width, () => {
+ 				const sized = requireValue(host.querySelector('.vw-100'), 'No .vw-100')
+@@ -73,21 +67,17 @@
+ 			})
+ 			expect(reading.viewport[0]).toBe(width)
+ 			expect(reading.sized).toEqual(reading.viewport)
+-			// The floors are the `min` key's two entries, and each one holds its axis at the
++			// The floors are the `min` key's entries, and each one holds its axis at the
+ 			// viewport over a smaller size of the element's own.
+ 			expect(reading.floored).toEqual(reading.viewport)
+ 		},
+ 	)
+ 
+ 	it('writes no breakpoint infix, so no sizing class answers to a boundary', () => {
++		expect(SIZING_ENTRY_CASES.filter(({ name }) => findRule(`.${name}`) === undefined)).toEqual([])
+ 		expect(
+-			['w-25', 'h-25', 'mw-100', 'mh-100', 'vw-100', 'vh-100', 'min-vw-100', 'min-vh-100'].filter(
+-				(name) => findRule(`.${name}`) === undefined,
+-			),
+-		).toEqual([])
+-		expect(
+-			['w', 'h', 'mw', 'mh', 'vw', 'vh', 'min-vw', 'min-vh'].flatMap((prefix) =>
+-				['sm', 'md', 'lg', 'xl', 'xxl'].flatMap((infix) =>
++			SIZING_ENTRY_CASES.flatMap(({ prefix }) =>
++				BREAKPOINT_INFIXES.flatMap((infix) =>
+ 					findRule(`.${prefix}-${infix}-`) === undefined ? [] : [`${prefix}-${infix}`],
+ 				),
+ 			),
+@@ -96,7 +86,7 @@
+ 
+ 	it('keeps every step independent of the density factor and inside a dark island', () => {
+ 		const host = scene.mount(
+-			`<div data-bs-theme="dark" style="${CONTAINER}"><div class="w-75 h-50"></div></div>`,
++			`<div data-bs-theme="dark" style="${PLACEMENT_CONTAINER}"><div class="w-75 h-50"></div></div>`,
+ 		)
+ 		const box = requireValue(host.querySelector('.w-75'), 'No .w-75')
+ 		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
+@@ -112,7 +102,7 @@
+ 		// The release writes the width entry before the viewport-width entry, and the height entry
+ 		// before the viewport-height entry, so the viewport size wins where an element carries both.
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}"><div class="vw-100 w-25 vh-100 h-25"></div></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><div class="vw-100 w-25 vh-100 h-25"></div></div>`,
+ 		)
+ 		const box = requireValue(host.querySelector('.w-25'), 'No .w-25')
+ 		const [across, down, height] = await visitBreakpoint(390, () => [
+@@ -124,7 +114,9 @@
+ 	})
+ 
+ 	it('keeps every step over a later unlayered consumer rule', () => {
+-		const host = scene.mount(`<div style="${CONTAINER}"><div class="w-25 h-25 mw-100"></div></div>`)
++		const host = scene.mount(
++			`<div style="${PLACEMENT_CONTAINER}"><div class="w-25 h-25 mw-100"></div></div>`,
++		)
+ 		scene.load('.w-25 { width: 7px; height: 7px; max-width: 5px }')
+ 		const box = requireValue(host.querySelector('.w-25'), 'No .w-25')
+ 		expect([
+@@ -135,7 +127,7 @@
+ 	})
+ 
+ 	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
+-		const host = scene.mount(`<div style="${CONTAINER}"><div class="w-25"></div></div>`)
++		const host = scene.mount(`<div style="${PLACEMENT_CONTAINER}"><div class="w-25"></div></div>`)
+ 		const box = requireValue(host.querySelector('.w-25'), 'No .w-25')
+ 		// An unlayered `!important` sorts after every layered one, so the shipped utility keeps its
+ 		// step; the same declaration re-opened inside the utilities layer arrives after the shipped
+--- round-1/tests/src/styles/utilities/visibility.test.ts
++++ round-2/tests/src/styles/utilities/visibility.test.ts
+@@ -2,6 +2,7 @@
+ import { findRule, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
++import { BREAKPOINT_INFIXES } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	scene.clear()
+@@ -41,7 +42,7 @@
+ 		expect(findRule('.visible')).toBeDefined()
+ 		expect(findRule('.invisible')).toBeDefined()
+ 		expect(
+-			['sm', 'md', 'lg', 'xl', 'xxl'].flatMap((infix) =>
++			BREAKPOINT_INFIXES.flatMap((infix) =>
+ 				[`.${infix}-visible`, `.${infix}-invisible`, `.visible-${infix}`].filter(
+ 					(selector) => findRule(selector) !== undefined,
+ 				),
+--- round-1/tests/src/styles/utilities/visually-hidden.test.ts
++++ round-2/tests/src/styles/utilities/visually-hidden.test.ts
+@@ -1,22 +1,12 @@
+ import { requireValue } from '@orkestrel/test'
+-import {
+-	build,
+-	mount,
+-	readName,
+-	readPixels,
+-	readStyle,
+-	traverseAccessible,
+-} from '@orkestrel/test/browser'
++import { readName, readPixels, readStyle, traverseAccessible } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { scene } from '../../../setupBrowser.js'
+-
+-// A container whose width is definite, so a width a utility resolves reads a known length.
+-const CONTAINER = 'position: relative; width: 400px'
+-
+-// The properties a hidden box is read on, and the reading every hidden box resolves to at rest: the
+-// rendered width and height, the position, the clip, and the overflow on each axis.
+-const HIDDEN_PROPERTIES = ['position', 'clip', 'overflow-x', 'overflow-y']
+-const HIDDEN = [1, 1, 'absolute', 'rect(0px, 0px, 0px, 0px)', 'hidden', 'hidden']
++import { mountTraversalStart, scene } from '../../../setupBrowser.js'
++import {
++	PLACEMENT_CONTAINER,
++	VISUALLY_HIDDEN_PROPERTIES,
++	VISUALLY_HIDDEN_READING,
++} from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	scene.clear()
+@@ -25,14 +15,14 @@
+ describe('visually hidden helpers', () => {
+ 	it('hides an element in a clipped one-pixel box while it stays in the accessible name', () => {
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}"><button type="button">Delete<span class="visually-hidden" style="padding: 1rem; margin: 1rem; border: 2px solid; white-space: normal"> the draft <span class="inner" style="overflow: visible">now</span></span></button></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><button type="button">Delete<span class="visually-hidden" style="padding: 1rem; margin: 1rem; border: 2px solid; white-space: normal"> the draft <span class="inner" style="overflow: visible">now</span></span></button></div>`,
+ 		)
+ 		const hidden = requireValue(host.querySelector('.visually-hidden'), 'No hidden text')
+ 		expect([
+ 			hidden.getBoundingClientRect().width,
+ 			hidden.getBoundingClientRect().height,
+-			...HIDDEN_PROPERTIES.map((property) => readStyle(hidden, property)),
+-		]).toEqual(HIDDEN)
++			...VISUALLY_HIDDEN_PROPERTIES.map((property) => readStyle(hidden, property)),
++		]).toEqual(VISUALLY_HIDDEN_READING)
+ 		// Every box edge the element's own rule sets is set back, and the text keeps to one line so
+ 		// no wrapped line escapes the clip.
+ 		expect(
+@@ -60,40 +50,35 @@
+ 	})
+ 
+ 	it('reveals the focusable form while the element holds focus, and while a descendant does', async () => {
+-		// The traversal starts on a control of the case's own ahead of the fixture, so the first Tab
+-		// the keyboard sends lands on the fixture's first focusable element rather than on nothing.
+-		const start = mount(build('button', { text: 'Start', attributes: { type: 'button' } }))
+-		const host = scene.mount(
+-			`<div style="${CONTAINER}"><a class="visually-hidden-focusable skip" href="#main">Skip to main content</a><div class="visually-hidden-focusable group"><a href="#main">Jump to the summary</a></div></div>`,
+-		)
+-		try {
+-			const skip = requireValue(host.querySelector('.skip'), 'No skip link')
+-			const group = requireValue(host.querySelector('.group'), 'No hidden group')
+-			const inner = requireValue(group.querySelector('a'), 'No inner link')
+-			expect(
+-				[skip, group].map((element) => [
+-					element.getBoundingClientRect().width,
+-					element.getBoundingClientRect().height,
+-					...HIDDEN_PROPERTIES.map((property) => readStyle(element, property)),
+-				]),
+-			).toEqual([HIDDEN, HIDDEN])
+-			start.focus()
+-			expect(await traverseAccessible('Skip to main content')).toBe(skip)
+-			expect(skip.getBoundingClientRect().width).toBeGreaterThan(1)
+-			expect([readStyle(skip, 'position'), readStyle(skip, 'clip')]).toEqual(['static', 'auto'])
+-			// A descendant holding focus reveals its container, which is what lets a hidden group
+-			// show the control the keyboard reached inside it.
+-			inner.focus()
+-			expect(group.matches(':focus-within')).toBe(true)
+-			expect(group.getBoundingClientRect().width).toBe(400)
+-			expect(readStyle(group, 'position')).toBe('static')
+-			expect(skip.getBoundingClientRect().width).toBe(1)
+-			inner.blur()
+-			expect(group.getBoundingClientRect().width).toBe(1)
+-			expect(readStyle(group, 'position')).toBe('absolute')
+-		} finally {
+-			start.remove()
+-		}
++		// The traversal starts on a focused control of the case's own ahead of the fixture, so the
++		// first Tab the keyboard sends lands on the fixture's first focusable element.
++		mountTraversalStart()
++		const host = scene.mount(
++			`<div style="${PLACEMENT_CONTAINER}"><a class="visually-hidden-focusable skip" href="#main">Skip to main content</a><div class="visually-hidden-focusable group"><a href="#main">Jump to the summary</a></div></div>`,
++		)
++		const skip = requireValue(host.querySelector('.skip'), 'No skip link')
++		const group = requireValue(host.querySelector('.group'), 'No hidden group')
++		const inner = requireValue(group.querySelector('a'), 'No inner link')
++		expect(
++			[skip, group].map((element) => [
++				element.getBoundingClientRect().width,
++				element.getBoundingClientRect().height,
++				...VISUALLY_HIDDEN_PROPERTIES.map((property) => readStyle(element, property)),
++			]),
++		).toEqual([VISUALLY_HIDDEN_READING, VISUALLY_HIDDEN_READING])
++		expect(await traverseAccessible('Skip to main content')).toBe(skip)
++		expect(skip.getBoundingClientRect().width).toBeGreaterThan(1)
++		expect([readStyle(skip, 'position'), readStyle(skip, 'clip')]).toEqual(['static', 'auto'])
++		// A descendant holding focus reveals its container, which is what lets a hidden group
++		// show the control the keyboard reached inside it.
++		inner.focus()
++		expect(group.matches(':focus-within')).toBe(true)
++		expect(group.getBoundingClientRect().width).toBe(400)
++		expect(readStyle(group, 'position')).toBe('static')
++		expect(skip.getBoundingClientRect().width).toBe(1)
++		inner.blur()
++		expect(group.getBoundingClientRect().width).toBe(1)
++		expect(readStyle(group, 'position')).toBe('absolute')
+ 	})
+ 
+ 	it('sits ahead of every utility, so a utility the release lets win still wins', () => {
+@@ -103,7 +88,7 @@
+ 		// hidden element absolute there, and a caption, which that rule leaves alone, takes the
+ 		// utility.
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}"><span class="visually-hidden w-100">Wide</span><span class="visually-hidden position-relative">Placed</span><table><caption class="visually-hidden position-relative">Totals</caption></table></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><span class="visually-hidden w-100">Wide</span><span class="visually-hidden position-relative">Placed</span><table><caption class="visually-hidden position-relative">Totals</caption></table></div>`,
+ 		)
+ 		expect(
+ 			requireValue(host.querySelector('.w-100'), 'No widened element').getBoundingClientRect()
+@@ -119,7 +104,7 @@
+ 
+ 	it('keeps the hidden box over a later unlayered consumer rule, important or not', () => {
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}"><span class="visually-hidden probe">Kept hidden</span><span class="visually-hidden rival">Also kept hidden</span></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><span class="visually-hidden probe">Kept hidden</span><span class="visually-hidden rival">Also kept hidden</span></div>`,
+ 		)
+ 		scene.load(
+ 			'.probe { width: 50px; position: static; clip: auto } .rival { width: 50px !important; position: static !important; clip: auto !important }',
+@@ -130,15 +115,15 @@
+ 				return [
+ 					element.getBoundingClientRect().width,
+ 					element.getBoundingClientRect().height,
+-					...HIDDEN_PROPERTIES.map((property) => readStyle(element, property)),
++					...VISUALLY_HIDDEN_PROPERTIES.map((property) => readStyle(element, property)),
+ 				]
+ 			}),
+-		).toEqual([HIDDEN, HIDDEN])
++		).toEqual([VISUALLY_HIDDEN_READING, VISUALLY_HIDDEN_READING])
+ 	})
+ 
+ 	it('yields to an important override inside the utilities layer', () => {
+ 		const host = scene.mount(
+-			`<div style="${CONTAINER}"><span class="visually-hidden">Shown</span></div>`,
++			`<div style="${PLACEMENT_CONTAINER}"><span class="visually-hidden">Shown</span></div>`,
+ 		)
+ 		scene.load('@layer utilities { .visually-hidden { width: 20px !important } }')
+ 		expect(
+@@ -149,13 +134,13 @@
+ 
+ 	it('hides the same box inside a dark island', () => {
+ 		const host = scene.mount(
+-			`<div data-bs-theme="dark" style="${CONTAINER}"><span class="visually-hidden">Hidden in the dark</span></div>`,
++			`<div data-bs-theme="dark" style="${PLACEMENT_CONTAINER}"><span class="visually-hidden">Hidden in the dark</span></div>`,
+ 		)
+ 		const hidden = requireValue(host.querySelector('.visually-hidden'), 'No hidden text')
+ 		expect([
+ 			hidden.getBoundingClientRect().width,
+ 			hidden.getBoundingClientRect().height,
+-			...HIDDEN_PROPERTIES.map((property) => readStyle(hidden, property)),
+-		]).toEqual(HIDDEN)
++			...VISUALLY_HIDDEN_PROPERTIES.map((property) => readStyle(hidden, property)),
++		]).toEqual(VISUALLY_HIDDEN_READING)
+ 	})
+ })

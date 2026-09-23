@@ -1,0 +1,1702 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index e63c6c5..daee177 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -22,11 +22,14 @@ import { ListGroupSection } from './sections/ListGroupSection.js'
+ import { MediaSection } from './sections/MediaSection.js'
+ import { PaginationSection } from './sections/PaginationSection.js'
+ import { PlaceholderSection } from './sections/PlaceholderSection.js'
++import { PositionSection } from './sections/PositionSection.js'
+ import { ProgressSection } from './sections/ProgressSection.js'
++import { SizingSection } from './sections/SizingSection.js'
+ import { SpinnerSection } from './sections/SpinnerSection.js'
+ import { TableSection } from './sections/TableSection.js'
+ import { TypeSection } from './sections/TypeSection.js'
+ import { ValidationSection } from './sections/ValidationSection.js'
++import { VisibilitySection } from './sections/VisibilitySection.js'
+ 
+ /**
+  * Mounts a heading, color-mode control, named showcase region, and the sections after it.
+@@ -114,6 +117,9 @@ export class Showcase implements ShowcaseInterface {
+ 			new BreadcrumbSection(this.#main),
+ 			new CloseSection(this.#main),
+ 			new InputGroupSection(this.#main),
++			new PositionSection(this.#main),
++			new SizingSection(this.#main),
++			new VisibilitySection(this.#main),
+ 		]
+ 	}
+ 
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index ea224cf..25c47fe 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -1704,3 +1704,155 @@ export const FORM_LABEL_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 			'<div class="container-fluid"><fieldset class="row"><legend class="col-5 col-form-label">Pickup</legend><div class="col-7"><input class="form-control" type="date" aria-label="Pickup date" value="2026-09-23"></div></fieldset></div>',
+ 	}),
+ ])
++
++/** Holds the Position section's visible copy and accessible name. */
++export const POSITION_COPY = Object.freeze({
++	region: 'Position',
++	paragraph:
++		'Compare the position values, the edge offsets and the centered translation that place a box inside its container, and the stacking levels that order boxes where they overlap. The fixed bars hold to the edges of the frame they render in, and the sticky bars hold to the edges of the box they scroll in.',
++})
++
++/**
++ * Holds the position specimens, each rendered inside a frame of the shell's own.
++ *
++ * @remarks
++ * A fixed or sticky element is placed against its containing block or its scroll container rather
++ * than against its parent, so every specimen renders inside the shell's `viewport` frame: the frame
++ * is the containing block of each fixed and absolute descendant, and its bounded height is what a
++ * percentage offset resolves against. The frame clips rather than scrolls, so the sticky bars scroll
++ * inside the shell's `scroller` box within it. The bars and the stacked boxes are cards, because a
++ * bar or a stacked box has to paint to show where it sits; every other specimen places text alone.
++ */
++export const POSITION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Position values',
++		markup:
++			'<div class="viewport"><div class="position-relative h-100"><p class="position-static">Static, in the flow</p><p class="position-relative start-50">Relative, shifted</p><p class="position-sticky top-0">Sticky, in the flow</p><p class="position-absolute bottom-0 end-0">Absolute, at the bottom end</p><p class="position-fixed top-0 end-0">Fixed, at the top end</p></div></div>',
++	}),
++	Object.freeze({
++		name: 'Edge offsets',
++		markup:
++			'<div class="viewport"><div class="position-relative h-100"><div class="position-absolute top-50 start-50 translate-middle w-50 h-50"><span class="position-absolute top-0 start-0">Top start</span><span class="position-absolute top-0 end-0">Top end</span><span class="position-absolute bottom-0 start-0">Bottom start</span><span class="position-absolute bottom-0 end-0">Bottom end</span><span class="position-absolute top-100 start-100">Past the end</span><span class="position-absolute bottom-100 end-100">Before the start</span></div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Centered translation',
++		markup:
++			'<div class="viewport"><div class="position-relative h-100"><span class="position-absolute top-0 start-50 translate-middle-x">Centered across the top</span><span class="position-absolute top-50 start-50 translate-middle">Centered</span><span class="position-absolute top-50 start-0 translate-middle-y">Centered down the start</span></div></div>',
++	}),
++	Object.freeze({
++		name: 'Stacking levels',
++		markup: `<div class="viewport"><div class="position-relative h-100">${[
++			{ level: 'n1', place: 'bottom-0 start-0 w-50 h-50', label: 'Level -1' },
++			{ level: '0', place: 'top-0 end-0 w-50 h-50', label: 'Level 0' },
++			{ level: '1', place: 'top-0 start-0 w-75 h-75', label: 'Level 1' },
++			{ level: '2', place: 'bottom-0 end-0 w-75 h-75', label: 'Level 2' },
++			{ level: '3', place: 'top-50 start-50 translate-middle w-50 h-50', label: 'Level 3' },
++		]
++			.map(
++				({ level, place, label }) =>
++					`<div class="card position-absolute ${place} z-${level}"><div class="card-body">${label}</div></div>`,
++			)
++			.join('')}</div></div>`,
++	}),
++	Object.freeze({
++		name: 'Fixed bars',
++		markup:
++			'<div class="viewport"><div class="card fixed-top"><div class="card-body">Fixed to the top of the frame</div></div><p>The frame is the containing block of each fixed bar, so each bar holds to an edge of the frame rather than to an edge of the page.</p><div class="card fixed-bottom"><div class="card-body">Fixed to the bottom of the frame</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Sticky bars',
++		markup:
++			'<div class="viewport"><div class="scroller"><div class="card sticky-top"><div class="card-body">Sticky at the top of the box</div></div><div class="vh-100"><p>Scroll this box: each bar holds to its edge while this content moves under it.</p></div><div class="card sticky-bottom"><div class="card-body">Sticky at the bottom of the box</div></div></div></div>',
++	}),
++])
++
++/** Holds the Sizing section's visible copy and accessible name. */
++export const SIZING_COPY = Object.freeze({
++	region: 'Sizing',
++	paragraph:
++		'Compare the width and height steps that size a box against its container, the maximum sizes that cap a box at its container, and the viewport sizes that read the viewport itself. Resize the viewport to watch the viewport sizes follow it while the steps follow their container.',
++})
++
++/**
++ * Holds the sizing specimens, each drawing its boxes as placeholders.
++ *
++ * @remarks
++ * A sized box has to paint to show its size, and the placeholder is the release's own consumer of
++ * the width utilities, so each box is a placeholder hidden from assistive technology. A percentage
++ * height resolves only against a container of definite height, so the height steps and the height
++ * cap render inside the shell's `viewport` frame, whose height is bounded. A box sized to the
++ * viewport renders inside the same frame, which clips what it overflows, so the viewport sizes and
++ * the width cap's viewport-wide box, beside the height cap, raise no scrollbar on the page.
++ */
++export const SIZING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Width steps',
++		markup: [
++			...['25', '50', '75', '100'].map(
++				(step) => `<p><span class="placeholder w-${step}" aria-hidden="true"></span></p>`,
++			),
++			'<p><span class="placeholder w-auto" aria-hidden="true">Auto width</span></p>',
++		].join(''),
++	}),
++	Object.freeze({
++		name: 'Height steps',
++		markup: `<div class="viewport"><div class="container-fluid h-100"><div class="row h-100">${[
++			'25',
++			'50',
++			'75',
++			'100',
++			'auto',
++		]
++			.map(
++				(step) =>
++					`<div class="col"><span class="placeholder w-100 h-${step}" aria-hidden="true"></span></div>`,
++			)
++			.join('')}</div></div></div>`,
++	}),
++	Object.freeze({
++		name: 'Maximum sizes',
++		markup:
++			'<div class="viewport"><p><span class="placeholder vw-100 mw-100" aria-hidden="true"></span></p><div class="h-50"><span class="placeholder w-25 vh-100 mh-100" aria-hidden="true"></span></div></div>',
++	}),
++	Object.freeze({
++		name: 'Viewport sizes',
++		markup:
++			'<div class="viewport"><p><span class="placeholder vw-100" aria-hidden="true"></span></p><p><span class="placeholder min-vw-100" aria-hidden="true"></span></p><span class="placeholder w-25 vh-100" aria-hidden="true"></span> <span class="placeholder w-25 min-vh-100" aria-hidden="true"></span></div>',
++	}),
++])
++
++/** Holds the Visibility section's visible copy and accessible name. */
++export const VISIBILITY_COPY = Object.freeze({
++	region: 'Visibility',
++	paragraph:
++		'Compare an invisible word that keeps its room with the visible words beside it, a visually hidden phrase that stays in the text a screen reader announces, and a skip link that appears only while it holds focus. Press Tab to reach the skip link.',
++})
++
++/**
++ * Holds the visibility specimens, each rendering its hidden subject beside visible text.
++ *
++ * @remarks
++ * A hidden subject paints nothing of its own, so each specimen carries the visible text around it:
++ * the room an invisible word keeps shows as the gap between its neighbors, and the visually hidden
++ * phrase and the resting skip link sit inside a visible sentence. That sentence is positioned, so
++ * the hidden element, which the helper positions absolutely, is placed inside the sentence rather
++ * than against a distant ancestor. The skip link points at the `#main` fragment the link specimens
++ * point at.
++ */
++export const VISIBILITY_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Visible and invisible',
++		markup:
++			'<p><span class="visible">Visible word</span> <span class="invisible">Invisible word</span> <span>Next word, after the room the invisible word keeps</span></p>',
++	}),
++	Object.freeze({
++		name: 'Visually hidden',
++		markup:
++			'<p class="position-relative">Unread messages: 3<span class="visually-hidden">, all sent since your last visit</span></p>',
++	}),
++	Object.freeze({
++		name: 'Skip link',
++		markup:
++			'<p class="position-relative">Press Tab to reveal the link this line holds. <a class="visually-hidden-focusable" href="#main">Skip to main content</a></p>',
++	}),
++])
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 2154013..e422f6c 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -27,3 +27,6 @@ export * from './sections/BadgeSection.js'
+ export * from './sections/BreadcrumbSection.js'
+ export * from './sections/CloseSection.js'
+ export * from './sections/InputGroupSection.js'
++export * from './sections/PositionSection.js'
++export * from './sections/SizingSection.js'
++export * from './sections/VisibilitySection.js'
+diff --git a/guides/veneer.md b/guides/veneer.md
+index cff0aa9..0dd0eed 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -205,90 +205,95 @@ shipped `0.25rem` in place; see [token parity and values](../tests/src/styles/to
+ 
+ The following files carry the axis.
+ 
+-| File                                        | Role                                                                                                                                                                                                                                               |
+-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `src/styles/elements/_button.scss`          | The bare button and its same-element states in the elements layer.                                                                                                                                                                                 |
+-| `src/styles/components/_button.scss`        | The Button class vocabulary and state relationships in the components layer.                                                                                                                                                                       |
+-| `src/styles/components/_type.scss`          | The heading, display, lead, small, mark, and initialism classes in the components layer.                                                                                                                                                           |
+-| `src/styles/components/_list.scss`          | The unstyled and inline list classes in the components layer.                                                                                                                                                                                      |
+-| `src/styles/components/_quote.scss`         | The quotation class, its last-child rule, and its footer in the components layer.                                                                                                                                                                  |
+-| `src/styles/components/_link.scss`          | The link color, opacity, offset, and underline classes in the components layer.                                                                                                                                                                    |
+-| `src/styles/components/_container.scss`     | The container family, its breakpoint caps, and navigation combinators in the components layer.                                                                                                                                                     |
+-| `src/styles/components/_grid.scss`          | The row, column, and offset families and their gutters in the components layer.                                                                                                                                                                    |
+-| `src/styles/components/_table.scss`         | The table classes, state layers, caption class, and responsive wrappers in the components layer.                                                                                                                                                   |
+-| `src/styles/components/_image.scss`         | The image and figure classes in the components layer.                                                                                                                                                                                              |
+-| `src/styles/components/_icon-link.scss`     | The icon link, its icon combinator, and its hover and focus shifts in the components layer.                                                                                                                                                        |
+-| `src/styles/components/_breadcrumb.scss`    | The breadcrumb trail, its item inset, its divider, and the current page in the components layer.                                                                                                                                                   |
+-| `src/styles/components/_badge.scss`         | The badge box, its empty collapse, and its offset inside a button in the components layer.                                                                                                                                                         |
+-| `src/styles/components/_close.scss`         | The close control, its states, and its opt-in inversion in the components layer.                                                                                                                                                                   |
+-| `src/styles/components/_progress.scss`      | The progress track, its stacked form, and the bar families in the components layer.                                                                                                                                                                |
+-| `src/styles/components/_spinner.scss`       | The border and grow spinners, their small twins, and their keyframes in the components layer.                                                                                                                                                      |
+-| `src/styles/components/_placeholder.scss`   | The placeholder, its height floors, its button box, and the glow and wave animations in the components layer.                                                                                                                                      |
+-| `src/styles/components/_button-group.scss`  | The button group, its vertical twin, their joining relationships, and the toolbar in the components layer, read by `tests/src/styles/components/button-group.test.ts`.                                                                             |
+-| `src/styles/components/_ratio.scss`         | The aspect-ratio box, its pseudo-element, and the named aspects in the components layer.                                                                                                                                                           |
+-| `src/styles/components/_vr.scss`            | The vertical rule in the components layer.                                                                                                                                                                                                         |
+-| `src/styles/components/_card.scss`          | The card box, its caps and body, the image and overlay placements, the header navigations, and the card group in the components layer.                                                                                                             |
+-| `src/styles/components/_list-group.scss`    | The list-group box, its item joins, action states, numbering, flush edges, horizontal ramp, and contextual roles in the components layer.                                                                                                          |
+-| `src/styles/components/_form-label.scss`    | The form label, the help text, and the horizontal label at each size in the components layer, read by `tests/src/styles/components/form-label.test.ts`.                                                                                            |
+-| `src/styles/components/_form-control.scss`  | The text control, its file button, date parts, placeholder, and states, the plaintext form, the sizes, the textarea heights, and the color control in the components layer.                                                                        |
+-| `src/styles/components/_form-check.scss`    | The check, radio, and switch controls, their states, the reverse and inline layouts, and the dark knob in the components layer.                                                                                                                    |
+-| `src/styles/components/_form-range.scss`    | The range control, its engine-specific thumb and track rules, and their states in the components layer.                                                                                                                                            |
+-| `src/styles/components/_form-select.scss`   | The select, its caret in both modes, its focus, list, disabled, and size forms, and the Gecko focus-ring reset in the components layer.                                                                                                            |
+-| `src/styles/components/_form-floating.scss` | The floating container, the floated geometry of its controls, the label and its transforms, the textarea backdrop, and the disabled and plaintext labels in the components layer.                                                                  |
+-| `src/styles/components/_input-group.scss`   | The input group row, its addon, sizes, squared corners, overlap, and lifts in the components layer, read by `tests/src/styles/components/input-group.test.ts`.                                                                                     |
+-| `src/styles/components/_validation.scss`    | The validation scope, state classes, feedback, and tooltips in the components layer, read by `tests/src/styles/components/validation.test.ts`.                                                                                                     |
+-| `src/styles/components/_pagination.scss`    | The pagination strip, its page links, their states, and the size classes in the components layer.                                                                                                                                                  |
+-| `src/styles/_reset.scss`                    | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.                                                                                                                                                         |
+-| `src/styles/elements/_html.scss`            | The document baseline in the elements layer.                                                                                                                                                                                                       |
+-| `src/styles/elements/_body.scss`            | The body baseline in the elements layer.                                                                                                                                                                                                           |
+-| `src/styles/elements/_heading.scss`         | The heading family text treatment in the elements layer.                                                                                                                                                                                           |
+-| `src/styles/elements/_p.scss`               | The p text treatment in the elements layer.                                                                                                                                                                                                        |
+-| `src/styles/elements/_hr.scss`              | The hr text treatment in the elements layer.                                                                                                                                                                                                       |
+-| `src/styles/elements/_a.scss`               | The a text treatment in the elements layer.                                                                                                                                                                                                        |
+-| `src/styles/elements/_ul.scss`              | The ul text treatment in the elements layer.                                                                                                                                                                                                       |
+-| `src/styles/elements/_ol.scss`              | The ol text treatment in the elements layer.                                                                                                                                                                                                       |
+-| `src/styles/elements/_dl.scss`              | The dl text treatment in the elements layer.                                                                                                                                                                                                       |
+-| `src/styles/elements/_blockquote.scss`      | The blockquote text treatment in the elements layer.                                                                                                                                                                                               |
+-| `src/styles/elements/_address.scss`         | The address text treatment in the elements layer.                                                                                                                                                                                                  |
+-| `src/styles/elements/_abbr.scss`            | The abbr text treatment in the elements layer.                                                                                                                                                                                                     |
+-| `src/styles/elements/_strong.scss`          | The strong text treatment in the elements layer.                                                                                                                                                                                                   |
+-| `src/styles/elements/_small.scss`           | The small text treatment in the elements layer.                                                                                                                                                                                                    |
+-| `src/styles/elements/_mark.scss`            | The mark text treatment in the elements layer.                                                                                                                                                                                                     |
+-| `src/styles/elements/_sub.scss`             | The sub text treatment in the elements layer.                                                                                                                                                                                                      |
+-| `src/styles/elements/_sup.scss`             | The sup text treatment in the elements layer.                                                                                                                                                                                                      |
+-| `src/styles/elements/_code.scss`            | The code text treatment in the elements layer.                                                                                                                                                                                                     |
+-| `src/styles/elements/_pre.scss`             | The pre text treatment in the elements layer.                                                                                                                                                                                                      |
+-| `src/styles/elements/_kbd.scss`             | The kbd text treatment in the elements layer.                                                                                                                                                                                                      |
+-| `src/styles/elements/_samp.scss`            | The samp text treatment in the elements layer.                                                                                                                                                                                                     |
+-| `src/styles/elements/_var.scss`             | The var text treatment in the elements layer.                                                                                                                                                                                                      |
+-| `src/styles/elements/_b.scss`               | The b family and its mandated pairs in the elements layer.                                                                                                                                                                                         |
+-| `src/styles/elements/_figure.scss`          | The figure family and its mandated pairs in the elements layer.                                                                                                                                                                                    |
+-| `src/styles/elements/_img.scss`             | The img family and its mandated pairs in the elements layer.                                                                                                                                                                                       |
+-| `src/styles/elements/_svg.scss`             | The svg family and its mandated pairs in the elements layer.                                                                                                                                                                                       |
+-| `src/styles/elements/_table.scss`           | The table family and its mandated pairs in the elements layer.                                                                                                                                                                                     |
+-| `src/styles/elements/_tr.scss`              | The tr family and its mandated pairs in the elements layer.                                                                                                                                                                                        |
+-| `src/styles/elements/_label.scss`           | The label family and its mandated pairs in the elements layer.                                                                                                                                                                                     |
+-| `src/styles/elements/_input.scss`           | The input family and its mandated pairs in the elements layer.                                                                                                                                                                                     |
+-| `src/styles/elements/_select.scss`          | The select family and its mandated pairs in the elements layer.                                                                                                                                                                                    |
+-| `src/styles/elements/_optgroup.scss`        | The optgroup family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
+-| `src/styles/elements/_textarea.scss`        | The textarea family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
+-| `src/styles/elements/_fieldset.scss`        | The fieldset family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
+-| `src/styles/elements/_output.scss`          | The output family and its mandated pairs in the elements layer.                                                                                                                                                                                    |
+-| `src/styles/elements/_iframe.scss`          | The iframe family and its mandated pairs in the elements layer.                                                                                                                                                                                    |
+-| `src/styles/elements/_details.scss`         | The details family and its mandated pairs in the elements layer.                                                                                                                                                                                   |
+-| `src/styles/elements/_progress.scss`        | The progress family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
+-| `src/styles/utilities/_gap.scss`            | The gutter and gap step utilities in the utilities layer.                                                                                                                                                                                          |
+-| `src/styles/index.scss`                     | The compilation barrel.                                                                                                                                                                                                                            |
+-| `src/styles/index.ts`                       | The side-effect entry, and the build's library entry.                                                                                                                                                                                              |
+-| `configs/src/vite.styles.config.ts`         | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
+-| `configs/src/tsconfig.styles.json`          | The check-only TypeScript project.                                                                                                                                                                                                                 |
+-| `tests/setupStyles.ts`                      | The cascade readers, the normalizer, the guide table and fence readers, the case tables, and the retained value lists.                                                                                                                             |
+-| `tests/setupServer.ts`                      | The Node-only readers: the installed and built cascades and the guide, the compiled-stylesheet reader, the shared-name readings, the guide's compatibility, deferral, and ledger rows, the cascade comparisons, and the elements-layer tag reader. |
+-| `tests/setupService.ts`                     | The service setup: the readiness that verifies the compiler, the built cascade, the pinned Chromium, and the candidate list; the paths of the Tailwind profiles and fixtures; the profile compiler; and the stage that reads what a page resolves. |
+-| `tests/src/styles/`                         | The browser proofs of the shipped cascade.                                                                                                                                                                                                         |
+-| `tests/setup.css`                           | The `tailwind` profile the service proofs compile, and the home of the exclusion line.                                                                                                                                                             |
+-| `tests/fixtures/tailwind/`                  | The `preflight` profile, the unexcluded instrument, the executed consumer profile, and the markup that profile scans.                                                                                                                              |
+-| `tests/service/tailwind/`                   | The Node proofs of the Tailwind profiles, the consumer pairing, and the preflight pairing, run in the `service` project.                                                                                                                           |
++| File                                         | Role                                                                                                                                                                                                                                               |
++| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `src/styles/elements/_button.scss`           | The bare button and its same-element states in the elements layer.                                                                                                                                                                                 |
++| `src/styles/components/_button.scss`         | The Button class vocabulary and state relationships in the components layer.                                                                                                                                                                       |
++| `src/styles/components/_type.scss`           | The heading, display, lead, small, mark, and initialism classes in the components layer.                                                                                                                                                           |
++| `src/styles/components/_list.scss`           | The unstyled and inline list classes in the components layer.                                                                                                                                                                                      |
++| `src/styles/components/_quote.scss`          | The quotation class, its last-child rule, and its footer in the components layer.                                                                                                                                                                  |
++| `src/styles/components/_link.scss`           | The link color, opacity, offset, and underline classes in the components layer.                                                                                                                                                                    |
++| `src/styles/components/_container.scss`      | The container family, its breakpoint caps, and navigation combinators in the components layer.                                                                                                                                                     |
++| `src/styles/components/_grid.scss`           | The row, column, and offset families and their gutters in the components layer.                                                                                                                                                                    |
++| `src/styles/components/_table.scss`          | The table classes, state layers, caption class, and responsive wrappers in the components layer.                                                                                                                                                   |
++| `src/styles/components/_image.scss`          | The image and figure classes in the components layer.                                                                                                                                                                                              |
++| `src/styles/components/_icon-link.scss`      | The icon link, its icon combinator, and its hover and focus shifts in the components layer.                                                                                                                                                        |
++| `src/styles/components/_breadcrumb.scss`     | The breadcrumb trail, its item inset, its divider, and the current page in the components layer.                                                                                                                                                   |
++| `src/styles/components/_badge.scss`          | The badge box, its empty collapse, and its offset inside a button in the components layer.                                                                                                                                                         |
++| `src/styles/components/_close.scss`          | The close control, its states, and its opt-in inversion in the components layer.                                                                                                                                                                   |
++| `src/styles/components/_progress.scss`       | The progress track, its stacked form, and the bar families in the components layer.                                                                                                                                                                |
++| `src/styles/components/_spinner.scss`        | The border and grow spinners, their small twins, and their keyframes in the components layer.                                                                                                                                                      |
++| `src/styles/components/_placeholder.scss`    | The placeholder, its height floors, its button box, and the glow and wave animations in the components layer.                                                                                                                                      |
++| `src/styles/components/_button-group.scss`   | The button group, its vertical twin, their joining relationships, and the toolbar in the components layer, read by `tests/src/styles/components/button-group.test.ts`.                                                                             |
++| `src/styles/components/_ratio.scss`          | The aspect-ratio box, its pseudo-element, and the named aspects in the components layer.                                                                                                                                                           |
++| `src/styles/components/_position.scss`       | The fixed and sticky helpers in the components layer.                                                                                                                                                                                              |
++| `src/styles/components/_vr.scss`             | The vertical rule in the components layer.                                                                                                                                                                                                         |
++| `src/styles/components/_card.scss`           | The card box, its caps and body, the image and overlay placements, the header navigations, and the card group in the components layer.                                                                                                             |
++| `src/styles/components/_list-group.scss`     | The list-group box, its item joins, action states, numbering, flush edges, horizontal ramp, and contextual roles in the components layer.                                                                                                          |
++| `src/styles/components/_form-label.scss`     | The form label, the help text, and the horizontal label at each size in the components layer, read by `tests/src/styles/components/form-label.test.ts`.                                                                                            |
++| `src/styles/components/_form-control.scss`   | The text control, its file button, date parts, placeholder, and states, the plaintext form, the sizes, the textarea heights, and the color control in the components layer.                                                                        |
++| `src/styles/components/_form-check.scss`     | The check, radio, and switch controls, their states, the reverse and inline layouts, and the dark knob in the components layer.                                                                                                                    |
++| `src/styles/components/_form-range.scss`     | The range control, its engine-specific thumb and track rules, and their states in the components layer.                                                                                                                                            |
++| `src/styles/components/_form-select.scss`    | The select, its caret in both modes, its focus, list, disabled, and size forms, and the Gecko focus-ring reset in the components layer.                                                                                                            |
++| `src/styles/components/_form-floating.scss`  | The floating container, the floated geometry of its controls, the label and its transforms, the textarea backdrop, and the disabled and plaintext labels in the components layer.                                                                  |
++| `src/styles/components/_input-group.scss`    | The input group row, its addon, sizes, squared corners, overlap, and lifts in the components layer, read by `tests/src/styles/components/input-group.test.ts`.                                                                                     |
++| `src/styles/components/_validation.scss`     | The validation scope, state classes, feedback, and tooltips in the components layer, read by `tests/src/styles/components/validation.test.ts`.                                                                                                     |
++| `src/styles/components/_pagination.scss`     | The pagination strip, its page links, their states, and the size classes in the components layer.                                                                                                                                                  |
++| `src/styles/_reset.scss`                     | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.                                                                                                                                                         |
++| `src/styles/elements/_html.scss`             | The document baseline in the elements layer.                                                                                                                                                                                                       |
++| `src/styles/elements/_body.scss`             | The body baseline in the elements layer.                                                                                                                                                                                                           |
++| `src/styles/elements/_heading.scss`          | The heading family text treatment in the elements layer.                                                                                                                                                                                           |
++| `src/styles/elements/_p.scss`                | The p text treatment in the elements layer.                                                                                                                                                                                                        |
++| `src/styles/elements/_hr.scss`               | The hr text treatment in the elements layer.                                                                                                                                                                                                       |
++| `src/styles/elements/_a.scss`                | The a text treatment in the elements layer.                                                                                                                                                                                                        |
++| `src/styles/elements/_ul.scss`               | The ul text treatment in the elements layer.                                                                                                                                                                                                       |
++| `src/styles/elements/_ol.scss`               | The ol text treatment in the elements layer.                                                                                                                                                                                                       |
++| `src/styles/elements/_dl.scss`               | The dl text treatment in the elements layer.                                                                                                                                                                                                       |
++| `src/styles/elements/_blockquote.scss`       | The blockquote text treatment in the elements layer.                                                                                                                                                                                               |
++| `src/styles/elements/_address.scss`          | The address text treatment in the elements layer.                                                                                                                                                                                                  |
++| `src/styles/elements/_abbr.scss`             | The abbr text treatment in the elements layer.                                                                                                                                                                                                     |
++| `src/styles/elements/_strong.scss`           | The strong text treatment in the elements layer.                                                                                                                                                                                                   |
++| `src/styles/elements/_small.scss`            | The small text treatment in the elements layer.                                                                                                                                                                                                    |
++| `src/styles/elements/_mark.scss`             | The mark text treatment in the elements layer.                                                                                                                                                                                                     |
++| `src/styles/elements/_sub.scss`              | The sub text treatment in the elements layer.                                                                                                                                                                                                      |
++| `src/styles/elements/_sup.scss`              | The sup text treatment in the elements layer.                                                                                                                                                                                                      |
++| `src/styles/elements/_code.scss`             | The code text treatment in the elements layer.                                                                                                                                                                                                     |
++| `src/styles/elements/_pre.scss`              | The pre text treatment in the elements layer.                                                                                                                                                                                                      |
++| `src/styles/elements/_kbd.scss`              | The kbd text treatment in the elements layer.                                                                                                                                                                                                      |
++| `src/styles/elements/_samp.scss`             | The samp text treatment in the elements layer.                                                                                                                                                                                                     |
++| `src/styles/elements/_var.scss`              | The var text treatment in the elements layer.                                                                                                                                                                                                      |
++| `src/styles/elements/_b.scss`                | The b family and its mandated pairs in the elements layer.                                                                                                                                                                                         |
++| `src/styles/elements/_figure.scss`           | The figure family and its mandated pairs in the elements layer.                                                                                                                                                                                    |
++| `src/styles/elements/_img.scss`              | The img family and its mandated pairs in the elements layer.                                                                                                                                                                                       |
++| `src/styles/elements/_svg.scss`              | The svg family and its mandated pairs in the elements layer.                                                                                                                                                                                       |
++| `src/styles/elements/_table.scss`            | The table family and its mandated pairs in the elements layer.                                                                                                                                                                                     |
++| `src/styles/elements/_tr.scss`               | The tr family and its mandated pairs in the elements layer.                                                                                                                                                                                        |
++| `src/styles/elements/_label.scss`            | The label family and its mandated pairs in the elements layer.                                                                                                                                                                                     |
++| `src/styles/elements/_input.scss`            | The input family and its mandated pairs in the elements layer.                                                                                                                                                                                     |
++| `src/styles/elements/_select.scss`           | The select family and its mandated pairs in the elements layer.                                                                                                                                                                                    |
++| `src/styles/elements/_optgroup.scss`         | The optgroup family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
++| `src/styles/elements/_textarea.scss`         | The textarea family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
++| `src/styles/elements/_fieldset.scss`         | The fieldset family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
++| `src/styles/elements/_output.scss`           | The output family and its mandated pairs in the elements layer.                                                                                                                                                                                    |
++| `src/styles/elements/_iframe.scss`           | The iframe family and its mandated pairs in the elements layer.                                                                                                                                                                                    |
++| `src/styles/elements/_details.scss`          | The details family and its mandated pairs in the elements layer.                                                                                                                                                                                   |
++| `src/styles/elements/_progress.scss`         | The progress family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
++| `src/styles/utilities/_visually-hidden.scss` | The visually hidden helper and its focusable form in the utilities layer, ahead of every utility partial.                                                                                                                                          |
++| `src/styles/utilities/_position.scss`        | The position, offset, translation, and stacking utilities in the utilities layer.                                                                                                                                                                  |
++| `src/styles/utilities/_sizing.scss`          | The width, height, maximum-size, and viewport-size utilities in the utilities layer.                                                                                                                                                               |
++| `src/styles/utilities/_gap.scss`             | The gutter and gap step utilities in the utilities layer.                                                                                                                                                                                          |
++| `src/styles/utilities/_visibility.scss`      | The visible and invisible utilities in the utilities layer.                                                                                                                                                                                        |
++| `src/styles/index.scss`                      | The compilation barrel.                                                                                                                                                                                                                            |
++| `src/styles/index.ts`                        | The side-effect entry, and the build's library entry.                                                                                                                                                                                              |
++| `configs/src/vite.styles.config.ts`          | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
++| `configs/src/tsconfig.styles.json`           | The check-only TypeScript project.                                                                                                                                                                                                                 |
++| `tests/setupStyles.ts`                       | The cascade readers, the normalizer, the guide table and fence readers, the case tables, and the retained value lists.                                                                                                                             |
++| `tests/setupServer.ts`                       | The Node-only readers: the installed and built cascades and the guide, the compiled-stylesheet reader, the shared-name readings, the guide's compatibility, deferral, and ledger rows, the cascade comparisons, and the elements-layer tag reader. |
++| `tests/setupService.ts`                      | The service setup: the readiness that verifies the compiler, the built cascade, the pinned Chromium, and the candidate list; the paths of the Tailwind profiles and fixtures; the profile compiler; and the stage that reads what a page resolves. |
++| `tests/src/styles/`                          | The browser proofs of the shipped cascade.                                                                                                                                                                                                         |
++| `tests/setup.css`                            | The `tailwind` profile the service proofs compile, and the home of the exclusion line.                                                                                                                                                             |
++| `tests/fixtures/tailwind/`                   | The `preflight` profile, the unexcluded instrument, the executed consumer profile, and the markup that profile scans.                                                                                                                              |
++| `tests/service/tailwind/`                    | The Node proofs of the Tailwind profiles, the consumer pairing, and the preflight pairing, run in the `service` project.                                                                                                                           |
+ 
+ The barrel's `@use` rules name the `_tokens.scss` and `_theme.scss` partials and the element
+ partials under the `elements/`, `components/`, and `utilities/` directories; the `_mixins.scss` partial reaches the build through the
+@@ -379,7 +384,7 @@ layers.
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container end-0 end-50 end-100 start-0 start-50 start-100 table");
+ ```
+ 
+ The following recipe is the `preflight` profile, which takes the bare import so Tailwind's own reset
+@@ -392,7 +397,7 @@ under Veneer's element treatment rather than over it.
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container end-0 end-50 end-100 start-0 start-50 start-100 table");
+ ```
+ 
+ The workspace compiles the `tailwind` recipe as written. The `tests/fixtures/tailwind/consumer.css`
+@@ -443,10 +448,18 @@ each as Chromium expands it, so a shorthand counts as the longhands it sets. The
+ runs over the shared names that rule lets leave the line. The gap steps `gap-0` to `gap-5` are
+ shipped names off the line: Tailwind's rule for each declares the `gap` shorthand, which Chromium
+ expands to the `row-gap` and `column-gap` longhands, and Veneer declares the same shorthand with
+-`!important`. The proof asserts that the `gap-3` name is in the branch and reads what the rule
+-claims: with the exclusion line dropped and Tailwind's own rule on the page, every element carrying
+-a name in the branch resolves, for every property that rule declares, what it resolves under the
+-cascade alone. A planted rule drives the partial-importance case: it declares `!important` on the
++`!important`. The width and height steps, the `top-*` and `bottom-*` offsets, the `z-0` to `z-3`
++levels, and the `visible` and `invisible` classes are shipped names off the line too: Tailwind's
++rule for each declares the one longhand Veneer declares with `!important`. The `start-*` and `end-*`
++offsets stay on the line: Tailwind's rule for each declares the logical `inset-inline-start` or
++`inset-inline-end` longhand, and Veneer's important declaration is on the physical `left` or `right`
++longhand, which does not cover it. The proof asserts that the `gap-3` name is in the branch and
++reads what the rule claims: with the exclusion line dropped and Tailwind's own rule on the page,
++every element carrying a name in the branch resolves, for every property that rule declares, what it
++resolves under the cascade alone. Each element is read on the longhands its own name's rule
++declares, because a longhand another name declares can move for a reason outside the equality: the
++gap rows sit inside the `.container` element, whose width moves when the line is dropped, and the
++width steps declare the `width` longhand. A planted rule drives the partial-importance case: it declares `!important` on the
+ `grid-column-start` longhand alone, leaving the `grid-column-end` longhand that Tailwind's `col-1`
+ rule also declares normal, and the equality still holds with the `col-1` class on the line.
+ 
+@@ -1768,6 +1781,121 @@ These are the keys' recorded departures.
+   beside `column-gap`; Veneer emits the standard property alone, because the managed Chromium and
+   Edge receipts this cascade is proved on resolve it and leave the alias redundant.
+ 
++### Position utilities
++
++The position keys ship whole in the utilities layer: the position values, the top, bottom, start,
++and end offsets at the `0`, `50`, and `100` steps, the centered translation on both axes and on each
++one, and the stacking levels from the `.z-n1` class to the `.z-3` class. The fixed and sticky
++helpers ship beside them in the components layer.
++
++The `src/styles/utilities/_position.scss` partial writes every entry through the `utility` mixin
++that § Styles describes, so each declaration carries the `!important` flag the release writes, and
++no position key writes a breakpoint infix. The partial writes the entries and their values in the
++release's map order, so where an element carries two values of one entry, the later value wins: an
++element carrying the `.position-absolute` and `.position-relative` classes resolves the `absolute`
++value, and an element carrying the `.translate-middle` and `.translate-middle-x` classes resolves the
++horizontal translation alone. The release writes the `z-index` entry last in its map, and the
++partial writes it beside the position entries; no other utility sets that property, so the placement
++moves no resolution.
++
++An offset step is a share of the containing block: the `.top-50` class places a box half its
++containing block's height from the top, and the `.start-50` class places it half the block's width
++from the start. The `.start-*` and `.end-*` classes set the physical `left` and `right` properties,
++as the release's own stylesheet does, so in a right-to-left scope the `.start-0` class still holds a
++box to the left edge. The offsets, the translations, and the stacking levels stay literal, because
++no published Veneer token carries them, and none of them reads the density factor.
++
++The `.fixed-top` and `.fixed-bottom` helpers pin a box across its containing block at one edge. The
++`.sticky-top` and `.sticky-bottom` helpers stick a box to one edge of its scroll container, each
++from its breakpoint infix up: the `.sticky-md-top` helper sticks a box from a 768px viewport and
++leaves it in the flow below that width. The `src/styles/components/_position.scss` partial writes
++the helpers in the components layer with normal declarations, as the release writes them, so a
++position utility or a rule of your own overrides them. The fixed helpers read the
++`--vn-stack-fixed` token and the sticky helpers read the `--vn-stack-sticky` token, so a retuned
++level moves the helpers beside the overlays that read the same ladder.
++
++The `tests/src/styles/utilities/position.test.ts` proof reads every position value, each offset
++against a containing block of definite size, the physical edges in a right-to-left scope, the
++translation on each axis, the stacking order where boxes overlap, the density factor, a dark island,
++the order inside an entry, the priority over a later unlayered rule, and the escape inside the
++utilities layer. The `tests/src/styles/components/position.test.ts` proof reads the fixed helpers
++against the viewport, both stacking levels and their retune, each sticky helper inside a real scroll
++container at its boundary and one pixel below it, and the helpers yielding to a later rule and to a
++position utility.
++
++These are the keys' recorded departures.
++
++- **The helpers read Veneer's stacking ladder.** The release writes the `1030` level for the fixed
++  helpers and the `1020` level for the sticky helpers; Veneer writes the `var(--vn-stack-fixed)`
++  and `var(--vn-stack-sticky)` values, which resolve to the same levels.
++- **The prefixed sticky value is absent.** The official cascade writes the
++  `position: -webkit-sticky` declaration ahead of the `position: sticky` declaration on the
++  `.position-sticky` class and on every sticky helper; Veneer writes the standard value alone,
++  because the managed Chromium and Edge receipts this cascade is proved on resolve it and leave the
++  prefixed value redundant.
++
++### Sizing utilities
++
++The sizing keys ship whole in the utilities layer: the `25`, `50`, `75`, `100`, and `auto` width
++and height steps, the `.mw-100` and `.mh-100` maximum sizes, the `.vw-100` and `.vh-100` viewport
++sizes, and the `.min-vw-100` and `.min-vh-100` viewport floors, which the `min` key carries.
++
++A step is a share of the containing block, so the `.w-50` class resolves half its container's
++width, and a height step resolves only inside a container of definite height. The `auto` step sets
++aside a width or height the element declares, so the box takes its content's size. A maximum size
++caps a box at its container. A viewport size and a viewport floor read the viewport rather than the
++container, so a box carrying the `.vw-100` class is as wide as the viewport wherever it sits. Every
++value stays literal, because no published Veneer token carries a share or a viewport size, and none
++of them reads the density factor.
++
++The `src/styles/utilities/_sizing.scss` partial writes every entry through the `utility` mixin in
++the release's map order: the width, maximum-width, viewport-width, and viewport-floor entries, then
++the same entries for the height. So a viewport size wins over a step on the same property: an
++element carrying the `.w-25` and `.vw-100` classes resolves the viewport's width. No sizing key
++writes a breakpoint infix.
++
++The `tests/src/styles/utilities/sizing.test.ts` proof reads every step against a container of
++definite size, the `auto` step over a width and a height the element declares, the width and height
++caps, each viewport size and floor at the 390 and 1280 viewports, the density factor, a dark island,
++the order between entries, the priority over a later unlayered rule, and the escape inside the
++utilities layer. The sizing keys carry no recorded departure.
++
++### Visibility utilities
++
++The visibility keys ship whole in the utilities layer: the `.visible` and `.invisible` classes, and
++the visually hidden helper with its focusable form.
++
++The `.invisible` class hides a box while the box keeps its room in the layout, and the `.visible`
++class shows a box, including a box inside an invisible ancestor. The release's entry carries no
++class, so each value's key is the whole class name; the `src/styles/utilities/_visibility.scss`
++partial writes the entry through the `utility` mixin with an empty class, and no visibility class
++writes a breakpoint infix.
++
++The `.visually-hidden` helper clips a box to one pixel and keeps its text in the accessible name, so
++a screen reader announces text a sighted reader does not see. The `.visually-hidden-focusable`
++helper does the same until the element or one of its descendants holds focus, which is how a skip
++link appears when the keyboard reaches it. A caption keeps its table position rather than turning
++absolute, and a child of a hidden box keeps its overflow hidden.
++
++The release writes the helper with the `!important` flag on every declaration, so the
++`src/styles/utilities/_visually-hidden.scss` partial places it in the utilities layer ahead of every
++utility partial. The helper is not a utility entry and each of its declarations carries its own
++value, so the partial writes the declarations itself rather than through the `utility` mixin. The
++cascade reverses layer order for important declarations, so in the components layer the helper would
++beat every utility. At the head of the utilities layer, a utility the release lets win still wins:
++an element carrying the `.visually-hidden` and `.w-100` classes resolves its container's width. The
++helper's own `:not(caption)` rule is more specific than a position utility, so an element carrying
++the `.visually-hidden` and `.position-relative` classes stays absolute, as it does in the release.
++
++The `tests/src/styles/utilities/visibility.test.ts` proof reads the room an invisible box keeps
++beside a visible twin, a visible box inside an invisible ancestor, the later value where an element
++carries both, a dark island, the priority over a later unlayered rule, and the escape inside the
++utilities layer. The `tests/src/styles/utilities/visually-hidden.test.ts` proof reads the clipped
++box and the accessible name, the caption, the reveal under keyboard focus and under a descendant's
++focus, the helper's place ahead of the utilities, the priority over a later unlayered rule whether
++or not that rule is important, the escape inside the utilities layer, and a dark island. The
++visibility keys carry no recorded departure.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -2798,6 +2926,13 @@ declaration.
+ | --------- | ------------- | --------------- | --------- | --------------- | ------------------- | --------- |
+ | `figure`  | `.figure-img` | `margin-bottom` | —         | `0.5rem`        | `var(--vn-space-4)` | tokenized |
+ 
++#### `fixed`
++
++| Component | Selector        | Property  | Condition | Bootstrap 5.3.8 | Veneer                  | Departure |
++| --------- | --------------- | --------- | --------- | --------------- | ----------------------- | --------- |
++| `fixed`   | `.fixed-top`    | `z-index` | —         | `1030`          | `var(--vn-stack-fixed)` | tokenized |
++| `fixed`   | `.fixed-bottom` | `z-index` | —         | `1030`          | `var(--vn-stack-fixed)` | tokenized |
++
+ #### `g`
+ 
+ | Component | Selector   | Property        | Condition                  | Bootstrap 5.3.8 | Veneer            | Departure |
+@@ -3352,6 +3487,35 @@ declaration.
+ | `row-gap` | `.row-gap-xxl-4` | `row-gap` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-gap-4)` | tokenized |
+ | `row-gap` | `.row-gap-xxl-5` | `row-gap` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-gap-5)` | tokenized |
+ 
++#### `sticky`
++
++| Component | Selector             | Property   | Condition                  | Bootstrap 5.3.8  | Veneer                   | Departure |
++| --------- | -------------------- | ---------- | -------------------------- | ---------------- | ------------------------ | --------- |
++| `sticky`  | `.sticky-top`        | `position` | —                          | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-top`        | `z-index`  | —                          | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-bottom`     | `position` | —                          | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-bottom`     | `z-index`  | —                          | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-sm-top`     | `position` | `@media (width >= 576px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-sm-top`     | `z-index`  | `@media (width >= 576px)`  | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-sm-bottom`  | `position` | `@media (width >= 576px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-sm-bottom`  | `z-index`  | `@media (width >= 576px)`  | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-md-top`     | `position` | `@media (width >= 768px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-md-top`     | `z-index`  | `@media (width >= 768px)`  | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-md-bottom`  | `position` | `@media (width >= 768px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-md-bottom`  | `z-index`  | `@media (width >= 768px)`  | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-lg-top`     | `position` | `@media (width >= 992px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-lg-top`     | `z-index`  | `@media (width >= 992px)`  | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-lg-bottom`  | `position` | `@media (width >= 992px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-lg-bottom`  | `z-index`  | `@media (width >= 992px)`  | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-xl-top`     | `position` | `@media (width >= 1200px)` | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-xl-top`     | `z-index`  | `@media (width >= 1200px)` | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-xl-bottom`  | `position` | `@media (width >= 1200px)` | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-xl-bottom`  | `z-index`  | `@media (width >= 1200px)` | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-xxl-top`    | `position` | `@media (width >= 1400px)` | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-xxl-top`    | `z-index`  | `@media (width >= 1400px)` | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++| `sticky`  | `.sticky-xxl-bottom` | `position` | `@media (width >= 1400px)` | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-xxl-bottom` | `z-index`  | `@media (width >= 1400px)` | `1020`           | `var(--vn-stack-sticky)` | tokenized |
++
+ #### `table`
+ 
+ | Component | Selector           | Property                   | Condition | Bootstrap 5.3.8                            | Veneer                                                                                   | Departure |
+@@ -3754,6 +3918,12 @@ declaration.
+ | `placeholder` | `.placeholder-wave` | `mask-image`         | —         | `linear-gradient(130deg, #000 55%, rgba(0, 0, 0, 0.8) 75%, #000 95%)` | `linear-gradient(130deg, var(--vn-palette-black-base) 55%, rgba(var(--vn-palette-black-rgb), 0.8) 75%, var(--vn-palette-black-base) 95%)` | tokenized |
+ | `placeholder` | `.placeholder-wave` | `-webkit-mask-size`  | —         | `200% 100%`                                                           | —                                                                                                                                         | dropped   |
+ 
++#### `position`
++
++| Component  | Selector           | Property   | Condition | Bootstrap 5.3.8  | Veneer   | Departure |
++| ---------- | ------------------ | ---------- | --------- | ---------------- | -------- | --------- |
++| `position` | `.position-sticky` | `position` | —         | `-webkit-sticky` | `sticky` | declared  |
++
+ #### `icon-link`
+ 
+ | Component   | Selector           | Property                        | Condition | Bootstrap 5.3.8                                               | Veneer                                                        | Departure |
+@@ -4135,6 +4305,25 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | is-invalid       | variable       | The `--bs-form-select-bg-icon` property carries the invalid mark on a single-value select; its value and the icon map behind it are proved in `tests/src/styles/components/validation.test.ts`.                                                                                                                                                                                                                                                                  | —                     | shipped  |
+ | pagination       | selector       | Every official `.pagination`, `.page-link`, and `.page-item` selector ships in the components layer; resolved geometry, states, and stacking are proved in `tests/src/styles/components/pagination.test.ts`.                                                                                                                                                                                                                                                     | —                     | shipped  |
+ | pagination       | variable       | Every official `--bs-pagination-*` property is declared, and each size class redeclares its padding, font, and radius; overrides are proved in `tests/src/styles/components/pagination.test.ts`.                                                                                                                                                                                                                                                                 | —                     | shipped  |
++| w                | selector       | Every official `.w-*` selector ships in the utilities layer; widths resolved against a definite container are proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                                             | —                     | shipped  |
++| mw               | selector       | The official `.mw-100` selector ships in the utilities layer; the cap against its container is proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                                                            | —                     | shipped  |
++| vw               | selector       | The official `.vw-100` selector ships in the utilities layer; the width read against the viewport is proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                                                      | —                     | shipped  |
++| min              | selector       | The official `.min-vw-100` and `.min-vh-100` selectors ship in the utilities layer; the floors read against the viewport are proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                              | —                     | shipped  |
++| h                | selector       | Every official `.h-*` selector ships in the utilities layer; heights resolved against a definite container are proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                                            | —                     | shipped  |
++| mh               | selector       | The official `.mh-100` selector ships in the utilities layer; the cap against its container is proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                                                            | —                     | shipped  |
++| vh               | selector       | The official `.vh-100` selector ships in the utilities layer; the height read against the viewport is proved in `tests/src/styles/utilities/sizing.test.ts`.                                                                                                                                                                                                                                                                                                     | —                     | shipped  |
++| position         | selector       | Every official `.position-*` selector ships in the utilities layer; each resolved value is proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                                              | —                     | shipped  |
++| top              | selector       | Every official `.top-*` selector ships in the utilities layer; offsets resolved against the containing block are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                        | —                     | shipped  |
++| bottom           | selector       | Every official `.bottom-*` selector ships in the utilities layer; offsets resolved against the containing block are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                     | —                     | shipped  |
++| start            | selector       | Every official `.start-*` selector ships in the utilities layer on the physical left edge; resolved offsets are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                         | —                     | shipped  |
++| end              | selector       | Every official `.end-*` selector ships in the utilities layer on the physical right edge; resolved offsets are proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                          | —                     | shipped  |
++| translate-middle | selector       | Every official `.translate-middle` selector ships in the utilities layer; the centering on each axis is proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                                 | —                     | shipped  |
++| z                | selector       | Every official `.z-*` selector ships in the utilities layer; the stacking order of each level is proved in `tests/src/styles/utilities/position.test.ts`.                                                                                                                                                                                                                                                                                                        | —                     | shipped  |
++| fixed            | selector       | The official `.fixed-top` and `.fixed-bottom` helpers ship in the components layer, reading `--vn-stack-fixed`; their placement and level are proved in `tests/src/styles/components/position.test.ts`.                                                                                                                                                                                                                                                          | —                     | shipped  |
++| sticky           | selector       | Every official `.sticky-*` helper ships at every breakpoint infix in the components layer, reading `--vn-stack-sticky`; the sticking at each boundary is proved in `tests/src/styles/components/position.test.ts`.                                                                                                                                                                                                                                               | —                     | shipped  |
++| visually-hidden  | selector       | The official `.visually-hidden` helper and its focusable form ship in the utilities layer ahead of every utility partial; the hidden box and the focus reveal are proved in `tests/src/styles/utilities/visually-hidden.test.ts`.                                                                                                                                                                                                                                | —                     | shipped  |
++| visible          | selector       | The official `.visible` selector ships in the utilities layer; the resolved visibility is proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
++| invisible        | selector       | The official `.invisible` selector ships in the utilities layer; the hidden paint and the kept box are proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+ | engine           | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                                                                                                                                                                                                                                                         | —                     | accepted |
+ | engine           | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                                                                                                                                                                                                                                                    | —                     | accepted |
+@@ -4192,6 +4381,18 @@ id on: a proof reaches it through the host it mounted the showcase into, and eac
+ accessible name. The application barrel is a workspace implementation surface and is outside this
+ guide's published API tables.
+ 
++The shell's `viewport` class marks a frame that paints nothing. Layout containment makes the frame
++the containing block of every fixed and absolute element inside it, and paint containment with a
++clip keeps what such an element overflows inside the frame without making the frame scroll. So a
++fixed bar holds to the frame's edge, and a backdrop sized to the viewport raises no scrollbar on the
++frame or on the page. The frame's bounded height holds a default dialog at the 390 viewport and
++gives a percentage height or offset a definite height to resolve against. Every Position specimen
++and the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes` specimens render
++inside an element carrying the shell's `viewport` class. The sticky bars scroll inside an element
++carrying the shell's `scroller` class within the frame, because the frame clips rather than
++scrolls; see [position specimens](../tests/app/browser/sections/PositionSection.test.ts), which
++proves the frame at the 390 and 1280 viewports.
++
+ The specimen and region names are what the capture registry addresses a frame by: every registered
+ scenario names the specimen or the region that is its subject, and § Tests gives the filename law
+ built on it, so a shipped key no region renders has no subject to register and no frame to be read
+@@ -4244,11 +4445,14 @@ The application proofs drive the shell through its interface; see
+ [list group specimens](../tests/app/browser/sections/ListGroupSection.test.ts),
+ [pagination specimens](../tests/app/browser/sections/PaginationSection.test.ts),
+ [placeholder specimens](../tests/app/browser/sections/PlaceholderSection.test.ts),
++[position specimens](../tests/app/browser/sections/PositionSection.test.ts),
+ [progress specimens](../tests/app/browser/sections/ProgressSection.test.ts),
++[sizing specimens](../tests/app/browser/sections/SizingSection.test.ts),
+ [specimen table rendering](../tests/app/browser/sections/SpecimenSection.test.ts),
+ [spinner specimens](../tests/app/browser/sections/SpinnerSection.test.ts),
+ [table specimens](../tests/app/browser/sections/TableSection.test.ts),
+-[validation specimens](../tests/app/browser/sections/ValidationSection.test.ts), and
++[validation specimens](../tests/app/browser/sections/ValidationSection.test.ts),
++[visibility specimens](../tests/app/browser/sections/VisibilitySection.test.ts), and
+ [showcase journeys](../tests/app/browser/integration.test.ts).
+ 
+ The journey run also writes the capture portfolio an appearance round is ruled on. Each frame is
+@@ -4350,7 +4554,12 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the spinner classes](../tests/src/styles/components/spinner.test.ts),
+ [the list group classes](../tests/src/styles/components/list-group.test.ts),
+ [the validation classes](../tests/src/styles/components/validation.test.ts),
+-[the gutter and gap utilities](../tests/src/styles/utilities/gap.test.ts), and
++[the gutter and gap utilities](../tests/src/styles/utilities/gap.test.ts),
++[the position utilities](../tests/src/styles/utilities/position.test.ts),
++[the position helpers](../tests/src/styles/components/position.test.ts),
++[the sizing utilities](../tests/src/styles/utilities/sizing.test.ts),
++[the visibility utilities](../tests/src/styles/utilities/visibility.test.ts),
++[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index 7cf86b2..c99fa49 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -69,5 +69,10 @@
+ @use 'components/placeholder';
+ @use 'components/icon-link';
+ @use 'components/ratio';
++@use 'components/position' as position-component;
+ @use 'components/vr';
++@use 'utilities/visually-hidden';
++@use 'utilities/position';
++@use 'utilities/sizing';
+ @use 'utilities/gap';
++@use 'utilities/visibility';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index a4c8d2d..e3a6acf 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -20,13 +20,16 @@ import {
+ 	MEDIA_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
++	POSITION_SPECIMENS,
+ 	PROGRESS_SPECIMENS,
+ 	SHOWCASE_COPY,
++	SIZING_SPECIMENS,
+ 	SPINNER_SPECIMENS,
+ 	Showcase,
+ 	TYPE_SPECIMENS,
+ 	TABLE_SPECIMENS,
+ 	VALIDATION_SPECIMENS,
++	VISIBILITY_SPECIMENS,
+ } from '@app/browser'
+ import { Button, BUTTON_SELECTOR } from '@src/browser'
+ import { requireValue } from '@orkestrel/test'
+@@ -111,6 +114,9 @@ describe('Showcase', () => {
+ 				'Breadcrumb',
+ 				'Close',
+ 				'Input group',
++				'Position',
++				'Sizing',
++				'Visibility',
+ 			])
+ 			expect(
+ 				[...host.querySelectorAll('[data-specimen]')].map((element) =>
+@@ -142,6 +148,9 @@ describe('Showcase', () => {
+ 					...BREADCRUMB_SPECIMENS,
+ 					...CLOSE_SPECIMENS,
+ 					...INPUT_GROUP_SPECIMENS,
++					...POSITION_SPECIMENS,
++					...SIZING_SPECIMENS,
++					...VISIBILITY_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+ 			expect(readPerception('Showcase')).toBe('Explore the color mode with the Dark mode control.')
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 736fc9b..37695a3 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -69,16 +69,22 @@ describe('app browser entry', () => {
+ 			'PAGINATION_SPECIMENS',
+ 			'PLACEHOLDER_COPY',
+ 			'PLACEHOLDER_SPECIMENS',
++			'POSITION_COPY',
++			'POSITION_SPECIMENS',
+ 			'PROGRESS_COPY',
+ 			'PROGRESS_SPECIMENS',
+ 			'PaginationSection',
+ 			'PlaceholderSection',
++			'PositionSection',
+ 			'ProgressSection',
+ 			'SHOWCASE_CONTROL',
+ 			'SHOWCASE_COPY',
++			'SIZING_COPY',
++			'SIZING_SPECIMENS',
+ 			'SPINNER_COPY',
+ 			'SPINNER_SPECIMENS',
+ 			'Showcase',
++			'SizingSection',
+ 			'SpecimenSection',
+ 			'SpinnerSection',
+ 			'TABLE_COPY',
+@@ -89,7 +95,10 @@ describe('app browser entry', () => {
+ 			'TypeSection',
+ 			'VALIDATION_COPY',
+ 			'VALIDATION_SPECIMENS',
++			'VISIBILITY_COPY',
++			'VISIBILITY_SPECIMENS',
+ 			'ValidationSection',
++			'VisibilitySection',
+ 		])
+ 	})
+ })
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 576cd34..4628b6e 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -59,12 +59,15 @@ import {
+ 	MEDIA_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
++	POSITION_SPECIMENS,
+ 	PROGRESS_SPECIMENS,
+ 	SHOWCASE_COPY,
++	SIZING_SPECIMENS,
+ 	SPINNER_SPECIMENS,
+ 	TABLE_SPECIMENS,
+ 	TYPE_SPECIMENS,
+ 	VALIDATION_SPECIMENS,
++	VISIBILITY_SPECIMENS,
+ } from '@app/browser'
+ import {
+ 	buildStem,
+@@ -1566,6 +1569,39 @@ describe('journey', () => {
+ 		)
+ 		JOURNAL.record('focus', readName(control), lifted)
+ 	})
++	it('reveals the skip link under focus and photographs the revealed link', async () => {
++		await applyTheme(VARIANT)
++		const specimen = readSpecimen(mounted.host, 'Skip link')
++		const link = requireValue(
++			specimen.querySelector<HTMLAnchorElement>('.visually-hidden-focusable'),
++			'The "Skip link" specimen renders no .visually-hidden-focusable',
++		)
++		const resting = link.getBoundingClientRect().width
++		// The focus frame is a page frame, the way the close control's is: the revealed link sits in
++		// the line that holds it, and the declared region is the link itself, so a reader of the
++		// whole document is pointed at it. Focus survives the staging a pointer does not, so the
++		// link is focused where the section renders it.
++		link.focus()
++		expect(link.matches(':focus')).toBe(true)
++		const revealed = link.getBoundingClientRect().width
++		await FRAMES.page('skip-link-focus', link)
++		await stagePane(window.innerWidth, window.innerHeight)
++		const framedFocus = link.matches(':focus')
++		const framed = link.getBoundingClientRect().width
++		await releasePane()
++		link.blur()
++		const rested = link.getBoundingClientRect().width
++		// The frame is held to the state it was shot in, so a shot that found the link unfocused
++		// reddens here instead of being written under a name claiming the reveal.
++		expect(framedFocus).toBe(true)
++		expect(framed).toBe(revealed)
++		expect([resting, rested]).toStrictEqual([1, 1])
++		expect(revealed).toBeGreaterThan(1)
++		ARTIFACT.push(
++			JSON.stringify({ reading: 'skip link', mode: VARIANT, resting, revealed, framed, rested }),
++		)
++		JOURNAL.record('focus', readName(link), String(revealed))
++	})
+ })
+ 
+ describe('refusal', () => {
+@@ -1698,6 +1734,9 @@ describe('portfolio', () => {
+ 				TABLE_SPECIMENS,
+ 				TYPE_SPECIMENS,
+ 				VALIDATION_SPECIMENS,
++				POSITION_SPECIMENS,
++				SIZING_SPECIMENS,
++				VISIBILITY_SPECIMENS,
+ 			].flatMap((table) => table.map((specimen) => specimen.name)),
+ 			SHOWCASE_COPY.region,
+ 		])
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index b9fc759..0e55c0b 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -98,6 +98,7 @@ describe('Bootstrap component oracle', () => {
+ 		const listed: readonly string[] = [
+ 			'badge',
+ 			'blockquote',
++			'bottom',
+ 			'breadcrumb',
+ 			'btn',
+ 			'btn-close',
+@@ -108,7 +109,9 @@ describe('Bootstrap component oracle', () => {
+ 			'column-gap',
+ 			'container',
+ 			'display',
++			'end',
+ 			'figure',
++			'fixed',
+ 			'form',
+ 			'form-check',
+ 			'form-control',
+@@ -119,6 +122,7 @@ describe('Bootstrap component oracle', () => {
+ 			'gap',
+ 			'gx',
+ 			'gy',
++			'h',
+ 			'h1',
+ 			'h2',
+ 			'h3',
+@@ -131,6 +135,7 @@ describe('Bootstrap component oracle', () => {
+ 			'input-group',
+ 			'invalid-feedback',
+ 			'invalid-tooltip',
++			'invisible',
+ 			'is-invalid',
+ 			'is-valid',
+ 			'lead',
+@@ -139,9 +144,13 @@ describe('Bootstrap component oracle', () => {
+ 			'list-inline',
+ 			'list-unstyled',
+ 			'mark',
++			'mh',
++			'min',
++			'mw',
+ 			'offset',
+ 			'pagination',
+ 			'placeholder',
++			'position',
+ 			'progress',
+ 			'ratio',
+ 			'reboot',
+@@ -149,11 +158,21 @@ describe('Bootstrap component oracle', () => {
+ 			'row-gap',
+ 			'small',
+ 			'spinner',
++			'start',
++			'sticky',
+ 			'table',
++			'top',
++			'translate-middle',
+ 			'valid-feedback',
+ 			'valid-tooltip',
++			'vh',
++			'visible',
++			'visually-hidden',
+ 			'vr',
++			'vw',
++			'w',
+ 			'was-validated',
++			'z',
+ 		]
+ 		expect(
+ 			scanCompatibilityPresence(rows, readOracleInventory(), readDeferrals(), readBuiltCascade()),
+@@ -452,8 +471,22 @@ describe('Bootstrap source order', () => {
+ 			'visually-hidden': 'utilities/visually-hidden',
+ 		}
+ 		const entryPaths: Readonly<Record<string, string>> = {
++			top: 'utilities/position',
++			bottom: 'utilities/position',
++			start: 'utilities/position',
++			end: 'utilities/position',
++			'translate-middle': 'utilities/position',
++			width: 'utilities/sizing',
++			'max-width': 'utilities/sizing',
++			'viewport-width': 'utilities/sizing',
++			'min-viewport-width': 'utilities/sizing',
++			height: 'utilities/sizing',
++			'max-height': 'utilities/sizing',
++			'viewport-height': 'utilities/sizing',
++			'min-viewport-height': 'utilities/sizing',
+ 			'row-gap': 'utilities/gap',
+ 			'column-gap': 'utilities/gap',
++			'z-index': 'utilities/position',
+ 		}
+ 		const helperOrder = helpers.map((name) => helperPaths[name] ?? `components/${name}`)
+ 		const utilityOrder = [
+diff --git a/tests/fixtures/tailwind/consumer.css b/tests/fixtures/tailwind/consumer.css
+index d88a8bc..b5d249b 100644
+--- a/tests/fixtures/tailwind/consumer.css
++++ b/tests/fixtures/tailwind/consumer.css
+@@ -4,4 +4,4 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './markup.html';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container end-0 end-50 end-100 start-0 start-50 start-100 table");
+diff --git a/tests/fixtures/tailwind/markup.html b/tests/fixtures/tailwind/markup.html
+index b5f61ac..8b62bef 100644
+--- a/tests/fixtures/tailwind/markup.html
++++ b/tests/fixtures/tailwind/markup.html
+@@ -60,3 +60,31 @@
+ 	</div>
+ 	<button type="button" class="btn px-8">Action</button>
+ </div>
++<div class="w-25">Width step 25</div>
++<div class="w-50">Width step 50</div>
++<div class="w-75">Width step 75</div>
++<div class="w-100">Width step 100</div>
++<div class="w-auto">Width step auto</div>
++<div class="h-25">Height step 25</div>
++<div class="h-50">Height step 50</div>
++<div class="h-75">Height step 75</div>
++<div class="h-100">Height step 100</div>
++<div class="h-auto">Height step auto</div>
++<div class="top-0">Top offset 0</div>
++<div class="top-50">Top offset 50</div>
++<div class="top-100">Top offset 100</div>
++<div class="bottom-0">Bottom offset 0</div>
++<div class="bottom-50">Bottom offset 50</div>
++<div class="bottom-100">Bottom offset 100</div>
++<div class="start-0">Start offset 0</div>
++<div class="start-50">Start offset 50</div>
++<div class="start-100">Start offset 100</div>
++<div class="end-0">End offset 0</div>
++<div class="end-50">End offset 50</div>
++<div class="end-100">End offset 100</div>
++<div class="z-0">Stacking level 0</div>
++<div class="z-1">Stacking level 1</div>
++<div class="z-2">Stacking level 2</div>
++<div class="z-3">Stacking level 3</div>
++<div class="visible">Visible</div>
++<div class="invisible">Invisible</div>
+diff --git a/tests/fixtures/tailwind/preflight.css b/tests/fixtures/tailwind/preflight.css
+index 65e97e2..b8560e6 100644
+--- a/tests/fixtures/tailwind/preflight.css
++++ b/tests/fixtures/tailwind/preflight.css
+@@ -3,4 +3,4 @@
+ @layer theme, reset, base, elements, components, utilities;
+ @import 'tailwindcss' source(none);
+ @source '../../../tmp/tailwind/candidates.txt';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container end-0 end-50 end-100 start-0 start-50 start-100 table");
+diff --git a/tests/service/tailwind/consumer.test.ts b/tests/service/tailwind/consumer.test.ts
+index 717692b..84dbb77 100644
+--- a/tests/service/tailwind/consumer.test.ts
++++ b/tests/service/tailwind/consumer.test.ts
+@@ -183,35 +183,38 @@ describe('the consumer pairing', () => {
+ 		expect(declared).toEqual(['row-gap', 'column-gap'])
+ 		const branch = collectImportantNames(await stage.expand(readBuiltCascade()), longhands)
+ 		expect(branch).toContain('gap-3')
+-		// The reading is the longhands Tailwind's own rule for each of these names declares, as
+-		// Chromium expands them. Dropping the exclusion line also moves the names outside the
+-		// branch, `.container` among them, and an element's used width follows its container, so a
+-		// reading of every longhand would report the ancestor moving rather than this rule losing.
+-		const properties = [...new Set(branch.flatMap((name) => longhands.get(name) ?? []))]
++		// Each element is read on the longhands Tailwind's own rule for its name declares, as
++		// Chromium expands them, because a longhand another name declares can move for a reason
++		// outside the equality. Dropping the exclusion line also moves the names outside the branch,
++		// `.container` among them, and an element's used width follows its container: the gap rows
++		// sit inside the container, and the width steps declare the `width` longhand, so a reading of
++		// that longhand on a gap row would report the ancestor moving rather than this rule losing.
+ 		await stage.mount(consumerMarkup)
+-		const standalone: Array<ReadonlyMap<string, string>> = []
++		const standalone: Array<readonly [string, ReadonlyMap<string, string>]> = []
+ 		for (const name of branch) {
+-			standalone.push(...(await stage.read(`[class~="${name}"]`, properties)))
++			for (const snapshot of await stage.read(`[class~="${name}"]`, longhands.get(name) ?? []))
++				standalone.push([name, snapshot])
+ 		}
+-		// Each reading has to carry the longhands the cascade declares important, or the comparison
+-		// that follows runs over nothing.
+-		for (const snapshot of standalone)
+-			expect(declared.filter((property) => !snapshot.has(property))).toEqual([])
+-		expect(standalone).not.toEqual([])
++		// Each reading has to carry the longhands the cascade declares important for its name, or
++		// the comparison that follows runs over nothing.
++		for (const [name, snapshot] of standalone)
++			expect((longhands.get(name) ?? []).filter((property) => !snapshot.has(property))).toEqual([])
++		expect(standalone.filter(([name]) => name === 'gap-3')).not.toEqual([])
+ 		// The instrument is the recipe with its exclusion line dropped, so Tailwind's own rule for
+ 		// each of these names is on the page, and the element still resolves, for every property
+ 		// that rule declares, what it resolves under the cascade alone.
+ 		await stage.load(instrumentProfile)
+ 		const paired: Array<ReadonlyMap<string, string>> = []
+-		for (const name of branch) paired.push(...(await stage.read(`[class~="${name}"]`, properties)))
++		for (const name of branch)
++			paired.push(...(await stage.read(`[class~="${name}"]`, longhands.get(name) ?? [])))
+ 		expect(paired).toHaveLength(standalone.length)
+ 		expect(
+-			standalone.flatMap((snapshot, index) => {
++			standalone.flatMap(([name, snapshot], index) => {
+ 				const after = requireValue(paired[index], 'The paired snapshot was never taken')
+ 				return Array.from(snapshot).flatMap(([property, value]) =>
+ 					after.get(property) === value
+ 						? []
+-						: [`${property}: ${value} became ${String(after.get(property))}`],
++						: [`${name} ${property}: ${value} became ${String(after.get(property))}`],
+ 				)
+ 			}),
+ 		).toEqual([])
+diff --git a/tests/setup.css b/tests/setup.css
+index f771b45..9674668 100644
+--- a/tests/setup.css
++++ b/tests/setup.css
+@@ -11,4 +11,4 @@
+ @import 'tailwindcss/theme.css' layer(theme);
+ @import 'tailwindcss/utilities.css' layer(utilities) source(none);
+ @source '../tmp/tailwind/candidates.txt';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container end-0 end-50 end-100 start-0 start-50 start-100 table");
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 768cce3..0f68752 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -199,6 +199,19 @@ export type CaptureSubject =
+ 	| 'Waving placeholder'
+ 	| 'Gap steps'
+ 	| 'Responsive gap'
++	| 'Position values'
++	| 'Edge offsets'
++	| 'Centered translation'
++	| 'Stacking levels'
++	| 'Fixed bars'
++	| 'Sticky bars'
++	| 'Width steps'
++	| 'Height steps'
++	| 'Maximum sizes'
++	| 'Viewport sizes'
++	| 'Visible and invisible'
++	| 'Visually hidden'
++	| 'Skip link'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -379,6 +392,11 @@ export const SHOWCASE_KEYS: readonly CaptureKey[] = Object.freeze([
+  * than the element the key ships: that element's own box clips to no pixel, so a frame declared on
+  * it reads back nothing. Its declared region is the element that hosts it, and the collapse itself
+  * is read in the component's cascade proof.
++ *
++ * A key whose recorded rule clips its element to one pixel names the element's positioned host
++ * through a `:has()` selector over that element, such as `.position-relative:has(> .visually-hidden)`,
++ * and reads the host's `position` property, because a frame declared on the one-pixel box reads back
++ * nothing. The helper's cascade proof reads the hidden box itself.
+  */
+ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 	Object.freeze({
+@@ -1077,6 +1095,84 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.gap-md-3',
+ 		property: 'column-gap',
+ 	}),
++	Object.freeze({
++		scenario: 'position-values',
++		subject: 'Position values',
++		selector: '.position-absolute',
++		property: 'position',
++	}),
++	Object.freeze({
++		scenario: 'edge-offsets',
++		subject: 'Edge offsets',
++		selector: '.bottom-0.end-0',
++		property: 'right',
++	}),
++	Object.freeze({
++		scenario: 'centered-translation',
++		subject: 'Centered translation',
++		selector: '.translate-middle',
++		property: 'transform',
++	}),
++	Object.freeze({
++		scenario: 'stacking-levels',
++		subject: 'Stacking levels',
++		selector: '.z-3',
++		property: 'z-index',
++	}),
++	Object.freeze({
++		scenario: 'fixed-bars',
++		subject: 'Fixed bars',
++		selector: '.fixed-top',
++		property: 'z-index',
++	}),
++	Object.freeze({
++		scenario: 'sticky-bars',
++		subject: 'Sticky bars',
++		selector: '.sticky-top',
++		property: 'position',
++	}),
++	Object.freeze({
++		scenario: 'width-steps',
++		subject: 'Width steps',
++		selector: '.w-75',
++		property: 'width',
++	}),
++	Object.freeze({
++		scenario: 'height-steps',
++		subject: 'Height steps',
++		selector: '.h-75',
++		property: 'height',
++	}),
++	Object.freeze({
++		scenario: 'maximum-sizes',
++		subject: 'Maximum sizes',
++		selector: '.mw-100',
++		property: 'max-width',
++	}),
++	Object.freeze({
++		scenario: 'viewport-sizes',
++		subject: 'Viewport sizes',
++		selector: '.vw-100',
++		property: 'width',
++	}),
++	Object.freeze({
++		scenario: 'visible-and-invisible',
++		subject: 'Visible and invisible',
++		selector: '.visible',
++		property: 'visibility',
++	}),
++	Object.freeze({
++		scenario: 'visually-hidden',
++		subject: 'Visually hidden',
++		selector: '.position-relative:has(> .visually-hidden)',
++		property: 'position',
++	}),
++	Object.freeze({
++		scenario: 'skip-link',
++		subject: 'Skip link',
++		selector: '.position-relative:has(> .visually-hidden-focusable)',
++		property: 'position',
++	}),
+ ])
+ 
+ /**
+@@ -1121,6 +1217,7 @@ export const DRIVEN_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'form-floating-empty-focus', subject: 'Form floating empty' }),
+ 	Object.freeze({ scenario: 'form-select-base-focus', subject: 'Form select base' }),
+ 	Object.freeze({ scenario: 'form-control-text-focus', subject: 'Form control text' }),
++	Object.freeze({ scenario: 'skip-link-focus', subject: 'Skip link' }),
+ ])
+ 
+ /**
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 9c49252..f298405 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1652,3 +1652,30 @@ export function mountClose(classes = ''): HTMLButtonElement {
+ 		'The mounted host renders no close control',
+ 	)
+ }
++
++/**
++ * Mounts a focused control the keyboard traversal starts from, ahead of every node mounted after it.
++ *
++ * @returns The mounted `Start` button, holding focus, inside a container {@link scene} removes for you.
++ *
++ * @remarks
++ * The installed `traverseAccessible` export sends Tab from the element holding focus, and from a
++ * page where nothing holds focus its first Tab reaches no element. A case that walks to a fixture's
++ * first focusable element mounts this control before the fixture, so that first Tab lands on the
++ * fixture.
++ *
++ * @example
++ * ```ts
++ * mountTraversalStart()
++ * await traverseAccessible('Skip to main content')
++ * ```
++ */
++export function mountTraversalStart(): HTMLButtonElement {
++	const host = scene.mount('<button type="button">Start</button>')
++	const control = requireValue(
++		host.querySelector<HTMLButtonElement>('button'),
++		'The mounted host renders no start control',
++	)
++	control.focus()
++	return control
++}
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 6a1b8fb..956bca7 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1338,6 +1338,7 @@ describe('server setup', () => {
+ 			new Set([
+ 				'badge',
+ 				'blockquote',
++				'bottom',
+ 				'breadcrumb',
+ 				'btn',
+ 				'btn-close',
+@@ -1348,8 +1349,10 @@ describe('server setup', () => {
+ 				'column-gap',
+ 				'container',
+ 				'display',
++				'end',
+ 				'engine',
+ 				'figure',
++				'fixed',
+ 				'form',
+ 				'form-check',
+ 				'form-control',
+@@ -1360,6 +1363,7 @@ describe('server setup', () => {
+ 				'gap',
+ 				'gx',
+ 				'gy',
++				'h',
+ 				'h1',
+ 				'h2',
+ 				'h3',
+@@ -1372,6 +1376,7 @@ describe('server setup', () => {
+ 				'input-group',
+ 				'invalid-feedback',
+ 				'invalid-tooltip',
++				'invisible',
+ 				'is-invalid',
+ 				'is-valid',
+ 				'lead',
+@@ -1380,9 +1385,13 @@ describe('server setup', () => {
+ 				'list-inline',
+ 				'list-unstyled',
+ 				'mark',
++				'mh',
++				'min',
++				'mw',
+ 				'offset',
+ 				'pagination',
+ 				'placeholder',
++				'position',
+ 				'progress',
+ 				'ratio',
+ 				'reboot',
+@@ -1390,11 +1399,21 @@ describe('server setup', () => {
+ 				'row-gap',
+ 				'small',
+ 				'spinner',
++				'start',
++				'sticky',
+ 				'table',
++				'top',
++				'translate-middle',
+ 				'valid-feedback',
+ 				'valid-tooltip',
++				'vh',
++				'visible',
++				'visually-hidden',
+ 				'vr',
++				'vw',
++				'w',
+ 				'was-validated',
++				'z',
+ 			]),
+ 		)
+ 		expect(
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 0074679..8e9f881 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -39,6 +39,7 @@ import {
+ 	BREADCRUMB_MARKUP,
+ 	BREADCRUMB_SELECTORS,
+ 	BREAKPOINT_CASES,
++	BREAKPOINT_INFIXES,
+ 	BUTTON_GROUP_CORNERS,
+ 	BUTTON_GROUP_RADIUS_CASES,
+ 	BUTTON_GROUP_SELECTORS,
+@@ -109,25 +110,38 @@ import {
+ 	PAGINATION_SIZE_CASES,
+ 	PAGINATION_STATE_CASES,
+ 	PLACEHOLDER_MARKUP,
++	PLACEMENT_CONTAINER,
+ 	PLACEHOLDER_SELECTORS,
+ 	PLACEHOLDER_SIZE_CASES,
+ 	PROGRESS_MARKUP,
+ 	PROGRESS_SELECTORS,
+ 	PROGRESS_VARIABLE_CASES,
++	POSITION_ENTRY_CASES,
++	POSITION_VALUES,
+ 	QUOTE_FOOTER_CASES,
+ 	RATIO_CASES,
+ 	REDUCED_MOTION,
+ 	REFERENCE_MARKUP,
+ 	RETAINED_COLOR_ALIASES,
+ 	RETAINED_LENGTH_ALIASES,
++	SIZE_STEP_CASES,
++	SIZING_ENTRY_CASES,
+ 	SPINNER_SELECTORS,
+ 	SPINNER_SIZE_CASES,
+ 	SPINNER_VARIABLE_CASES,
++	STACK_LEVEL_CASES,
++	STICKY_SCROLLER,
+ 	TABLE_GEOMETRY_CASES,
+ 	NEUTRAL_MARKUP,
++	OFFSET_EDGES,
++	OFFSET_STEP_CASES,
+ 	TABLE_MARKUP,
+ 	TABLE_RESPONSIVE_CASES,
+ 	TABLE_ROLES,
++	VIEWPORT_SIZE_CASES,
++	VIEWPORT_WIDTHS,
++	VISUALLY_HIDDEN_PROPERTIES,
++	VISUALLY_HIDDEN_READING,
+ 	TABLE_ROLE_CASES,
+ 	TABLE_SELECTORS,
+ 	THEME_DARK_ADDITIONS,
+@@ -201,6 +215,7 @@ describe('styles setup', () => {
+ 				'BREADCRUMB_MARKUP',
+ 				'BREADCRUMB_SELECTORS',
+ 				'BREAKPOINT_CASES',
++				'BREAKPOINT_INFIXES',
+ 				'BUTTON_BARE_CASES',
+ 				'BUTTON_BARE_VALUES',
+ 				'BUTTON_CONTRAST_FLOOR_CASES',
+@@ -277,26 +292,36 @@ describe('styles setup', () => {
+ 				'LIST_GROUP_SPACE_CASES',
+ 				'MANDATED_TAG_PAIRS',
+ 				'NEUTRAL_MARKUP',
++				'OFFSET_EDGES',
++				'OFFSET_STEP_CASES',
+ 				'PAGINATION_MARKUP',
+ 				'PAGINATION_PARENT_CASES',
+ 				'PAGINATION_SELECTORS',
+ 				'PAGINATION_SIZE_CASES',
+ 				'PAGINATION_STATE_CASES',
+ 				'PLACEHOLDER_MARKUP',
++				'PLACEMENT_BOX',
++				'PLACEMENT_CONTAINER',
+ 				'PLACEHOLDER_SELECTORS',
+ 				'PLACEHOLDER_SIZE_CASES',
+ 				'PROGRESS_MARKUP',
+ 				'PROGRESS_SELECTORS',
+ 				'PROGRESS_VARIABLE_CASES',
++				'POSITION_ENTRY_CASES',
++				'POSITION_VALUES',
+ 				'QUOTE_FOOTER_CASES',
+ 				'RATIO_CASES',
+ 				'REDUCED_MOTION',
+ 				'REFERENCE_MARKUP',
+ 				'RETAINED_COLOR_ALIASES',
+ 				'RETAINED_LENGTH_ALIASES',
++				'SIZE_STEP_CASES',
++				'SIZING_ENTRY_CASES',
+ 				'SPINNER_SELECTORS',
+ 				'SPINNER_SIZE_CASES',
+ 				'SPINNER_VARIABLE_CASES',
++				'STACK_LEVEL_CASES',
++				'STICKY_SCROLLER',
+ 				'TABLE_GEOMETRY_CASES',
+ 				'TABLE_MARKUP',
+ 				'TABLE_RESPONSIVE_CASES',
+@@ -334,6 +359,10 @@ describe('styles setup', () => {
+ 				'TYPE_TEXT_CASES',
+ 				'UNMAPPED_TOKENS',
+ 				'VENEER_GUIDE_PATH',
++				'VIEWPORT_SIZE_CASES',
++				'VIEWPORT_WIDTHS',
++				'VISUALLY_HIDDEN_PROPERTIES',
++				'VISUALLY_HIDDEN_READING',
+ 				'collectFencedBlocks',
+ 				'collectGridVocabulary',
+ 				'collectReferenceRows',
+@@ -1402,6 +1431,143 @@ describe('styles setup', () => {
+ 			expect(entry.pixels).toBe(Number.parseFloat(entry.value) * 16)
+ 		}
+ 	})
++	it('binds the placement steps, values, and fixtures to the inventory, the ramp, and the journey', async () => {
++		const recorded = new Map(
++			Object.entries(oracle.components).map(([key, { selectors }]) => [
++				key,
++				selectors.map(({ selector, declarations }) => ({ selector, declarations })),
++			]),
++		)
++		const declared = new Map(
++			[...recorded.values()].flat().map(({ selector, declarations }) => [selector, declarations]),
++		)
++		// Each step's share is read against the percentage the release records for it, so a case
++		// whose share and value disagree reddens even where the record agrees with the step.
++		for (const key of ['w', 'h']) {
++			expect(
++				requireValue(recorded.get(key), `No ${key} key`).map(({ selector, declarations }) => [
++					selector,
++					declarations.map(({ value }) => value),
++				]),
++			).toEqual([
++				...SIZE_STEP_CASES.map(({ step, value }) => [`.${key}-${step}`, [value]]),
++				[`.${key}-auto`, ['auto']],
++			])
++		}
++		for (const { step, share, value } of [...SIZE_STEP_CASES, ...OFFSET_STEP_CASES]) {
++			expect(Number.parseFloat(value) / 100).toBe(share)
++			expect(Number.parseFloat(step) / 100).toBe(share)
++		}
++		for (const edge of OFFSET_EDGES) {
++			expect(
++				requireValue(recorded.get(edge), `No ${edge} key`).map(({ selector, declarations }) => [
++					selector,
++					declarations.map(({ value }) => value),
++				]),
++			).toEqual(OFFSET_STEP_CASES.map(({ step, value }) => [`.${edge}-${step}`, [value]]))
++		}
++		// The sticky value is recorded after its prefixed alias, so each value is the last one its
++		// selector declares.
++		expect(
++			requireValue(recorded.get('position'), 'No position key').map(
++				({ selector, declarations }) => [selector, declarations.at(-1)?.value],
++			),
++		).toEqual(POSITION_VALUES.map((value) => [`.position-${value}`, value]))
++		expect(
++			requireValue(recorded.get('z'), 'No z key').map(({ selector, declarations }) => [
++				selector,
++				declarations.map(({ value }) => value),
++			]),
++		).toEqual(STACK_LEVEL_CASES.map(({ level, value }) => [`.z-${level}`, [value]]))
++		// Each entry's class is recorded, and every selector recorded under the entries' keys answers
++		// to one of the stems, so a stem the table leaves out reddens as surely as a class it misnames.
++		for (const [keys, cases] of [
++			[['w', 'mw', 'vw', 'min', 'h', 'mh', 'vh'], SIZING_ENTRY_CASES],
++			[
++				['position', 'top', 'bottom', 'start', 'end', 'translate-middle', 'z'],
++				POSITION_ENTRY_CASES,
++			],
++		] as const) {
++			expect(cases.filter(({ name }) => !declared.has(`.${name}`))).toEqual([])
++			expect(cases.filter(({ prefix, name }) => !`${name}-`.startsWith(`${prefix}-`))).toEqual([])
++			expect(
++				keys
++					.flatMap((key) => requireValue(recorded.get(key), `No ${key} key`))
++					.filter(({ selector }) =>
++						cases.every(({ prefix }) => !`${selector}-`.startsWith(`.${prefix}-`)),
++					),
++			).toEqual([])
++		}
++		expect(
++			VIEWPORT_SIZE_CASES.map(({ name }) =>
++				requireValue(declared.get(`.${name}`), `No recorded .${name}`).map(({ property }) =>
++					property.replace(/^min-/u, ''),
++				),
++			),
++		).toEqual(VIEWPORT_SIZE_CASES.map(({ property }) => [property]))
++		// The resting reading is the helper's recorded box: its width and height as rendered lengths,
++		// then each read property's recorded value, with the clip's bare zeros written as the lengths
++		// a computed style reports.
++		const hidden = new Map(
++			[
++				...requireValue(declared.get('.visually-hidden'), 'No recorded helper'),
++				...requireValue(declared.get('.visually-hidden:not(caption)'), 'No recorded position'),
++			].map(({ property, value }) => [property, value]),
++		)
++		expect([
++			...['width', 'height'].map((property) =>
++				Number.parseFloat(requireValue(hidden.get(property), `No hidden ${property}`)),
++			),
++			...VISUALLY_HIDDEN_PROPERTIES.map((property) =>
++				requireValue(
++					hidden.get(property.replace(/-[xy]$/u, '')),
++					`No hidden ${property}`,
++				).replaceAll(/\b0(?=[,)])/gu, '0px'),
++			),
++		]).toEqual(VISUALLY_HIDDEN_READING)
++		const ramp = await compileBreakpointRamp()
++		expect(BREAKPOINT_INFIXES).toEqual([...ramp.members.keys()])
++		const journey = readFileSync('configs/app/vite.journey.config.ts', 'utf8')
++		expect(
++			[...new Set([...journey.matchAll(/width: (\d+)/gu)].map(([, width]) => Number(width)))].sort(
++				(left, right) => left - right,
++			),
++		).toEqual(VIEWPORT_WIDTHS)
++		// The container is positioned, and its sides differ from each other and from every variant
++		// width, which is what lets an offset on the wrong axis or a viewport unit read a different
++		// size.
++		const sides = [...PLACEMENT_CONTAINER.matchAll(/(?:width|height): (\d+)px/gu)].map(([, side]) =>
++			Number(side),
++		)
++		expect(sides).toHaveLength(2)
++		expect(new Set([...sides, ...VIEWPORT_WIDTHS]).size).toBe(sides.length + VIEWPORT_WIDTHS.length)
++		expect(PLACEMENT_CONTAINER).toContain('position: relative')
++		for (const table of [
++			BREAKPOINT_INFIXES,
++			VIEWPORT_WIDTHS,
++			SIZE_STEP_CASES,
++			SIZING_ENTRY_CASES,
++			VIEWPORT_SIZE_CASES,
++			POSITION_VALUES,
++			OFFSET_EDGES,
++			OFFSET_STEP_CASES,
++			STACK_LEVEL_CASES,
++			POSITION_ENTRY_CASES,
++			VISUALLY_HIDDEN_PROPERTIES,
++			VISUALLY_HIDDEN_READING,
++			STICKY_SCROLLER,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of [
++			...SIZE_STEP_CASES,
++			...SIZING_ENTRY_CASES,
++			...VIEWPORT_SIZE_CASES,
++			...OFFSET_STEP_CASES,
++			...STACK_LEVEL_CASES,
++			...POSITION_ENTRY_CASES,
++		])
++			expect(Object.isFrozen(entry)).toBe(true)
++	})
+ 	it('pins the frozen container variants and payload widths against the retained scale', () => {
+ 		expect(CONTAINER_CLASS_CASES.map(({ name, boundary }) => [name, boundary])).toEqual([
+ 			['container', 0],
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index f82a361..ef8668f 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1839,6 +1839,137 @@ export const GAP_STEP_CASES = Object.freeze([
+ 	Object.freeze({ step: 5, value: '3rem', pixels: 48, token: TOKEN_NAMES.gap[5] }),
+ ])
+ 
++/** Lists the breakpoint infixes, which are the grid breakpoint names above the unconditional one. */
++export const BREAKPOINT_INFIXES = Object.freeze(
++	GRID_BREAKPOINT_CASES.filter(({ boundary }) => boundary !== 0).map(({ name }) => name),
++)
++
++/** Lists the viewport widths the journey's variants render at, narrowest first. */
++export const VIEWPORT_WIDTHS = Object.freeze([390, 1280])
++
++/**
++ * Holds the inline style of the container the placement proofs mount their boxes in.
++ *
++ * @remarks
++ * The container is positioned, so it is the containing block of every absolute box inside it. Its
++ * width and height are definite, differ from each other, and differ from every viewport width a
++ * case visits, so a step or an offset written as a length of the same number, or as a viewport
++ * unit, reads a different size, and an offset read against the wrong axis reads a different one.
++ */
++export const PLACEMENT_CONTAINER = 'position: relative; width: 400px; height: 200px'
++
++/** Holds the inline style of a box small enough that every offset step leaves it a distinct place. */
++export const PLACEMENT_BOX = 'width: 20px; height: 10px'
++
++/**
++ * Holds the scroll container a sticky helper sticks against, with the offset each case scrolls it to.
++ *
++ * @remarks
++ * The `style` field is the container's inline style, and the `offset` field is far enough past a
++ * helper resting 50px down the box that a helper left in the flow has scrolled out of it.
++ */
++export const STICKY_SCROLLER = Object.freeze({
++	style: 'height: 100px; overflow: auto',
++	offset: 200,
++})
++
++/**
++ * Lists the width and height steps that take a share of their container, in the release's map order.
++ *
++ * @remarks
++ * The `value` field is the percentage the release records, and the `share` field is the fraction
++ * of the container it resolves. The `auto` step follows these in the map and takes no share.
++ */
++export const SIZE_STEP_CASES = Object.freeze([
++	Object.freeze({ step: '25', value: '25%', share: 0.25 }),
++	Object.freeze({ step: '50', value: '50%', share: 0.5 }),
++	Object.freeze({ step: '75', value: '75%', share: 0.75 }),
++	Object.freeze({ step: '100', value: '100%', share: 1 }),
++])
++
++/** Lists each sizing entry's class stem in the release's map order, with one class it writes. */
++export const SIZING_ENTRY_CASES = Object.freeze([
++	Object.freeze({ prefix: 'w', name: 'w-25' }),
++	Object.freeze({ prefix: 'mw', name: 'mw-100' }),
++	Object.freeze({ prefix: 'vw', name: 'vw-100' }),
++	Object.freeze({ prefix: 'min-vw', name: 'min-vw-100' }),
++	Object.freeze({ prefix: 'h', name: 'h-25' }),
++	Object.freeze({ prefix: 'mh', name: 'mh-100' }),
++	Object.freeze({ prefix: 'vh', name: 'vh-100' }),
++	Object.freeze({ prefix: 'min-vh', name: 'min-vh-100' }),
++])
++
++/** Lists the viewport sizes and floors, each with the axis it reads the viewport on. */
++export const VIEWPORT_SIZE_CASES = Object.freeze([
++	Object.freeze({ name: 'vw-100', property: 'width' }),
++	Object.freeze({ name: 'min-vw-100', property: 'width' }),
++	Object.freeze({ name: 'vh-100', property: 'height' }),
++	Object.freeze({ name: 'min-vh-100', property: 'height' }),
++])
++
++/** Lists the position values in the release's list order. */
++export const POSITION_VALUES = Object.freeze(['static', 'relative', 'absolute', 'fixed', 'sticky'])
++
++/** Lists the offset entries' class stems in the release's map order. */
++export const OFFSET_EDGES = Object.freeze(['top', 'bottom', 'start', 'end'])
++
++/**
++ * Lists the offset steps in the release's map order.
++ *
++ * @remarks
++ * The `value` field is the offset the release records, and the `share` field is the fraction of
++ * the containing block it offsets by.
++ */
++export const OFFSET_STEP_CASES = Object.freeze([
++	Object.freeze({ step: '0', value: '0', share: 0 }),
++	Object.freeze({ step: '50', value: '50%', share: 0.5 }),
++	Object.freeze({ step: '100', value: '100%', share: 1 }),
++])
++
++/** Lists the stacking levels in the release's map order, each with the `z-index` value it sets. */
++export const STACK_LEVEL_CASES = Object.freeze([
++	Object.freeze({ level: 'n1', value: '-1' }),
++	Object.freeze({ level: '0', value: '0' }),
++	Object.freeze({ level: '1', value: '1' }),
++	Object.freeze({ level: '2', value: '2' }),
++	Object.freeze({ level: '3', value: '3' }),
++])
++
++/** Lists each position entry's class stem in the release's map order, with one class it writes. */
++export const POSITION_ENTRY_CASES = Object.freeze([
++	Object.freeze({ prefix: 'position', name: 'position-static' }),
++	Object.freeze({ prefix: 'top', name: 'top-0' }),
++	Object.freeze({ prefix: 'bottom', name: 'bottom-0' }),
++	Object.freeze({ prefix: 'start', name: 'start-0' }),
++	Object.freeze({ prefix: 'end', name: 'end-0' }),
++	Object.freeze({ prefix: 'translate-middle', name: 'translate-middle' }),
++	Object.freeze({ prefix: 'z', name: 'z-0' }),
++])
++
++/** Lists the properties a visually hidden box is read on through its computed style. */
++export const VISUALLY_HIDDEN_PROPERTIES = Object.freeze([
++	'position',
++	'clip',
++	'overflow-x',
++	'overflow-y',
++])
++
++/**
++ * Holds the reading every visually hidden box resolves at rest.
++ *
++ * @remarks
++ * The reading is the box's rendered width and height, then the computed value of each property
++ * {@link VISUALLY_HIDDEN_PROPERTIES} lists, in its order.
++ */
++export const VISUALLY_HIDDEN_READING = Object.freeze([
++	1,
++	1,
++	'absolute',
++	'rect(0px, 0px, 0px, 0px)',
++	'hidden',
++	'hidden',
++])
++
+ /**
+  * Pins each named aspect ratio against the percentage its own name derives.
+  *

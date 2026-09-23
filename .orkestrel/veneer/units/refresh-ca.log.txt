@@ -1,0 +1,124 @@
+
+> @orkestrel/veneer@0.0.1 build:src
+> npm run build:src:core && npm run build:src:browser && npm run build:src:styles
+
+
+> @orkestrel/veneer@0.0.1 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  9.78 kB │ gzip: 2.63 kB │ map: 15.17 kB
+
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  9.94 kB │ gzip: 2.70 kB │ map: 15.19 kB
+
+✓ built in 163ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/veneer@0.0.1 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+> @orkestrel/veneer@0.0.1 build:src:browser
+> vite build --config configs/src/vite.browser.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  10.52 kB │ gzip: 3.41 kB │ map: 17.13 kB
+
+✓ built in 76ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  162.97 kB │ gzip: 21.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.13s
+=== build:src exit=0
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+······················
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  17:40:24
+   Duration  15.50s (transform 797ms, setup 141ms, import 8.01s, tests 7.18s, environment 0ms)
+
+=== test:conformance exit=0
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+···························stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-cVL1Is'
+    at finishWithoutResolve (/home/user/veneer/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-cVL1Is'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-cVL1Is or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-cVL1Is/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+······································································································································································································································
+
+ Test Files  4 passed (4)
+      Tests  257 passed (257)
+   Start at  17:40:40
+   Duration  15.59s (transform 2.35s, setup 257ms, import 8.36s, tests 21.86s, environment 1ms)
+
+=== test:setup exit=0
+
+> @orkestrel/veneer@0.0.1 test:app
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+5:40:58 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+·····················································································
+
+ Test Files  33 passed (33)
+      Tests  85 passed (85)
+   Start at  17:40:58
+   Duration  21.77s (transform 0ms, setup 2.03s, import 2.41s, tests 2.98s, environment 0ms)
+
+=== test:app exit=0
