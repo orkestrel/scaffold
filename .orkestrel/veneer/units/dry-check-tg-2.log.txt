@@ -1,0 +1,17 @@
+=== tg apply --3way of tg-shared-3.patch on 47aab1d 19:29:59
+--- conflict map
+guides/veneer.md:2508 ours 46 ['| Name                                                      '] theirs 35 ['| Name                                                      ']
+tests/setup.ts:230 ours 20 ["\t| 'Captioned carousel'"] theirs 6 ["\t| 'Split button'"]
+tests/setup.ts:1308 ours 136 ["\t\tscenario: 'role-alerts',"] theirs 34 ["\t\tscenario: 'split-button',"]
+--- resolve
+guides/veneer.md: 1 block(s)
+tests/setup.ts: 2 block(s)
+constants: joined 0
+setup: joined 1
+journey: joined 0
+--- owned files copied from the worktree
+=== tg check 19:30:10
+tg check exit=0
+=== tg lint 19:30:33
+tg lint exit=0
+=== done 19:30:35

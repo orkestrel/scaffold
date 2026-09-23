@@ -1,0 +1,5 @@
+TOGGLES landing probe (2026-09-23, 19:30 UTC): tg-shared-3.patch applied three-way in a scratch worktree at the UTIL-DISPLAY landing tip 47aab1d with the six owned files copied in.
+  Conflicts: guides/veneer.md (the deferral table, both sides extended and re-padded), tests/setup.ts (the CaptureSubject union and the resting rows) — the map is in dry-check-tg.log.txt.
+  tg-resolve.py (ours then theirs; the table union by the first cell) and land-seams.py (setup: joined 1) resolved every block; the deferral table's header appears once.
+  check exit 0, lint:check exit 0, test:guides 19 passed (19).
+  test:conformance read 6 failed | 16 passed (22), every failure ENOENT on dist/src/styles/index.css or dist/src/core/index.js: the probe carries no build, so those cases read nothing of the resolution; the landing's fast gates build dist before conformance.
