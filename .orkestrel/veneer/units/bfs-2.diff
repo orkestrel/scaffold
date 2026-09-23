@@ -1,0 +1,444 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 6dd9b2e..0a94a1e 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -635,11 +635,11 @@ export const VALIDATION_COPY = Object.freeze({
+  * the markup is derived from that row rather than written twice, so a passing specimen and its
+  * failing twin cannot drift apart. Every class a specimen writes is one the cascade declares a rule
+  * for, and no specimen carries an inline style, which is what the showcase census and the style
+- * sweep hold the whole surface to. No row renders a validation tooltip: the release positions one
+- * against the ancestor an input group or a floating label positions, those rules belong to other
+- * partials, and a tooltip with no positioned ancestor resolves `top: 100%` against the initial
+- * containing block, which grows the document by the height of every pane the capture stages
+- * against it.
++ * sweep hold the whole surface to. No row renders a validation tooltip. The release positions a
++ * tooltip against the ancestor an input group or a floating label positions, and a tooltip with no
++ * positioned ancestor resolves `top: 100%` against the initial containing block, which grows the
++ * document by the height of every pane the capture stages against it; the Input group section
++ * renders the tooltip pair inside the groups they hang from.
+  */
+ export const VALIDATION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 	[
+@@ -1503,7 +1503,7 @@ export const CLOSE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ export const INPUT_GROUP_COPY = Object.freeze({
+ 	region: 'Input group',
+ 	paragraph:
+-		'Compare a control joined to its addons and buttons: the shared borders, the squared inner corners, each size, and the feedback a failing group reports under its row.',
++		'Compare a control joined to its addons and buttons: the shared borders, the squared inner corners, each size, the feedback a failing group reports under its row, and the tooltip a passing or a failing group hangs over the row after it.',
+ })
+ 
+ /**
+@@ -1515,8 +1515,17 @@ export const INPUT_GROUP_COPY = Object.freeze({
+  * control. The large
+  * and small groups are one ramp, so their markup is derived from the size list rather than written
+  * twice. The failing group describes its control with the feedback it reveals, which is the pairing
+- * a group reporting validation exists to hold on one row. No specimen renders a validation tooltip:
+- * the tooltip hangs below the group it is positioned against and would cover the specimen after it.
++ * a group reporting validation exists to hold on one row.
++ *
++ * The tooltip pair is one passing and one failing group, derived from one state list so neither
++ * twin drifts from the other. Each describes its control with the tooltip it reveals, and the
++ * tooltip is the group's last child. The release positions the tooltip absolutely below the group
++ * at `z-index: 5`, so it lies over whatever follows the group: that overlap is the release's own
++ * positioning, not a showcase layout. Each specimen therefore carries a button-led group after the
++ * validated one, and that group is the room the tooltip hangs over. The room is in-flow content
++ * rather than a declared height, because an inline style is refused on this surface. The room leads
++ * with its button because the tooltip starts at the validated group's leading edge, so the tooltip
++ * lies over the one child of the room that rests on a raised stacking level.
+  */
+ export const INPUT_GROUP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -1548,6 +1557,33 @@ export const INPUT_GROUP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		markup:
+ 			'<div class="input-group has-validation"><span class="input-group-text">@</span><input class="form-control is-invalid" type="text" id="checked-group-handle" aria-label="Checked group handle" aria-describedby="checked-group-feedback"><div class="invalid-feedback" id="checked-group-feedback">Choose a handle.</div></div>',
+ 	}),
++	...[
++		{
++			name: 'Input group valid tooltip',
++			state: 'valid',
++			id: 'open-tooltip-handle',
++			label: 'Open handle',
++			value: 'veneer',
++			text: 'The handle is free.',
++			action: 'Claim',
++			field: 'Claimed handle',
++		},
++		{
++			name: 'Input group invalid tooltip',
++			state: 'invalid',
++			id: 'taken-tooltip-handle',
++			label: 'Taken handle',
++			value: 'admin',
++			text: 'Choose another handle.',
++			action: 'Suggest',
++			field: 'Suggested handle',
++		},
++	].map(({ name, state, id, label, value, text, action, field }) =>
++		Object.freeze({
++			name,
++			markup: `<div class="input-group has-validation"><span class="input-group-text">@</span><input class="form-control is-${state}" type="text" id="${id}" aria-label="${label}" value="${value}" aria-describedby="${id}-tooltip"><div class="${state}-tooltip" id="${id}-tooltip">${text}</div></div><div class="input-group"><button type="button" class="btn btn-outline-secondary">${action}</button><input class="form-control" type="text" aria-label="${field}"></div>`,
++		}),
++	),
+ ])
+ 
+ /** Holds the Form floating section's visible copy and accessible name. */
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index a737cf3..c8b3d40 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -605,12 +605,21 @@ describe('journey', () => {
+ 		}
+ 	})
+ 
+-	it('renders the container, the row, the table, and the link the cascade ships, in both modes', async () => {
++	it('reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark', async () => {
+ 		// Each key is addressed by the specimen label its section declared, because one class
+-		// answers for several specimens here: the Layout table alone renders several containers.
++		// answers for several specimens: one table can render several containers.
+ 		const rendered = new Map<string, string>()
+ 		const framed = new Map<string, string>()
+ 		const paint = new Map<string, string>()
++		const hung = new Map<
++			string,
++			{
++				readonly edge: number
++				readonly limit: number
++				readonly shared: boolean
++				readonly hit: string | undefined
++			}
++		>()
+ 		for (const mode of [LIGHT, DARK]) {
+ 			await applyTheme(mode)
+ 			await waitForAnimations(document.body)
+@@ -626,9 +635,9 @@ describe('journey', () => {
+ 				// scenario name it carries; and an element frame taken where the showcase renders
+ 				// these specimens comes back blank white, measured at both registered widths. The
+ 				// lift is what the harness can photograph. Shooting the selector's own element
+-				// instead would crop the specimen to one of its role links, with none of the
+-				// background the paint is read against. The property comparison checks only the
+-				// declared treatment; the written frame is read back separately.
++				// instead would crop the specimen to that element, with none of the background the
++				// paint is read against. The property comparison checks only the declared
++				// treatment; the written frame is read back separately.
+ 				const lifted = build('div')
+ 				lifted.append(specimen.cloneNode(true))
+ 				document.body.prepend(lifted)
+@@ -644,6 +653,31 @@ describe('journey', () => {
+ 					rendered.set(`${mode}|${key.scenario}`, readStyle(element, key.property))
+ 					framed.set(`${mode}|${key.scenario}`, readStyle(copy, key.property))
+ 					paint.set(`${mode}|${key.scenario}`, readStyle(copy, 'color'))
++					// A key whose top sits at or below its host's bottom edge hangs outside the host's
++					// box, so the copy the frame is shot on is where its room and its stacking are
++					// read: its bottom edge against the frame's, and the hit at the centre of the
++					// button leading the group after the host, which is a point inside both boxes.
++					const box = copy.getBoundingClientRect()
++					const host = requireValue(
++						copy.parentElement,
++						`The lifted "${key.subject}" specimen's ${key.selector} has no host`,
++					)
++					if (box.top >= host.getBoundingClientRect().bottom) {
++						const button = requireValue(
++							frame.querySelector('.input-group + .input-group > .btn:first-child'),
++							`The lifted "${key.subject}" specimen renders no button-led group for its hanging ${key.selector} to cover`,
++						)
++						const target = button.getBoundingClientRect()
++						const x = target.left + target.width / 2
++						const y = target.top + target.height / 2
++						const hit = readHit(button)
++						hung.set(`${mode}|${key.scenario}`, {
++							edge: box.bottom,
++							limit: frame.getBoundingClientRect().bottom,
++							shared: x > box.left && x < box.right && y > box.top && y < box.bottom,
++							hit: hit === copy ? 'tooltip' : hit?.outerHTML.slice(0, 80),
++						})
++					}
+ 					if (mode === VARIANT) await FRAMES.place(key.scenario, copy, frame)
+ 				} finally {
+ 					lifted.remove()
+@@ -668,6 +702,29 @@ describe('journey', () => {
+ 		expect(rendered.get(`${LIGHT}|base`)).not.toBe(rendered.get(`${DARK}|base`))
+ 		expect(rendered.get(`${LIGHT}|role-links`)).not.toBe(rendered.get(`${DARK}|role-links`))
+ 		expect([...rendered].filter(([, value]) => value.length === 0)).toStrictEqual([])
++		// The tooltip keys read the reveal their sibling state writes, in both modes.
++		expect(rendered.get(`${LIGHT}|input-group-valid-tooltip`)).toBe('block')
++		expect(rendered.get(`${DARK}|input-group-valid-tooltip`)).toBe('block')
++		expect(rendered.get(`${LIGHT}|input-group-invalid-tooltip`)).toBe('block')
++		expect(rendered.get(`${DARK}|input-group-invalid-tooltip`)).toBe('block')
++		// The keys hanging below their host are the tooltip keys. Each tooltip ends inside the
++		// frame, so the frame carries the whole of it, and it paints over the button of the group
++		// it hangs over: the tooltip's stacking level is above the one a grouped button rests on.
++		// A hit that reaches no element leaves `hit` undefined, which reddens like a hit on the
++		// button does.
++		ARTIFACT.push(JSON.stringify({ reading: 'cascade tooltips', readings: [...hung] }))
++		expect([...hung.keys()]).toStrictEqual([
++			`${LIGHT}|input-group-valid-tooltip`,
++			`${LIGHT}|input-group-invalid-tooltip`,
++			`${DARK}|input-group-valid-tooltip`,
++			`${DARK}|input-group-invalid-tooltip`,
++		])
++		expect(
++			[...hung].filter(
++				([, reading]) =>
++					reading.edge > reading.limit || !reading.shared || reading.hit !== 'tooltip',
++			),
++		).toStrictEqual([])
+ 		JOURNAL.record('read', 'cascade keys', String(rendered.get(`${LIGHT}|role-links`)))
+ 	})
+ 
+@@ -1419,10 +1476,10 @@ describe('journey', () => {
+ 			'The "Input group button" specimen renders no grouped button',
+ 		)
+ 		// At rest the button sits one step above the control on the group's stacking levels. It
+-		// pulls its leading border back by one border width over the control's trailing border, so
+-		// the button's leading border paints over the outer column of that border until the control
+-		// is lifted past it. The following reading uses the button's own border width, which is
+-		// the width the group's pull-back is written in.
++		// pulls its leading border back by one border width onto the control's trailing border, so
++		// the two share one line, and the button's border paints that line until the control is
++		// lifted past it. The following reading uses the button's own border width, which is the
++		// width the group's pull-back is written in.
+ 		expect(readStyle(control, 'z-index')).toBe('auto')
+ 		expect(readStyle(button, 'z-index')).toBe('2')
+ 		expect(button.getBoundingClientRect().left).toBeCloseTo(
+diff --git a/tests/app/browser/sections/InputGroupSection.test.ts b/tests/app/browser/sections/InputGroupSection.test.ts
+index 4b547c2..6d19f15 100644
+--- a/tests/app/browser/sections/InputGroupSection.test.ts
++++ b/tests/app/browser/sections/InputGroupSection.test.ts
+@@ -6,8 +6,15 @@ import {
+ 	SpecimenSection,
+ } from '@app/browser'
+ import { requireValue } from '@orkestrel/test'
+-import { build, mount, readName, readStates } from '@orkestrel/test/browser'
+-import { describe, expect, it } from 'vitest'
++import { build, isRendered, mount, readName, readStates } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++
++// The tooltip specimens claim a revealed tooltip, and the reveal is the published cascade's rule,
++// so the cascade has to be in the document before a visibility reading means anything.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
+ 
+ describe('InputGroupSection', () => {
+ 	it('renders every group specimen through the shared section contract', () => {
+@@ -28,14 +35,30 @@ describe('InputGroupSection', () => {
+ 				'Input group large',
+ 				'Input group small',
+ 				'Input group validation',
++				'Input group valid tooltip',
++				'Input group invalid tooltip',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				INPUT_GROUP_SPECIMENS.map(({ markup }) => markup),
+ 			)
+-			// Each specimen is one group, and the sized pair carries the size class its name claims.
+-			expect(rendered.map((element) => element.querySelectorAll('.input-group').length)).toEqual(
+-				rendered.map(() => 1),
+-			)
++			// Each specimen is one group, apart from the tooltip pair, which carries a button-led
++			// group after the validated one as the in-flow room the tooltip hangs over. The sized
++			// pair carries the size class its name claims.
++			expect(
++				rendered.map((element) => [
++					element.getAttribute('data-specimen'),
++					element.querySelectorAll('.input-group').length,
++				]),
++			).toEqual([
++				['Input group plain', 1],
++				['Input group addons', 1],
++				['Input group button', 1],
++				['Input group large', 1],
++				['Input group small', 1],
++				['Input group validation', 1],
++				['Input group valid tooltip', 2],
++				['Input group invalid tooltip', 2],
++			])
+ 			expect(
+ 				region.querySelector('[data-specimen="Input group large"] .input-group-lg'),
+ 			).not.toBeNull()
+@@ -52,16 +75,37 @@ describe('InputGroupSection', () => {
+ 			// The failing group announces its state and describes its control with the feedback it
+ 			// reveals, which is the pairing a group reporting validation holds on one row.
+ 			const checked = requireValue(
+-				region.querySelector('.has-validation .form-control'),
++				region.querySelector('[data-specimen="Input group validation"] .form-control'),
+ 				'No checked control',
+ 			)
+ 			const feedback = requireValue(
+-				region.querySelector('.has-validation .invalid-feedback'),
++				region.querySelector('[data-specimen="Input group validation"] .invalid-feedback'),
+ 				'No checked feedback',
+ 			)
+ 			expect(checked.getAttribute('aria-describedby')).toBe(feedback.id)
+ 			expect(readStates(checked)).toEqual(['described'])
+-			expect(region.querySelector('.valid-tooltip, .invalid-tooltip')).toBeNull()
++			// Each tooltip specimen's validated group reports its state through a tooltip it holds as
++			// its last child, describes its control with that tooltip, and reveals it; the room after
++			// it leads with its button.
++			for (const [state, name] of [
++				['valid', 'Input group valid tooltip'],
++				['invalid', 'Input group invalid tooltip'],
++			]) {
++				const groups = [...region.querySelectorAll(`[data-specimen="${name}"] > .input-group`)]
++				const [validated, room] = groups
++				const tooltip = requireValue(validated?.lastElementChild, `No last child in ${name}`)
++				const control = requireValue(
++					validated?.querySelector(`.form-control.is-${state}`),
++					`No ${state} control in ${name}`,
++				)
++				expect(validated?.classList.contains('has-validation')).toBe(true)
++				expect(tooltip.classList.contains(`${state}-tooltip`)).toBe(true)
++				expect(control.getAttribute('aria-describedby')).toBe(tooltip.id)
++				expect(readStates(control)).toEqual(['described'])
++				expect(isRendered(tooltip)).toBe(true)
++				expect(room?.firstElementChild?.classList.contains('btn')).toBe(true)
++				expect(room?.lastElementChild?.classList.contains('form-control')).toBe(true)
++			}
+ 			expect(Object.isFrozen(INPUT_GROUP_COPY)).toBe(true)
+ 			expect(Object.isFrozen(INPUT_GROUP_SPECIMENS)).toBe(true)
+ 			expect(INPUT_GROUP_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 1cd2437..8e0ac91 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -94,9 +94,11 @@ export type CaptureSubject =
+ 	| 'Capped container'
+ 	| 'Input group addons'
+ 	| 'Input group button'
++	| 'Input group invalid tooltip'
+ 	| 'Input group large'
+ 	| 'Input group plain'
+ 	| 'Input group small'
++	| 'Input group valid tooltip'
+ 	| 'Input group validation'
+ 	| 'Invalid check'
+ 	| 'Invalid control'
+@@ -288,9 +290,9 @@ export interface CaptureKey {
+  *
+  * @remarks
+  * The selector addresses the element inside the specimen whose treatment the key ships, and the
+- * frame is shot over the whole specimen rather than over that element: the selector's own crop
+- * carries one role link and none of the background the paint is read against. The
+- * selector stays the declared sampling region the written frame is guarded on.
++ * frame is shot over the whole specimen rather than over that element: shooting the selector's own
++ * element would crop the specimen to that element, with none of the background the paint is read
++ * against. The selector stays the declared sampling region the written frame is guarded on.
+  */
+ export interface CascadeKey extends CaptureKey {
+ 	/** Holds the selector the key's own element answers to inside that specimen. */
+@@ -336,56 +338,62 @@ export const BUTTON_KEYS: readonly CaptureKey[] = Object.freeze([
+ ])
+ 
+ /**
+- * Lists the content and layout keys a journey photographs, each with the specimen that renders it
+- * and the property its treatment is read from.
++ * Lists every resting cascade key a journey photographs, each with the specimen that renders it, the
++ * selector the frame's declared region is read on, and the property the key's own rule sets.
+  *
+  * @remarks
+- * The rows are the keys the consumer page reads out of the packed stylesheet — the capped
+- * container, the numbered-column row, the base table, and the role link — so the portfolio and
+- * that page answer for one family rather than two. A key is addressed by its specimen label rather
+- * than by its class, because one class answers for several specimens: the Layout table alone
+- * renders several containers.
++ * A family appends its resting rows here as it lands, and a scenario that drives a state sits in
++ * that family's own list. A key is addressed by its specimen label rather than by its class,
++ * because one class answers for several specimens: one table can render several containers.
+  *
+- * Each property is one the key's own rule sets. The journey also reads the container and row text
+- * color across modes: their layout stays fixed while their text paint earns the dark frames.
++ * Each row's selector is its own, because the declared selector is what tells one row from another
++ * and several specimens of one component answer to the component's bare class. So a row beyond a
++ * component's first names what sets its specimen apart — a modifier, a state, or the host its
++ * specimen renders the element in — which is also what that specimen exists to show.
++ *
++ * Each property is one the key's own rule sets. The journey also reads each copy's text color across
++ * modes, so a key whose property no mode retunes still shows the text paint that earns its dark
++ * frame.
+  *
+- * Two placement rulings were measured rather than assumed, and each one is why these frames are
++ * The placement rulings were measured rather than assumed, and each one is why these frames are
+  * shot the way they are.
+  *
+  * A **page frame** covers the whole document, so one shot of the resting page is one image whatever
+  * scenario name it carries. A cascade scenario shot that way would duplicate the arrival frame
+  * rather than show the key it names.
+  *
+- * An **element frame** taken where the showcase renders these specimens comes back blank white. The
+- * capped container, the numbered-column row, the base table, and the role link sit around 3500 to
+- * 4700 CSS pixels down a document over 8000 pixels tall, and every one of them photographed blank at
+- * the 390-wide variants, as did the role link at the 1280-wide ones. The same specimens, copied and
+- * put at the document's start, photograph correctly at both widths — which is what the journey does,
+- * comparing each key's declared property on the showcase specimen and the copy after placement.
+- * That comparison covers only the declared property. The written frame is separately read back for
+- * its size, its floor, and the variation inside its declared region.
++ * An **element frame** taken where the showcase renders these specimens comes back blank white.
++ * This was measured on 2026-09-22 against the Layout, Table, and Links specimens this registry
++ * carried first, which sat around 3500 to 4700 CSS pixels down a document over 8000 pixels tall:
++ * every one of them photographed blank at the 390-wide variants, as did the link specimen at the
++ * 1280-wide ones. The same specimens, copied and put at the document's start, photograph correctly
++ * at both widths — which is what the journey does for every row, comparing each key's declared
++ * property on the showcase specimen and the copy after placement. That comparison covers only the
++ * declared property. The written frame is separately read back for its size, its floor, and the
++ * variation inside its declared region.
++ *
++ * A key the release positions below its host's box is framed with the in-flow content its specimen
++ * renders beneath it. The journey reads a key as hanging when the key's top sits at or below the
++ * bottom edge of its host, the element that holds it, and on the lifted copy it reads a hanging
++ * key's bottom edge inside the frame's. A hanging key lies over that content, which is the release's
++ * own overlap, and the journey reads which element paints on top where the two meet.
+  *
+  * A hover or focus frame is registered for none of them. The showcase renders each key at rest and
+  * the journey reads each key at rest, so a pointer state would be a claim about a paint no journey
+  * here drives. That is what separates these from the Button scenarios, where the pointer journey
+  * drives hover and active and reads each one back after its own shot.
+  *
+- * The grow spinners are the specimens this registry declines. Their resting frame is the animation's
+- * own first step, `transform: scale(0)` at `opacity: 0`, so the element reports an empty box and
+- * paints nothing: a shot of it carries one color and no subject, and at the 1280-wide variants the
+- * declared region clips to no pixel at all. The showcase renders both specimens and
+- * `tests/src/styles/components/spinner.test.ts` reads their running timelines; what is declined here
+- * is the frame, because there is nothing in it to read.
++ * A specimen whose resting frame paints nothing is declined. The grow spinners are the case: their
++ * resting frame is the animation's own first step, `transform: scale(0)` at `opacity: 0`, so the
++ * element reports an empty box and paints nothing, a shot of it carries one color and no subject,
++ * and at the 1280-wide variants the declared region clips to no pixel at all. The showcase renders
++ * the grow spinners and the `tests/src/styles/components/spinner.test.ts` file reads their running
++ * timelines; what is declined here is the frame, because there is nothing in it to read.
+  *
+- * Each row's selector is its own, because the declared selector is what tells one row from another
+- * and several specimens of one component answer to the component's bare class. So a badge row
+- * beyond the first names the host its specimen renders the badge in — the dark surface, the
+- * heading-scaled span, the button — which is also the composition that specimen exists to show.
+- *
+- * The collapsed badge is the one row whose selector names the surrounding region rather than the
+- * element the key ships: the recorded `:empty` rule resolves `display: none`, so the badge's own
+- * box clips to no pixel and a frame declared on it reads back nothing. Its declared region is the
+- * cell that hosts the label, and the collapse itself is read in the cascade proof.
++ * A key whose recorded rule resolves `display: none` at rest names the surrounding region rather
++ * than the element the key ships: that element's own box clips to no pixel, so a frame declared on
++ * it reads back nothing. Its declared region is the element that hosts it, and the collapse itself
++ * is read in the component's cascade proof.
+  */
+ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 	Object.freeze({
+@@ -898,6 +906,18 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.has-validation > .invalid-feedback',
+ 		property: 'display',
+ 	}),
++	Object.freeze({
++		scenario: 'input-group-valid-tooltip',
++		subject: 'Input group valid tooltip',
++		selector: '.is-valid ~ .valid-tooltip',
++		property: 'display',
++	}),
++	Object.freeze({
++		scenario: 'input-group-invalid-tooltip',
++		subject: 'Input group invalid tooltip',
++		selector: '.is-invalid ~ .invalid-tooltip',
++		property: 'display',
++	}),
+ 	Object.freeze({
+ 		scenario: 'form-floating-empty',
+ 		subject: 'Form floating empty',
