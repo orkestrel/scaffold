@@ -22,7 +22,7 @@ Land the shared mechanisms every component builds on, each conforming to the con
 
 **Control identifiers.** None. A test is named for what it proves.
 
-**Standing conditions.** No engine cascade key has landed; `settleAnimations` is proved on probe elements with a test-local transition declared in `tests/setupBrowser.ts` (report-only: return the patch) or inline in the test's own mounted `<style>`. The guide parity proof compares each § Surface `Summary` with its doc block and each § Methods row with its method's TSDoc; J-TYPES landed the rows and tables for the contracts you implement, so implement to those doc blocks. `tests/setupPolicy.ts` and `tests/policy.test.ts` are vendored and off-limits.
+**Standing conditions.** The `collapse`, `dropdown`, and `nav` cascade keys have landed on Veneer `main` (the baseline's `a658879`) and no other engine key has; this unit reads none of them, and `settleAnimations` is proved on probe elements with a test-local transition declared in `tests/setupBrowser.ts` (report-only: return the patch) or inline in the test's own mounted `<style>`. The guide parity proof compares each § Surface `Summary` with its doc block and each § Methods row with its method's TSDoc; J-TYPES landed the rows and tables for the contracts you implement, so implement to those doc blocks. `tests/setupPolicy.ts` and `tests/policy.test.ts` are vendored and off-limits.
 
 ## Unknowns
 

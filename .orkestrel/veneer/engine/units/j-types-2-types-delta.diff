@@ -1,0 +1,204 @@
+--- /c/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/ae9013d2-d803-4f77-889d-b615fd892f79/scratchpad/types.before.ts	2026-09-23 12:47:33.605864800 -0400
++++ src/browser/types.ts	2026-09-23 13:09:41.284276000 -0400
+@@ -34,9 +34,7 @@
+ }
+ 
+ /** Configures the initial DOM event subscriptions for a button. */
+-export interface ButtonHooks {
+-	readonly toggle?: (event: CustomEvent<ButtonDetail>) => void
+-}
++export type ButtonHooks = EventHooks<ButtonEventMap>
+ 
+ /** Configures a button's initial event hooks. */
+ export interface ButtonOptions {
+@@ -247,7 +245,7 @@
+ 	 */
+ 	hide(): Promise<boolean>
+ 	/**
+-	 * Removes the backdrop element at once and releases its listeners.
++	 * Removes the backdrop element at once and abandons a fade in flight.
+ 	 *
+ 	 * @example
+ 	 * ```ts
+@@ -300,7 +298,7 @@
+ /** Names the physical side a positioned element resolves to, as its `data-popper-placement` attribute carries it. */
+ export type PlacementSide = 'top' | 'right' | 'bottom' | 'left'
+ 
+-/** Configures where a menu or a tip sits against its reference. */
++/** Configures where the mechanism sets a menu or a tip against its reference, from the values the owning component resolved. */
+ export interface PlacementOptions {
+ 	/** Names the preferred placement, mirroring Bootstrap's `placement` option. Default: `bottom`. */
+ 	readonly position?: PlacementPosition
+@@ -318,8 +316,8 @@
+ 	readonly reference: HTMLElement
+ 	/** Carries the menu or tip that is positioned. */
+ 	readonly element: HTMLElement
+-	/** If `true`, promotes the element with `popover="hint"`; if `false`, with `popover="manual"`. Default: `false`. */
+-	readonly hint?: boolean
++	/** Names the value of the HTML `popover` attribute the element is promoted with: `manual` for a menu or a popover tip, `hint` for a tooltip tip. Default: `manual`. */
++	readonly popover?: 'manual' | 'hint'
+ }
+ 
+ /** Anchors a menu or a tip to its reference through CSS anchor positioning in the top layer. */
+@@ -407,11 +405,11 @@
+ }
+ 
+ /**
+- * Describes a node whose `setHTML` method parses markup through a sanitizer, which the installed DOM declarations omit.
++ * Describes a node whose `setHTML` method parses markup through a sanitizer.
+  *
+  * @remarks
+- * TypeScript's DOM library declares `Sanitizer` and `setHTMLUnsafe` and leaves `setHTML` out, so a
+- * guard narrows an element to this contract before the tip content is written.
++ * The DOM library of TypeScript 6.0.3 declares `Sanitizer` and `setHTMLUnsafe` and omits `setHTML`,
++ * so a guard narrows an element to this contract before the tip content is written.
+  */
+ export interface SanitizeTargetInterface {
+ 	/**
+@@ -466,7 +464,7 @@
+ 	/**
+ 	 * Shows the panel and hides its open accordion siblings.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the panel was shown, a transition was in flight, a listener prevented `show`, or the collapse is destroyed.
++	 * @returns Resolves true after the `shown` event; false when the panel was shown, a transition was in flight on the panel or on an open accordion sibling, a listener prevented `show`, or the collapse is destroyed.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await collapse.show()
+@@ -536,8 +534,13 @@
+ 		/** If `true`, a click outside the menu closes it; if `false`, it does not. Default: `true`. */
+ 		readonly outside?: boolean
+ 	}
+-	/** Positions the menu against its reference. Default: the side the direction classes and `--bs-position` select, at offset `[0, 2]`. */
+-	readonly placement?: PlacementOptions
++	/** Offsets the menu against its reference and selects whether it is anchored; the side comes from the direction classes and `--bs-position`. */
++	readonly placement?: {
++		/** Shifts the menu along and away from its reference in pixels, mirroring Bootstrap's `offset` option. Default: `[0, 2]`. */
++		readonly offset?: readonly [number, number]
++		/** If `true`, leaves the menu in flow with `data-bs-popper="static"`, mirroring Bootstrap's `display: 'static'`; if `false`, anchors it in the top layer. Default: `false`. */
++		readonly static?: boolean
++	}
+ 	/** Carries the element the menu is anchored to, mirroring Bootstrap's `reference` option. Default: the toggle. */
+ 	readonly reference?: HTMLElement
+ 	/** Subscribes until the dropdown is destroyed. */
+@@ -703,7 +706,7 @@
+ 	/** Carries the navigation whose links follow the scroll. */
+ 	readonly target: HTMLElement
+ 	/** Reads the active link, or undefined when no section is in view. */
+-	readonly active: HTMLElement | undefined
++	readonly link: HTMLElement | undefined
+ 	/**
+ 	 * Re-reads the navigation's links and observes their sections again.
+ 	 *
+@@ -726,7 +729,7 @@
+ 
+ /** Selects which close requests hide a modal or an offcanvas panel. */
+ export interface DismissOptions {
+-	/** If `true`, a click on the backdrop hides; if `false`, it dispatches `hidePrevented`, mirroring Bootstrap's `backdrop: 'static'`. Default: `true`. */
++	/** If `true`, a click on the backdrop hides; if `false`, it dispatches `hidePrevented`, mirroring Bootstrap's `backdrop: 'static'`. Applies only while the owning component's `backdrop` option is `true`. Default: `true`. */
+ 	readonly backdrop?: boolean
+ 	/** If `true`, Escape hides; if `false`, it dispatches `hidePrevented`, mirroring Bootstrap's `keyboard: false`. Default: `true`. */
+ 	readonly escape?: boolean
+@@ -963,8 +966,15 @@
+ 	}
+ 	/** Receives the tip element, mirroring Bootstrap's `container` option. Default: the nearest ancestor carrying `aria-modal="true"`, else the document body. */
+ 	readonly container?: HTMLElement
+-	/** Positions the tip against its trigger. Default: `top` at offset `[0, 6]`, falling back through `top`, `right`, `bottom`, and `left`. */
+-	readonly placement?: PlacementOptions
++	/** Positions the tip against its trigger. */
++	readonly placement?: {
++		/** Names the preferred placement, mirroring Bootstrap's `placement` option. Default: `top`, and `right` for a popover. */
++		readonly position?: PlacementPosition
++		/** Shifts the tip along and away from its trigger in pixels, mirroring Bootstrap's `offset` option. Default: `[0, 6]`, and `[0, 8]` for a popover. */
++		readonly offset?: readonly [number, number]
++		/** Lists the placements tried in order when the preferred one overflows, mirroring Bootstrap's `fallbackPlacements` option. Default: `['top', 'right', 'bottom', 'left']`. */
++		readonly fallbacks?: readonly PlacementPosition[]
++	}
+ 	/** Configures how markup content is sanitized, read from the constructor alone as in Bootstrap. */
+ 	readonly sanitize?: SanitizeOptions
+ 	/** Delegates the tooltip to descendants of the host matching this selector, mirroring Bootstrap's `selector` option. */
+@@ -986,7 +996,10 @@
+ 	/**
+ 	 * Builds, inserts, and shows the tip.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the tip was shown, the tooltip is disabled or has no content, a listener prevented `show`, or the tooltip is destroyed.
++	 * @returns Resolves true after the `shown` event; false when the tooltip is disabled or has no content, the trigger is not connected to its document, a listener prevented `show`, a transition was in flight, or the tooltip is destroyed.
++	 * @remarks
++	 * A settled shown tip is rebuilt, as Bootstrap's `show` rebuilds it. Bootstrap throws for a trigger
++	 * whose inline `display` is `none`; this contract resolves false there instead.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await tooltip.show()
+@@ -1035,12 +1048,13 @@
+ 	 * Replaces the content of the tip's slots, keyed by each slot's selector, and rebuilds a shown tip.
+ 	 *
+ 	 * @param content - The content per slot selector; an undefined or empty value removes its slot.
++	 * @returns Resolves true after the content is written and, when the tip is shown, after the rebuilt tip's `shown` event; false when the tooltip is destroyed, or when the tip is shown and the rebuild's `show` is refused because the tooltip is disabled or has no content, the trigger is not connected to its document, or a listener prevented `show`.
+ 	 * @example
+ 	 * ```ts
+-	 * tooltip.fill({ '.tooltip-inner': 'Saved' })
++	 * const filled = await tooltip.fill({ '.tooltip-inner': 'Saved' })
+ 	 * ```
+ 	 */
+-	fill(content: Readonly<Record<string, TipContent | undefined>>): void
++	fill(content: Readonly<Record<string, TipContent | undefined>>): Promise<boolean>
+ 	/**
+ 	 * Measures the side the shown tip resolved to and rewrites its placement attribute.
+ 	 *
+@@ -1105,7 +1119,10 @@
+ 	/**
+ 	 * Builds, inserts, and shows the tip, removing the header or body slot whose content is empty.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the tip was shown, the popover is disabled or has no content, a listener prevented `show`, or the popover is destroyed.
++	 * @returns Resolves true after the `shown` event; false when the popover is disabled or has no content, the trigger is not connected to its document, a listener prevented `show`, a transition was in flight, or the popover is destroyed.
++	 * @remarks
++	 * A settled shown tip is rebuilt, as Bootstrap's `show` rebuilds it. Bootstrap throws for a trigger
++	 * whose inline `display` is `none`; this contract resolves false there instead.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await popover.show()
+@@ -1154,12 +1171,13 @@
+ 	 * Replaces the content of the tip's slots, keyed by each slot's selector, and rebuilds a shown tip.
+ 	 *
+ 	 * @param content - The content per slot selector; an undefined or empty value removes its slot.
++	 * @returns Resolves true after the content is written and, when the tip is shown, after the rebuilt tip's `shown` event; false when the popover is destroyed, or when the tip is shown and the rebuild's `show` is refused because the popover is disabled or has no content, the trigger is not connected to its document, or a listener prevented `show`.
+ 	 * @example
+ 	 * ```ts
+-	 * popover.fill({ '.popover-header': 'Draft', '.popover-body': 'Saved at noon' })
++	 * const filled = await popover.fill({ '.popover-header': 'Draft', '.popover-body': 'Saved at noon' })
+ 	 * ```
+ 	 */
+-	fill(content: Readonly<Record<string, TipContent | undefined>>): void
++	fill(content: Readonly<Record<string, TipContent | undefined>>): Promise<boolean>
+ 	/**
+ 	 * Measures the side the shown tip resolved to and rewrites its placement attribute.
+ 	 *
+@@ -1296,9 +1314,9 @@
+ 	readonly relatedTarget: HTMLElement
+ 	/** Names the direction the items move, as Bootstrap's `direction` field does. */
+ 	readonly direction: SwipeDirection
+-	/** Sets the position of the item that was active, as Bootstrap's `from` field does. */
++	/** Carries the position of the item that was active, as Bootstrap's `from` field does. */
+ 	readonly from: number
+-	/** Sets the position of the item becoming active, as Bootstrap's `to` field does. */
++	/** Carries the position of the item becoming active, as Bootstrap's `to` field does. */
+ 	readonly to: number
+ }
+ 
+@@ -1345,7 +1363,7 @@
+ 	/**
+ 	 * Slides to the following item.
+ 	 *
+-	 * @returns Resolves true after the `slid` event; false when a slide was in flight, the last item is active without wrapping, a listener prevented `slide`, or the carousel is destroyed.
++	 * @returns Resolves true after the `slid` event; false when a slide was in flight, the computed following item is the active item (the last item without wrapping, or a single item), a listener prevented `slide`, or the carousel is destroyed.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.next()
+@@ -1355,7 +1373,7 @@
+ 	/**
+ 	 * Slides to the preceding item.
+ 	 *
+-	 * @returns Resolves true after the `slid` event; false when a slide was in flight, the first item is active without wrapping, a listener prevented `slide`, or the carousel is destroyed.
++	 * @returns Resolves true after the `slid` event; false when a slide was in flight, the computed preceding item is the active item (the first item without wrapping, or a single item), a listener prevented `slide`, or the carousel is destroyed.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.previous()
