@@ -320,3 +320,15 @@ end padding, each resolving the release's `$form-select-padding-x` multiple. One
 the group's value is written `calc(var(--vn-space-6) * 4)`, the release's `$form-select-padding-x *
 4`. The ledger row stays `tokenized`; the N2 table's expected references follow. Carrier: the GROUP
 fix round.
+
+## D34 — The floating control's height and floated top inset scale with density
+
+FLOATING measured that the tokenized insets (`--vn-space-8` and `--vn-space-6`) outgrow the literal
+`3.5rem` height at `--vn-factor-density: 2`, so an empty floating control grows past its declared
+height. No space token carries `3.5rem` or `1.625rem`, so the height, the minimum height, and the
+floated top inset take the multiplied space token D33 adopts: `calc(var(--vn-space-8) * 3.5)` plus
+the border twice for the height and minimum height, `calc(var(--vn-space-8) * 1.625)` for the floated
+top inset, each exact at factor 1. The density case asserts the control's content box stays
+non-negative at factor 2 and every inset and the height scale together; the ledger rows for those
+properties read `tokenized`; the guide's density sentence follows. The backdrop's `1.5em` height and
+the `1.25` line height stay literal (each is relative already). Carrier: the FLOATING fix round.
