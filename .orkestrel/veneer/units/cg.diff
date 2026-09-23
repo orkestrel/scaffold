@@ -1,0 +1,1868 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 589e473..5544a0e 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -61,11 +61,12 @@ no disabled state: a `disabled` host, a `.disabled` host, and an `aria-disabled=
+ acquired and toggled like any other, which is what Bootstrap's data API does with the click it
+ receives.
+ 
+-`emitEvent` dispatches a bubbling, non-cancelable event and cannot express a cancelable one, and
+-`bindEventMap` and `Delegate` are shaped around Button: the event map, the selector, and the engine
+-each name that one component. `emitEvent`, `bindEventMap`, and `Delegate` are mechanisms with one
+-consumer, so they stay that shape until a second component needs them. B-COLLAPSE is the unit that
+-generalizes them, because Collapse is the first component carrying a cancelable pre-change event.
++The `emitEvent` function dispatches a bubbling, non-cancelable event and cannot express a cancelable
++one, and the `bindEventMap` function and the `Delegate` class are shaped around Button: the event
++map, the selector, and the engine each name that one component. The `emitEvent` and `bindEventMap`
++functions and the `Delegate` class are mechanisms with one consumer, so they stay that shape until a
++second component needs them. B-COLLAPSE is the unit that generalizes them, because Collapse is the
++first component carrying a cancelable pre-change event.
+ 
+ ## Methods
+ 
+@@ -145,22 +146,25 @@ The specifier resolves to standalone CSS rather than to a JavaScript module, so
+ stylesheet and declares no binding. A consumer with no bundler resolves the same subpath and serves
+ the resolved file with a `<link>` element instead.
+ 
+-The `src/styles/_tokens.scss` partial declares the cascade order
+-`theme, reset, base, elements, components, utilities`, and the entry reaches that statement through
+-the barrel's first `@use` rule, so the order is declared before any rule fills a layer.
++The `src/styles/_tokens.scss` partial declares the
++`theme, reset, base, elements, components, utilities` cascade order, and the entry reaches that
++statement through the barrel's first `@use` rule, so the order is declared before any rule fills a
++layer.
++
++The barrel loads the forms partials in the order the release's `_forms.scss` partial imports them,
++so the validation partial loads after the other forms partials: where a validation rule and a forms
++rule tie on one property, the validation rule wins, as it does in the release. The
++`Bootstrap source order` case pins that sequence; see
++[Bootstrap conformance](../tests/conformance.test.ts).
+ 
+ Every Bootstrap utility Veneer ships carries the `!important` Bootstrap writes for it, and Veneer
+ adds none Bootstrap does not write. Outside the class utilities, the `[hidden]` rule in the `reset`
+-layer and the calendar-picker indicator rule in the `elements` layer carry one as well, each
+-matching Bootstrap's own declaration. The conformance proof holds that agreement for every
+-declaration both sheets make: each shared selector and property carries the same priority on both
+-sides, because the oracle records values without their priority. Where a class name exists in
+-Bootstrap and in Tailwind, the declaration Veneer ships is Bootstrap's; § Tailwind states how a
+-paired build keeps that true.
+ layer, the calendar-picker indicator rule in the `elements` layer, and the color swatch rules in
+-the `components` layer carry one as well, each matching Bootstrap's own declaration. Where a class
+-name exists in Bootstrap and in Tailwind, the declaration Veneer ships is Bootstrap's; § Tailwind
+-states how a paired build keeps that true.
++the `components` layer carry one as well, each matching Bootstrap's own declaration. The
++conformance proof holds that agreement for every declaration both sheets make: each shared selector
++and property carries the same priority on both sides, because the oracle records values without
++their priority. Where a class name exists in Bootstrap and in Tailwind, the declaration Veneer ships
++is Bootstrap's; § Tailwind states how a paired build keeps that true.
+ 
+ Override an important utility from inside that utility's own layer, which your sheet re-opens by
+ name. An important declaration in a layer beats an important declaration outside every layer,
+@@ -175,9 +179,9 @@ last, so an unlayered `!important` of your own leaves the shipped utility in pla
+ }
+ ```
+ 
+-The escape is executed in [token parity and values](../tests/src/styles/tokens.test.ts): that sheet
+-loads after the shipped cascade and moves the resolved `row-gap` to `2rem`, beside an unlayered
+-override of the same declaration that leaves the shipped `0.25rem` in place.
++The token proof executes the escape: that sheet loads after the shipped cascade and moves the
++resolved `row-gap` to `2rem`, beside an unlayered override of the same declaration that leaves the
++shipped `0.25rem` in place; see [token parity and values](../tests/src/styles/tokens.test.ts).
+ 
+ ### Files
+ 
+@@ -276,30 +280,31 @@ because the `./styles` subpath names the stylesheet.
+ 
+ A rule in the `elements` layer treats a tag by its name, never by where the markup puts that tag.
+ The exception is a pair the HTML content model mandates, where the descendant is legal only under
+-the parents `MANDATED_TAG_PAIRS` in `tests/setupStyles.ts` lists for it, such as `li` under `ol`
+-and `ul`. The browser's own selector engine answers the question: `scanPositionalPairs` in
+-`tests/setupBrowser.ts` mounts each styled tag alone, then inside each tag (itself included), then
+-after each tag, and compares the rules `Element.matches` reports across those placements. A rule
+-reaching a tag through its position reports as a pair. Nothing here parses a selector, and a
+-construct such as `:has()` or `:is()` is answered by the engine that ships it.
++the parents the `MANDATED_TAG_PAIRS` constant in the `tests/setupStyles.ts` module lists for it,
++such as `li` under `ol` and `ul`. The browser's own selector engine answers the question: the
++`scanPositionalPairs` function in the `tests/setupBrowser.ts` module mounts each styled tag alone,
++then inside each tag (itself included), then after each tag, and compares the rules the
++`Element.matches` method reports across those placements. A rule reaching a tag through its position
++reports as a pair. Nothing here parses a selector, and a construct such as the `:has()` or `:is()`
++pseudo-class is answered by the engine that ships it.
+ 
+ The wrapper replaces the plugins, the output directory, the library entry, the build options
+ (keeping the root's build-log handler and dropping the browser externals and output paths), and the
+ test fields it inherits, and it declares the `src:styles` project. The check-only project extends
+-the root `tsconfig.json` file, narrows the `lib` option to the `ESNext` value and the `types`
+-option to the `vite/client` value over the `src/styles/**/*.ts` sources, and emits nothing.
+-The styles proofs load the host-independent `tests/setupStyles.ts`, which holds the case tables
+-and the markup strings, the value lists copied from Bootstrap's own stylesheet and from Elements'
+-built showcase, the shadow readers, and the selector normalizer. They read the installed cascade
+-through the Node-only `tests/setupServer.ts`; `tests/setup.ts` carries
+-the shared helpers and `tests/setupBrowser.ts` the DOM helpers. Each setup module has its own
+-proof of the same name, and none imports a stylesheet: the styles project loads the built cascade
+-through its `setupFiles` array instead. Every module test under `tests/src/styles/` other than
+-`integration.test.ts` names a source module at the same relative path under `src/styles/`, a
+-leading-underscore partial resolved, which `npm run test:policy` enforces, and
+-`tests/src/styles/integration.test.ts` reads the customization recipe beside them. § Tests links the cascade-wide proofs, the document
+-and body baselines, the class proofs, and the gutter utilities; each remaining tag proof sits
+-beside its element partial.
++the root `tsconfig.json` file, narrows the `lib` option to the `ESNext` value and the `types` option
++to the `vite/client` value over the `src/styles/**/*.ts` sources, and emits nothing. The styles
++proofs load the host-independent `tests/setupStyles.ts` module, which holds the case tables and the
++markup strings, the value lists copied from Bootstrap's own stylesheet and from Elements' built
++showcase, the shadow readers, and the selector normalizer. They read the installed cascade through
++the Node-only `tests/setupServer.ts` module; the `tests/setup.ts` module carries the shared helpers
++and the `tests/setupBrowser.ts` module the DOM helpers. Each setup module has its own proof of the
++same name, and none imports a stylesheet: the styles project loads the built cascade through its
++`setupFiles` array instead. Every module test under `tests/src/styles/` other than the
++`integration.test.ts` file names a source module at the same relative path under the `src/styles/`
++directory, a leading-underscore partial resolved, which the `npm run test:policy` command enforces,
++and the `tests/src/styles/integration.test.ts` proof reads the customization recipe beside them.
++§ Tests links the cascade-wide proofs, the document and body baselines, the class proofs, and the
++gutter utilities; each remaining tag proof sits beside its element partial.
+ 
+ ### Tailwind
+ 
+@@ -323,15 +328,14 @@ markup: it fills `base` and reads font variables of its own, so the `preflight`
+ `theme` and `base` whatever your markup uses. The stylesheet profiles proof reads that
+ difference; see [stylesheet profiles](../tests/service/tailwind/profiles.test.ts).
+ 
+-Where a generated utility registers a custom property
+-of its own, Tailwind also generates a `properties` layer and declares `@layer properties;` ahead of
+-the order line your entry wrote. That placement adds a layer in front of Veneer's and leaves
+-Veneer's named layers in their declared order;
+-[stylesheet profiles](../tests/service/tailwind/profiles.test.ts) reads both orders, the compiled
+-stylesheet's own and the one the document resolves against. It takes the document's order as the
+-first placement of each layer across the built cascade followed by the compiled profile, which is
+-the sequence in which a page links the cascade and then loads the profile; the proof fixes that
+-sequence rather than observing it on a page.
++Where a generated utility registers a custom property of its own, Tailwind also generates a
++`properties` layer and declares `@layer properties;` ahead of the order line your entry wrote. That
++placement adds a layer in front of Veneer's and leaves Veneer's named layers in their declared
++order. The profiles proof reads both orders, the compiled stylesheet's own and the one the document
++resolves against; see [stylesheet profiles](../tests/service/tailwind/profiles.test.ts). It takes
++the document's order as the first placement of each layer across the built cascade followed by the
++compiled profile, which is the sequence in which a page links the cascade and then loads the
++profile; the proof fixes that sequence rather than observing it on a page.
+ 
+ The `standalone` profile is the product, and § Styles states it: import `@orkestrel/veneer/styles`
+ and nothing else.
+@@ -341,14 +345,14 @@ markup directory, which is what Tailwind scans to decide which utilities to gene
+ rule is unknown to a browser, so the placement rule that drops an `@import` rule written after one
+ is not the browser's own: it is the `postcss-import` plugin's, and Vite runs that plugin ahead of
+ the Tailwind plugin that would otherwise see the file. The plugin refuses an `@import` rule preceded
+-by anything other than `@charset`, a comment, an empty `@layer` statement, or another `@import`
+-rule, and drops it. The plugin follows CSS Cascading and Inheritance Level 5,
+-[§ Importing Style Sheets](https://www.w3.org/TR/css-cascade-5/#at-import) and
+-[§ Declaring Without Styles](https://www.w3.org/TR/css-cascade-5/#layer-empty), for the rules a
+-browser treats as valid ahead of an `@import` rule. Each recipe writes its imports first, so the
+-rule holds whichever tool inlines them. The first recipe is the `tailwind` profile,
+-which composes Tailwind's theme and utilities and leaves the reset to Veneer's own `reset` and
+-`elements` layers.
++by anything other than a `@charset` rule, a comment, an empty `@layer` statement, or another
++`@import` rule, and drops it. The plugin follows CSS Cascading and Inheritance Level 5 for the rules
++a browser treats as valid ahead of an `@import` rule; see [§ Importing Style
++Sheets](https://www.w3.org/TR/css-cascade-5/#at-import) and [§ Declaring Without
++Styles](https://www.w3.org/TR/css-cascade-5/#layer-empty). Each recipe writes its imports first, so
++the rule holds whichever tool inlines them. The first recipe is the `tailwind` profile, which
++composes Tailwind's theme and utilities and leaves the reset to Veneer's own `reset` and `elements`
++layers.
+ 
+ ```css
+ @layer theme, reset, base, elements, components, utilities;
+@@ -361,8 +365,8 @@ which composes Tailwind's theme and utilities and leaves the reset to Veneer's o
+ ```
+ 
+ The following recipe is the `preflight` profile, which takes the bare import so Tailwind's own reset
+-fills the `base` layer. Veneer's `elements` layer sits after `base`, so the reset arrives under
+-Veneer's element treatment rather than over it.
++fills the `base` layer. Veneer's `elements` layer sits after the `base` layer, so the reset arrives
++under Veneer's element treatment rather than over it.
+ 
+ ```css
+ @layer theme, reset, base, elements, components, utilities;
+@@ -374,22 +378,21 @@ Veneer's element treatment rather than over it.
+ ```
+ 
+ The workspace compiles the `tailwind` recipe as written. The `tests/fixtures/tailwind/consumer.css`
+-fixture is that fence with one line changed — its `@source './markup.html';` line names
+-the markup fixture beside it in place of your own directory — and [the consumer
+-pairing](../tests/service/tailwind/consumer.test.ts) holds every other line of the file
+-equal to the fence, so a recipe edited here and not there reddens rather than shipping a
+-recipe nothing compiled. The workspace compiles the recipe with the installed PostCSS plugin
+-in Node, from the fixture's own path, so the `@orkestrel/veneer/styles` specifier resolves
+-through the manifest's `exports` entry the way a consumer's install resolves it, and no alias,
+-wrapper, or bundler stands in. The same proof reads the sheet that recipe compiles to: the
+-sheet carries Veneer's token namespace and its component rules; the markup's `px-8` utility is
+-generated, so the `@source` line reached the scanner; every element carrying a shared class name
+-resolves exactly what the shipped cascade alone resolves for it; and the `px-8` utility moves the
+-button's padding off the `.btn` declaration, which is the override a consumer pairs Tailwind for.
+-The `tests/fixtures/tailwind/unexcluded.css` fixture is the negative control: with the exclusion
+-line dropped, the same reading moves the `grid-column-start` property of the `.col-1` element
+-from `auto` to `1`, which
+-is what shows the equality can see a Tailwind rule winning.
++fixture is that fence with one line changed — its `@source './markup.html';` line names the markup
++fixture beside it in place of your own directory — and the consumer pairing holds every other line
++of the file equal to the fence, so a recipe edited here and not there reddens rather than shipping a
++recipe nothing compiled; see [the consumer pairing](../tests/service/tailwind/consumer.test.ts). The
++workspace compiles the recipe with the installed PostCSS plugin in Node, from the fixture's own
++path, so the `@orkestrel/veneer/styles` specifier resolves through the manifest's `exports` entry
++the way a consumer's install resolves it, and no alias, wrapper, or bundler stands in. The same
++proof reads the sheet that recipe compiles to: the sheet carries Veneer's token namespace and its
++component rules; the markup's `px-8` utility is generated, so the `@source` line reached the
++scanner; every element carrying a shared class name resolves exactly what the shipped cascade alone
++resolves for it; and the `px-8` utility moves the button's padding off the `.btn` declaration, which
++is the override a consumer pairs Tailwind for. The `tests/fixtures/tailwind/unexcluded.css` fixture
++is the negative control: with the exclusion line dropped, the same reading moves the
++`grid-column-start` property of the `.col-1` element from `auto` to `1`, which is what shows the
++equality can see a Tailwind rule winning.
+ 
+ The order line never changes between profiles. It is the line the `src/styles/_tokens.scss`
+ file declares, and declaring it ahead of the Tailwind import is what makes Tailwind's own
+@@ -402,27 +405,28 @@ line, because that importance does not cover every longhand Tailwind's rule woul
+ The line withholds a name that stays on it from Tailwind's generation, so Veneer's declaration is
+ the only one the page carries for it.
+ 
+-The `tests/setup.css` file is where the workspace writes that line. The
+-profiles proof reads it from that file rather than repeating it,
+-and holds every written copy equal to it — the recipes in this section,
+-`tests/fixtures/tailwind/preflight.css`, and `tests/fixtures/tailwind/consumer.css`; see
+-[stylesheet profiles](../tests/service/tailwind/profiles.test.ts). So a release that ships
+-another shared class name extends the line, and every copy left behind reddens until it matches.
+-
+-Nothing writes the shared set down either. [The consumer pairing](../tests/service/tailwind/consumer.test.ts)
+-derives it per run as the class names the built cascade and the unexcluded instrument both declare,
+-and asserts that `container`, `table`, `col-1`, `caption-top`, and `caption-bottom` are among them,
+-so a derivation that reached an empty stylesheet cannot read as a clean result. It then holds the
+-exclusion line equal to the derived names that the rule stated with the exclusion line keeps on
+-the line, which states that rule as an equality: a name that joins the set joins the line, and a
+-name that gains the `!important` declarations the rule asks for leaves the line. The proof reads
++The `tests/setup.css` file is where the workspace writes that line. The profiles proof reads it from
++that file rather than repeating it, and holds every written copy equal to it — the recipes in this
++section and the `tests/fixtures/tailwind/preflight.css` and `tests/fixtures/tailwind/consumer.css`
++files; see [stylesheet profiles](../tests/service/tailwind/profiles.test.ts). So a release that
++ships another shared class name extends the line, and every copy left behind reddens until it
++matches.
++
++Nothing writes the shared set down either; see [the consumer
++pairing](../tests/service/tailwind/consumer.test.ts). That proof derives it per run as the class
++names the built cascade and the unexcluded instrument both declare, and asserts that the
++`container`, `table`, `col-1`, `caption-top`, and `caption-bottom` classes are among them, so a
++derivation that reached an empty stylesheet cannot read as a clean result. It then holds the
++exclusion line equal to the derived names that the rule stated with the exclusion line keeps on the
++line, which states that rule as an equality: a name that joins the set joins the line, and a name
++that gains the `!important` declarations the rule asks for leaves the line. The proof reads
+ Tailwind's longhands from the unexcluded instrument and Veneer's importance from the built cascade,
+ each as Chromium expands it, so a shorthand counts as the longhands it sets. The importance branch
+ runs over the shared names that rule lets leave the line. No shipped shared name is important, so
+ that branch is driven by planted `!important` declarations on the `grid-column-start` and
+ `grid-column-end` longhands Tailwind's `col-1` rule declares, and it reads what the rule claims:
+-with the exclusion line dropped and Tailwind's own rule on the page, the element resolves, for
+-every property that rule declares, what it resolves under the cascade and the plant alone. The
++with the exclusion line dropped and Tailwind's own rule on the page, the element resolves, for every
++property that rule declares, what it resolves under the cascade and the plant alone. The
+ partial-importance plant makes only the `grid-column-start` longhand important, and the equality
+ still holds with the `col-1` class on the line.
+ 
+@@ -438,22 +442,21 @@ from what it emits.
+ The proofs under `tests/service/tailwind/` run in the `service` project. They compile each profile
+ in Node through the installed `@tailwindcss/postcss` plugin, from the profile's own path; they read
+ what a compiled sheet declares from its text, and what a page resolves from a headless Chromium page
+-that links the built cascade. Before any proof runs, the `tests/setupService.ts` module verifies
+-the compiler, the built cascade, the pinned Chromium, and the candidate list, writes that list, and
+-refuses loudly, naming the command that restores each gate where one does. Run
+-`npm run build:src:styles`, then `npm run test:service`. The `prepublishOnly` chain runs the
+-`test:service` script, and the `test` script does not.
+-
+-Veneer's `elements` layer sits after `base`, so Tailwind's reset arrives under Veneer's own element
+-treatment rather than over it: every property Veneer declares for an overlapping element keeps the
+-value the standalone cascade resolves for it, and what the `preflight` profile adds is the
+-properties Veneer leaves alone.
+-[The preflight pairing](../tests/service/tailwind/preflight.test.ts) derives the overlap — the
+-tags the compiled `base` layer's type selectors name, intersected with the tags Veneer's elements
+-partials style — renders one neutral element per tag, and reads every longhand that layer
+-declares, as Chromium expands it, before and after the profile loads. Each property Veneer's own
+-rules declare for the tag is asserted unchanged, and each property that moved is a row of the
+-following table.
++that links the built cascade. Before any proof runs, the `tests/setupService.ts` module verifies the
++compiler, the built cascade, the pinned Chromium, and the candidate list, writes that list, and
++refuses loudly, naming the command that restores each gate where one does. Run the
++`npm run build:src:styles` command, then the `npm run test:service` command. The `prepublishOnly`
++chain runs the `test:service` script, and the `test` script does not.
++
++Veneer's `elements` layer sits after the `base` layer, so Tailwind's reset arrives under Veneer's
++own element treatment rather than over it: every property Veneer declares for an overlapping element
++keeps the value the standalone cascade resolves for it, and what the `preflight` profile adds is the
++properties Veneer leaves alone; see [the preflight
++pairing](../tests/service/tailwind/preflight.test.ts). That proof derives the overlap — the tags the
++compiled `base` layer's type selectors name, intersected with the tags Veneer's elements partials
++style — renders one neutral element per tag, and reads every longhand that layer declares, as
++Chromium expands it, before and after the profile loads. Each property Veneer's own rules declare
++for the tag is asserted unchanged, and each property that moved is a row of the following table.
+ 
+ The border style and the tab size move on every overlapping element, because the reset's universal
+ rule declares them: it sets a border style the elements never paint, because it sets the border
+@@ -683,25 +686,25 @@ the core and browser targets. The `test:service` script runs the Tailwind proofs
+ 
+ The `test:src:styles` script builds first because the proof's subject is the compiled cascade: the
+ project loads the `dist/src/styles/index.css` file through its `setupFiles` array, and a case
+-reading that file reads the rules the browser resolved from it rather than the declarations the
+-SCSS sources carry. The mixin proofs compile their own fixture partial,
+-`tests/src/styles/fixtures/mixins.scss`, and the token proofs also drive declarations the case
+-writes.
++reading that file reads the rules the browser resolved from it rather than the declarations the SCSS
++sources carry. The mixin proofs compile their own `tests/src/styles/fixtures/mixins.scss` fixture
++partial, and the token proofs also drive declarations the case writes.
+ 
+ The `test:service` script does not build. The `service` project's readiness refuses a missing
+-`dist/src/styles/index.css` file and names `npm run build:src:styles`, and the `prepublishOnly`
+-chain runs `npm run build`, which builds the styles target, before the `test:service` script.
++`dist/src/styles/index.css` file and names the `npm run build:src:styles` command, and the
++`prepublishOnly` chain runs the `npm run build` command, which builds the styles target, before the
++`test:service` script.
+ 
+ ### Table classes
+ 
+ The table key ships whole, including compact cells, bordered and borderless cells, row and column
+ stripes, active and hover states, contextual colors, the group divider, the caption class, and
+-responsive wrappers. The component partial loads after the grid in the components layer.
++responsive wrappers.
+ 
+ Veneer's `elements` treatment puts a caption above its table, so the family carries a second caption
+-class beside Bootstrap's `.caption-top`: `.caption-bottom` returns one caption to the bottom
+-placement Bootstrap's own `caption` rule gives every caption. It is Veneer's own addition to that
+-family, and both classes sit in the `components` layer at the same specificity, so a caption
++class beside Bootstrap's `.caption-top` class: the `.caption-bottom` class returns one caption to
++the bottom placement Bootstrap's own `caption` rule gives every caption. It is Veneer's own addition
++to that family, and both classes sit in the `components` layer at the same specificity, so a caption
+ carrying the pair resolves to `bottom`, the later of the two rules.
+ 
+ Cells resolve state color before stripe color before base color. Their inset shadow resolves state
+@@ -725,9 +728,8 @@ boundary with Veneer's `width < Npx` form by adding 0.02 to the recorded boundar
+ 
+ ### Helper classes
+ 
+-The helper keys ship whole, each in its own partial after the table in the components layer: the
+-icon link with its icon combinator and its hover and focus shifts, the aspect-ratio box with its
+-named aspects, and the vertical rule.
++The helper keys ship whole, each in its own partial: the icon link with its icon combinator and its
++hover and focus shifts, the aspect-ratio box with its named aspects, and the vertical rule.
+ 
+ The icon link lays its content out as an inline flex row, tints its underline from `--vn-link-rgb`
+ at the `--bs-link-opacity` a consumer sets, and offsets that underline by `0.25em`. Its icon
+@@ -735,10 +737,10 @@ combinator sizes the icon to `1em` on each axis, fills it from the current color
+ transform. The `.icon-link-hover` class is what arms the shift: hover and keyboard focus each move
+ the icon by `--bs-icon-link-transform`, and the resting `.icon-link` class alone moves nothing.
+ 
+-The combinator names `.bi`, which is Bootstrap Icons' class. Veneer declares no rule for that class
+-and no rule selects it alone, so the combinator matches nothing until a consumer brings the icon
+-markup. This is the ruling the container's navigation combinators already carry: the declarations are
+-self-contained on the element Veneer owns.
++The combinator names the `.bi` class, which belongs to Bootstrap Icons. Veneer declares no rule for
++that class and no rule selects it alone, so the combinator matches nothing until a consumer brings
++the icon markup. This is the ruling the container's navigation combinators already carry: the
++declarations are self-contained on the element Veneer owns.
+ 
+ The aspect-ratio box holds its own proportion through a pseudo-element whose top padding is a
+ percentage, which resolves against the containing block's width. Each named aspect declares
+@@ -749,16 +751,16 @@ percentages to eight instead, because the official arithmetic rounds there. The
+ every percentage to six significant digits, the shipped column widths included, so the widest aspect
+ ships as `42.8571%` where the source declares `42.8571428571%`.
+ 
+-The vertical rule reads `--bs-border-width` for its width, stretches to its flex line, holds a
+-`1em` floor, and paints the current color at a literal `0.25` opacity. The alias `_tokens.scss`
+-declares over `--vn-border-width` is what carries a retune of either name into the rule. The opacity
+-stays a literal because no published scale retunes it, which is the treatment the `hr` rule gives its
+-own opacity.
++The vertical rule reads `--bs-border-width` for its width, stretches to its flex line, holds a `1em`
++floor, and paints the current color at a literal `0.25` opacity. The alias the `_tokens.scss`
++partial declares over `--vn-border-width` is what carries a retune of either name into the rule. The
++opacity stays a literal because no published scale retunes it, which is the treatment the `hr` rule
++gives its own opacity.
+ 
+-`tests/src/styles/components/icon-link.test.ts`, `tests/src/styles/components/ratio.test.ts`, and
+-`tests/src/styles/components/vr.test.ts` read each resolved treatment in the browser. The icon link's
+-reduced-motion collapse is read under the staged preference, and the declaration the rule carries
+-under that condition is read from the built cascade beside it.
++The `tests/src/styles/components/icon-link.test.ts`, `tests/src/styles/components/ratio.test.ts`,
++and `tests/src/styles/components/vr.test.ts` proofs read each resolved treatment in the browser. The
++icon link's reduced-motion collapse is read under the staged preference, and the declaration the
++rule carries under that condition is read from the built cascade beside it.
+ 
+ These are the keys' recorded departures.
+ 
+@@ -769,8 +771,8 @@ These are the keys' recorded departures.
+   the build emits it from the standard property without the source declaring it.
+ - **The icon's transition reads Veneer's motion tokens.** The official value is `0.2s ease-in-out`;
+   Veneer writes `var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to `0.15s ease`
+-  and rescales with `--vn-factor-motion`, as `.btn` does. A transition written outside those tokens
+-  would ignore the motion factor the package publishes.
++  and rescales with `--vn-factor-motion`, as the `.btn` class does. A transition written outside
++  those tokens would ignore the motion factor the package publishes.
+ - **The shift's direction is physical.** `translate3d(0.25em, 0, 0)` moves the icon to the right,
+   and Veneer declares that one transform, so the icon shifts the same way whatever the document's
+   writing direction.
+@@ -779,7 +781,7 @@ These are the keys' recorded departures.
+ 
+ The pagination key ships whole: the strip, its page links, the hover, focus, active, and disabled
+ states, the collapsed borders between adjacent pages, the rounded ends, and the small and large size
+-classes. The component partial loads after the vertical rule in the components layer.
++classes.
+ 
+ Every value the family paints is Bootstrap 5.3.8's own, apart from the forced-colors focus outline
+ § Additions records. A length reads the Veneer scale token that already resolves to it, so the strip
+@@ -819,20 +821,19 @@ Button family reads, because this family ships the release's recorded surface an
+ resolves to that easing. It is written through the `transition` mixin, so the reduced-motion rule the
+ release records beside it is emitted with it and the transition collapses under that preference.
+ 
+-`tests/src/styles/components/pagination.test.ts` reads each resolved treatment in the browser: the
+-size geometry, the collapsed borders as painted boxes, the stacking under a real pointer and real
+-keyboard focus, the focus ring through the installed ring reader, the twin state spellings, the
+-refused pointer, the density and radius factors, a consumer's own override, and the transition
+-collapse under the staged preference.
++The `tests/src/styles/components/pagination.test.ts` proof reads each resolved treatment in the
++browser: the size geometry, the collapsed borders as painted boxes, the stacking under a real
++pointer and real keyboard focus, the focus ring through the installed ring reader, the twin state
++spellings, the refused pointer, the density and radius factors, a consumer's own override, and the
++transition collapse under the staged preference.
+ 
+ ### Button group classes
+ 
+-The button group key ships whole, in its own partial after the vertical rule in the components
+-layer: the horizontal group, the vertical group, the relationships that join their children, and
+-the sized group families. It declares no custom property of its own. Its radius reads
+-`--bs-border-radius` and its overlap reads `--bs-border-width`, and `_tokens.scss` already declares
+-each of those over `--vn-radius-base` and `--vn-border-width`, so a consumer retuning either name
+-moves the group.
++The button group key ships whole, in its own partial: the horizontal group, the vertical group, the
++relationships that join their children, and the sized group families. It declares no custom property
++of its own. Its radius reads `--bs-border-radius` and its overlap reads `--bs-border-width`, and
++`_tokens.scss` already declares each of those over `--vn-radius-base` and `--vn-border-width`, so a
++consumer retuning either name moves the group.
+ 
+ A group lays its children out as an inline flex line, and each child grows and shrinks from an
+ automatic basis, so the children share the group's free space. The vertical group turns that line
+@@ -848,21 +849,22 @@ The corners follow the same physical reading. A horizontal group clears the trai
+ every child but the last and the leading corners of every child but the first, so the group keeps
+ one rounded outline; a vertical group clears the bottom corners and the top corners the same way. A
+ group nested inside a group is treated as one of those children, and its own children carry the
+-corners it would have carried. A child carrying `.dropdown-toggle` keeps its trailing corners,
+-which is what leaves room for the split toggle Disclosure ships.
+-
+-The `.btn-group-sm > .btn` and `.btn-group-lg > .btn` twins ship from
+-`src/styles/components/_button.scss`, where Bootstrap's own `@extend` puts them, so the sized group
+-families resolve the Button size each name declares and this partial writes nothing for them.
+-
+-`tests/src/styles/components/button-group.test.ts` reads each resolved treatment in the browser: the
+-direction and child growth, the overlap measured as the offset between neighbours, every corner of
+-every child position, the excluded `.dropdown-toggle` child read against a plain child in each
+-direction, each lift driven or written, the label of a focused input that is still unchecked, the
+-retuned compatibility variables, and the published radius and density factors. The lift a pressed
+-child takes is read out of the cascade as well as rendered: the pointer driver moves onto its target
+-before pressing it, so the rendered reading alone cannot tell the pressed selector from the hovered
+-one that lifts the same child.
++corners it would have carried. A child carrying the `.dropdown-toggle` class keeps its trailing
++corners, which is what leaves room for the split toggle Disclosure ships.
++
++The `.btn-group-sm > .btn` and `.btn-group-lg > .btn` twins ship from the
++`src/styles/components/_button.scss` partial, where Bootstrap's own `@extend` rule puts them, so the
++sized group families resolve the Button size each name declares and this partial writes nothing for
++them.
++
++The `tests/src/styles/components/button-group.test.ts` proof reads each resolved treatment in the
++browser: the direction and child growth, the overlap measured as the offset between neighbours,
++every corner of every child position, the excluded `.dropdown-toggle` child read against a plain
++child in each direction, each lift driven or written, the label of a focused input that is still
++unchecked, the retuned compatibility variables, and the published radius and density factors. The
++lift a pressed child takes is read out of the cascade as well as rendered: the pointer driver moves
++onto its target before pressing it, so the rendered reading alone cannot tell the pressed selector
++from the hovered one that lifts the same child.
+ 
+ These are the key's recorded departures.
+ 
+@@ -885,13 +887,12 @@ The `.btn-toolbar .input-group` combinator ships with the input group it sizes,
+ ### Progress classes
+ 
+ The progress key ships whole: the track, the stacked track, the bar, the striped bar, and the
+-animated bar. The component partial loads after the vertical rule in the components layer, and the
+-elements layer keeps its own `progress { vertical-align: baseline }` rule for the bare tag, which
+-this family never selects.
++animated bar. The elements layer keeps its own `progress { vertical-align: baseline }` rule for the
++bare tag, which this family never selects.
+ 
+ The track declares the whole closure the bar reads, so a consumer retunes a progress bar on the
+-element that carries it. Its radius reads `--bs-border-radius`, which `_tokens.scss` declares over
+-`--vn-radius-base`, so the radius factor rescales the track's corners; its fill reads
++element that carries it. Its radius reads `--bs-border-radius`, which the `_tokens.scss` partial
++declares over `--vn-radius-base`, so the radius factor rescales the track's corners; its fill reads
+ `--bs-secondary-bg`, so the track repaints with the color mode. The `--bs-progress-box-shadow`
+ property is declared and no rule reads it, which is Bootstrap's own emission: shadows are off in
+ this build, so the recorded cascade declares the variable and paints no shadow.
+@@ -908,13 +909,15 @@ These are the key's recorded departures.
+ 
+ - **The bar's text and fill read palette tokens.** The recorded values are `#fff` and `#0d6efd`,
+   and Veneer writes `var(--vn-palette-white-base)` and `var(--vn-palette-blue)`, which are the
+-  tokens declaring those bytes. A consumer retuning the palette moves the bar with it.
++  tokens declaring those bytes. The bar reads the palette entry rather than the primary role, so a
++  `--vn-color-primary-base` retune leaves it on the release's blue, and the
++  `--bs-progress-bar-bg` property on the track, or a `--vn-palette-blue` retune, moves it.
+ - **The stripe tints through the white channel triplet.** The recorded gradient writes
+   `rgba(255, 255, 255, 0.15)` at each stop, and Veneer writes
+   `rgba(var(--vn-palette-white-rgb), 0.15)`, which resolves to the same color.
+ 
+-`tests/src/styles/components/progress.test.ts` reads the resolved track, bar, stripe, transition,
+-and animation in the browser, under each motion preference and in each color mode.
++The `tests/src/styles/components/progress.test.ts` proof reads the resolved track, bar, stripe,
++transition, and animation in the browser, under each motion preference and in each color mode.
+ 
+ ### Spinner classes
+ 
+@@ -935,8 +938,8 @@ property a consumer retunes, which is why the animation itself is declared once.
+ The rotation is physical: the ring turns the same way whatever the document's writing direction, so
+ the direction-flipping annotation the release carries on that keyframe does not ship.
+ 
+-`tests/src/styles/components/spinner.test.ts` reads the resolved box, border, paint, and running
+-animation in the browser, under each motion preference and in each color mode.
++The `tests/src/styles/components/spinner.test.ts` proof reads the resolved box, border, paint, and
++running animation in the browser, under each motion preference and in each color mode.
+ 
+ ### Placeholder classes
+ 
+@@ -976,8 +979,8 @@ These are the key's recorded departures.
+   comparison reads declarations outside keyframes, so a keyframe's own declaration reaches neither
+   ledger file.
+ 
+-`tests/src/styles/components/placeholder.test.ts` reads the resolved paint, height floors, button
+-box, and both animations in the browser, in each color mode.
++The `tests/src/styles/components/placeholder.test.ts` proof reads the resolved paint, height floors,
++button box, and both animations in the browser, in each color mode.
+ 
+ ### Form label classes
+ 
+@@ -985,8 +988,7 @@ The form label partial ships the form label, the help text, and the horizontal l
+ The release records the form label and the help text under the umbrella `form` key and the
+ horizontal labels under the `col` key, so the ledger files each one there. With this partial the
+ `form` key ships whole: every other rule the umbrella key records ships from the partial of the key
+-its classes name, and the switch row's inset ships from the check partial. The component partial
+-loads first among the forms partials in the components layer, which is the release's order.
++its classes name, and the switch row's inset ships from the check partial.
+ 
+ A label sits above its control, and help text sits under its control at `0.875em` of the type around
+ it, in the secondary text color. Name the help text as the control's description through the
+@@ -1015,23 +1017,23 @@ relative to the element's own font size, and its color reads `--bs-secondary-col
+ so a retune of that variable repaints the help text. Neither records a departure, and neither does
+ the horizontal label's `0` margin, which is the release's own value.
+ 
+-[The form label classes](../tests/src/styles/components/form-label.test.ts) reads the resolved
+-treatment in the browser: the label's margin at the resting and a doubled density, the help text's
+-margin, its size under a `20px` parent, and its color against the resolved `--bs-secondary-color` in
+-each mode and under a wrapper override, the horizontal label's content box level with its control's
+-at each size, at a doubled density, and under a `4px` border-width and a line-height retune, each
+-horizontal label's type step and the sized labels' insets, the legend's cleared margin and its
+-control's type step, and the components layer. Each case table is held against the pinned inventory
+-in [the styles setup proof](../tests/setupStyles.test.ts). The capture journey writes a resting
+-element frame of each specimen.
++The form label proof reads the resolved treatment in the browser; see [the form label
++classes](../tests/src/styles/components/form-label.test.ts). It reads the label's margin at the
++resting and a doubled density, the help text's margin, its size under a `20px` parent, and its color
++against the resolved `--bs-secondary-color` in each mode and under a wrapper override, the
++horizontal label's content box level with its control's at each size, at a doubled density, and
++under a `4px` border-width and a line-height retune, each horizontal label's type step and the sized
++labels' insets, the legend's cleared margin and its control's type step, and the components layer.
++Each case table is held against the pinned inventory; see [the styles setup
++proof](../tests/setupStyles.test.ts). The capture journey writes a resting element frame of each
++specimen.
+ 
+ ### Form control classes
+ 
+-The text-control key ships whole: the control itself, its file button, date parts, and
+-placeholder, its focus and disabled states, the plaintext form, the small and large sizes, the
+-textarea heights, the color control and its swatches, and the reduced-motion twins of the control
+-and file-button transitions. The component partial loads before the range partial in the
+-components layer. The rules keyed to a bare element or a bare part stay in the elements layer — the
++The text-control key ships whole: the control itself, its file button, date parts, and placeholder,
++its focus and disabled states, the plaintext form, the small and large sizes, the textarea heights,
++the color control and its swatches, and the reduced-motion twins of the control and file-button
++transitions. The rules keyed to a bare element or a bare part stay in the elements layer — the
+ date-field padding, the color swatch wrapper's padding, and the file button's font and appearance —
+ and the `src/styles/components/_form-control.scss` partial restates none of them.
+ 
+@@ -1060,7 +1062,9 @@ These are the key's recorded departures.
+   official brand color; Veneer reads the `--vn-focus-width` and `--vn-focus-color` tokens, the
+   binding the `.btn` class already carries, which resolves to a `0.1875rem` ring. The focused border
+   mixes half of the `--vn-palette-blue` entry over the `--vn-palette-white-base` entry, which lands
+-  within one channel step of the official `#86b7fe` value in either mode.
++  within one channel step of the official `#86b7fe` value in either mode. The border reads the
++  palette entry rather than the primary role, so a `--vn-color-primary-base` retune leaves it on the
++  release's tint, and a `--vn-palette-blue` retune moves it.
+ - **The transitions read the motion tokens.** The official timing is the `0.15s ease-in-out` value;
+   Veneer writes the `var(--vn-motion-feedback) var(--vn-ease-standard)` value, which resolves to the
+   `0.15s ease` value, and emits each reduced-motion twin through the shared transition mixin.
+@@ -1113,12 +1117,11 @@ frame of the text control under keyboard focus.
+ 
+ ### Form select classes
+ 
+-The select key ships every rule the release writes on the select itself: the control, its focus,
+-its list forms, its disabled surface, the Gecko focus-ring reset, the small and large sizes, the
+-reduced-motion twin of its transition, and the dark caret rule. The component partial loads after
+-the validation partial and before the range partial in the components layer. The floating-label
+-and input-group rules the key also records belong to those components' own partials, and the
+-validation rules on the select ship from the `src/styles/components/_validation.scss` partial.
++The select key ships every rule the release writes on the select itself: the control, its focus, its
++list forms, its disabled surface, the Gecko focus-ring reset, the small and large sizes, the
++reduced-motion twin of its transition, and the dark caret rule. The floating-label and input-group
++rules the key also records belong to those components' own partials, and the validation rules on the
++select ship from the `src/styles/components/_validation.scss` partial.
+ 
+ The caret is the release's own glyph. A data URI cannot read a custom property, so the caret comes
+ from the maps in the `src/styles/_tokens.scss` file at compile time: the
+@@ -1136,13 +1139,13 @@ These are the key's recorded departures.
+ 
+ - **The select's spacing reads the space scale.** The padding, the caret's inset, and the size
+   classes' padding read the `--vn-space-2`, `--vn-space-3`, `--vn-space-4`, `--vn-space-6`, and
+-  `--vn-space-8` tokens, and the end padding that clears the caret is the `--vn-space-6` token
+-  three times over, the release's own derivation. A select with no validation state rescales with
+-  the `--vn-factor-density` token as the shipped partials do. A validation state keeps the
+-  release's literal icon geometry, as § Validation classes states, so a validated single-row select
+-  keeps the release's end padding and caret inset at any density. A validated list form
+-  (`[multiple]`, or `[size]` above one row) carries no caret and keeps the list padding, which
+-  follows density. The caret's own `16px 12px` size stays literal.
++  `--vn-space-8` tokens, and the end padding that clears the caret is the `--vn-space-6` token three
++  times over, the release's own derivation. A select with no validation state rescales with the
++  `--vn-factor-density` token as the shipped partials do. A validation state keeps the release's
++  literal icon geometry, as § Validation classes states, so a validated single-row select keeps the
++  release's end padding and caret inset at any density. A validated list form (a `[multiple]`
++  attribute, or a `[size]` attribute above one row) carries no caret and keeps the list padding,
++  which follows density. The caret's own `16px 12px` size stays literal.
+ - **The select's type reads the size, weight, and line scales.** The font size reads the
+   `--vn-size-3` token, and the `--vn-size-2` and `--vn-size-5` tokens on the small and large
+   selects; the weight and line height read the `--vn-weight-body` and `--vn-line-body` tokens. Each
+@@ -1152,6 +1155,8 @@ These are the key's recorded departures.
+   value, the binding the `.btn` class already carries, which resolves to a `0.1875rem` ring. The
+   focused border is the official tint written as half the `--vn-palette-blue` token over the
+   `--vn-palette-white-base` token, the mix the official cascade bakes into its `#86b7fe` literal.
++  The border reads the palette entry rather than the primary role, so a `--vn-color-primary-base`
++  retune leaves it on the release's tint, and a `--vn-palette-blue` retune moves it.
+ - **The transition reads the motion tokens.** The official cascade writes the `0.15s ease-in-out`
+   value; the partial writes the `var(--vn-motion-feedback) var(--vn-ease-standard)` value, which
+   resolves to the `0.15s ease` value, and emits the reduced-motion twin through the shared transition mixin.
+@@ -1172,33 +1177,32 @@ The fill, the text, the border, the corners, the disabled surface, and the Gecko
+ `--bs-border-radius` family, and the `--bs-secondary-bg` variable, all of which this package
+ already declares, so each matches the official value and records no departure.
+ 
+-[The select classes](../tests/src/styles/components/form-select.test.ts) reads the resolved
+-treatment in the browser. Each row of the proof's case table is resolved on the element its
+-selector matches and compared with the value the same engine resolves for the official text, so the
+-text and fill colors, the list forms' missing image, and the size geometry answer to the official
+-record rather than to figures written by hand. The table carries every declaration the release
+-writes on the select's own rules except the image, the transition and its reduced-motion twin, and
+-the prefixed appearance aliases on the `.form-select` rule, and the whole `.form-select:focus` rule. The caret cases read
+-the image in each mode, on a single-row select, and under a direct retune; the reduced-motion case
+-reads the transition; the keyboard focus case reads the focused border, ring, and outline, and the
+-forced-colors case reads the outline under staged forced colors. A wrapper that sets its own text
+-color leaves the select's text in the body color in each mode. The
+-focused border is held within one channel step of the official tint, because the official compiler
+-rounds the mix's half-step channel to a whole one and the engine keeps the half step. Chromium
+-discards the `:-moz-focusring` selector at parse time, so no reading in that browser reaches the
+-Gecko reset; [the styles setup proof](../tests/setupStyles.test.ts) reads its declarations out of
+-the compiled cascade instead, which is evidence of the compiled contract rather than of a rendered
+-result. The capture journey writes a resting frame of each specimen and a page frame of the plain
+-select under keyboard focus.
++The select proof reads the resolved treatment in the browser; see [the select
++classes](../tests/src/styles/components/form-select.test.ts). Each row of the proof's case table is
++resolved on the element its selector matches and compared with the value the same engine resolves
++for the official text, so the text and fill colors, the list forms' missing image, and the size
++geometry answer to the official record rather than to figures written by hand. The table carries
++every declaration the release writes on the select's own rules except the image, the transition and
++its reduced-motion twin, and the prefixed appearance aliases on the `.form-select` rule, and the
++whole `.form-select:focus` rule. The caret cases read the image in each mode, on a single-row
++select, and under a direct retune; the reduced-motion case reads the transition; the keyboard focus
++case reads the focused border, ring, and outline, and the forced-colors case reads the outline under
++staged forced colors. A wrapper that sets its own text color leaves the select's text in the body
++color in each mode. The focused border is held within one channel step of the official tint, because
++the official compiler rounds the mix's half-step channel to a whole one and the engine keeps the
++half step. Chromium discards the `:-moz-focusring` selector at parse time, so no reading in that
++browser reaches the Gecko reset, and the styles setup proof reads its declarations out of the
++compiled cascade instead, which is evidence of the compiled contract rather than of a rendered
++result; see [the styles setup proof](../tests/setupStyles.test.ts). The capture journey writes a
++resting frame of each specimen and a page frame of the plain select under keyboard focus.
+ 
+ ### Form check classes
+ 
+ The check key ships whole: the check row and its floated box, the checkbox and radio shapes, the
+ held, focused, checked, mixed, and disabled states, the reverse and inline layouts, and the switch
+-with its track, its knob positions, and the reduced-motion twin of the knob transition. The
+-component partial loads before the range partial in the components layer. The release records the
+-switch row's own inset only under the umbrella `form` key, and it ships here, because the switch
+-track needs it. The validation rules that reach a check ship from the
++with its track, its knob positions, and the reduced-motion twin of the knob transition. The release
++records the switch row's own inset only under the umbrella `form` key, and it ships here, because
++the switch track needs it. The validation rules that reach a check ship from the
+ `src/styles/components/_validation.scss` partial. The `.btn-check` rules the release writes in its
+ own check partial are recorded under the `btn` key, and they ship in Button's own form from the
+ `src/styles/components/_button.scss` partial. This partial writes none of either.
+@@ -1208,13 +1212,12 @@ read a custom property, so the `src/styles/components/_form-check.scss` partial
+ of the `$icons` map in the `src/styles/_tokens.scss` file into the `--bs-form-check-bg-image` and
+ `--bs-form-switch-bg` variables the release writes, and a state rule sets the variable rather than
+ restating the paint around it. The resting knob is the one glyph the release repaints by mode, so
+-the partial declares its dark value on the release's own dark rule,
+-`[data-bs-theme='dark'] .form-switch .form-check-input:not(:checked):not(:focus)`, reading the
+-`switch-knob` entry of the `$dark` map: the theme scopes declare nothing for that variable, so the
+-control's own rules decide the knob in both modes. The descendant rule also reaches a resting
+-switch inside a light island
+-nested in a dark one, as the release's own rule does, and the partial adds no light-scope reset.
+-Retune one control's glyph by declaring the variable on that control.
++the partial declares its dark value on the release's own
++`[data-bs-theme='dark'] .form-switch .form-check-input:not(:checked):not(:focus)` dark rule, reading
++the `switch-knob` entry of the `$dark` map: the theme scopes declare nothing for that variable, so
++the control's own rules decide the knob in both modes. The descendant rule also reaches a resting
++switch inside a light island nested in a dark one, as the release's own rule does, and the partial
++adds no light-scope reset. Retune one control's glyph by declaring the variable on that control.
+ 
+ These are the key's recorded departures.
+ 
+@@ -1227,16 +1230,18 @@ These are the key's recorded departures.
+   `--vn-palette-blue`, the entry that resolves to the release's own `#0d6efd`. Every glyph that
+   fill carries bakes the release's white, so the fill reads the mode-independent palette entry
+   rather than the role fill, which the dark mode lightens under that white. A
+-  `--vn-color-primary-base` retune therefore leaves a checked box on the release's blue.
++  `--vn-color-primary-base` retune therefore leaves a checked box on the release's blue, and a
++  `--vn-palette-blue` retune moves it.
+ - **The focus ring binds the focus tokens, and the focus border tints the blue palette entry.** The
+   focused border mixes `--vn-palette-blue` at half strength over `--vn-palette-white-base`, which is
+   how the release derives its `#86b7fe`; the exact midpoint reads half a channel step under that
+   literal. The ring reads `--vn-focus-width` and `--vn-focus-color`, which resolves to a
+   `0.1875rem` ring and is the binding `.btn` already carries. A `--vn-color-primary-base` retune
+-  moves the ring and leaves the border on the release's tint.
++  moves the ring and leaves the border on the release's tint, and a `--vn-palette-blue` retune moves
++  the border.
+ - **The knob transition reads the motion tokens.** The release's value is `0.15s ease-in-out`;
+   Veneer writes `var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to `0.15s ease`,
+-  and emits the reduced-motion twin through the shared transition mixin, as `.btn` does.
++  and emits the reduced-motion twin through the shared transition mixin, as the `.btn` class does.
+ - **The prefixed appearance and color-adjust aliases are absent from the source.** The release
+   writes `-webkit-appearance`, `-moz-appearance`, `-webkit-print-color-adjust`, and `color-adjust`
+   beside the standard properties; the partial writes the standard properties alone, and the build
+@@ -1250,31 +1255,30 @@ The resting fill reads `--bs-body-bg`, and the border reads `--bs-border-width`
+ `--bs-border-color`, each of which this package already declares, so each matches the release's
+ value and records no departure.
+ 
+-[The check classes](../tests/src/styles/components/form-check.test.ts) reads the resolved treatment
+-in the browser: the row and box geometry, each shape, the resting fill in the light and dark modes, the filled
+-states against the palette entry, every glyph against the release's own URI, the dark knob, the
+-ring after keyboard traversal and its ratio in each mode, the outline under staged forced colors,
+-the held and disabled states, the reverse and inline layouts, and the knob transition at rest and
+-under the staged reduced-motion preference.
+-Each case table is held against the pinned inventory in
+-[the styles setup proof](../tests/setupStyles.test.ts). The capture journey photographs each
+-specimen at rest as an element frame, the resting checkbox under keyboard focus as a page frame,
+-and a lifted copy of that checkbox marked mixed as an element frame, because the mixed state is a
+-property no attribute declares. No proof prints, so the proof reads the `print-color-adjust`
+-declaration as its resolved value alone.
++The check proof reads the resolved treatment in the browser; see [the check
++classes](../tests/src/styles/components/form-check.test.ts). It reads the row and box geometry, each
++shape, the resting fill in the light and dark modes, the filled states against the palette entry,
++every glyph against the release's own URI, the dark knob, the ring after keyboard traversal and its
++ratio in each mode, the outline under staged forced colors, the held and disabled states, the
++reverse and inline layouts, and the knob transition at rest and under the staged reduced-motion
++preference. Each case table is held against the pinned inventory; see [the styles setup
++proof](../tests/setupStyles.test.ts). The capture journey photographs each specimen at rest as an
++element frame, the resting checkbox under keyboard focus as a page frame, and a lifted copy of that
++checkbox marked mixed as an element frame, because the mixed state is a property no attribute
++declares. No proof prints, so the proof reads the `print-color-adjust` declaration as its resolved
++value alone.
+ 
+ ### Form range classes
+ 
+ The range key ships whole: the control itself, its focus and disabled states, the thumb and the
+ track each engine names with its own pseudo-element, the held thumb, and the reduced-motion twin of
+-the thumb transition. The component partial loads after the vertical rule in the components layer.
+-No rule keyed to the bare `[type=range]` attribute ships with it, so a slider carrying no class
+-renders as the user agent paints it.
++the thumb transition. No rule keyed to the bare `[type=range]` attribute ships with it, so a slider
++carrying no class renders as the user agent paints it.
+ 
+ WebKit and Gecko name the thumb and the track with pseudo-elements of their own, and an engine
+ discards a selector naming the other engine's. Bootstrap writes the family out once per engine for
+-that reason, and `src/styles/components/_form-range.scss` emits the same rules from one declaration
+-of the pair, so a retune reaches both halves together.
++that reason, and the `src/styles/components/_form-range.scss` partial emits the same rules from one
++declaration of the pair, so a retune reaches both halves together.
+ 
+ These are the key's recorded departures.
+ 
+@@ -1287,16 +1291,16 @@ These are the key's recorded departures.
+   entry that resolves to the official cascade's own `#0d6efd`, and the held thumb lightens it to
+   three tenths of that entry over `--vn-palette-white-base`, which is the tint the official cascade
+   bakes into its own literal. A `--vn-color-primary-base` retune therefore leaves the thumb on the
+-  official blue, because the rule reads the palette entry rather than the role fill.
++  official blue, because the rule reads the palette entry rather than the role fill, and a
++  `--vn-palette-blue` retune moves it.
+ - **The focus ring binds the focus tokens.** The official shadow is a hairline over a quarter-rem
+   ring in the official brand color; Veneer keeps the hairline and reads `--vn-focus-width` and
+   `--vn-focus-color` for the ring, which resolves to a `0.1875rem` ring and is the binding `.btn`
+   already carries. The hairline paints `--vn-surface-body-base`, the variable the official cascade
+   compiles to white.
+ - **The thumb transition reads the motion tokens.** The official value is `0.15s ease-in-out`;
+-  Veneer writes `var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to
+-  `0.15s ease`, and emits the reduced-motion twin through the shared transition mixin, as `.btn`
+-  does.
++  Veneer writes `var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to `0.15s ease`,
++  and emits the reduced-motion twin through the shared transition mixin, as the `.btn` class does.
+ - **The prefixed appearance and transition aliases are absent.** The official cascade writes
+   `-webkit-appearance`, `-moz-appearance`, `-webkit-transition`, and `-moz-transition` beside the
+   standard properties; the build's targets emit the standard property alone.
+@@ -1309,19 +1313,20 @@ The track fill reads `--bs-secondary-bg` and the disabled thumb reads `--bs-seco
+ both of which this package already declares, so each matches the official value and records no
+ departure.
+ 
+-[The range classes](../tests/src/styles/components/form-range.test.ts) reads the resolved treatment
+-in the browser, and each limit that bounds what the proof can claim is recorded there beside the
+-reading it bounds. Chromium answers a computed-style request for a slider part with the host's own
+-resolved style rather than the part's, so the thumb's geometry, paint, and transition have no
+-resolved reading. Chromium discards a selector naming a Gecko pseudo-element at parse time, so no
+-reading taken in that browser reaches the Gecko half at all. A pointer hold on a slider part is not
+-reachable through the installed browser exports, and a hold on the control itself moves the value
+-rather than entering the part's `:active`, so the held thumb has a declaration reading and no drive.
+-The declarations both halves carry are read out of the compiled cascade in [the styles setup
++The range proof reads the resolved treatment in the browser, and each limit that bounds what the
++proof can claim is recorded there beside the reading it bounds; see [the range
++classes](../tests/src/styles/components/form-range.test.ts). Chromium answers a computed-style
++request for a slider part with the host's own resolved style rather than the part's, so the thumb's
++geometry, paint, and transition have no resolved reading. Chromium discards a selector naming a
++Gecko pseudo-element at parse time, so no reading taken in that browser reaches the Gecko half at
++all. A pointer hold on a slider part is not reachable through the installed browser exports, and a
++hold on the control itself moves the value rather than entering the part's `:active` state, so the
++held thumb has a declaration reading and no drive. The styles setup proof reads the declarations
++both halves carry out of the compiled cascade; see [the styles setup
+ proof](../tests/setupStyles.test.ts). The page frame the capture journey writes shows the rendered
+ thumb and the rendered track; the ring paints on a part with no resolved reading, so its rendered
+-evidence is open, and its contrast ratio is uncompared for this key because `readRing` reads the
+-chrome the focused element itself wears and this ring sits on a part Chromium withholds.
++evidence is open, and its contrast ratio is uncompared for this key because the `readRing` function
++reads the chrome the focused element itself wears and this ring sits on a part Chromium withholds.
+ The host's outline under staged forced colors has a resolved reading, because the host wears it.
+ 
+ ### Form floating classes
+@@ -1329,11 +1334,10 @@ The host's outline under staged forced colors has a resolved reading, because th
+ The floating-label key ships the container and the floated geometry of the controls inside it: the
+ text control, the plaintext control, and the select. It ships the label with its transforms under
+ focus, when filled, and when autofilled, beside the reduced-motion twin of the label transition. It
+-also ships the textarea label backdrop and the disabled and plaintext labels. The component partial
+-loads after the range partial and before the validation partial in the components layer, which is
+-the release's order: where a validation rule and a floating rule tie on one property, the validation
+-rule wins, so a valid or invalid floating control keeps the end padding its state icon sits in. The
+-validation partial emits the validation rules the release records against the container. The
++also ships the textarea label backdrop and the disabled and plaintext labels. Where a validation
++rule and a floating rule tie on one property, the validation rule wins under the forms order
++§ Styles states, so a valid or invalid floating control keeps the end padding its state icon sits
++in. The validation partial emits the validation rules the release records against the container. The
+ input-group partial emits the input-group rules for a floating child, and the ledger attributes a
+ selector naming both classes to this key, so any departure those rules carry is recorded in this
+ key's table.
+@@ -1380,21 +1384,22 @@ release's. The border width, the body color, the body and secondary surfaces, an
+ radius read the `--bs-*` variables the release names, so each declaration matches the release's own
+ text and moves with a consumer's retune of that variable.
+ 
+-[The floating label classes](../tests/src/styles/components/form-floating.test.ts) reads the
+-resolved treatment in the browser: the container's positioning, each control's height and insets at
+-rest, under keyboard focus, and after typing, the label's position, fade, transform, and origin in
+-each of those states, the backdrop's geometry and its `disabled` surface, the plaintext label's
+-border, the disabled label's gray, the end padding a valid or invalid control keeps for its state
+-icon, and the transition at rest and under the staged reduced-motion preference. It also reads the
+-height and every inset at a doubled density factor, the backdrop radius at a doubled radius factor,
+-the label and the backdrop in each color mode, and the declarations under an ancestor retune of each
+-`--bs-*` variable the family reads. Each limit that bounds what the proof can claim is recorded in
+-the `tests/src/styles/components/form-floating.test.ts` file beside the reading it bounds. The
+-installed browser exports offer no way to put a control into the autofilled state, so the autofill
+-rules have no resolved reading, and the proof reads the declarations the cascade authors for them,
+-which is compiled-contract evidence rather than a rendered proof. The class-qualified disabled label
+-rule paints what the bare disabled rule already paints, so it takes the same declaration reading.
+-The `.form-select` rule removes the select's native appearance, so the floating select's
++The floating label proof reads the resolved treatment in the browser; see [the floating label
++classes](../tests/src/styles/components/form-floating.test.ts). It reads the container's
++positioning, each control's height and insets at rest, under keyboard focus, and after typing, the
++label's position, fade, transform, and origin in each of those states, the backdrop's geometry and
++its `disabled` surface, the plaintext label's border, the disabled label's gray, the end padding a
++valid or invalid control keeps for its state icon, and the transition at rest and under the staged
++reduced-motion preference. It also reads the height and every inset at a doubled density factor, the
++backdrop radius at a doubled radius factor, the label and the backdrop in each color mode, and the
++declarations under an ancestor retune of each `--bs-*` variable the family reads. Each limit that
++bounds what the proof can claim is recorded in the
++`tests/src/styles/components/form-floating.test.ts` file beside the reading it bounds. The installed
++browser exports offer no way to put a control into the autofilled state, so the autofill rules have
++no resolved reading, and the proof reads the declarations the cascade authors for them, which is
++compiled-contract evidence rather than a rendered proof. The class-qualified disabled label rule
++paints what the bare disabled rule already paints, so it takes the same declaration reading. The
++`.form-select` rule removes the select's native appearance, so the floating select's
+ `line-height: 1.25` declaration resolves against its type size and the proof reads it resolved. The
+ select's own border, radius, and paint belong to the `.form-select` rule, which ships, so the
+ `form-floating-select` frame shows the floated label over the styled select; the text control's
+@@ -1406,13 +1411,12 @@ the floated label over the styled control.
+ The input group key ships every selector the release records for it except the `.dropdown-toggle`
+ corner rules: the group row, the text control, select, and floating wrapper that take its free
+ space, the focus and button lifts, the text addon, the large and small sizes, the squared inner
+-corners, the overlap margin, and the width a group takes inside a toolbar. The component partial
+-loads directly before the validation partial in the components layer, which is the release's own
+-order: where a size rule and a validation state carry the same specificity, the state wins, so a
+-failing control in a sized group keeps the padding its mark sits in. The feedback and tooltip keys
+-close with it, because the overlap rule this partial writes is the one rule they share with the
+-group; each element's own rules ship from `src/styles/components/_validation.scss`, which
+-§ Validation classes describes.
++corners, the overlap margin, and the width a group takes inside a toolbar. Where a size rule and a
++validation state carry the same specificity, the state wins under the forms order § Styles states,
++so a failing control in a sized group keeps the padding its mark sits in. The feedback and tooltip
++keys close with it, because the overlap rule this partial writes is the one rule they share with the
++group; each element's own rules ship from the `src/styles/components/_validation.scss` partial,
++which § Validation classes describes.
+ 
+ Every child after the first pulls back by `--bs-border-width`, so two neighbours paint one line,
+ where each neighbour's border is one `--bs-border-width` wide, and the group squares each corner a
+@@ -1454,36 +1458,36 @@ The addon's text, fill, border, and radius read `--bs-body-color`, `--bs-tertiar
+ so each matches the official value and records no departure. The addon therefore repaints with the
+ color mode, and its corners follow `--vn-factor-radius`.
+ 
+-[The input group classes](../tests/src/styles/components/input-group.test.ts) reads the resolved
+-treatment in the browser: the row and the child that grows, the overlap against the published border
+-width, every squared and kept corner on the addon, the control, the button, and a control inside a
+-floating wrapper, the count a group reporting validation moves, the feedback and tooltip left in
+-place with the tooltip below the group, each size on every child it names, the room a failing
+-control keeps for its mark in a sized group, the focus and button lifts after keyboard focus, the
+-grouped button's own ring, the toolbar width, and the addon's paint, factors, override, and mode.
+-The text control and select classes write their corners from `--bs-border-radius` through the
+-`input-border` mixin. The proof holds every kept corner to the radius the same element carries
+-outside a group, and it holds the control's and the select's kept corners to the value that the
+-`--bs-border-radius` custom property resolves to. Every corner the group squares reads zero. The
+-group's free-space and focus-lift rules select the floating wrapper, so the proof reads them on the
+-wrapper. The wrapper draws no border, so the proof reads the corners the group squares on the
+-control or select inside it. No wrapper the proof mounts holds a label, so the proof reads no
+-floated label. The addon takes no position, so a grouped control already paints over it at rest; the
+-focus lift matters against a grouped button, which rests one step up at `z-index: 2`. The page frame
+-the capture journey writes shows the `Input group button` specimen's control under keyboard focus,
+-lifted to `z-index: 5`, with its ring over the grouped button. The capture journey writes a resting
+-element frame of the `Input group valid tooltip` specimen and one of the `Input group invalid
+-tooltip` specimen. In each, the validated group's revealed tooltip hangs over the button-led group
+-the specimen renders beneath that validated group. The journey reads that the tooltip ends inside
+-the frame and paints over that group's button, because the tooltip rule writes `z-index: 5` and a
+-grouped button rests at `z-index: 2`.
++The input group proof reads the resolved treatment in the browser; see [the input group
++classes](../tests/src/styles/components/input-group.test.ts). It reads the row and the child that
++grows, the overlap against the published border width, every squared and kept corner on the addon,
++the control, the button, and a control inside a floating wrapper, the count a group reporting
++validation moves, the feedback and tooltip left in place with the tooltip below the group, each size
++on every child it names, the room a failing control keeps for its mark in a sized group, the focus
++and button lifts after keyboard focus, the grouped button's own ring, the toolbar width, and the
++addon's paint, factors, override, and mode. The text control and select classes write their corners
++from `--bs-border-radius` through the `input-border` mixin. The proof holds every kept corner to the
++radius the same element carries outside a group, and it holds the control's and the select's kept
++corners to the value that the `--bs-border-radius` custom property resolves to. Every corner the
++group squares reads zero. The group's free-space and focus-lift rules select the floating wrapper,
++so the proof reads them on the wrapper. The wrapper draws no border, so the proof reads the corners
++the group squares on the control or select inside it. No wrapper the proof mounts holds a label, so
++the proof reads no floated label. The addon takes no position, so a grouped control already paints
++over it at rest; the focus lift matters against a grouped button, which rests one step up at
++`z-index: 2`. The page frame the capture journey writes shows the `Input group button` specimen's
++control under keyboard focus, lifted to `z-index: 5`, with its ring over the grouped button. The
++capture journey writes a resting element frame of the `Input group valid tooltip` specimen and one
++of the `Input group invalid tooltip` specimen. In each, the validated group's revealed tooltip hangs
++over the button-led group the specimen renders beneath that validated group. The journey reads that
++the tooltip ends inside the frame and paints over that group's button, because the tooltip rule
++writes `z-index: 5` and a grouped button rests at `z-index: 2`.
+ 
+ ### Validation classes
+ 
+-The validation keys ship whole in their own partial after the forms partials in the components
+-layer: the `.was-validated` scope, the `.is-valid` and `.is-invalid` classes, and the feedback and
+-tooltip elements each state reveals. The partial writes each state's cascade from the same loop
+-over the state list, because the release emits them from a shared mixin as well.
++The validation keys ship whole in their own partial: the `.was-validated` scope, the `.is-valid` and
++`.is-invalid` classes, and the feedback and tooltip elements each state reveals. The partial writes
++each state's cascade from the same loop over the state list, because the release emits them from a
++shared mixin as well.
+ 
+ A state paints through the `--bs-form-valid-*` and `--bs-form-invalid-*` aliases the theme mixin
+ already declares, so retuning `--vn-form-valid` and `--vn-form-invalid` retunes a passing and a
+@@ -1511,21 +1515,20 @@ These are the keys' recorded departures.
+   together under `--vn-factor-density`, and the icon room stays the release's literal, as the rest
+   of the icon geometry does.
+ 
+-`tests/src/styles/components/validation.test.ts` reads each resolved treatment in the browser: the
+-border and text paint in light and inside a dark island, the mark on a validated control and on a
+-single-value select, the focus ring, the reveal a sibling's state drives, the tooltip's placement,
+-the check label's tint, the stacking an input-group child takes, the outline a focused validated
+-control keeps under staged forced colors, and the validated color control's width against the
+-resting one at a doubled density and under a direct `--vn-space-24` override. It also reads a
+-required empty control inside a `.was-validated` form on arrival and again after the control is
+-filled, which is the scoped form the release reaches without a state class.
++The `tests/src/styles/components/validation.test.ts` proof reads each resolved treatment in the
++browser: the border and text paint in light and inside a dark island, the mark on a validated
++control and on a single-value select, the focus ring, the reveal a sibling's state drives, the
++tooltip's placement, the check label's tint, the stacking an input-group child takes, the outline a
++focused validated control keeps under staged forced colors, and the validated color control's width
++against the resting one at a doubled density and under a direct `--vn-space-24` override. It also
++reads a required empty control inside a `.was-validated` form on arrival and again after the control
++is filled, which is the scoped form the release reaches without a state class.
+ 
+ ### Card classes
+ 
+ The card key ships whole: the card box, its header and footer caps, the body and its title family,
+ the link pair, the image placements and the overlay, the header navigations, the list-group
+-combinators, and the card group. The component partial loads in the components layer, at the
+-barrel's Bootstrap order.
++combinators, and the card group.
+ 
+ `--bs-card-border-radius` rounds the card's own box, and `--bs-card-inner-border-radius` is that
+ radius less the border width, which is what the caps, the images, and the overlay round to so their
+@@ -1543,11 +1546,11 @@ The combinators for a list group are authored in this partial rather than in the
+ which is where the release authors them. The official inventory records them under the card key and
+ under the list-group key alike, and one emission answers for both readings.
+ 
+-`.card-header-tabs .nav-link.active` names `.nav-link`, which is Navigation's class. This partial
+-declares no rule for that class and no rule selects it alone, so the combinator matches nothing
+-until a consumer brings the tab markup. It is the ruling the container's navigation combinators and
+-the icon link's `.bi` combinator already carry: the declarations are self-contained on the element
+-Veneer owns.
++The `.card-header-tabs .nav-link.active` selector names the `.nav-link` class, which belongs to
++Navigation. This partial declares no rule for that class and no rule selects it alone, so the
++combinator matches nothing until a consumer brings the tab markup. It is the ruling the container's
++navigation combinators and the icon link's `.bi` combinator already carry: the declarations are
++self-contained on the element Veneer owns.
+ 
+ `.card-group` lays its cards out as one row at and above the `sm` boundary, through the tree's
+ upward breakpoint mixin. The joined row squares the facing corners of each card and of the caps and
+@@ -1566,31 +1569,30 @@ These are the key's recorded departures.
+ - **No shadow is painted.** `--bs-card-box-shadow` is declared empty and the card writes no
+   `box-shadow`, which is what the release emits with its shadow flag off.
+ 
+-`tests/src/styles/components/card.test.ts` reads each resolved treatment in the browser: the cap and
+-body spacing, the inner radius on every cap and image, the overlay's bounds, the list-group joins at
+-each position a group takes inside a card, an `active` header tab against a resting link in the same
+-navigation, and the group boundary at each viewport around it, on cards carrying every cap and image
+-the joined row squares.
++The `tests/src/styles/components/card.test.ts` proof reads each resolved treatment in the browser:
++the cap and body spacing, the inner radius on every cap and image, the overlay's bounds, the
++list-group joins at each position a group takes inside a card, an `active` header tab against a
++resting link in the same navigation, and the group boundary at each viewport around it, on cards
++carrying every cap and image the joined row squares.
+ 
+ ### List group classes
+ 
+ The list-group key ships whole: the group box, its items and the joins between them, the `active`
+ item and its overlap, the `disabled` item on a class and on the native attribute, the action states
+ on an anchor host and on a button host, the numbered counter, the flush edges, the horizontal ramp,
+-and the contextual roles. The component partial loads in the components layer, at the barrel's
+-Bootstrap order.
++and the contextual roles.
+ 
+ Items share one edge rather than drawing two. Every item after the first drops its top border, and
+-an item carrying `active` takes the border back and pulls itself up by the same width, so its own
+-fill covers the join instead of adding a line to it. The ends of the group inherit their radius
+-rather than reading the group's own slot, which is what lets a card round the list inside it through
+-the card's inner radius without either rule changing.
++an item carrying the `active` class takes the border back and pulls itself up by the same width, so
++its own fill covers the join instead of adding a line to it. The ends of the group inherit their
++radius rather than reading the group's own slot, which is what lets a card round the list inside it
++through the card's inner radius without either rule changing.
+ 
+ An action row takes the container's text alignment and the full width of the group, so a button host
+ reads like the anchor beside it. Hover and keyboard focus paint one pair of slots and a held pointer
+-paints its own pair, and each rule carries a `:not(.active)` guard, so a row carrying `active` keeps
+-its own paint while its neighbour is driven. Hover and focus also lift the row over its neighbours,
+-which is what puts the driven row's own borders over theirs.
++paints its own pair, and each rule carries a `:not(.active)` guard, so a row carrying the `active`
++class keeps its own paint while its neighbour is driven. Hover and focus also lift the row over its
++neighbours, which is what puts the driven row's own borders over theirs.
+ 
+ The horizontal ramp is emitted by walking the shared breakpoint ramp, so the unconditional class and
+ the class at each boundary carry one geometry. A row swaps which edge each item shares: the side
+@@ -1612,17 +1614,16 @@ These are the key's recorded departures.
+   and resolves elsewhere, so routing the `active` row onto it would move a recorded color. A
+   consumer retuning the palette entry moves the `active` row; retuning the primary role does not.
+ 
+-`tests/src/styles/components/list-group.test.ts` reads each resolved treatment in the browser: the
+-item padding and the end radii, the shared edge and the `active` overlap, the counter's marker, the
+-flush edges, each action state driven on a resting host and on an `active` host of each kind, the
+-palette retune the preceding departure records, the contextual roles against a plain item, and the
+-row geometry at each viewport around every boundary.
++The `tests/src/styles/components/list-group.test.ts` proof reads each resolved treatment in the
++browser: the item padding and the end radii, the shared edge and the `active` overlap, the counter's
++marker, the flush edges, each action state driven on a resting host and on an `active` host of each
++kind, the palette retune the preceding departure records, the contextual roles against a plain item,
++and the row geometry at each viewport around every boundary.
+ 
+ ### Breadcrumb classes
+ 
+ The breadcrumb key ships whole: the trail, the inset between items, the divider each item after the
+-first paints before itself, and the current page the `active` class marks. The component partial
+-loads after the vertical rule in the components layer.
++first paints before itself, and the current page the `active` class marks.
+ 
+ The trail is a wrapping flex row carrying no list marker, so an `ol` element renders as a line of
+ steps that wraps at its container's edge. Its bottom margin reads `--vn-space-8` and the inset
+@@ -1644,12 +1645,13 @@ size.
+ The divider color and the `active` item's color both read `--bs-secondary-color`, which each color
+ mode declares for itself, so a trail inside a dark island follows the island.
+ 
+-`tests/src/styles/components/breadcrumb.test.ts` reads each resolved treatment in the browser.
++The `tests/src/styles/components/breadcrumb.test.ts` proof reads each resolved treatment in the
++browser.
+ 
+ ### Badge classes
+ 
+ The badge key ships whole: the label box, the empty collapse, and the offset a badge takes inside a
+-button. The component partial loads after the breadcrumb in the components layer.
++button.
+ 
+ The font size and the padding are relative, and so is the `em` box they make. The font size is
+ `0.75em` of the host, and the padding is `0.65em` and `0.35em` of the badge's own size, so the two
+@@ -1668,14 +1670,13 @@ An empty badge collapses, and a badge inside a button lifts by one pixel. Both a
+ rules, and the offset selects `.btn .badge` rather than the badge class, so a badge outside a button
+ stays in flow.
+ 
+-`tests/src/styles/components/badge.test.ts` reads each resolved treatment in the browser.
++The `tests/src/styles/components/badge.test.ts` proof reads each resolved treatment in the browser.
+ 
+ ### Close classes
+ 
+ The close key ships the control, its hover, focus, and `disabled` states, and the opt-in inversion.
+-The component partial loads after the badge in the components layer. The combinators the alert,
+-toast, modal, and offcanvas headers write belong to the overlay components and stay listed under §
+-Deferred selectors.
++The combinators the alert, toast, modal, and offcanvas headers write belong to the overlay
++components and stay listed under § Deferred selectors.
+ 
+ The control is a content-box square one `em` on each side with a `0.25em` inset, so the whole target
+ measures one and a half `em` and that `em` box scales with the text around it. The radius and the
+@@ -1688,24 +1689,30 @@ recorded value.
+ 
+ Each state reads its own opacity variable: `0.5` at rest, `0.75` under the pointer, `1` on focus,
+ and `0.25` when `disabled`. Focus removes the outline and paints the recorded shadow, which is what
+-separates this control from the focus ring the button class wears. Under forced colors the focused
+-control's rule also writes an outline in the system highlight color through the `forced-ring` mixin,
+-because forced colors paint no shadow ring. § Additions records it. A control is `disabled` through
+-the `disabled` attribute and through the `disabled` class alike, and each form removes pointer
+-events and text selection beside dimming the control.
++separates this control from the focus ring the button class wears. The shadow keeps the release's
++literal blue at a quarter strength rather than reading the primary role, so a brand retune leaves
++it, and the `--bs-btn-close-focus-shadow` property the `.btn-close` rule declares moves it. Under
++forced colors the focused control's rule also writes an outline in the system highlight color
++through the `forced-ring` mixin, because forced colors paint no shadow ring. § Additions records it.
++A control is `disabled` through the `disabled` attribute and through the `disabled` class alike, and
++each form removes pointer events and text selection beside dimming the control.
+ 
+ The mark is inverted by `--bs-btn-close-filter`, which the theme scopes declare: empty in light and
+ the recorded inversion in dark, so a control inside a dark island inverts on its own. The
+ `.btn-close-white` class declares the same inversion on the control itself, which is the opt-in for
+ a control sitting over a dark surface inside a light island.
+ 
+-`tests/src/styles/components/close.test.ts` reads each resolved treatment in the browser.
++The showcase's Close region carries the control at rest, refused through the `disabled` attribute,
++refused through the `disabled` class, and inverted over a dark surface.
++
++The `tests/src/styles/components/close.test.ts` proof reads each resolved treatment in the browser.
+ 
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+-and the owning unit that deletes the row when it ships the name, or the terminal owner `Excluded` for a name no unit will ship and that must remain absent from the cascade.
+-`readDeferrals` in `tests/setupServer.ts` reads the `Name`, `Owner`, and `Reason` columns, and
++and the owning unit that deletes the row when it ships the name, or the terminal owner `Excluded`
++for a name no unit will ship and that must remain absent from the cascade. The `readDeferrals`
++function in the `tests/setupServer.ts` module reads the `Name`, `Owner`, and `Reason` columns, and
+ the conformance proof refuses a deferred name it finds in the built cascade. That reader is why this
+ table carries an owner and a reason: every row here names a name the pinned inventory carries, so a
+ name this release declares nowhere is recorded in § Outside the ledger instead.
+@@ -1780,40 +1787,40 @@ pilot departs from those rows as follows, and each departure names its cause.
+   Tailwind dependency and the `standalone` profile is the product, so wiring it there would put a
+   compiled Tailwind stylesheet in front of every proof of a cascade that ships without one. The
+   profiles proof in the `service` project compiles the file in Node from its own path and reads the
+-  compiled text instead, and the standalone case in `tests/src/styles/index.test.ts` reads that no
+-  stylesheet compiled from it reaches the styles document.
++  compiled text instead, and the standalone case in the `tests/src/styles/index.test.ts` proof reads
++  that no stylesheet compiled from it reaches the styles document.
+ - **The canonical file carries the composable imports, and the bare import sits in a fixture.** The
+   workspace rows describe the file as cascade-layer order ahead of the `@import 'tailwindcss'` rule
+   and its `@source` rule. The `tests/setup.css` file carries `tailwindcss/theme.css` and
+   `tailwindcss/utilities.css` in their layers instead, because Veneer's own `reset` and `elements`
+-  layers are the reset and Tailwind's belongs to the `preflight` profile.
+-  `tests/fixtures/tailwind/preflight.css` carries the bare import, and
+-  `tests/fixtures/tailwind/unexcluded.css` carries the canonical file without its exclusion line.
+-  § Tailwind states what each profile declares.
++  layers are the reset and Tailwind's belongs to the `preflight` profile. The
++  `tests/fixtures/tailwind/preflight.css` file carries the bare import, and the
++  `tests/fixtures/tailwind/unexcluded.css` file carries the canonical file without its exclusion
++  line. § Tailwind states what each profile declares.
+ 
+ Scaffold's `SRC_MATRIX` constant is closed on the `core`, `browser`, and `server` environments, so
+-this axis is hand-authored and its configuration files, `configs/src/vite.styles.config.ts` and
+-`configs/src/tsconfig.styles.json`, are the package's own. Emitting the axis from the generator
+-means the `@src/styles` alias in the root `tsconfig.json` file, the matching lint allowlist entry
+-and fence, a `src/styles` owner in the environment boundary, a `srcStyles` factory and its project
+-registration in the root `vite.config.ts` file, and the environment lists in the
++this axis is hand-authored and its configuration files, the `configs/src/vite.styles.config.ts` and
++`configs/src/tsconfig.styles.json` files, are the package's own. Emitting the axis from the
++generator means the `@src/styles` alias in the root `tsconfig.json` file, the matching lint
++allowlist entry and fence, a `src/styles` owner in the environment boundary, a `srcStyles` factory
++and its project registration in the root `vite.config.ts` file, and the environment lists in the
+ `tests/config.test.ts` proof.
+ 
+ ## Tokens
+ 
+ Veneer publishes the token registry through the `@orkestrel/veneer` specifier and the cascade that
+-declares those tokens through `@orkestrel/veneer/styles`. `src/core/constants.ts` holds the names,
+-`src/styles/_tokens.scss` holds the light and dark value maps, and `src/styles/_theme.scss` holds the
+-scopes that apply them.
++declares those tokens through `@orkestrel/veneer/styles`. The `src/core/constants.ts` module holds
++the names, the `src/styles/_tokens.scss` partial holds the light and dark value maps, and the
++`src/styles/_theme.scss` partial holds the scopes that apply them.
+ 
+ Veneer declares one canonical token per value and one `--bs-*` alias per Bootstrap root variable. A
+-registry path is its name: `TOKEN_NAMES.color.primary.subtle` is `--vn-color-primary-subtle`. A
+-registry member is a group exactly where the cascade declares more than one property for it, so
+-`TOKEN_NAMES.border.color` is a leaf while `TOKEN_NAMES.color.primary` carries `base`, `rgb`, and
+-the tiers. A group's own value takes the `base` member and the `-base` suffix with it, which is why
+-`--vn-text-body-base` sits beside `--vn-text-body-rgb` and the tierless `--vn-text-secondary` takes
+-no suffix at all. Read a channel triplet through the alpha form it exists for:
+-`rgba(var(--vn-color-primary-rgb), 0.5)`.
++registry path is its name: the `TOKEN_NAMES.color.primary.subtle` path is
++`--vn-color-primary-subtle`. A registry member is a group exactly where the cascade declares more
++than one property for it, so the `TOKEN_NAMES.border.color` member is a leaf while the
++`TOKEN_NAMES.color.primary` member carries the `base` and `rgb` members and the tiers. A group's own
++value takes the `base` member and the `-base` suffix with it, which is why `--vn-text-body-base`
++sits beside `--vn-text-body-rgb` and the tierless `--vn-text-secondary` takes no suffix at all. Read
++a channel triplet through the alpha form it exists for: `rgba(var(--vn-color-primary-rgb), 0.5)`.
+ 
+ A table with a `Source` column names in each cell where that row's value comes from. The factor
+ table and the tier table carry no such column: the factor table's values are Veneer's own neutral
+@@ -1828,18 +1835,19 @@ multipliers, and the tier table gives each tier's expression in the row. The tab
+ 
+ ### Reference map
+ 
+-The tables that follow state the value the cascade declares for each token, and
+-`tests/src/styles/tokens.test.ts` resolves every stated value against the built cascade in each
+-mode. Every value cell states a value: one code span for each token the row's first cell names,
++The tables that follow state the value the cascade declares for each token, and the
++`tests/src/styles/tokens.test.ts` proof resolves every stated value against the built cascade in
++each mode. Every value cell states a value: one code span for each token the row's first cell names,
+ `` `light`, dark `dark` `` where a table's single value column carries the light and the dark
+ reading together, or `the same expression` where the dark scope repeats the light cell. The
+-`collectReferenceRows` reader in `tests/setupStyles.ts` refuses a cell written in any other form,
+-so a law about a scale belongs in a sentence beside its table rather than in a cell. A `Role` cell
+-names the role whose fill the row gives, so that row's token is the role's own
++`collectReferenceRows` reader in the `tests/setupStyles.ts` module refuses a cell written in any
++other form, so a law about a scale belongs in a sentence beside its table rather than in a cell. A
++`Role` cell names the role whose fill the row gives, so that row's token is the role's own
+ `--vn-color-{role}-base`; a `Role` table carries the `Role`, `Fill`, `Source`, and `Alias` columns,
+-and because both modes derive from the one fill the reader refuses a `Dark` column or a second
+-value column there, and a `Fill` cell stating more than one value per mode. A `Tier` row is a template over `{role}` and `{fill}`, and it expands over
+-every role the preceding table names.
++and because both modes derive from the one fill the reader refuses a `Dark` column or a second value
++column there, and a `Fill` cell stating more than one value per mode. A `Tier` row is a template
++over the `{role}` and `{fill}` placeholders, and it expands over every role the preceding table
++names.
+ 
+ The styles build shortens a number and a duration, so a stated value and the declaration are
+ compared with every number written in full and every millisecond duration written in seconds. A
+@@ -1862,10 +1870,11 @@ no `Source` column.
+ | `--vn-factor-elevation` | `1`   | none  |
+ | `--vn-factor-motion`    | `1`   | none  |
+ 
+-A factor takes effect where the scale it multiplies is declared. Veneer declares the scales at
+-`:root`, so a factor set on the root element rescales the document. A subtree that sets a factor
+-alone keeps the root's lengths, because a custom property carries its `var()` references already
+-substituted; to rescale a subtree, declare the factor and the scale together on that subtree.
++A factor takes effect where the scale it multiplies is declared. Veneer declares the scales on the
++`:root` selector, so a factor set on the root element rescales the document. A subtree that sets a
++factor alone keeps the root's lengths, because a custom property carries its `var()` references
++already substituted; to rescale a subtree, declare the factor and the scale together on that
++subtree.
+ 
+ #### Palette and gray ramp
+ 
+@@ -1885,7 +1894,7 @@ Bootstrap's own values for them, so neither gets a canonical token of its own.
+ 
+ Each role carries a fill, its channel triplet, and the subtle, emphasis, and border tiers. Veneer
+ takes Bootstrap's role names as the compatibility axis and Elements' measured fills as the identity.
+-`tertiary` is Veneer's own role and answers no Bootstrap alias.
++The `tertiary` role is Veneer's own and answers no Bootstrap alias.
+ 
+ | Role        | Fill                                                | Source                                             | Alias            |
+ | ----------- | --------------------------------------------------- | -------------------------------------------------- | ---------------- |
+@@ -1908,11 +1917,11 @@ so a retuned fill carries its whole family with it.
+ | `--vn-color-{role}-emphasis` | `color-mix(in oklab, {fill} 70%, var(--vn-text-body-base))`    | the same expression                                            | `--bs-{role}-text-emphasis` |
+ | `--vn-color-{role}-border`   | `color-mix(in oklab, {fill} 35%, var(--vn-surface-body-base))` | `color-mix(in oklab, {fill} 50%, oklch(0.235 0.013 256))`      | `--bs-{role}-border-subtle` |
+ 
+-The percentages are Elements' own, and `tests/src/styles/tokens.test.ts` resolves each measured
+-role's tier against the color Elements renders for it. The dark border tier mixes against a literal
+-rather than against `--vn-surface-raised`, because that literal is the surface the tiers were
+-calibrated on and the raised surface carries its own content reading; `src/styles/_tokens.scss`
+-holds it as the dark `anchor` entry.
++The percentages are Elements' own, and the `tests/src/styles/tokens.test.ts` proof resolves each
++measured role's tier against the color Elements renders for it. The dark border tier mixes against a
++literal rather than against `--vn-surface-raised`, because that literal is the surface the tiers
++were calibrated on and the raised surface carries its own content reading; the
++`src/styles/_tokens.scss` partial holds it as the dark `anchor` entry.
+ 
+ `--vn-color-{role}-rgb` carries the fill's sRGB rendering as channels, for a consumer writing
+ `rgba(var(--vn-color-primary-rgb), 0.5)`. A fill outside the sRGB gamut takes the color the engine
+@@ -1967,7 +1976,7 @@ the two names carry different values for different consumers.
+ #### Links
+ 
+ The table lists the link tokens: the resting color, the hover color, and the decoration. Each row
+-gives its light value, its dark value, its `Source`, and the `--bs-*` variables it answers.
++gives its light value, its dark value, its `Source` cell, and the `--bs-*` variables it answers.
+ 
+ | Token                          | Light                                                                                            | Dark                                                                                              | Source                                                                                         | Alias                                                |
+ | ------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+@@ -1978,16 +1987,16 @@ gives its light value, its dark value, its `Source`, and the `--bs-*` variables
+ `--vn-link-base` departs from Bootstrap's own link color, and the preceding Links row states the
+ value each mode carries. Bootstrap paints `#0d6efd` in light and `#6ea8fe` in dark, and shades its
+ hover toward black in light and toward white in dark. Veneer carries the primary fill toward the
+-body text in each mode instead, and shades the hover toward black in each mode. The departure
+-ledger carries no link row, because its comparison reaches no theme-scope token;
+-§ Outside the ledger records that limit, and the preceding Links table is where a canonical link
+-value is recorded. `tests/src/styles/elements/a.test.ts` reads the `a` tag's resting and hover
+-colors in each mode against the recorded readings of `--vn-link-base` and `--vn-link-hover-base`.
++body text in each mode instead, and shades the hover toward black in each mode. The departure ledger
++carries no link row, because its comparison reaches no theme-scope token; § Outside the ledger
++records that limit, and the preceding Links table is where a canonical link value is recorded. The
++`tests/src/styles/elements/a.test.ts` proof reads the `a` tag's resting and hover colors in each
++mode against the recorded readings of `--vn-link-base` and `--vn-link-hover-base`.
+ 
+ #### Type
+ 
+ The table lists the type tokens: the families, the size scale, the line heights, and the weights.
+-Each row gives one value for every mode, its `Source`, and the `--bs-*` variables it answers.
++Each row gives one value for every mode, its `Source` cell, and the `--bs-*` variables it answers.
+ 
+ | Token                                                   | Value                                                                                                                                         | Source                                                                                     | Alias                                            |
+ | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+@@ -2002,8 +2011,9 @@ Each row gives one value for every mode, its `Source`, and the `--bs-*` variable
+ #### Space, border, radius, and elevation
+ 
+ The table lists the length tokens the layout is built from: the space scale, the border, the radius
+-scale, and the elevation rungs. Each row gives its value, its `Source`, and the `--bs-*` variables
+-it answers, and a row whose dark mode differs writes the dark reading into its own `Value` cell.
++scale, and the elevation rungs. Each row gives its value, its `Source` cell, and the `--bs-*`
++variables it answers, and a row whose dark mode differs writes the dark reading into its own `Value`
++cell.
+ 
+ | Token                                     | Value                                                                                                                                                                                                                                                                                                             | Source                                              | Alias                                                                  |
+ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------- |
+@@ -2023,10 +2033,10 @@ it answers, and a row whose dark mode differs writes the dark reading into its o
+ Each space step is its own number times `0.125rem`, so at the default density factor the scale runs
+ 2 px at `--vn-space-1`, 4 to 16 px across `--vn-space-2` through `--vn-space-8`, 24 px at
+ `--vn-space-12`, and 48 px at `--vn-space-24`. The radius scale runs 4, 6, and 8 px across
+-`--vn-radius-small`, `-base`, and `-large` at the default radius factor, then 16 px and 32 px, and
+-`--vn-radius-pill` takes a fixed `50rem` that no factor scales. Each elevation rung is a pair of
+-layers — Elements' hint, popover, and dialog readings — with every length scaled by
+-`var(--vn-factor-elevation)` and every color written as `rgba(var(--vn-palette-black-rgb), α)`.
++`--vn-radius-small`, `--vn-radius-base`, and `--vn-radius-large` at the default radius factor, then
++16 px and 32 px, and `--vn-radius-pill` takes a fixed `50rem` that no factor scales. Each elevation
++rung is a pair of layers — Elements' hint, popover, and dialog readings — with every length scaled
++by `var(--vn-factor-elevation)` and every color written as `rgba(var(--vn-palette-black-rgb), α)`.
+ 
+ The container widths and the default gutters are fixed lengths, and neither scale carries a factor.
+ Bootstrap writes each container width as a literal inside its own breakpoint rule, so a container
+@@ -2045,9 +2055,9 @@ gutter tokens.
+ 
+ The container partial applies each width inside the `breakpoint-up` mixin for the name that width
+ carries, and each rule names that name and every narrower one, so a capped container takes the width
+-of the widest boundary the viewport has crossed: `.container-sm` reads `--vn-container-sm` from
+-576px, `--vn-container-md` from 768px, and `--vn-container-xxl` from 1400px. `.container-fluid` reads
+-no cap.
++of the widest boundary the viewport has crossed: the `.container-sm` class reads `--vn-container-sm`
++from 576px, `--vn-container-md` from 768px, and `--vn-container-xxl` from 1400px. The
++`.container-fluid` class reads no cap.
+ 
+ The gutter and row-gap utilities read a separate scale. Its tokens carry no density factor,
+ matching the default gutter tokens. Override a step to retune its utilities without changing the
+@@ -2065,8 +2075,8 @@ default gutters. The `gap` and `column-gap` keys remain assigned to the utilitie
+ #### Motion, focus, validation, breakpoints, and stacking
+ 
+ The table lists the durations and easings, the focus ring, the validation pair, the breakpoint
+-ladder, and the stacking ladder. Each row gives its value, its `Source`, and the `--bs-*` variables
+-it answers, and a row whose dark mode differs writes the dark reading into its own cell.
++ladder, and the stacking ladder. Each row gives its value, its `Source` cell, and the `--bs-*`
++variables it answers, and a row whose dark mode differs writes the dark reading into its own cell.
+ 
+ | Token                                                    | Value                                                                            | Source                                                                                                                                              | Alias                                                       |
+ | -------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+@@ -2084,16 +2094,16 @@ it answers, and a row whose dark mode differs writes the dark reading into its o
+ | `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                           | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | none                                                        |
+ 
+ Veneer keeps Bootstrap's breakpoint names verbatim because a consumer predicts `--bs-breakpoint-md`
+-from `--vn-breakpoint-md`. `src/styles/_mixins.scss` holds the one Sass source those widths are
+-emitted from, and the `breakpoint-up` and `breakpoint-down` mixins gate a partial's declarations at
+-the same widths: `breakpoint-up` reaches every viewport at and above a name's boundary, and
+-`breakpoint-down` every viewport below it. The zero boundary is at or below every viewport and
+-above none, so `breakpoint-up(xs)` emits its content unwrapped and `breakpoint-down(xs)` emits
+-nothing. A name the ramp does not carry fails the build.
+-
+-The stacking ladder takes Veneer's own component words: `drawer` is
+-Bootstrap's offcanvas, `dialog` its modal, and `hint` its tooltip. Bootstrap declares that ladder as
+-Sass variables on its component rules rather than as root custom properties, so each rung retains
++from `--vn-breakpoint-md`. The `src/styles/_mixins.scss` partial holds the one Sass source those
++widths are emitted from, and the `breakpoint-up` and `breakpoint-down` mixins gate a partial's
++declarations at the same widths: the `breakpoint-up` mixin reaches every viewport at and above a
++name's boundary, and the `breakpoint-down` mixin every viewport below it. The zero boundary is at or
++below every viewport and above none, so the `breakpoint-up(xs)` call emits its content unwrapped and
++the `breakpoint-down(xs)` call emits nothing. A name the ramp does not carry fails the build.
++
++The stacking ladder takes Veneer's own component words: the `drawer` rung is Bootstrap's offcanvas,
++the `dialog` rung its modal, and the `hint` rung its tooltip. Bootstrap declares that ladder as Sass
++variables on its component rules rather than as root custom properties, so each rung retains
+ Bootstrap's own number and answers no `--bs-*` alias.
+ 
+ ### Button states and bindings
+@@ -2197,9 +2207,13 @@ dark caret and knob the same way the release does.
+ 
+ ### Customization
+ 
+-Override a canonical token in your own unlayered rule. Veneer declares its tokens inside
+-`@layer theme`, so an unlayered rule wins, and every derived tier and every `--bs-*` alias follows
+-the override because each one is an expression over the token you changed.
++Override a canonical token in your own unlayered rule. Veneer declares its tokens inside the
++`@layer theme` block, so an unlayered rule wins, and every tier and every `--bs-*` alias derived
++from the token you changed follows the override, because each one is an expression over that token.
++A component rule that paints the release's fixed blue reads `--vn-palette-blue`, or keeps the
++release's literal where its partial writes one, rather than the primary role, so a brand retune
++leaves that paint where the release puts it; the component's own section names the rule and the
++published property that moves it.
+ 
+ ```css
+ :root {
+@@ -2226,35 +2240,38 @@ rather than an expression, so override `--vn-color-primary-rgb` alongside the fi
+ old brand. That rule is also the alpha form itself: a triplet is comma-separated, so it takes
+ `rgba(triplet, alpha)` and not the slash syntax a modern `rgb()` accepts. The
+ `[data-bs-theme='dark']` rule is what carries the brand into a dark island, which keeps its own fill
+-and mixes its own tiers from it. `tests/src/styles/integration.test.ts` executes this recipe and
+-reads the rescaled spacing, the fill, the subtle, emphasis, and border tiers, the triplet, the
+-translucent fill the alpha form paints, what a fill override without the triplet leaves that
+-translucent fill painting, and the dark island's own fill and tiers.
++and mixes its own tiers from it. The `tests/src/styles/integration.test.ts` proof executes this
++recipe and reads the rescaled spacing, the fill, the subtle, emphasis, and border tiers, the
++triplet, the translucent fill the alpha form paints, what a fill override without the triplet
++leaves that translucent fill painting, the dark island's own fill and tiers, and each palette paint
++the recipe leaves in place: the active page and the active list item, the range thumb, the focused
++and checked check, the focused select and text control, and the progress bar.
+ 
+ ### Departures
+ 
+ Each row names one declaration the built cascade writes differently from Bootstrap 5.3.8, keyed the
+ way the official inventory is keyed: the component, the selector, the property, and the at-rule
+-enclosing the declaration. One table follows per component, in the order the shipped keys sort.
+-`readDepartures` in `tests/setupServer.ts` reads every one of them, and `collectLedger` measures the
+-same comparison over the unminified compile, so the conformance proof reddens on a difference no row
+-records and on a row no difference carries. Refresh the rows with
+-`npm run build:src && npm run test:conformance`: the ledger gates print every row to add and every
+-row to strike, one per line, as that row's cells joined by `|` in column order.
++enclosing the declaration. One table follows per component, in the order the shipped keys sort. The
++`readDepartures` function in the `tests/setupServer.ts` module reads every one of them, and the
++`collectLedger` function measures the same comparison over the unminified compile, so the
++conformance proof reddens on a difference no row records and on a row no difference carries. Refresh
++the rows with `npm run build:src && npm run test:conformance`: the ledger gates print every row to
++add and every row to strike, one per line, as that row's cells joined by `|` in column order.
+ 
+ The comparison is textual. It reads the value each side writes, never the value a browser computes,
+ so a row can record a difference in notation whose computed value matches: `transparent` against
+ `rgba(0, 0, 0, 0)` and `87.5%` against `0.875em` are such rows.
+ 
+-A `—` in `Condition` records a declaration under no at-rule, and a `—` in either value column
+-records a side that writes no declaration there at all. `(empty)` records a side that writes the
+-declaration with nothing after the colon, which leaves the property without a value while the
+-declaration itself stands. The `Departure` cell names why the two values differ: `tokenized` routes
+-the release value through a Veneer token, `aliased` reads another compatibility variable in its
+-place, `fallback` keeps the release value behind a `var()` fallback, `dropped` writes no declaration
+-at all, and `declared` writes the value in a form or at a value the other members do not name. An
+-empty value against a recorded one is `declared` rather than `dropped`, because the cascade writes
+-the declaration.
++A `—` cell in the `Condition` column records a declaration under no at-rule, and a `—` cell in
++either value column records a side that writes no declaration there at all. An `(empty)` cell
++records a side that writes the declaration with nothing after the colon, which leaves the property
++without a value while the declaration itself stands. The `Departure` cell names why the two values
++differ: the `tokenized` value routes the release value through a Veneer token, the `aliased` value
++reads another compatibility variable in its place, the `fallback` value keeps the release value
++behind a `var()` fallback, the `dropped` value writes no declaration at all, and the `declared`
++value writes the value in a form or at a value the other members do not name. An empty value against
++a recorded one is a `declared` row rather than a `dropped` row, because the cascade writes the
++declaration.
+ 
+ #### `blockquote`
+ 
+@@ -3569,15 +3586,16 @@ the declaration.
+ ### Additions
+ 
+ Each row names one name this cascade emits that the official inventory lacks, attributed to the
+-shipped component whose vocabulary it joins. `readAdditions` in `tests/setupServer.ts` reads this
+-table, and `collectLedger` measures the same additions, so the conformance proof reddens on a name
+-no row records and on a row no name carries. `Category` names what was added: a `selector` the
+-release does not write, a `declaration` the release omits on a selector it does write, a custom
+-`property` the component's official vocabulary lacks, or a `keyframes` animation it does not define.
+-A `declaration` name is written `selector { property }`. `Condition` is the at-rule enclosing the
+-emitted rule, and `—` records a rule under none, so a selector the release writes unconditionally
+-and this cascade also writes under a query the release records for no rule of that selector is named
+-at that query. The `Reason` cell is the only cell no measurement fixes.
++shipped component whose vocabulary it joins. The `readAdditions` function in the
++`tests/setupServer.ts` module reads this table, and the `collectLedger` function measures the same
++additions, so the conformance proof reddens on a name no row records and on a row no name carries.
++The `Category` cell names what was added: a `selector` the release does not write, a `declaration`
++the release omits on a selector it does write, a custom `property` the component's official
++vocabulary lacks, or a `keyframes` animation it does not define. A `declaration` name is written
++`selector { property }`. The `Condition` cell holds the at-rule enclosing the emitted rule, and a
++`—` cell records a rule under none, so a selector the release writes unconditionally and this
++cascade also writes under a query the release records for no rule of that selector is named at that
++query. The `Reason` cell is the only cell no measurement fixes.
+ 
+ | Component      | Name                                                          | Condition                                        | Category    | Reason                                                                                                                                                                     |
+ | -------------- | ------------------------------------------------------------- | ------------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+@@ -3766,18 +3784,18 @@ Role coverage is next. The `tertiary` role has no release counterpart, and the r
+ and `dark` roles have no Elements specimen, so each of those keeps the other project's value
+ unchanged.
+ 
+-Names this release declares nowhere follow. `scroll-padding` on the document waits on the
+-first sticky header, which fixes the offset, and the hint surface and the component-scoped tokens
+-wait on the components that paint them. A name the cascade never writes reaches neither table here
+-nor § Deferred selectors, whose rows must sit in the pinned inventory `scanCompatibilityPresence`
+-reads.
++Names this release declares nowhere follow. `scroll-padding` on the document waits on the first
++sticky header, which fixes the offset, and the hint surface and the component-scoped tokens wait on
++the components that paint them. A name the cascade never writes reaches neither table here nor
++§ Deferred selectors, whose rows must sit in the pinned inventory the `scanCompatibilityPresence`
++function reads.
+ 
+ The Elements behaviors this package does not copy close the list. Elements' disclosure interpolates
+ its content height when the engine reports `prefers-reduced-motion: reduce`; the `transition` mixin
+-emits the reduced-motion pair for every transition it writes, and
+-`tests/src/styles/mixins.test.ts` reads the collapse. Elements' popover snaps open and fades closed;
+-that asymmetry belongs to the overlay units and is recorded as an Elements decision rather than a
+-Bootstrap one.
++emits the reduced-motion pair for every transition it writes, and the
++`tests/src/styles/mixins.test.ts` proof reads the collapse. Elements' popover snaps open and fades
++closed; that asymmetry belongs to the overlay units and is recorded as an Elements decision rather
++than a Bootstrap one.
+ 
+ ## Compatibility
+ 
+@@ -3976,58 +3994,47 @@ scope for the overlay unit.
+ 
+ ## Showcase
+ 
+-The private application renders the Veneer heading, the Dark mode button, a Showcase region, and a
+-Buttons region carrying every declared button specimen, a Content region carrying the
+-text specimens, lists, quotations, code, media, tables, form controls, and interactive tags, a Type
+-region carrying the typography, list, and quotation classes, and a Media region carrying the image
+-and figure classes beside the aspect-ratio boxes, and a Links region carrying the link classes and
+-the icon links, and a Layout region carrying the container, grid, and gutter specimens and the
+-vertical rule, and a Table region carrying the table variant and responsive specimens. Each helper
+-key sits in the region whose subject it belongs to rather than in a region of its own, which is how
+-every other section is grouped: the image classes and the figure classes share Media, and the
+-quotation classes sit in Type. The showcase's own button drives the controller and announces the
+-selected mode, and its entry constructs a `Delegate` instance beside the showcase. The shell's own
+-stylesheet reaches that button through the `control` class the showcase sets on it, so no rule of
+-the shell's reaches a specimen through the element it happens to be. The regions mount into a
+-`main` element the shell carries no id on: a proof reaches it through the host it mounted the
+-showcase into, and each region through its accessible name. The application barrel is a workspace
+-implementation surface and is outside this guide's published API tables.
+-A Breadcrumb region carries the trail specimens, a Badge region carries the badge specimens on the
+-dark table surface the badge needs to read against, and a Close region carries the close control at
+-rest, refused through the attribute, refused through the class, and inverted over a dark surface.
+-
+-That placement is what the capture registry addresses a frame by: every registered scenario names
+-the specimen or the region that is its subject, and § Tests gives the filename law built on it, so a
+-shipped key no region renders has no subject to register and no frame to be read from.
++The private application renders the Veneer heading, the Dark mode button, and a Showcase region.
++After the Showcase region, the regions render in the order the `Showcase` class constructs them, one
++per section; see [showcase mounting and destruction](../tests/app/browser/Showcase.test.ts), which
++pins that order. The Content region carries the text specimens, lists, quotations, code, media,
++tables, form controls, and interactive tags. Each helper key sits in the region whose subject it
++belongs to rather than in a region of its own, which is how every other section is grouped: the icon
++links sit in Links, the aspect-ratio boxes share Media with the image classes and the figure
++classes, the vertical rule sits in Layout, and the list and quotation classes sit in Type. The
++showcase's own button drives the controller and announces the selected mode, and its entry
++constructs a `Delegate` instance beside the showcase. The shell's own stylesheet reaches that button
++through the `control` class the showcase sets on it, so no rule of the shell's reaches a specimen
++through the element it happens to be. The regions mount into a `main` element the shell carries no
++id on: a proof reaches it through the host it mounted the showcase into, and each region through its
++accessible name. The application barrel is a workspace implementation surface and is outside this
++guide's published API tables.
++
++The specimen and region names are what the capture registry addresses a frame by: every registered
++scenario names the specimen or the region that is its subject, and § Tests gives the filename law
++built on it, so a shipped key no region renders has no subject to register and no frame to be read
++from.
+ 
+ Scaffold mandates the Vue toolchain for an `app/browser` environment, and this shell declares no
+ component in it: the shell is framework-free by design, so the showcase drives the published
+ cascade and the published engine with no framework between them and what renders.
+ 
+-The cascade
+-carries every `--vn-*` token, every `--bs-*` root alias Bootstrap 5.3.8 declares, and the document
+-and body baseline. It also ships the bare button treatment in the `elements` layer, and the `.btn` treatments beside
+-the typography, list, quotation, image, link, container, grid, table, icon-link, ratio, and
+-vertical-rule classes in the `components` layer. The document baseline also
+-declares `interpolate-size: allow-keywords`, and `tests/src/styles/elements/html.test.ts` reads it
+-there.
+-That proves the declaration reaches the document; what it interpolates is proved by the first unit
+-that animates a keyword length. § Tokens gives each token's value and
+-source.
+-
+-A Placeholder region, a Progress region, and a Spinner region follow the Table region, each carrying
+-that key's own specimens, and the `components` layer carries those keys' classes beside the ones
+-named earlier. The grow spinners are the specimens the capture registry declines: each one rests at
++The cascade carries every `--vn-*` token, every `--bs-*` root alias Bootstrap 5.3.8 declares, and
++the document and body baseline; § Compatibility gives each shipped key and the classes it ships. The
++document baseline also declares `interpolate-size: allow-keywords`, and the
++`tests/src/styles/elements/html.test.ts` proof reads it there. That proves the declaration reaches
++the document; what it interpolates is proved by the first unit that animates a keyword length.
++§ Tokens gives each token's value and source.
++
++The grow spinners are the specimens the capture registry declines: each one rests at
+ `transform: scale(0)` and `opacity: 0`, so its frame would carry an empty box and no subject, and at
+-the wider variants the declared region clips to no pixel at all. The showcase renders each of them
+-and [cascade spinner classes](../tests/src/styles/components/spinner.test.ts) reads their running
+-timelines, so what is declined is the frame rather than the proof.
++the wider variants the declared region clips to no pixel at all. The showcase renders each of them,
++and the spinner proof reads their running timelines, so what is declined is the frame rather than
++the proof; see [cascade spinner classes](../tests/src/styles/components/spinner.test.ts).
+ 
+-A Validation region follows the Table region; a Form check, a Form control, a Form floating, a Form
+-label, a Form range, and a Form select region follow the Spinner region; and an Input group region
+-follows the Close region, each carrying that key's own specimens. The Form label region carries a
+-label above its control with the help text the control names as its description, and a horizontal
+-label level with the control beside it at each size and as the legend of a group.
++The Form label region carries a label above its control with the help text the control names as its
++description, and a horizontal label level with the control beside it at each size and as the legend
++of a group.
+ 
+ ## Tests
+ 
+@@ -4053,10 +4060,10 @@ A scenario's stem is its own subject's stem, and a driven state follows that ste
+ specimen held under the pointer is `primary-active`. A subject is a specimen one of the showcase
+ tables declares, or the region a page frame reads the surface through. The `tests/setup.ts` module
+ declares that grammar as the types the registry rows are written in, so a scenario spelling a
+-project suffix or a mode token fails the typecheck at the row declaring it. The registry proof in
+-[showcase journeys](../tests/app/browser/integration.test.ts) holds every registered subject against
+-those tables and against the rendered surface, so a scenario whose subject the showcase stops
+-rendering reddens rather than photographing something else under the same name.
++project suffix or a mode token fails the typecheck at the row declaring it. The registry proof holds
++every registered subject against those tables and against the rendered surface, so a scenario whose
++subject the showcase stops rendering reddens rather than photographing something else under the same
++name; see [showcase journeys](../tests/app/browser/integration.test.ts).
+ 
+ The stem is what lets this portfolio be sorted against a counterpart portfolio by subject rather
+ than by hand. The rule comes from the Bootstrap 5.3.8 portfolio the CL13 round shot of the same
+@@ -4064,31 +4071,15 @@ markup, whose stems match that registry's specimen names. Nothing here pairs the
+ no listing of that portfolio is retained in this repository, so the appearance round that reads one
+ pairs the rows and rules on the alignment.
+ 
+-| Veneer stem            | Subject                                               |
+-| ---------------------- | ----------------------------------------------------- |
+-| `capped-container`     | the `Capped container` specimen's own container       |
+-| `numbered-columns`     | the `Numbered columns` specimen's own row             |
+-| `base`                 | the `Base` table specimen                             |
+-| `role-links`           | the `Role links` specimen, every anchor it renders    |
+-| `showcase`             | the `Showcase` region, as a frame of the resting page |
+-| `primary-focus`        | the `Primary` specimen reached by keyboard traversal  |
+-| `primary-hover`        | the `Primary` specimen under the pointer              |
+-| `primary-active`       | the `Primary` specimen held under the pointer         |
+-| `toggle-pressed`       | the `Toggle` specimen driven to its pressed state     |
+-| `breadcrumb-trail`     | the `Breadcrumb trail` specimen's own trail           |
+-| `badge-counter`        | the `Badge counter` specimen's own badge              |
+-| `close-control`        | the `Close control` specimen, at rest                 |
+-| `close-inverted`       | the `Close inverted` specimen's inverted control      |
+-| `progress-base`        | the `Progress base` specimen's own track              |
+-| `striped-progress`     | the `Striped progress` specimen's own bar             |
+-| `animated-progress`    | the `Animated progress` specimen's own bar            |
+-| `stacked-progress`     | the `Stacked progress` specimen's own track           |
+-| `border-spinner`       | the `Border spinner` specimen's own ring              |
+-| `small-border-spinner` | the `Small border spinner` specimen's own ring        |
+-| `placeholder-ramp`     | the `Placeholder ramp` specimen's largest placeholder |
+-| `glowing-placeholder`  | the `Glowing placeholder` specimen's own wrapper      |
+-| `waving-placeholder`   | the `Waving placeholder` specimen's own wrapper       |
+-| `button-placeholder`   | the `Button placeholder` specimen's own control       |
++The following table gives examples of the stem rule: a resting element frame, a driven state, and
++the page frame. The capture registry declares every stem and its subject; see
++[the capture registry](../tests/setup.ts).
++
++| Veneer stem        | Subject            | Frame                                                   |
++| ------------------ | ------------------ | ------------------------------------------------------- |
++| `capped-container` | `Capped container` | A resting element frame of the specimen's own container |
++| `primary-hover`    | `Primary`          | A driven state: the specimen under the pointer          |
++| `showcase`         | `Showcase`         | The page frame, read through the region at rest         |
+ 
+ An element frame carries its whole specimen and the background that specimen renders against, and
+ the element the scenario is about is the frame's declared region. A crop of that element alone
+@@ -4098,12 +4089,12 @@ for its size and the color its bottom row paints, and its declared region is rea
+ of pixels differing from that region's first pixel; a region painting one color is refused as a
+ blank.
+ 
+-The guard's population is the frames on disk under `tmp/capture/states`, discovered from the
+-registry's own expansion and read back whether or not this run wrote a file, so an ordinary journey
+-run guards the frames an earlier capture run left. Each frame is paired with the region its scenario
+-declared while the shot was staged, because the written file carries no box and the handed-back
+-document no longer holds one. A directory holding no frame is reported as that, and held to the
+-directory rather than passed over as a clean sweep.
++The guard's population is the frames on disk under the `tmp/capture/states` directory, discovered
++from the registry's own expansion and read back whether or not this run wrote a file, so an ordinary
++journey run guards the frames an earlier capture run left. Each frame is paired with the region its
++scenario declared while the shot was staged, because the written file carries no box and the
++handed-back document no longer holds one. A directory holding no frame is reported as that, and held
++to the directory rather than passed over as a clean sweep.
+ 
+ One accessibility artifact covers one subject and one variant, and it is named
+ `<subject>--<theme>-<viewport>-accessibility.txt`. Its stem is the subject's where a frame's stem is
+@@ -4112,7 +4103,7 @@ artifact names its subject, its variant, and the state its reading was taken in,
+ the reading is taken on arrival while a driven frame shows focus, the pointer, or a press. It
+ carries that subject's accessible tree and its keyboard focus order, both read through a scope
+ enclosing the subject, so a subject that is itself a control records its own role and name rather
+-than reporting itself unreachable. The per-variant manifest `tmp/capture/<variant>.txt` keeps the
++than reporting itself unreachable. The per-variant `tmp/capture/<variant>.txt` manifest keeps the
+ whole page's tree, the focus inventory, the interaction log, and every reading the journeys took.
+ 
+ The two portfolios read side by side within one stated limit: a counterpart frame is shot on a blank
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 3825fa6..b6dfb8c 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -34,8 +34,12 @@ await new GuideCommand({
+ 	runner: createVitest,
+ }).execute(async ({ files, report, rows }) => {
+ 	const { isRecord, parseJSON } = await import('@orkestrel/contract')
+-	const { computeSymbolKey, findMissingSymbols } = await import('@orkestrel/guide')
++	const { computeSymbolKey, findColumnIndex, findMissingSymbols, selectSectionBlocks } =
++		await import('@orkestrel/guide')
++	const { createMarkdown } = await import('@orkestrel/markdown')
+ 	const { requireValue } = await import('@orkestrel/test')
++	const { CAPTURE_KEYS, CAPTURE_SCENARIOS } = await import('./setup.js')
++	const { readTableCells, selectTableColumns } = await import('./setupStyles.js')
+ 	const { isColorModeState } = await import('@orkestrel/veneer/browser')
+ 	const { describe, expect, it } = await import('vitest')
+ 	const own = requireValue(
+@@ -61,6 +65,24 @@ await new GuideCommand({
+ 		expect(isColorModeState('auto')).toBe(false)
+ 	})
+ 
++	it('names a registered scenario and the subject it declares in every stem example', () => {
++		const guide = requireValue(files[GUIDE_SPEC], `Missing inventory: ${GUIDE_SPEC}`)
++		const tables = selectSectionBlocks(createMarkdown(guide).document, 'Tests').flatMap((block) =>
++			block.element === 'table' && findColumnIndex(block, 'Veneer stem') !== undefined
++				? [block]
++				: [],
++		)
++		expect(tables).toHaveLength(1)
++		const table = requireValue(tables[0], `Missing stem table: ${GUIDE_SPEC}`)
++		const columns = selectTableColumns(table, ['Veneer stem', 'Subject'], 'Stem')
++		const examples = table.rows.map((row) => readTableCells(row, columns))
++		expect(examples.length).toBeGreaterThan(0)
++		for (const [stem, subject] of examples) {
++			expect(CAPTURE_SCENARIOS).toContain(stem)
++			expect(CAPTURE_KEYS.find((key) => key.scenario === stem)?.subject).toBe(subject)
++		}
++	})
++
+ 	for (const { entry, guide, source } of rows) {
+ 		describe(`${entry.concept}`, () => {
+ 			it('uses only listed fence languages', () => {
+diff --git a/tests/src/styles/integration.test.ts b/tests/src/styles/integration.test.ts
+index 44fc0de..fde3a45 100644
+--- a/tests/src/styles/integration.test.ts
++++ b/tests/src/styles/integration.test.ts
+@@ -1,11 +1,19 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readPixels, readStyle } from '@orkestrel/test/browser'
++import {
++	matchesColor,
++	readPixels,
++	readRules,
++	readStyle,
++	releaseMedia,
++	stageMedia,
++} from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../setupBrowser.js'
+ import { CUSTOMIZATION_RECIPE, FILL_ONLY_RECIPE } from '../../setupStyles.js'
+ 
+-afterEach(() => {
++afterEach(async () => {
+ 	scene.clear()
++	await releaseMedia()
+ })
+ 
+ describe('token customization', () => {
+@@ -65,6 +73,75 @@ describe('token customization', () => {
+ 		expect(matchesColor(readStyle(filled, 'background-color'), '#2e7d32')).toBe(true)
+ 		expect(readStyle(veil, 'background-color')).toBe(brand)
+ 	})
++	it('holds every paint on the release blue through the brand retune and moves it with the palette entry', async () => {
++		const container = scene.mount(
++			'<div id="brand" style="background-color: var(--bs-primary)"></div>' +
++				'<ul class="pagination"><li class="page-item active"><span class="page-link">1</span></li></ul>' +
++				'<ul class="list-group"><li class="list-group-item active">Active item</li></ul>' +
++				'<input class="form-range" type="range" aria-label="Range">' +
++				'<div id="thumb"></div>' +
++				'<input class="form-check-input" type="checkbox" aria-label="Focused check">' +
++				'<input class="form-check-input" type="checkbox" aria-label="Checked check" checked>' +
++				'<select class="form-select" aria-label="Select"><option>One</option></select>' +
++				'<input class="form-control" type="text" aria-label="Control">' +
++				'<div class="progress"><div class="progress-bar" style="width: 50%"></div></div>',
++		)
++		const brand = requireValue(container.querySelector('#brand'), 'No brand specimen')
++		const page = requireValue(container.querySelector<HTMLElement>('.page-link'), 'No page')
++		const item = requireValue(container.querySelector<HTMLElement>('.list-group-item'), 'No item')
++		const thumb = requireValue(container.querySelector<HTMLElement>('#thumb'), 'No thumb probe')
++		const [focusedCheck, checkedCheck] =
++			container.querySelectorAll<HTMLElement>('.form-check-input')
++		const select = requireValue(container.querySelector<HTMLElement>('.form-select'), 'No select')
++		const control = requireValue(
++			container.querySelector<HTMLElement>('.form-control'),
++			'No control',
++		)
++		const bar = requireValue(container.querySelector<HTMLElement>('.progress-bar'), 'No bar')
++		// Chromium withholds the thumb part's computed style, so the resting thumb rule's declared
++		// paint is resolved on a probe beside the control, where every token it names inherits.
++		const resting = requireValue(
++			readRules()
++				.filter((rule) => rule instanceof CSSStyleRule)
++				.find((rule) => rule.selectorText === '.form-range::-webkit-slider-thumb'),
++			'The cascade carries no resting thumb rule',
++		)
++		thumb.style.setProperty('background-color', resting.style.getPropertyValue('background-color'))
++		const paints: ReadonlyArray<readonly [HTMLElement, string, boolean]> = [
++			[page, 'background-color', false],
++			[item, 'background-color', false],
++			[thumb, 'background-color', false],
++			[requireValue(focusedCheck, 'No focused check'), 'border-top-color', true],
++			[requireValue(checkedCheck, 'No checked check'), 'background-color', false],
++			[select, 'border-top-color', true],
++			[control, 'border-top-color', true],
++			[bar, 'background-color', false],
++		]
++		// Several of these paints carry a transition, so motion is held off and each reading is the
++		// settled paint rather than the first frame of a change.
++		await stageMedia({ motion: false })
++		// Each paint is read at rest, under the recipe, and under a palette retune on top of it. A
++		// focus paint is read with its own control focused and nothing else, so the readings differ
++		// only by the sheet loaded before them.
++		const [unretuned, retuned, repainted] = [
++			undefined,
++			CUSTOMIZATION_RECIPE,
++			':root { --vn-palette-blue: #6f42c1; }',
++		].map((sheet) => {
++			if (sheet !== undefined) scene.load(sheet)
++			return paints.map(([element, property, focused]) => {
++				if (focused) element.focus()
++				const value = readStyle(element, property)
++				element.blur()
++				return value
++			})
++		})
++		expect(matchesColor(readStyle(brand, 'background-color'), '#2e7d32')).toBe(true)
++		expect(retuned).toEqual(unretuned)
++		const moved = requireValue(repainted, 'No palette reading')
++		expect(moved).toHaveLength(paints.length)
++		expect(moved.filter((value, index) => value === unretuned?.[index])).toEqual([])
++	})
+ 	it('carries the retuned brand into the dark island and into its own dark tiers', () => {
+ 		scene.load(CUSTOMIZATION_RECIPE)
+ 		const container = scene.mount(

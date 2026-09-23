@@ -1,0 +1,23 @@
+## Per-claim verdicts
+
+**Claim 1 — Delta and scope: CONFIRMED.**
+`bpo-2.diff` header lines 1, 38, 109 (`.orkestrel/veneer/units/bpo-2.diff:1,38,109`) show exactly `src/styles/index.scss`, `tests/conformance.test.ts`, `tests/src/styles/components/ratio.test.ts` changed; `bpo-2-status.txt:1-3` lists the same three files. The `index.scss` hunk in the diff (`bpo-2.diff:1-37`) carries no further edit beyond round 1's reorder, and round 1's claim 2 (barrel order) was CONFIRMED by both lanes (`bpo-audit-verdict.md:8`), so the order round 2 carries is the order round 1 confirmed.
+
+**Claim 3 — The comment's nouns: CONFIRMED.**
+`/home/user/veneer-bpo/tests/conformance.test.ts:352-356` reads: "the `spinners` token and the `placeholders` token, plural forms Veneer writes from the singular `spinner` stem and the `placeholder` stem." Every prose occurrence of `spinners`/`spinner`/`placeholders`/`placeholder` is followed by `token` or `stem` (a noun). No other bare prose token in the comment (checked lines 352-356 in full).
+
+**Claim 4 — The corrected move list: BROKEN.**
+The report's move list (`b-passive-order-report-2.md:71-102`) correctly places `### Button toolbar classes` after `### Button group classes` (line 74-76), places `### Helper classes` after `### Placeholder classes` (line 77-78, 86-88), names `#### btn-close` as itself (line 98), and every heading it names exists at the lines it gives — confirmed against `/home/user/veneer-bpo/guides/veneer.md`: `### Button group classes:828`, `### Button toolbar classes:876`, `### Helper classes:726`, `### Progress classes:885`, `### Spinner classes:919`, `### Placeholder classes:941`, `### Pagination classes:778`, `### Card classes:1523`, `### Breadcrumb classes:1621`, `### Badge classes:1649`, `### Close classes:1673`, `#### card:3341`, `#### breadcrumb:3369`, `#### pagination:3272`, `#### badge:3363`, `#### progress:3298`, `#### placeholder:3290`, `#### icon-link:2868`, `#### btn-close:3376`.
+
+But the move list omits a passive section and its table. `/home/user/veneer-bpo/guides/veneer.md:1575` carries `### List group classes`, and `list-group` is a passive component in the barrel (`bpo-2.diff:24-30`, `@use 'components/list-group';` sits between `progress-component` and `close`). Neither `report-2.md:71-92` (the section move list) nor `report-2.md:94-102` (the table move list) names `### List group classes` or `#### list-group` (guide line 3353) anywhere. The section's current position (1575, between `### Card classes:1523` and `### Breadcrumb classes:1621`) does not match the barrel's card→breadcrumb→pagination→badge→progress→list-group→close order the report itself states applies, so the omission is not a case of "already correctly placed" stated elsewhere in the report (compare how the report explicitly marks `### Card classes` "already correctly placed at 1523," `report-2.md:76`, with no equivalent note for list-group). Claim 4 requires the lane to check "that no passive section or table is omitted"; `list-group` is a passive section and table omitted from both lists.
+
+**Claim 5 — Law and report: BROKEN.**
+No `any`, `as`, `!`, suppression, mock, or nested function beyond a directly passed callback in the diff (`bpo-2.diff` full text reviewed); the added test code uses only arrow callbacks passed directly to `flatMap`/`matchAll`. No helper duplicates an installed `@orkestrel/test` export (the added case reuses `scene`, `requireValue`, `readStyle` already imported in the file). No banned term found (case-insensitive sweep of the report against the `.claude/rules/writing.md` substitution table returned no matches).
+
+The report states a count in prose outside a reported run's result line, in violation of the criterion. `b-passive-order-report-2.md:31` writes "(the thirteen proofs):" immediately before quoting the tool's own result line; `report-2.md:43-44` writes "Baseline case count (`211`, pre-reorder, thirteen proofs) versus post-reorder case count for the same thirteen proofs"; `report-2.md:114` writes "across the thirteen proofs" appended after the quoted result line `1 failed | 12 passed (13)`. Each is a count of a growable set (the test files under audit) stated in the report's own prose rather than inside the tool's reported result line, which `AGENTS.md` § Writing bans ("NEVER state a count... Name the members, or write the sentence without the number") and which claim 5 states explicitly as its own criterion.
+
+## Findings outside the claims
+
+None found to the BROKEN standard within the read scope (the diff, the two test files, the report, and the guide headings the claims name).
+
+VERDICT: FAIL 4, 5; outside the claims: none
