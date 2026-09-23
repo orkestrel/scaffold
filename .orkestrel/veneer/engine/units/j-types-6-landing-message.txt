@@ -1,14 +1,18 @@
-Close the round-5 audit on the engine contracts: derived composites, token language, and renames
+Close the round-5 to round-8 audits on the engine contracts: derived composites, one-home tokens, key language
 
-Under the round-5 audit's findings, `src/browser/types.ts` reduces each composite selector
+Under the round-5 to round-8 audits, `src/browser/types.ts` reduces each composite selector
 default to the part no key of its entity names and states the composition the engine derives
-(`trigger`, `entry`, the tab `link`, the scroll lock's `fixed`); puts every sentence that stated
-a fixed class token or attribute name into the key language; renames the scrollspy parent-link
-selector `parent`, the tooltip delegation option and attribute `descendants`, and the carousel
-step attribute `step`; states the overlay-to-backdrop token pass-through and adds the offcanvas
-`fade` token; deletes the scroll lock's class map (the modal writes `modal-open` itself);
-corrects the `dataAttributes` default and the `auto` token sentences; and turns every event-map
-description to the verb-to-event direction. The guide's Surface rows and Methods cells follow.
-J-TYPES rounds 6 and 7, audited by Astra, Opus 5.5, and the checker. J-ENGINE campaign (D43).
+(the dropdown `trigger` and `entry`, the tab `link`, `wrapper`, and its new `entry`, the
+carousel `image`, the scroll lock's `fixed`); puts every sentence that stated a fixed class
+token or attribute name into the key language, one idiom, with the attribute paths spelled
+out; renames the scrollspy parent-link selector `parent`, the tooltip delegation option and
+attribute `descendants`, and the carousel step attribute `step`; states the overlay-to-backdrop
+token pass-through and adds the offcanvas `fade` token; deletes the scroll lock's class map
+(the modal writes `modal-open` itself); states the offcanvas resize listener as a lifetime
+listener; corrects the `dataAttributes` default to the platform's measured behaviour (an
+element-local list also excludes an unlisted data attribute) and the `auto` token sentences;
+and turns every event-map description to the verb-to-event direction. The guide's Surface
+rows and Methods cells follow. J-TYPES rounds 6 to 9, each audited by Astra, Opus 5.5, and the
+checker. J-ENGINE campaign (D43).
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
