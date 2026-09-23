@@ -1,0 +1,82 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index dddeace..234e927 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -152,8 +152,11 @@ the barrel's first `@use` rule, so the order is declared before any rule fills a
+ Every Bootstrap utility Veneer ships carries the `!important` Bootstrap writes for it, and Veneer
+ adds none Bootstrap does not write. Outside the class utilities, the `[hidden]` rule in the `reset`
+ layer and the calendar-picker indicator rule in the `elements` layer carry one as well, each
+-matching Bootstrap's own declaration. Where a class name exists in Bootstrap and in Tailwind, the
+-declaration Veneer ships is Bootstrap's; § Tailwind states how a paired build keeps that true.
++matching Bootstrap's own declaration. The conformance proof holds that agreement for every
++declaration both sheets make: each shared selector and property carries the same priority on both
++sides, because the oracle records values without their priority. Where a class name exists in
++Bootstrap and in Tailwind, the declaration Veneer ships is Bootstrap's; § Tailwind states how a
++paired build keeps that true.
+ 
+ Override an important utility from inside that utility's own layer, which your sheet re-opens by
+ name. An important declaration in a layer beats an important declaration outside every layer,
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 23f5efd..a485171 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -1,6 +1,7 @@
+ import { readInventory, resolveContained } from '@orkestrel/test/server'
+ import { parseJSON } from '@orkestrel/contract'
+ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
++import { createRequire } from 'node:module'
+ import { dirname, resolve } from 'node:path'
+ import { ELEMENT_TAGS } from './setupStyles.js'
+ import { describe, expect, it } from 'vitest'
+@@ -29,6 +30,7 @@ import {
+ 	readAdditions,
+ 	readManifestMember,
+ 	readBuiltCascade,
++	SheetReader,
+ 	readCompatibility,
+ 	readDeferrals,
+ 	readDepartures,
+@@ -216,6 +218,43 @@ describe('cascade ledger', () => {
+ 	})
+ })
+ 
++describe('declaration priority', () => {
++	// D39a: the oracle fixture records a declaration's value without its priority, so the ledger's
++	// value comparison cannot carry a dropped or added `!important`. This case holds D39's rule
++	// directly against the release's compiled CSS instead, where the priority is held equal.
++	it('carries the priority the release writes on every declaration both sheets make, and adds none', () => {
++		const release = new SheetReader(
++			readFileSync(
++				createRequire(import.meta.url).resolve('bootstrap/dist/css/bootstrap.css'),
++				'utf8',
++			),
++		)
++		const cascade = new SheetReader(readBuiltCascade())
++		const key = (selector: string, property: string): string => `${selector} { ${property} }`
++		const shipped = new Map<string, boolean>()
++		for (const declaration of cascade.declarations) {
++			const pair = key(declaration.selector, declaration.property)
++			shipped.set(pair, (shipped.get(pair) ?? false) || declaration.important)
++		}
++		const seen = new Set<string>()
++		const mismatches: string[] = []
++		let compared = 0
++		for (const declaration of release.declarations) {
++			const pair = key(declaration.selector, declaration.property)
++			const important = shipped.get(pair)
++			if (important === undefined || seen.has(pair)) continue
++			seen.add(pair)
++			compared += 1
++			if (important !== declaration.important)
++				mismatches.push(
++					`${pair}: release ${declaration.important ? 'important' : 'normal'}, cascade ${important ? 'important' : 'normal'}`,
++				)
++		}
++		expect(compared).toBeGreaterThan(0)
++		expect(mismatches).toEqual([])
++	})
++})
++
+ describe('Bootstrap source order', () => {
+ 	// A forms rule that ties a validation rule on one property yields to it only because the release
+ 	// loads validation after it, so the barrel keeps the release's forms sequence for every forms
