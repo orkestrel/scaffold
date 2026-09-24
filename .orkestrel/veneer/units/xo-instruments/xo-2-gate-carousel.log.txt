@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/user/veneer-xo
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+·······
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  12:37:30
+   Duration  16.31s (transform 0ms, setup 490ms, import 625ms, tests 3.50s, environment 0ms)
+

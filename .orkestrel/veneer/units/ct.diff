@@ -1,0 +1,724 @@
+diff --git a/src/styles/_theme.scss b/src/styles/_theme.scss
+index 09615d7..d12de75 100644
+--- a/src/styles/_theme.scss
++++ b/src/styles/_theme.scss
+@@ -1,3 +1,4 @@
++@use 'sass:map';
+ @use 'tokens';
+ @use 'mixins' as *;
+ 
+@@ -6,13 +7,20 @@
+ 	// qualifier, so any element opens an island and a nested island returns its own subtree to its
+ 	// own mode. `:root` carries the light closure too, which is the state a document is in before
+ 	// the color-mode engine has applied a mode to it.
+-	[data-bs-theme='light'] {
+-		color-scheme: light;
+-		@include theme-tokens(tokens.$roles, tokens.$aliased, tokens.$light);
+-	}
+-
+-	[data-bs-theme='dark'] {
+-		color-scheme: dark;
+-		@include theme-tokens(tokens.$roles, tokens.$aliased, tokens.$dark);
++	//
++	// The tokens the shared closure leaves out, or mixes the wrong way for a role, follow the closure
++	// in each scope, so each one replaces what the closure wrote and a nested island returns it to its
++	// own mode. The secondary aliases sit in each scope for the same reason: an alias declared at the
++	// `:root` selector alone would keep the light fill inside a dark island.
++	@each $mode, $values in (light: tokens.$light, dark: tokens.$dark) {
++		[data-bs-theme='#{$mode}'] {
++			color-scheme: $mode;
++			@include theme-tokens(tokens.$roles, tokens.$aliased, $values);
++			@each $name, $key in tokens.$retuned {
++				#{$name}: #{map.get($values, $key)};
++			}
++			--bs-secondary: var(--vn-color-secondary-base);
++			--bs-secondary-rgb: var(--vn-color-secondary-rgb);
++		}
+ 	}
+ }
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 5fe18aa..0aac827 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -23,6 +23,15 @@ $light: (
+ 	'state-stripe': 5%,
+ 	'primary': 'oklch(0.48 0.255 264)',
+ 	'primary-rgb': '8, 65, 234',
++	'secondary': 'oklch(0.446 0.043 257.281)',
++	'secondary-rgb': '69, 85, 108',
++	'light-emphasis': 'var(--vn-gray-700)',
++	// No gray step holds the release's light subtle tier: its gray-100 step mixed half with white.
++	'light-subtle': '#fcfcfd',
++	'light-border': 'var(--vn-gray-200)',
++	'dark-emphasis': 'var(--vn-gray-700)',
++	'dark-subtle': 'var(--vn-gray-400)',
++	'dark-border': 'var(--vn-gray-500)',
+ 	'tint': 12%,
+ 	'edge': 35%,
+ 	'anchor': 'var(--vn-surface-body-base)',
+@@ -43,8 +52,8 @@ $light: (
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+ 	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 70%, var(--vn-text-body-base))',
+ 	'link-rgb': '13, 54, 172',
+-	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 80%, black)',
+-	'link-hover-rgb': '10, 43, 137',
++	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, black)',
++	'link-hover-rgb': '8, 35, 112',
+ 	'border': 'oklch(0.869 0.022 252.894)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)',
+ 	'valid': 'var(--vn-color-success-base)',
+@@ -56,8 +65,10 @@ $light: (
+ );
+ 
+ // The dark values of the same closure, and the image-valued compatibility variables that have a
+-// dark value alone. Only the primary fill retunes; every other role keeps one fill in light and in
+-// dark, and reaches its dark tiers through the mix percentages and the border anchor.
++// dark value alone. The primary and secondary fills retune; every other role keeps one fill in
++// light and in dark, and reaches its dark tiers through the mix percentages and the border anchor.
++// The dark secondary is the fill the release paints in a dark island, because the light slate
++// reads about 2.3 to 1 against the dark canvas.
+ $dark: (
+ 	'focus-highlight': Highlight,
+ 	'focus-reset': none,
+@@ -67,6 +78,15 @@ $dark: (
+ 	'state-stripe': 5%,
+ 	'primary': 'oklch(0.7 0.15 233)',
+ 	'primary-rgb': '0, 172, 236',
++	'secondary': 'var(--vn-gray-600)',
++	'secondary-rgb': '108, 117, 125',
++	'light-emphasis': 'var(--vn-gray-100)',
++	'light-subtle': 'var(--vn-gray-800)',
++	'light-border': 'var(--vn-gray-700)',
++	'dark-emphasis': 'var(--vn-gray-300)',
++	// No gray step holds the release's dark subtle tier: its gray-800 step mixed half with black.
++	'dark-subtle': '#1a1d20',
++	'dark-border': 'var(--vn-gray-800)',
+ 	'tint': 15%,
+ 	'edge': 50%,
+ 	// The surface every dark role's border tier mixes against. It holds the value those tiers were
+@@ -90,8 +110,8 @@ $dark: (
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+ 	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 80%, var(--vn-text-body-base))',
+ 	'link-rgb': '79, 185, 238',
+-	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 80%, black)',
+-	'link-hover-rgb': '63, 148, 190',
++	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, white)',
++	'link-hover-rgb': '141, 210, 244',
+ 	'border': 'oklch(0.4 0.022 256)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent)',
+ 	'valid': 'var(--vn-color-success-emphasis)',
+@@ -112,6 +132,24 @@ $dark: (
+ 		url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236ea8fe'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3e%3c/svg%3e"),
+ );
+ 
++// The canonical tokens the shared closure does not write, or writes the wrong way for a role, each
++// keyed to the `$light` and `$dark` entry its value comes from. The secondary fill retunes by mode,
++// and the light and dark roles take the release's gray steps for their tiers, because each of those
++// fills sits beside the surface or the text, where the mix every other role takes leaves an alert's
++// text on a fill of nearly its own color. The `:root` block here and each mode scope in the theme
++// partial write these after the closure, so a tier here replaces the mix the closure writes for its
++// role.
++$retuned: (
++	'--vn-color-secondary-base': 'secondary',
++	'--vn-color-secondary-rgb': 'secondary-rgb',
++	'--vn-color-light-subtle': 'light-subtle',
++	'--vn-color-light-emphasis': 'light-emphasis',
++	'--vn-color-light-border': 'light-border',
++	'--vn-color-dark-subtle': 'dark-subtle',
++	'--vn-color-dark-emphasis': 'dark-emphasis',
++	'--vn-color-dark-border': 'dark-border',
++);
++
+ // The forms glyphs, the accordion chevrons, and the navbar toggler icon at their light values, each
+ // as the escaped data URI the release compiles its own variable to.
+ //
+@@ -215,8 +253,6 @@ $icons: (
+ 		--vn-gray-800: #343a40;
+ 		--vn-gray-900: #212529;
+ 
+-		--vn-color-secondary-base: oklch(0.446 0.043 257.281);
+-		--vn-color-secondary-rgb: 69, 85, 108;
+ 		--vn-color-tertiary-base: oklch(0.541 0.281 293.009);
+ 		--vn-color-tertiary-rgb: 127, 34, 254;
+ 		--vn-color-success-base: oklch(0.527 0.154 150.069);
+@@ -360,6 +396,9 @@ $icons: (
+ 		--vn-stack-toast: 1090;
+ 
+ 		@include theme-tokens($roles, $aliased, $light);
++		@each $name, $key in $retuned {
++			#{$name}: #{map.get($light, $key)};
++		}
+ 	}
+ 
+ 	:root {
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 16f923e..51b3b3c 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -10,6 +10,7 @@ import type {
+ 	OracleVocabulary,
+ } from './setupServer.js'
+ import { isRecord, parseJSON } from '@orkestrel/contract'
++import { TOKEN_NAMES } from '@src/core'
+ import { createHash } from 'node:crypto'
+ import { existsSync, readFileSync } from 'node:fs'
+ import { resolve } from 'node:path'
+@@ -1636,6 +1637,7 @@ describe('server setup', () => {
+ 				'tooltip',
+ 				'text',
+ 				'text-truncate',
++				'theme',
+ 				'top',
+ 				'transition',
+ 				'translate-middle',
+@@ -2162,6 +2164,7 @@ describe('server setup', () => {
+ 				collectKeyframeNames(LEDGER_CASCADE),
+ 				LEDGER_INVENTORY,
+ 				LEDGER_SHIPPED,
++				[],
+ 			).map(describeAddition),
+ 		).toEqual([
+ 			'reboot | body { margin } | — | declaration',
+@@ -2237,7 +2240,7 @@ describe('server setup', () => {
+ 			'Keyframes orphan-spin is recorded under no shipped component',
+ 		)
+ 		// The name decides nothing: `btn-glow` opens with the shipped `btn` key and is still refused.
+-		expect(() => collectAdditions([], ['btn-glow'], LEDGER_INVENTORY, LEDGER_SHIPPED)).toThrow(
++		expect(() => collectAdditions([], ['btn-glow'], LEDGER_INVENTORY, LEDGER_SHIPPED, [])).toThrow(
+ 			'Keyframes btn-glow is recorded under no shipped component',
+ 		)
+ 		const recorded: OracleInventory = {
+@@ -2259,11 +2262,13 @@ describe('server setup', () => {
+ 			},
+ 		}
+ 		// A withheld key's record does not admit its animation.
+-		expect(() => collectAdditions([], ['spinner-border'], recorded, LEDGER_SHIPPED)).toThrow(
++		expect(() => collectAdditions([], ['spinner-border'], recorded, LEDGER_SHIPPED, [])).toThrow(
+ 			'Keyframes spinner-border is recorded under no shipped component',
+ 		)
+ 		// A shipped key's record admits its animation, whichever key the name opens with.
+-		expect(collectAdditions([], ['btn-pulse', 'table-flash'], recorded, LEDGER_SHIPPED)).toEqual([])
++		expect(
++			collectAdditions([], ['btn-pulse', 'table-flash'], recorded, LEDGER_SHIPPED, []),
++		).toEqual([])
+ 		expect(collectLedger(LEDGER_CASCADE, LEDGER_INVENTORY, LEDGER_SHIPPED).additions).toHaveLength(
+ 			6,
+ 		)
+@@ -2307,6 +2312,23 @@ describe('server setup', () => {
+ 		).toEqual(['btn | .btn-tertiary | — | selector', 'btn | --vn-btn-tertiary-face | — | property'])
+ 	})
+ 
++	it('records a name the token registry carries, and names the planted name beside it', () => {
++		// The registry's record is the Tokens section, which a reference-map proof holds equal to the
++		// cascade, so a canonical token a theme scope declares is no addition and a name the registry
++		// lacks still is. The registry is the only reason the canonical name is absent: an empty
++		// registry names the canonical name and the planted name.
++		const planted = `@layer theme { :root { ${TOKEN_NAMES.palette.blue}: #0d6efd; --vn-planted: 0 } }`
++		const inventory = readOracleInventory()
++		expect(collectLedger(planted, inventory, ['theme']).additions.map(describeAddition)).toEqual([
++			'theme | --vn-planted | — | property',
++		])
++		expect(
++			collectAdditions(readCascadeBlocks(planted), [], inventory, ['theme'], []).map(
++				describeAddition,
++			),
++		).toEqual(['theme | --vn-palette-blue | — | property', 'theme | --vn-planted | — | property'])
++	})
++
+ 	it('names a planted unrecorded difference, a planted stale row, and a planted unrecorded name', () => {
+ 		const scratch = createScratch()
+ 		try {
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 304405e..dba3077 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -25,8 +25,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
+ import { isDeepStrictEqual } from 'node:util'
+ import { chromium } from 'playwright'
+ import { AtRule, Container, list, parse, Rule } from 'postcss'
++import { TOKEN_NAMES } from '@src/core'
+ import { resolveBrowser, resolvePinnedBrowser } from '../configs/browsers.js'
+ import {
++	collectTokenNames,
+ 	describeIncompleteRow,
+ 	MANDATED_TAG_PAIRS,
+ 	matchesCSSWhitespace,
+@@ -2569,21 +2571,27 @@ export function collectValueGaps(
+ }
+ 
+ /**
+- * Collects every name the cascade emits that the official inventory lacks.
++ * Collects every name the cascade emits that neither the official inventory nor the token registry
++ * records.
+  *
+  * @param blocks - The compiled cascade's blocks, as the {@link readCascadeBlocks} helper reads
+  *   them.
+  * @param keyframes - The cascade's animation names, as the {@link collectKeyframeNames} helper reads them.
+  * @param inventory - The official vocabulary by component.
+  * @param shipped - The shipped component keys.
++ * @param registry - The canonical token names, whose record is the guide's Tokens section.
+  * @returns One addition per distinct name and condition, in written order.
+  * @throws When the {@link attributeSelector} helper refuses a rule, and when the cascade defines an
+  *   animation the inventory records under no shipped key, naming that animation.
+  *
+  * @remarks
+- * A rule no shipped component claims is outside this ledger: the theme layer's own scopes are the
+- * release's `theme` vocabulary, which this release does not ship as a component. The site this
+- * walk reads is the selector with the condition around it, so a selector the release writes
++ * A rule no shipped component claims is outside this ledger. The theme layer's scopes answer to
++ * the release's `theme` key, and a custom property a rule declares that the registry names is
++ * recorded rather than added: the Tokens section records every registry name, and its
++ * reference-map proof holds that record equal to the cascade, so a row here would repeat the same
++ * reason across the whole registry. A registry name no rule of the cascade declares is not this
++ * ledger's concern either; the reference-map proof reports it. The site this walk reads is the
++ * selector with the condition around it, so a selector the release writes
+  * unconditionally and this cascade also writes under a query the release does not record is an
+  * added name at that query. A selector the inventory records at the same site contributes its
+  * declarations instead, so a treatment the release writes on a selector it knows reads as an added
+@@ -2602,6 +2610,7 @@ export function collectAdditions(
+ 	keyframes: readonly string[],
+ 	inventory: OracleInventory,
+ 	shipped: readonly string[],
++	registry: readonly string[],
+ ): readonly Addition[] {
+ 	const rows: Addition[] = []
+ 	const seen = new Set<string>()
+@@ -2631,6 +2640,7 @@ export function collectAdditions(
+ 			}
+ 			for (const property of block.declarations.keys()) {
+ 				if (!property.startsWith('--') || vocabulary.properties.includes(property)) continue
++				if (registry.includes(property)) continue
+ 				const owned = `${component}|property|${property}|${condition ?? ''}`
+ 				if (seen.has(owned)) continue
+ 				seen.add(owned)
+@@ -2647,7 +2657,7 @@ export function collectAdditions(
+ 			matched.flatMap((rule) => rule.declarations.map((declaration) => declaration.property)),
+ 		)
+ 		for (const property of block.declarations.keys()) {
+-			if (declared.has(property)) continue
++			if (declared.has(property) || registry.includes(property)) continue
+ 			const known = vocabulary.properties.includes(property)
+ 			const category: AdditionCategory =
+ 				property.startsWith('--') && !known ? 'property' : 'declaration'
+@@ -2789,6 +2799,8 @@ export function scanShippedDeferrals(
+  * @param cascade - The compiled CSS text, as the {@link compileExpandedCascade} helper writes it.
+  * @param inventory - The official vocabulary by component.
+  * @param shipped - The shipped component keys.
++ * @param registry - The canonical token names the additions treat as recorded. Default: every
++ *   name the `TOKEN_NAMES` registry carries.
+  * @returns Every measured difference and every measured addition, which the guide's Departures and
+  *   Additions tables record row for row.
+  * @throws When a shipped key has no official inventory, when two shipped keys claim one site, or
+@@ -2798,11 +2810,18 @@ export function collectLedger(
+ 	cascade: string,
+ 	inventory: OracleInventory,
+ 	shipped: readonly string[],
++	registry: readonly string[] = collectTokenNames(TOKEN_NAMES),
+ ): CascadeLedger {
+ 	const blocks = readCascadeBlocks(cascade)
+ 	return {
+ 		departures: collectValueGaps(blocks, inventory, shipped),
+-		additions: collectAdditions(blocks, collectKeyframeNames(cascade), inventory, shipped),
++		additions: collectAdditions(
++			blocks,
++			collectKeyframeNames(cascade),
++			inventory,
++			shipped,
++			registry,
++		),
+ 	}
+ }
+ 
+diff --git a/tests/src/styles/theme.test.ts b/tests/src/styles/theme.test.ts
+index 293899f..6fbc412 100644
+--- a/tests/src/styles/theme.test.ts
++++ b/tests/src/styles/theme.test.ts
+@@ -1,10 +1,29 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle } from '@orkestrel/test/browser'
++import {
++	matchesColor,
++	measureContrast,
++	measureLuminance,
++	parseCSSColor,
++	readContrast,
++	readStyle,
++	readToken,
++} from '@orkestrel/test/browser'
+ import { ColorMode } from '@src/browser'
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { scene } from '../../setupBrowser.js'
+-import { COMPONENT_DARK_ASSETS } from '../../setupStyles.js'
++import {
++	collectNestedRules,
++	collectScopeProperties,
++	readCascadeSheet,
++	scene,
++} from '../../setupBrowser.js'
++import {
++	COMPONENT_DARK_ASSETS,
++	TEXT_MODES,
++	THEME_GRAY_TIERS,
++	THEME_LINK_CASES,
++	THEME_SECONDARY_CASE,
++} from '../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	document.documentElement.removeAttribute('data-bs-theme')
+@@ -101,16 +120,17 @@ describe('theme scopes', () => {
+ 		const dark = requireValue(container.querySelector('#dark'), 'No dark island specimen')
+ 		const inner = requireValue(container.querySelector('#inner'), 'No nested light specimen')
+ 		const outside = requireValue(container.querySelector('#outside'), 'No outside specimen')
+-		// Only the primary fill retunes with the mode among the role fills, so every other role's
+-		// `base` reading is mode-independent and must agree across the modes. The mixed tiers and the
+-		// body tokens all carry the mode.
++		// Only the primary and secondary fills retune with the mode among the role fills, so every
++		// other role's `base` reading is mode-independent and must agree across the modes. The mixed
++		// tiers and the body tokens all carry the mode.
++		const retuned = ['primary', 'secondary']
+ 		const matrix: Array<readonly [token: string, independent: boolean]> = [
+ 			[TOKEN_NAMES.text.body.base, false],
+ 			[TOKEN_NAMES.surface.body.base, false],
+ 		]
+ 		for (const [role, tiers] of Object.entries(TOKEN_NAMES.color)) {
+ 			for (const [tier, token] of Object.entries(tiers)) {
+-				if (tier !== 'rgb') matrix.push([token, tier === 'base' && role !== 'primary'])
++				if (tier !== 'rgb') matrix.push([token, tier === 'base' && !retuned.includes(role)])
+ 			}
+ 		}
+ 		for (const [token, independent] of matrix) {
+@@ -132,6 +152,154 @@ describe('theme scopes', () => {
+ 			})
+ 		}
+ 	})
++	// The release declares its secondary fill at the document scope alone, so its dark island
++	// paints the light fill over a dark page. The dark scope takes that fill rather than the light
++	// slate, whose label reads about 2.3 to 1 against the dark page, and the nested light island
++	// returns to the slate.
++	it('paints the secondary role in a dark island with the fill the release paints there, at no less contrast against the page', () => {
++		const container = scene.mount(
++			'<div data-bs-theme="light" style="background-color: var(--bs-body-bg)">' +
++				'<button id="light" class="btn btn-outline-secondary">Light</button>' +
++				'<div data-bs-theme="dark" style="background-color: var(--bs-body-bg)">' +
++				'<button id="dark" class="btn btn-outline-secondary">Dark</button>' +
++				'<div data-bs-theme="light" style="background-color: var(--bs-body-bg)">' +
++				'<button id="inner" class="btn btn-outline-secondary">Inner</button></div></div></div>' +
++				`<div style="background-color: ${THEME_SECONDARY_CASE.page}">` +
++				`<span id="release" style="color: ${THEME_SECONDARY_CASE.fill}">Release</span></div>`,
++		)
++		const light = requireValue(container.querySelector('#light'), 'No light label')
++		const dark = requireValue(container.querySelector('#dark'), 'No dark label')
++		const inner = requireValue(container.querySelector('#inner'), 'No nested light label')
++		const release = requireValue(container.querySelector('#release'), 'No release label')
++		expect(matchesColor(readStyle(dark, 'color'), THEME_SECONDARY_CASE.fill)).toBe(true)
++		expect(matchesColor(readStyle(dark, 'border-top-color'), THEME_SECONDARY_CASE.fill)).toBe(true)
++		expect(readContrast(dark)).toBeGreaterThanOrEqual(readContrast(release))
++		expect(matchesColor(readStyle(light, 'color'), 'oklch(0.446 0.043 257.281)')).toBe(true)
++		expect(matchesColor(readStyle(inner, 'color'), readStyle(light, 'color'))).toBe(true)
++		expect(matchesColor(readStyle(dark, 'color'), readStyle(light, 'color'))).toBe(false)
++	})
++	// The release writes its light and dark roles' tiers from the gray ramp, because each role's fill
++	// sits beside the surface or the text, where a mix toward either leaves an alert's text on a fill
++	// of nearly its own color. Each tier resolves to the release's value in its own mode, and a
++	// light island nested in a dark one returns to the light values.
++	it('resolves each light and dark role tier to the value the release gives it, in each mode', () => {
++		const container = scene.mount(
++			'<div id="light" data-bs-theme="light"><div id="dark" data-bs-theme="dark">' +
++				'<div id="inner" data-bs-theme="light"></div></div></div>',
++		)
++		const scopes = new Map([
++			[
++				'light',
++				[
++					requireValue(container.querySelector('#light'), 'No light scope'),
++					requireValue(container.querySelector('#inner'), 'No nested light scope'),
++				],
++			],
++			['dark', [requireValue(container.querySelector('#dark'), 'No dark scope')]],
++		])
++		expect(THEME_GRAY_TIERS.length).toBeGreaterThan(0)
++		expect(
++			THEME_GRAY_TIERS.flatMap(([role, mode, tier, value]) =>
++				(scopes.get(mode) ?? []).flatMap((scope) => {
++					const resolved = readToken(scope, `--vn-color-${role}-${tier}`)
++					return matchesColor(resolved, value)
++						? []
++						: [[role, mode, tier, scope.id, resolved, value]]
++				}),
++			),
++		).toEqual([])
++	})
++	it.each(TEXT_MODES)(
++		'reads the light and dark alerts in %s mode at no less contrast than the release gives them',
++		(mode) => {
++			const values = new Map(
++				THEME_GRAY_TIERS.filter(([, scope]) => scope === mode).map(([role, , tier, value]) => [
++					`${role} ${tier}`,
++					value,
++				]),
++			)
++			const container = scene.mount(
++				`<div data-bs-theme="${mode}" style="background-color: var(--bs-body-bg)">` +
++					'<div id="light" class="alert alert-light">Light notice</div>' +
++					'<div id="dark" class="alert alert-dark">Dark notice</div></div>' +
++					['light', 'dark']
++						.map(
++							(role) =>
++								`<div style="background-color: ${requireValue(values.get(`${role} subtle`), `No ${role} fill`)}">` +
++								`<span id="release-${role}" style="color: ${requireValue(values.get(`${role} emphasis`), `No ${role} text`)}">Release</span></div>`,
++						)
++						.join(''),
++			)
++			for (const role of ['light', 'dark']) {
++				const alert = requireValue(container.querySelector(`#${role}`), `No ${role} alert`)
++				const specimen = requireValue(
++					container.querySelector(`#release-${role}`),
++					`No ${role} release specimen`,
++				)
++				expect({ role, contrast: readContrast(alert) >= readContrast(specimen) }).toEqual({
++					role,
++					contrast: true,
++				})
++			}
++		},
++	)
++	// The release shades its light link toward black on hover and tints its dark link toward white,
++	// each by a step a reader sees. Each mode's hover moves the same way as the release's, and the
++	// contrast between the resting and the hover paint is at least the release's own.
++	it.each(THEME_LINK_CASES)(
++		'moves the $mode link on hover the way the release does, by at least the release step',
++		({ mode, rest, hover }) => {
++			const container = scene.mount(
++				`<div data-bs-theme="${mode}">` +
++					'<span id="rest" style="color: var(--bs-link-color)">Rest</span>' +
++					'<span id="hover" style="color: var(--bs-link-hover-color)">Hover</span></div>',
++			)
++			const [resting, hovered] = ['#rest', '#hover'].map((selector) =>
++				requireValue(
++					parseCSSColor(
++						readStyle(
++							requireValue(container.querySelector(selector), `No ${selector} specimen`),
++							'color',
++						),
++					),
++					`No ${selector} paint`,
++				),
++			)
++			const released = requireValue(parseCSSColor(rest), 'No release rest')
++			const shaded = requireValue(parseCSSColor(hover), 'No release hover')
++			const moved = requireValue(hovered, 'No hover paint')
++			const held = requireValue(resting, 'No resting paint')
++			expect(measureLuminance(moved) > measureLuminance(held)).toBe(
++				measureLuminance(shaded) > measureLuminance(released),
++			)
++			expect(measureContrast(moved, held)).toBeGreaterThanOrEqual(measureContrast(shaded, released))
++		},
++	)
++	// Each compatibility name the release repeats in its light scope and Veneer declares at the
++	// document scope alone is one value in every mode, so a light island nested in a dark one reads
++	// it from the document scope through the dark island. A dark scope that re-declared one of them
++	// would leave the nested island reading the dark value.
++	it('resolves in a light island nested in a dark one every compatibility name the light scope leaves to the document scope', () => {
++		const rules = collectNestedRules(
++			requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade').cssRules,
++		)
++		const light = collectScopeProperties(rules, "[data-bs-theme='light']")
++		const inherited = collectScopeProperties(rules, ':root').filter(
++			(name) => name.startsWith('--bs-') && !light.includes(name),
++		)
++		expect(inherited).toEqual(expect.arrayContaining(['--bs-blue', '--bs-border-radius']))
++		const container = scene.mount(
++			'<div data-bs-theme="dark"><div data-bs-theme="light"><p id="inner"></p></div></div>',
++		)
++		const inner = requireValue(container.querySelector('#inner'), 'No nested light specimen')
++		expect(
++			inherited.flatMap((name) => {
++				const expected = readToken(document.documentElement, name)
++				const resolved = readToken(inner, name)
++				return resolved === expected ? [] : [[name, resolved, expected]]
++			}),
++		).toEqual([])
++	})
+ 	it("declares no component's image in the dark scope and leaves each one to its component's own dark rule", () => {
+ 		const specimen = requireValue(scene.mount('<div></div>').firstElementChild, 'No asset specimen')
+ 		// Every component whose image Bootstrap retunes in dark alone has landed its own dark rule, so
+--- /dev/null
++++ b/app/browser/sections/ColorModeSection.ts
+@@ -0,0 +1,20 @@
++import { COLOR_MODE_COPY, COLOR_MODE_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared color mode specimens into a named region.
++ * @example
++ * ```ts
++ * const section = new ColorModeSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class ColorModeSection extends SpecimenSection {
++	/**
++	 * Mounts the Color modes region and its specimens.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, COLOR_MODE_COPY, COLOR_MODE_SPECIMENS)
++	}
++}
+--- /dev/null
++++ b/tests/app/browser/sections/ColorModeSection.test.ts
+@@ -0,0 +1,153 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	COLOR_MODE_COPY,
++	COLOR_MODE_SPECIMENS,
++	ColorModeSection,
++	SpecimenSection,
++} from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { readSpecimen } from '../../../setupBrowser.js'
++
++// Each surface claims a mode the published cascade resolves from its attribute, so the cascade has
++// to be in the document before a reading of that mode means anything.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('ColorModeSection', () => {
++	it('renders the declared color mode specimens through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ColorModeSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Color modes region')
++			expect(region.getAttribute('aria-label')).toBe('Color modes')
++			expect(region.querySelector('p')?.textContent).toBe(COLOR_MODE_COPY.paragraph)
++			expect(COLOR_MODE_SPECIMENS).not.toStrictEqual([])
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++				COLOR_MODE_SPECIMENS.map(({ name }) => name),
++			)
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				COLOR_MODE_SPECIMENS.map(({ markup }) => markup),
++			)
++			// Each mode is an attribute written in markup, and no specimen writes an inline style or
++			// carries an identifier a lifted copy of it would repeat.
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.querySelector('[id]')).toBeNull()
++			expect(Object.isFrozen(COLOR_MODE_COPY)).toBe(true)
++			expect(Object.isFrozen(COLOR_MODE_SPECIMENS)).toBe(true)
++			expect(COLOR_MODE_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	// The mutations this catches are a surface that stops declaring its mode, a surface moved out of
++	// the one it nests in, and a surface that drops one of the controls whose dark image the release
++	// retunes: each surface is read for the controls it carries itself, not the ones a surface nested
++	// in it carries.
++	it('nests a dark island in a light surface and a light island in the dark one, each carrying the same controls', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ColorModeSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Color modes region')
++			const specimen = readSpecimen(region, 'Nested islands')
++			const surfaces = [...specimen.querySelectorAll('[data-bs-theme]')]
++			expect(surfaces.map((surface) => surface.getAttribute('data-bs-theme'))).toEqual([
++				'light',
++				'dark',
++				'light',
++			])
++			expect(surfaces.map((surface) => surface.parentElement?.closest('[data-bs-theme]'))).toEqual([
++				null,
++				surfaces[0],
++				surfaces[1],
++			])
++			const controls = [
++				'p',
++				'.btn',
++				'select.form-select',
++				'.form-switch > input.form-check-input[role="switch"]',
++				'.navbar > .navbar-toggler > .navbar-toggler-icon',
++				'.accordion-header > .accordion-button',
++			]
++			expect(
++				surfaces.map((surface) =>
++					controls.map(
++						(selector) =>
++							[...surface.querySelectorAll(selector)].filter(
++								(element) => element.closest('[data-bs-theme]') === surface,
++							).length,
++					),
++				),
++			).toEqual(surfaces.map(() => controls.map(() => 1)))
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	// The dark island resolves the dark closure and the nested island returns to the light one for
++	// the body text, the fill, and the scheme. The dark images do not return: the release writes each
++	// one on a component rule under any dark ancestor, so the nested island's caret is the dark
++	// island's, which is the release's own behavior.
++	it('resolves each surface to its own mode, and keeps the dark caret in the nested light island', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ColorModeSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Color modes region')
++			const surfaces = [
++				...readSpecimen(region, 'Nested islands').querySelectorAll('[data-bs-theme]'),
++			]
++			const readings = surfaces.map((surface) => {
++				const select = requireValue(
++					[...surface.querySelectorAll('.form-select')].find(
++						(element) => element.closest('[data-bs-theme]') === surface,
++					),
++					'No select on the surface',
++				)
++				return {
++					scheme: readStyle(surface, 'color-scheme'),
++					text: readStyle(surface, 'color'),
++					fill: readStyle(surface, 'background-color'),
++					caret: readStyle(select, 'background-image'),
++				}
++			})
++			const [outer, island, inner] = readings
++			expect(readings.map(({ scheme }) => scheme)).toEqual(['light', 'dark', 'light'])
++			expect(island?.text).not.toBe(outer?.text)
++			expect(island?.fill).not.toBe(outer?.fill)
++			expect(inner?.text).toBe(outer?.text)
++			expect(inner?.fill).toBe(outer?.fill)
++			expect(island?.caret).not.toBe(outer?.caret)
++			expect(inner?.caret).toBe(island?.caret)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases the region and preserves adjacent content on repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new ColorModeSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Color modes region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})

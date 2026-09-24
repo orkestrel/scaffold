@@ -1,0 +1,69 @@
+--- a/tests/src/styles/components/alert.test.ts
++++ b/tests/src/styles/components/alert.test.ts
+@@ -16,6 +16,7 @@
+ 	ALERT_SELECTORS,
+ 	ALERT_SPACE_CASES,
+ 	TEXT_MODES,
++	THEME_GRAY_TIERS,
+ } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+@@ -166,12 +167,29 @@
+ 			const resolved = aliases.map((name) => readToken(island, name))
+ 			// A variant reading another role's alias reddens here only where the two roles resolve
+ 			// apart, so every other role is first held apart from this one on each alias the variant
+-			// reads, in the mode the island names.
+-			for (const other of ALERT_ROLES.filter((name) => name !== role))
+-				for (const [index, name] of aliases.entries())
+-					expect(
+-						matchesColor(readToken(island, name.replace(role, other)), resolved[index] ?? ''),
+-					).toBe(false)
++			// reads, in the mode the island names. The release gives the light and dark roles one
++			// text emphasis in light mode, so a pair the release itself writes alike is not held
++			// apart; the retune that follows separates that routing.
++			const release = new Map(
++				THEME_GRAY_TIERS.filter(([, scope]) => scope === mode).map(([name, , tier, value]) => [
++					`${name} ${tier}`,
++					value,
++				]),
++			)
++			const tiers = ['emphasis', 'subtle', 'border']
++			expect(
++				ALERT_ROLES.filter((name) => name !== role).flatMap((other) =>
++					aliases.flatMap((name, index) =>
++						release.get(`${role} ${tiers[index] ?? ''}`) !== undefined &&
++						release.get(`${role} ${tiers[index] ?? ''}`) ===
++							release.get(`${other} ${tiers[index] ?? ''}`)
++							? []
++							: matchesColor(readToken(island, name.replace(role, other)), resolved[index] ?? '')
++								? [[other, name]]
++								: [],
++					),
++				),
++			).toEqual([])
+ 			expect(matchesColor(readStyle(alert, 'color'), readToken(island, text))).toBe(true)
+ 			expect(matchesColor(readStyle(alert, 'background-color'), readToken(island, fill))).toBe(true)
+ 			expect(matchesColor(readStyle(alert, 'border-top-color'), readToken(island, edge))).toBe(true)
+--- a/tests/src/styles/components/button.test.ts
++++ b/tests/src/styles/components/button.test.ts
+@@ -231,7 +231,7 @@
+ 		expect(readStyle(button, 'text-decoration-line')).toBe('underline')
+ 		await hoverAccessible('Link specimen')
+ 		expect(
+-			matchesColor(readStyle(button, 'color'), 'color(srgb 0.0407929 0.170295 0.538144)'),
++			matchesColor(readStyle(button, 'color'), 'color(srgb 0.0331634 0.138386 0.437272)'),
+ 		).toBe(true)
+ 		expect(matchesColor(readStyle(button, 'background-color'), 'transparent')).toBe(true)
+ 		await holdAccessible('Link specimen')
+--- a/tests/src/styles/elements/a.test.ts
++++ b/tests/src/styles/elements/a.test.ts
+@@ -10,7 +10,8 @@
+ })
+ 
+ describe('anchor treatment', () => {
+-	// The record measures the primary-over-canvas mix and its sRGB black hover mix.
++	// The record measures the primary-over-canvas mix, and its hover mix toward black in light and
++	// toward white in dark.
+ 	it.each(TEXT_A_CASES)(
+ 		'reads the link tokens and restores the no-href default in $mode mode',
+ 		async ({ mode, color, hover }) => {

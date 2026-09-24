@@ -3,36 +3,36 @@
 > node --experimental-strip-types tests/guides.test.ts
 
 
-[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/veneer-xo[39m
+ RUN  v4.1.11 /home/user/veneer-xo
 
-[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+···x················
 
-[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
 
-[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds each compatibility ledger row once
-[31m[1mAssertionError[22m: expected [ Array(1) ] to deeply equal [][39m
+ FAIL   guides  tests/guides.test.ts > holds each compatibility ledger row once
+AssertionError: expected [ Array(1) ] to deeply equal []
 
 - Expected
 + Received
 
 - []
 + [
-+   "{\"component\":\"btn\",\"category\":\"accessibility\",\"obligation\":\"A toggle announces the button role and its pressed state, rather than a checkbox role.\",\"proof\":\"button.click.toggle\",\"status\":\"accepted\"}",
++   "[\"btn\",\"accessibility\",\"A toggle announces the button role and its pressed state, rather than a checkbox role.\",\"button.click.toggle\"]",
 + ]
 
-[36m [2m❯[22m tests/guides.test.ts:[2m74:68[22m[39m
-    [90m 72|[39m   [35mconst[39m rows [33m=[39m [34mreadCompatibility[39m()[33m.[39m[34mmap[39m((row) [33m=>[39m [33mJSON[39m[33m.[39m[34mstringify[39m(row))
-    [90m 73|[39m   [34mexpect[39m(rows[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)
-    [90m 74|[39m   expect(rows.filter((row, index) => rows.indexOf(row) !== index)).toE…
-    [90m   |[39m                                                                    [31m^[39m
-    [90m 75|[39m  })
-    [90m 76|[39m
+ ❯ tests/guides.test.ts:77:72
+     75|   )
+     76|   expect(ledger.length).toBeGreaterThan(0)
+     77|   expect(ledger.filter((row, index) => ledger.indexOf(row) !== index))…
+       |                                                                        ^
+     78|  })
+     79|
 
-[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
 
 
-[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
-[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m19 passed[39m[22m[90m (20)[39m
-[2m   Start at [22m 11:59:36
-[2m   Duration [22m 29.43s[2m (transform 8.12s, setup 1.08s, import 23.75s, tests 3.52s, environment 0ms)[22m
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  12:36:39
+   Duration  4.07s (transform 1.12s, setup 225ms, import 2.94s, tests 685ms, environment 0ms)
 

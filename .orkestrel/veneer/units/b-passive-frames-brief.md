@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native subagent in the worktree `/home/user/veneer-fp` (branch `unit/fp` from the
-session head `BASE_TBD`). The executor that opens this brief is that subagent.
+session head `cf5e447`). The executor that opens this brief is that subagent.
 
 ## Objective
 
@@ -59,7 +59,7 @@ with a variant from `light-1280`, `dark-1280`, `light-390`, and `dark-390`; run 
 
 **Owned.** The passive specimen tables in `app/browser/constants.ts` (`BUTTON_SPECIMENS`, `BUTTON_GROUP_SPECIMENS`, `SPINNER_SPECIMENS`, `PLACEHOLDER_SPECIMENS`, and `LIST_GROUP_SPECIMENS`, with their TSDoc); the passive registry rows in `tests/setup.ts` and their TSDoc; the passive driven cases this unit adds to `tests/app/browser/integration.test.ts`; the passive section proofs under `tests/app/browser/sections/`; `tests/setup.test.ts` and `tests/app/browser/Showcase.test.ts` where a registry or specimen change makes a case false.
 
-**Shared (report-only).** `guides/veneer.md` (the passive class sections a specimen changes and § Tests). Return one `fp-shared.patch` against `BASE_TBD` and
+**Shared (report-only).** `guides/veneer.md` (the passive class sections a specimen changes and § Tests). Return one `fp-shared.patch` against `cf5e447` and
 edit nothing there.
 
 **Off-limits.** every partial under `src/styles/**`; every other specimen table; `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts`;

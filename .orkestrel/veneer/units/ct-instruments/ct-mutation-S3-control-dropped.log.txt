@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 /home/user/veneer-ct/tmp/probe/ct-copy
+
+ ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:21:2 > ColorModeSection > renders the declared color mode specimens through the shared section contract 4ms
+ × |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls 7ms
+   → expected [ [ 1, 1, 1, 1, 1, 1 ], …(2) ] to deeply equal [ [ 1, 1, 1, 1, 1, 1 ], …(2) ]
+ ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:100:2 > ColorModeSection > resolves each surface to its own mode, and keeps the dark caret in the nested light island 12ms
+ ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:136:2 > ColorModeSection > releases the region and preserves adjacent content on repeated destruction 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls
+AssertionError: expected [ [ 1, 1, 1, 1, 1, 1 ], …(2) ] to deeply equal [ [ 1, 1, 1, 1, 1, 1 ], …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -18,9 +18,9 @@[39m
+[2m    [[22m
+[2m      1,[22m
+[2m      1,[22m
+[2m      1,[22m
+[2m      1,[22m
+[32m-     1,[39m
+[31m+     0,[39m
+[2m      1,[22m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/sections/ColorModeSection.test.ts:89:5
+     87|      ),
+     88|     ),
+     89|    ).toEqual(surfaces.map(() => controls.map(() => 1)))
+       |     ^
+     90|   } finally {
+     91|    section.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  12:30:18
+   Duration  13.47s (transform 0ms, setup 374ms, import 362ms, tests 1.73s, environment 0ms)
+

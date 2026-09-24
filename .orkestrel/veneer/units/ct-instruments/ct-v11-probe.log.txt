@@ -1,0 +1,73 @@
+
+ RUN  v4.1.11 /home/user/veneer-ct/tmp/probe/ct-copy
+
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+11:34:00 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/ctprobe.test.ts (1 test | 1 failed) 3044ms
+   × measures the dark state mixer 3043ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/ctprobe.test.ts:16:1 > measures the dark state mixer
+AssertionError: expected [ …(16) ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "white bare rest-L 0.0093 hover-L 0.0342 active-L 0.0703 hover-vs-rest 1.421 active-vs-rest 2.029",[39m
+[31m+   "white btn btn-primary rest-L 0.3561 hover-L 0.3973 active-L 0.4365 hover-vs-rest 1.101 active-vs-rest 1.198",[39m
+[31m+   "white btn btn-secondary rest-L 0.1739 hover-L 0.2325 active-L 0.2890 hover-vs-rest 1.262 active-vs-rest 1.514",[39m
+[31m+   "white btn btn-info rest-L 0.1294 hover-L 0.1745 active-L 0.2212 hover-vs-rest 1.251 active-vs-rest 1.512",[39m
+[31m+   "white btn btn-warning rest-L 0.1579 hover-L 0.2036 active-L 0.2512 hover-vs-rest 1.220 active-vs-rest 1.449",[39m
+[31m+   "white btn btn-dark rest-L 0.0181 hover-L 0.0492 active-L 0.0898 hover-vs-rest 1.458 active-vs-rest 2.054",[39m
+[31m+   "white btn btn-light rest-L 0.9461 hover-L 0.9525 active-L 0.9578 hover-vs-rest 1.006 active-vs-rest 1.012",[39m
+[31m+   "white btn rest-L 0.0093 hover-L 0.0342 active-L 0.0703 hover-vs-rest 1.421 active-vs-rest 2.029",[39m
+[31m+   "black bare rest-L 0.0093 hover-L 0.0077 active-L 0.0065 hover-vs-rest 1.028 active-vs-rest 1.050",[39m
+[31m+   "black btn btn-primary rest-L 0.3561 hover-L 0.2683 active-L 0.2059 hover-vs-rest 1.276 active-vs-rest 1.587",[39m
+[31m+   "black btn btn-secondary rest-L 0.1739 hover-L 0.1325 active-L 0.1030 hover-vs-rest 1.227 active-vs-rest 1.464",[39m
+[31m+   "black btn btn-info rest-L 0.1294 hover-L 0.0987 active-L 0.0767 hover-vs-rest 1.207 active-vs-rest 1.416",[39m
+[31m+   "black btn btn-warning rest-L 0.1579 hover-L 0.1200 active-L 0.0929 hover-vs-rest 1.223 active-vs-rest 1.455",[39m
+[31m+   "black btn btn-dark rest-L 0.0181 hover-L 0.0145 active-L 0.0119 hover-vs-rest 1.055 active-vs-rest 1.099",[39m
+[31m+   "black btn btn-light rest-L 0.9461 hover-L 0.7084 active-L 0.5402 hover-vs-rest 1.314 active-vs-rest 1.688",[39m
+[31m+   "black btn rest-L 0.0093 hover-L 0.0077 active-L 0.0065 hover-vs-rest 1.028 active-vs-rest 1.050",[39m
+[31m+ ][39m
+
+ ❯ tests/src/styles/ctprobe.test.ts:37:13
+     35|   }
+     36|  }
+     37|  expect(out).toEqual([])
+       |             ^
+     38| })
+     39|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  11:33:47
+   Duration  16.37s (transform 0ms, setup 1.05s, import 18ms, tests 3.04s, environment 0ms)
+

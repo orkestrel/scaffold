@@ -1,0 +1,246 @@
+=== M1-secondary
+site: src/styles/_tokens.scss
+@@ -71,8 +71,8 @@
+ 	'state-stripe': 5%,
+ 	'primary': 'oklch(0.7 0.15 233)',
+ 	'primary-rgb': '0, 172, 236',
+-	'secondary': 'var(--vn-gray-600)',
+-	'secondary-rgb': '108, 117, 125',
++	'secondary': 'oklch(0.446 0.043 257.281)',
++	'secondary-rgb': '69, 85, 108',
+ 	'tint': 15%,
+ 	'edge': 50%,
+ 	// The surface every dark role's border tier mixes against. It holds the value those tiers were
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/theme.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  2 failed | 8 passed (10)
+failing:
+FAIL  |[object Object] (chromium)| tests/src/styles/theme.test.ts:106:2 > theme scopes > resolves every role tier and the body tokens per island over nested modes
+FAIL  |[object Object] (chromium)| tests/src/styles/theme.test.ts:153:2 > theme scopes > paints the secondary role in a dark island with the fill the release paints there, at no less contrast against the page
+× |[object Object] (chromium)| tests/src/styles/theme.test.ts:106:2 > theme scopes > resolves every role tier and the body tokens per island over nested modes 15ms
+× |[object Object] (chromium)| tests/src/styles/theme.test.ts:153:2 > theme scopes > paints the secondary role in a dark island with the fill the release paints there, at no less contrast against the page 3ms
+restored: identical
+
+=== M3-dark-hover
+site: src/styles/_tokens.scss
+@@ -96,7 +96,7 @@
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+ 	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 80%, var(--vn-text-body-base))',
+ 	'link-rgb': '79, 185, 238',
+-	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, white)',
++	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, black)',
+ 	'link-hover-rgb': '141, 210, 244',
+ 	'border': 'oklch(0.4 0.022 256)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent)',
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/theme.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  1 failed | 9 passed (10)
+failing:
+FAIL  |[object Object] (chromium)| tests/src/styles/theme.test.ts:179:2 > theme scopes > moves the 'dark' link on hover the way the release does, by at least the release step
+× |[object Object] (chromium)| tests/src/styles/theme.test.ts:179:2 > theme scopes > moves the 'dark' link on hover the way the release does, by at least the release step 5ms
+restored: identical
+
+=== M4-light-hover
+site: src/styles/_tokens.scss
+@@ -45,7 +45,7 @@
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+ 	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 70%, var(--vn-text-body-base))',
+ 	'link-rgb': '13, 54, 172',
+-	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, black)',
++	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 80%, black)',
+ 	'link-hover-rgb': '8, 35, 112',
+ 	'border': 'oklch(0.869 0.022 252.894)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)',
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/theme.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  1 failed | 9 passed (10)
+failing:
+FAIL  |[object Object] (chromium)| tests/src/styles/theme.test.ts:179:2 > theme scopes > moves the 'light' link on hover the way the release does, by at least the release step
+× |[object Object] (chromium)| tests/src/styles/theme.test.ts:179:2 > theme scopes > moves the 'light' link on hover the way the release does, by at least the release step 3ms
+restored: identical
+
+=== M5-dark-redeclares
+site: src/styles/_theme.scss
+@@ -19,6 +19,9 @@
+ 			--vn-color-secondary-rgb: #{map.get($values, 'secondary-rgb')};
+ 			--bs-secondary: var(--vn-color-secondary-base);
+ 			--bs-secondary-rgb: var(--vn-color-secondary-rgb);
++			@if $mode == dark {
++				--bs-border-radius: 0;
++			}
+ 		}
+ 	}
+ }
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/theme.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  1 failed | 9 passed (10)
+failing:
+FAIL  |[object Object] (chromium)| tests/src/styles/theme.test.ts:211:2 > theme scopes > resolves in a light island nested in a dark one every compatibility name the light scope leaves to the document scope
+× |[object Object] (chromium)| tests/src/styles/theme.test.ts:211:2 > theme scopes > resolves in a light island nested in a dark one every compatibility name the light scope leaves to the document scope 38ms
+restored: identical
+
+=== M6-registry-rule
+site: tests/setupServer.ts
+@@ -2640,7 +2640,6 @@
+ 			}
+ 			for (const property of block.declarations.keys()) {
+ 				if (!property.startsWith('--') || vocabulary.properties.includes(property)) continue
+-				if (registry.includes(property)) continue
+ 				const owned = `${component}|property|${property}|${condition ?? ''}`
+ 				if (seen.has(owned)) continue
+ 				seen.add(owned)
+@@ -2657,7 +2656,7 @@
+ 			matched.flatMap((rule) => rule.declarations.map((declaration) => declaration.property)),
+ 		)
+ 		for (const property of block.declarations.keys()) {
+-			if (declared.has(property) || registry.includes(property)) continue
++			if (declared.has(property)) continue
+ 			const known = vocabulary.properties.includes(property)
+ 			const category: AdditionCategory =
+ 				property.startsWith('--') && !known ? 'property' : 'declaration'
+command: npm run test:setup
+build exit: skipped
+test exit: 1
+summary: Tests  2 failed | 299 passed (301)
+failing:
+FAIL  |setup| tests/setupServer.test.ts > server setup > records a name the token registry carries, and names the planted name beside it
+FAIL  |setup| tests/setupServer.test.ts > server setup > records and reads official control state and rejects contradicted or absent obligation steps
+restored: identical
+
+=== M7-theme-withheld
+site: guides/veneer.md
+@@ -9309,7 +9309,6 @@
+ | rounded          | selector       | Every official `.rounded`, `.rounded-top`, `.rounded-end`, `.rounded-bottom`, and `.rounded-start` selector ships in the utilities layer; each resolved radius is proved in the `tests/src/styles/utilities/border.test.ts` proof.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | —                                   | shipped  |
+ | toast            | selector       | Every official `.toast` selector ships in the components layer, the shown and showing states, the container and its stacking gap, the header, its close combinator, and the body included; resolved geometry, states, stacking, and paint are proved in the `tests/src/styles/components/toast.test.ts` file.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | —                                   | shipped  |
+ | toast            | variable       | Every official `--bs-toast-*` custom property is declared on the `.toast` class, and the stacking slot is declared again on the `.toast-container` class; each one is read in the `tests/src/styles/components/toast.test.ts` file, and each one but the toast's stacking slot beside the property it drives.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | —                                   | shipped  |
+-| theme            | selector       | Every official theme selector ships: the document scope, the light and dark scopes, and the breakpoint aliases from the `_tokens.scss` and `_theme.scss` partials in the theme layer; the smooth-scroll rule from the `_reset.scss` partial in the reset layer; and the dark caret, knob, toggler icon, and chevron rules from the `_form-select.scss`, `_form-check.scss`, `_navbar.scss`, and `_accordion.scss` partials in the components layer. Resolved scopes, nested islands, and the dark roles are proved in the `tests/src/styles/theme.test.ts` proof.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | —                                   | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | —                                   | accepted |
+ | engine           | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | —                                   | accepted |
+ | engine           | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | —                                   | accepted |
+command: npm run test:conformance
+build exit: 0
+test exit: 1
+summary: Tests  5 failed | 21 passed (26)
+failing:
+FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector, custom property, and recorded animation in the built cascade
+FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted dark component rule the theme key records even when its component ships
+FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits
+FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+restored: identical
+
+=== S1-dark-attribute
+site: app/browser/constants.ts
+@@ -3530,6 +3530,6 @@
+ 	Object.freeze({
+ 		name: 'Nested islands',
+ 		markup:
+-			'<div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Light surface: the page closure every island sits on.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Surface action</button><select class="form-select w-auto" aria-label="Surface berth"><option>Surface berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Surface alerts"></div><nav class="navbar" aria-label="Surface bar"><button class="navbar-toggler" type="button" aria-label="Toggle the surface bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Surface manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="dark"><p class="mb-2">Dark island: every token beneath this attribute takes its dark value.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Island action</button><select class="form-select w-auto" aria-label="Island berth"><option>Island berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Island alerts"></div><nav class="navbar" aria-label="Island bar"><button class="navbar-toggler" type="button" aria-label="Toggle the island bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Island manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Nested light island: the berth list reads in the light closure again.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Nested action</button><select class="form-select w-auto" aria-label="Nested berth"><option>Nested berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Nested alerts"></div><nav class="navbar" aria-label="Nested bar"><button class="navbar-toggler" type="button" aria-label="Toggle the nested bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Nested manifest</button></h2></div></div></div></div></div>',
++			'<div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Light surface: the page closure every island sits on.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Surface action</button><select class="form-select w-auto" aria-label="Surface berth"><option>Surface berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Surface alerts"></div><nav class="navbar" aria-label="Surface bar"><button class="navbar-toggler" type="button" aria-label="Toggle the surface bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Surface manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3"><p class="mb-2">Dark island: every token beneath this attribute takes its dark value.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Island action</button><select class="form-select w-auto" aria-label="Island berth"><option>Island berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Island alerts"></div><nav class="navbar" aria-label="Island bar"><button class="navbar-toggler" type="button" aria-label="Toggle the island bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Island manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Nested light island: the berth list reads in the light closure again.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Nested action</button><select class="form-select w-auto" aria-label="Nested berth"><option>Nested berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Nested alerts"></div><nav class="navbar" aria-label="Nested bar"><button class="navbar-toggler" type="button" aria-label="Toggle the nested bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Nested manifest</button></h2></div></div></div></div></div>',
+ 	}),
+ ])
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ColorModeSection.test.ts
+build exit: skipped
+test exit: 1
+summary: Tests  2 failed | 2 passed (4)
+failing:
+FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:100:2 > ColorModeSection > resolves each surface to its own mode, and keeps the dark caret in the nested light island
+FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls
+× |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:100:2 > ColorModeSection > resolves each surface to its own mode, and keeps the dark caret in the nested light island 11ms
+× |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls 5ms
+restored: identical
+
+=== S2-nested-attribute
+site: app/browser/constants.ts
+@@ -3530,6 +3530,6 @@
+ 	Object.freeze({
+ 		name: 'Nested islands',
+ 		markup:
+-			'<div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Light surface: the page closure every island sits on.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Surface action</button><select class="form-select w-auto" aria-label="Surface berth"><option>Surface berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Surface alerts"></div><nav class="navbar" aria-label="Surface bar"><button class="navbar-toggler" type="button" aria-label="Toggle the surface bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Surface manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="dark"><p class="mb-2">Dark island: every token beneath this attribute takes its dark value.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Island action</button><select class="form-select w-auto" aria-label="Island berth"><option>Island berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Island alerts"></div><nav class="navbar" aria-label="Island bar"><button class="navbar-toggler" type="button" aria-label="Toggle the island bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Island manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Nested light island: the berth list reads in the light closure again.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Nested action</button><select class="form-select w-auto" aria-label="Nested berth"><option>Nested berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Nested alerts"></div><nav class="navbar" aria-label="Nested bar"><button class="navbar-toggler" type="button" aria-label="Toggle the nested bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Nested manifest</button></h2></div></div></div></div></div>',
++			'<div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Light surface: the page closure every island sits on.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Surface action</button><select class="form-select w-auto" aria-label="Surface berth"><option>Surface berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Surface alerts"></div><nav class="navbar" aria-label="Surface bar"><button class="navbar-toggler" type="button" aria-label="Toggle the surface bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Surface manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="dark"><p class="mb-2">Dark island: every token beneath this attribute takes its dark value.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Island action</button><select class="form-select w-auto" aria-label="Island berth"><option>Island berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Island alerts"></div><nav class="navbar" aria-label="Island bar"><button class="navbar-toggler" type="button" aria-label="Toggle the island bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Island manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3"><p class="mb-2">Nested light island: the berth list reads in the light closure again.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Nested action</button><select class="form-select w-auto" aria-label="Nested berth"><option>Nested berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Nested alerts"></div><nav class="navbar" aria-label="Nested bar"><button class="navbar-toggler" type="button" aria-label="Toggle the nested bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Nested manifest</button></h2></div></div></div></div></div>',
+ 	}),
+ ])
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ColorModeSection.test.ts
+build exit: skipped
+test exit: 1
+summary: Tests  2 failed | 2 passed (4)
+failing:
+FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:100:2 > ColorModeSection > resolves each surface to its own mode, and keeps the dark caret in the nested light island
+FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls
+× |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:100:2 > ColorModeSection > resolves each surface to its own mode, and keeps the dark caret in the nested light island 73ms
+× |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls 12ms
+restored: identical
+
+=== S3-control-dropped
+site: app/browser/constants.ts
+@@ -3530,6 +3530,6 @@
+ 	Object.freeze({
+ 		name: 'Nested islands',
+ 		markup:
+-			'<div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Light surface: the page closure every island sits on.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Surface action</button><select class="form-select w-auto" aria-label="Surface berth"><option>Surface berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Surface alerts"></div><nav class="navbar" aria-label="Surface bar"><button class="navbar-toggler" type="button" aria-label="Toggle the surface bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Surface manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="dark"><p class="mb-2">Dark island: every token beneath this attribute takes its dark value.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Island action</button><select class="form-select w-auto" aria-label="Island berth"><option>Island berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Island alerts"></div><nav class="navbar" aria-label="Island bar"><button class="navbar-toggler" type="button" aria-label="Toggle the island bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Island manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Nested light island: the berth list reads in the light closure again.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Nested action</button><select class="form-select w-auto" aria-label="Nested berth"><option>Nested berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Nested alerts"></div><nav class="navbar" aria-label="Nested bar"><button class="navbar-toggler" type="button" aria-label="Toggle the nested bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Nested manifest</button></h2></div></div></div></div></div>',
++			'<div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Light surface: the page closure every island sits on.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Surface action</button><select class="form-select w-auto" aria-label="Surface berth"><option>Surface berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Surface alerts"></div><nav class="navbar" aria-label="Surface bar"><button class="navbar-toggler" type="button" aria-label="Toggle the surface bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Surface manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="dark"><p class="mb-2">Dark island: every token beneath this attribute takes its dark value.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Island action</button><select class="form-select w-auto" aria-label="Island berth"><option>Island berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Island alerts"></div><nav class="navbar" aria-label="Island bar"><button class="navbar-toggler" type="button" aria-label="Toggle the island bar links"><span class="navbar-toggler-icon"></span></button></nav></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Island manifest</button></h2></div></div><div class="bg-body text-body border rounded p-3" data-bs-theme="light"><p class="mb-2">Nested light island: the berth list reads in the light closure again.</p><div class="d-flex flex-wrap align-items-center gap-2 mb-2"><button class="btn btn-outline-secondary" type="button">Nested action</button><select class="form-select w-auto" aria-label="Nested berth"><option>Nested berth 4</option></select><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" aria-label="Nested alerts"></div></div><div class="accordion mb-2"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" aria-expanded="false">Nested manifest</button></h2></div></div></div></div></div>',
+ 	}),
+ ])
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ColorModeSection.test.ts
+build exit: skipped
+test exit: 1
+summary: Tests  1 failed | 3 passed (4)
+failing:
+FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls
+× |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls 15ms
+restored: identical
+
+=== S4-section-unexported
+site: app/browser/index.ts
+@@ -58,4 +58,3 @@
+ export * from './sections/SpacingSection.js'
+ export * from './sections/InteractionSection.js'
+ export * from './sections/NavbarSection.js'
+-export * from './sections/ColorModeSection.js'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ColorModeSection.test.ts tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts
+build exit: skipped
+test exit: 1
+summary: Tests  1 failed | 4 passed (5)
+failing:
+FAIL  |app:browser (chromium)| tests/app/browser/index.test.ts:8:2 > app browser entry > exports the showcase surface, the specimen table, and the sections family
+FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts [ tests/app/browser/sections/ColorModeSection.test.ts ]
+× |app:browser (chromium)| tests/app/browser/index.test.ts:8:2 > app browser entry > exports the showcase surface, the specimen table, and the sections family 13ms
+restored: identical
+
+=== control: build exit 0
+control: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/theme.test.ts -> exit 0, Tests  10 passed (10)
+control: npm run test:setup -> exit 1, Tests  5 failed | 284 passed | 12 skipped (301)
+control: npm run test:conformance -> exit 1, Tests  2 failed | 24 passed (26)
+control: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ColorModeSection.test.ts tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts -> exit 0, Tests  9 passed (9)
+=== re-run alone after the controls, load average 6.34 11.89 8.87
+=== M6-registry-rule-2
+site: tests/setupServer.ts
+@@ -2640,7 +2640,6 @@
+ 			}
+ 			for (const property of block.declarations.keys()) {
+ 				if (!property.startsWith('--') || vocabulary.properties.includes(property)) continue
+-				if (registry.includes(property)) continue
+ 				const owned = `${component}|property|${property}|${condition ?? ''}`
+ 				if (seen.has(owned)) continue
+ 				seen.add(owned)
+@@ -2657,7 +2656,7 @@
+ 			matched.flatMap((rule) => rule.declarations.map((declaration) => declaration.property)),
+ 		)
+ 		for (const property of block.declarations.keys()) {
+-			if (declared.has(property) || registry.includes(property)) continue
++			if (declared.has(property)) continue
+ 			const known = vocabulary.properties.includes(property)
+ 			const category: AdditionCategory =
+ 				property.startsWith('--') && !known ? 'property' : 'declaration'
+command: npm run test:setup
+build exit: skipped
+test exit: 1
+summary: Tests  1 failed | 300 passed (301)
+failing:
+FAIL  |setup| tests/setupServer.test.ts > server setup > records a name the token registry carries, and names the planted name beside it
+restored: identical
+

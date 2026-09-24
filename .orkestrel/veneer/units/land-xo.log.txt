@@ -1,0 +1,8 @@
+=== xo landing at 12:46:39 over e4a6d7c
+=== applied /home/user/scaffold/.orkestrel/veneer/units/xo-shared-2.patch
+=== applied /home/user/scaffold/.orkestrel/veneer/units/xo-unscoped.patch
+=== clean: cf5e447
+=== land-unit exit=0
+=== oxfmt exit=0
+=== oxlint exit=0
+=== check exit=0

@@ -1,0 +1,122 @@
+=== mutation: carousel-round1-reordered-control
+site: app/browser/constants.ts
+python: tmp/units/xo-plant-carousel-2.py reordered
+diff:
+2273a2274,2278
+> 		name: 'Reordered control carousel',
+> 		markup:
+> 			'<div id="control-carousel" class="vn-control carousel-dark carousel"><div class="vn-control carousel-indicators"><button type="button" data-bs-target="#control-carousel" data-bs-slide-to="0" aria-label="Control 1"></button><button typ
+> 	}),
+> 	Object.freeze({
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/CarouselSection.test.ts
+exit: 1
+line: AssertionError: expected undefined to be <img class="img-fluid" …(4)></img> // Object.is equality
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:250:2 > CarouselSection > paints the incoming slide in each advancing carousel while the resting slide moves out
+restored: the pre-mutation copy was written back over the site
+
+=== mutation: carousel-round1-extended-control
+site: app/browser/constants.ts
+python: tmp/units/xo-plant-carousel-2.py extra
+diff:
+2273a2274,2278
+> 		name: 'Extended control carousel',
+> 		markup:
+> 			'<div id="control-carousel" class="carousel carousel-dark vn-control"><div class="carousel-indicators vn-control"><button type="button" data-bs-target="#control-carousel" data-bs-slide-to="0" aria-label="Control 1"></button><button typ
+> 	}),
+> 	Object.freeze({
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/CarouselSection.test.ts
+exit: 1
+line: AssertionError: expected [ { …(3) }, { …(3) }, { …(3) } ] to deeply equal []
+line: AssertionError: expected undefined to be <img class="img-fluid" …(4)></img> // Object.is equality
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed (7)
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:135:2 > CarouselSection > holds each caption to 4.5:1 against every fill its picture paints, the inverted carousel over light pictures
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:250:2 > CarouselSection > paints the incoming slide in each advancing carousel while the resting slide moves out
+restored: the pre-mutation copy was written back over the site
+
+=== mutation: carousel-selector-reordered-control
+site: app/browser/constants.ts
+python: tmp/units/xo-plant-carousel-2.py reordered
+diff:
+2273a2274,2278
+> 		name: 'Reordered control carousel',
+> 		markup:
+> 			'<div id="control-carousel" class="vn-control carousel-dark carousel"><div class="vn-control carousel-indicators"><button type="button" data-bs-target="#control-carousel" data-bs-slide-to="0" aria-label="Control 1"></button><button typ
+> 	}),
+> 	Object.freeze({
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/CarouselSection.test.ts
+exit: 1
+line: AssertionError: expected [ [ '#control-carousel', …(2) ], …(2) ] to deeply equal [ [ '#control-carousel', …(2) ], …(2) ]
+line: AssertionError: expected [ { …(3) }, { …(3) }, { …(3) } ] to deeply equal []
+line: AssertionError: expected undefined to be <img class="img-fluid" …(4)></img> // Object.is equality
+ Test Files  1 failed (1)
+      Tests  3 failed | 4 passed (7)
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:137:2 > CarouselSection > holds each caption to 4.5:1 against every fill its picture paints, the inverted carousel over light pictures
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:256:2 > CarouselSection > paints the incoming slide in each advancing carousel while the resting slide moves out
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:71:2 > CarouselSection > names every indicator and control, and marks the current indicator in every indicated carousel
+restored: the pre-mutation copy was written back over the site
+
+=== mutation: carousel-selector-extended-control
+site: app/browser/constants.ts
+python: tmp/units/xo-plant-carousel-2.py extra
+diff:
+2273a2274,2278
+> 		name: 'Extended control carousel',
+> 		markup:
+> 			'<div id="control-carousel" class="carousel carousel-dark vn-control"><div class="carousel-indicators vn-control"><button type="button" data-bs-target="#control-carousel" data-bs-slide-to="0" aria-label="Control 1"></button><button typ
+> 	}),
+> 	Object.freeze({
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/CarouselSection.test.ts
+exit: 1
+line: AssertionError: expected [ [ '#control-carousel', …(2) ], …(2) ] to deeply equal [ [ '#control-carousel', …(2) ], …(2) ]
+line: AssertionError: expected [ { …(3) }, { …(3) }, { …(3) } ] to deeply equal []
+line: AssertionError: expected undefined to be <img class="img-fluid" …(4)></img> // Object.is equality
+ Test Files  1 failed (1)
+      Tests  3 failed | 4 passed (7)
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:137:2 > CarouselSection > holds each caption to 4.5:1 against every fill its picture paints, the inverted carousel over light pictures
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:256:2 > CarouselSection > paints the incoming slide in each advancing carousel while the resting slide moves out
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:71:2 > CarouselSection > names every indicator and control, and marks the current indicator in every indicated carousel
+restored: the pre-mutation copy was written back over the site
+
+=== mutation: ledger-status-copy-round1-key
+site: guides/veneer.md
+sed: 8785{p;s/| accepted |$/| shipped  |/}
+diff:
+8785a8786
+> | btn              | accessibility  | A toggle announces the button role and its pressed state, rather than a checkbox role.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | button.click.toggle                 | shipped  |
+command: npm run test:guides
+exit: 0
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+restored: the pre-mutation copy was written back over the site
+
+=== mutation: ledger-status-copy
+site: guides/veneer.md
+sed: 8785{p;s/| accepted |$/| shipped  |/}
+diff:
+8785a8786
+> | btn              | accessibility  | A toggle announces the button role and its pressed state, rather than a checkbox role.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | button.click.toggle                 | shipped  |
+command: npm run test:guides
+exit: 1
+line: AssertionError: expected [ Array(1) ] to deeply equal []
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+ FAIL   guides  tests/guides.test.ts > holds each compatibility ledger row once
+restored: the pre-mutation copy was written back over the site
+
+=== mutation: ledger-verbatim-copy
+site: guides/veneer.md
+sed: 8785{p}
+diff:
+8785a8786
+> | btn              | accessibility  | A toggle announces the button role and its pressed state, rather than a checkbox role.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | button.click.toggle                 | accepted |
+command: npm run test:guides
+exit: 1
+line: AssertionError: expected [ Array(1) ] to deeply equal []
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+ FAIL   guides  tests/guides.test.ts > holds each compatibility ledger row once
+restored: the pre-mutation copy was written back over the site
+

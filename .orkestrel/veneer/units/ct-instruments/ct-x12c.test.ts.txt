@@ -1,0 +1,20 @@
+import { writeFileSync } from 'node:fs'
+import { expect, it } from 'vitest'
+import { collectValueGaps, readCascadeBlocks, readOracleInventory } from '../../tests/setupServer.js'
+
+it('reads a fallback that reaches a theme site in a planted cascade', () => {
+	const inventory = readOracleInventory()
+	const blocks = readCascadeBlocks(
+		'@layer theme { [data-bs-theme=dark] { --bs-carousel-indicator-active-bg: #111 } }',
+	)
+	Reflect.set(globalThis, 'ctFallback', [])
+	let refusal = ''
+	try {
+		collectValueGaps(blocks, inventory, ['carousel', 'theme'])
+	} catch (error) {
+		refusal = error instanceof Error ? error.message : String(error)
+	}
+	const reached: unknown = Reflect.get(globalThis, 'ctFallback')
+	writeFileSync('tmp/probe/ct-x12c.json', JSON.stringify({ reached, refusal }, undefined, '\t'))
+	expect(Array.isArray(reached)).toBe(true)
+}, 120_000)

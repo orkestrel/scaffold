@@ -1,0 +1,27 @@
+Close out the carried rows: retire the close deferral, write the heading size once, derive the case tables
+
+- CLOSE_DEFERRED, an empty frozen list since the overlay units shipped
+  every header combinator, is retired with its Overlays owner; the close
+  binding case compares CLOSE_SELECTORS with the recorded btn-close
+  selectors directly.
+- The heading-size function in _mixins.scss writes the `9 - $level`
+  mapping once for the heading element, the .hN classes, and the .fs-N
+  classes; the built stylesheets are byte-equal.
+- The carousel section proof selects every population through class
+  selectors on the mounted specimens.
+- The nav and input-group inline case pairs move to the frozen
+  NAV_MODE_CASES and INPUT_GROUP_MODE_CASES tables, bound to their source
+  tables.
+- The guide proof holds each compatibility ledger row once, keyed by
+  every cell but Status.
+- The utility regions, their guide sections, and their Tests links follow
+  one stated order; the departure tables follow the sorted run; the
+  older TSDoc field tokens and the Alert and Carousel class sections take
+  their nouns.
+
+Unit CLOSE-OUT (xo), rounds 1 and 2, on opus; audited by analyst on
+Astra, reviewer on Opus 5.5, and checker on Sonnet (xo-audit-verdict.md,
+xo-audit-2-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

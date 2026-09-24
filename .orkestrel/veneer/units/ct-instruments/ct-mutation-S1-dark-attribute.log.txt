@@ -1,0 +1,62 @@
+
+ RUN  v4.1.11 /home/user/veneer-ct/tmp/probe/ct-copy
+
+ ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:21:2 > ColorModeSection > renders the declared color mode specimens through the shared section contract 3ms
+ × |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls 5ms
+   → expected [ 'light', 'light' ] to deeply equal [ 'light', 'dark', 'light' ]
+ × |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:100:2 > ColorModeSection > resolves each surface to its own mode, and keeps the dark caret in the nested light island 7ms
+   → expected [ 'light', 'light' ] to deeply equal [ 'light', 'dark', 'light' ]
+ ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:136:2 > ColorModeSection > releases the region and preserves adjacent content on repeated destruction 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:55:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls
+AssertionError: expected [ 'light', 'light' ] to deeply equal [ 'light', 'dark', 'light' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "light",[22m
+[32m-   "dark",[39m
+[2m    "light",[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/sections/ColorModeSection.test.ts:62:76
+     60|    const specimen = readSpecimen(region, 'Nested islands')
+     61|    const surfaces = [...specimen.querySelectorAll('[data-bs-theme]')]
+     62|    expect(surfaces.map((surface) => surface.getAttribute('data-bs-them…
+       |                                                                            ^
+     63|     'light',
+     64|     'dark',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:100:2 > ColorModeSection > resolves each surface to its own mode, and keeps the dark caret in the nested light island
+AssertionError: expected [ 'light', 'light' ] to deeply equal [ 'light', 'dark', 'light' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "light",[22m
+[32m-   "dark",[39m
+[2m    "light",[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/sections/ColorModeSection.test.ts:123:48
+    121|    })
+    122|    const [outer, island, inner] = readings
+    123|    expect(readings.map(({ scheme }) => scheme)).toEqual(['light', 'dar…
+       |                                                ^
+    124|    expect(island?.text).not.toBe(outer?.text)
+    125|    expect(island?.fill).not.toBe(outer?.fill)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  12:29:50
+   Duration  15.29s (transform 0ms, setup 395ms, import 343ms, tests 1.65s, environment 0ms)
+

@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/veneer-xo
+
+·······
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  12:35:13
+   Duration  15.53s (transform 0ms, setup 441ms, import 492ms, tests 2.77s, environment 0ms)
+

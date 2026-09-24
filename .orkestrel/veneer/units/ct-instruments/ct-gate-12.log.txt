@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/user/veneer-ct/tmp/probe/ct-copy
+
+Port 63315 is in use, trying another one...
+12:53:15 PM [vite] (client) [optimizer] bundling dependencies...
+·········
+
+ Test Files  3 passed (3)
+      Tests  9 passed (9)
+   Start at  12:53:14
+   Duration  15.66s (transform 0ms, setup 978ms, import 954ms, tests 4.84s, environment 0ms)
+

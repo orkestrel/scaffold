@@ -1,0 +1,40 @@
+
+ RUN  v4.1.11 /home/user/veneer-xo
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+·····x·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/CarouselSection.test.ts:250:2 > CarouselSection > paints the incoming slide in each advancing carousel while the resting slide moves out
+AssertionError: expected undefined to be <img class="img-fluid" …(4)></img> // Object.is equality
+
+- Expected:
+<img
+  alt="Lighthouse at sunset"
+  class="img-fluid"
+  height="400"
+  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'%3E%3Crect width='800' height='400' fill='%23fd7e14'/%3E%3Cpath d='M0 400L260 180L480 320L640 220L800 400Z' fill='%23ca6510'/%3E%3C/svg%3E"
+  width="800"
+/>
+
++ Received:
+undefined
+
+ ❯ tests/app/browser/sections/CarouselSection.test.ts:274:29
+    272|     )
+    273|     picture.scrollIntoView()
+    274|     expect(readHit(picture)).toBe(picture)
+       |                             ^
+    275|    }
+    276|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  12:34:22
+   Duration  10.24s (transform 0ms, setup 386ms, import 348ms, tests 2.13s, environment 0ms)
+

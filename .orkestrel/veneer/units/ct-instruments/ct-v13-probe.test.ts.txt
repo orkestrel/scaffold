@@ -1,0 +1,19 @@
+import { requireValue } from '@orkestrel/test'
+import { readContrast, readStyle } from '@orkestrel/test/browser'
+import { expect, it } from 'vitest'
+import { scene } from '../../setupBrowser.js'
+
+it('reads the light and dark alert paints', () => {
+	const out: string[] = []
+	for (const mode of ['light', 'dark']) {
+		const container = scene.mount(
+			`<div data-bs-theme="${mode}" style="background-color: var(--bs-body-bg)"><div id="light" class="alert alert-light">Light notice</div><div id="dark" class="alert alert-dark">Dark notice</div></div>`,
+		)
+		for (const role of ['light', 'dark']) {
+			const alert = requireValue(container.querySelector(`#${role}`), 'alert')
+			out.push(`${mode} alert-${role} text ${readStyle(alert, 'color')} fill ${readStyle(alert, 'background-color')} border ${readStyle(alert, 'border-top-color')} contrast ${readContrast(alert).toFixed(3)}`)
+		}
+		scene.clear()
+	}
+	expect(out).toEqual([])
+})

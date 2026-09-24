@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native subagent in the worktree `/home/user/veneer-fo` (branch `unit/fo` from the
-session head `BASE_TBD`). The executor that opens this brief is that subagent.
+session head `cf5e447`). The executor that opens this brief is that subagent.
 
 ## Objective
 
@@ -65,7 +65,7 @@ with a variant from `light-1280`, `dark-1280`, `light-390`, and `dark-390`; run 
 
 **Owned.** The overlay specimen tables in `app/browser/constants.ts` (`CAROUSEL_SPECIMENS`, `ALERT_SPECIMENS`, `POPOVER_SPECIMENS`, with their TSDoc); the overlay registry rows in `tests/setup.ts` and their TSDoc; the overlay driven cases in `tests/app/browser/integration.test.ts`; `tests/app/browser/sections/CarouselSection.test.ts`, `AlertSection.test.ts`, and `PopoverSection.test.ts`; `tests/setup.test.ts` and `tests/app/browser/Showcase.test.ts` where a registry or specimen change makes a case false.
 
-**Shared (report-only).** `guides/veneer.md` (§ Carousel classes, § Alert classes, § Popover classes, and § Tests). Return one `fo-shared.patch` against `BASE_TBD` and
+**Shared (report-only).** `guides/veneer.md` (§ Carousel classes, § Alert classes, § Popover classes, and § Tests). Return one `fo-shared.patch` against `cf5e447` and
 edit nothing there.
 
 **Off-limits.** every partial under `src/styles/**`; every other specimen table; `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts`;

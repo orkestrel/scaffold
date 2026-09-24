@@ -1,0 +1,55 @@
+
+ RUN  v4.1.11 /home/user/veneer-ct/tmp/probe/ct-copy
+
+ ✓ |app:browser (chromium)| tests/app/browser/Showcase.test.ts:86:2 > Showcase > mounts the named content and removes its nodes and listener on destruction 384ms
+ ✓ |app:browser (chromium)| tests/app/browser/Showcase.test.ts:111:2 > Showcase > mounts its sections after the region and destroys them before removing the nodes 115ms
+ ✓ |app:browser (chromium)| tests/app/browser/Showcase.test.ts:313:2 > Showcase > paints one affordance on the mode control in both modes 2224ms
+ ✓ |app:browser (chromium)| tests/app/browser/Showcase.test.ts:350:2 > Showcase > mirrors a preexisting dark root without claiming its attribute 106ms
+ × |app:browser (chromium)| tests/app/browser/index.test.ts:8:2 > app browser entry > exports the showcase surface, the specimen table, and the sections family 7ms
+   → expected [ 'ACCORDION_COPY', …(175) ] to strictly equal [ 'ACCORDION_COPY', …(176) ]
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts [ tests/app/browser/sections/ColorModeSection.test.ts ]
+Error: Failed to import test file /home/user/veneer-ct/tmp/probe/ct-copy/tests/app/browser/sections/ColorModeSection.test.ts
+Caused by: SyntaxError: The requested module '/app/browser/index.ts' does not provide an export named 'ColorModeSection'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/index.test.ts:8:2 > app browser entry > exports the showcase surface, the specimen table, and the sections family
+AssertionError: expected [ 'ACCORDION_COPY', …(175) ] to strictly equal [ 'ACCORDION_COPY', …(176) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -43,11 +43,10 @@[39m
+[2m    "CONTENT_SPECIMENS",[22m
+[2m    "CardSection",[22m
+[2m    "CarouselSection",[22m
+[2m    "CloseSection",[22m
+[2m    "CollapseSection",[22m
+[32m-   "ColorModeSection",[39m
+[2m    "ColorSection",[22m
+[2m    "ContentSection",[22m
+[2m    "DISPLAY_COPY",[22m
+[2m    "DISPLAY_SPECIMENS",[22m
+[2m    "DROPDOWN_COPY",[22m
+
+ ❯ tests/app/browser/index.test.ts:9:36
+      7|  // what proves they are types.
+      8|  it('exports the showcase surface, the specimen table, and the section…
+      9|   expect(Object.keys(entry).sort()).toStrictEqual([
+       |                                    ^
+     10|    'ACCORDION_COPY',
+     11|    'ACCORDION_SPECIMENS',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  1 failed | 4 passed (5)
+   Start at  12:30:33
+   Duration  15.22s (transform 0ms, setup 480ms, import 392ms, tests 2.84s, environment 0ms)
+
