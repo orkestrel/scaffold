@@ -1,0 +1,37 @@
+Script started on 2026-09-24 01:19:30+00:00 [COMMAND="npm publish --ignore-scripts --browser=false --registry=https://registry.npmjs.org --otp="$OTP"" <not executed on terminal>]
+\|/-npm notice
+-npm notice package: @orkestrel/test@0.0.22
+-npm notice Tarball Contents
+-npm notice 1.1kB LICENSE
+npm notice 12.5kB README.md
+npm notice 152.6kB dist/src/browser/index.d.ts
+npm notice 168.3kB dist/src/browser/index.js
+npm notice 241.2kB dist/src/browser/index.js.map
+npm notice 38.4kB dist/src/core/index.cjs
+npm notice 53.8kB dist/src/core/index.cjs.map
+npm notice 42.4kB dist/src/core/index.d.cts
+npm notice 42.4kB dist/src/core/index.d.ts
+npm notice 37.2kB dist/src/core/index.js
+npm notice 53.5kB dist/src/core/index.js.map
+npm notice 41.7kB dist/src/server/index.cjs
+npm notice 58.6kB dist/src/server/index.cjs.map
+npm notice 35.3kB dist/src/server/index.d.cts
+npm notice 35.3kB dist/src/server/index.d.ts
+npm notice 39.7kB dist/src/server/index.js
+npm notice 56.9kB dist/src/server/index.js.map
+npm notice 5.0kB package.json
+-npm notice Tarball Details
+-npm notice name: @orkestrel/test
+-npm notice version: 0.0.22
+-npm notice filename: orkestrel-test-0.0.22.tgz
+-npm notice package size: 308.1 kB
+-npm notice unpacked size: 1.1 MB
+-npm notice shasum: 5f6a21d2d71df34e98c1dac094302d4c30bf4145
+-npm notice integrity: sha512-P9oyZJc1Mjb3h[...]jNo9Dt9pzBCGw==
+-npm notice total files: 18
+-npm notice
+-\|/npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+/-\|/-\|/-\|npm notice Your package is being processed and may take a few minutes to become available.
+|+ @orkestrel/test@0.0.22
+|
+Script done on 2026-09-24 01:19:33+00:00 [COMMAND_EXIT_CODE="0"]

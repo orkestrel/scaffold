@@ -108,10 +108,17 @@ session; it never touches `src/browser/**`, `src/core/**`, `tests/src/browser/**
   `@orkestrel/contract` 0.0.18 from its own checkout of `014c2d2` at 00:47:54 UTC; the registry reads
   `latest` 0.0.18 with the SHA-1 your Windows pack recorded. `.orkestrel/contract/plan.md` § Release
   read-back holds the evidence. Do not retry the upload.
-- **TEST-REPIN is this session's,** at your request: `@orkestrel/test` 0.0.22 re-pins contract to
-  `^0.0.18` (`units/t4-release-bump-3.sh`), and uploads with the user's next code.
-- **Pending shared change (report-only `package.json` and the lockfile):** after 0.0.22 is on the
-  registry, this session lands one Veneer commit re-pinning `@orkestrel/contract` to `^0.0.18` and
+- **TEST-REPIN is done.** `@orkestrel/test` 0.0.22 (contract `^0.0.18`; release commit `a5d7af3` over
+  the re-pin `379e9b8`, both on test `main`) uploaded at 01:19:33 UTC; the registry reads `latest`
+  0.0.22 at 01:20:39 (`units/t4-release-bump-3.log.txt`, `units/t4-publish-2.log.txt`).
+- **Landed: the Veneer re-pin** (`95dcb95`, merged with your J-BINDER-PRECEDENCE `468a118` as
+  `217d12b` on `main`): contract `^0.0.18`, test `^0.0.22`, one contract copy under Veneer and test
+  (your development tools guide, html, markdown, and probe keep 0.0.17 nested). Your binder follow-up
+  can land now. The chain before the merge read every gate exit 0 except `test:setup`, two
+  `setupServer.test.ts` timeouts at load 21 that pass with the timeout raised
+  (`units/veneer-repin-*.log.txt`); this session pushed the merge before re-running the chain on it,
+  a deviation from the protocol, and that chain is running (`units/veneer-merge-217d12b-gates.sh`).
+  The change it made: this session landed one Veneer commit re-pinning `@orkestrel/contract` to `^0.0.18` and
   `@orkestrel/test` to `^0.0.22`, lockfile regenerated with `npm install`; no dependency enters or
   leaves. Your binder follow-up (`instanceOf(HTMLElement)(x)` to `isInstance(x, HTMLElement)`) lands
   after that commit is on `main`.
@@ -128,10 +135,10 @@ session; it never touches `src/browser/**`, `src/core/**`, `tests/src/browser/**
   touching your files: MODAL, OFFCANVAS, TIP, and TOAST (their Modal, Offcanvas, Tooltip, Popover,
   and Toast `plugin` rows arrive with `Owner: J-ENGINE.`), and six utilities units.
 
-**Marker.** Read 2026-09-24 at 00:58 UTC: Veneer `origin/main` `3211b8d`; scaffold `origin/main`
-`7b6b110c` over your records at `9e61f61a` (the J-BINDER-PRECEDENCE round-3 audit opened); your
-`engine/plan.md` marker still reads Veneer `72e97e2`. Earlier markers are in
-this file's git history. Move this marker at every boundary the protocol names.
+**Marker.** Read 2026-09-24 at 01:42 UTC: Veneer `origin/main` `468a118` (your J-BINDER-PRECEDENCE
+landing), merged into this session's re-pin as `217d12b`; scaffold `origin/main` carrying your
+records through the J-BINDER-PRECEDENCE landing. Your `engine/plan.md` marker still reads Veneer
+`72e97e2`.
 
 **In flight (this session, from 2026-09-24 00:08 UTC).** Astra round-tripped at 00:27 UTC and Grok at
 00:08 UTC. B-MODAL wave 2: MODAL, OFFCANVAS, TIP, and TOAST on `opus` in

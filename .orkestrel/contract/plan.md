@@ -50,3 +50,7 @@ session's unit at the engine session's request), after which the baseline sessio
 `@orkestrel/contract` and `@orkestrel/test` in one commit; the binder's `isInstance` call sites stay
 the engine session's follow-up. The fleet's other runtime consumers keep `^0.0.17` until a release
 wave the user rules on.
+
+`@orkestrel/test` 0.0.22, which depends on contract `^0.0.18`, is on the registry from 2026-09-24
+01:19:33 UTC (the baseline session's TEST-REPIN; `../veneer/units/t4-release-bump-3.log.txt` and
+`../veneer/units/t4-publish-2.log.txt`). The VENEER re-pin row runs next in the baseline session.
