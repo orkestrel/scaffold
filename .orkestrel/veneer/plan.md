@@ -141,24 +141,25 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 15:45 UTC.** Implementation first, the user's instruction.
-- **Your J-TESTPIN (`f22f02c`) is merged** into this session's branch as `42d51fc`, installed from the merged lockfile.
-- **Landed on this session's branch, pushed, not yet on `main`:** BCF, CLOSE-OUT, THEME, the five frames units
-  (OVERLAY-FRAMES, UTIL-FRAMES, FORMS-FRAMES `31f1243`, PASSIVE-FRAMES `fc72165`, FOCUS-FRAME `5afa37b`),
-  PREFLIGHT-HOST (`2af1547`), and LABEL (`cbee3bb`). The authoritative chain runs over `cbee3bb`; this session pushes
-  `main` when it is green and names the commit here.
-- **Your preflight row is closed on this branch** by PREFLIGHT-HOST: the preflight proof runs once under the host's
-  defaults and once under a staged stand-in for Chromium 153's `select` and `table` defaults, compares each move by its
-  preflight value and a form control's height by its content box height, and passes under both here. The case title is
-  now "keeps every longhand the elements layer declares, holds each moved form-control height to its content box
-  height, and every other move to its recorded preflight value, under %s"; your `host-chromium-153-reading.md` names
-  the old title. Read it on your Chromium 153 host after `main` moves.
+**In flight (this session), 2026-09-24 16:20 UTC.** Implementation first, the user's instruction.
+- **Veneer `main` is `0fdadf4`.** It holds BCF, CLOSE-OUT, THEME, the five frames units (OVERLAY-FRAMES, UTIL-FRAMES,
+  FORMS-FRAMES `31f1243`, PASSIVE-FRAMES `fc72165`, FOCUS-FRAME `5afa37b`), PREFLIGHT-HOST (`2af1547`), LABEL
+  (`cbee3bb`), your J-TESTPIN (merged as `42d51fc`), and your J-SNAPSHOT (merged as `3e35cd7`). Merge it at your next
+  boundary.
+- **Your Placement case is still red on `main`.** `tests/src/browser/Placement.test.ts` › "flips to the opposite side
+  when the preferred side overflows…" expects `[896, true, true]` and receives `[986, false, true]`, alone and in the
+  suite, on `c21fd17` and on `0fdadf4`. Every other project passes on `cbee3bb` (`units/chain-main-5*.log.txt`). This
+  session does not touch it.
+- **Your preflight row is closed on `main`** by PREFLIGHT-HOST: the proof runs under the host's defaults and under a
+  staged stand-in for Chromium 153's `select` and `table` defaults. The case title is now "keeps every longhand the
+  elements layer declares, holds each moved form-control height to its content box height, and every other move to its
+  recorded preflight value, under %s"; your `host-chromium-153-reading.md` names the old title. Read it on your
+  Chromium 153 host.
 - **LABEL adds `:root { color-scheme: light }`** in `_theme.scss`: the build lowers `light-dark()` into variables it
-  declares only beside a `color-scheme` declaration. The dark primary takes a black label and tints on hover and press.
-  A root carrying `data-bs-theme="dark"` reads the dark picks.
+  declares only beside a `color-scheme` declaration. A root carrying `data-bs-theme="dark"` reads the dark picks.
 - **Running:** FRAME-HELPERS, one focus-frame helper in `tests/setupBrowser.ts` and every focus drive by Tab; it leaves
   your oracle rows as they stand.
-- **Asked of you:** nothing new. Move your marker at your next boundary.
+- **Asked of you:** fix Placement, then move your marker.
 
 ## Landing procedure
 

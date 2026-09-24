@@ -1,0 +1,22 @@
+=== origin/main c21fd17; session head cbee3bb
+Auto-merging guides/veneer.md
+Merge made by the 'ort' strategy.
+ guides/veneer.md                       |  70 ++++---
+ src/browser/HostSnapshot.ts            | 306 +++++++++++++++++-----------
+ src/browser/types.ts                   |  39 ++--
+ tests/src/browser/HostSnapshot.test.ts | 362 +++++++++++++++++++++++++++++++--
+ tests/src/browser/Modal.test.ts        |   5 +-
+ 5 files changed, 601 insertions(+), 181 deletions(-)
+=== merge exit=0
+=== merged 3e35cd7
+=== format:check exit=0
+=== lint:check exit=0
+=== check exit=0
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:196:2 > Placement > flips to the opposite side when the preferred side overflows, and tries the listed fallbacks instead when given
+      Tests  1 failed | 650 passed (651)
+=== src:browser exit=1
+      Tests  75 passed (75)
+=== setup:browser exit=0
+      Tests  20 passed (20)
+=== guides exit=0
