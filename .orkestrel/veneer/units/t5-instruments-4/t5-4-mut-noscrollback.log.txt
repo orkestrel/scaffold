@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+Port 63315 is in use, trying another one...
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·············x························---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3302:2 > captureFrame > refuses an element that outgrows every pane, and hands the pane and the scroll back
+AssertionError: expected +0 to be 100 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 100[39m
+[31m+ 0[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3325:25
+    3323|   expect(pane.hasAttribute(CAPTURE_PANE)).toBe(false)
+    3324|   expect([window.innerWidth, window.innerHeight]).toStrictEqual(before)
+    3325|   expect(window.scrollY).toBe(100)
+       |                         ^
+    3326|  })
+    3327|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 37 passed | 334 skipped (372)
+   Start at  18:11:49
+   Duration  23.46s (transform 0ms, setup 326ms, import 447ms, tests 9.48s, environment 0ms)
+

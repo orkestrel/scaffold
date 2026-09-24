@@ -1,0 +1,10 @@
+{
+ "note": "The right-nudge branch deleted.",
+ "edits": [
+  {
+   "from": "\t\telse if (columns > -start) left += Math.min(1 - start, columns)\n",
+   "to": ""
+  }
+ ],
+ "file": "src/browser/helpers.ts"
+}
