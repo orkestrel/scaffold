@@ -1,0 +1,36 @@
+diff --git a/tests/src/styles/components/accordion.test.ts b/tests/src/styles/components/accordion.test.ts
+index 8266e35..6d5a76a 100644
+--- a/tests/src/styles/components/accordion.test.ts
++++ b/tests/src/styles/components/accordion.test.ts
+@@ -107,7 +107,12 @@ describe('accordion classes', () => {
+ 		expect(readStyle(button, 'flex-shrink', '::after')).toBe('0')
+ 		expect(readPixels(button, 'height', '::after')).toBe(20)
+ 		expect(readStyle(button, 'background-repeat', '::after')).toBe('no-repeat')
+-		expect(readStyle(button, 'background-size', '::after')).toBe('20px')
++		// A one-value `background-size` serializes as that one value on one build and as
++		// `<length> auto` on another (D45), so the width is read from the leading term and the
++		// second term, where a build writes one, is asserted `auto` rather than compared by string.
++		const [chevronSize, chevronHeight] = readStyle(button, 'background-size', '::after').split(' ')
++		expect(chevronSize).toBe('20px')
++		expect(chevronHeight === undefined || chevronHeight === 'auto').toBe(true)
+ 		// The chevron's automatic start margin takes the row's free space, so it resolves to a
+ 		// positive length on a button whose label is shorter than the row.
+ 		expect(readPixels(button, 'margin-left', '::after')).toBeGreaterThan(0)
+diff --git a/tests/src/styles/components/navbar.test.ts b/tests/src/styles/components/navbar.test.ts
+index c1183a5..6a4f24a 100644
+--- a/tests/src/styles/components/navbar.test.ts
++++ b/tests/src/styles/components/navbar.test.ts
+@@ -60,7 +60,12 @@ describe('navbar classes', () => {
+ 		expect(readPixels(icon, 'height')).toBe(30)
+ 		expect(readStyle(icon, 'vertical-align')).toBe('middle')
+ 		expect(readStyle(icon, 'background-repeat')).toBe('no-repeat')
+-		expect(readStyle(icon, 'background-size')).toBe('100%')
++		// A one-value `background-size` serializes as that one value on one build and as
++		// `<length> auto` on another (D45), so the width is read from the leading term and the
++		// second term, where a build writes one, is asserted `auto` rather than compared by string.
++		const [iconSize, iconHeight] = readStyle(icon, 'background-size').split(' ')
++		expect(iconSize).toBe('100%')
++		expect(iconHeight === undefined || iconHeight === 'auto').toBe(true)
+ 		// The layer reading answers for the names no resolved style reaches on its own: a state rule
+ 		// the partial stopped writing resolves to the resting treatment and reads normal, so the
+ 		// selectors are held against the rules the shipped cascade carries.
