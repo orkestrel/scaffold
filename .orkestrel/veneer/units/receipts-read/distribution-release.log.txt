@@ -1,0 +1,14 @@
+
+> @orkestrel/veneer@0.0.1 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+
+ RUN  v4.1.11 /home/user/veneer-read
+
+···········----··
+
+ Test Files  1 passed (1)
+      Tests  13 passed | 4 skipped (17)
+   Start at  22:39:04
+   Duration  19.14s (transform 688ms, setup 145ms, import 3.69s, tests 15.13s, environment 0ms)
+

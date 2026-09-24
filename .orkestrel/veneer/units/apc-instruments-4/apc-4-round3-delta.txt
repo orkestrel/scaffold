@@ -1,0 +1,8 @@
+247c247
+< 		'moves a role color to the tier of a fill or body text retuned at the scope declaring the %s theme',
+---
+> 		'moves a role color and its emphasis class to the tier of a fill or body text retuned at the scope declaring the %s theme',
+339c339
+< 		'keeps each emphasis class opaque under an opacity step and fades the role class beside it, in %s mode',
+---
+> 		'keeps each emphasis class outside the neutral roles opaque under an opacity step and fades its role class beside it, in %s mode',
