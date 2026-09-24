@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /home/user/veneer-read
+
+ ✓ |distribution| tests/distribution.test.ts > distribution classifiers > classifies synthetic export mappings without a registry stage 4ms
+ ✓ |distribution| tests/distribution.test.ts > installed package consumer > loads standalone styles with the declared cascade order [requires the registry] 1069ms
+ ✓ |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry] 708ms
+ ✓ |distribution| tests/distribution.test.ts > installed package consumer > packs one archive and installs it in isolation [requires the registry] 1ms
+ ✓ |distribution| tests/distribution.test.ts > installed package consumer > ships every relative target its exports map names [requires the registry] 1ms
+ ✓ |distribution| tests/distribution.test.ts > installed package consumer > declares types for every module it publishes [requires the registry] 1ms
+ ✓ |distribution| tests/distribution.test.ts > installed package consumer > ships only relative or Orkestrel module specifiers [requires the registry] 116ms
+ ✓ |distribution| tests/distribution.test.ts > installed package consumer > refuses a subpath its exports map does not name [requires the registry] 55ms
+ ✓ |distribution| tests/distribution.test.ts > installed package consumer > compiles a consumer under every module resolution [requires the registry] 6962ms
+ ✓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node import, and no more 1710ms
+ ✓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node require, and no more 1786ms
+ ↓ |distribution| tests/distribution.test.ts > installed entry . > drives the published button engine and its delegation in a real browser [requires the registry]
+ ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a real browser, and no more [requires a browser]
+ ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node import, and no more
+ ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node require, and no more
+ ✓ |distribution| tests/distribution.test.ts > installed entry ./browser > drives the published button engine and its delegation in a real browser [requires the registry] 562ms
+ ✓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a real browser, and no more [requires a browser] 1290ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed | 4 skipped (17)
+   Start at  22:39:59
+   Duration  18.16s (transform 839ms, setup 279ms, import 3.44s, tests 14.28s, environment 0ms)
+
