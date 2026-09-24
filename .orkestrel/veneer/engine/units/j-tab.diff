@@ -1,0 +1,2836 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index db80947..39aded8 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -62,6 +62,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `TARGET_ATTRIBUTE`                        | const     | Names the attribute a trigger carries its target selector in by default, Bootstrap's attribute name.                                                   |
+ | `resolveOptions`                          | function  | Resolves an entity's options from its defaults, its declared attributes, and the constructor object.                                                   |
+ | `resolveVocabulary`                       | function  | Resolves one markup vocabulary group from its default table and the values that replace it.                                                            |
++| `computeNeighbor`                         | function  | Returns the member after or before the current one in a list, as Bootstrap's `getNextActiveElement` function does.                                     |
+ | `isClassToken`                            | function  | Checks whether a value is one class token a class list accepts.                                                                                        |
+ | `isAttributeName`                         | function  | Checks whether a value is an attribute name the document accepts.                                                                                      |
+ | `isSelector`                              | function  | Checks whether a value is a selector list the document parses.                                                                                         |
+@@ -120,6 +121,12 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `TabSelectorMap`                          | interface | Names the selectors a tab matches with; each default is Bootstrap's selector.                                                                          |
+ | `TabOptions`                              | interface | Configures a tab's markup vocabulary, hooks, and lifetime.                                                                                             |
+ | `TabInterface`                            | interface | Activates a tab control and its pane, and moves focus between sibling controls with the arrow keys.                                                    |
++| `Tab`                                     | class     | Activates a tab control and its pane, deactivating the active sibling control and its pane.                                                            |
++| `TAB_CLASSES`                             | const     | Names the class tokens a tab writes and tests by default, the tokens Bootstrap's cascade selects on.                                                   |
++| `TAB_ATTRIBUTES`                          | const     | Names the attribute a tab control carries its pane selector in by default, Bootstrap's attribute name.                                                 |
++| `TAB_SELECTORS`                           | const     | Names the default selectors a tab and the delegate match tab lists, controls, and dropdowns with, Bootstrap's selectors.                               |
++| `TAB_EVENTS`                              | const     | Names the bubbling events a tab dispatches on its controls, keyed by the verb each carries.                                                            |
++| `isTabEvent`                              | function  | Checks whether a DOM event is a tab event, whose detail carries an HTML element or nothing as its related target.                                      |
+ | `ScrollSpyDetail`                         | interface | Describes the detail the scrollspy event carries.                                                                                                      |
+ | `ScrollSpyEventMap`                       | interface | Maps the verb to the scrollspy event it names.                                                                                                         |
+ | `ScrollSpyHooks`                          | type      | Configures the initial DOM event subscriptions for a scrollspy.                                                                                        |
+@@ -444,6 +451,33 @@ const opened = await collapse.show()
+ collapse.destroy()
+ ```
+ 
++Construct a tab over the second control of a tab list and show it: the first control and its pane
++deactivate. Destruction restores both controls, both panes, and the roles the tab wrote.
++
++```ts
++import { Tab } from '@orkestrel/veneer/browser'
++
++const list = document.createElement('div')
++list.className = 'nav nav-tabs'
++const home = document.createElement('button')
++home.className = 'nav-link active'
++home.dataset.bsTarget = '#home'
++const profile = document.createElement('button')
++profile.className = 'nav-link'
++profile.dataset.bsTarget = '#profile'
++list.append(home, profile)
++const homePane = document.createElement('div')
++homePane.id = 'home'
++homePane.className = 'tab-pane active show'
++const profilePane = document.createElement('div')
++profilePane.id = 'profile'
++profilePane.className = 'tab-pane'
++document.body.append(list, homePane, profilePane)
++const tab = new Tab(profile)
++const activated = await tab.show()
++tab.destroy()
++```
++
+ ## Engine
+ 
+ The browser entry drives Bootstrap's markup on the platform's own mechanisms, and its TypeScript
+@@ -764,6 +798,158 @@ The collapse departs from Bootstrap's in these ways:
+ - The delegate leaves a panel outside its root alone. Bootstrap's data API listens on the document,
+   so it reaches every panel.
+ 
++#### Tab
++
++The `Tab` class owns one control, the element Bootstrap's markup marks with a `data-bs-toggle` value
++of `tab`, `pill`, or `list`, and shows the pane the control names. Construction validates and copies
++the `classes`, `attributes`, and `selectors` groups, resolves the pane from the control's target
++attribute or its `href` fragment, claims the control, and binds the hooks; the `pane` property
++carries that pane, or undefined when the control names none. When the control or one of its
++ancestors matches the `list` selector, construction then writes the roles and states Bootstrap
++writes, each only where the markup does not already carry that value: `role="tablist"` on a list
++with no role; on each control of the list, `aria-selected`, `tabindex="-1"` when the control is not
++active, and `role="tab"` when it has no role; `role="presentation"` on the wrapper of a control when
++the wrapper has no role; and on the pane of each control, `role="tabpanel"` when it has no role and
++an `aria-labelledby` attribute naming the control's id when it has none. The controls of a list are
++the elements inside it the `link` or `entry` selector matches and the `toggle` selector does not,
++and every element inside it the `trigger` selector matches. The wrapper of a control is the closest
++element, from the control up, that the `wrapper` or `entry` selector matches, or the control itself
++when none does. A control outside any list constructs, writes nothing, and has no sibling.
++
++The `show` method dispatches `hide.vn.tab` on the active sibling, the other control of the list that
++carries the `active` token, and then `show.vn.tab` on the control, and refuses when a listener
++prevented either one. It then deactivates the sibling: it removes the sibling's `active` token,
++blurs it, removes the `active` and `shown` tokens from its pane, and, for a sibling whose role is
++`tab`, writes `aria-selected="false"` and `tabindex="-1"` and closes the dropdown that holds it. It
++activates the control: it adds the control's `active` token and, for a control whose role is `tab`,
++writes `aria-selected="true"`, removes `tabindex`, and opens the dropdown that holds it. It adds the
++`active` token to the control's pane and then the `shown` token. A pane carrying the `fade` token is
++laid out between those two writes, so the `shown` token starts its fade, and the call waits for the
++fade to settle. The call then dispatches `hidden.vn.tab` on the sibling and `shown.vn.tab` on the
++control, and resolves `true`. A dropdown holds a control when the control's wrapper carries the
++`dropdown` token: opening it adds the `active` token to the element inside the wrapper the `toggle`
++selector matches, adds the `shown` token to the element the `menu` selector matches, and writes
++`aria-expanded="true"` on the wrapper, and closing it removes both tokens and writes
++`aria-expanded="false"`. The `show` method resolves `false` when the control is already active, a
++listener prevented either pre-change event, or the tab is destroyed. The `active` property reads the
++control's `active` token on every access. The tab listens for no key: the delegate carries the
++keyboard.
++
++The tab writes, removes, and tests the following class tokens, under the names its `classes` group
++resolves; each default is the token the shipped cascade selects on.
++
++| Key        | Default    | Marks                                                                             |
++| ---------- | ---------- | --------------------------------------------------------------------------------- |
++| `active`   | `active`   | The active control and its pane, and the toggle of a dropdown holding the control |
++| `shown`    | `show`     | A shown pane, and the open menu of a dropdown holding the active control          |
++| `fade`     | `fade`     | A pane whose fade the call waits for after it writes the `shown` token            |
++| `disabled` | `disabled` | A control a delegated click leaves inactive and the delegated keys pass over      |
++| `dropdown` | `dropdown` | A wrapper holding a dropdown whose toggle and menu follow the control it holds    |
++
++The tab reads the following attribute, under the name its `attributes` group resolves; the default
++is Bootstrap's attribute name. The tab declares no option an attribute feeds, so the tab has no
++`TAB_DEFAULTS` table.
++
++| Key      | Default          | Feeds                                                | Read through              |
++| -------- | ---------------- | ---------------------------------------------------- | ------------------------- |
++| `target` | `data-bs-target` | The pane a control names, before its `href` fragment | The `readTarget` function |
++
++The tab matches with the following selectors, under the names its `selectors` group resolves; each
++default is Bootstrap's selector.
++
++| Key       | Default                                                                    | Selects                                                         |
++| --------- | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
++| `trigger` | `[data-bs-toggle="tab"], [data-bs-toggle="pill"], [data-bs-toggle="list"]` | The controls a delegated click or key drives                    |
++| `list`    | `.list-group, .nav, [role="tablist"]`                                      | The list that holds a control and its siblings                  |
++| `wrapper` | `.nav-item`                                                                | The element that wraps a link inside its list                   |
++| `entry`   | `.list-group-item`                                                         | The list-group items, each a control and its own wrapper        |
++| `link`    | `.nav-link, [role="tab"]`                                                  | The links of a list, each a control unless it is a toggle       |
++| `toggle`  | `.dropdown-toggle`                                                         | The dropdown toggle that follows the control its dropdown holds |
++| `menu`    | `.dropdown-menu`                                                           | The dropdown menu that follows the control its dropdown holds   |
++
++The tab dispatches the following events. Each one bubbles and carries the other control of the swap
++as `detail.relatedTarget`, or undefined when no control was active.
++
++| Key      | Wire name       | Cancelable | Dispatched on      | Dispatched                                        |
++| -------- | --------------- | ---------- | ------------------ | ------------------------------------------------- |
++| `hide`   | `hide.vn.tab`   | Yes        | The active sibling | Before any write; prevention refuses the swap     |
++| `show`   | `show.vn.tab`   | Yes        | The control        | After `hide.vn.tab`; prevention refuses the swap  |
++| `hidden` | `hidden.vn.tab` | No         | The active sibling | After the swap and the fade of the control's pane |
++| `shown`  | `shown.vn.tab`  | No         | The control        | After `hidden.vn.tab`                             |
++
++A call reads the control and its pane at each of its doors for the phase it is in. After the
++pre-change events it reads again whether the control is active and whether the active sibling is
++still the one `hide.vn.tab` named. While it deactivates the sibling it reads only its lifetime and
++whether a later call of the same tab started. From its write of the control's `active` token the
++control must carry that token, and from each write to the pane the pane must carry the `active`
++token and, from its write on, the `shown` token, through the fade and the `hidden.vn.tab` dispatch.
++A call that finds the control or the pane otherwise, the tab destroyed, or a later call of the same
++tab started reads the change as taken over: it stops, writing and dispatching nothing more, and
++resolves `false`. A sibling that shows during the fade therefore takes the swap over: the call it
++took over dispatches no completed event and resolves `false`, and the sibling's own call dispatches
++its completed events once. A listener that shows the control again inside `show.vn.tab` runs the one
++swap and dispatches the one `shown.vn.tab` event: its own call resolves `true`, and the call whose
++event it heard resolves `false`. Destruction aborts the wait, so a call awaiting the fade resolves
++`false` and dispatches no completed event, and restoration writes back every value the tab wrote:
++the roles and states it wrote at construction, and the tokens and states of the control, its pane,
++the sibling it deactivated, that sibling's pane, and each dropdown. Each tab records a value when it
++first writes it, so a value another tab of the same list wrote reads to it as the markup's own;
++destroying the tabs of one list in the reverse of their construction order restores the markup the
++list carried. A delegate destroys the tabs it acquired in the order it acquired them, so after its
++destruction a list whose controls it drove through more than one tab keeps the values the later tabs
++found when they first wrote, rather than the markup the list carried.
++
++The delegate's `tab` option carries the tab's groups. A click inside a control the resolved
++`trigger` selector matches prevents the click's default action when the control is an anchor or an
++area, as Bootstrap's data API does, and, unless the control carries the `disabled` token or a
++`disabled` attribute, shows it through the tab the static `find` method returns or one the delegate
++acquires with the group. The delegate's `keydown` listener on its root carries the keyboard
++Bootstrap binds on each tab: `ArrowLeft`, `ArrowRight`, `ArrowUp`, `ArrowDown`, `Home`, and `End`
++pressed on such a control inside a list stop propagating and lose their default action. Focus then
++moves, without scrolling, to the previous or the next control of the list, wrapping at either end,
++or to its first or last control, passing over each control that carries the `disabled` token or a
++`disabled` attribute, and that control shows through its tab. The `computeNeighbor` function picks
++the previous or the next control. Under nested roots each control is driven once per click or key,
++by the first live delegate whose root contains it to reach it. A click whose button host is the tab
++control, with no button and no tab constructed on it, is refused before either route runs, as a
++click on a collapse panel's own button host is; where one of the two engines exists there, only the
++other route constructs, and both drive it once.
++
++The tab departs from Bootstrap's in these ways:
++
++- The tab has no `Default` table and reads no `data-bs-config` attribute, so it declares no
++  `TAB_DEFAULTS` table and its groups, hooks, and signal are read from the constructor alone.
++- A control outside any list still constructs, as Bootstrap's does, and its `show` method activates
++  the control and its pane with no sibling. Bootstrap's `show` throws when the control has no list.
++- The `show` method of an active control resolves `false` and dispatches nothing. Bootstrap's
++  returns nothing.
++- The refusals and the active sibling are read again after the pre-change events. Bootstrap reads
++  them once, before `hide.bs.tab`.
++- The wait runs on the pane's own fade, through the pane's running animations, after the pane is
++  laid out with its `active` token and takes its `shown` token. Bootstrap waits on each element that
++  took the `active` token and carries the `fade` token, the control and then the pane, through a
++  `transitionend` listener and a fallback timer, and adds `show` to the pane after that wait.
++- The completed events are dispatched after the whole swap: `hidden.vn.tab` and then `shown.vn.tab`.
++  Bootstrap dispatches `hidden.bs.tab` when the sibling's deactivation completes, before the control
++  takes its `active` token, and `shown.bs.tab` when the control's own completion runs, which waits
++  on the control rather than on its pane.
++- The sibling's pane loses its `active` and `shown` tokens together, with no wait. Bootstrap removes
++  `show` after the pane's own wait.
++- A control whose role is not `tab` takes no `shown` token. Bootstrap adds `show` to every element
++  it activates whose role is not `tab`.
++- The pane is resolved once, at construction. Bootstrap reads it at each activation. The sibling's
++  pane is the one the sibling's own tab carries, or the one the sibling names at the swap.
++- The keyboard is the delegate's `keydown` route rather than a listener on each control, and it
++  answers on a control the `trigger` selector matches; focus moves from that control rather than
++  from the key's target. Bootstrap listens on each control that has an instance.
++- A `disabled` attribute disables a control whatever its value. Bootstrap reads a `disabled`
++  attribute of `false` on an element with no `disabled` property as enabled.
++- Wire events carry the `.vn.` namespace, and the other control travels in `detail.relatedTarget`.
++- Destruction restores every value the tab wrote. Bootstrap's `dispose` method removes its instance
++  data and event handlers and restores nothing.
++- The delegate leaves a control outside its root alone. Bootstrap's data API listens on the
++  document, so it reaches every control.
++
+ ## Styles
+ 
+ Veneer publishes its cascade through a standalone stylesheet subpath, `./styles`. The
+@@ -5780,7 +5966,7 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | engine           | initialization | util/index.js: `getjQuery` skipped when `document.body` carries `data-bs-no-jquery`; `defineJQueryPlugin` registers `$.fn[NAME]` after `onDOMContentLoaded`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | —                                  | accepted |
+ | engine           | plugin         | Collapse: a `[data-bs-toggle="collapse"]` trigger names its panel by `data-bs-target` or `href` attribute; `parent: null` and `toggle: true` defaults; `toggle`, `show`, and `hide` methods; cancelable `show.bs.collapse` and `hide.bs.collapse` events, then `shown.bs.collapse` and `hidden.bs.collapse` events; trigger `aria-expanded` and `collapsed` states track the panel; `collapsing` class and inline size until transition end. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                      | tests/src/browser/Collapse.test.ts | shipped  |
+ | engine           | plugin         | Dropdown: the `[data-bs-toggle="dropdown"]` data API; the `autoClose`, `boundary`, `display`, `offset`, `popperConfig`, and `reference` options; the `toggle`, `show`, `hide`, `dispose`, and `update` methods; the paired `.bs.dropdown` events, the `show` and `hide` events cancelable; the `aria-expanded` attribute; arrow and `Escape` key focus; placement from the `--bs-position` property and the wrappers, centering included. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                         | —                                  | accepted |
+-| engine           | plugin         | Tab: `[data-bs-toggle="tab\|pill\|list"]` shows the pane its trigger names with `show()`; fires `hide.bs.tab`, `hidden.bs.tab`, `show.bs.tab`, and `shown.bs.tab` with `relatedTarget`, `show` and `hide` cancelable; arrow keys, `Home`, and `End` move focus; writes `role`, `aria-selected`, `tabindex`, and `active`; `show` on the pane; in a dropdown, `active` on the toggle, `show` on the menu, and `aria-expanded` on the item. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                         | —                                  | accepted |
++| engine           | plugin         | Tab: `[data-bs-toggle="tab\|pill\|list"]` shows the pane its trigger names with `show()`; fires `hide.bs.tab`, `hidden.bs.tab`, `show.bs.tab`, and `shown.bs.tab` with `relatedTarget`, `show` and `hide` cancelable; arrow keys, `Home`, and `End` move focus; writes `role`, `aria-selected`, `tabindex`, and `active`; `show` on the pane; in a dropdown, `active` on the toggle, `show` on the menu, and `aria-expanded` on the item. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                         | tests/src/browser/Tab.test.ts      | shipped  |
+ | engine           | plugin         | ScrollSpy: `[data-bs-spy="scroll"]` observes the sections its `target` links name through `IntersectionObserver` (`rootMargin`, `threshold`, `offset`, `smoothScroll`); `refresh()`, `dispose()`; fires `activate.bs.scrollspy` with `relatedTarget` and no cancelable event; moves the `active` class. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | —                                  | accepted |
+ | engine           | plugin         | Alert: a `[data-bs-dismiss="alert"]` trigger closes the alert it names, or the `.alert` ancestor it sits in; no defaults; the `close` method; the cancelable `close.bs.alert` event, then the `closed.bs.alert` event after removal; the `close` method removes the `show` class and waits on the transition only when the alert carries the `fade` class, then removes the element and disposes the instance; no key, focus, or ARIA handling. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                   | —                                  | accepted |
+ | engine           | plugin         | Carousel: `[data-bs-slide]` and `[data-bs-slide-to]` triggers and `[data-bs-ride="carousel"]` on load; `interval: 5000`, `keyboard: true`, `pause: 'hover'`, `ride: false`, `touch: true`, and `wrap: true` defaults; `next`, `prev`, `pause`, `cycle`, and `to` methods; cancelable `slide.bs.carousel`, then `slid.bs.carousel`; arrow keys; `aria-current` on the active indicator; the `Swipe` utility adds the `pointer-event` class. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                        | —                                  | accepted |
+diff --git a/src/browser/Delegate.ts b/src/browser/Delegate.ts
+index fa90303..27b8b05 100644
+--- a/src/browser/Delegate.ts
++++ b/src/browser/Delegate.ts
+@@ -5,8 +5,12 @@ import type {
+ 	CollapseVocabulary,
+ 	DelegateInterface,
+ 	DelegateOptions,
++	TabAttributeMap,
++	TabClassMap,
++	TabInterface,
++	TabSelectorMap,
+ } from './types.js'
+-import { instanceOf } from '@orkestrel/contract'
++import { instanceOf, isInstance } from '@orkestrel/contract'
+ import { Button } from './Button.js'
+ import { Collapse } from './Collapse.js'
+ import {
+@@ -15,15 +19,19 @@ import {
+ 	COLLAPSE_ATTRIBUTES,
+ 	COLLAPSE_CLASSES,
+ 	COLLAPSE_SELECTORS,
++	TAB_ATTRIBUTES,
++	TAB_CLASSES,
++	TAB_SELECTORS,
+ } from './constants.js'
+-import { readTargets, resolveVocabulary } from './helpers.js'
++import { computeNeighbor, readTargets, resolveVocabulary } from './helpers.js'
++import { Tab } from './Tab.js'
+ import { isAttributeName, isClassToken, isSelector } from './validators.js'
+ 
+ /**
+  * Activates data-attribute hosts through a root's delegated click listener.
+  *
+  * @remarks
+- * Construction validates and copies each entity group, then installs the listener. Importing the
++ * Construction validates and copies each entity group, then installs its listeners. Importing the
+  * browser barrel installs nothing. A click inside a host the button group's `trigger` selector
+  * matches drives the engine the `Button.find` method returns for that host, whoever constructed it,
+  * and acquires a fresh one, constructed with the button group, only when the host has none. A click
+@@ -33,7 +41,16 @@ import { isAttributeName, isClassToken, isSelector } from './validators.js'
+  * alone; it prevents the click's default action only when the trigger or the clicked element is an
+  * anchor. A click whose button host is one of the panels its collapse trigger names inside the
+  * root, with no button and no collapse engine on that element, is refused before either route runs:
+- * nothing is marked, driven, constructed, or prevented. Under nested roots, a button host is driven
++ * nothing is marked, driven, constructed, or prevented. A click inside a control the tab group's
++ * `trigger` selector matches prevents the default action when the control is an anchor or an area,
++ * and, unless the control carries the group's `disabled` token or a `disabled` attribute, shows it
++ * through the engine the `Tab.find` method returns or one it acquires, constructed with the tab
++ * group. A click whose button host is that control, with no button and no tab engine on it, is
++ * refused the same way. The root's `keydown` listener carries the tab keyboard: an arrow key,
++ * `Home`, or `End` pressed on such a control inside a list the group's `list` selector matches
++ * stops propagating and loses its default action, and focus moves, without scrolling, to the
++ * previous, next, first, or last control of the list that is not disabled, wrapping at either end,
++ * which then shows through its engine. Under nested roots, a button host is driven
+  * once per click, and so is each panel, by the first live delegate whose root contains it to reach
+  * it. A listener that destroys a delegate during a click leaves every panel the click has not
+  * reached to the delegates still live. While the delegate owns an engine it observes its root, and
+@@ -41,7 +58,7 @@ import { isAttributeName, isClassToken, isSelector } from './validators.js'
+  * contains. A click that arrives while an engine's host is being restored finds no owner, because
+  * the engine releases its claim first, and acquires a fresh engine whose snapshot takes the values
+  * not yet written back. At each click and each delivery it also drops every engine that was
+- * destroyed directly. Destruction releases the listener and the observer and restores every host
++ * destroyed directly. Destruction releases the listeners and the observer and restores every host
+  * this delegate acquired.
+  *
+  * @example
+@@ -53,11 +70,16 @@ import { isAttributeName, isClassToken, isSelector } from './validators.js'
+ export class Delegate implements DelegateInterface {
+ 	static readonly #driven = new WeakMap<
+ 		Event,
+-		WeakMap<typeof Button | typeof Collapse, WeakSet<HTMLElement>>
++		WeakMap<typeof Button | typeof Collapse | typeof Tab, WeakSet<HTMLElement>>
+ 	>()
+ 	readonly #root: ParentNode
+ 	readonly #button: ButtonVocabulary
+ 	readonly #collapse: CollapseVocabulary
++	readonly #tab: {
++		readonly classes: TabClassMap
++		readonly attributes: TabAttributeMap
++		readonly selectors: TabSelectorMap
++	}
+ 	readonly #controller = new AbortController()
+ 	readonly #observer = new MutationObserver(() => {
+ 		const size = this.#owned.size
+@@ -65,10 +87,10 @@ export class Delegate implements DelegateInterface {
+ 		this.#release()
+ 		this.#unobserve(size)
+ 	})
+-	readonly #owned = new Set<ButtonInterface | CollapseInterface>()
++	readonly #owned = new Set<ButtonInterface | CollapseInterface | TabInterface>()
+ 
+ 	/**
+-	 * Resolves each entity group and binds native clicks on the supplied root.
++	 * Resolves each entity group and binds native clicks and keys on the supplied root.
+ 	 *
+ 	 * @param options - The delegation root, `document` by default, and the vocabulary of each routed entity.
+ 	 * @throws Thrown when a group value is not a class token, an attribute name, or a selector, as an `AppError` carrying the entity's `{ENTITY}_OPTION_INVALID` code.
+@@ -108,10 +130,33 @@ export class Delegate implements DelegateInterface {
+ 				options?.collapse?.selectors,
+ 			),
+ 		}
++		this.#tab = {
++			classes: resolveVocabulary(
++				'TAB_OPTION_INVALID',
++				TAB_CLASSES,
++				isClassToken,
++				options?.tab?.classes,
++			),
++			attributes: resolveVocabulary(
++				'TAB_OPTION_INVALID',
++				TAB_ATTRIBUTES,
++				isAttributeName,
++				options?.tab?.attributes,
++			),
++			selectors: resolveVocabulary(
++				'TAB_OPTION_INVALID',
++				TAB_SELECTORS,
++				isSelector,
++				options?.tab?.selectors,
++			),
++		}
+ 		this.#root = options?.root ?? document
+ 		this.#root.addEventListener('click', (event) => this.#activate(event), {
+ 			signal: this.#controller.signal,
+ 		})
++		this.#root.addEventListener('keydown', (event) => this.#press(event), {
++			signal: this.#controller.signal,
++		})
+ 	}
+ 
+ 	get root(): ParentNode {
+@@ -134,9 +179,19 @@ export class Delegate implements DelegateInterface {
+ 		this.#discard()
+ 		this.#unobserve(size)
+ 		if (!(event.target instanceof Element)) return
+-		if (this.#conflicts(event.target)) return
++		if (this.#conflicts(event.target) || this.#contends(event.target)) return
+ 		this.#routeButton(event, event.target)
+ 		this.#routeCollapse(event, event.target)
++		this.#routeTab(event, event.target)
++	}
++
++	// Drops every engine destroyed directly, then routes a key pressed inside the root.
++	#press(event: Event): void {
++		const size = this.#owned.size
++		this.#discard()
++		this.#unobserve(size)
++		if (!isInstance(event, KeyboardEvent) || !isInstance(event.target, Element)) return
++		this.#routeTabKey(event, event.target)
+ 	}
+ 
+ 	// Reports whether both routes would construct an engine on one element: the click's button host
+@@ -154,6 +209,19 @@ export class Delegate implements DelegateInterface {
+ 		)
+ 	}
+ 
++	// Reports whether the button route and the tab route would each construct an engine on one
++	// element: the click's button host is its tab control inside the root, and neither the button nor
++	// the tab registry holds an engine for it.
++	#contends(target: Element): boolean {
++		const host = target.closest(this.#button.selectors.trigger)
++		if (!isInstance(host, HTMLElement) || !this.#root.contains(host)) return false
++		return (
++			target.closest(this.#tab.selectors.trigger) === host &&
++			Button.find(host) === undefined &&
++			Tab.find(host) === undefined
++		)
++	}
++
+ 	// Routes a click inside a button trigger to that host's button engine.
+ 	#routeButton(event: Event, target: Element): void {
+ 		const host = target.closest(this.#button.selectors.trigger)
+@@ -185,12 +253,69 @@ export class Delegate implements DelegateInterface {
+ 		}
+ 	}
+ 
+-	// Marks one click for one engine host and one route across every delegate, and reports whether
+-	// this call marked it, so a host under nested roots is driven once per click by each route.
+-	#mark(event: Event, route: typeof Button | typeof Collapse, host: HTMLElement): boolean {
++	// Routes a click inside a tab trigger to that control's tab engine, preventing the default action
++	// of an anchor or an area as Bootstrap's data API does, and leaving a disabled control inactive.
++	#routeTab(event: Event, target: Element): void {
++		const control = target.closest(this.#tab.selectors.trigger)
++		if (!isInstance(control, HTMLElement) || !this.#root.contains(control)) return
++		if (isInstance(control, HTMLAnchorElement) || isInstance(control, HTMLAreaElement)) {
++			event.preventDefault()
++		}
++		if (this.#disabled(control) || !this.#mark(event, Tab, control)) return
++		const engine = Tab.find(control) ?? this.#acquire(new Tab(control, this.#tab))
++		void engine.show()
++	}
++
++	// Routes an arrow key, `Home`, or `End` pressed on a tab trigger inside a list to the control it
++	// moves to, as Bootstrap's `_keydown` does: the key stops propagating and loses its default action,
++	// focus moves to the previous, next, first, or last control of the list that is not disabled,
++	// wrapping at either end, and that control shows through its tab engine.
++	#routeTabKey(event: KeyboardEvent, target: Element): void {
++		const { key } = event
++		if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(key)) return
++		const control = target.closest(this.#tab.selectors.trigger)
++		if (!isInstance(control, HTMLElement) || !this.#root.contains(control)) return
++		const list = control.closest(this.#tab.selectors.list)
++		if (list === null) return
++		event.stopPropagation()
++		event.preventDefault()
++		const { link, entry, toggle, trigger } = this.#tab.selectors
++		const controls = Array.from(
++			list.querySelectorAll(`:is(${link}, ${entry}):not(${toggle}), ${trigger}`),
++		)
++			.filter(instanceOf(HTMLElement))
++			.filter((element) => !this.#disabled(element))
++		const next =
++			key === 'Home'
++				? controls[0]
++				: key === 'End'
++					? controls.at(-1)
++					: computeNeighbor(controls, control, key === 'ArrowRight' || key === 'ArrowDown', true)
++		if (next === undefined || !this.#root.contains(next) || !this.#mark(event, Tab, next)) return
++		next.focus({ preventScroll: true })
++		// A focus listener runs inside the call and can destroy this delegate, which then drives nothing.
++		if (this.#controller.signal.aborted) return
++		const engine = Tab.find(next) ?? this.#acquire(new Tab(next, this.#tab))
++		void engine.show()
++	}
++
++	// Reports whether a tab control carries the tab group's `disabled` token or a `disabled` attribute.
++	#disabled(control: HTMLElement): boolean {
++		return (
++			control.classList.contains(this.#tab.classes.disabled) || control.hasAttribute('disabled')
++		)
++	}
++
++	// Marks one click or key for one engine host and one route across every delegate, and reports
++	// whether this call marked it, so a host under nested roots is driven once per event by each route.
++	#mark(
++		event: Event,
++		route: typeof Button | typeof Collapse | typeof Tab,
++		host: HTMLElement,
++	): boolean {
+ 		const routes =
+ 			Delegate.#driven.get(event) ??
+-			new WeakMap<typeof Button | typeof Collapse, WeakSet<HTMLElement>>()
++			new WeakMap<typeof Button | typeof Collapse | typeof Tab, WeakSet<HTMLElement>>()
+ 		const hosts = routes.get(route) ?? new WeakSet<HTMLElement>()
+ 		if (hosts.has(host)) return false
+ 		Delegate.#driven.set(event, routes.set(route, hosts.add(host)))
+@@ -198,7 +323,9 @@ export class Delegate implements DelegateInterface {
+ 	}
+ 
+ 	// Owns a constructed engine and observes the root while any engine is owned.
+-	#acquire<TEngine extends ButtonInterface | CollapseInterface>(engine: TEngine): TEngine {
++	#acquire<TEngine extends ButtonInterface | CollapseInterface | TabInterface>(
++		engine: TEngine,
++	): TEngine {
+ 		if (this.#owned.size === 0) {
+ 			this.#observer.observe(this.#root, { childList: true, subtree: true })
+ 		}
+@@ -208,10 +335,14 @@ export class Delegate implements DelegateInterface {
+ 
+ 	// Drops every owned engine its class's registry no longer holds: an engine destroyed directly,
+ 	// or one whose destruction is under way. Each engine sits in its own class's registry alone, so
+-	// an engine neither lookup returns is held by none.
++	// an engine no lookup returns is held by none.
+ 	#discard(): void {
+ 		for (const engine of this.#owned) {
+-			if (Button.find(engine.host) !== engine && Collapse.find(engine.host) !== engine) {
++			if (
++				Button.find(engine.host) !== engine &&
++				Collapse.find(engine.host) !== engine &&
++				Tab.find(engine.host) !== engine
++			) {
+ 				this.#owned.delete(engine)
+ 			}
+ 		}
+diff --git a/src/browser/Tab.ts b/src/browser/Tab.ts
+new file mode 100644
+index 0000000..2557423
+--- /dev/null
++++ b/src/browser/Tab.ts
+@@ -0,0 +1,419 @@
++import type {
++	TabAttributeMap,
++	TabClassMap,
++	TabInterface,
++	TabOptions,
++	TabSelectorMap,
++} from './types.js'
++import { AppError } from '@src/core'
++import { instanceOf, isInstance } from '@orkestrel/contract'
++import { TAB_ATTRIBUTES, TAB_CLASSES, TAB_EVENTS, TAB_SELECTORS } from './constants.js'
++import {
++	bindEventMap,
++	emitEvent,
++	readTag,
++	readTarget,
++	reflow,
++	resolveVocabulary,
++	settleAnimations,
++} from './helpers.js'
++import { HostSnapshot } from './HostSnapshot.js'
++import { Registry } from './Registry.js'
++import { isAttributeName, isClassToken, isSelector, isTabEvent } from './validators.js'
++
++/**
++ * Activates a tab control and its pane, deactivating the active sibling control and its pane.
++ *
++ * @remarks
++ * The host must be an HTMLElement in the current realm and have no live tab owner. Construction
++ * validates and copies the `classes`, `attributes`, and `selectors` groups, resolves the pane the
++ * host's target attribute or `href` fragment names, claims the host, and binds the hooks. When the
++ * host or one of its ancestors matches the `list` selector, construction then writes the roles and
++ * states Bootstrap writes: `role="tablist"` on the list when it has no role; on each control of the list,
++ * `aria-selected`, `tabindex="-1"` when it is not active, and `role="tab"` when it has no role;
++ * `role="presentation"` on each control's wrapper when it has no role; and on each control's pane,
++ * `role="tabpanel"` when it has no role and `aria-labelledby` naming the control's id when it has
++ * none. A control outside any list writes nothing at construction and has no sibling. Showing
++ * dispatches `hide.vn.tab` on the active sibling and `show.vn.tab` on the host, refuses when either
++ * is prevented, deactivates the sibling and its pane, activates the host and its pane, waits for a
++ * pane carrying the `fade` token to settle, and dispatches `hidden.vn.tab` and `shown.vn.tab`. After
++ * each write, dispatch, and await, a call reads its lifetime and the host again: from the write of
++ * the host's `active` token the host must carry it, and from each write to the pane the pane must
++ * carry every token written so far. A call that finds the tab destroyed, a later call started, or
++ * the host or pane otherwise stops, writing and dispatching nothing more, and resolves `false`.
++ * Destruction restores every value the tab wrote. An aborted `signal` destroys the tab. The
++ * keyboard is the delegate's: the tab listens for no key.
++ *
++ * @example
++ * ```ts
++ * const control = document.querySelector<HTMLElement>('#profile-tab')
++ * if (control !== null) {
++ * 	const tab = new Tab(control)
++ * 	await tab.show()
++ * 	tab.destroy()
++ * }
++ * ```
++ */
++export class Tab implements TabInterface {
++	static readonly #registry = new Registry<Tab>({ code: 'TAB_HOST_OWNED' })
++	readonly #host: HTMLElement
++	readonly #pane: HTMLElement | undefined
++	readonly #classes: TabClassMap
++	readonly #attributes: TabAttributeMap
++	readonly #selectors: TabSelectorMap
++	readonly #snapshot = new HostSnapshot()
++	readonly #controller = new AbortController()
++	// The identity of the latest call that started a change. A call holds its change only while this
++	// is its identity, so a call resuming after a later one started sees that it no longer holds it.
++	#change: object | undefined
++
++	/**
++	 * Claims the host, resolves its vocabulary and pane, binds initial hooks, and writes the list's initial roles and states.
++	 *
++	 * @param host - The HTML element to own, the control.
++	 * @param options - The markup vocabulary, initial event subscriptions, and lifetime.
++	 * @throws Thrown when the host is not an HTMLElement, when a group value is not a class token, an attribute name, or a selector, or when the host already has a live owner. Thrown as the platform's `SyntaxError` when a control of the list names its pane by a selector that is not valid CSS.
++	 */
++	constructor(host: HTMLElement, options?: TabOptions) {
++		if (!isInstance(host, HTMLElement)) {
++			throw new AppError('Tab requires an HTMLElement host', 'TAB_HOST_INVALID', {
++				tag: readTag(host),
++			})
++		}
++		this.#classes = resolveVocabulary(
++			'TAB_OPTION_INVALID',
++			TAB_CLASSES,
++			isClassToken,
++			options?.classes,
++		)
++		this.#attributes = resolveVocabulary(
++			'TAB_OPTION_INVALID',
++			TAB_ATTRIBUTES,
++			isAttributeName,
++			options?.attributes,
++		)
++		this.#selectors = resolveVocabulary(
++			'TAB_OPTION_INVALID',
++			TAB_SELECTORS,
++			isSelector,
++			options?.selectors,
++		)
++		this.#host = host
++		this.#pane = readTarget(host, this.#attributes)
++		// The initial writes are read before the claim, so a pane selector that throws leaves the host unclaimed.
++		const roles = this.#planRoles()
++		Tab.#registry.claim(host, this)
++		bindEventMap(host, TAB_EVENTS, isTabEvent, options?.on, this.#controller.signal)
++		const signal = options?.signal
++		if (signal?.aborted) this.destroy()
++		else {
++			signal?.addEventListener('abort', () => this.destroy(), {
++				once: true,
++				signal: this.#controller.signal,
++			})
++			this.#writeRoles(roles)
++		}
++	}
++
++	/**
++	 * Returns the live tab that owns a control, mirroring Bootstrap's `getInstance`.
++	 *
++	 * @param host - The control to look up.
++	 * @returns The owning tab, or undefined when no live tab owns the control.
++	 * @example
++	 * ```ts
++	 * await Tab.find(control)?.show()
++	 * ```
++	 */
++	static find(host: HTMLElement): TabInterface | undefined {
++		return Tab.#registry.find(host)
++	}
++
++	get host(): HTMLElement {
++		return this.#host
++	}
++
++	get pane(): HTMLElement | undefined {
++		return this.#pane
++	}
++
++	get active(): boolean {
++		return this.#host.classList.contains(this.#classes.active)
++	}
++
++	async show(): Promise<boolean> {
++		if (this.#refused()) return false
++		const host = this.#host
++		const outgoing = this.#sibling()
++		// Both pre-change events are dispatched before either is read, as Bootstrap's `show` does; a
++		// listener that destroys the tab inside the first one stops the second.
++		const hiding =
++			outgoing === undefined || emitEvent(outgoing, TAB_EVENTS.hide, { relatedTarget: host }, true)
++		if (this.#controller.signal.aborted) return false
++		const showing = emitEvent(host, TAB_EVENTS.show, { relatedTarget: outgoing }, true)
++		if (!hiding || !showing) return false
++		// A listener runs inside each dispatch and can destroy this tab, activate this control, or
++		// activate another sibling, so the refusals and the active sibling are read again before any
++		// write.
++		if (this.#refused() || this.#sibling() !== outgoing) return false
++		const change = {}
++		this.#change = change
++		const { active, shown, fade } = this.#classes
++		const pane = this.#pane
++		const previous =
++			outgoing === undefined
++				? undefined
++				: (Tab.#registry.find(outgoing)?.pane ?? readTarget(outgoing, this.#attributes))
++		const leaving = outgoing?.getAttribute('role') === 'tab'
++		const entering = host.getAttribute('role') === 'tab'
++		if (outgoing !== undefined) this.#record(outgoing, previous, leaving)
++		this.#record(host, pane, entering)
++		// Each write door reads the host and the pane for its phase: nothing while the sibling is
++		// deactivated, the host's `active` token from its write on, and each pane token from its write on.
++		if (outgoing !== undefined) {
++			if (!this.#apply(change, [], [], () => outgoing.classList.remove(active))) return false
++			if (!this.#apply(change, [], [], () => outgoing.blur())) return false
++			if (
++				previous !== undefined &&
++				!this.#apply(change, [], [], () => previous.classList.remove(active, shown))
++			) {
++				return false
++			}
++			if (leaving && !this.#select(change, [], [], outgoing, false)) return false
++		}
++		const held = [active]
++		if (!this.#apply(change, held, [], () => host.classList.add(active))) return false
++		if (entering && !this.#select(change, held, [], host, true)) return false
++		const settled = [active, shown]
++		if (pane !== undefined) {
++			if (!this.#apply(change, held, [active], () => pane.classList.add(active))) return false
++			const fading = pane.classList.contains(fade)
++			// Laying the pane out with its `active` token lets the `shown` token written next fade it.
++			if (fading) reflow(pane)
++			if (!this.#apply(change, held, settled, () => pane.classList.add(shown))) return false
++			if (fading) {
++				await settleAnimations(pane, this.#controller.signal)
++				if (!this.#holds(change, held, settled)) return false
++			}
++		}
++		if (outgoing !== undefined) {
++			emitEvent(outgoing, TAB_EVENTS.hidden, { relatedTarget: host }, false)
++			if (!this.#holds(change, held, settled)) return false
++		}
++		this.#change = undefined
++		emitEvent(host, TAB_EVENTS.shown, { relatedTarget: outgoing }, false)
++		return !this.#controller.signal.aborted
++	}
++
++	destroy(): void {
++		if (this.#controller.signal.aborted) return
++		this.#controller.abort()
++		// The claim goes before the controls are restored, so an engine constructed while restoration
++		// runs can claim the host, and its snapshot takes the values this one has still to write back.
++		Tab.#registry.release(this.#host, this)
++		this.#snapshot.restore()
++	}
++
++	// Reports whether a call cannot start: the tab is destroyed or the host is already active.
++	#refused(): boolean {
++		return this.#controller.signal.aborted || this.active
++	}
++
++	// Reports whether the call still holds its change: the tab is live, no later call started a
++	// change, the host carries every token in `control`, and the pane, when there is one, carries
++	// every token in `panel`.
++	#holds(change: object, control: readonly string[], panel: readonly string[]): boolean {
++		const pane = this.#pane
++		return (
++			!this.#controller.signal.aborted &&
++			this.#change === change &&
++			control.every((token) => this.#host.classList.contains(token)) &&
++			(pane === undefined || panel.every((token) => pane.classList.contains(token)))
++		)
++	}
++
++	// Runs one write a reaction can run inside, then reads whether the call still holds its change.
++	#apply(
++		change: object,
++		control: readonly string[],
++		panel: readonly string[],
++		write: () => void,
++	): boolean {
++		write()
++		return this.#holds(change, control, panel)
++	}
++
++	// Returns the list that holds the host, or undefined when no ancestor matches the `list` selector.
++	#list(): HTMLElement | undefined {
++		const list = this.#host.closest(this.#selectors.list)
++		return isInstance(list, HTMLElement) ? list : undefined
++	}
++
++	// Lists the controls of a list, as Bootstrap's `_getChildren` does: the links and entries that are
++	// not dropdown toggles, and every trigger.
++	#controls(list: HTMLElement): readonly HTMLElement[] {
++		const { link, entry, toggle, trigger } = this.#selectors
++		return Array.from(
++			list.querySelectorAll(`:is(${link}, ${entry}):not(${toggle}), ${trigger}`),
++		).filter(instanceOf(HTMLElement))
++	}
++
++	// Returns the active control of the host's list other than the host, or undefined when the list
++	// has none or the host has no list.
++	#sibling(): HTMLElement | undefined {
++		const list = this.#list()
++		if (list === undefined) return undefined
++		return this.#controls(list).find(
++			(control) => control !== this.#host && control.classList.contains(this.#classes.active),
++		)
++	}
++
++	// Returns the element that wraps a control inside its list, or the control itself when no
++	// ancestor matches the `wrapper` or `entry` selector.
++	#wrapper(control: HTMLElement): HTMLElement {
++		const wrapper = control.closest(`:is(${this.#selectors.wrapper}, ${this.#selectors.entry})`)
++		return isInstance(wrapper, HTMLElement) ? wrapper : control
++	}
++
++	// Returns the dropdown a control's wrapper forms, with the toggle and the menu inside it, or
++	// undefined when the wrapper carries no `dropdown` token.
++	#dropdown(control: HTMLElement):
++		| {
++				readonly wrapper: HTMLElement
++				readonly toggle: HTMLElement | undefined
++				readonly menu: HTMLElement | undefined
++		  }
++		| undefined {
++		const wrapper = this.#wrapper(control)
++		if (!wrapper.classList.contains(this.#classes.dropdown)) return undefined
++		const toggle = wrapper.querySelector(this.#selectors.toggle)
++		const menu = wrapper.querySelector(this.#selectors.menu)
++		return {
++			wrapper,
++			toggle: isInstance(toggle, HTMLElement) ? toggle : undefined,
++			menu: isInstance(menu, HTMLElement) ? menu : undefined,
++		}
++	}
++
++	// Lists the initial writes the markup does not already carry, each an element, an attribute, and
++	// its value; the first write planned for an attribute wins, as Bootstrap's `_setAttributeIfNotExists`
++	// leaves the first value in place.
++	#planRoles(): ReadonlyArray<readonly [HTMLElement, string, string]> {
++		const list = this.#list()
++		if (list === undefined) return []
++		const planned: Array<readonly [HTMLElement, string, string]> = []
++		if (this.#absent(planned, list, 'role')) planned.push([list, 'role', 'tablist'])
++		for (const control of this.#controls(list)) {
++			const active = control.classList.contains(this.#classes.active)
++			planned.push([control, 'aria-selected', String(active)])
++			const wrapper = this.#wrapper(control)
++			if (wrapper !== control && this.#absent(planned, wrapper, 'role')) {
++				planned.push([wrapper, 'role', 'presentation'])
++			}
++			if (!active) planned.push([control, 'tabindex', '-1'])
++			if (this.#absent(planned, control, 'role')) planned.push([control, 'role', 'tab'])
++			const pane = readTarget(control, this.#attributes)
++			if (pane === undefined) continue
++			if (this.#absent(planned, pane, 'role')) planned.push([pane, 'role', 'tabpanel'])
++			if (control.id !== '' && this.#absent(planned, pane, 'aria-labelledby')) {
++				planned.push([pane, 'aria-labelledby', control.id])
++			}
++		}
++		return planned.filter(([element, name, value]) => element.getAttribute(name) !== value)
++	}
++
++	// Reports whether an element carries no attribute of the name and no earlier initial write plans one.
++	#absent(
++		planned: ReadonlyArray<readonly [HTMLElement, string, string]>,
++		element: HTMLElement,
++		name: string,
++	): boolean {
++		return (
++			!element.hasAttribute(name) &&
++			!planned.some(([target, attribute]) => target === element && attribute === name)
++		)
++	}
++
++	// Records every initial write's attribute before the first one, then writes each, stopping when a
++	// reaction to a write destroys the tab.
++	#writeRoles(roles: ReadonlyArray<readonly [HTMLElement, string, string]>): void {
++		for (const [element, name] of roles) {
++			this.#snapshot.save({ category: 'attribute', element, name })
++		}
++		for (const [element, name, value] of roles) {
++			element.setAttribute(name, value)
++			if (this.#controller.signal.aborted) return
++		}
++	}
++
++	// Records a control's `active` token and its pane's tokens before the swap first writes them, and
++	// for a control whose role is `tab`, its selection, its tab stop, and its dropdown's state.
++	#record(control: HTMLElement, pane: HTMLElement | undefined, tab: boolean): void {
++		const { active, shown } = this.#classes
++		this.#snapshot.save({ category: 'token', element: control, name: active })
++		if (pane !== undefined) {
++			this.#snapshot.save({ category: 'token', element: pane, name: active })
++			this.#snapshot.save({ category: 'token', element: pane, name: shown })
++		}
++		if (!tab) return
++		this.#snapshot.save({ category: 'attribute', element: control, name: 'aria-selected' })
++		this.#snapshot.save({ category: 'attribute', element: control, name: 'tabindex' })
++		const dropdown = this.#dropdown(control)
++		if (dropdown === undefined) return
++		this.#snapshot.save({ category: 'attribute', element: dropdown.wrapper, name: 'aria-expanded' })
++		if (dropdown.toggle !== undefined) {
++			this.#snapshot.save({ category: 'token', element: dropdown.toggle, name: active })
++		}
++		if (dropdown.menu !== undefined) {
++			this.#snapshot.save({ category: 'token', element: dropdown.menu, name: shown })
++		}
++	}
++
++	// Writes a `tab` control's selection and tab stop, and the state of the dropdown that holds it,
++	// reading after every write whether the call still holds its change for the phase it is in.
++	#select(
++		change: object,
++		control: readonly string[],
++		panel: readonly string[],
++		element: HTMLElement,
++		selected: boolean,
++	): boolean {
++		if (
++			!this.#apply(change, control, panel, () =>
++				element.setAttribute('aria-selected', String(selected)),
++			)
++		) {
++			return false
++		}
++		if (
++			!this.#apply(change, control, panel, () => {
++				if (selected) element.removeAttribute('tabindex')
++				else element.setAttribute('tabindex', '-1')
++			})
++		) {
++			return false
++		}
++		const dropdown = this.#dropdown(element)
++		if (dropdown === undefined) return true
++		const { toggle, menu, wrapper } = dropdown
++		if (
++			toggle !== undefined &&
++			!this.#apply(change, control, panel, () =>
++				toggle.classList.toggle(this.#classes.active, selected),
++			)
++		) {
++			return false
++		}
++		if (
++			menu !== undefined &&
++			!this.#apply(change, control, panel, () =>
++				menu.classList.toggle(this.#classes.shown, selected),
++			)
++		) {
++			return false
++		}
++		return this.#apply(change, control, panel, () =>
++			wrapper.setAttribute('aria-expanded', String(selected)),
++		)
++	}
++}
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index 4317b6e..6f2c32b 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -8,6 +8,10 @@ import type {
+ 	CollapseSelectorMap,
+ 	ColorModeAttributeMap,
+ 	EventWire,
++	TabAttributeMap,
++	TabClassMap,
++	TabEventMap,
++	TabSelectorMap,
+ } from './types.js'
+ 
+ /** Names the attribute a color-mode controller writes by default, the attribute Bootstrap's cascade reads. */
+@@ -63,3 +67,36 @@ export const COLLAPSE_ATTRIBUTES: CollapseAttributeMap = Object.freeze({
+ export const COLLAPSE_SELECTORS: CollapseSelectorMap = Object.freeze({
+ 	trigger: '[data-bs-toggle="collapse"]',
+ })
++
++/** Names the bubbling events a tab dispatches on its controls, keyed by the verb each carries. */
++export const TAB_EVENTS: EventWire<TabEventMap, 'tab'> = Object.freeze({
++	show: 'show.vn.tab',
++	shown: 'shown.vn.tab',
++	hide: 'hide.vn.tab',
++	hidden: 'hidden.vn.tab',
++})
++
++/** Names the class tokens a tab writes and tests by default, the tokens Bootstrap's cascade selects on. */
++export const TAB_CLASSES: TabClassMap = Object.freeze({
++	active: 'active',
++	shown: 'show',
++	fade: 'fade',
++	disabled: 'disabled',
++	dropdown: 'dropdown',
++})
++
++/** Names the attribute a tab control carries its pane selector in by default, Bootstrap's attribute name. */
++export const TAB_ATTRIBUTES: TabAttributeMap = Object.freeze({
++	target: TARGET_ATTRIBUTE,
++})
++
++/** Names the default selectors a tab and the delegate match tab lists, controls, and dropdowns with, Bootstrap's selectors. */
++export const TAB_SELECTORS: TabSelectorMap = Object.freeze({
++	trigger: '[data-bs-toggle="tab"], [data-bs-toggle="pill"], [data-bs-toggle="list"]',
++	list: '.list-group, .nav, [role="tablist"]',
++	wrapper: '.nav-item',
++	entry: '.list-group-item',
++	link: '.nav-link, [role="tab"]',
++	toggle: '.dropdown-toggle',
++	menu: '.dropdown-menu',
++})
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index d1630fd..b85ee8e 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -294,3 +294,33 @@ export function readTag(value: unknown): string | undefined {
+ 		return undefined
+ 	}
+ }
++
++/**
++ * Returns the member after or before the current one in a list, as Bootstrap's `getNextActiveElement` function does.
++ *
++ * @param list - The members in order, such as the enabled controls of a tab list.
++ * @param current - The member to move from.
++ * @param next - If `true`, returns the member after the current one; if `false`, the member before it.
++ * @param wrap - If `true`, moves past either end to the other end; if `false`, stays on the end member.
++ * @returns The neighboring member, or undefined when the list is empty.
++ * @remarks
++ * A current value the list does not hold returns the first member, or the last member when `next`
++ * is `false` and `wrap` is `true`.
++ * @example
++ * ```ts
++ * computeNeighbor(['home', 'profile', 'contact'], 'contact', true, true) // 'home'
++ * ```
++ */
++export function computeNeighbor<T>(
++	list: readonly T[],
++	current: T,
++	next: boolean,
++	wrap: boolean,
++): T | undefined {
++	const index = list.indexOf(current)
++	if (index === -1) return !next && wrap ? list.at(-1) : list[0]
++	const moved = index + (next ? 1 : -1)
++	return list[
++		wrap ? (moved + list.length) % list.length : Math.max(0, Math.min(moved, list.length - 1))
++	]
++}
+diff --git a/src/browser/index.ts b/src/browser/index.ts
+index 8e0b192..cff116b 100644
+--- a/src/browser/index.ts
++++ b/src/browser/index.ts
+@@ -8,4 +8,5 @@ export * from './HostSnapshot.js'
+ export * from './ColorMode.js'
+ export * from './Button.js'
+ export * from './Collapse.js'
++export * from './Tab.js'
+ export * from './Delegate.js'
+diff --git a/src/browser/validators.ts b/src/browser/validators.ts
+index 2c3084b..dbcb78c 100644
+--- a/src/browser/validators.ts
++++ b/src/browser/validators.ts
+@@ -1,6 +1,6 @@
+-import type { ButtonEventMap, CollapseEventMap, ColorModeState } from './types.js'
++import type { ButtonEventMap, CollapseEventMap, ColorModeState, TabEventMap } from './types.js'
+ import type { Guard } from '@orkestrel/contract'
+-import { literalOf } from '@orkestrel/contract'
++import { isInstance, literalOf } from '@orkestrel/contract'
+ 
+ /**
+  * Checks whether a value names a supported color mode.
+@@ -140,3 +140,31 @@ export function isCollapseEvent(value: unknown): value is CollapseEventMap['show
+ 		return false
+ 	}
+ }
++
++/**
++ * Checks whether a DOM event is a tab event, whose detail carries an HTML element or nothing as its related target.
++ *
++ * @param value - The value to inspect.
++ * @returns True if the value is a CustomEvent whose detail is an object with an absent or undefined `relatedTarget` or one that is an HTMLElement; false otherwise.
++ * @remarks
++ * A tab dispatches each event with the other control of the swap as the detail's `relatedTarget`,
++ * or undefined when no control was active, so a consumer's own event under a tab wire name that
++ * carries no detail, or another value there, is refused. The containment covers a `relatedTarget`
++ * accessor that throws, as the button event guard does.
++ * @example
++ * ```ts
++ * isTabEvent(new CustomEvent('shown.vn.tab', { detail: { relatedTarget: undefined } })) // true
++ * isTabEvent(new CustomEvent('shown.vn.tab')) // false
++ * ```
++ */
++export function isTabEvent(value: unknown): value is TabEventMap['show'] {
++	try {
++		if (!isInstance(value, CustomEvent)) return false
++		const detail: unknown = value.detail
++		if (typeof detail !== 'object' || detail === null) return false
++		const related = 'relatedTarget' in detail ? detail.relatedTarget : undefined
++		return related === undefined || isInstance(related, HTMLElement)
++	} catch {
++		return false
++	}
++}
+diff --git a/tests/src/browser/Delegate.test.ts b/tests/src/browser/Delegate.test.ts
+index f8b1b24..418f1f0 100644
+--- a/tests/src/browser/Delegate.test.ts
++++ b/tests/src/browser/Delegate.test.ts
+@@ -1,8 +1,16 @@
+-import { Button, BUTTON_SELECTORS, Collapse, COLLAPSE_SELECTORS, Delegate } from '@src/browser'
++import {
++	Button,
++	BUTTON_SELECTORS,
++	Collapse,
++	COLLAPSE_SELECTORS,
++	Delegate,
++	Tab,
++	TAB_SELECTORS,
++} from '@src/browser'
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue, waitForCondition } from '@orkestrel/test'
+-import { build, mount } from '@orkestrel/test/browser'
++import { build, mount, pressKeys } from '@orkestrel/test/browser'
+ import { describe, expect, it, onTestFinished } from 'vitest'
+ import { recordCalls, recordListeners, scene } from '../../setupBrowser.js'
+ 
+@@ -221,7 +229,7 @@ describe('Delegate', () => {
+ 		expect(host.getAttribute('aria-pressed')).toBe('false')
+ 	})
+ 
+-	it('registers exactly one root listener and releases the listener and its engines', async () => {
++	it('registers one click and one key listener on the root and releases both and its engines', async () => {
+ 		const root = mount(build('div'))
+ 		onTestFinished(() => root.remove())
+ 		const host = build('button', { attributes: { 'data-bs-toggle': 'button' } })
+@@ -235,7 +243,7 @@ describe('Delegate', () => {
+ 		const targets = await recordListeners(async () => {
+ 			delegate = new Delegate({ root })
+ 		})
+-		expect(targets).toEqual([root])
++		expect(targets).toEqual([root, root])
+ 		host.click()
+ 		removed.click()
+ 		removed.remove()
+@@ -1003,4 +1011,332 @@ describe('Delegate', () => {
+ 			error: { code: 'COLLAPSE_OPTION_INVALID', context: { key: 'trigger' } },
+ 		})
+ 	})
++
++	it('shows the pane a tab, pill, or list trigger names on click, preventing the default action of an anchor alone', async () => {
++		const root = scene.mount(`
++			<ul class="nav nav-tabs">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><a class="nav-link" id="profile-tab" href="#profile" data-bs-toggle="pill"><span>Profile</span></a></li>
++			</ul>
++			<div class="list-group">
++				<a class="list-group-item active" id="inbox-tab" href="#inbox" data-bs-toggle="list">Inbox</a>
++				<a class="list-group-item" id="sent-tab" href="#sent" data-bs-toggle="list">Sent</a>
++			</div>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>
++			<div class="tab-pane active show" id="inbox"></div>
++			<div class="tab-pane" id="sent"></div>`)
++		onTestFinished(() => scene.clear())
++		const home = requireValue(root.querySelector<HTMLElement>('#home-tab'), 'No home control')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No profile')
++		const sent = requireValue(root.querySelector<HTMLElement>('#sent-tab'), 'No sent control')
++		const label = requireValue(profile.querySelector('span'), 'No profile label')
++		const profilePane = requireValue(root.querySelector('#profile'), 'No profile pane')
++		const sentPane = requireValue(root.querySelector('#sent'), 'No sent pane')
++		const delegate = new Delegate({ root })
++		onTestFinished(() => delegate.destroy())
++		expect(TAB_SELECTORS.trigger).toBe(
++			'[data-bs-toggle="tab"], [data-bs-toggle="pill"], [data-bs-toggle="list"]',
++		)
++		const follow = new MouseEvent('click', { bubbles: true, cancelable: true })
++		expect(label.dispatchEvent(follow)).toBe(false)
++		await waitForCondition('the profile pane shows', () => profilePane.classList.contains('show'))
++		expect(profile.classList.contains('active')).toBe(true)
++		expect(profile.getAttribute('aria-selected')).toBe('true')
++		expect(home.classList.contains('active')).toBe(false)
++		expect(() => new Tab(profile)).toThrow(expect.objectContaining({ code: 'TAB_HOST_OWNED' }))
++		sent.click()
++		await waitForCondition('the sent pane shows', () => sentPane.classList.contains('show'))
++		expect(root.querySelector('#inbox-tab')?.classList.contains('active')).toBe(false)
++		const press = new MouseEvent('click', { bubbles: true, cancelable: true })
++		expect(home.dispatchEvent(press)).toBe(true)
++		await waitForCondition('the home control activates', () => home.classList.contains('active'))
++		expect(Tab.find(home)).toBeDefined()
++		expect(profile.classList.contains('active')).toBe(false)
++		delegate.destroy()
++		expect(Tab.find(home)).toBeUndefined()
++		expect(Tab.find(profile)).toBeUndefined()
++		expect(Tab.find(sent)).toBeUndefined()
++		expect(Array.from(sent.classList)).toEqual(['list-group-item'])
++		expect(sent.hasAttribute('role')).toBe(false)
++		expect(Array.from(sentPane.classList)).toEqual(['tab-pane'])
++		expect(root.querySelector('.list-group')?.hasAttribute('role')).toBe(false)
++	})
++
++	it('leaves a control carrying the disabled token or attribute inactive on click, still preventing the default action of an anchor', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><a class="nav-link active" href="#home" data-bs-toggle="tab">Home</a></li>
++				<li class="nav-item"><a class="nav-link disabled" href="#profile" data-bs-toggle="tab">Profile</a></li>
++				<li class="nav-item"><button type="button" class="nav-link" disabled data-bs-toggle="tab" data-bs-target="#contact">Contact</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>
++			<div class="tab-pane" id="contact"></div>`)
++		onTestFinished(() => scene.clear())
++		const [, profile, contact] = Array.from(root.querySelectorAll<HTMLElement>('.nav-link'))
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		root.addEventListener('show.vn.tab', (event) => events.handler(event.type), {
++			signal: controller.signal,
++		})
++		const delegate = new Delegate({ root })
++		onTestFinished(() => delegate.destroy())
++		const follow = new MouseEvent('click', { bubbles: true, cancelable: true })
++		expect(profile?.dispatchEvent(follow)).toBe(false)
++		contact?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
++		await Promise.resolve()
++		expect(events.calls).toEqual([])
++		expect(Tab.find(requireValue(profile, 'No profile control'))).toBeUndefined()
++		expect(Tab.find(requireValue(contact, 'No contact control'))).toBeUndefined()
++		expect(profile?.classList.contains('active')).toBe(false)
++		expect(contact?.classList.contains('active')).toBe(false)
++	})
++
++	it('moves focus and activation with the arrow keys, Home, and End, wrapping at either end and skipping disabled controls', async () => {
++		const root = scene.mount(`
++			<ul class="nav nav-tabs">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++				<li class="nav-item"><button type="button" class="nav-link disabled" id="archive-tab" data-bs-toggle="tab" data-bs-target="#archive">Archive</button></li>
++				<li class="nav-item"><a class="nav-link" id="drafts-tab" href="#drafts" disabled data-bs-toggle="tab">Drafts</a></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact">Contact</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>
++			<div class="tab-pane" id="archive"></div>
++			<div class="tab-pane" id="drafts"></div>
++			<div class="tab-pane" id="contact"></div>`)
++		onTestFinished(() => scene.clear())
++		const readings = createRecorder<readonly [string, string, boolean]>()
++		const escaped = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		document.addEventListener('keydown', (event) => escaped.handler(event.key), {
++			signal: controller.signal,
++		})
++		const delegate = new Delegate({ root })
++		onTestFinished(() => delegate.destroy())
++		// The recorder reads each key after the delegate's root heard it, so it sees what the route did.
++		root.addEventListener(
++			'keydown',
++			(event) =>
++				readings.handler(event.key, document.activeElement?.id ?? '', event.defaultPrevented),
++			{ signal: controller.signal },
++		)
++		requireValue(root.querySelector<HTMLElement>('#home-tab'), 'No home control').focus()
++		for (const [key, id] of [
++			['{ArrowRight}', 'profile-tab'],
++			['{ArrowDown}', 'contact-tab'],
++			['{ArrowRight}', 'home-tab'],
++			['{ArrowLeft}', 'contact-tab'],
++			['{ArrowUp}', 'profile-tab'],
++			['{End}', 'contact-tab'],
++			['{Home}', 'home-tab'],
++		]) {
++			await pressKeys(key ?? '')
++			await waitForCondition(
++				`the ${id} control activates`,
++				() => root.querySelector('.nav-link.active')?.id === id,
++			)
++			expect(document.activeElement?.id).toBe(id)
++		}
++		expect(
++			Array.from(root.querySelectorAll('.nav-link.active')).map((control) => control.id),
++		).toEqual(['home-tab'])
++		await pressKeys('{Enter}')
++		expect(readings.calls).toEqual([
++			['ArrowRight', 'profile-tab', true],
++			['ArrowDown', 'contact-tab', true],
++			['ArrowRight', 'home-tab', true],
++			['ArrowLeft', 'contact-tab', true],
++			['ArrowUp', 'profile-tab', true],
++			['End', 'contact-tab', true],
++			['Home', 'home-tab', true],
++			['Enter', 'home-tab', false],
++		])
++		expect(escaped.calls).toEqual([['Enter']])
++		expect(
++			Tab.find(requireValue(root.querySelector<HTMLElement>('#archive-tab'), 'No archive')),
++		).toBeUndefined()
++	})
++
++	// Every show event is prevented, so the control stays inactive and each further drive of it would
++	// dispatch its events again: the counts read how many delegates drove it.
++	it('drives a tab control under nested roots once per click and once per key', async () => {
++		const root = scene.mount(`
++			<div id="nested">
++				<ul class="nav">
++					<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++					<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++					<li class="nav-item"><button type="button" class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact">Contact</button></li>
++				</ul>
++				<div class="tab-pane active show" id="home"></div>
++				<div class="tab-pane" id="profile"></div>
++				<div class="tab-pane" id="contact"></div>
++			</div>`)
++		onTestFinished(() => scene.clear())
++		const nested = requireValue(root.querySelector<HTMLElement>('#nested'), 'No nested root')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No profile')
++		const events = createRecorder<readonly [string, string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		root.addEventListener(
++			'show.vn.tab',
++			(event) => {
++				events.handler(event.type, event.target instanceof Element ? event.target.id : '')
++				event.preventDefault()
++			},
++			{ signal: controller.signal },
++		)
++		const outer = new Delegate({ root })
++		const inner = new Delegate({ root: nested })
++		const same = new Delegate({ root: nested })
++		onTestFinished(() => outer.destroy())
++		onTestFinished(() => inner.destroy())
++		onTestFinished(() => same.destroy())
++		profile.click()
++		await Promise.resolve()
++		expect(events.calls).toEqual([['show.vn.tab', 'profile-tab']])
++		profile.focus()
++		await pressKeys('{ArrowRight}')
++		await waitForCondition('the contact control takes focus', () =>
++			Boolean(document.activeElement?.id === 'contact-tab'),
++		)
++		expect(events.calls).toEqual([
++			['show.vn.tab', 'profile-tab'],
++			['show.vn.tab', 'contact-tab'],
++		])
++		expect(root.querySelector('#home-tab')?.classList.contains('active')).toBe(true)
++	})
++
++	it('refuses a click whose button host is the tab control when neither engine exists, driving neither route', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link" data-vn-press data-bs-toggle="tab" data-bs-target="#pane"><span>Both</span></button></li>
++			</ul>
++			<div class="tab-pane" id="pane"></div>`)
++		onTestFinished(() => scene.clear())
++		const control = requireValue(root.querySelector('button'), 'No control')
++		const label = requireValue(control.querySelector('span'), 'No label')
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of ['toggle.vn.button', 'show.vn.tab']) {
++			root.addEventListener(name, (event) => events.handler(event.type), {
++				signal: controller.signal,
++			})
++		}
++		const delegate = new Delegate({ root, button: { selectors: { trigger: '[data-vn-press]' } } })
++		onTestFinished(() => delegate.destroy())
++		const click = new MouseEvent('click', { bubbles: true, cancelable: true })
++		expect(label.dispatchEvent(click)).toBe(true)
++		await Promise.resolve()
++		expect(events.calls).toEqual([])
++		expect(Button.find(control)).toBeUndefined()
++		expect(Tab.find(control)).toBeUndefined()
++		expect(control.hasAttribute('aria-pressed')).toBe(false)
++		expect(control.classList.contains('active')).toBe(false)
++		expect(root.querySelector('ul')?.hasAttribute('role')).toBe(false)
++	})
++
++	it('drives the button route and the tab route once each when the tab control carries a button a consumer constructed', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link" data-vn-press data-bs-toggle="tab" data-bs-target="#pane">Both</button></li>
++			</ul>
++			<div class="tab-pane" id="pane"></div>`)
++		onTestFinished(() => scene.clear())
++		const control = requireValue(root.querySelector('button'), 'No control')
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of ['toggle.vn.button', 'show.vn.tab']) {
++			root.addEventListener(name, (event) => events.handler(event.type), {
++				signal: controller.signal,
++			})
++		}
++		const pressing = new Button(control, { classes: { pressed: 'is-pressed' } })
++		onTestFinished(() => pressing.destroy())
++		const delegate = new Delegate({ root, button: { selectors: { trigger: '[data-vn-press]' } } })
++		onTestFinished(() => delegate.destroy())
++		control.click()
++		await waitForCondition('the control activates', () => control.classList.contains('active'))
++		expect(events.calls).toEqual([['toggle.vn.button'], ['show.vn.tab']])
++		expect(Button.find(control)).toBe(pressing)
++		expect(Tab.find(control)?.active).toBe(true)
++		expect(control.getAttribute('aria-pressed')).toBe('true')
++	})
++
++	it('routes tab clicks and keys by a replaced trigger selector alone and constructs each engine with the tab group', async () => {
++		const root = scene.mount(`
++			<div class="tabs">
++				<button type="button" class="tabs-link is-current" id="one" data-vn-tab data-vn-target="#first">One</button>
++				<button type="button" class="tabs-link is-off" id="two" data-vn-tab data-vn-target="#second">Two</button>
++				<button type="button" class="tabs-link disabled" id="three" data-vn-tab data-vn-target="#third">Three</button>
++				<button type="button" class="nav-link" id="fallback" data-bs-toggle="tab" data-bs-target="#third">Fallback</button>
++			</div>
++			<div class="is-current is-visible" id="first"></div>
++			<div id="second"></div>
++			<div id="third"></div>`)
++		onTestFinished(() => scene.clear())
++		const [one, two, three, fallback] = ['one', 'two', 'three', 'fallback'].map((id) =>
++			requireValue(root.querySelector<HTMLElement>(`#${id}`), `No ${id}`),
++		)
++		const delegate = new Delegate({
++			root,
++			tab: {
++				classes: { active: 'is-current', shown: 'is-visible', disabled: 'is-off' },
++				attributes: { target: 'data-vn-target' },
++				selectors: { trigger: '[data-vn-tab]', list: '.tabs', link: '.tabs-link' },
++			},
++		})
++		onTestFinished(() => delegate.destroy())
++		fallback?.click()
++		await Promise.resolve()
++		expect(Tab.find(requireValue(fallback, 'No fallback'))).toBeUndefined()
++		expect(fallback?.classList.contains('active')).toBe(false)
++		two?.click()
++		await Promise.resolve()
++		expect(Tab.find(requireValue(two, 'No second control'))).toBeUndefined()
++		three?.click()
++		await waitForCondition('the third control activates', () =>
++			Boolean(three?.classList.contains('is-current')),
++		)
++		expect(Array.from(root.querySelector('#third')?.classList ?? [])).toEqual([
++			'is-current',
++			'is-visible',
++		])
++		expect(Array.from(root.querySelector('#first')?.classList ?? [])).toEqual([])
++		expect(root.querySelector('.tabs')?.getAttribute('role')).toBe('tablist')
++		three?.focus()
++		await pressKeys('{ArrowLeft}')
++		await waitForCondition('the first control activates', () =>
++			Boolean(one?.classList.contains('is-current')),
++		)
++		expect(document.activeElement).toBe(one)
++		expect(Tab.find(requireValue(one, 'No first control'))?.active).toBe(true)
++	})
++
++	it('refuses a tab group value that is not a class token, an attribute name, or a selector at construction', () => {
++		const root = build('div')
++		expect(
++			attempt(() => new Delegate({ root, tab: { classes: { disabled: 'is off' } } })),
++		).toMatchObject({
++			success: false,
++			error: { code: 'TAB_OPTION_INVALID', context: { key: 'disabled' } },
++		})
++		expect(
++			attempt(() => new Delegate({ root, tab: { attributes: { target: 'data target' } } })),
++		).toMatchObject({
++			success: false,
++			error: { code: 'TAB_OPTION_INVALID', context: { key: 'target' } },
++		})
++		const refused = attempt(() => new Delegate({ root, tab: { selectors: { trigger: '' } } }))
++		expect(refused).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
++		expect(refused).toMatchObject({
++			error: { code: 'TAB_OPTION_INVALID', context: { key: 'trigger' } },
++		})
++	})
+ })
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+new file mode 100644
+index 0000000..7a5d6ff
+--- /dev/null
++++ b/tests/src/browser/Tab.test.ts
+@@ -0,0 +1,1240 @@
++import type { TabInterface } from '@src/browser'
++import { Tab, TAB_ATTRIBUTES, TAB_CLASSES, TAB_EVENTS, TAB_SELECTORS } from '@src/browser'
++import { isAppError } from '@src/core'
++import { attempt } from '@orkestrel/contract'
++import { createRecorder, requireValue } from '@orkestrel/test'
++import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
++import navCascade from '../../../src/styles/components/_nav.scss?inline'
++import { recordListeners, scene } from '../../setupBrowser.js'
++
++afterEach(() => scene.clear())
++
++describe('Tab', () => {
++	// Bootstrap's own fade declarations, which the shipped cascade does not carry: a pane carrying
++	// `fade` is transparent until it carries `show`, and its opacity transitions.
++	const fade = '.fade { transition: opacity 0.15s linear } .fade:not(.show) { opacity: 0 }'
++
++	it('publishes frozen default tables that name the cascade tokens, Bootstrap attributes and selectors, and wire events', () => {
++		expect(TAB_CLASSES).toStrictEqual({
++			active: 'active',
++			shown: 'show',
++			fade: 'fade',
++			disabled: 'disabled',
++			dropdown: 'dropdown',
++		})
++		expect(TAB_ATTRIBUTES).toStrictEqual({ target: 'data-bs-target' })
++		expect(TAB_SELECTORS).toStrictEqual({
++			trigger: '[data-bs-toggle="tab"], [data-bs-toggle="pill"], [data-bs-toggle="list"]',
++			list: '.list-group, .nav, [role="tablist"]',
++			wrapper: '.nav-item',
++			entry: '.list-group-item',
++			link: '.nav-link, [role="tab"]',
++			toggle: '.dropdown-toggle',
++			menu: '.dropdown-menu',
++		})
++		expect(TAB_EVENTS).toStrictEqual({
++			show: 'show.vn.tab',
++			shown: 'shown.vn.tab',
++			hide: 'hide.vn.tab',
++			hidden: 'hidden.vn.tab',
++		})
++		for (const table of [TAB_CLASSES, TAB_ATTRIBUTES, TAB_SELECTORS, TAB_EVENTS]) {
++			expect(Object.isFrozen(table)).toBe(true)
++		}
++	})
++
++	it('reads the shipped nav declarations the pane proofs run under, which carry no fade', () => {
++		const sheet = requireValue(scene.load(navCascade).sheet, 'The cascade sheet did not load')
++		const root = scene.mount(`
++			<div class="tab-content">
++				<div class="tab-pane fade" id="hidden"></div>
++				<div class="tab-pane fade active" id="active"></div>
++			</div>`)
++		const hidden = requireValue(root.querySelector<HTMLElement>('#hidden'), 'No hidden pane')
++		const active = requireValue(root.querySelector<HTMLElement>('#active'), 'No active pane')
++		expect(sheet.cssRules.length).toBeGreaterThan(0)
++		expect(getComputedStyle(hidden).display).toBe('none')
++		expect(getComputedStyle(active).display).toBe('block')
++		expect(getComputedStyle(active).opacity).toBe('1')
++		expect(getComputedStyle(active).transitionDuration).toBe('0s')
++	})
++
++	it('claims the host and resolves its pane by the target attribute before its href', () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><a class="nav-link" id="first" href="#by-href" data-bs-target="#by-target" data-bs-toggle="tab">First</a></li>
++				<li class="nav-item"><a class="nav-link" id="second" href="#by-href" data-bs-toggle="tab">Second</a></li>
++				<li class="nav-item"><a class="nav-link" id="third" data-bs-toggle="tab">Third</a></li>
++			</ul>
++			<div id="by-target"></div>
++			<div id="by-href"></div>`)
++		const [first, second, third] = Array.from(root.querySelectorAll('a'))
++		const one = new Tab(requireValue(first, 'No first control'))
++		const two = new Tab(requireValue(second, 'No second control'))
++		const three = new Tab(requireValue(third, 'No third control'))
++		onTestFinished(() => one.destroy())
++		onTestFinished(() => two.destroy())
++		onTestFinished(() => three.destroy())
++		expect(one.host).toBe(first)
++		expect(one.pane).toBe(root.querySelector('#by-target'))
++		expect(two.pane).toBe(root.querySelector('#by-href'))
++		expect(three.pane).toBeUndefined()
++		expect(Tab.find(requireValue(first, 'No first control'))).toBe(one)
++		expect(one.active).toBe(false)
++	})
++
++	it('refuses an invalid host and a second owner, then permits reconstruction after destruction', () => {
++		const absent = attempt(() => Reflect.construct(Tab, [null]))
++		expect(absent).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
++		expect(absent).toMatchObject({
++			error: { code: 'TAB_HOST_INVALID', context: { tag: undefined } },
++		})
++		const svg = attempt(() =>
++			Reflect.construct(Tab, [document.createElementNS('http://www.w3.org/2000/svg', 'svg')]),
++		)
++		expect(svg).toMatchObject({ error: { code: 'TAB_HOST_INVALID', context: { tag: 'svg' } } })
++		const control = document.createElement('button')
++		const tab = new Tab(control)
++		onTestFinished(() => tab.destroy())
++		expect(Tab.find(control)).toBe(tab)
++		expect(attempt(() => new Tab(control))).toMatchObject({
++			success: false,
++			error: { code: 'TAB_HOST_OWNED', context: { tag: 'BUTTON' } },
++		})
++		tab.destroy()
++		expect(Tab.find(control)).toBeUndefined()
++		const replacement = new Tab(control)
++		onTestFinished(() => replacement.destroy())
++		expect(Tab.find(control)).toBe(replacement)
++	})
++
++	it('constructs a control with no list, writing nothing, and activates it and its pane with no sibling to hide', async () => {
++		const root = scene.mount(`
++			<button type="button" data-bs-toggle="tab" data-bs-target="#pane">Alone</button>
++			<div id="pane"></div>`)
++		const control = requireValue(root.querySelector('button'), 'No control')
++		const pane = requireValue(root.querySelector<HTMLElement>('#pane'), 'No pane')
++		const events = createRecorder<readonly [string, unknown]>()
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		const tab = new Tab(control, {
++			on: {
++				hide: (event) => events.handler(event.type, event.detail.relatedTarget),
++				show: (event) => events.handler(event.type, event.detail.relatedTarget),
++				shown: (event) => events.handler(event.type, event.detail.relatedTarget),
++			},
++		})
++		onTestFinished(() => tab.destroy())
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(await tab.show()).toBe(true)
++		expect(events.calls).toEqual([
++			['show.vn.tab', undefined],
++			['shown.vn.tab', undefined],
++		])
++		expect(Array.from(control.classList)).toEqual(['active'])
++		expect(control.hasAttribute('aria-selected')).toBe(false)
++		expect(Array.from(pane.classList)).toEqual(['active', 'show'])
++		expect(tab.active).toBe(true)
++		tab.destroy()
++		expect(control.hasAttribute('class')).toBe(false)
++		expect(pane.hasAttribute('class')).toBe(false)
++	})
++
++	it('writes the initial roles and states on the list, its controls, their wrappers, and their panes, and destruction restores them', () => {
++		const root = scene.mount(`
++			<ul class="nav nav-tabs">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item" role="none"><button type="button" class="nav-link" id="profile-tab" role="tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#contact">Contact</button></li>
++			</ul>
++			<div class="list-group">
++				<a class="list-group-item" id="entry" href="#entry-pane" data-bs-toggle="list">Entry</a>
++			</div>
++			<div class="tab-content">
++				<div class="tab-pane active show" id="home"></div>
++				<div class="tab-pane" id="profile" aria-labelledby="consumer"></div>
++				<div class="tab-pane" id="contact" role="region"></div>
++				<div class="tab-pane" id="entry-pane"></div>
++			</div>`)
++		const list = requireValue(root.querySelector<HTMLElement>('ul'), 'No list')
++		const [home, profile, contact] = Array.from(list.querySelectorAll('button'))
++		const [homeItem, profileItem, contactItem] = Array.from(list.querySelectorAll('li'))
++		const homePane = requireValue(root.querySelector('#home'), 'No home pane')
++		const profilePane = requireValue(root.querySelector('#profile'), 'No profile pane')
++		const contactPane = requireValue(root.querySelector('#contact'), 'No contact pane')
++		const entry = requireValue(root.querySelector<HTMLElement>('#entry'), 'No entry')
++		const tab = new Tab(requireValue(profile, 'No profile control'))
++		onTestFinished(() => tab.destroy())
++		expect(list.getAttribute('role')).toBe('tablist')
++		expect(homeItem?.getAttribute('role')).toBe('presentation')
++		expect(profileItem?.getAttribute('role')).toBe('none')
++		expect(contactItem?.getAttribute('role')).toBe('presentation')
++		expect(home?.getAttribute('role')).toBe('tab')
++		expect(home?.getAttribute('aria-selected')).toBe('true')
++		expect(home?.hasAttribute('tabindex')).toBe(false)
++		expect(profile?.getAttribute('aria-selected')).toBe('false')
++		expect(profile?.getAttribute('tabindex')).toBe('-1')
++		expect(contact?.getAttribute('role')).toBe('tab')
++		expect(contact?.getAttribute('aria-selected')).toBe('false')
++		expect(contact?.getAttribute('tabindex')).toBe('-1')
++		expect(homePane.getAttribute('role')).toBe('tabpanel')
++		expect(homePane.getAttribute('aria-labelledby')).toBe('home-tab')
++		expect(profilePane.getAttribute('role')).toBe('tabpanel')
++		expect(profilePane.getAttribute('aria-labelledby')).toBe('consumer')
++		expect(contactPane.getAttribute('role')).toBe('region')
++		expect(contactPane.hasAttribute('aria-labelledby')).toBe(false)
++		expect(entry.hasAttribute('role')).toBe(false)
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		const again = new Tab(requireValue(contact, 'No contact control'))
++		onTestFinished(() => again.destroy())
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		again.destroy()
++		tab.destroy()
++		expect(list.hasAttribute('role')).toBe(false)
++		expect(homeItem?.hasAttribute('role')).toBe(false)
++		expect(profileItem?.getAttribute('role')).toBe('none')
++		expect(contactItem?.hasAttribute('role')).toBe(false)
++		expect(home?.hasAttribute('role')).toBe(false)
++		expect(home?.hasAttribute('aria-selected')).toBe(false)
++		expect(profile?.getAttribute('role')).toBe('tab')
++		expect(profile?.hasAttribute('aria-selected')).toBe(false)
++		expect(profile?.hasAttribute('tabindex')).toBe(false)
++		expect(contact?.hasAttribute('role')).toBe(false)
++		expect(contact?.hasAttribute('tabindex')).toBe(false)
++		expect(homePane.hasAttribute('role')).toBe(false)
++		expect(homePane.hasAttribute('aria-labelledby')).toBe(false)
++		expect(profilePane.hasAttribute('role')).toBe(false)
++		expect(profilePane.getAttribute('aria-labelledby')).toBe('consumer')
++		expect(contactPane.getAttribute('role')).toBe('region')
++	})
++
++	it('writes each list-group item its own wrapper, taking no presentation role', () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item" id="outer">
++					<div class="list-group">
++						<a class="list-group-item active" id="inbox" href="#inbox-pane" data-bs-toggle="list">Inbox</a>
++						<a class="list-group-item" id="sent" href="#sent-pane" data-bs-toggle="list">Sent</a>
++					</div>
++				</li>
++			</ul>
++			<div id="inbox-pane"></div>
++			<div id="sent-pane"></div>`)
++		const [inbox, sent] = Array.from(root.querySelectorAll('a'))
++		const tab = new Tab(requireValue(sent, 'No sent control'))
++		onTestFinished(() => tab.destroy())
++		expect(root.querySelector('#outer')?.hasAttribute('role')).toBe(false)
++		expect(root.querySelector('ul')?.hasAttribute('role')).toBe(false)
++		expect(root.querySelector('.list-group')?.getAttribute('role')).toBe('tablist')
++		expect(inbox?.getAttribute('role')).toBe('tab')
++		expect(sent?.getAttribute('role')).toBe('tab')
++		expect(sent?.getAttribute('tabindex')).toBe('-1')
++		expect(root.querySelector('#sent-pane')?.getAttribute('aria-labelledby')).toBe('sent')
++	})
++
++	it('swaps the active control and pane, dispatching both pre-change events before any write and both completed events after', async () => {
++		scene.load(navCascade)
++		const root = scene.mount(`
++			<ul class="nav nav-tabs">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-content">
++				<div class="tab-pane active show" id="home"></div>
++				<div class="tab-pane" id="profile"></div>
++			</div>`)
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const homePane = requireValue(root.querySelector<HTMLElement>('#home'), 'No home pane')
++		const profilePane = requireValue(root.querySelector<HTMLElement>('#profile'), 'No profile')
++		const events = createRecorder<readonly [string, string, unknown, string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TAB_EVENTS)) {
++			root.addEventListener(
++				name,
++				(event) =>
++					events.handler(
++						event.type,
++						event.target instanceof Element ? event.target.id : '',
++						event instanceof CustomEvent ? event.detail.relatedTarget : undefined,
++						`${homePane.className}|${profilePane.className}`,
++					),
++				{ signal: controller.signal },
++			)
++		}
++		const tab = new Tab(requireValue(profile, 'No profile control'))
++		onTestFinished(() => tab.destroy())
++		home?.focus()
++		expect(await tab.show()).toBe(true)
++		expect(events.calls).toEqual([
++			['hide.vn.tab', 'home-tab', profile, 'tab-pane active show|tab-pane'],
++			['show.vn.tab', 'profile-tab', home, 'tab-pane active show|tab-pane'],
++			['hidden.vn.tab', 'home-tab', profile, 'tab-pane|tab-pane active show'],
++			['shown.vn.tab', 'profile-tab', home, 'tab-pane|tab-pane active show'],
++		])
++		expect(document.activeElement).not.toBe(home)
++		expect(Array.from(home?.classList ?? [])).toEqual(['nav-link'])
++		expect(home?.getAttribute('aria-selected')).toBe('false')
++		expect(home?.getAttribute('tabindex')).toBe('-1')
++		expect(Array.from(profile?.classList ?? [])).toEqual(['nav-link', 'active'])
++		expect(profile?.getAttribute('aria-selected')).toBe('true')
++		expect(profile?.hasAttribute('tabindex')).toBe(false)
++		expect(getComputedStyle(homePane).display).toBe('none')
++		expect(getComputedStyle(profilePane).display).toBe('block')
++		expect(tab.active).toBe(true)
++	})
++
++	it('resolves false with no event and no write when the control is already active', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>`)
++		const control = requireValue(root.querySelector('button'), 'No control')
++		const events = createRecorder<readonly [string]>()
++		const tab = new Tab(control, {
++			on: {
++				show: (event) => events.handler(event.type),
++				hide: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => tab.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		expect(await tab.show()).toBe(false)
++		expect(events.calls).toEqual([])
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++	})
++
++	it('dispatches both pre-change events and refuses the swap before any write when a listener prevents either one', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const events = createRecorder<readonly [string, boolean]>()
++		const vetoes = new Set<string>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TAB_EVENTS)) {
++			root.addEventListener(
++				name,
++				(event) => {
++					events.handler(event.type, event.cancelable)
++					if (vetoes.has(event.type)) event.preventDefault()
++				},
++				{ signal: controller.signal },
++			)
++		}
++		const tab = new Tab(requireValue(profile, 'No profile control'))
++		onTestFinished(() => tab.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		vetoes.add('hide.vn.tab')
++		expect(await tab.show()).toBe(false)
++		expect(events.calls).toEqual([
++			['hide.vn.tab', true],
++			['show.vn.tab', true],
++		])
++		vetoes.clear()
++		vetoes.add('show.vn.tab')
++		expect(await tab.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(home?.classList.contains('active')).toBe(true)
++		expect(profile?.classList.contains('active')).toBe(false)
++		vetoes.clear()
++		events.clear()
++		expect(await tab.show()).toBe(true)
++		expect(events.calls).toEqual([
++			['hide.vn.tab', true],
++			['show.vn.tab', true],
++			['hidden.vn.tab', false],
++			['shown.vn.tab', false],
++		])
++	})
++
++	it('waits for the pane fade to settle before dispatching the completed events, leaving no animation on the pane', async () => {
++		scene.load(navCascade)
++		scene.load(fade)
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-content">
++				<div class="tab-pane fade active show" id="home"></div>
++				<div class="tab-pane fade" id="profile"></div>
++			</div>`)
++		const profile = requireValue(root.querySelectorAll('button')[1], 'No profile control')
++		const pane = requireValue(root.querySelector<HTMLElement>('#profile'), 'No profile pane')
++		const order = createRecorder<readonly [string]>()
++		const remaining = createRecorder<readonly [number]>()
++		const tab = new Tab(profile, {
++			on: {
++				shown: (event) => {
++					order.handler(event.type)
++					remaining.handler(pane.getAnimations().length)
++				},
++			},
++		})
++		onTestFinished(() => tab.destroy())
++		root.addEventListener('hidden.vn.tab', (event) => order.handler(event.type), { once: true })
++		const showing = tab.show()
++		expect(Array.from(pane.classList)).toEqual(['tab-pane', 'fade', 'active', 'show'])
++		expect(order.calls).toEqual([])
++		const animations = pane.getAnimations()
++		expect(
++			animations.map((animation) =>
++				animation instanceof CSSTransition ? animation.transitionProperty : animation.id,
++			),
++		).toEqual(['opacity'])
++		void animations[0]?.finished.then(() => order.handler('finished'))
++		expect(await showing).toBe(true)
++		expect(order.calls).toEqual([['finished'], ['hidden.vn.tab'], ['shown.vn.tab']])
++		expect(remaining.calls).toEqual([[0]])
++		expect(getComputedStyle(pane).opacity).toBe('1')
++	})
++
++	it('marks the toggle, the menu, and the wrapper of a dropdown holding the active control, and clears them when a sibling activates', async () => {
++		const root = scene.mount(`
++			<ul class="nav nav-tabs">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item dropdown">
++					<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">More</a>
++					<ul class="dropdown-menu">
++						<li><a class="dropdown-item" id="settings-tab" href="#settings" data-bs-toggle="tab">Settings</a></li>
++					</ul>
++				</li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="settings"></div>`)
++		const home = requireValue(root.querySelector<HTMLElement>('#home-tab'), 'No home control')
++		const settings = requireValue(root.querySelector<HTMLElement>('#settings-tab'), 'No settings')
++		const wrapper = requireValue(root.querySelector('.dropdown'), 'No dropdown')
++		const toggle = requireValue(root.querySelector('.dropdown-toggle'), 'No toggle')
++		const menu = requireValue(root.querySelector('.dropdown-menu'), 'No menu')
++		const tab = new Tab(settings)
++		const back = new Tab(home)
++		onTestFinished(() => tab.destroy())
++		onTestFinished(() => back.destroy())
++		expect(toggle.hasAttribute('role')).toBe(false)
++		expect(wrapper.getAttribute('role')).toBe('presentation')
++		expect(settings.getAttribute('role')).toBe('tab')
++		expect(await tab.show()).toBe(true)
++		expect(Array.from(toggle.classList)).toEqual(['nav-link', 'dropdown-toggle', 'active'])
++		expect(Array.from(menu.classList)).toEqual(['dropdown-menu', 'show'])
++		expect(wrapper.getAttribute('aria-expanded')).toBe('true')
++		expect(await back.show()).toBe(true)
++		expect(Array.from(toggle.classList)).toEqual(['nav-link', 'dropdown-toggle'])
++		expect(Array.from(menu.classList)).toEqual(['dropdown-menu'])
++		expect(wrapper.getAttribute('aria-expanded')).toBe('false')
++		back.destroy()
++		tab.destroy()
++		expect(wrapper.hasAttribute('aria-expanded')).toBe(false)
++	})
++
++	it('abandons a swap in flight on destruction, resolving false and restoring the control, its pane, and the sibling it deactivated', async () => {
++		scene.load(fade)
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane fade active show" id="home"></div>
++			<div class="tab-pane fade" id="profile"></div>`)
++		const list = requireValue(root.querySelector('ul'), 'No list')
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const homePane = requireValue(root.querySelector<HTMLElement>('#home'), 'No home pane')
++		const profilePane = requireValue(root.querySelector<HTMLElement>('#profile'), 'No profile')
++		const hooks = createRecorder<readonly [string]>()
++		const lifetime = new AbortController()
++		let tab: TabInterface | undefined
++		onTestFinished(() => tab?.destroy())
++		const targets = await recordListeners(async () => {
++			tab = new Tab(requireValue(profile, 'No profile control'), {
++				on: {
++					show: (event) => hooks.handler(event.type),
++					shown: (event) => hooks.handler(event.type),
++				},
++				signal: lifetime.signal,
++			})
++		})
++		expect(targets).toEqual([profile, profile, lifetime.signal])
++		const showing = tab?.show()
++		expect(profilePane.classList.contains('show')).toBe(true)
++		expect(home?.classList.contains('active')).toBe(false)
++		tab?.destroy()
++		expect(await showing).toBe(false)
++		expect(hooks.calls).toEqual([['show.vn.tab']])
++		expect(Array.from(home?.classList ?? [])).toEqual(['nav-link', 'active'])
++		expect(home?.hasAttribute('aria-selected')).toBe(false)
++		expect(Array.from(homePane.classList)).toEqual(['tab-pane', 'fade', 'active', 'show'])
++		expect(Array.from(profile?.classList ?? [])).toEqual(['nav-link'])
++		expect(profile?.hasAttribute('aria-selected')).toBe(false)
++		expect(profile?.hasAttribute('tabindex')).toBe(false)
++		expect(Array.from(profilePane.classList)).toEqual(['tab-pane', 'fade'])
++		expect(list.hasAttribute('role')).toBe(false)
++		expect(Tab.find(requireValue(profile, 'No profile control'))).toBeUndefined()
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		profile?.dispatchEvent(
++			new CustomEvent('shown.vn.tab', { bubbles: true, detail: { relatedTarget: undefined } }),
++		)
++		lifetime.abort()
++		expect(hooks.calls).toEqual([['show.vn.tab']])
++		expect(await tab?.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++	})
++
++	it('restores the controls and panes after a completed swap, keeping consumer edits', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const homePane = requireValue(root.querySelector('#home'), 'No home pane')
++		const profilePane = requireValue(root.querySelector('#profile'), 'No profile pane')
++		const tab = new Tab(requireValue(profile, 'No profile control'))
++		onTestFinished(() => tab.destroy())
++		expect(await tab.show()).toBe(true)
++		profilePane.classList.add('consumer')
++		profile?.setAttribute('aria-controls', 'profile')
++		tab.destroy()
++		expect(Array.from(home?.classList ?? [])).toEqual(['nav-link', 'active'])
++		expect(Array.from(homePane.classList)).toEqual(['tab-pane', 'active', 'show'])
++		expect(Array.from(profile?.classList ?? [])).toEqual(['nav-link'])
++		expect(Array.from(profilePane.classList)).toEqual(['tab-pane', 'consumer'])
++		expect(profile?.getAttribute('aria-controls')).toBe('profile')
++		expect(profile?.hasAttribute('role')).toBe(false)
++	})
++
++	it('dispatches bubbling events, the pre-change ones cancelable, with the other control in detail, and binds only engine-shaped events to hooks', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const readings = createRecorder<readonly [string, boolean, boolean, unknown]>()
++		const hooks = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TAB_EVENTS)) {
++			root.addEventListener(
++				name,
++				(event) =>
++					readings.handler(
++						event.type,
++						event.bubbles,
++						event.cancelable,
++						event instanceof CustomEvent ? event.detail : undefined,
++					),
++				{ signal: controller.signal },
++			)
++		}
++		const incoming = requireValue(profile, 'No profile control')
++		const outgoing = requireValue(home, 'No home control')
++		const tab = new Tab(incoming, {
++			on: {
++				show: (event) => hooks.handler(event.type),
++				shown: (event) => hooks.handler(event.type),
++			},
++		})
++		const other = new Tab(outgoing, {
++			on: {
++				hide: (event) => hooks.handler(event.type),
++				hidden: (event) => hooks.handler(event.type),
++			},
++		})
++		onTestFinished(() => tab.destroy())
++		onTestFinished(() => other.destroy())
++		expect(await tab.show()).toBe(true)
++		expect(readings.calls).toEqual([
++			['hide.vn.tab', true, true, { relatedTarget: incoming }],
++			['show.vn.tab', true, true, { relatedTarget: outgoing }],
++			['hidden.vn.tab', true, false, { relatedTarget: incoming }],
++			['shown.vn.tab', true, false, { relatedTarget: outgoing }],
++		])
++		expect(hooks.calls).toEqual([
++			['hide.vn.tab'],
++			['show.vn.tab'],
++			['hidden.vn.tab'],
++			['shown.vn.tab'],
++		])
++		incoming.dispatchEvent(new CustomEvent('shown.vn.tab', { detail: null }))
++		incoming.dispatchEvent(new Event('show.vn.tab'))
++		outgoing.dispatchEvent(new CustomEvent('hidden.vn.tab', { detail: { relatedTarget: 'x' } }))
++		expect(hooks.count).toBe(4)
++	})
++
++	it('writes, tests, reads, and matches only the replacing values when every group is replaced', async () => {
++		const root = scene.mount(`
++			<div class="nav">
++				<div class="tabs">
++					<div class="tabs-item nav-item"><span class="tabs-link is-current" id="one" data-vn-target="#first" data-bs-target="#decoy-pane">One</span></div>
++					<div class="tabs-item"><span class="tabs-link" id="two" data-vn-target="#second">Two</span></div>
++					<div class="tabs-item is-menu">
++						<span class="tabs-link tabs-toggle" id="more">More</span>
++						<div class="tabs-menu"><span id="three" data-vn-tab data-vn-target="#third">Three</span></div>
++					</div>
++					<span class="tabs-entry" id="four" data-vn-target="#fourth">Four</span>
++					<span class="nav-link active" id="decoy" data-bs-toggle="tab" data-bs-target="#decoy-pane">Decoy</span>
++				</div>
++			</div>
++			<div class="is-current is-visible" id="first"></div>
++			<div class="is-fading" id="second"></div>
++			<div id="third"></div>
++			<div id="fourth"></div>
++			<div class="active show" id="decoy-pane"></div>`)
++		const outer = requireValue(root.querySelector('.nav'), 'No outer nav')
++		const tabs = requireValue(root.querySelector('.tabs'), 'No list')
++		const [one, two, three, four, more, decoy] = [
++			'one',
++			'two',
++			'three',
++			'four',
++			'more',
++			'decoy',
++		].map((id) => requireValue(root.querySelector<HTMLElement>(`#${id}`), `No ${id}`))
++		const [first, second, decoyPane] = ['first', 'second', 'decoy-pane'].map((id) =>
++			requireValue(root.querySelector<HTMLElement>(`#${id}`), `No ${id}`),
++		)
++		const menu = requireValue(root.querySelector('.tabs-menu'), 'No menu')
++		const wrapper = requireValue(root.querySelector('.is-menu'), 'No dropdown wrapper')
++		const classes = {
++			active: 'is-current',
++			shown: 'is-visible',
++			fade: 'is-fading',
++			disabled: 'is-off',
++			dropdown: 'is-menu',
++		}
++		const attributes = { target: 'data-vn-target' }
++		const selectors = {
++			trigger: '[data-vn-tab]',
++			list: '.tabs',
++			wrapper: '.tabs-item',
++			entry: '.tabs-entry',
++			link: '.tabs-link',
++			toggle: '.tabs-toggle',
++			menu: '.tabs-menu',
++		}
++		const tab = new Tab(requireValue(two, 'No second control'), { classes, attributes, selectors })
++		const menuTab = new Tab(requireValue(three, 'No third control'), {
++			classes,
++			attributes,
++			selectors,
++		})
++		onTestFinished(() => tab.destroy())
++		onTestFinished(() => menuTab.destroy())
++		classes.active = 'later'
++		expect(outer.hasAttribute('role')).toBe(false)
++		expect(tabs.getAttribute('role')).toBe('tablist')
++		for (const control of [one, two, three, four]) {
++			expect(control?.getAttribute('role')).toBe('tab')
++		}
++		expect(more?.hasAttribute('role')).toBe(false)
++		expect(decoy?.hasAttribute('role')).toBe(false)
++		expect(one?.getAttribute('aria-selected')).toBe('true')
++		expect(one?.parentElement?.getAttribute('role')).toBe('presentation')
++		expect(menu.hasAttribute('role')).toBe(false)
++		expect(wrapper.getAttribute('role')).toBe('presentation')
++		expect(first?.getAttribute('aria-labelledby')).toBe('one')
++		expect(decoyPane?.hasAttribute('role')).toBe(false)
++		expect(tab.pane).toBe(second)
++		expect(await tab.show()).toBe(true)
++		expect(Array.from(one?.classList ?? [])).toEqual(['tabs-link'])
++		expect(Array.from(first?.classList ?? [])).toEqual([])
++		expect(Array.from(two?.classList ?? [])).toEqual(['tabs-link', 'is-current'])
++		expect(Array.from(second?.classList ?? [])).toEqual(['is-fading', 'is-current', 'is-visible'])
++		expect(tab.active).toBe(true)
++		expect(Array.from(decoy?.classList ?? [])).toEqual(['nav-link', 'active'])
++		expect(Array.from(decoyPane?.classList ?? [])).toEqual(['active', 'show'])
++		expect(await menuTab.show()).toBe(true)
++		expect(Array.from(more?.classList ?? [])).toEqual(['tabs-link', 'tabs-toggle', 'is-current'])
++		expect(Array.from(menu.classList)).toEqual(['tabs-menu', 'is-visible'])
++		expect(wrapper.getAttribute('aria-expanded')).toBe('true')
++		expect(await tab.show()).toBe(true)
++		expect(Array.from(more?.classList ?? [])).toEqual(['tabs-link', 'tabs-toggle'])
++		expect(Array.from(menu.classList)).toEqual(['tabs-menu'])
++		expect(wrapper.getAttribute('aria-expanded')).toBe('false')
++	})
++
++	it('refuses a group value that is not a class token, an attribute name, or a selector before claiming the host', () => {
++		const control = document.createElement('button')
++		expect(attempt(() => new Tab(control, { classes: { active: 'is active' } }))).toMatchObject({
++			success: false,
++			error: { code: 'TAB_OPTION_INVALID', context: { key: 'active' } },
++		})
++		expect(
++			attempt(() => new Tab(control, { attributes: { target: 'data target' } })),
++		).toMatchObject({
++			success: false,
++			error: { code: 'TAB_OPTION_INVALID', context: { key: 'target' } },
++		})
++		const refused = attempt(() => new Tab(control, { selectors: { list: '.nav,' } }))
++		expect(refused).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
++		expect(refused).toMatchObject({
++			error: { code: 'TAB_OPTION_INVALID', context: { key: 'list' } },
++		})
++		expect(Tab.find(control)).toBeUndefined()
++		const tab = new Tab(control)
++		onTestFinished(() => tab.destroy())
++		expect(Tab.find(control)).toBe(tab)
++	})
++
++	it('destroys the tab when its signal aborts, and at construction when it arrived aborted', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++			</ul>
++			<div id="home"></div>`)
++		const control = requireValue(root.querySelector('button'), 'No control')
++		const list = requireValue(root.querySelector('ul'), 'No list')
++		const controller = new AbortController()
++		const tab = new Tab(control, { signal: controller.signal })
++		onTestFinished(() => tab.destroy())
++		expect(await tab.show()).toBe(true)
++		controller.abort()
++		expect(Tab.find(control)).toBeUndefined()
++		expect(Array.from(control.classList)).toEqual(['nav-link'])
++		expect(list.hasAttribute('role')).toBe(false)
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		const aborted = new Tab(control, { signal: AbortSignal.abort() })
++		expect(Tab.find(control)).toBeUndefined()
++		expect(await aborted.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++	})
++
++	// A custom element's attribute reaction runs inside the class write that triggers it, so the
++	// reaction destroys the tab while `show` is still on the stack between two writes.
++	it('stops writing when a reaction to its own write destroys it, resolving false and restoring every control and pane', async () => {
++		const name = 'vn-tab-destroyed-write'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>`)
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const pane = document.createElement(name)
++		pane.id = 'profile'
++		pane.className = 'tab-pane'
++		root.append(pane)
++		const events = createRecorder<readonly [string]>()
++		const tab = new Tab(requireValue(profile, 'No profile control'), {
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => tab.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		const destroyed = createRecorder<readonly [number]>()
++		reactions.set(pane, () => {
++			reactions.delete(pane)
++			tab.destroy()
++			observer.takeRecords()
++			observer.observe(root, { attributes: true, subtree: true })
++			destroyed.handler(1)
++		})
++		expect(await tab.show()).toBe(false)
++		expect(destroyed.count).toBe(1)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.calls).toEqual([['show.vn.tab']])
++		expect(Array.from(pane.classList)).toEqual(['tab-pane'])
++		expect(Array.from(home?.classList ?? [])).toEqual(['nav-link', 'active'])
++		expect(home?.hasAttribute('aria-selected')).toBe(false)
++		expect(Array.from(profile?.classList ?? [])).toEqual(['nav-link'])
++		expect(profile?.hasAttribute('aria-selected')).toBe(false)
++	})
++
++	it('writes nothing when a listener to its show event destroys it, resolving false', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const events = createRecorder<readonly [string]>()
++		const tab: TabInterface = new Tab(requireValue(profile, 'No profile control'), {
++			on: {
++				show: (event) => {
++					events.handler(event.type)
++					tab.destroy()
++				},
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => tab.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		// The hook runs on the control before the event reaches the root, so the observer starts after
++		// the restoration and records only what the call writes once the listener destroyed the tab.
++		root.addEventListener(
++			'show.vn.tab',
++			() => observer.observe(root, { attributes: true, subtree: true }),
++			{ once: true },
++		)
++		expect(await tab.show()).toBe(false)
++		expect(events.calls).toEqual([['show.vn.tab']])
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(home?.classList.contains('active')).toBe(true)
++		expect(Tab.find(requireValue(profile, 'No profile control'))).toBeUndefined()
++	})
++
++	it('dispatches no show event when a listener to the sibling hide destroys it, resolving false', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		// The root hears the show event whether or not the destruction released the tab's own hooks.
++		root.addEventListener('show.vn.tab', (event) => events.handler(event.type), {
++			signal: controller.signal,
++		})
++		const tab: TabInterface = new Tab(requireValue(profile, 'No profile control'))
++		onTestFinished(() => tab.destroy())
++		home?.addEventListener(
++			'hide.vn.tab',
++			(event) => {
++				events.handler(event.type)
++				tab.destroy()
++			},
++			{ once: true },
++		)
++		expect(await tab.show()).toBe(false)
++		expect(events.calls).toEqual([['hide.vn.tab']])
++		expect(home?.classList.contains('active')).toBe(true)
++		expect(profile?.classList.contains('active')).toBe(false)
++	})
++
++	it('dispatches no shown event when a listener to its hidden event destroys it, resolving false and restoring the swap', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TAB_EVENTS)) {
++			root.addEventListener(name, (event) => events.handler(event.type), {
++				signal: controller.signal,
++			})
++		}
++		const tab: TabInterface = new Tab(requireValue(profile, 'No profile control'))
++		onTestFinished(() => tab.destroy())
++		home?.addEventListener('hidden.vn.tab', () => tab.destroy(), { once: true })
++		expect(await tab.show()).toBe(false)
++		expect(events.calls).toEqual([['hide.vn.tab'], ['show.vn.tab'], ['hidden.vn.tab']])
++		expect(home?.classList.contains('active')).toBe(true)
++		expect(profile?.classList.contains('active')).toBe(false)
++		expect(root.querySelector('#profile')?.classList.contains('active')).toBe(false)
++	})
++
++	it('runs one swap and one shown event when a listener to its show event shows it again, the inner call resolving true and the outer false', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const profile = requireValue(root.querySelectorAll('button')[1], 'No profile control')
++		const events = createRecorder<readonly [string]>()
++		const inner = createRecorder<readonly [Promise<boolean>]>()
++		let reentered = false
++		const tab: TabInterface = new Tab(profile, {
++			on: {
++				show: (event) => {
++					events.handler(event.type)
++					if (reentered) return
++					reentered = true
++					inner.handler(tab.show())
++				},
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => tab.destroy())
++		expect(await tab.show()).toBe(false)
++		expect(inner.count).toBe(1)
++		expect(await inner.calls[0]?.[0]).toBe(true)
++		expect(events.calls).toEqual([['show.vn.tab'], ['show.vn.tab'], ['shown.vn.tab']])
++		expect(tab.active).toBe(true)
++	})
++
++	it('resolves false when a listener to its pre-change events activates another control first, leaving that control alone active', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact">Contact</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>
++			<div class="tab-pane" id="contact"></div>`)
++		const [home, profile, contact] = Array.from(root.querySelectorAll('button'))
++		const contactTab = new Tab(requireValue(contact, 'No contact control'))
++		onTestFinished(() => contactTab.destroy())
++		const events = createRecorder<readonly [string, string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TAB_EVENTS)) {
++			root.addEventListener(
++				name,
++				(event) =>
++					events.handler(event.type, event.target instanceof Element ? event.target.id : ''),
++				{ signal: controller.signal },
++			)
++		}
++		// The listener goes on the root after the recorder, so the incoming show is recorded before
++		// the contact control's own swap runs inside its delivery.
++		const inner = createRecorder<readonly [Promise<boolean>]>()
++		root.addEventListener(
++			'show.vn.tab',
++			(event) => {
++				if (event.target === profile) inner.handler(contactTab.show())
++			},
++			{ signal: controller.signal },
++		)
++		const tab = new Tab(requireValue(profile, 'No profile control'))
++		onTestFinished(() => tab.destroy())
++		expect(await tab.show()).toBe(false)
++		expect(await inner.calls[0]?.[0]).toBe(true)
++		expect(events.calls).toEqual([
++			['hide.vn.tab', 'home-tab'],
++			['show.vn.tab', 'profile-tab'],
++			['hide.vn.tab', 'home-tab'],
++			['show.vn.tab', 'contact-tab'],
++			['hidden.vn.tab', 'home-tab'],
++			['shown.vn.tab', 'contact-tab'],
++		])
++		expect(root.querySelectorAll('.nav-link.active')).toHaveLength(1)
++		expect(contact?.classList.contains('active')).toBe(true)
++		expect(profile?.classList.contains('active')).toBe(false)
++		expect(home?.classList.contains('active')).toBe(false)
++		expect(root.querySelector('#profile')?.classList.contains('active')).toBe(false)
++	})
++
++	it('deactivates the pane the sibling names through its own tab rather than through this tab attributes', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-vn-target="#own" data-bs-target="#default">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="own"></div>
++			<div class="tab-pane active show" id="default"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const [home, profile] = Array.from(root.querySelectorAll('button'))
++		const sibling = new Tab(requireValue(home, 'No home control'), {
++			attributes: { target: 'data-vn-target' },
++		})
++		const tab = new Tab(requireValue(profile, 'No profile control'))
++		onTestFinished(() => sibling.destroy())
++		onTestFinished(() => tab.destroy())
++		expect(sibling.pane).toBe(root.querySelector('#own'))
++		expect(await tab.show()).toBe(true)
++		expect(Array.from(root.querySelector('#own')?.classList ?? [])).toEqual(['tab-pane'])
++		expect(Array.from(root.querySelector('#default')?.classList ?? [])).toEqual([
++			'tab-pane',
++			'active',
++			'show',
++		])
++	})
++
++	it('resolves false for a call whose sibling write a reaction answers by showing the tab again, the inner call completing the one swap', async () => {
++		const name = 'vn-tab-reentered-write'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<div class="nav">
++				<button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab">Profile</button>
++			</div>`)
++		const list = requireValue(root.querySelector<HTMLElement>('.nav'), 'No list')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No profile')
++		const home = document.createElement(name)
++		home.id = 'home-tab'
++		home.className = 'nav-link active'
++		home.setAttribute('data-bs-toggle', 'tab')
++		list.prepend(home)
++		const events = createRecorder<readonly [string, string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const event of Object.values(TAB_EVENTS)) {
++			root.addEventListener(
++				event,
++				(delivered) =>
++					events.handler(
++						delivered.type,
++						delivered.target instanceof Element ? delivered.target.id : '',
++					),
++				{ signal: controller.signal },
++			)
++		}
++		const tab = new Tab(profile)
++		onTestFinished(() => tab.destroy())
++		const inner = createRecorder<readonly [Promise<boolean>]>()
++		reactions.set(home, (value) => {
++			if ((value ?? '').split(' ').includes('active')) return
++			reactions.delete(home)
++			inner.handler(tab.show())
++		})
++		expect(await tab.show()).toBe(false)
++		expect(await inner.calls[0]?.[0]).toBe(true)
++		expect(events.calls).toEqual([
++			['hide.vn.tab', 'home-tab'],
++			['show.vn.tab', 'profile-tab'],
++			['show.vn.tab', 'profile-tab'],
++			['shown.vn.tab', 'profile-tab'],
++		])
++		expect(profile.getAttribute('aria-selected')).toBe('true')
++	})
++
++	// Each case below drives a custom element whose attribute reaction runs inside the engine's own
++	// write and changes the tokens the call reads, without destroying the tab. The observer starts
++	// inside the reaction, so every record it takes is a write the call made after the change.
++	it('stops a swap whose pane-activation write a reaction answers by removing the active token, dispatching no completed event', async () => {
++		const name = 'vn-tab-pane-deactivated'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>`)
++		const profile = requireValue(root.querySelectorAll('button')[1], 'No profile control')
++		const pane = document.createElement(name)
++		pane.id = 'profile'
++		pane.className = 'tab-pane'
++		root.append(pane)
++		const events = createRecorder<readonly [string]>()
++		const tab = new Tab(profile, {
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => tab.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(pane, (value) => {
++			if (!(value ?? '').split(' ').includes('active')) return
++			reactions.delete(pane)
++			pane.classList.remove('active')
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await tab.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.calls).toEqual([['show.vn.tab']])
++		expect(Array.from(pane.classList)).toEqual(['tab-pane'])
++	})
++
++	it('stops a swap whose pane loses its shown token during the fade, dispatching no completed event', async () => {
++		scene.load(fade)
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane fade active show" id="home"></div>
++			<div class="tab-pane fade" id="profile"></div>`)
++		const profile = requireValue(root.querySelectorAll('button')[1], 'No profile control')
++		const pane = requireValue(root.querySelector<HTMLElement>('#profile'), 'No profile pane')
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TAB_EVENTS)) {
++			root.addEventListener(name, (event) => events.handler(event.type), {
++				signal: controller.signal,
++			})
++		}
++		const tab = new Tab(profile)
++		onTestFinished(() => tab.destroy())
++		const showing = tab.show()
++		expect(pane.getAnimations()).toHaveLength(1)
++		pane.classList.remove('show')
++		expect(await showing).toBe(false)
++		expect(events.calls).toEqual([['hide.vn.tab'], ['show.vn.tab']])
++		expect(Array.from(pane.classList)).toEqual(['tab-pane', 'fade', 'active'])
++	})
++
++	it('resolves false for the swap a sibling takes over by a reaction to its control write, with no panes to read', async () => {
++		const name = 'vn-tab-control-taken'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(`
++			<div class="nav">
++				<button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab">Home</button>
++			</div>`)
++		const list = requireValue(root.querySelector<HTMLElement>('.nav'), 'No list')
++		const profile = document.createElement(name)
++		profile.id = 'profile-tab'
++		profile.className = 'nav-link'
++		profile.setAttribute('data-bs-toggle', 'tab')
++		const contact = document.createElement('button')
++		contact.id = 'contact-tab'
++		contact.className = 'nav-link'
++		contact.setAttribute('data-bs-toggle', 'tab')
++		list.append(profile, contact)
++		const events = createRecorder<readonly [string, string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const event of Object.values(TAB_EVENTS)) {
++			root.addEventListener(
++				event,
++				(delivered) =>
++					events.handler(
++						delivered.type,
++						delivered.target instanceof Element ? delivered.target.id : '',
++					),
++				{ signal: controller.signal },
++			)
++		}
++		const contactTab = new Tab(contact)
++		const tab = new Tab(profile)
++		onTestFinished(() => contactTab.destroy())
++		onTestFinished(() => tab.destroy())
++		const inner = createRecorder<readonly [Promise<boolean>]>()
++		reactions.set(profile, (value) => {
++			if (!(value ?? '').split(' ').includes('active')) return
++			reactions.delete(profile)
++			inner.handler(contactTab.show())
++		})
++		expect(await tab.show()).toBe(false)
++		expect(await inner.calls[0]?.[0]).toBe(true)
++		expect(events.calls).toEqual([
++			['hide.vn.tab', 'home-tab'],
++			['show.vn.tab', 'profile-tab'],
++			['hide.vn.tab', 'profile-tab'],
++			['show.vn.tab', 'contact-tab'],
++			['hidden.vn.tab', 'profile-tab'],
++			['shown.vn.tab', 'contact-tab'],
++		])
++		expect(profile.classList.contains('active')).toBe(false)
++		expect(profile.getAttribute('aria-selected')).toBe('false')
++		expect(contact.classList.contains('active')).toBe(true)
++	})
++
++	it('resolves false for the swap a sibling takes over during the fade, which dispatches its own completed events once', async () => {
++		scene.load(fade)
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact">Contact</button></li>
++			</ul>
++			<div class="tab-pane fade active show" id="home"></div>
++			<div class="tab-pane fade" id="profile"></div>
++			<div class="tab-pane fade" id="contact"></div>`)
++		const [, profile, contact] = Array.from(root.querySelectorAll('button'))
++		const events = createRecorder<readonly [string, string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TAB_EVENTS)) {
++			root.addEventListener(
++				name,
++				(event) =>
++					events.handler(event.type, event.target instanceof Element ? event.target.id : ''),
++				{ signal: controller.signal },
++			)
++		}
++		const tab = new Tab(requireValue(profile, 'No profile control'))
++		const sibling = new Tab(requireValue(contact, 'No contact control'))
++		onTestFinished(() => tab.destroy())
++		onTestFinished(() => sibling.destroy())
++		const first = tab.show()
++		const second = sibling.show()
++		expect(await first).toBe(false)
++		expect(await second).toBe(true)
++		expect(events.calls).toEqual([
++			['hide.vn.tab', 'home-tab'],
++			['show.vn.tab', 'profile-tab'],
++			['hide.vn.tab', 'profile-tab'],
++			['show.vn.tab', 'contact-tab'],
++			['hidden.vn.tab', 'profile-tab'],
++			['shown.vn.tab', 'contact-tab'],
++		])
++		expect(Array.from(root.querySelector('#profile')?.classList ?? [])).toEqual([
++			'tab-pane',
++			'fade',
++		])
++		expect(Array.from(root.querySelector('#contact')?.classList ?? [])).toEqual([
++			'tab-pane',
++			'fade',
++			'active',
++			'show',
++		])
++	})
++})
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index 6cb3eb4..8faacd6 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -3,6 +3,7 @@ import {
+ 	BUTTON_EVENTS,
+ 	BUTTON_SELECTORS,
+ 	bindEventMap,
++	computeNeighbor,
+ 	emitEvent,
+ 	isButtonEvent,
+ 	isClassToken,
+@@ -591,3 +592,31 @@ describe('resolveVocabulary', () => {
+ 		})
+ 	})
+ })
++
++describe('computeNeighbor', () => {
++	it('returns the next or the previous member, wrapping past either end when wrap is true', () => {
++		const controls = ['home', 'profile', 'contact']
++		expect(computeNeighbor(controls, 'home', true, true)).toBe('profile')
++		expect(computeNeighbor(controls, 'profile', false, true)).toBe('home')
++		expect(computeNeighbor(controls, 'contact', true, true)).toBe('home')
++		expect(computeNeighbor(controls, 'home', false, true)).toBe('contact')
++	})
++
++	it('stays on the end member when wrap is false', () => {
++		const controls = ['home', 'profile', 'contact']
++		expect(computeNeighbor(controls, 'contact', true, false)).toBe('contact')
++		expect(computeNeighbor(controls, 'home', false, false)).toBe('home')
++		expect(computeNeighbor(controls, 'profile', true, false)).toBe('contact')
++	})
++
++	it('returns an end member for a current value outside the list, and undefined for an empty list', () => {
++		const controls = ['home', 'profile', 'contact']
++		expect(computeNeighbor(controls, 'settings', true, true)).toBe('home')
++		expect(computeNeighbor(controls, 'settings', false, true)).toBe('contact')
++		expect(computeNeighbor(controls, 'settings', false, false)).toBe('home')
++		expect(computeNeighbor(controls, 'settings', true, false)).toBe('home')
++		expect(computeNeighbor(['home'], 'home', true, true)).toBe('home')
++		expect(computeNeighbor([], 'home', true, true)).toBeUndefined()
++		expect(computeNeighbor([], 'home', false, false)).toBeUndefined()
++	})
++})
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index 785a012..3a8309d 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -34,8 +34,14 @@ describe('src browser entry', () => {
+ 			'Delegate',
+ 			'HostSnapshot',
+ 			'Registry',
++			'TAB_ATTRIBUTES',
++			'TAB_CLASSES',
++			'TAB_EVENTS',
++			'TAB_SELECTORS',
+ 			'TARGET_ATTRIBUTE',
++			'Tab',
+ 			'bindEventMap',
++			'computeNeighbor',
+ 			'emitEvent',
+ 			'isAttributeName',
+ 			'isButtonEvent',
+@@ -43,6 +49,7 @@ describe('src browser entry', () => {
+ 			'isCollapseEvent',
+ 			'isColorModeState',
+ 			'isSelector',
++			'isTabEvent',
+ 			'parseElement',
+ 			'readTag',
+ 			'readTarget',
+diff --git a/tests/src/browser/validators.test.ts b/tests/src/browser/validators.test.ts
+index 7403734..d08a8f7 100644
+--- a/tests/src/browser/validators.test.ts
++++ b/tests/src/browser/validators.test.ts
+@@ -5,6 +5,7 @@ import {
+ 	isCollapseEvent,
+ 	isColorModeState,
+ 	isSelector,
++	isTabEvent,
+ } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+ import { build } from '@orkestrel/test/browser'
+@@ -166,3 +167,60 @@ describe('isCollapseEvent', () => {
+ 		expect(isCollapseEvent(event)).toBe(false)
+ 	})
+ })
++
++describe('isTabEvent', () => {
++	it('requires a custom event whose detail carries an HTML element or nothing as its related target', () => {
++		const control = build('button')
++		expect(isTabEvent(new CustomEvent('show.vn.tab', { detail: { relatedTarget: control } }))).toBe(
++			true,
++		)
++		expect(
++			isTabEvent(new CustomEvent('shown.vn.tab', { detail: { relatedTarget: undefined } })),
++		).toBe(true)
++		expect(isTabEvent(new CustomEvent('hidden.vn.tab', { detail: {} }))).toBe(true)
++		expect(isTabEvent(new CustomEvent('show.vn.tab'))).toBe(false)
++		expect(isTabEvent(new CustomEvent('show.vn.tab', { detail: { relatedTarget: null } }))).toBe(
++			false,
++		)
++		expect(
++			isTabEvent(new CustomEvent('show.vn.tab', { detail: { relatedTarget: '#profile' } })),
++		).toBe(false)
++		expect(
++			isTabEvent(
++				new CustomEvent('show.vn.tab', {
++					detail: {
++						relatedTarget: document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
++					},
++				}),
++			),
++		).toBe(false)
++		expect(isTabEvent(new CustomEvent('show.vn.tab', { detail: 'profile' }))).toBe(false)
++		expect(isTabEvent(new Event('show.vn.tab'))).toBe(false)
++		expect(isTabEvent(undefined)).toBe(false)
++		expect(isTabEvent(null)).toBe(false)
++	})
++
++	it('returns false when a prototype or relatedTarget accessor throws', () => {
++		expect(
++			isTabEvent(
++				new Proxy(
++					{},
++					{
++						getPrototypeOf() {
++							throw new Error('Unreadable')
++						},
++					},
++				),
++			),
++		).toBe(false)
++		const event = new CustomEvent('show.vn.tab', {
++			detail: {
++				get relatedTarget() {
++					throw new Error('Unreadable')
++				},
++			},
++		})
++		expect(isTabEvent(event)).toBe(false)
++		expect(attempt(() => isTabEvent(event))).toEqual({ success: true, value: false })
++	})
++})

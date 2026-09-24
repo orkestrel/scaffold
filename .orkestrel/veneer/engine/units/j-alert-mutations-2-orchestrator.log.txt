@@ -1,0 +1,3 @@
+# The Orchestrator's re-run of the J-ALERT round-2 mutations (2026-09-24, Chromium 153.0.8010.12, the unit's whole-file instrument j-alert-mutations-2.py as retained; worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/alert)
+worktree: e24e2c3 Select the rows whose Proof cell is a dash in the setup proof, now that a plugin row names its proof file; selection: the whole list
+--- results (the instrument's stdout)

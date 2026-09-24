@@ -1,0 +1,27 @@
+diff --git a/guides/veneer.md b/tmp/j-carousel/veneer-methods.md
+index f450b9e..7ad8c86 100644
+--- a/guides/veneer.md
++++ b/tmp/j-carousel/veneer-methods.md
+@@ -395,14 +395,14 @@ The interface exposes the following lifecycle operations.
+ 
+ #### `CarouselInterface`
+ 
+-| Method     | Summary                                                                          |
+-| ---------- | -------------------------------------------------------------------------------- |
+-| `next`     | Slides to the following item.                                                    |
+-| `previous` | Slides to the preceding item.                                                    |
+-| `slide`    | Slides to the item at a position, waiting for a slide in flight to finish first. |
+-| `start`    | Starts or restarts cycling through the items at the configured interval.         |
+-| `pause`    | Pauses cycling until it is started again.                                        |
+-| `destroy`  | Releases hooks, stops cycling and swipes, and restores the carousel's classes.   |
++| Method     | Summary                                                                                                                     |
++| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
++| `next`     | Slides to the following item.                                                                                               |
++| `previous` | Slides to the preceding item.                                                                                               |
++| `slide`    | Slides to the item at a position, waiting for a slide in flight to finish first.                                            |
++| `start`    | Starts or restarts cycling through the items at the active item's interval or the configured interval.                      |
++| `pause`    | Pauses cycling until it is started again.                                                                                   |
++| `destroy`  | Releases hooks, stops cycling and swipes, abandons a slide in flight, and restores the items, the indicators, and the host. |
+ 
+ ## Examples
+ 

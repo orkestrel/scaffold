@@ -1,0 +1,70 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -120,7 +120,7 @@
+ | `TabAttributeMap`                         | interface | Names the attribute a tab reads; its default is Bootstrap's attribute name.                                                                            |
+ | `TabSelectorMap`                          | interface | Names the selectors a tab matches with; each default is Bootstrap's selector.                                                                          |
+ | `TabOptions`                              | interface | Configures a tab's markup vocabulary, hooks, and lifetime.                                                                                             |
+-| `TabInterface`                            | interface | Activates a tab control and its pane, and moves focus between sibling controls with the arrow keys.                                                    |
++| `TabInterface`                            | interface | Activates a tab control and its pane, deactivating the active sibling control and its pane.                                                            |
+ | `Tab`                                     | class     | Activates a tab control and its pane, deactivating the active sibling control and its pane.                                                            |
+ | `TAB_CLASSES`                             | const     | Names the class tokens a tab writes and tests by default, the tokens Bootstrap's cascade selects on.                                                   |
+ | `TAB_ATTRIBUTES`                          | const     | Names the attribute a tab control carries its pane selector in by default, Bootstrap's attribute name.                                                 |
+@@ -230,9 +230,9 @@
+ 
+ #### `DelegateInterface`
+ 
+-| Method    | Summary                                                        |
+-| --------- | -------------------------------------------------------------- |
+-| `destroy` | Releases the click listener and destroys every engine it owns. |
++| Method    | Summary                                                                 |
++| --------- | ----------------------------------------------------------------------- |
++| `destroy` | Releases the click and key listeners and destroys every engine it owns. |
+ 
+ #### `RegistryInterface`
+ 
+@@ -315,10 +315,10 @@
+ 
+ #### `TabInterface`
+ 
+-| Method    | Summary                                                                              |
+-| --------- | ------------------------------------------------------------------------------------ |
+-| `show`    | Activates the control and its pane and deactivates the active sibling.               |
+-| `destroy` | Releases hooks and the key listener and restores the control's roles and attributes. |
++| Method    | Summary                                                                                             |
++| --------- | --------------------------------------------------------------------------------------------------- |
++| `show`    | Activates the control and its pane and deactivates the active sibling.                              |
++| `destroy` | Releases hooks, abandons a swap in flight, and restores every role, state, and token the tab wrote. |
+ 
+ #### `ScrollSpyInterface`
+ 
+@@ -559,16 +559,17 @@
+ 
+ ### Delegation
+ 
+-The `Delegate` class is the engine's only data API. It listens for clicks on its root, the document
+-unless you pass another, and routes each click by the selectors it resolves for each entity it
+-serves. The `button` option carries the button's `classes` and `selectors` groups: a click inside a
++The `Delegate` class is the engine's only data API. It listens for clicks and keys on its root, the
++document unless you pass another, and routes each click by the selectors it resolves for each
++entity it serves. The `button` option carries the button's `classes` and `selectors` groups: a click inside a
+ host the resolved `trigger` selector matches drives that host's button, and each button the delegate
+ constructs receives the same groups. A replaced selector is not an alias, so the default selector
+ then routes nothing. The driven engine is the one the static `find` method of the `Button` class
+ returns, whoever constructed it, or an engine the delegate constructs and acquires when the host has
+ none; an engine you constructed keeps its own groups. The button route prevents the click's default
+ action, as Bootstrap's data API does. The `collapse` option carries the collapse's groups the same
+-way, and § Components states its route under Collapse. A click whose button host is one of the
++way, and § Components states its route under Collapse; the `tab` option carries the tab's groups,
++and § Components states its click and key routes under Tab. A click whose button host is one of the
+ panels its collapse trigger names inside the root is refused when neither engine exists there, as §
+ Components states under Collapse. A host under nested delegate roots is driven once per click for
+ each entity whose selector matches, by the first live delegate whose root contains it to reach it. A
+@@ -585,7 +586,7 @@
+ reaction sends, finds no owner, and the first live delegate whose root contains the host to reach it
+ acquires a fresh engine at once; that engine's snapshot takes the values the restoration has still
+ to write back. At each click and each delivery the delegate also drops every engine you destroyed
+-directly, and it stops observing when it owns none. Destruction removes the listener and the
++directly, and it stops observing when it owns none. Destruction removes the listeners and the
+ observer and restores every host the delegate still owns; an engine you constructed stays yours.
+ 
+ A trigger names the element it controls by its target attribute, `data-bs-target` by default, which

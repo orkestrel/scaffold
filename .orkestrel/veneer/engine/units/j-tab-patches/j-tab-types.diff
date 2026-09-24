@@ -1,0 +1,38 @@
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -137,7 +137,7 @@
+ /** Owns delegated activation and the engines it constructs. */
+ export interface DelegateInterface {
+ 	readonly root: ParentNode
+-	/** Releases the click listener and destroys every engine it owns. */
++	/** Releases the click and key listeners and destroys every engine it owns. */
+ 	destroy(): void
+ }
+ 
+@@ -969,7 +969,7 @@
+ 	readonly signal?: AbortSignal
+ }
+ 
+-/** Activates a tab control and its pane, and moves focus between sibling controls with the arrow keys. */
++/** Activates a tab control and its pane, deactivating the active sibling control and its pane. */
+ export interface TabInterface {
+ 	/** Carries the control. */
+ 	readonly host: HTMLElement
+@@ -980,7 +980,7 @@
+ 	/**
+ 	 * Activates the control and its pane and deactivates the active sibling.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the control was active, a listener prevented `show` or the sibling's `hide`, or the tab is destroyed.
++	 * @returns Resolves true after the `shown` event; false when the control was active, a listener prevented `show` or the sibling's `hide`, the tab is destroyed, or the control's or the pane's tokens read the change as taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const activated = await tab.show()
+@@ -988,7 +988,7 @@
+ 	 */
+ 	show(): Promise<boolean>
+ 	/**
+-	 * Releases hooks and the key listener and restores the control's roles and attributes.
++	 * Releases hooks, abandons a swap in flight, and restores every role, state, and token the tab wrote.
+ 	 *
+ 	 * @example
+ 	 * ```ts
