@@ -1,0 +1,36 @@
+# The Orchestrator's re-run of the J-HELPERS round-3 mutations (2026-09-24, Chromium 153.0.8010.12, the unit's whole-file instrument j-helpers-mutations-3.py as retained; worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/helpers)
+worktree: e8251cf Merge branch 'main' into unit/toast; selection: the direction is reversed in readSiblings readSiblings returns the farthest first readOutermost judges nesting by the last part of a selector list alone readOutermost excludes no nested match readOutermost judges nesting by :scope under a document root readOutermost excludes no nested match under a fragment root readScrollbarWidth drops the null-view guard readClosest applies the containment before the guard, to the starting element readClosest widens the guard to Element readClosest passes a rejected match to a farther ancestor the bounded readTarget returns an inside later match ScrollSpy reads a disabled attribute of false as disabled branch: the scrollspy parent is the farthest preceding one branch: the scrollspy reads no preceding parent
+--- results (the instrument's stdout)
+EXACT exit=1 | readSiblings returns the farthest first | tests/src/browser/helpers.test.ts | 1 failed of 57 | named: ['returns the matching siblings after or before the element, nearest first, leaving the element out'] | joined: []
+EXACT exit=1 | readOutermost judges nesting by the last part of a selector list alone | tests/src/browser/helpers.test.ts | 1 failed of 57 | named: ['nests a selector list as one selector, whichever part each match takes'] | joined: []
+JOINED exit=1 | readOutermost excludes no nested match | tests/src/browser/helpers.test.ts | 5 failed of 57 | named: ['returns the matches no other match inside the root holds, in document order'] | joined: ['nests a selector list as one selector, whichever part each match takes', 'lets a match that is not an HTML element nest the matches inside it, and leaves it out', 'judges nesting under a document root, where the document element nests the body', 'judges nesting under a fragment root']
+JOINED exit=1 | readOutermost judges nesting by :scope under a document root | tests/src/browser/helpers.test.ts | 2 failed of 57 | named: ['judges nesting under a document root, where the document element nests the body'] | joined: ['judges nesting under a fragment root']
+EXACT exit=1 | readOutermost excludes no nested match under a fragment root | tests/src/browser/helpers.test.ts | 1 failed of 57 | named: ['judges nesting under a fragment root'] | joined: []
+EXACT exit=1 | readScrollbarWidth drops the null-view guard | tests/src/browser/helpers.test.ts | 1 failed of 57 | named: ['returns 0 for a document with no view'] | joined: []
+EXACT exit=1 | readClosest applies the containment before the guard, to the starting element | tests/src/browser/helpers.test.ts | 1 failed of 57 | named: ['returns a match the root contains, the root itself included, and undefined for a match outside it'] | joined: []
+EXACT exit=1 | readClosest widens the guard to Element | tests/src/browser/helpers.test.ts | 1 failed of 57 | named: ['returns undefined when the closest match is not an HTML element, passing the search to no farther ancestor'] | joined: []
+EXACT exit=1 | readClosest passes a rejected match to a farther ancestor | tests/src/browser/helpers.test.ts | 1 failed of 57 | named: ['returns undefined when the closest match is not an HTML element, passing the search to no farther ancestor'] | joined: []
+EXACT exit=1 | the bounded readTarget returns an inside later match | tests/src/browser/helpers.test.ts | 1 failed of 57 | named: ['bounds the first match alone by a root, returning undefined for an outside first match with an inside later one'] | joined: []
+EXACT exit=1 | ScrollSpy reads a disabled attribute of false as disabled | tests/src/browser/ScrollSpy.test.ts | 1 failed of 27 | named: ['observes a link whose disabled attribute reads false'] | joined: []
+EXACT exit=1 | branch: the scrollspy parent is the farthest preceding one | tests/src/browser/ScrollSpy.test.ts | 1 failed of 27 | named: ['stops activating when a reaction to its parent write destroys it, dispatching nothing and restoring every link'] | joined: []
+JOINED exit=1 | branch: the scrollspy reads no preceding parent | tests/src/browser/ScrollSpy.test.ts | 3 failed of 27 | named: ['activates the links that lead to the active one, a nested list parent or a dropdown toggle, and clears them at the next activation'] | joined: ['writes, tests, reads, and matches only the replacing values when every group is replaced', 'stops activating when a reaction to its parent write destroys it, dispatching nothing and restoring every link']
+receipt: restored byte for byte
+--- the instrument's log rows for this run ()
+--- the Orchestrator's restore check
+every source restored byte for byte (the Orchestrator's digest)
+--- status after
+ M guides/veneer.md
+ M src/browser/Carousel.ts
+ M src/browser/Collapse.ts
+ M src/browser/Delegate.ts
+ M src/browser/Dropdown.ts
+ M src/browser/Modal.ts
+ M src/browser/ScrollLock.ts
+ M src/browser/ScrollSpy.ts
+ M src/browser/Tab.ts
+ M src/browser/helpers.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/Dropdown.test.ts
+ M tests/src/browser/ScrollSpy.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
