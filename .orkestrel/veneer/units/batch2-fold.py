@@ -1,10 +1,10 @@
 # batch2-fold.py: fold the second wave-2/3 landing batch into Veneer's ROADMAP.md — the landing commits in
 # the B-MODAL, B-UTILITIES, and B-CROSS rows, the B-CROSS units and re-baseline, and the findings the landed
 # units' verdicts routed to later units as rows of § Carriers — so the scaffold records of those units can be
-# pruned. A successor of batch1-fold.py for UTIL-PAINT, RESIDUE, and OFFCANVAS. Run from the Veneer checkout
-# root after batch1-fold.py, with the landing commits as arguments: up dr oc.
+# pruned. A successor of batch1-fold.py for UTIL-PAINT, UTIL-TEXT, UTIL-SPACING, RESIDUE, and OFFCANVAS. Run
+# from the Veneer checkout root after batch1-fold.py, with the landing commits as arguments: up ut usp dr oc.
 import pathlib, re, sys
-up, dr, oc = sys.argv[1:4]
+up, ut, usp, dr, oc = sys.argv[1:6]
 p = pathlib.Path('ROADMAP.md'); s = p.read_text()
 def once(old, new):
     global s
@@ -21,7 +21,13 @@ font = "and each prose round by `checker`"
 once(font, font + "; UTIL-PAINT landed as `%s` (the background, border, and rounded keys with the "
      "Background and Border regions, the swatch helper, and the whole-order Tailwind profiles proof; three "
      "rounds on `opus`, the first audited by `analyst` on Astra, `reviewer` on Opus 5.5, and `checker`, the "
-     "second by `analyst` on Astra and `checker`, the third, a prose round, by `checker`)" % up)
+     "second by `analyst` on Astra and `checker`, the third, a prose round, by `checker`); UTIL-TEXT landed "
+     "as `%s` (the text, color, and link keys with the Text and Color regions, the color-and-background pairs "
+     "in a partial of their own ahead of the colored-link helper, and the helper moved to the utilities "
+     "layer); UTIL-SPACING landed as `%s` (the margin, padding, user-select, and pointer-events keys with the "
+     "Spacing and Interaction regions); each of those two over a first round audited by `analyst` on Astra, "
+     "`reviewer` on Opus 5.5, and `checker` and a fix round audited by `analyst` on Astra and `checker`, "
+     "accepted with its round record's defects on the record" % (up, ut, usp))
 # The B-CROSS row: its units per the design verdict, the re-baseline, and RESIDUE's landing.
 row = re.search(r'^\| B-CROSS +\| `opus` on Opus 5\.5 +\|', s, re.M)
 assert row, 'B-CROSS row'
