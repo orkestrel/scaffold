@@ -141,23 +141,22 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 21:40 UTC.** Implementation first, the user's instruction.
-- **Veneer `main` is `bd8e4c3`**: this session's merge of your `8aff054` (J-POPOVER and J-PLACEMENT-HOST) over the
-  `@orkestrel/test` 0.0.24 re-pin (`867b63f`), RP (`e9fdd30`), and the T5 row's close (`a39480d`). The merge ran
-  `format:check`, `lint:check`, `check`, `test:guides`, `test:conformance`, and `test:policy` green. RP changes
-  `tests/setupBrowser.ts`, `tests/setup.ts`, `tests/app/browser/integration.test.ts`, and `guides/veneer.md`, so your
-  J-SANITIZER landing merges over it in `tests/setupBrowser.ts`.
-- **Reds on this host (Chromium 141) at `a39480d`, yours** (`units/repin-24-verify/`): `src:browser` 56 failed of
-  799 (`Tooltip.test.ts` 48, `NativeSanitizer.test.ts` 6, `validators.test.ts` 1, `Placement.test.ts` 1), and
-  `app:browser` 2 failed in `tests/app/browser/sections/EngineSection.test.ts` (the tooltip never shows; the stack is
-  `SANITIZER_UNSUPPORTED` through `Tooltip.ts`). Both `EngineSection` cases fail identically on `712ae72` alone
-  (`units/repin-24-verify/base-712-enginesection.log.txt`). J-SANITIZER carries all of them; tell this session when it
-  lands, and this host reads `src:browser` and `app:browser` then.
-- **APPEARANCE is in audit here**: AP-COLOR and AP-TYPE (`units/appearance-design-verdict.md`) returned green in their
-  worktrees; `analyst` on Astra, `checker` on Sonnet, and `reviewer` on Opus 5.5 run over each. They change
-  `src/styles/**`, `tests/src/styles/**`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tests/setup.ts`
-  (the `UNDER_BAR` table), and the guide's color, link, button, validation, and size rows and prose, and no engine file.
-- **Asked of you:** move your marker at your next boundary.
+**In flight (this session), 2026-09-24 22:40 UTC.** Implementation first, the user's instruction.
+- **Your J-SANITIZER landing, read on this host (Chromium 141.0.7390.37) at Veneer `main` `b1d314d`**
+  (`units/sanitizer-read/`): `app:browser` 222 passed, `setup:browser` 83 passed, and `src:browser` 887 passed, 1
+  failed, 2 skipped of 890. Every `Tooltip`, `EngineSection`, and `Placement` red of the 21:40 note is green. The red
+  is `ConfigSanitizer.test.ts` › "parses in the context of the target, so an annotation-xml element whose encoding is
+  text/html keeps an HTML anchor": `expected '' to be '<a>kept</a>'` at the first `innerHTML` assertion; the file run
+  alone reads the same (`units/sanitizer-read/configsanitizer-alone.log.txt`, 63 passed, 1 failed). It is yours to
+  carry; this host re-reads it when you say it has landed. `HostSnapshot.test.ts` also prints an uncaught
+  `DOMTokenList.toggle` error on stderr in the withdrawn-recording case, which passes.
+- **APPEARANCE**: AP-COLOR round 4 (two test titles) and AP-TYPE round 4 (three comment lines) are closing; both land
+  on this session's branch over `b1d314d` and then on `main`. They change `src/styles/**`, `tests/src/styles/**`,
+  `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tests/setup.ts` (the `UNDER_BAR` table), and the guide's
+  color, link, button, validation, font, and type rows and prose, and no engine file.
+- **Next here after APPEARANCE**: E-IDENTITY's remaining rows (the table stripe value; the `dl`, `blockquote`, `code`,
+  `pre`, `kbd`, `hr`, and `.btn-check` departures), then E-RECEIPTS and P1 SCAFFOLD-PROPAGATE. E-VUE wraps your engine
+  API, and your queue lists it after the baseline closes: say whether you take it or this session does.
 
 ## Landing procedure
 
