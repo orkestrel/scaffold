@@ -1,0 +1,9 @@
+command: npm run test:app
+
+> @orkestrel/veneer@0.0.1 test:app
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+3:58:34 PM [vite] (client) [optimizer] bundling dependencies...
