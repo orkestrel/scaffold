@@ -1,30 +1,35 @@
-# Unit UTIL-EFFECT (`ue`) — shadow, opacity, and the focus ring
+# Unit UTIL-SPACING (`usp`) — margin, padding, pointer events, and user select
 
 ## Role and engine
 
-`opus` on Opus 5 (the alias serves `claude-opus-5`), reached as a native Claude subagent in the
-worktree `/home/user/veneer-ue` (branch `unit/ue` from `BASE_SHA`, the commit on which UTIL-SPACER
-has landed). The executor that opens this brief is that subagent.
+`opus` on Opus 5.5, reached as a native Claude subagent in the
+worktree `/home/user/veneer-usp` (branch `unit/usp` from `2a3f223`, Veneer `main`, on which UTIL-SPACER, UTIL-DISPLAY, and
+UTIL-PLACEMENT have landed). The executor that opens this brief is that subagent.
 
 ## Objective
 
-The keys `shadow`, `opacity`, `focus-ring` (the map entry's `--bs-focus-ring-color` per role and the helper rule) ship in the cascade through the `utility` and `utility-variable` mixins, in the
-showcase as the regions `app/browser/sections/ShadowSection.ts` (region `Shadow`), `app/browser/sections/OpacitySection.ts` (region `Opacity`), `app/browser/sections/FocusRingSection.ts` (region `Focus ring`), in the mirrored proofs, the capture registry, the ledger,
+The keys `m`, `mx`, `my`, `mt`, `me`, `mb`, `ms`, `p`, `px`, `py`, `pt`, `pe` (padding-end and `pointer-events` together, R1), `pb`, `ps`, `user-select` ship in the cascade through the `utility` and `utility-variable` mixins, in the
+showcase as the regions `app/browser/sections/SpacingSection.ts` (region `Spacing`), `app/browser/sections/InteractionSection.ts` (region `Interaction`), in the mirrored proofs, the capture registry, the ledger,
 and the guide, with every shared name measured against Tailwind's longhands.
 
 ## Context
 
-**Evidence.** Terrain § A rows `shadow` (four values through `--bs-box-shadow*`), `opacity` (five steps,
-literal, R2), `focus-ring` (`css-var` `focus-ring-color` over the eight roles), and § B
-`focus-ring` (`.focus-ring:focus`: `outline: 0` and the `--bs-focus-ring-*` box shadow); R16 adds
-`forced-ring` to `.focus-ring:focus` as an `### Additions` row (the D37 and `.page-link`
-precedent; `grep -n "forced-ring" src/styles/components/_pagination.scss`); the pinned inventory
-records `focus-ring` under the `focus-ring` and `theme` keys. The shared set contains `opacity-*`
-and `shadow`, `shadow-sm`, `shadow-lg`, `shadow-none` (Tailwind's shadow rules declare `--tw-shadow`,
-which keeps the shadow names on the line if the reader counts custom properties: the unit
-measures). Partials: `src/styles/utilities/_shadow.scss`, `src/styles/utilities/_opacity.scss`, `src/styles/components/_focus-ring.scss`.
+**Evidence.** The wave-3 terrain `/home/user/scaffold/.orkestrel/veneer/units/b-utilities-w3-terrain-report.md` (measured at `2a3f223`) records which facts in this brief
+moved or went false (§ 1), the pattern UTIL-DISPLAY and UTIL-PLACEMENT shipped (§ 2), the collision
+map with each unit's barrel slot (§ 3), and the files each unit makes false (§ 4). Where the terrain
+and this brief disagree, the terrain's reading of the tree wins, and the tree wins over both. Terrain § A rows `margin*`, `padding*`, `user-select`, `pointer-events` (the stems `m`, `mx`,
+`my`, `mt`, `me`, `mb`, `ms`, `p`, `px`, `py`, `pt`, `pe`, `pb`, `ps`; `$spacers` six steps and
+`auto` on margin; no negative margin ships, R9); R2 binds the steps to `--vn-space-2`, `-4`, `-8`,
+`-12`, `-24` (density-scaled) with `0` and `auto` as recorded; the pinned inventory's `pe` key
+carries `.pe-none` and `.pe-auto` with the padding-end rules (the design brief's reading); the
+shared set contains `m`, `mt`, `mb`, `p`, `pt`, `pb` at every step (physical properties, expected
+off the line) and `mx`, `my`, `ms`, `me`, `px`, `py`, `ps`, `pe` (Tailwind declares logical
+properties, expected on the line): the unit measures each. Partials: `src/styles/utilities/_spacing.scss`, `src/styles/utilities/_interaction.scss`.
 
-**Law.** `AGENTS.md`; `.claude/rules/{styles,tests,browser,names,documentation,writing,architecture}.md`;
+**Law.** `AGENTS.md` in the worktree;
+`/home/user/scaffold/.claude/rules/{styles,tests,browser,names,documentation,writing,architecture,typescript}.md`
+(the Veneer checkout carries no `.claude/rules/` directory, so read the rule files from the scaffold
+checkout);
 the skill: none; the guide `guides/veneer.md`; the family record
 `/home/user/scaffold/.orkestrel/veneer/units/b-utilities-family.md` (rulings 1 to 15, the shared
 and off-limits files, the gates, the host facts) and the design verdict
@@ -39,18 +44,20 @@ preference), `readStyle`, `readPixels`, `visitBreakpoint`, `pressKeys`, `travers
 the entry before writing a helper) and `@orkestrel/contract`. A helper, guard, wait, recorder, or
 deferred whose job an installed export does is a defect; the checker probes the diff for a new
 exported symbol against those entries. The `utility` and `utility-variable` mixins in
-`src/styles/_mixins.scss` (landed by UTIL-SPACER at `BASE_SHA`; read their doc blocks and the cases
+`src/styles/_mixins.scss` (landed by UTIL-SPACER at `2a3f223`; read their doc blocks and the cases
 in `tests/src/styles/mixins.test.ts` first) write every entry; no partial writes `!important` by
 hand (family ruling 2).
 
-**Host.** Linux, `bash`; the worktree `/home/user/veneer-ue` (branch `unit/ue` from `BASE_SHA`);
+**Host.** Linux, `bash`; the worktree `/home/user/veneer-usp` (branch `unit/usp` from `2a3f223`);
 npm 11 on `PATH` through
 `export PATH="/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/npm11/node_modules/.bin:$PATH"`
-(run it first in every shell); network reachable; Chromium installed; no sandbox; the service
+(run it first in every shell); no network needed; `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`, Chromium 141
+(`chromium-1194`); no sandbox; the service
 proofs drive the installed Tailwind compiler (`npm run build:src:styles && npm run test:service`).
 
-**Measurements.** Taken by the staging script at `BASE_SHA` (`npm ci --ignore-scripts` and
-`npm run build:src` exit 0; the log sits beside this brief as `ue-stage.log.txt`). The unit runs
+**Measurements.** Taken by the staging script `units/b-utilities-w3-stage.sh` at `2a3f223`
+(`npm run build:src` and `npm run test:conformance` exit 0 in this worktree; the logs are
+`tmp/units/usp-stage-build.log.txt` and `tmp/units/usp-stage-conformance.log.txt`). The unit runs
 `npm run test:conformance` and `npm run test:service` first and records the exits and case counts as
 the baseline; a red reading at the baseline is a standing condition to report, never to repair.
 
@@ -62,7 +69,16 @@ restored by `scaffold repair`: never edit them; the policy sweep reads every com
 authored Markdown file for the banned terms and enforces the mirror law (a
 `tests/src/styles/utilities/<stem>.test.ts` mirrors `src/styles/utilities/_<stem>.scss`, and a
 `tests/src/styles/components/<stem>.test.ts` mirrors `src/styles/components/_<stem>.scss`).
-`git status --porcelain` is empty at `BASE_SHA`. The sibling UTIL wave units run in their own
+`git status --porcelain` is empty at `2a3f223`. The worktree's `node_modules` is a hard-linked copy
+of the checkout's with the Vite and Vitest caches removed: never edit a file under `node_modules`.
+`tests/config.test.ts` is vendored too. Read every gate that needs a shared file (`check`, the
+section proofs, the built cascade, the style proofs, conformance, the service proofs) on a validation
+copy you build under `tmp/probe/base/` (`git archive 2a3f223 | tar -x -C tmp/probe/base`,
+`cp -al node_modules tmp/probe/base/node_modules`, your owned files copied over it, your shared
+patches applied), record them as the copy's readings, and delete `tmp/probe/` before the report.
+`git worktree` is forbidden. The B-MODAL wave-2 units (MODAL, OFFCANVAS, TIP, and TOAST in
+`/home/user/veneer-md`, `-oc`, `-tp`, and `-to`) run beside this wave from the same base: their
+files are off-limits, and every shared file they patch stays as the base has it in your patch. The sibling UTIL wave units run in their own
 worktrees on disjoint files; every shared file is report-only for every one of them; the
 exclusion line and its copies integrate as a set union (family ruling 7).
 
@@ -76,8 +92,8 @@ exclusion line and its copies integrate as a set union (family ruling 7).
 
 ## Scope
 
-**Owned.** `src/styles/utilities/_shadow.scss`, `src/styles/utilities/_opacity.scss`, `src/styles/components/_focus-ring.scss`; their mirrored proofs under `tests/src/styles/utilities/` and
-`tests/src/styles/components/`; `app/browser/sections/ShadowSection.ts` (region `Shadow`), `app/browser/sections/OpacitySection.ts` (region `Opacity`), `app/browser/sections/FocusRingSection.ts` (region `Focus ring`) and their section proofs under
+**Owned.** `src/styles/utilities/_spacing.scss`, `src/styles/utilities/_interaction.scss`; their mirrored proofs under `tests/src/styles/utilities/` and
+`tests/src/styles/components/`; `app/browser/sections/SpacingSection.ts` (region `Spacing`), `app/browser/sections/InteractionSection.ts` (region `Interaction`) and their section proofs under
 `tests/app/browser/sections/`.
 
 **Shared (report-only).** `src/styles/index.scss` (the `@use` lines at the release's map
@@ -87,14 +103,14 @@ owns the file), `tests/setup.ts` and `tests/setup.test.ts` (the `CaptureSubject`
 resting and driven rows appended at the end), `tests/setupStyles.ts` and `tests/setupStyles.test.ts`
 (any case table), `tests/conformance.test.ts` (the `listed` literal and the order case's expected
 list), `tests/setupServer.test.ts` (the compatibility component set), `app/browser/constants.ts`
-(`<KEY>_COPY`, `<KEY>_SPECIMENS`), `app/browser/Showcase.ts` and `app/browser/index.ts` (the
-sections, constructed after every component region in barrel order), `tests/app/browser/Showcase.test.ts`
+(`<KEY>_COPY`, `<KEY>_SPECIMENS`), `app/browser/Showcase.ts` and `app/browser/index.ts` (the sections,
+constructed after `VisibilitySection` and before `NavbarSection`, in the family's barrel order), `tests/app/browser/Showcase.test.ts`
 and `tests/app/browser/index.test.ts`, `tests/app/browser/integration.test.ts` (the driven frames),
 `tests/setup.css`, `tests/fixtures/tailwind/consumer.css`, `tests/fixtures/tailwind/preflight.css`,
 `tests/fixtures/tailwind/markup.html` (the unit's shared names appended; the line names returned
 for the union), `guides/veneer.md` (the `### <Page> utilities` section, the `### Files` rows, the
 compatibility rows, the `#### <key>` tables, the `### Additions` rows, the § Tests links, ruling
-11), `ROADMAP.md`. For each, the unit returns an exact patch (a unified diff against `BASE_SHA`, or
+11), `ROADMAP.md`. For each, the unit returns an exact patch (a unified diff against `2a3f223`, or
 the appended rows verbatim with the anchor line they follow) in its report and edits nothing there.
 
 **Off-limits.** Every other UTIL unit's partials, proofs, and sections; `tests/setupPolicy.ts`,
@@ -119,7 +135,7 @@ runtime probe lives under `tmp/probe/` and is deleted before the report.
 
 ## Output
 
-A report at `/home/user/veneer-ue/tmp/units/ue-report.md` with: the coverage matrix (every
+A report at `/home/user/veneer-usp/tmp/units/usp-report.md` with: the coverage matrix (every
 inventory selector and condition of the unit's keys → proof case, distinguishing mutation,
 specimen, capture scenario), the shared-name table (each shared name the unit ships against its
 measured exclusion-line status and the longhands Tailwind declares for it), the precedence cases
@@ -139,11 +155,14 @@ paragraph order, a case title, and the position of a row inside its table.
 
 ## Acceptance criteria
 
+Read criteria 2 to 7 on the validation copy the standing conditions describe.
+
 1. `npm run format:check` and `npm run lint:check` exit 0 in the worktree.
 2. `npm run check` exits 0.
 3. `npm run build:src` exits 0, and the built cascade carries every selector the inventory records under the unit's keys with `!important` on each property declaration and none on a custom property, and no other selector under those keys (the report lists the inventory's count beside the cascade's).
-4. `npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot <every owned proof>` exits 0, and each case distinguishes its named mutation: `.shadow` following `--vn-factor-elevation` (mutation: a literal); each opacity step at the empty infix; `readRing` reading the default ring colour and each role colour under a driven focus (mutation: the `css-var` written important, or a role omitted); `stageMedia({ forced: true })` reading the outline (mutation: `forced-ring` omitted); the priority over an unlayered rule and the escape.
-5. The section proofs exit 0 under the config the sibling section proofs use, with the specimens: Shadow region: `Shadows`. Opacity region: `Opacity steps`. Focus ring region: `Focus ring`, `Focus ring roles` (driven focus scenarios).
+4. `npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot <every owned proof>` exits 0, and each case distinguishes its named mutation: every side, step, and boundary through `GRID_BREAKPOINT_CASES` and a side table (mutation: a wrong step map, a swapped side); `.m-md-3.mx-sm-1` at 768 reading a 16px `margin-left` (mutation: the breakpoint loop run per entry); `.p-3.px-1` reading the `px` value (mutation: `padding-x` emitted before `padding`); a `--vn-space-*` retune moving every side and density moving it (mutation: a literal); no `.m-n1` rule (the scope control); `.pe-none` letting `elementFromPoint` reach the element beneath (mutation: `pointer-events: auto`); the selection values; the priority over an unlayered rule and the escape.
+5. `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser <every owned
+   section proof>` exits 0, with the specimens: Spacing region: `Margin steps`, `Padding steps`, `Side margins`, `Side padding`, `Auto margins`, `Responsive spacing`. Interaction region: `Text selection`, `Pointer events`.
 6. `npm run test:conformance` reads green over the built cascade with the unit's ledger rows applied through its patch in a scratch copy, or the unit reports the exact gap the integrator must close (the ledger rows are a shared patch; the unit proves them by applying them to a copy of the guide under `tmp/probe/` and running the conformance project against it).
 7. `npm run build:src:styles && npm run test:service` exits 0 with the unit's shared names on or off the exclusion line as measured, the consumer proof reading each name resolving to the cascade's declaration, and the negative control (a shipped important shared name written onto the line, or its `!important` dropped) red, recorded.
 8. The report carries the matrix, the shared-name table, the precedence cases, the ledger rows, the section text, and every shared-file patch.
@@ -152,6 +171,6 @@ paragraph order, a case title, and the position of a row inside its table.
 
 ## Review evidence
 
-`git -C /home/user/veneer-ue diff BASE_SHA` and `git -C /home/user/veneer-ue status --porcelain`,
-captured by the Orchestrator at hand-back as `ue.diff` and `ue-status.txt`, plus the report and
+`git -C /home/user/veneer-usp diff 2a3f223` and `git -C /home/user/veneer-usp status --porcelain`,
+captured by the Orchestrator at hand-back as `usp.diff` and `usp-status.txt`, plus the report and
 the regenerated frames of the Orchestrator's capture run.

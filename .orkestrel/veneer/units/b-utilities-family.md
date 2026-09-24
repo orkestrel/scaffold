@@ -63,7 +63,8 @@ section proof `tests/app/browser/sections/<Name>Section.test.ts` exist per parti
    as a set union; the consumer proof reads each name resolving to the cascade's declaration.
 8. **The showcase (R12).** A region per mechanism named for the release's documentation page, one
    `SpecimenSection` subclass per region fed by `<KEY>_COPY` and `<KEY>_SPECIMENS`, constructed
-   after every component region in barrel order; a specimen shows a ramp, a responsive behaviour,
+   after `VisibilitySection` and before `NavbarSection` in barrel order (re-baselined 2026-09-24
+   against `2a3f223`, where NAVBAR landed its component region after the utility regions); a specimen shows a ramp, a responsive behaviour,
    or a driven state and composes only classes shipped at the launch commit plus its own; a hidden
    or viewport subject takes visible context; `.vw-100`, `.fixed-*`, and `.sticky-*` render inside a
    shell `.viewport` frame that paints nothing (UTIL-PLACEMENT owns it).
