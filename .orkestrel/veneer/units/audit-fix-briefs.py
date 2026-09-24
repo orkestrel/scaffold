@@ -112,6 +112,12 @@ UNITS = {
         checker='claims 2, 4, and 5',
         lanes='the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, by the user\'s instruction to put implementation first, because the round\'s subjective findings (the names and the titles) take the lanes\' own wording',
         bench='the bench round-tripped at 15:15 (ff-audit-3 launched)'),
+    'lc3': dict(name='LABEL', worktree='/home/user/veneer-lc2', base='7852481', key='lc',
+        evidence='`lc-3.diff` and `lc-3-status.txt` (rounds 2 and 3 against `7852481`), `b-label-lc-report-3.md`, `b-label-lc-brief-3.md`, `lc-instruments/` (the `lc3-*` logs and instruments and `lc-mutations-3.log.txt`), round 2\'s `lc-2.diff` and `b-label-lc-report-2.md`, and the round-2 verdict `lc-audit-2-verdict.md` and its lane verdicts',
+        focus='claims 1, 2, and 3 (the fixture against S1, the state fills against S2, and the byte comparison)',
+        checker='claims 4 and 5',
+        lanes='the subjective lane (`reviewer` on Opus 5.5) and the checker (Sonnet) run blind beside you',
+        bench='the bench round-tripped at 15:26 (pl-audit-2 returned exit 0)'),
 }
 N = sys.argv[1]
 for arg in sys.argv[2:]:

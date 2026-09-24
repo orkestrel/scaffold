@@ -1,0 +1,19 @@
+# command: npm run build:src:styles (worktree /home/user/veneer-lc2, HEAD 7852481 with round 2 uncommitted)
+ M guides/veneer.md
+ M src/styles/_mixins.scss
+ M src/styles/_tokens.scss
+ M src/styles/components/_button.scss
+ M src/styles/components/_validation.scss
+ M src/styles/utilities/_color-bg.scss
+ M src/styles/utilities/_link.scss
+ M tests/setup.ts
+ M tests/setupStyles.test.ts
+ M tests/setupStyles.ts
+ M tests/src/styles/components/button.test.ts
+ M tests/src/styles/fixtures/contrast.scss
+ M tests/src/styles/utilities/link.test.ts
+
+✓ built in 2.42s
+# exit 0
+0be55f660338d520f820f878e350667883f7163349ee1c57bd1ed694afde5149  tmp/units/lc3-round2-index.css
+0be55f660338d520f820f878e350667883f7163349ee1c57bd1ed694afde5149  tmp/units/lc2-round1-index.css
