@@ -1,4 +1,0 @@
-51a8fa0 Merge remote-tracking branch 'origin/main' into claude/inspiring-allen-t4qzv1
-9b3b178 Fold the TOGGLES landing into the roadmap
-f538d48 Close the round-5 to round-8 audits on the engine contracts: derived composites, one-home tokens, key language
-a7d1441 Reshape the engine contracts to Veneer's own vocabulary, wire names, and sanitizer port

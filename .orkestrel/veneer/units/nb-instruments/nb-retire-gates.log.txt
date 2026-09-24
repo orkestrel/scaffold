@@ -1,8 +1,0 @@
-format-check | exit 0 | All matched files use the correct format. | npx oxfmt --config .oxfmtrc.json --check src/styles/_tokens.scss src/styles/_theme.scss tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/theme.test.ts
-lint-check | exit 0 |  | npm run lint:check
-check | exit 0 |  | npm run check
-build-src | exit 0 | ✓ built in 1.34s | npm run build:src
-setupstyles-setup-project | exit 0 |       Tests  112 passed (112) | npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
-styles-retired | exit 0 |       Tests  102 passed (102) | npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/navbar.test.ts tests/src/styles/theme.test.ts tests/src/styles/tokens.test.ts tests/src/styles/components/container.test.ts
-test-conformance | exit 0 |       Tests  22 passed (22) | npm run test:conformance
-done

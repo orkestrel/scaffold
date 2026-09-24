@@ -1,7 +1,0 @@
-# T4 TEST-CLIP audit round 4: claims
-
-Subject: the round-4 fix `11054f2` over `7104241` in `/home/user/test` (`t4-4.diff`, `t4-r4-brief.md`), and the Orchestrator's settlement of round 3's open claims.
-
-1. **The clip-edge prose.** In `guides/test.md`, the § Capture paragraph and the closing sentences of the "Measure a document's content edge" pattern state that a `hidden`, `auto`, or `scroll` overflow clips at the padding box whatever the `overflow-clip-margin` value selects, and that the `clip` keyword and a paint containment over a `visible` overflow clip at the box that value selects, the padding box by default, expanded by the length the `readClipMargin` helper reads. Both match the `readClipEdge` function in `src/browser/helpers.ts`, and no other sentence in the guide states the clip edge otherwise.
-2. **Law and scope.** The delta touches `guides/test.md` alone. Every code token in the edited sentences is followed by a noun, and no edited sentence carries a banned term or a count. `npx oxfmt --check guides/test.md`, `npm run format:check`, and `npm run test:guides` exit 0 in `t4-r4-gates.log.txt`.
-3. **Round 3's open claims.** `t4-audit-3-gates.log.txt` records `format:check`, `lint:check`, `check`, `build`, and `test` exiting 0 at `7104241` on a clean tree. `t4-audit-3-mutations.log.txt` records each mutation in `t4-r3-instruments/mutate.py` reddening at least one case its assertions name, and the checkout pristine afterwards. `t4-r4-report.diff` removes the temporal and counting tokens from `t4-r3-report.md` and changes no measurement.
