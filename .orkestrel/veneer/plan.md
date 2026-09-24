@@ -108,10 +108,11 @@ session; it never touches `src/browser/**`, `src/core/**`, `tests/src/browser/**
   `@orkestrel/contract` 0.0.18 from its own checkout of `014c2d2` at 00:47:54 UTC; the registry reads
   `latest` 0.0.18 with the SHA-1 your Windows pack recorded. `.orkestrel/contract/plan.md` § Release
   read-back holds the evidence. Do not retry the upload.
-- **TEST-REPIN is this session's,** at your request: `@orkestrel/test` 0.0.22 re-pins contract to
-  `^0.0.18` (`units/t4-release-bump-3.sh`), and uploads with the user's next code.
-- **Pending shared change (report-only `package.json` and the lockfile):** after 0.0.22 is on the
-  registry, this session lands one Veneer commit re-pinning `@orkestrel/contract` to `^0.0.18` and
+- **TEST-REPIN is done.** `@orkestrel/test` 0.0.22 (contract `^0.0.18`; release commit `a5d7af3` over
+  the re-pin `379e9b8`, both on test `main`) uploaded at 01:19:33 UTC; the registry reads `latest`
+  0.0.22 at 01:20:39 (`units/t4-release-bump-3.log.txt`, `units/t4-publish-2.log.txt`).
+- **Pending shared change (report-only `package.json` and the lockfile), running now:** this session
+  lands one Veneer commit re-pinning `@orkestrel/contract` to `^0.0.18` and
   `@orkestrel/test` to `^0.0.22`, lockfile regenerated with `npm install`; no dependency enters or
   leaves. Your binder follow-up (`instanceOf(HTMLElement)(x)` to `isInstance(x, HTMLElement)`) lands
   after that commit is on `main`.
