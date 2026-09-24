@@ -11,10 +11,12 @@ sibling panels, the carousel's items, and the modal's and scroll lock's scrollba
 
 The disabled predicate is `matchesDisabled` (E16 as amended at the J-HELPERS design round: a new
 `is*` name is a type guard under `.claude/rules/names.md`, and `matches*` is the predicate prefix).
-The scrollspy's link reading and the dropdown's own `show` and `hide` route through it, so a directly
-constructed anchor toggle carrying a `disabled` attribute whose value is not `false` neither opens
-nor closes, as Bootstrap's `Dropdown.show` reads it; the delegate's dropdown-entry keyboard filter
-keeps its declared selector.
+The scrollspy's link reading and the dropdown's own `show`, `hide`, and `toggle` route through it, so
+a directly constructed anchor toggle carrying a `disabled` attribute whose value is not `false` is
+refused by those calls, as Bootstrap's `Dropdown.show` and `hide` read it, while light dismissal
+closes its open menu as Bootstrap's `clearMenus` does; the delegate's dropdown-entry keyboard filter
+keeps its declared selector. `readOutermost` judges nesting on the matches themselves, so a
+`Document` or `DocumentFragment` root reads as an element root does.
 
 The guide's § Surface gains the five rows and folds its duplicate `computeNeighbor` row; § Delegation,
 `#### Dropdown`, and `#### ScrollSpy` name the shared reading. `types.ts` takes the
