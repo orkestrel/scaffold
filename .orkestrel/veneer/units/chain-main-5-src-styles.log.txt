@@ -1,0 +1,22 @@
+command: npm run test:src:styles
+
+> @orkestrel/veneer@0.0.1 test:src:styles
+> npm run build:src:styles && vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot
+
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  283.21 kB │ gzip: 33.80 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.73s
+
+ RUN  v4.1.11 /home/user/veneer
+
+3:55:54 PM [vite] (client) [optimizer] bundling dependencies...
