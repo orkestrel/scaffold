@@ -1,0 +1,76 @@
+
+## T-a: pairs moved into the top-level components layer
+sites: src/styles/utilities/_color-bg.scss
+layer reading: exit 0: the .text-bg-primary rule sits in the layer: components
+build: npm run build:src:styles exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/color-bg.test.ts tests/src/styles/utilities/color.test.ts
+exit: 1
+summary: Tests  3 failed | 8 passed (11) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+failing:
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:42:2 > color-and-background pairs > lets a text color and a later background utility on the same element win over a pair, as the release does
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:64:2 > color-and-background pairs > yields its foreground to a colored link on the same element, as the release does
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:132:2 > color utilities > yields to an important override inside the utilities layer and to no unlayered one
+
+## T-d: pairs loaded after the colored-link helper
+sites: src/styles/index.scss
+layer reading: exit 0: the .text-bg-primary rule sits in the layer: utilities
+build: npm run build:src:styles exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/color-bg.test.ts
+exit: 1
+summary: Tests  1 failed | 3 passed (4) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+failing:
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:64:2 > color-and-background pairs > yields its foreground to a colored link on the same element, as the release does
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+exit: 1
+summary: Tests  1 failed | 21 passed (22) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+failing:
+  FAIL  |conformance| tests/conformance.test.ts > Bootstrap source order > loads the passive block and the helpers in the release order, after every forms partial, each important helper ahead of the utilities
+
+## moved pair case: foreground swapped, info reads white
+sites: src/styles/utilities/_color-bg.scss
+layer reading: exit 0: the .text-bg-primary rule sits in the layer: utilities
+build: npm run build:src:styles exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/color-bg.test.ts
+exit: 1
+summary: Tests  2 failed | 2 passed (4) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+failing:
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:13:2 > color-and-background pairs > paints each color-and-background pair as the release records it in light mode, at the opacity the scope sets
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:13:2 > color-and-background pairs > paints each color-and-background pair as the release records it in dark mode, at the opacity the scope sets
+
+## moved pair case: background swapped, every pair reads the primary channels
+sites: src/styles/utilities/_color-bg.scss
+layer reading: exit 0: the .text-bg-primary rule sits in the layer: utilities
+build: npm run build:src:styles exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/color-bg.test.ts
+exit: 1
+summary: Tests  3 failed | 1 passed (4) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+failing:
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:13:2 > color-and-background pairs > paints each color-and-background pair as the release records it in light mode, at the opacity the scope sets
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:13:2 > color-and-background pairs > paints each color-and-background pair as the release records it in dark mode, at the opacity the scope sets
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:42:2 > color-and-background pairs > lets a text color and a later background utility on the same element win over a pair, as the release does
+
+## moved pair case: opacity fallback dropped
+sites: src/styles/utilities/_color-bg.scss
+layer reading: exit 0: the .text-bg-primary rule sits in the layer: utilities
+build: npm run build:src:styles exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/color-bg.test.ts
+exit: 1
+summary: Tests  4 failed (4) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+failing:
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:13:2 > color-and-background pairs > paints each color-and-background pair as the release records it in light mode, at the opacity the scope sets
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:13:2 > color-and-background pairs > paints each color-and-background pair as the release records it in dark mode, at the opacity the scope sets
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:42:2 > color-and-background pairs > lets a text color and a later background utility on the same element win over a pair, as the release does
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:64:2 > color-and-background pairs > yields its foreground to a colored link on the same element, as the release does
+
+## T-e: text-dark specimen off the light pair
+sites: app/browser/constants.ts
+layer reading: exit 0: the .text-bg-primary rule sits in the layer: utilities
+build: npm run build:src:styles exit 0
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/ColorSection.test.ts
+exit: 1
+summary: Tests  1 failed | 2 passed (3) | ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+failing:
+  FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorSection.test.ts:16:2 > ColorSection > renders every declared specimen through the shared section contract
+
+restored layer reading: exit 0: the .text-bg-primary rule sits in the layer: utilities
+restored: npm run build:src:styles exit 0

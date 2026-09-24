@@ -15,6 +15,16 @@ UNITS = {
         evidence='`oc-2.diff`, `oc-2-status.txt`, `oc-shared-2.patch`, `b-modal-oc-report-2.md`, `b-modal-oc-brief-2.md`, `oc-instruments/` (the round-2 mutation, gate, cascade-probe, and utility-reading logs and instruments, and `oc-2-guide-changes-ignoring-whitespace.txt`), round 1\'s `oc.diff`, `oc-shared.patch`, and `b-modal-oc-report.md`, and the round-1 verdict `oc-audit-verdict.md` and its lane verdicts; `w2-w3-note-1.md`, `w2-w3-note-2.md`, and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-modal-design-verdict.md`',
         focus='claims 1, 3, 4, 5, and 6 (the patch delta against round 1, the failing-first and transition-state runs and the probe control, every clause of the plugin row against the release source, the navbar and stacking sentences against the cascade, and the utility reading and its proof)',
         checker='claims 1, 2, 5, and 8'),
+    'usp': dict(name='UTIL-SPACING', worktree='/home/user/veneer-usp',
+        evidence='`usp-2.diff`, `usp-2-status.txt`, `usp-shared-2.patch`, `b-utilities-usp-report-2.md`, `b-utilities-usp-brief-2.md`, `usp-instruments/` (the round-2 records: `usp-mutations-2.log.txt`, `usp-mutate-2.sh`, `usp-cascade-2.mjs`, `usp-cascade-controls-2.sh`, `usp-gates-2.sh`, `usp-gates-2.log.txt`, `usp-guides-2.log.txt`, `usp-service-2.sh`, `usp-service-2.log.txt`, `usp-2-owned-interdiff.txt`, and `usp-2-shared-interdiff.txt`), round 1\'s `usp.diff`, `usp-shared.patch`, and `b-utilities-usp-report.md`, and the round-1 verdict `usp-audit-verdict.md` and its lane verdicts; `w2-w3-note-1.md` to `w2-w3-note-5.md` and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-utilities-design-verdict.md`',
+        focus='claims 1, 2, 3, and 6 (the patch delta against round 1, the derived auto-margin population and each member\'s red run, the census and its negative controls, and the renamed field\'s readers)',
+        checker='claims 1, 4, 5, 6, and 7',
+        bench='the bench round-tripped at 03:17 (dr-audit returned exit 0 through this queue)'),
+    'ut': dict(name='UTIL-TEXT', worktree='/home/user/veneer-ut',
+        evidence='`ut-2.diff`, `ut-2-status.txt`, `ut-shared-2.patch`, `b-utilities-ut-report-2.md`, `b-utilities-ut-brief-2.md`, `ut-instruments/` (the round-2 records: `ut-mutations-2.log.txt`, `ut-mutate-3.py`, `ut-mutate-3-run.log.txt`, `ut-mutate-3-run2.log.txt`, `ut-2-copy-gates.sh`, the `ut-2-copy-*.log.txt` logs, `ut-2-cascade-count.log.txt`, `ut-2-service-up2.log.txt`, `ut-2-shared-interdiff.txt`, and the `ut-2-*.py` edit scripts), round 1\'s `ut.diff`, `ut-shared.patch`, and `b-utilities-ut-report.md`, and the round-1 verdict `ut-audit-verdict.md` and its lane verdicts; `w2-w3-note-1.md` to `w2-w3-note-5.md` and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-utilities-design-verdict.md`',
+        focus='claims 1, 2, 3, 5, and 7 (the patch delta against round 1, the pairs\' partial and its order against the release, the components-layer control, the product sentences against the markup, and the moved cases)',
+        checker='claims 1, 4, 6, and 8',
+        bench='the bench round-tripped at 03:17 (dr-audit returned exit 0 through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"
@@ -62,7 +72,7 @@ Each named claim carries a verdict with evidence; the counts the report states a
 """)
     sh = f"""#!/bin/bash
 # {title}, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at {u['worktree']}.
-# Written by w23-audit-2-briefs.py. Launched through codex-queue-2.sh; the bench round-tripped at 02:50 (md-audit-2 and tp-audit-2 returned exit 0); the cap is 1800 s (comparable objective lanes ran 7 to 12 min over retained logs, plus slack for the loaded container).
+# Written by w23-audit-2-briefs.py. Launched through codex-queue-2.sh; {u.get('bench', 'the bench round-tripped at 02:50 (md-audit-2 and tp-audit-2 returned exit 0)')}; the cap is 1800 s (comparable objective lanes ran 7 to 12 min over retained logs, plus slack for the loaded container).
 # Brief: .orkestrel/veneer/units/{key}-audit-2-analyst-brief.md  Claims: .orkestrel/veneer/units/{claims}  Journal: tmp/codex/{key}-audit-2-analyst.jsonl  Last message: tmp/codex/{key}-audit-2-analyst-last.md
 cd /home/user/scaffold || exit 1
 timeout 1800 codex exec --json -C {u['worktree']} --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\\"high\\"" --output-last-message /home/user/scaffold/tmp/codex/{key}-audit-2-analyst-last.md "Your working directory is {u['worktree']}. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/{key}-audit-2-analyst-brief.md exactly. Rule on every numbered claim in /home/user/scaffold/.orkestrel/veneer/units/{claims} holding the objective lane. Make your final message the report the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/{key}-audit-2-analyst.jsonl 2> /home/user/scaffold/tmp/codex/{key}-audit-2-analyst.err

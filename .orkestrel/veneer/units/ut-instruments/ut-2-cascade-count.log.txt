@@ -1,0 +1,5 @@
+inventory selectors under text, text-truncate, and link: 130
+distinct cascade sites naming a .text- or .link- class: 130
+recorded sites the cascade lacks: []
+cascade sites the inventory does not record under these keys: []
+priority faults: []

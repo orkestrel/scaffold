@@ -1,0 +1,143 @@
+@use 'sass:list';
+@use 'sass:map';
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+@layer utilities {
+	// The release writes the color-and-background pairs with the `!important` flag on both
+	// declarations, and its helpers load ahead of its utilities, so the pairs head this partial: a
+	// text color or a background utility on the same element still wins, as it does in the release.
+	// No entry the release's map writes ahead of the `color` entry sets a color or a background, so
+	// the pairs resolve here exactly as they would ahead of every utility partial. Each foreground is
+	// the one the release records for its role, read from the palette, because the release's
+	// `color-contrast` function chose it against the release's own fills.
+	$dark-labels: info, warning, light;
+	@each $role in $aliased {
+		$foreground: 'white';
+		@if list.index($dark-labels, $role) {
+			$foreground: 'black';
+		}
+		.text-bg-#{$role} {
+			color: var(--vn-palette-#{$foreground}-base) !important;
+			background-color: RGBA(var(--bs-#{$role}-rgb), var(--bs-bg-opacity, 1)) !important;
+		}
+	}
+
+	// Stand in for the release's text color maps. A role, black, white, and the body read the
+	// release's `--bs-*` channel aliases at the `--bs-text-opacity` variable the entry sets; the
+	// release's half-strength black and white literals read the palette's channels instead.
+	$colors: ();
+	@each $name in list.join($aliased, ('black', 'white')) {
+		$colors: map.set($colors, $name, rgba(var(--bs-#{$name}-rgb), var(--bs-text-opacity)));
+	}
+	$colors: map.merge(
+		$colors,
+		(
+			body: rgba(var(--bs-body-color-rgb), var(--bs-text-opacity)),
+			muted: var(--bs-secondary-color),
+			black-50: rgba(var(--vn-palette-black-rgb), 0.5),
+			white-50: rgba(var(--vn-palette-white-rgb), 0.5),
+			body-secondary: var(--bs-secondary-color),
+			body-tertiary: var(--bs-tertiary-color),
+			body-emphasis: var(--bs-emphasis-color),
+			reset: inherit,
+		)
+	);
+	$emphases: ();
+	@each $role in $aliased {
+		$emphases: map.set($emphases, '#{$role}-emphasis', var(--bs-#{$role}-text-emphasis));
+	}
+	$underlines: ();
+	@each $role in $aliased {
+		$underlines: map.set(
+			$underlines,
+			$role,
+			rgba(var(--vn-color-#{$role}-rgb), var(--bs-link-underline-opacity))
+		);
+	}
+	$underlines: map.set(
+		$underlines,
+		null,
+		rgba(var(--vn-link-rgb), var(--bs-link-underline-opacity, 1))
+	);
+
+	// The color and link entries of the release's utility map, in its order. None is responsive, so
+	// the walk writes every one at the empty infix alone. An opacity entry writes a custom property,
+	// which the `utility-variable` mixin writes at no infix, so the walk writes it at the empty infix
+	// as the `utility` mixin gates its own entries. The link entries follow the text colors here
+	// because the release's map writes them there: a text-decoration utility sets the underline
+	// color through its shorthand, and an underline class written later still wins over it.
+	@include breakpoint-each using ($infix, $_boundary) {
+		@include utility(
+			text,
+			color,
+			$colors,
+			$infix,
+			$locals: (
+				text-opacity: 1,
+			)
+		);
+		@if $infix == '' {
+			@include utility-variable(
+				text-opacity,
+				text-opacity,
+				(
+					25: 0.25,
+					50: 0.5,
+					75: 0.75,
+					100: 1,
+				)
+			);
+		}
+		@include utility(text, color, $emphases, $infix);
+		@if $infix == '' {
+			@include utility-variable(
+				link-opacity,
+				link-opacity,
+				(
+					10: 0.1,
+					25: 0.25,
+					50: 0.5,
+					75: 0.75,
+					100: 1,
+				),
+				$state: (hover)
+			);
+		}
+		@include utility(
+			link-offset,
+			text-underline-offset,
+			(
+				1: 0.125em,
+				2: 0.25em,
+				3: 0.375em,
+			),
+			$infix,
+			$state: (hover)
+		);
+		@include utility(
+			link-underline,
+			text-decoration-color,
+			$underlines,
+			$infix,
+			$locals: (
+				link-underline-opacity: 1,
+			)
+		);
+		@if $infix == '' {
+			@include utility-variable(
+				link-underline-opacity,
+				link-underline-opacity,
+				(
+					0: 0,
+					10: 0.1,
+					25: 0.25,
+					50: 0.5,
+					75: 0.75,
+					100: 1,
+				),
+				$state: (hover)
+			);
+		}
+	}
+}
