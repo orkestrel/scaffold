@@ -55,6 +55,7 @@ Every finding an audit round left open names exactly one carrier here until that
 | The reading of the shipped `_modal.scss` cascade beside the test-local sheet the Modal proofs mount (`units/j-modal-audit-4-verdict.md`) | J-MODAL audit round 4 | J-INTEGRATION (W5) | a Modal case under the built cascade in `tests/src/browser/integration.test.ts` |
 | `tests/setupBrowser.ts` `holdOraclePointer` repeats the pointer-driving sequence the installed `@orkestrel/test` `driveHold` owns and adds release on a failed frame wait (`units/j-helpers-design-verdict.md` § 5) | J-HELPERS design round, objective lane | the user (an `@orkestrel/test` release adding the cleanup to `driveHold`, then a Veneer test-infrastructure unit routing through it) | the test release and the Veneer re-pin |
 | The fixture lookups `readButton`, `readSpecimen`, `readSubject`, and `readOracleButton` in `tests/setupBrowser.ts` repeat one shape (`units/j-helpers-design-verdict.md` § Carried) | J-HELPERS design round, subjective lane | J-INTEGRATION (W5) | one lookup helper with the four as its callers or its removal |
+| The `PopoverInterface.show` and `fill` TSDoc mirror of the J-TOOLTIP carried findings (the in-flight refusal order and the inline `display: none` case), returned report-only in `units/j-tooltip-report.md` | J-TOOLTIP round 1 | J-POPOVER (W4) | its `types.ts` edit under the owned `Popover*` declarations |
 
 ## Routing ledger
 

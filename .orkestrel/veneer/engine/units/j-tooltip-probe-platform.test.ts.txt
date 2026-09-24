@@ -1,0 +1,102 @@
+import { Placement } from '@src/browser'
+import { afterEach, describe, expect, it } from 'vitest'
+import { userEvent } from 'vitest/browser'
+import tooltipCascade from '../../../src/styles/components/_tooltip.scss?inline'
+import { scene } from '../../setupBrowser.js'
+
+afterEach(() => scene.clear())
+
+describe('probe', () => {
+	it('reads the hint close events', async () => {
+		const root = scene.mount(
+			'<button id="a">A</button><button id="b">B</button><div id="ta" popover="hint">tip a</div><div id="tb" popover="hint">tip b</div><div id="c">outside</div>',
+		)
+		const ta = root.querySelector<HTMLElement>('#ta')
+		const tb = root.querySelector<HTMLElement>('#tb')
+		if (ta === null || tb === null) throw new Error('none')
+		const log: string[] = []
+		for (const tip of [ta, tb]) {
+			tip.addEventListener('beforetoggle', (event) => {
+				log.push(`${tip.id} before ${event.newState} cancelable=${event.cancelable}`)
+				if (event.newState === 'closed' && tip.id === 'ta') event.preventDefault()
+			})
+			tip.addEventListener('toggle', (event) => log.push(`${tip.id} toggle ${event.newState}`))
+		}
+		ta.showPopover()
+		await new Promise((resolve) => setTimeout(resolve, 20))
+		tb.showPopover()
+		await new Promise((resolve) => setTimeout(resolve, 20))
+		log.push(`after b: a open=${ta.matches(':popover-open')} b open=${tb.matches(':popover-open')}`)
+		await userEvent.keyboard('{Escape}')
+		await new Promise((resolve) => setTimeout(resolve, 20))
+		log.push(`after esc: b open=${tb.matches(':popover-open')}`)
+		ta.showPopover()
+		await new Promise((resolve) => setTimeout(resolve, 20))
+		await userEvent.click(root.querySelector<HTMLElement>('#c') ?? root)
+		await new Promise((resolve) => setTimeout(resolve, 20))
+		log.push(`after click: a open=${ta.matches(':popover-open')}`)
+		expect(log.join('\n')).toBe("")
+		expect(log.length).toBeGreaterThan(0)
+	})
+
+	it('reads the arrow under the shipped cascade', async () => {
+		scene.load(tooltipCascade)
+		const root = scene.mount(
+			'<button id="ref" style="margin: 120px 200px">Reference</button><div class="tooltip bs-tooltip-auto" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner">A longer tooltip text</div></div>',
+		)
+		const reference = root.querySelector<HTMLElement>('#ref')
+		const tip = root.querySelector<HTMLElement>('.tooltip')
+		const arrow = root.querySelector<HTMLElement>('.tooltip-arrow')
+		if (reference === null || tip === null || arrow === null) throw new Error('none')
+		const lines: string[] = []
+		for (const position of ['top', 'right', 'bottom', 'left'] as const) {
+			const placement = new Placement(
+				{ reference, element: tip, popover: 'hint' },
+				{ position, offset: [0, 6], fallbacks: [] },
+			)
+			tip.classList.add('show')
+			const r = reference.getBoundingClientRect()
+			const t = tip.getBoundingClientRect()
+			const a = arrow.getBoundingClientRect()
+			const before = getComputedStyle(arrow, '::before')
+			lines.push(
+				`${position} side=${tip.getAttribute('data-popper-placement')} arrowPos=${getComputedStyle(arrow).position} ref=${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)}x${Math.round(r.height)} tip=${Math.round(t.left)},${Math.round(t.top)},${Math.round(t.width)}x${Math.round(t.height)} arrow=${Math.round(a.left)},${Math.round(a.top)},${Math.round(a.width)}x${Math.round(a.height)} before=${before.top},${before.left},${before.right},${before.bottom}`,
+			)
+			// The proposal: the arrow positioned absolutely and centered along the tip's edge.
+			const vertical = position === 'top' || position === 'bottom'
+			arrow.style.setProperty('position', 'absolute')
+			arrow.style.setProperty(vertical ? 'left' : 'top', `calc(50% - ${vertical ? a.width / 2 : a.height / 2}px)`)
+			const b = arrow.getBoundingClientRect()
+			lines.push(
+				`  proposal arrow=${Math.round(b.left)},${Math.round(b.top)},${Math.round(b.width)}x${Math.round(b.height)} centerX=${Math.round(b.left + b.width / 2)} refCenterX=${Math.round(r.left + r.width / 2)} centerY=${Math.round(b.top + b.height / 2)} refCenterY=${Math.round(r.top + r.height / 2)}`,
+			)
+			arrow.removeAttribute('style')
+			tip.classList.remove('show')
+			placement.destroy()
+		}
+		expect(lines.join('\n')).toBe("")
+		expect(lines.length).toBe(8)
+	})
+
+	it('reads setHTML over a dictionary', () => {
+		const div = document.createElement('div')
+		const lines: string[] = []
+		lines.push(`has setHTML=${'setHTML' in div}`)
+		const config = {
+			elements: [
+				{ name: 'div', attributes: [] },
+				{ name: 'a', attributes: ['href', 'title'] },
+				'b',
+			],
+			attributes: ['class', 'role', 'aria-label'],
+			dataAttributes: false,
+		}
+		Reflect.apply(Reflect.get(div, 'setHTML'), div, [
+			'<div class="tooltip" role="tooltip" data-x="1" aria-label="l" aria-custom="c" onclick="x()"><b>b</b><a href="javascript:alert(1)" title="t">a</a><a href="https://x">y</a><script>1</script><i>i</i></div>',
+			{ sanitizer: config },
+		])
+		lines.push(div.innerHTML)
+		expect(lines.join('\n')).toBe("")
+		expect(lines.length).toBe(2)
+	})
+})
