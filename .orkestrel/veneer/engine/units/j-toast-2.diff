@@ -1,0 +1,2591 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index db80947..79a562c 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -168,11 +168,18 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `AlertInterface`                          | interface | Closes an `.alert` by fading it out and removing it from the document.                                                                                 |
+ | `ToastEventMap`                           | interface | Maps each verb to the toast event it names, carrying null detail.                                                                                      |
+ | `ToastHooks`                              | type      | Configures the initial DOM event subscriptions for a toast.                                                                                            |
+-| `ToastClassMap`                           | interface | Names the class tokens a toast writes and tests; each default is the token the cascade selects on.                                                     |
+-| `ToastAttributeMap`                       | interface | Names the attributes a toast reads; each default is Bootstrap's attribute name.                                                                        |
+-| `ToastSelectorMap`                        | interface | Names the selector a toast matches with; its default is Bootstrap's selector.                                                                          |
++| `ToastClassMap`                           | interface | Names the tokens a toast writes and tests, `shown`, `transition`, and `fade`, and those the delegate's dismiss route tests, `host` and `disabled`.     |
++| `ToastAttributeMap`                       | interface | Names the attributes a toast reads for its options and the one the delegate's dismiss route reads; each default is Bootstrap's attribute name.         |
++| `ToastSelectorMap`                        | interface | Names the selector the delegate routes dismiss clicks by; a toast constructed directly matches with none, and the default is Bootstrap's selector.     |
+ | `ToastOptions`                            | interface | Configures a toast's fade, automatic hiding, markup vocabulary, hooks, and lifetime.                                                                   |
+ | `ToastInterface`                          | interface | Shows a `.toast` in its container's flow and hides it after a delay.                                                                                   |
++| `Toast`                                   | class     | Shows and hides a toast in its container's flow, and hides it after a delay unless the pointer or focus holds it.                                      |
++| `TOAST_CLASSES`                           | const     | Names the class tokens a toast writes and tests and the delegate's dismiss route tests by default, the tokens Bootstrap's cascade and data API use.    |
++| `TOAST_ATTRIBUTES`                        | const     | Names the attributes a toast and the delegate's dismiss route read by default, Bootstrap's attribute names.                                            |
++| `TOAST_SELECTORS`                         | const     | Names the default selector the delegate routes toast dismiss clicks by, Bootstrap's data-attribute selector.                                           |
++| `TOAST_DEFAULTS`                          | const     | Sets the fade, automatic hiding, and delay a toast starts from before its attributes and the constructor, Bootstrap's defaults.                        |
++| `TOAST_EVENTS`                            | const     | Names the bubbling events a toast dispatches on its host, keyed by the verb each carries.                                                              |
++| `isToastEvent`                            | function  | Checks whether a DOM event is a toast event, which carries no payload.                                                                                 |
+ | `CarouselDetail`                          | interface | Describes the detail each carousel event carries.                                                                                                      |
+ | `CarouselEventMap`                        | interface | Maps each verb to the carousel event it names.                                                                                                         |
+ | `CarouselHooks`                           | type      | Configures the initial DOM event subscriptions for a carousel.                                                                                         |
+@@ -444,6 +451,26 @@ const opened = await collapse.show()
+ collapse.destroy()
+ ```
+ 
++Construct a toast over a toast element with a three-second delay, show it, and wait for the
++`hidden.vn.toast` event it dispatches when it hides itself after the delay. Destruction then
++restores the element.
++
++```ts
++import { Toast } from '@orkestrel/veneer/browser'
++
++const host = document.createElement('div')
++host.className = 'toast'
++host.textContent = 'Saved'
++document.body.append(host)
++const toast = new Toast(host, { delay: 3000 })
++const hidden = new Promise((resolve) => {
++	host.addEventListener('hidden.vn.toast', resolve, { once: true })
++})
++const shown = await toast.show()
++await hidden
++toast.destroy()
++```
++
+ ## Engine
+ 
+ The browser entry drives Bootstrap's markup on the platform's own mechanisms, and its TypeScript
+@@ -764,6 +791,147 @@ The collapse departs from Bootstrap's in these ways:
+ - The delegate leaves a panel outside its root alone. Bootstrap's data API listens on the document,
+   so it reaches every panel.
+ 
++#### Toast
++
++The `Toast` class owns one toast, the element Bootstrap's markup marks with the `host` token, and
++shows and hides it in its container's flow. Construction validates and copies the `classes`,
++`attributes`, and `selectors` groups, resolves the `animated`, `autohide`, and `delay` options,
++claims the toast, binds the hooks and its pointer and focus listeners, and writes nothing. The toast
++validates its `selectors` group and keeps none of it: the delegate routes dismiss clicks by the
++selector, and a toast you construct directly matches with none.
++
++Showing adds the `fade` token when the `animated` option is `true`, reads the layout, and adds the
++`shown` and `transition` tokens; when `animated` is `true` it then waits for the toast's transitions
++to settle. It removes the `transition` token and dispatches `shown.vn.toast`. Hiding reads the
++layout, adds the `transition` token, waits the same way, removes the `transition` and `shown`
++tokens, and dispatches `hidden.vn.toast`. With `animated` set to `false`, neither call waits, so
++each dispatches its completed event before it returns. The `show` and `hide` methods resolve `true`
++after the completed event. Each resolves `false` when a transition is in flight on the toast, a
++listener prevented the pre-change event, or the toast is destroyed, and `hide` also resolves
++`false` when the toast is hidden. Showing a shown toast runs the sequence again, dispatching both
++events, and restarts the delay. The `shown` property reads the `shown` token on every access.
++
++The shipped cascade declares no transition on the toast, and no Veneer rule reads the `fade` token,
++so under the shipped cascade both calls complete in a microtask. Where a sheet of yours carries
++Bootstrap's `.fade` transition, hiding waits for the fade out. Showing takes the toast from no
++display to displayed at no opacity, which starts no transition, so `shown.vn.toast` dispatches in a
++microtask and the fade in runs after it, as the `transition` token leaves.
++
++With the `autohide` option `true`, a shown toast hides itself through a native `setTimeout` timer
++`delay` milliseconds after `shown.vn.toast`. The timer is cleared while the pointer or focus is
++inside the toast, focus moving between the toast's descendants included, and started again in full
++when both have left. When a `mouseout` event's related target is outside the toast, the toast reads
++whether focus is still inside through the `:focus-within` pseudo-class; when a `focusout` event's
++related target is outside, it reads whether the pointer is still inside through the `:hover`
++pseudo-class; and a toast that shows with either one inside starts no timer until both leave. An
++accepted `show` or `hide` call clears the pending timer, and so does destruction.
++
++The toast writes and tests the `shown`, `transition`, and `fade` tokens, and the delegate's dismiss
++route tests the `host` and `disabled` tokens, under the names the `classes` group resolves; each
++default is the token Bootstrap's cascade and data API use.
++
++| Key          | Default    | Marks                                                               |
++| ------------ | ---------- | ------------------------------------------------------------------- |
++| `host`       | `toast`    | A toast, which a dismiss trigger naming no target hides from inside |
++| `shown`      | `show`     | A shown toast                                                       |
++| `transition` | `showing`  | A toast while it shows or hides                                     |
++| `fade`       | `fade`     | A toast that fades, written when the `animated` option is `true`    |
++| `disabled`   | `disabled` | A dismiss trigger that hides nothing                                |
++
++The toast reads the `animated`, `autohide`, and `delay` attributes, and the delegate's dismiss route
++reads the `target` attribute, under the names the `attributes` group resolves; each default is
++Bootstrap's attribute name.
++
++| Key        | Default             | Feeds                                                         | Read through                |
++| ---------- | ------------------- | ------------------------------------------------------------- | --------------------------- |
++| `animated` | `data-bs-animation` | The `animated` option, unless the constructor supplies it     | The `parseBoolean` function |
++| `autohide` | `data-bs-autohide`  | The `autohide` option, unless the constructor supplies it     | The `parseBoolean` function |
++| `delay`    | `data-bs-delay`     | The `delay` option, unless the constructor supplies it        | The `parseNumber` function  |
++| `target`   | `data-bs-target`    | The toast a dismiss trigger names, before its `href` fragment | The `readTarget` function   |
++
++The `TOAST_DEFAULTS` constant holds the options the toast starts from, before the attributes and
++the constructor; each default is Bootstrap's.
++
++| Option     | Default | Controls                                                                |
++| ---------- | ------- | ----------------------------------------------------------------------- |
++| `animated` | `true`  | Whether the toast writes the `fade` token and waits for its transitions |
++| `autohide` | `true`  | Whether a shown toast hides itself after the delay                      |
++| `delay`    | `5000`  | The milliseconds a shown toast waits before it hides itself             |
++
++The delegate matches dismiss triggers with the following selector, under the name the `selectors`
++group resolves; the default is Bootstrap's selector.
++
++| Key       | Default                     | Selects                                              |
++| --------- | --------------------------- | ---------------------------------------------------- |
++| `dismiss` | `[data-bs-dismiss="toast"]` | The triggers a delegated click hides a toast through |
++
++The toast dispatches the following events on its host. Each one bubbles and carries no detail,
++which the platform reads as `null`.
++
++| Key      | Wire name         | Cancelable | Dispatched                                      |
++| -------- | ----------------- | ---------- | ----------------------------------------------- |
++| `show`   | `show.vn.toast`   | Yes        | Before any write; prevention refuses the show   |
++| `shown`  | `shown.vn.toast`  | No         | After the `transition` token leaves             |
++| `hide`   | `hide.vn.toast`   | Yes        | Before any write; prevention refuses the hide   |
++| `hidden` | `hidden.vn.toast` | No         | After the `transition` and `shown` tokens leave |
++
++A call reads the toast at each of its doors for the phase it is in. Before a show writes the
++`transition` token, the toast must lack it, and after its `fade` write the toast must carry the
++`shown` token exactly when it carried it as the call began writing; from a call's write of the
++`transition` token until it removes that token, the toast must carry the `transition` and `shown`
++tokens; at completion the toast must carry the `shown` token without the `transition` token after
++a show, and neither token after a hide. A call that finds the toast otherwise, the toast destroyed,
++or a later call of the same toast started reads the change as taken over: it stops, writing and
++dispatching nothing more, and resolves `false`. A call takes its identity before it dispatches its
++pre-change event, so a listener that calls `show` inside `show.vn.toast` or `hide.vn.toast` takes
++the change over, whether that call is still waiting or has already completed: the listener's call
++resolves `true`, the call whose event it heard resolves `false` and writes nothing, and the toast
++runs the one sequence and dispatches the one completed event. Destruction clears the timer and
++aborts the wait, so a call awaiting the transition resolves `false` and dispatches no completed
++event, and restoration writes back the toast's `shown`, `transition`, and `fade` tokens.
++
++The delegate's `toast` option carries the toast's groups. A click inside a trigger the resolved
++`dismiss` selector matches inside the root hides the toast the trigger's target attribute or `href`
++fragment names, or, when the trigger names none, the closest element carrying the `host` token,
++through the toast the static `find` method returns or one the delegate acquires with the group. The
++delegate leaves a toast outside its root alone, and under nested roots each toast is driven once
++per click. It prevents the click's default action when the trigger is an anchor or an area, as
++Bootstrap's data API does, and then skips a trigger carrying the `disabled` token or a `disabled`
++attribute. A click whose dismissed toast is its button host, or one of the panels its collapse
++trigger names inside the root, with neither engine constructed on that element, is refused before
++any route runs: the delegate marks, drives, constructs, and prevents nothing.
++
++The toast departs from Bootstrap's in these ways:
++
++- No `hide` token is written. Bootstrap's `hide` method adds its deprecated `hide` class at
++  completion, and its `show` method removes it.
++- The option Bootstrap names `animation` is `animated`, read from the `data-bs-animation` attribute
++  by default, and no `data-bs-config` attribute is read.
++- The events carry the `.vn.` namespace, such as `shown.vn.toast`, where Bootstrap's carry `.bs.`.
++- Completion waits on the toast's running finite animations, and the delay runs on a native
++  `setTimeout` timer with no fallback timer beside it. Bootstrap waits on a `transitionend`
++  listener with a fallback timer, so its `shown.bs.toast` event arrives after the fade's duration
++  even though showing starts no transition.
++- A call while a transition is in flight resolves `false`. Bootstrap's `show` and `hide` methods
++  have no such guard, and each runs its sequence again.
++- Hiding reads the layout before it writes the `transition` token, so a toast inserted shown in the
++  same task still fades out. Bootstrap's `hide` method reads no layout.
++- The toast reads whether the pointer or focus is still inside through the `:hover` and
++  `:focus-within` pseudo-classes. Bootstrap keeps a flag for each, which its `mouseover`,
++  `mouseout`, `focusin`, and `focusout` listeners set.
++- An accepted `hide` call clears the pending timer. Bootstrap leaves it running, so it later calls
++  `hide` on the hidden toast.
++- The toast stays in its container's flow and is never promoted to the top layer, so a toast
++  container keeps its stacking level above a modal's, as Bootstrap's does. A native popover toast
++  would leave the container's flow.
++- Destruction clears the timer, abandons a transition in flight, and restores the `shown`,
++  `transition`, and `fade` tokens the toast carried before its first change. Bootstrap's `dispose`
++  method clears the timer and removes the `show` class.
++- A dismiss trigger carrying a `disabled` attribute hides nothing whatever the attribute's value.
++  Bootstrap reads `disabled="false"` on an element with no `disabled` property as enabled.
++- The delegate leaves a toast outside its root alone. Bootstrap's data API listens on the document,
++  so it reaches every toast.
++
+ ## Styles
+ 
+ Veneer publishes its cascade through a standalone stylesheet subpath, `./styles`. The
+@@ -5784,7 +5952,7 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | engine           | plugin         | ScrollSpy: `[data-bs-spy="scroll"]` observes the sections its `target` links name through `IntersectionObserver` (`rootMargin`, `threshold`, `offset`, `smoothScroll`); `refresh()`, `dispose()`; fires `activate.bs.scrollspy` with `relatedTarget` and no cancelable event; moves the `active` class. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | —                                  | accepted |
+ | engine           | plugin         | Alert: a `[data-bs-dismiss="alert"]` trigger closes the alert it names, or the `.alert` ancestor it sits in; no defaults; the `close` method; the cancelable `close.bs.alert` event, then the `closed.bs.alert` event after removal; the `close` method removes the `show` class and waits on the transition only when the alert carries the `fade` class, then removes the element and disposes the instance; no key, focus, or ARIA handling. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                   | —                                  | accepted |
+ | engine           | plugin         | Carousel: `[data-bs-slide]` and `[data-bs-slide-to]` triggers and `[data-bs-ride="carousel"]` on load; `interval: 5000`, `keyboard: true`, `pause: 'hover'`, `ride: false`, `touch: true`, and `wrap: true` defaults; `next`, `prev`, `pause`, `cycle`, and `to` methods; cancelable `slide.bs.carousel`, then `slid.bs.carousel`; arrow keys; `aria-current` on the active indicator; the `Swipe` utility adds the `pointer-event` class. Owner: J-ENGINE.                                                                                                                                                                                                                                                                                                                                                                                                        | —                                  | accepted |
+-| engine           | plugin         | Toast: a `[data-bs-dismiss="toast"]` trigger hides the toast it names or sits in; the `animation: true`, `autohide: true`, and `delay: 5000` defaults; the `show`, `hide`, `dispose`, and `isShown` methods; the cancelable `show.bs.toast` and `hide.bs.toast` events, then the `shown.bs.toast` and `hidden.bs.toast` events; the `show` method adds the `show` and `showing` classes, and the `fade` class when animated, then removes the `showing` class after the transition; the `hide` method adds the `showing` class, then removes the `showing` and `show` classes and adds the deprecated `hide` class; the `dispose` method removes the `show` class; with the `autohide` option the toast hides after the milliseconds the `delay` option names, and a pointer or focus inside the toast holds that timer; no key or ARIA handling. Owner: J-ENGINE. | —                                  | accepted |
++| engine           | plugin         | Toast: a `[data-bs-dismiss="toast"]` trigger hides the toast it names or sits in; the `animation: true`, `autohide: true`, and `delay: 5000` defaults; the `show`, `hide`, `dispose`, and `isShown` methods; the cancelable `show.bs.toast` and `hide.bs.toast` events, then the `shown.bs.toast` and `hidden.bs.toast` events; the `show` method adds the `show` and `showing` classes, and the `fade` class when animated, then removes the `showing` class after the transition; the `hide` method adds the `showing` class, then removes the `showing` and `show` classes and adds the deprecated `hide` class; the `dispose` method removes the `show` class; with the `autohide` option the toast hides after the milliseconds the `delay` option names, and a pointer or focus inside the toast holds that timer; no key or ARIA handling. Owner: J-ENGINE. | tests/src/browser/Toast.test.ts    | shipped  |
+ 
+ A `plugin` row records a behavior J-ENGINE owns, while the classes that behavior sets ship in the
+ cascade and render in markup.
+diff --git a/src/browser/Delegate.ts b/src/browser/Delegate.ts
+index fa90303..4c57136 100644
+--- a/src/browser/Delegate.ts
++++ b/src/browser/Delegate.ts
+@@ -5,8 +5,12 @@ import type {
+ 	CollapseVocabulary,
+ 	DelegateInterface,
+ 	DelegateOptions,
++	ToastAttributeMap,
++	ToastClassMap,
++	ToastInterface,
++	ToastSelectorMap,
+ } from './types.js'
+-import { instanceOf } from '@orkestrel/contract'
++import { instanceOf, isInstance } from '@orkestrel/contract'
+ import { Button } from './Button.js'
+ import { Collapse } from './Collapse.js'
+ import {
+@@ -15,8 +19,12 @@ import {
+ 	COLLAPSE_ATTRIBUTES,
+ 	COLLAPSE_CLASSES,
+ 	COLLAPSE_SELECTORS,
++	TOAST_ATTRIBUTES,
++	TOAST_CLASSES,
++	TOAST_SELECTORS,
+ } from './constants.js'
+-import { readTargets, resolveVocabulary } from './helpers.js'
++import { readTarget, readTargets, resolveVocabulary } from './helpers.js'
++import { Toast } from './Toast.js'
+ import { isAttributeName, isClassToken, isSelector } from './validators.js'
+ 
+ /**
+@@ -40,8 +48,17 @@ import { isAttributeName, isClassToken, isSelector } from './validators.js'
+  * at each observer delivery it destroys and releases every engine whose host the root no longer
+  * contains. A click that arrives while an engine's host is being restored finds no owner, because
+  * the engine releases its claim first, and acquires a fresh engine whose snapshot takes the values
+- * not yet written back. At each click and each delivery it also drops every engine that was
+- * destroyed directly. Destruction releases the listener and the observer and restores every host
++ * not yet written back. A click inside a trigger the toast group's `dismiss` selector matches hides
++ * the toast the trigger's target attribute or `href` fragment names, or else the closest element
++ * carrying the toast group's `host` token, through the engine the `Toast.find` method returns or
++ * one it acquires, constructed with the toast group; it leaves a toast outside the root alone, skips
++ * a trigger carrying the `disabled` token or attribute, and prevents the click's default action
++ * only when the trigger is an anchor or an area; a toast it constructs while a listener has
++ * destroyed the delegate is destroyed and driven nowhere. A click whose dismissed toast inside the
++ * root is also its button host or one of the panels its collapse trigger names, with neither engine
++ * on that element and the dismiss trigger not disabled, is refused before any route runs. At each
++ * click and each delivery it also drops every engine that
++ * was destroyed directly. Destruction releases the listener and the observer and restores every host
+  * this delegate acquired.
+  *
+  * @example
+@@ -53,11 +70,16 @@ import { isAttributeName, isClassToken, isSelector } from './validators.js'
+ export class Delegate implements DelegateInterface {
+ 	static readonly #driven = new WeakMap<
+ 		Event,
+-		WeakMap<typeof Button | typeof Collapse, WeakSet<HTMLElement>>
++		WeakMap<typeof Button | typeof Collapse | typeof Toast, WeakSet<HTMLElement>>
+ 	>()
+ 	readonly #root: ParentNode
+ 	readonly #button: ButtonVocabulary
+ 	readonly #collapse: CollapseVocabulary
++	readonly #toast: {
++		readonly classes: ToastClassMap
++		readonly attributes: ToastAttributeMap
++		readonly selectors: ToastSelectorMap
++	}
+ 	readonly #controller = new AbortController()
+ 	readonly #observer = new MutationObserver(() => {
+ 		const size = this.#owned.size
+@@ -65,7 +87,7 @@ export class Delegate implements DelegateInterface {
+ 		this.#release()
+ 		this.#unobserve(size)
+ 	})
+-	readonly #owned = new Set<ButtonInterface | CollapseInterface>()
++	readonly #owned = new Set<ButtonInterface | CollapseInterface | ToastInterface>()
+ 
+ 	/**
+ 	 * Resolves each entity group and binds native clicks on the supplied root.
+@@ -108,6 +130,26 @@ export class Delegate implements DelegateInterface {
+ 				options?.collapse?.selectors,
+ 			),
+ 		}
++		this.#toast = {
++			classes: resolveVocabulary(
++				'TOAST_OPTION_INVALID',
++				TOAST_CLASSES,
++				isClassToken,
++				options?.toast?.classes,
++			),
++			attributes: resolveVocabulary(
++				'TOAST_OPTION_INVALID',
++				TOAST_ATTRIBUTES,
++				isAttributeName,
++				options?.toast?.attributes,
++			),
++			selectors: resolveVocabulary(
++				'TOAST_OPTION_INVALID',
++				TOAST_SELECTORS,
++				isSelector,
++				options?.toast?.selectors,
++			),
++		}
+ 		this.#root = options?.root ?? document
+ 		this.#root.addEventListener('click', (event) => this.#activate(event), {
+ 			signal: this.#controller.signal,
+@@ -126,17 +168,19 @@ export class Delegate implements DelegateInterface {
+ 		this.#owned.clear()
+ 	}
+ 
+-	// Drops every engine destroyed directly, refuses a click that would have the button route and the
+-	// collapse route each construct an engine on one element, and otherwise routes it through both,
+-	// each of which drives its engines only when its trigger selector matches.
++	// Drops every engine destroyed directly, refuses a click that would have two routes each construct
++	// an engine on one element, and otherwise routes it through the button, collapse, and toast
++	// routes, each of which drives its engines only when its selector matches.
+ 	#activate(event: Event): void {
+ 		const size = this.#owned.size
+ 		this.#discard()
+ 		this.#unobserve(size)
+ 		if (!(event.target instanceof Element)) return
+ 		if (this.#conflicts(event.target)) return
++		if (this.#contests(event.target)) return
+ 		this.#routeButton(event, event.target)
+ 		this.#routeCollapse(event, event.target)
++		this.#routeToast(event, event.target)
+ 	}
+ 
+ 	// Reports whether both routes would construct an engine on one element: the click's button host
+@@ -154,6 +198,32 @@ export class Delegate implements DelegateInterface {
+ 		)
+ 	}
+ 
++	// Reports whether the toast route and the button or collapse route would each construct an engine
++	// on the toast the click's dismiss trigger resolves: that toast is the click's button host with
++	// neither a button nor a toast engine on it, or one of the panels the click's collapse trigger
++	// names inside the root with neither a collapse nor a toast engine on it.
++	#contests(target: Element): boolean {
++		const trigger = this.#closest(target, this.#toast.selectors.dismiss)
++		if (trigger === undefined || this.#disabled(trigger)) return false
++		const toast = this.#dismissed(trigger)
++		if (toast === undefined || Toast.find(toast) !== undefined) return false
++		const host = this.#closest(target, this.#button.selectors.trigger)
++		if (host === toast && Button.find(toast) === undefined) return true
++		const opener = this.#closest(target, this.#collapse.selectors.trigger)
++		return (
++			opener !== undefined &&
++			readTargets(opener, this.#collapse.attributes).includes(toast) &&
++			Collapse.find(toast) === undefined
++		)
++	}
++
++	// Returns the closest element the selector matches from the event's target, when the root
++	// contains it.
++	#closest(target: Element, selector: string): HTMLElement | undefined {
++		const element = target.closest(selector)
++		return isInstance(element, HTMLElement) && this.#root.contains(element) ? element : undefined
++	}
++
+ 	// Routes a click inside a button trigger to that host's button engine.
+ 	#routeButton(event: Event, target: Element): void {
+ 		const host = target.closest(this.#button.selectors.trigger)
+@@ -185,12 +255,58 @@ export class Delegate implements DelegateInterface {
+ 		}
+ 	}
+ 
++	// Routes a click inside a dismiss trigger to the toast engine of the toast it resolves inside the
++	// root, preventing the default action of an anchor or an area as Bootstrap's data API does, before
++	// it skips a disabled trigger.
++	#routeToast(event: Event, target: Element): void {
++		const trigger = this.#closest(target, this.#toast.selectors.dismiss)
++		// A listener to an earlier route's event can destroy this delegate, which then prevents,
++		// marks, and drives nothing more.
++		if (trigger === undefined || this.#controller.signal.aborted) return
++		if (isInstance(trigger, HTMLAnchorElement) || isInstance(trigger, HTMLAreaElement)) {
++			event.preventDefault()
++		}
++		if (this.#disabled(trigger)) return
++		const toast = this.#dismissed(trigger)
++		if (toast === undefined || !this.#mark(event, Toast, toast)) return
++		void (Toast.find(toast) ?? this.#construct(toast))?.hide()
++	}
++
++	// Constructs a toast with the toast group and acquires it, or destroys it and returns undefined
++	// when this delegate was destroyed while it was constructed.
++	#construct(toast: HTMLElement): ToastInterface | undefined {
++		const engine = new Toast(toast, this.#toast)
++		if (!this.#controller.signal.aborted) return this.#acquire(engine)
++		engine.destroy()
++		return undefined
++	}
++
++	// Reports whether a dismiss trigger carries the `disabled` token or attribute, so it hides nothing.
++	#disabled(trigger: HTMLElement): boolean {
++		return (
++			trigger.classList.contains(this.#toast.classes.disabled) || trigger.hasAttribute('disabled')
++		)
++	}
++
++	// Returns the toast a dismiss trigger hides inside the root: the element its target attribute or
++	// `href` fragment names, or else the closest element carrying the `host` token.
++	#dismissed(trigger: HTMLElement): HTMLElement | undefined {
++		const toast =
++			readTarget(trigger, this.#toast.attributes) ??
++			trigger.closest(`.${CSS.escape(this.#toast.classes.host)}`)
++		return isInstance(toast, HTMLElement) && this.#root.contains(toast) ? toast : undefined
++	}
++
+ 	// Marks one click for one engine host and one route across every delegate, and reports whether
+ 	// this call marked it, so a host under nested roots is driven once per click by each route.
+-	#mark(event: Event, route: typeof Button | typeof Collapse, host: HTMLElement): boolean {
++	#mark(
++		event: Event,
++		route: typeof Button | typeof Collapse | typeof Toast,
++		host: HTMLElement,
++	): boolean {
+ 		const routes =
+ 			Delegate.#driven.get(event) ??
+-			new WeakMap<typeof Button | typeof Collapse, WeakSet<HTMLElement>>()
++			new WeakMap<typeof Button | typeof Collapse | typeof Toast, WeakSet<HTMLElement>>()
+ 		const hosts = routes.get(route) ?? new WeakSet<HTMLElement>()
+ 		if (hosts.has(host)) return false
+ 		Delegate.#driven.set(event, routes.set(route, hosts.add(host)))
+@@ -198,7 +314,9 @@ export class Delegate implements DelegateInterface {
+ 	}
+ 
+ 	// Owns a constructed engine and observes the root while any engine is owned.
+-	#acquire<TEngine extends ButtonInterface | CollapseInterface>(engine: TEngine): TEngine {
++	#acquire<TEngine extends ButtonInterface | CollapseInterface | ToastInterface>(
++		engine: TEngine,
++	): TEngine {
+ 		if (this.#owned.size === 0) {
+ 			this.#observer.observe(this.#root, { childList: true, subtree: true })
+ 		}
+@@ -208,10 +326,14 @@ export class Delegate implements DelegateInterface {
+ 
+ 	// Drops every owned engine its class's registry no longer holds: an engine destroyed directly,
+ 	// or one whose destruction is under way. Each engine sits in its own class's registry alone, so
+-	// an engine neither lookup returns is held by none.
++	// an engine no lookup returns is held by none.
+ 	#discard(): void {
+ 		for (const engine of this.#owned) {
+-			if (Button.find(engine.host) !== engine && Collapse.find(engine.host) !== engine) {
++			if (
++				Button.find(engine.host) !== engine &&
++				Collapse.find(engine.host) !== engine &&
++				Toast.find(engine.host) !== engine
++			) {
+ 				this.#owned.delete(engine)
+ 			}
+ 		}
+diff --git a/src/browser/Toast.ts b/src/browser/Toast.ts
+new file mode 100644
+index 0000000..40946dd
+--- /dev/null
++++ b/src/browser/Toast.ts
+@@ -0,0 +1,298 @@
++import type { ToastClassMap, ToastInterface, ToastOptions } from './types.js'
++import { AppError } from '@src/core'
++import { isInstance, parseBoolean, parseNumber } from '@orkestrel/contract'
++import {
++	TOAST_ATTRIBUTES,
++	TOAST_CLASSES,
++	TOAST_DEFAULTS,
++	TOAST_EVENTS,
++	TOAST_SELECTORS,
++} from './constants.js'
++import {
++	bindEventMap,
++	emitEvent,
++	readTag,
++	reflow,
++	resolveOptions,
++	resolveVocabulary,
++	settleAnimations,
++} from './helpers.js'
++import { HostSnapshot } from './HostSnapshot.js'
++import { Registry } from './Registry.js'
++import { isAttributeName, isClassToken, isSelector, isToastEvent } from './validators.js'
++
++/**
++ * Shows and hides a toast in its container's flow, and hides it after a delay unless the pointer or focus holds it.
++ *
++ * @remarks
++ * The host must be an HTMLElement in the current realm and have no live toast owner. Construction
++ * writes nothing: it validates and copies the `classes`, `attributes`, and `selectors` groups,
++ * resolves the `animated`, `autohide`, and `delay` options from the defaults, the attributes the
++ * `attributes` group names, and the constructor, claims the host, binds the hooks, and listens for
++ * the pointer and focus entering and leaving the host. Showing writes the `fade` token when
++ * `animated` is `true`, then the `shown` and `transition` tokens, waits for the host's transitions
++ * to settle when `animated` is `true`, removes the `transition` token, and dispatches the `shown`
++ * event; hiding writes the `transition` token, waits the same way, and removes the `transition` and
++ * `shown` tokens. Showing a shown toast runs the sequence again and restarts the delay. With
++ * `autohide`, a shown toast hides itself through a native timer `delay` milliseconds after it
++ * shows; the timer is cleared while the pointer or focus is inside the host and started again in
++ * full when both have left. A call takes its identity before it dispatches its pre-change event,
++ * so a call a listener makes inside that dispatch takes the change over, whether it is still
++ * waiting or has completed. After each write, dispatch, and await, a call reads its lifetime and
++ * the host again: the `fade` write must leave the `shown` token as the call found it, from the
++ * write of the `transition` token until its removal the host must carry that token and the
++ * `shown` token, and at completion the host must carry the state the call completes to. A call
++ * that finds the toast destroyed, a later call started, or the host otherwise stops, writing and
++ * dispatching nothing more, and resolves `false`. Destruction clears the timer and restores the
++ * host. An aborted `signal` destroys the toast.
++ *
++ * @example
++ * ```ts
++ * const host = document.createElement('div')
++ * host.className = 'toast'
++ * const toast = new Toast(host, { delay: 3000 })
++ * await toast.show()
++ * toast.destroy()
++ * ```
++ */
++export class Toast implements ToastInterface {
++	static readonly #registry = new Registry<Toast>({ code: 'TOAST_HOST_OWNED' })
++	readonly #host: HTMLElement
++	readonly #classes: ToastClassMap
++	readonly #animated: boolean
++	readonly #autohide: boolean
++	readonly #delay: number
++	readonly #snapshot = new HostSnapshot()
++	readonly #controller = new AbortController()
++	// The identity of the latest call that started a change. A call holds its change only while this
++	// is its identity, so a call resuming after a later one started sees that it no longer holds it.
++	#change: object | undefined
++	#timer: ReturnType<typeof setTimeout> | undefined
++
++	/**
++	 * Claims the host, resolves its vocabulary and options, and binds initial hooks and the pointer and focus listeners.
++	 *
++	 * @param host - The HTML element to own, the toast.
++	 * @param options - The fade, automatic hiding, delay, markup vocabulary, initial event subscriptions, and lifetime.
++	 * @throws Thrown when the host is not an HTMLElement, when a group value is not a class token, an attribute name, or a selector, when a declared attribute the constructor leaves undefined fails coercion, or when the host already has a live owner.
++	 */
++	constructor(host: HTMLElement, options?: ToastOptions) {
++		if (!isInstance(host, HTMLElement)) {
++			throw new AppError('Toast requires an HTMLElement host', 'TOAST_HOST_INVALID', {
++				tag: readTag(host),
++			})
++		}
++		this.#classes = resolveVocabulary(
++			'TOAST_OPTION_INVALID',
++			TOAST_CLASSES,
++			isClassToken,
++			options?.classes,
++		)
++		const attributes = resolveVocabulary(
++			'TOAST_OPTION_INVALID',
++			TOAST_ATTRIBUTES,
++			isAttributeName,
++			options?.attributes,
++		)
++		// The delegate routes by the selector and the toast itself matches with none, so the resolved
++		// group is not kept; resolving it still refuses an invalid value at construction.
++		resolveVocabulary('TOAST_OPTION_INVALID', TOAST_SELECTORS, isSelector, options?.selectors)
++		const resolved = resolveOptions<typeof TOAST_DEFAULTS, 'animated' | 'autohide' | 'delay'>(
++			host,
++			attributes,
++			'TOAST_OPTION_INVALID',
++			TOAST_DEFAULTS,
++			{ animated: parseBoolean, autohide: parseBoolean, delay: parseNumber },
++			options,
++		)
++		this.#animated = resolved.animated
++		this.#autohide = resolved.autohide
++		this.#delay = resolved.delay
++		Toast.#registry.claim(host, this)
++		this.#host = host
++		const signal = this.#controller.signal
++		bindEventMap(host, TOAST_EVENTS, isToastEvent, options?.on, signal)
++		host.addEventListener('mouseover', () => this.#disarm(), { signal })
++		host.addEventListener('focusin', () => this.#disarm(), { signal })
++		host.addEventListener(
++			'mouseout',
++			(event) => this.#leave(event.relatedTarget, ':focus-within'),
++			{ signal },
++		)
++		host.addEventListener('focusout', (event) => this.#leave(event.relatedTarget, ':hover'), {
++			signal,
++		})
++		const lifetime = options?.signal
++		if (lifetime?.aborted) this.destroy()
++		else lifetime?.addEventListener('abort', () => this.destroy(), { once: true, signal })
++	}
++
++	/**
++	 * Returns the live toast that owns a host, mirroring Bootstrap's `getInstance`.
++	 *
++	 * @param host - The toast to look up.
++	 * @returns The owning toast, or undefined when no live toast owns the host.
++	 * @example
++	 * ```ts
++	 * await Toast.find(host)?.hide()
++	 * ```
++	 */
++	static find(host: HTMLElement): ToastInterface | undefined {
++		return Toast.#registry.find(host)
++	}
++
++	get host(): HTMLElement {
++		return this.#host
++	}
++
++	get shown(): boolean {
++		return this.#host.classList.contains(this.#classes.shown)
++	}
++
++	async show(): Promise<boolean> {
++		if (this.#refused()) return false
++		// The identity is taken before the dispatch, so a call a listener makes inside it, still
++		// waiting or already completed, takes the change over.
++		const change = {}
++		this.#change = change
++		if (!emitEvent(this.#host, TOAST_EVENTS.show, null, true)) return false
++		// A listener runs inside the dispatch and can destroy this toast or start another call, so the
++		// refusal and the identity are read again before any write.
++		if (this.#refused() || this.#change !== change) return false
++		this.#disarm()
++		const host = this.#host
++		const { shown, transition, fade } = this.#classes
++		this.#save()
++		// Each write door reads the host for its phase: no transition token and the shown token as the
++		// call found it before the transition token is written, the shown and transition tokens while
++		// the transition runs, and the shown token without the transition token at completion.
++		const before = host.classList.contains(shown) ? [shown] : []
++		const absent = before.length > 0 ? [transition] : [shown, transition]
++		if (this.#animated && !this.#apply(change, before, absent, () => host.classList.add(fade))) {
++			return false
++		}
++		reflow(host)
++		if (
++			!this.#apply(change, [shown, transition], [], () => host.classList.add(shown, transition))
++		) {
++			return false
++		}
++		if (this.#animated) {
++			await settleAnimations(host, this.#controller.signal)
++			if (!this.#holds(change, [shown, transition], [])) return false
++		}
++		if (!this.#apply(change, [shown], [transition], () => host.classList.remove(transition))) {
++			return false
++		}
++		this.#change = undefined
++		emitEvent(host, TOAST_EVENTS.shown, null, false)
++		if (!host.matches(':hover') && !host.matches(':focus-within')) this.#arm()
++		return !this.#controller.signal.aborted
++	}
++
++	async hide(): Promise<boolean> {
++		if (this.#refused() || !this.shown) return false
++		const change = {}
++		this.#change = change
++		if (!emitEvent(this.#host, TOAST_EVENTS.hide, null, true)) return false
++		if (this.#refused() || !this.shown || this.#change !== change) return false
++		this.#disarm()
++		const host = this.#host
++		const { shown, transition } = this.#classes
++		this.#save()
++		// Each write door reads the host for its phase: the shown and transition tokens while the
++		// transition runs, and neither at completion. The layout read lets a toast inserted shown in
++		// this task fade out.
++		reflow(host)
++		if (!this.#apply(change, [shown, transition], [], () => host.classList.add(transition))) {
++			return false
++		}
++		if (this.#animated) {
++			await settleAnimations(host, this.#controller.signal)
++			if (!this.#holds(change, [shown, transition], [])) return false
++		}
++		if (
++			!this.#apply(change, [], [shown, transition], () => host.classList.remove(transition, shown))
++		) {
++			return false
++		}
++		this.#change = undefined
++		emitEvent(host, TOAST_EVENTS.hidden, null, false)
++		return !this.#controller.signal.aborted
++	}
++
++	destroy(): void {
++		if (this.#controller.signal.aborted) return
++		this.#controller.abort()
++		this.#disarm()
++		// The claim goes before the host is restored, so an engine constructed while restoration runs
++		// can claim the host, and its snapshot takes the values this one has still to write back.
++		Toast.#registry.release(this.#host, this)
++		this.#snapshot.restore()
++	}
++
++	// Reports whether a call cannot start: the toast is destroyed or the host transitions.
++	#refused(): boolean {
++		return (
++			this.#controller.signal.aborted || this.#host.classList.contains(this.#classes.transition)
++		)
++	}
++
++	// Reports whether the call still holds its change: the toast is live, no later call started a
++	// change, and the host carries every token in `present` and none in `absent`.
++	#holds(change: object, present: readonly string[], absent: readonly string[]): boolean {
++		const tokens = this.#host.classList
++		return (
++			!this.#controller.signal.aborted &&
++			this.#change === change &&
++			present.every((token) => tokens.contains(token)) &&
++			!absent.some((token) => tokens.contains(token))
++		)
++	}
++
++	// Runs one write a reaction can run inside, then reads whether the call still holds its change.
++	#apply(
++		change: object,
++		present: readonly string[],
++		absent: readonly string[],
++		write: () => void,
++	): boolean {
++		write()
++		return this.#holds(change, present, absent)
++	}
++
++	// Records the host's shown, transition, and fade tokens before the first write, so destruction
++	// restores them.
++	#save(): void {
++		const { shown, transition, fade } = this.#classes
++		for (const name of [shown, transition, fade]) {
++			this.#snapshot.save({ category: 'token', element: this.#host, name })
++		}
++	}
++
++	// Starts the delay in full for a live, shown, settled toast with `autohide`, replacing a pending one.
++	#arm(): void {
++		this.#disarm()
++		if (!this.#autohide || this.#controller.signal.aborted) return
++		const tokens = this.#host.classList
++		if (!tokens.contains(this.#classes.shown) || tokens.contains(this.#classes.transition)) return
++		this.#timer = setTimeout(() => {
++			this.#timer = undefined
++			void this.hide()
++		}, this.#delay)
++	}
++
++	// Clears the pending delay.
++	#disarm(): void {
++		clearTimeout(this.#timer)
++		this.#timer = undefined
++	}
++
++	// Starts the delay when the pointer or focus leaves the host for an element outside it, unless the
++	// other input still holds it, which the `held` pseudo-class reads.
++	#leave(related: EventTarget | null, held: string): void {
++		if (isInstance(related, Node) && this.#host.contains(related)) return
++		if (this.#host.matches(held)) return
++		this.#arm()
++	}
++}
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index 4317b6e..aa8479c 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -8,6 +8,11 @@ import type {
+ 	CollapseSelectorMap,
+ 	ColorModeAttributeMap,
+ 	EventWire,
++	ToastAttributeMap,
++	ToastClassMap,
++	ToastEventMap,
++	ToastOptions,
++	ToastSelectorMap,
+ } from './types.js'
+ 
+ /** Names the attribute a color-mode controller writes by default, the attribute Bootstrap's cascade reads. */
+@@ -63,3 +68,41 @@ export const COLLAPSE_ATTRIBUTES: CollapseAttributeMap = Object.freeze({
+ export const COLLAPSE_SELECTORS: CollapseSelectorMap = Object.freeze({
+ 	trigger: '[data-bs-toggle="collapse"]',
+ })
++
++/** Names the bubbling events a toast dispatches on its host, keyed by the verb each carries. */
++export const TOAST_EVENTS: EventWire<ToastEventMap, 'toast'> = Object.freeze({
++	show: 'show.vn.toast',
++	shown: 'shown.vn.toast',
++	hide: 'hide.vn.toast',
++	hidden: 'hidden.vn.toast',
++})
++
++/** Names the class tokens a toast writes and tests and the delegate's dismiss route tests by default, the tokens Bootstrap's cascade and data API use. */
++export const TOAST_CLASSES: ToastClassMap = Object.freeze({
++	host: 'toast',
++	shown: 'show',
++	transition: 'showing',
++	fade: 'fade',
++	disabled: 'disabled',
++})
++
++/** Names the attributes a toast and the delegate's dismiss route read by default, Bootstrap's attribute names. */
++export const TOAST_ATTRIBUTES: ToastAttributeMap = Object.freeze({
++	animated: 'data-bs-animation',
++	autohide: 'data-bs-autohide',
++	delay: 'data-bs-delay',
++	target: TARGET_ATTRIBUTE,
++})
++
++/** Names the default selector the delegate routes toast dismiss clicks by, Bootstrap's data-attribute selector. */
++export const TOAST_SELECTORS: ToastSelectorMap = Object.freeze({
++	dismiss: '[data-bs-dismiss="toast"]',
++})
++
++/** Sets the fade, automatic hiding, and delay a toast starts from before its attributes and the constructor, Bootstrap's defaults. */
++export const TOAST_DEFAULTS: Required<Pick<ToastOptions, 'animated' | 'autohide' | 'delay'>> =
++	Object.freeze({
++		animated: true,
++		autohide: true,
++		delay: 5000,
++	})
+diff --git a/src/browser/index.ts b/src/browser/index.ts
+index 8e0b192..9a181b8 100644
+--- a/src/browser/index.ts
++++ b/src/browser/index.ts
+@@ -9,3 +9,4 @@ export * from './ColorMode.js'
+ export * from './Button.js'
+ export * from './Collapse.js'
+ export * from './Delegate.js'
++export * from './Toast.js'
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index a537b6a..f91ab5c 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -1841,7 +1841,7 @@ export interface ToastEventMap {
+ /** Configures the initial DOM event subscriptions for a toast. */
+ export type ToastHooks = EventHooks<ToastEventMap>
+ 
+-/** Names the class tokens a toast writes and tests; each default is the token the cascade selects on. */
++/** Names the tokens a toast writes and tests, `shown`, `transition`, and `fade`, and those the delegate's dismiss route tests, `host` and `disabled`. */
+ export interface ToastClassMap {
+ 	/** Marks the toast, which a dismiss trigger naming no target hides from inside. Default: `toast`. */
+ 	readonly host: string
+@@ -1855,7 +1855,7 @@ export interface ToastClassMap {
+ 	readonly disabled: string
+ }
+ 
+-/** Names the attributes a toast reads; each default is Bootstrap's attribute name. */
++/** Names the attributes a toast reads for its options and the one the delegate's dismiss route reads; each default is Bootstrap's attribute name. */
+ export interface ToastAttributeMap {
+ 	/** Names the toast attribute that feeds the `animated` option, Bootstrap's `animation`. Default: `data-bs-animation`. */
+ 	readonly animated: string
+@@ -1867,7 +1867,7 @@ export interface ToastAttributeMap {
+ 	readonly target: string
+ }
+ 
+-/** Names the selector a toast matches with; its default is Bootstrap's selector. */
++/** Names the selector the delegate routes dismiss clicks by; a toast constructed directly matches with none, and the default is Bootstrap's selector. */
+ export interface ToastSelectorMap {
+ 	/** Selects the triggers that hide a toast. Default: `[data-bs-dismiss="toast"]`. */
+ 	readonly dismiss: string
+@@ -1881,11 +1881,11 @@ export interface ToastOptions {
+ 	readonly autohide?: boolean
+ 	/** Sets the milliseconds a shown toast waits before it hides itself. Default: `5000`. */
+ 	readonly delay?: number
+-	/** Replaces the class tokens the toast writes and tests, read from the constructor alone; an absent key keeps its default. */
++	/** Replaces the class tokens the toast writes and tests and the delegate's dismiss route tests, read from the constructor alone; an absent key keeps its default. */
+ 	readonly classes?: Partial<ToastClassMap>
+-	/** Replaces the attribute names the toast reads, read from the constructor alone; an absent key keeps its default. */
++	/** Replaces the attribute names the toast and the delegate's dismiss route read, read from the constructor alone; an absent key keeps its default. */
+ 	readonly attributes?: Partial<ToastAttributeMap>
+-	/** Replaces the selector the toast matches with, read from the constructor alone; an absent key keeps its default. */
++	/** Replaces the selector the delegate routes dismiss clicks by, read from the constructor alone; a toast constructed directly matches with none, and an absent key keeps its default. */
+ 	readonly selectors?: Partial<ToastSelectorMap>
+ 	/** Subscribes until the toast is destroyed. */
+ 	readonly on?: ToastHooks
+@@ -1902,7 +1902,7 @@ export interface ToastInterface {
+ 	/**
+ 	 * Shows the toast and starts the delay after which it hides itself.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when a transition was in flight, a listener prevented `show`, or the toast is destroyed.
++	 * @returns Resolves true after the `shown` event; false when a transition was in flight, a listener prevented `show`, the toast is destroyed, a later call took the change over, or the toast's tokens read the change as taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await toast.show()
+@@ -1912,7 +1912,7 @@ export interface ToastInterface {
+ 	/**
+ 	 * Hides the toast.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the toast was hidden, a transition was in flight, a listener prevented `hide`, or the toast is destroyed.
++	 * @returns Resolves true after the `hidden` event; false when the toast was hidden, a transition was in flight, a listener prevented `hide`, the toast is destroyed, a later call took the change over, or the toast's tokens read the change as taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await toast.hide()
+diff --git a/src/browser/validators.ts b/src/browser/validators.ts
+index 2c3084b..6e50364 100644
+--- a/src/browser/validators.ts
++++ b/src/browser/validators.ts
+@@ -1,6 +1,6 @@
+-import type { ButtonEventMap, CollapseEventMap, ColorModeState } from './types.js'
++import type { ButtonEventMap, CollapseEventMap, ColorModeState, ToastEventMap } from './types.js'
+ import type { Guard } from '@orkestrel/contract'
+-import { literalOf } from '@orkestrel/contract'
++import { isInstance, literalOf } from '@orkestrel/contract'
+ 
+ /**
+  * Checks whether a value names a supported color mode.
+@@ -140,3 +140,28 @@ export function isCollapseEvent(value: unknown): value is CollapseEventMap['show
+ 		return false
+ 	}
+ }
++
++/**
++ * Checks whether a DOM event is a toast event, which carries no payload.
++ *
++ * @param value - The value to inspect.
++ * @returns True if the value is a CustomEvent whose detail is null; false otherwise.
++ * @remarks
++ * A toast dispatches each event with no detail, and the platform reads an absent `detail` as
++ * `null`, which is the `CustomEvent<null>` type every key of the toast event map carries, so a
++ * consumer's own event under a toast wire name that carries a payload is refused. The class half
++ * reads through the `isInstance` function `@orkestrel/contract` publishes, which contains a hostile
++ * prototype's throw, and the containment here covers a `detail` accessor that throws.
++ * @example
++ * ```ts
++ * isToastEvent(new CustomEvent('hidden.vn.toast')) // true
++ * isToastEvent(new CustomEvent('hidden.vn.toast', { detail: { shown: false } })) // false
++ * ```
++ */
++export function isToastEvent(value: unknown): value is ToastEventMap['show'] {
++	try {
++		return isInstance(value, CustomEvent) && value.detail === null
++	} catch {
++		return false
++	}
++}
+diff --git a/tests/src/browser/Delegate.test.ts b/tests/src/browser/Delegate.test.ts
+index f8b1b24..c655024 100644
+--- a/tests/src/browser/Delegate.test.ts
++++ b/tests/src/browser/Delegate.test.ts
+@@ -1,8 +1,16 @@
+-import { Button, BUTTON_SELECTORS, Collapse, COLLAPSE_SELECTORS, Delegate } from '@src/browser'
++import {
++	Button,
++	BUTTON_SELECTORS,
++	Collapse,
++	COLLAPSE_SELECTORS,
++	Delegate,
++	Toast,
++	TOAST_SELECTORS,
++} from '@src/browser'
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue, waitForCondition } from '@orkestrel/test'
+-import { build, mount } from '@orkestrel/test/browser'
++import { build, clickAccessible, mount } from '@orkestrel/test/browser'
+ import { describe, expect, it, onTestFinished } from 'vitest'
+ import { recordCalls, recordListeners, scene } from '../../setupBrowser.js'
+ 
+@@ -1003,4 +1011,281 @@ describe('Delegate', () => {
+ 			error: { code: 'COLLAPSE_OPTION_INVALID', context: { key: 'trigger' } },
+ 		})
+ 	})
++
++	it('hides the toast a dismiss trigger names by its target attribute or its href, or the toast it sits in, preventing an anchor click alone', async () => {
++		const root = scene.mount(`
++			<button type="button" data-bs-dismiss="toast" data-bs-target="#one">Dismiss one</button>
++			<a href="#two" data-bs-dismiss="toast"><span>Dismiss two</span></a>
++			<div id="one" class="toast show">One</div>
++			<div id="two" class="toast show">Two</div>
++			<div id="three" class="toast show"><button type="button" data-bs-dismiss="toast">Close</button></div>`)
++		onTestFinished(() => scene.clear())
++		const one = requireValue(root.querySelector<HTMLElement>('#one'), 'No first toast')
++		const two = requireValue(root.querySelector<HTMLElement>('#two'), 'No second toast')
++		const three = requireValue(root.querySelector<HTMLElement>('#three'), 'No third toast')
++		const trigger = requireValue(root.querySelector('button'), 'No trigger')
++		const label = requireValue(root.querySelector('a span'), 'No link label')
++		const delegate = new Delegate({ root })
++		onTestFinished(() => delegate.destroy())
++		expect(TOAST_SELECTORS.dismiss).toBe('[data-bs-dismiss="toast"]')
++		const click = new MouseEvent('click', { bubbles: true, cancelable: true })
++		expect(trigger.dispatchEvent(click)).toBe(true)
++		await waitForCondition('the first toast hides', () => !one.classList.contains('show'))
++		expect(() => new Toast(one)).toThrow(expect.objectContaining({ code: 'TOAST_HOST_OWNED' }))
++		const follow = new MouseEvent('click', { bubbles: true, cancelable: true })
++		expect(label.dispatchEvent(follow)).toBe(false)
++		await waitForCondition('the second toast hides', () => !two.classList.contains('show'))
++		await clickAccessible('Close')
++		await waitForCondition('the third toast hides', () => !three.classList.contains('show'))
++		expect(Array.from(three.classList)).toEqual(['toast'])
++		one.remove()
++		await Promise.resolve()
++		expect(Toast.find(one)).toBeUndefined()
++		expect(Array.from(one.classList)).toEqual(['toast', 'show'])
++		delegate.destroy()
++		expect(Toast.find(two)).toBeUndefined()
++		expect(Toast.find(three)).toBeUndefined()
++		expect(Array.from(two.classList)).toEqual(['toast', 'show'])
++		expect(Array.from(three.classList)).toEqual(['toast', 'show'])
++	})
++
++	it('routes toast dismiss clicks by a replaced selector alone, reads the replaced host token, target attribute, and disabled token, and constructs each engine with the toast group', async () => {
++		const root = scene.mount(`
++			<button type="button" data-vn-dismiss="note" data-vn-target="#note" class="disabled">Replaced</button>
++			<button type="button" data-bs-dismiss="toast" data-bs-target="#note">Default</button>
++			<button type="button" data-vn-dismiss="note" data-vn-target="#note" class="is-off">Off</button>
++			<div id="note" class="note is-open">Saved</div>
++			<div id="outer" class="note is-open">
++				<div id="decoy" class="toast is-open"><button type="button" data-vn-dismiss="note">Inner</button></div>
++			</div>`)
++		onTestFinished(() => scene.clear())
++		const note = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const outer = requireValue(root.querySelector<HTMLElement>('#outer'), 'No outer toast')
++		const decoy = requireValue(root.querySelector<HTMLElement>('#decoy'), 'No decoy')
++		const [replacement, fallback, off, inner] = Array.from(root.querySelectorAll('button'))
++		const delegate = new Delegate({
++			root,
++			toast: {
++				classes: { host: 'note', shown: 'is-open', disabled: 'is-off' },
++				attributes: { target: 'data-vn-target' },
++				selectors: { dismiss: '[data-vn-dismiss="note"]' },
++			},
++		})
++		onTestFinished(() => delegate.destroy())
++		fallback?.click()
++		off?.click()
++		await Promise.resolve()
++		expect(Toast.find(note)).toBeUndefined()
++		expect(Array.from(note.classList)).toEqual(['note', 'is-open'])
++		replacement?.click()
++		await waitForCondition('the toast hides', () => !note.classList.contains('is-open'))
++		expect(Array.from(note.classList)).toEqual(['note'])
++		expect(Toast.find(note)?.shown).toBe(false)
++		inner?.click()
++		await waitForCondition('the outer toast hides', () => !outer.classList.contains('is-open'))
++		expect(Toast.find(decoy)).toBeUndefined()
++		expect(Array.from(decoy.classList)).toEqual(['toast', 'is-open'])
++		delegate.destroy()
++		expect(Array.from(note.classList)).toEqual(['note', 'is-open'])
++		expect(Array.from(outer.classList)).toEqual(['note', 'is-open'])
++	})
++
++	it('skips a dismiss trigger carrying the disabled token or attribute, preventing an anchor click all the same', async () => {
++		const root = scene.mount(`
++			<a href="#note" class="disabled" data-bs-dismiss="toast">Token</a>
++			<a href="#note" disabled data-bs-dismiss="toast">Attribute</a>
++			<div id="note" class="toast show">Saved</div>`)
++		onTestFinished(() => scene.clear())
++		const note = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const delegate = new Delegate({ root })
++		onTestFinished(() => delegate.destroy())
++		for (const anchor of Array.from(root.querySelectorAll('a'))) {
++			const click = new MouseEvent('click', { bubbles: true, cancelable: true })
++			expect(anchor.dispatchEvent(click)).toBe(false)
++		}
++		await Promise.resolve()
++		expect(Toast.find(note)).toBeUndefined()
++		expect(Array.from(note.classList)).toEqual(['toast', 'show'])
++	})
++
++	it('leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots', async () => {
++		const outside = scene.mount(`<div id="away" class="toast show">Away</div>`)
++		const root = scene.mount(`
++			<button type="button" data-bs-dismiss="toast" data-bs-target="#away">Away</button>
++			<button type="button" data-bs-dismiss="toast" data-bs-target="#mine">Mine</button>
++			<div id="inner">
++				<div id="nested" class="toast show"><button type="button" data-bs-dismiss="toast">Close</button></div>
++			</div>
++			<div id="mine" class="toast show">Mine</div>`)
++		onTestFinished(() => scene.clear())
++		const away = requireValue(outside.querySelector<HTMLElement>('#away'), 'No outside toast')
++		const inner = requireValue(root.querySelector<HTMLElement>('#inner'), 'No inner root')
++		const nested = requireValue(root.querySelector<HTMLElement>('#nested'), 'No nested toast')
++		const mine = requireValue(root.querySelector<HTMLElement>('#mine'), 'No owned toast')
++		const [toAway, toMine, close] = Array.from(root.querySelectorAll('button'))
++		const hides = createRecorder<readonly [string]>()
++		const owned = new Toast(mine, { on: { hide: (event) => hides.handler(event.type) } })
++		onTestFinished(() => owned.destroy())
++		const outer = new Delegate({ root })
++		const within = new Delegate({ root: inner })
++		onTestFinished(() => outer.destroy())
++		onTestFinished(() => within.destroy())
++		toAway?.click()
++		await Promise.resolve()
++		expect(Toast.find(away)).toBeUndefined()
++		expect(Array.from(away.classList)).toEqual(['toast', 'show'])
++		toMine?.click()
++		await waitForCondition('the owned toast hides', () => !mine.classList.contains('show'))
++		expect(hides.calls).toEqual([['hide.vn.toast']])
++		const refusals = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		nested.addEventListener(
++			'hide.vn.toast',
++			(event) => {
++				refusals.handler(event.type)
++				event.preventDefault()
++			},
++			{ signal: controller.signal },
++		)
++		close?.click()
++		await Promise.resolve()
++		expect(refusals.calls).toEqual([['hide.vn.toast']])
++		expect(nested.classList.contains('show')).toBe(true)
++		controller.abort()
++		close?.click()
++		await waitForCondition('the nested toast hides', () => !nested.classList.contains('show'))
++		outer.destroy()
++		within.destroy()
++		expect(Toast.find(mine)).toBe(owned)
++		expect(Toast.find(nested)).toBeUndefined()
++		expect(Array.from(nested.classList)).toEqual(['toast', 'show'])
++	})
++
++	it('leaves a toast to the live outer delegate when a listener to the button route destroys the inner delegate during the click', async () => {
++		const root = scene.mount(`
++			<div id="inner">
++				<button type="button" data-bs-toggle="button" data-bs-dismiss="toast" data-bs-target="#note">Both</button>
++				<div id="note" class="toast show">Saved</div>
++			</div>`)
++		onTestFinished(() => scene.clear())
++		const inner = requireValue(root.querySelector<HTMLElement>('#inner'), 'No inner root')
++		const note = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const trigger = requireValue(root.querySelector('button'), 'No trigger')
++		const outer = new Delegate({ root })
++		const within = new Delegate({ root: inner })
++		onTestFinished(() => outer.destroy())
++		onTestFinished(() => within.destroy())
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		root.addEventListener('toggle.vn.button', () => within.destroy(), {
++			signal: controller.signal,
++		})
++		trigger.click()
++		await waitForCondition('the toast hides', () => !note.classList.contains('show'))
++		const engine = requireValue(Toast.find(note), 'No toast engine')
++		expect(engine.shown).toBe(false)
++		outer.destroy()
++		expect(Toast.find(note)).toBeUndefined()
++		expect(Array.from(note.classList)).toEqual(['toast', 'show'])
++	})
++
++	it('refuses a click whose button host is the toast its dismiss trigger resolves when neither engine exists, and drives both routes once when a consumer constructed the button', async () => {
++		const root = scene.mount(`
++			<div id="note" class="toast show" data-vn-press>
++				<button type="button" data-bs-dismiss="toast">Close</button>
++			</div>`)
++		onTestFinished(() => scene.clear())
++		const note = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const trigger = requireValue(root.querySelector('button'), 'No trigger')
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of ['toggle.vn.button', 'hide.vn.toast']) {
++			root.addEventListener(name, (event) => events.handler(event.type), {
++				signal: controller.signal,
++			})
++		}
++		const delegate = new Delegate({ root, button: { selectors: { trigger: '[data-vn-press]' } } })
++		onTestFinished(() => delegate.destroy())
++		const click = new MouseEvent('click', { bubbles: true, cancelable: true })
++		expect(trigger.dispatchEvent(click)).toBe(true)
++		await Promise.resolve()
++		expect(click.defaultPrevented).toBe(false)
++		expect(events.calls).toEqual([])
++		expect(Button.find(note)).toBeUndefined()
++		expect(Toast.find(note)).toBeUndefined()
++		expect(Array.from(note.classList)).toEqual(['toast', 'show'])
++		expect(note.hasAttribute('aria-pressed')).toBe(false)
++		const pressing = new Button(note)
++		onTestFinished(() => pressing.destroy())
++		trigger.click()
++		await waitForCondition('the toast hides', () => !note.classList.contains('show'))
++		expect(events.calls).toEqual([['toggle.vn.button'], ['hide.vn.toast']])
++		expect(Button.find(note)).toBe(pressing)
++		expect(note.getAttribute('aria-pressed')).toBe('true')
++	})
++
++	it('drives the button route alone when the dismiss trigger inside the toast that is its button host is disabled', () => {
++		const root = scene.mount(`
++			<div id="note" class="toast show" data-vn-press>
++				<button type="button" class="disabled" data-bs-dismiss="toast">Close</button>
++			</div>`)
++		onTestFinished(() => scene.clear())
++		const note = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const trigger = requireValue(root.querySelector('button'), 'No trigger')
++		const delegate = new Delegate({ root, button: { selectors: { trigger: '[data-vn-press]' } } })
++		onTestFinished(() => delegate.destroy())
++		trigger.click()
++		expect(note.getAttribute('aria-pressed')).toBe('true')
++		expect(Toast.find(note)).toBeUndefined()
++		expect(Array.from(note.classList)).toEqual(['toast', 'show', 'active'])
++	})
++
++	it('refuses a click whose collapse trigger names the toast its dismiss trigger resolves when neither engine exists, driving neither route', async () => {
++		const root = scene.mount(`
++			<button type="button" data-bs-toggle="collapse" data-bs-dismiss="toast" data-bs-target="#note">Both</button>
++			<div id="note" class="toast show collapse">Saved</div>`)
++		onTestFinished(() => scene.clear())
++		const note = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const trigger = requireValue(root.querySelector('button'), 'No trigger')
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of ['hide.vn.collapse', 'show.vn.collapse', 'hide.vn.toast']) {
++			root.addEventListener(name, (event) => events.handler(event.type), {
++				signal: controller.signal,
++			})
++		}
++		const delegate = new Delegate({ root })
++		onTestFinished(() => delegate.destroy())
++		trigger.click()
++		await Promise.resolve()
++		expect(events.calls).toEqual([])
++		expect(Collapse.find(note)).toBeUndefined()
++		expect(Toast.find(note)).toBeUndefined()
++		expect(Array.from(note.classList)).toEqual(['toast', 'show', 'collapse'])
++		expect(trigger.hasAttribute('aria-expanded')).toBe(false)
++	})
++
++	it('refuses a toast group value that is not a class token, an attribute name, or a selector at construction', () => {
++		const root = build('div')
++		expect(
++			attempt(() => new Delegate({ root, toast: { classes: { disabled: 'is off' } } })),
++		).toMatchObject({
++			success: false,
++			error: { code: 'TOAST_OPTION_INVALID', context: { key: 'disabled' } },
++		})
++		expect(
++			attempt(() => new Delegate({ root, toast: { attributes: { target: 'data target' } } })),
++		).toMatchObject({
++			success: false,
++			error: { code: 'TOAST_OPTION_INVALID', context: { key: 'target' } },
++		})
++		const refused = attempt(() => new Delegate({ root, toast: { selectors: { dismiss: '' } } }))
++		expect(refused).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
++		expect(refused).toMatchObject({
++			error: { code: 'TOAST_OPTION_INVALID', context: { key: 'dismiss' } },
++		})
++	})
+ })
+diff --git a/tests/src/browser/Toast.test.ts b/tests/src/browser/Toast.test.ts
+new file mode 100644
+index 0000000..cafb267
+--- /dev/null
++++ b/tests/src/browser/Toast.test.ts
+@@ -0,0 +1,1264 @@
++import type { ToastInterface } from '@src/browser'
++import {
++	Toast,
++	TOAST_ATTRIBUTES,
++	TOAST_CLASSES,
++	TOAST_DEFAULTS,
++	TOAST_EVENTS,
++	TOAST_SELECTORS,
++} from '@src/browser'
++import { isAppError } from '@src/core'
++import { attempt } from '@orkestrel/contract'
++import { createRecorder, requireValue, waitForEvent } from '@orkestrel/test'
++import { releaseMedia, stageMedia, waitForAnimations } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
++import { userEvent } from 'vitest/browser'
++import toastCascade from '../../../src/styles/components/_toast.scss?inline'
++import { recordListeners, scene } from '../../setupBrowser.js'
++
++// Bootstrap's `.fade` rule from its `_transitions.scss` file, which the shipped cascade does not
++// carry: the toast key declares no transition, so each case that proves a wait loads this sheet.
++const FADE =
++	'.fade { transition: opacity 0.15s linear } @media (prefers-reduced-motion: reduce) { .fade { transition: none } } .fade:not(.show) { opacity: 0 }'
++
++afterEach(() => scene.clear())
++
++describe('Toast', () => {
++	it('publishes frozen default tables that name the cascade tokens, Bootstrap attributes, wire events, and defaults', () => {
++		expect(TOAST_CLASSES).toStrictEqual({
++			host: 'toast',
++			shown: 'show',
++			transition: 'showing',
++			fade: 'fade',
++			disabled: 'disabled',
++		})
++		expect(TOAST_ATTRIBUTES).toStrictEqual({
++			animated: 'data-bs-animation',
++			autohide: 'data-bs-autohide',
++			delay: 'data-bs-delay',
++			target: 'data-bs-target',
++		})
++		expect(TOAST_SELECTORS).toStrictEqual({ dismiss: '[data-bs-dismiss="toast"]' })
++		expect(TOAST_EVENTS).toStrictEqual({
++			show: 'show.vn.toast',
++			shown: 'shown.vn.toast',
++			hide: 'hide.vn.toast',
++			hidden: 'hidden.vn.toast',
++		})
++		expect(TOAST_DEFAULTS).toStrictEqual({ animated: true, autohide: true, delay: 5000 })
++		for (const table of [
++			TOAST_CLASSES,
++			TOAST_ATTRIBUTES,
++			TOAST_SELECTORS,
++			TOAST_EVENTS,
++			TOAST_DEFAULTS,
++		]) {
++			expect(Object.isFrozen(table)).toBe(true)
++		}
++	})
++
++	it('reads the shipped toast declarations, which carry no transition, and the fade sheet the motion proofs load', () => {
++		const sheet = requireValue(scene.load(toastCascade).sheet, 'The cascade sheet did not load')
++		const root = scene.mount('<div class="toast"></div>')
++		const probe = requireValue(root.querySelector<HTMLElement>('.toast'), 'No probe')
++		expect(sheet.cssRules.length).toBeGreaterThan(0)
++		expect(getComputedStyle(probe).display).toBe('none')
++		expect(getComputedStyle(probe).transitionDuration).toBe('0s')
++		probe.classList.add('show')
++		expect(getComputedStyle(probe).display).toBe('block')
++		expect(getComputedStyle(probe).opacity).toBe('1')
++		probe.classList.add('showing')
++		expect(getComputedStyle(probe).opacity).toBe('0')
++		expect(getComputedStyle(probe).transitionDuration).toBe('0s')
++		scene.load(FADE)
++		probe.classList.add('fade')
++		expect(getComputedStyle(probe).transitionProperty).toBe('opacity')
++		expect(getComputedStyle(probe).transitionDuration).toBe('0.15s')
++		probe.classList.remove('show', 'showing')
++		expect(getComputedStyle(probe).display).toBe('none')
++	})
++
++	it('shows through the fade and showing tokens and hides back under the shipped cascade, awaiting the fade out', async () => {
++		scene.load(toastCascade)
++		scene.load(FADE)
++		const root = scene.mount(
++			'<div class="toast" id="note"><div class="toast-body">Saved</div></div>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const order = createRecorder<readonly [string]>()
++		const running = createRecorder<readonly [number]>()
++		const toast = new Toast(host, {
++			autohide: false,
++			on: {
++				shown: (event) => {
++					order.handler(event.type)
++					running.handler(host.getAnimations().length)
++				},
++				hidden: (event) => {
++					order.handler(event.type)
++					running.handler(host.getAnimations().length)
++				},
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		expect(toast.host).toBe(host)
++		expect(toast.shown).toBe(false)
++		const showing = toast.show()
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show', 'showing'])
++		expect(toast.shown).toBe(true)
++		// The toast goes from no display to displayed at no opacity, so no transition starts.
++		expect(host.getAnimations()).toEqual([])
++		expect(await showing).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++		await waitForAnimations(host)
++		expect(getComputedStyle(host).opacity).toBe('1')
++		const hiding = toast.hide()
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show', 'showing'])
++		const [fading] = host.getAnimations()
++		expect(fading).toBeInstanceOf(CSSTransition)
++		expect(fading instanceof CSSTransition ? fading.transitionProperty : '').toBe('opacity')
++		void fading?.finished.then(() => order.handler('finished'))
++		expect(await hiding).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++		expect(getComputedStyle(host).display).toBe('none')
++		expect(toast.shown).toBe(false)
++		// The shown event's reading starts the fade in, which runs after the showing token has left.
++		expect(order.calls).toEqual([['shown.vn.toast'], ['finished'], ['hidden.vn.toast']])
++		expect(running.calls).toEqual([[1], [0]])
++	})
++
++	it('dispatches shown after the fade in finishes when the toast is displayed before it shows, under the fade sheet alone', async () => {
++		scene.load(FADE)
++		const root = scene.mount('<div class="toast fade" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const order = createRecorder<readonly [string]>()
++		const remaining = createRecorder<readonly [number]>()
++		const toast = new Toast(host, {
++			autohide: false,
++			on: {
++				shown: (event) => {
++					order.handler(event.type)
++					remaining.handler(host.getAnimations().length)
++				},
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		const showing = toast.show()
++		const [transition] = host.getAnimations()
++		expect(transition).toBeInstanceOf(CSSTransition)
++		void transition?.finished.then(() => order.handler('finished'))
++		expect(await showing).toBe(true)
++		expect(order.calls).toEqual([['finished'], ['shown.vn.toast']])
++		expect(remaining.calls).toEqual([[0]])
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++	})
++
++	it('shows and hides at once with animated false, writing no fade token and awaiting nothing', async () => {
++		scene.load(FADE)
++		const root = scene.mount('<div class="toast" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			animated: false,
++			autohide: false,
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++				hide: (event) => events.handler(event.type),
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		const showing = toast.show()
++		expect(events.calls).toEqual([['show.vn.toast'], ['shown.vn.toast']])
++		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
++		expect(host.getAnimations()).toEqual([])
++		expect(await showing).toBe(true)
++		const hiding = toast.hide()
++		expect(events.calls).toEqual([
++			['show.vn.toast'],
++			['shown.vn.toast'],
++			['hide.vn.toast'],
++			['hidden.vn.toast'],
++		])
++		expect(Array.from(host.classList)).toEqual(['toast'])
++		expect(await hiding).toBe(true)
++	})
++
++	it('dispatches shown with no animation created under staged reduced motion', async () => {
++		scene.load(FADE)
++		await stageMedia({ motion: false })
++		onTestFinished(() => releaseMedia())
++		const root = scene.mount('<div class="toast fade" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const shown = createRecorder<readonly [number]>()
++		const toast = new Toast(host, {
++			autohide: false,
++			on: { shown: () => shown.handler(host.getAnimations().length) },
++		})
++		onTestFinished(() => toast.destroy())
++		const showing = toast.show()
++		expect(host.classList.contains('showing')).toBe(true)
++		expect(getComputedStyle(host).transitionDuration).toBe('0s')
++		expect(host.getAnimations()).toEqual([])
++		expect(await showing).toBe(true)
++		expect(shown.calls).toEqual([[0]])
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++	})
++
++	it('resolves false for a hide on a hidden toast and for a call while a transition is in flight, completing the transition in flight once', async () => {
++		scene.load(toastCascade)
++		scene.load(FADE)
++		const root = scene.mount('<div class="toast" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			autohide: false,
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++				hide: (event) => events.handler(event.type),
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		expect(await toast.hide()).toBe(false)
++		expect(events.count).toBe(0)
++		const showing = toast.show()
++		const shownAgain = toast.show()
++		const hiddenDuring = toast.hide()
++		expect(await shownAgain).toBe(false)
++		expect(await hiddenDuring).toBe(false)
++		expect(await showing).toBe(true)
++		await waitForAnimations(host)
++		const hiding = toast.hide()
++		const shownDuring = toast.show()
++		const hiddenAgain = toast.hide()
++		expect(await shownDuring).toBe(false)
++		expect(await hiddenAgain).toBe(false)
++		expect(await hiding).toBe(true)
++		expect(events.calls).toEqual([
++			['show.vn.toast'],
++			['shown.vn.toast'],
++			['hide.vn.toast'],
++			['hidden.vn.toast'],
++		])
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++	})
++
++	it('hides itself after the delay its attribute names, and never with autohide off', async () => {
++		const root = scene.mount(`
++			<button type="button">Outside</button>
++			<div class="toast" id="held" data-bs-autohide="false" data-bs-delay="40">Held</div>
++			<div class="toast" id="timed" data-bs-delay="40">Timed</div>`)
++		const held = requireValue(root.querySelector<HTMLElement>('#held'), 'No held toast')
++		const timed = requireValue(root.querySelector<HTMLElement>('#timed'), 'No timed toast')
++		await userEvent.hover(requireValue(root.querySelector('button'), 'No outside control'))
++		const events = createRecorder<readonly [string]>()
++		const stamps = createRecorder<readonly [number]>()
++		const keeper = new Toast(held)
++		const toast = new Toast(timed, {
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++				hide: (event) => {
++					events.handler(event.type)
++					stamps.handler(performance.now())
++				},
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => keeper.destroy())
++		onTestFinished(() => toast.destroy())
++		const hidden = waitForEvent<readonly [Event]>(
++			(listener) => timed.addEventListener('hidden.vn.toast', listener, { once: true }),
++			'the timed toast hides',
++		)
++		const start = performance.now()
++		expect(await keeper.show()).toBe(true)
++		expect(await toast.show()).toBe(true)
++		await hidden
++		expect(requireValue(stamps.calls[0], 'No hide stamp')[0] - start).toBeGreaterThanOrEqual(40)
++		expect(events.calls).toEqual([
++			['show.vn.toast'],
++			['shown.vn.toast'],
++			['hide.vn.toast'],
++			['hidden.vn.toast'],
++		])
++		expect(toast.shown).toBe(false)
++		expect(keeper.shown).toBe(true)
++	})
++
++	it('restarts the delay when show runs on a shown toast, dispatching both events again', async () => {
++		const root = scene.mount(`
++			<button type="button">Outside</button>
++			<div class="toast" id="note">Saved</div>
++			<div class="toast" id="control">Control</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const other = requireValue(root.querySelector<HTMLElement>('#control'), 'No control toast')
++		await userEvent.hover(requireValue(root.querySelector('button'), 'No outside control'))
++		const events = createRecorder<readonly [string]>()
++		const stamps = createRecorder<readonly [number]>()
++		const toast = new Toast(host, {
++			delay: 80,
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++				hide: () => stamps.handler(performance.now()),
++			},
++		})
++		const control = new Toast(other, { delay: 40 })
++		onTestFinished(() => toast.destroy())
++		onTestFinished(() => control.destroy())
++		expect(await toast.show()).toBe(true)
++		const cycled = waitForEvent<readonly [Event]>(
++			(listener) => other.addEventListener('hidden.vn.toast', listener, { once: true }),
++			'the control toast hides',
++		)
++		expect(await control.show()).toBe(true)
++		await cycled
++		expect(toast.shown).toBe(true)
++		const hidden = waitForEvent<readonly [Event]>(
++			(listener) => host.addEventListener('hidden.vn.toast', listener, { once: true }),
++			'the toast hides',
++		)
++		const restart = performance.now()
++		expect(await toast.show()).toBe(true)
++		await hidden
++		expect(requireValue(stamps.calls[0], 'No hide stamp')[0] - restart).toBeGreaterThanOrEqual(80)
++		expect(stamps.count).toBe(1)
++		expect(events.calls).toEqual([
++			['show.vn.toast'],
++			['shown.vn.toast'],
++			['show.vn.toast'],
++			['shown.vn.toast'],
++		])
++	})
++
++	it('holds the delay while the pointer rests inside or focus stays inside, focus moving between descendants included, and starts it in full after both have left', async () => {
++		const root = scene.mount(`
++			<button type="button">Outside</button>
++			<div class="toast" id="note"><button type="button">First</button><button type="button">Second</button></div>
++			<div class="toast" id="control">Control</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const other = requireValue(root.querySelector<HTMLElement>('#control'), 'No control toast')
++		const [outside, first, second] = Array.from(root.querySelectorAll('button'))
++		const inner = requireValue(first, 'No first control')
++		const next = requireValue(second, 'No second control')
++		const away = requireValue(outside, 'No outside control')
++		const stamps = createRecorder<readonly [number]>()
++		const toast = new Toast(host, {
++			delay: 40,
++			on: { hide: () => stamps.handler(performance.now()) },
++		})
++		const control = new Toast(other, { delay: 40 })
++		onTestFinished(() => toast.destroy())
++		onTestFinished(() => control.destroy())
++		await userEvent.hover(inner)
++		expect(await toast.show()).toBe(true)
++		// Each cycle shows the control toast with the same delay and waits for it to hide itself, so a
++		// delay the toast started before the cycle ends first.
++		for (const step of ['pointer inside', 'focus inside', 'pointer back inside']) {
++			if (step === 'focus inside') {
++				inner.focus()
++				next.focus()
++				await userEvent.hover(away)
++			}
++			if (step === 'pointer back inside') {
++				await userEvent.hover(next)
++				away.focus()
++			}
++			const cycled = waitForEvent<readonly [Event]>(
++				(listener) => other.addEventListener('hidden.vn.toast', listener, { once: true }),
++				`the control toast hides with the ${step}`,
++			)
++			expect(await control.show()).toBe(true)
++			await cycled
++			expect([step, toast.shown, stamps.count]).toEqual([step, true, 0])
++		}
++		const hidden = waitForEvent<readonly [Event]>(
++			(listener) => host.addEventListener('hidden.vn.toast', listener, { once: true }),
++			'the toast hides after both have left',
++		)
++		const left = performance.now()
++		await userEvent.hover(away)
++		await hidden
++		expect(requireValue(stamps.calls[0], 'No hide stamp')[0] - left).toBeGreaterThanOrEqual(40)
++	})
++
++	it('keeps the delay cleared when focus moves between descendants and a descendant listener stops the focusin that follows', async () => {
++		const root = scene.mount(`
++			<button type="button">Outside</button>
++			<div class="toast" id="note"><button type="button">First</button><button type="button">Second</button></div>
++			<div class="toast" id="control">Control</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const other = requireValue(root.querySelector<HTMLElement>('#control'), 'No control toast')
++		const [outside, first, second] = Array.from(root.querySelectorAll('button'))
++		const inner = requireValue(first, 'No first control')
++		const next = requireValue(second, 'No second control')
++		await userEvent.hover(requireValue(outside, 'No outside control'))
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		next.addEventListener('focusin', (event) => event.stopPropagation(), {
++			signal: controller.signal,
++		})
++		const toast = new Toast(host, { delay: 40 })
++		const control = new Toast(other, { delay: 40 })
++		onTestFinished(() => toast.destroy())
++		onTestFinished(() => control.destroy())
++		expect(await toast.show()).toBe(true)
++		inner.focus()
++		next.focus()
++		expect(document.activeElement).toBe(next)
++		const cycled = waitForEvent<readonly [Event]>(
++			(listener) => other.addEventListener('hidden.vn.toast', listener, { once: true }),
++			'the control toast hides',
++		)
++		expect(await control.show()).toBe(true)
++		await cycled
++		expect(toast.shown).toBe(true)
++	})
++
++	// The pointer must reach the toast before its delay ends, so the delay is sized well past the
++	// round trip of a trusted hover; focus moves synchronously and needs no margin.
++	it('clears a pending delay when focus or the pointer enters, and starts it again in full when both have left', async () => {
++		const delay = 300
++		const root = scene.mount(`
++			<button type="button">Outside</button>
++			<div class="toast" id="note"><button type="button">Inside</button></div>
++			<div class="toast" id="control">Control</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const other = requireValue(root.querySelector<HTMLElement>('#control'), 'No control toast')
++		const [outside, first] = Array.from(root.querySelectorAll('button'))
++		const inner = requireValue(first, 'No inside control')
++		const away = requireValue(outside, 'No outside control')
++		await userEvent.hover(away)
++		const stamps = createRecorder<readonly [number]>()
++		const toast = new Toast(host, { delay, on: { hide: () => stamps.handler(performance.now()) } })
++		const control = new Toast(other, { delay })
++		onTestFinished(() => toast.destroy())
++		onTestFinished(() => control.destroy())
++		for (const input of ['focus', 'pointer']) {
++			stamps.clear()
++			expect(await toast.show()).toBe(true)
++			if (input === 'focus') inner.focus()
++			else await userEvent.hover(inner)
++			const cycled = waitForEvent<readonly [Event]>(
++				(listener) => other.addEventListener('hidden.vn.toast', listener, { once: true }),
++				`the control toast hides while ${input} is inside`,
++				{ budget: 4000 },
++			)
++			expect(await control.show()).toBe(true)
++			await cycled
++			expect([input, toast.shown, stamps.count]).toEqual([input, true, 0])
++			const hidden = waitForEvent<readonly [Event]>(
++				(listener) => host.addEventListener('hidden.vn.toast', listener, { once: true }),
++				`the toast hides after ${input} leaves`,
++				{ budget: 4000 },
++			)
++			const left = performance.now()
++			if (input === 'focus') away.focus()
++			else await userEvent.hover(away)
++			await hidden
++			expect(requireValue(stamps.calls[0], 'No hide stamp')[0] - left).toBeGreaterThanOrEqual(delay)
++		}
++	})
++
++	it('clears the pending delay when a hide is accepted, so a toast its markup shows again stays shown', async () => {
++		const root = scene.mount(`
++			<button type="button">Outside</button>
++			<div class="toast" id="note">Saved</div>
++			<div class="toast" id="control">Control</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const other = requireValue(root.querySelector<HTMLElement>('#control'), 'No control toast')
++		await userEvent.hover(requireValue(root.querySelector('button'), 'No outside control'))
++		const toast = new Toast(host, { delay: 40 })
++		const control = new Toast(other, { delay: 40 })
++		onTestFinished(() => toast.destroy())
++		onTestFinished(() => control.destroy())
++		expect(await toast.show()).toBe(true)
++		expect(await toast.hide()).toBe(true)
++		host.classList.add('show')
++		const cycled = waitForEvent<readonly [Event]>(
++			(listener) => other.addEventListener('hidden.vn.toast', listener, { once: true }),
++			'the control toast hides',
++		)
++		expect(await control.show()).toBe(true)
++		await cycled
++		expect(toast.shown).toBe(true)
++	})
++
++	it('leaves the toast untouched when a listener prevents show or hide, and resolves false', async () => {
++		const root = scene.mount('<div class="toast" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const completed = createRecorder<readonly [string]>()
++		const refusals = createRecorder<readonly [boolean]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of ['show.vn.toast', 'hide.vn.toast']) {
++			host.addEventListener(
++				name,
++				(event) => {
++					refusals.handler(event.cancelable)
++					event.preventDefault()
++				},
++				{ signal: controller.signal },
++			)
++		}
++		const toast = new Toast(host, {
++			on: {
++				shown: (event) => completed.handler(event.type),
++				hidden: (event) => completed.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		expect(await toast.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(Array.from(host.classList)).toEqual(['toast'])
++		host.classList.add('show')
++		observer.takeRecords()
++		writes.clear()
++		expect(await toast.hide()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
++		expect(refusals.calls).toEqual([[true], [true]])
++		expect(completed.count).toBe(0)
++	})
++
++	it('dispatches bubbling events, the pre-change ones cancelable, with no detail, and binds only engine-shaped events to hooks', async () => {
++		const root = scene.mount('<div class="toast" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const readings = createRecorder<readonly [string, boolean, boolean, unknown]>()
++		const hooks = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of Object.values(TOAST_EVENTS)) {
++			root.addEventListener(
++				name,
++				(event) =>
++					readings.handler(
++						event.type,
++						event.bubbles,
++						event.cancelable,
++						event instanceof CustomEvent ? event.detail : undefined,
++					),
++				{ signal: controller.signal },
++			)
++		}
++		const toast = new Toast(host, {
++			autohide: false,
++			on: {
++				show: (event) => hooks.handler(event.type),
++				shown: (event) => hooks.handler(event.type),
++				hide: (event) => hooks.handler(event.type),
++				hidden: (event) => hooks.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		expect(await toast.show()).toBe(true)
++		expect(await toast.hide()).toBe(true)
++		expect(readings.calls).toEqual([
++			['show.vn.toast', true, true, null],
++			['shown.vn.toast', true, false, null],
++			['hide.vn.toast', true, true, null],
++			['hidden.vn.toast', true, false, null],
++		])
++		expect(hooks.calls).toEqual([
++			['show.vn.toast'],
++			['shown.vn.toast'],
++			['hide.vn.toast'],
++			['hidden.vn.toast'],
++		])
++		host.dispatchEvent(new CustomEvent('shown.vn.toast', { detail: { shown: true } }))
++		host.dispatchEvent(new Event('hidden.vn.toast'))
++		expect(hooks.count).toBe(4)
++	})
++
++	it('abandons the transition in flight on destruction, resolving false and restoring the toast', async () => {
++		scene.load(FADE)
++		const root = scene.mount('<div class="toast fade" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const hooks = createRecorder<readonly [string]>()
++		const lifetime = new AbortController()
++		let toast: ToastInterface | undefined
++		onTestFinished(() => toast?.destroy())
++		const targets = await recordListeners(async () => {
++			toast = new Toast(host, {
++				on: {
++					show: (event) => hooks.handler(event.type),
++					shown: (event) => hooks.handler(event.type),
++				},
++				signal: lifetime.signal,
++			})
++		})
++		expect(targets).toEqual([host, host, host, host, host, host, lifetime.signal])
++		const showing = toast?.show()
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show', 'showing'])
++		expect(host.getAnimations()).toHaveLength(1)
++		toast?.destroy()
++		expect(await showing).toBe(false)
++		expect(hooks.calls).toEqual([['show.vn.toast']])
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++		expect(Toast.find(host)).toBeUndefined()
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		host.dispatchEvent(new CustomEvent('shown.vn.toast', { bubbles: true }))
++		lifetime.abort()
++		expect(hooks.calls).toEqual([['show.vn.toast']])
++		expect(await toast?.show()).toBe(false)
++		expect(await toast?.hide()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		const replacement = new Toast(host)
++		onTestFinished(() => replacement.destroy())
++		expect(Toast.find(host)).toBe(replacement)
++	})
++
++	it('restores the tokens it wrote after a completed change, keeping consumer edits, and a toast its markup showed', async () => {
++		const root = scene.mount(`
++			<div class="toast" id="note">Saved</div>
++			<div class="toast show" id="open">Open</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const open = requireValue(root.querySelector<HTMLElement>('#open'), 'No open toast')
++		const toast = new Toast(host, { autohide: false })
++		const shown = new Toast(open, { autohide: false })
++		onTestFinished(() => toast.destroy())
++		onTestFinished(() => shown.destroy())
++		expect(await toast.show()).toBe(true)
++		host.classList.add('consumer')
++		toast.destroy()
++		expect(Array.from(host.classList)).toEqual(['toast', 'consumer'])
++		expect(shown.shown).toBe(true)
++		expect(await shown.hide()).toBe(true)
++		expect(Array.from(open.classList)).toEqual(['toast'])
++		shown.destroy()
++		expect(Array.from(open.classList)).toEqual(['toast', 'show'])
++	})
++
++	it('writes, removes, tests, and reads only the replacing values when every group is replaced', async () => {
++		const root = scene.mount(`
++			<div class="note" id="note" data-vn-autohide="false" data-bs-animation="false" data-bs-delay="soon">Saved</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const classes = {
++			host: 'note',
++			shown: 'is-open',
++			transition: 'is-fading',
++			fade: 'is-faded',
++			disabled: 'is-off',
++		}
++		const attributes = {
++			animated: 'data-vn-animation',
++			autohide: 'data-vn-autohide',
++			delay: 'data-vn-delay',
++			target: 'data-vn-target',
++		}
++		const selectors = { dismiss: '[data-vn-dismiss]' }
++		const toast = new Toast(host, { classes, attributes, selectors })
++		onTestFinished(() => toast.destroy())
++		classes.shown = 'later'
++		expect(toast.shown).toBe(false)
++		const showing = toast.show()
++		expect(Array.from(host.classList)).toEqual(['note', 'is-faded', 'is-open', 'is-fading'])
++		expect(await showing).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['note', 'is-faded', 'is-open'])
++		expect(toast.shown).toBe(true)
++		host.classList.add('show', 'showing', 'fade')
++		expect(await toast.hide()).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['note', 'is-faded', 'show', 'showing', 'fade'])
++		expect(toast.shown).toBe(false)
++	})
++
++	it('refuses a group value that is not a class token, an attribute name, or a selector, and an attribute that fails coercion, before claiming the host', () => {
++		const root = scene.mount(`
++			<div class="toast" id="delay" data-bs-delay="soon"></div>
++			<div class="toast" id="animation" data-bs-animation="maybe"></div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#delay'), 'No toast')
++		const animated = requireValue(root.querySelector<HTMLElement>('#animation'), 'No toast')
++		expect(attempt(() => new Toast(host, { classes: { shown: 'is open' } }))).toMatchObject({
++			success: false,
++			error: { code: 'TOAST_OPTION_INVALID', context: { key: 'shown' } },
++		})
++		expect(attempt(() => new Toast(host, { attributes: { delay: 'data delay' } }))).toMatchObject({
++			success: false,
++			error: { code: 'TOAST_OPTION_INVALID', context: { key: 'delay' } },
++		})
++		expect(
++			attempt(() => new Toast(host, { selectors: { dismiss: '[data-vn-dismiss=' } })),
++		).toMatchObject({
++			success: false,
++			error: { code: 'TOAST_OPTION_INVALID', context: { key: 'dismiss' } },
++		})
++		const delay = attempt(() => new Toast(host))
++		expect(delay).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
++		expect(delay).toMatchObject({
++			error: { code: 'TOAST_OPTION_INVALID', context: { attribute: 'data-bs-delay', tag: 'DIV' } },
++		})
++		expect(attempt(() => new Toast(animated))).toMatchObject({
++			error: {
++				code: 'TOAST_OPTION_INVALID',
++				context: { attribute: 'data-bs-animation', tag: 'DIV' },
++			},
++		})
++		expect(Toast.find(host)).toBeUndefined()
++		expect(Toast.find(animated)).toBeUndefined()
++		const toast = new Toast(host, { delay: 30 })
++		onTestFinished(() => toast.destroy())
++		expect(Toast.find(host)).toBe(toast)
++	})
++
++	it('refuses an invalid host and a second owner, then permits reconstruction after destruction', () => {
++		const absent = attempt(() => Reflect.construct(Toast, [null]))
++		expect(absent).toEqual({ success: false, error: expect.toSatisfy(isAppError) })
++		expect(absent).toMatchObject({
++			error: { code: 'TOAST_HOST_INVALID', context: { tag: undefined } },
++		})
++		const svg = attempt(() =>
++			Reflect.construct(Toast, [document.createElementNS('http://www.w3.org/2000/svg', 'svg')]),
++		)
++		expect(svg).toMatchObject({ error: { code: 'TOAST_HOST_INVALID', context: { tag: 'svg' } } })
++		const host = document.createElement('div')
++		const toast = new Toast(host)
++		onTestFinished(() => toast.destroy())
++		expect(Toast.find(host)).toBe(toast)
++		expect(attempt(() => new Toast(host))).toMatchObject({
++			success: false,
++			error: { code: 'TOAST_HOST_OWNED', context: { tag: 'DIV' } },
++		})
++		toast.destroy()
++		expect(Toast.find(host)).toBeUndefined()
++		const replacement = new Toast(host)
++		onTestFinished(() => replacement.destroy())
++		expect(Toast.find(host)).toBe(replacement)
++	})
++
++	it('destroys the toast when its signal aborts, and at construction when it arrived aborted', async () => {
++		const host = document.createElement('div')
++		host.className = 'toast'
++		const controller = new AbortController()
++		const toast = new Toast(host, { autohide: false, signal: controller.signal })
++		onTestFinished(() => toast.destroy())
++		expect(await toast.show()).toBe(true)
++		controller.abort()
++		expect(Toast.find(host)).toBeUndefined()
++		expect(Array.from(host.classList)).toEqual(['toast'])
++		const aborted = new Toast(host, { signal: AbortSignal.abort() })
++		expect(Toast.find(host)).toBeUndefined()
++		expect(await aborted.show()).toBe(false)
++		expect(Array.from(host.classList)).toEqual(['toast'])
++	})
++
++	// A custom element's attribute reaction runs inside the class write that triggers it, so the
++	// reaction destroys the toast while `show` is still on the stack between two writes.
++	it('stops writing when a reaction to its own write destroys it, resolving false and restoring the toast', async () => {
++		const name = 'vn-toast-destroyed-write'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		const destroyed = createRecorder<readonly [readonly MutationRecord[]]>()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			toast.destroy()
++			destroyed.handler(observer.takeRecords())
++		})
++		expect(await toast.show()).toBe(false)
++		expect(destroyed.count).toBe(1)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.calls).toEqual([['show.vn.toast']])
++		expect(Array.from(host.classList)).toEqual(['toast'])
++	})
++
++	it('writes nothing when a listener to its show event destroys it, resolving false', async () => {
++		const root = scene.mount('<div class="toast" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const events = createRecorder<readonly [string]>()
++		const toast: ToastInterface = new Toast(host, {
++			on: {
++				show: (event) => {
++					events.handler(event.type)
++					toast.destroy()
++				},
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		expect(await toast.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.calls).toEqual([['show.vn.toast']])
++		expect(Toast.find(host)).toBeUndefined()
++	})
++
++	it('runs one transition and one shown event when a listener to its show event shows it again, the inner call resolving true and the outer false', async () => {
++		const name = 'vn-toast-reentered-show'
++		const reactions = createRecorder<readonly [string | null, string | null]>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, previous: string | null, value: string | null) {
++					reactions.handler(previous, value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast'
++		root.append(host)
++		reactions.clear()
++		const events = createRecorder<readonly [string]>()
++		const inner = createRecorder<readonly [Promise<boolean>]>()
++		let reentered = false
++		const toast: ToastInterface = new Toast(host, {
++			autohide: false,
++			on: {
++				show: (event) => {
++					events.handler(event.type)
++					if (reentered) return
++					reentered = true
++					inner.handler(toast.show())
++				},
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		expect(await toast.show()).toBe(false)
++		expect(inner.count).toBe(1)
++		expect(await inner.calls[0]?.[0]).toBe(true)
++		expect(events.calls).toEqual([['show.vn.toast'], ['show.vn.toast'], ['shown.vn.toast']])
++		expect(
++			reactions.calls.filter(
++				([previous, value]) =>
++					!(previous ?? '').split(' ').includes('showing') &&
++					(value ?? '').split(' ').includes('showing'),
++			),
++		).toHaveLength(1)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++	})
++
++	it('runs one sequence when a listener to its show event shows it again without a transition, the inner call resolving true and the outer false', async () => {
++		const root = scene.mount('<div class="toast" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const events = createRecorder<readonly [string]>()
++		const inner = createRecorder<readonly [Promise<boolean>]>()
++		let reentered = false
++		const toast: ToastInterface = new Toast(host, {
++			animated: false,
++			autohide: false,
++			on: {
++				show: (event) => {
++					events.handler(event.type)
++					if (reentered) return
++					reentered = true
++					inner.handler(toast.show())
++				},
++				shown: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		expect(await toast.show()).toBe(false)
++		expect(inner.count).toBe(1)
++		expect(await inner.calls[0]?.[0]).toBe(true)
++		expect(events.calls).toEqual([['show.vn.toast'], ['show.vn.toast'], ['shown.vn.toast']])
++		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
++	})
++
++	it('resolves false for a hide whose event listener shows the toast, and the show completes once', async () => {
++		const root = scene.mount('<div class="toast show" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const events = createRecorder<readonly [string]>()
++		const nested = createRecorder<readonly [Promise<boolean>]>()
++		const toast: ToastInterface = new Toast(host, {
++			animated: false,
++			autohide: false,
++			on: {
++				show: (event) => events.handler(event.type),
++				shown: (event) => events.handler(event.type),
++				hide: (event) => {
++					events.handler(event.type)
++					if (nested.count === 0) nested.handler(toast.show())
++				},
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => toast.destroy())
++		expect(await toast.hide()).toBe(false)
++		expect(await nested.calls[0]?.[0]).toBe(true)
++		expect(events.calls).toEqual([['hide.vn.toast'], ['show.vn.toast'], ['shown.vn.toast']])
++		expect(toast.shown).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
++	})
++
++	it('hands the tokens still to be written back to a toast a reaction constructs while destruction restores the host', async () => {
++		const name = 'vn-toast-restoration-reaction'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast'
++		root.append(host)
++		const toast = new Toast(host, { autohide: false })
++		onTestFinished(() => toast.destroy())
++		expect(await toast.show()).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++		const constructed = createRecorder<readonly [unknown]>()
++		const shows = createRecorder<readonly [Promise<boolean>]>()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			const result = attempt(() => new Toast(host, { autohide: false }))
++			constructed.handler(result)
++			if (result.success) shows.handler(result.value.show())
++		})
++		toast.destroy()
++		expect(constructed.calls).toEqual([[{ success: true, value: expect.any(Toast) }]])
++		const replacement = requireValue(Toast.find(host), 'No replacement toast')
++		onTestFinished(() => replacement.destroy())
++		expect(await shows.calls[0]?.[0]).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++		replacement.destroy()
++		expect(Array.from(host.classList)).toEqual(['toast'])
++	})
++
++	it('resolves false for the call whose transition another call took over during the await, and dispatches shown once', async () => {
++		const root = scene.mount('<div class="toast" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const shown = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			autohide: false,
++			on: { shown: (event) => shown.handler(event.type) },
++		})
++		onTestFinished(() => toast.destroy())
++		const first = toast.show()
++		host.classList.remove('showing')
++		const second = toast.show()
++		expect(host.classList.contains('showing')).toBe(true)
++		expect(await first).toBe(false)
++		expect(await second).toBe(true)
++		expect(shown.count).toBe(1)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++	})
++
++	it('stops a show when the transition token leaves during its await, dispatching no shown event', async () => {
++		scene.load(FADE)
++		const root = scene.mount('<div class="toast fade" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, { on: { shown: (event) => events.handler(event.type) } })
++		onTestFinished(() => toast.destroy())
++		const showing = toast.show()
++		const transition = requireValue(host.getAnimations()[0], 'No transition')
++		await transition.ready
++		host.classList.remove('showing')
++		expect(await showing).toBe(false)
++		expect(events.count).toBe(0)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++	})
++
++	it('clears a pending delay when a show is accepted, even when that show stops before it completes', async () => {
++		scene.load(toastCascade)
++		scene.load(FADE)
++		const root = scene.mount(`
++			<button type="button">Outside</button>
++			<div class="toast fade" id="note">Saved</div>
++			<div class="toast" id="control">Control</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const other = requireValue(root.querySelector<HTMLElement>('#control'), 'No control toast')
++		await userEvent.hover(requireValue(root.querySelector('button'), 'No outside control'))
++		const toast = new Toast(host, { delay: 400 })
++		const control = new Toast(other, { delay: 400 })
++		onTestFinished(() => toast.destroy())
++		onTestFinished(() => control.destroy())
++		expect(await toast.show()).toBe(true)
++		// The fade in runs after the first show; the second show fades out from full opacity.
++		await waitForAnimations(host)
++		const again = toast.show()
++		const transition = requireValue(host.getAnimations()[0], 'No transition')
++		await transition.ready
++		host.classList.remove('showing')
++		expect(await again).toBe(false)
++		const cycled = waitForEvent<readonly [Event]>(
++			(listener) => other.addEventListener('hidden.vn.toast', listener, { once: true }),
++			'the control toast hides',
++			{ budget: 3000 },
++		)
++		expect(await control.show()).toBe(true)
++		await cycled
++		expect(toast.shown).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++	})
++
++	// Each case below drives a custom element whose attribute reaction runs inside the engine's own
++	// write and changes the host's tokens without destroying the toast or starting another call. The
++	// observer starts inside the reaction, so every record it takes is a write the call made after the
++	// host showed the change.
++	it('stops a show whose fade write a reaction answers by writing the transition token, writing nothing more', async () => {
++		const name = 'vn-toast-show-fade-changed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, { on: { shown: (event) => events.handler(event.type) } })
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (value) => {
++			if (!(value ?? '').split(' ').includes('fade')) return
++			reactions.delete(host)
++			host.classList.add('showing')
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await toast.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.count).toBe(0)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'showing'])
++	})
++
++	it('stops a show of a shown toast whose fade write a reaction answers by removing the shown token, writing nothing more', async () => {
++		const name = 'vn-toast-show-fade-hidden'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast show'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, { on: { shown: (event) => events.handler(event.type) } })
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (value) => {
++			if (!(value ?? '').split(' ').includes('fade')) return
++			reactions.delete(host)
++			host.classList.remove('show')
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await toast.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.count).toBe(0)
++		expect(toast.shown).toBe(false)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++	})
++
++	// With `animated` false no wait follows the transition-token write, so the door after that write
++	// is the only read between it and the next write.
++	it('stops a show whose shown-and-transition write a reaction answers by removing the transition token, writing nothing more', async () => {
++		const name = 'vn-toast-show-token-removed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			animated: false,
++			on: { shown: (event) => events.handler(event.type) },
++		})
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (value) => {
++			if (!(value ?? '').split(' ').includes('showing')) return
++			reactions.delete(host)
++			host.classList.remove('showing')
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await toast.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.count).toBe(0)
++		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
++	})
++
++	it('stops a show whose completing removal a reaction answers by removing the shown token, dispatching no shown event', async () => {
++		const name = 'vn-toast-show-completion-changed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, previous: string | null, value: string | null) {
++					if (!(previous ?? '').split(' ').includes('showing')) return
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, { on: { shown: (event) => events.handler(event.type) } })
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (value) => {
++			if ((value ?? '').split(' ').includes('showing')) return
++			reactions.delete(host)
++			host.classList.remove('show')
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await toast.show()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.count).toBe(0)
++		expect(toast.shown).toBe(false)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++	})
++
++	it('stops a hide whose transition-token write a reaction answers by removing the shown token, writing nothing more', async () => {
++		const name = 'vn-toast-hide-token-changed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast show'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, {
++			animated: false,
++			on: { hidden: (event) => events.handler(event.type) },
++		})
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (value) => {
++			if (!(value ?? '').split(' ').includes('showing')) return
++			reactions.delete(host)
++			host.classList.remove('show')
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await toast.hide()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.count).toBe(0)
++		expect(Array.from(host.classList)).toEqual(['toast', 'showing'])
++	})
++
++	it('stops a hide when the shown token leaves during its transition, dispatching no hidden event', async () => {
++		scene.load(toastCascade)
++		scene.load(FADE)
++		const root = scene.mount('<div class="toast fade show" id="note">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, { on: { hidden: (event) => events.handler(event.type) } })
++		onTestFinished(() => toast.destroy())
++		const hiding = toast.hide()
++		const transition = requireValue(host.getAnimations()[0], 'No transition')
++		await transition.ready
++		host.classList.remove('show')
++		expect(await hiding).toBe(false)
++		expect(events.count).toBe(0)
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'showing'])
++	})
++
++	it('stops a hide whose completing removal a reaction answers by adding the shown token back, dispatching no hidden event', async () => {
++		const name = 'vn-toast-hide-completion-changed'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'toast show'
++		root.append(host)
++		const events = createRecorder<readonly [string]>()
++		const toast = new Toast(host, { on: { hidden: (event) => events.handler(event.type) } })
++		onTestFinished(() => toast.destroy())
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (value) => {
++			const tokens = (value ?? '').split(' ')
++			if (tokens.includes('show') || tokens.includes('showing')) return
++			reactions.delete(host)
++			host.classList.add('show')
++			observer.observe(root, { attributes: true, subtree: true })
++		})
++		expect(await toast.hide()).toBe(false)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(events.count).toBe(0)
++		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
++	})
++})
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index 785a012..3970bf5 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -35,6 +35,12 @@ describe('src browser entry', () => {
+ 			'HostSnapshot',
+ 			'Registry',
+ 			'TARGET_ATTRIBUTE',
++			'TOAST_ATTRIBUTES',
++			'TOAST_CLASSES',
++			'TOAST_DEFAULTS',
++			'TOAST_EVENTS',
++			'TOAST_SELECTORS',
++			'Toast',
+ 			'bindEventMap',
+ 			'emitEvent',
+ 			'isAttributeName',
+@@ -43,6 +49,7 @@ describe('src browser entry', () => {
+ 			'isCollapseEvent',
+ 			'isColorModeState',
+ 			'isSelector',
++			'isToastEvent',
+ 			'parseElement',
+ 			'readTag',
+ 			'readTarget',
+diff --git a/tests/src/browser/validators.test.ts b/tests/src/browser/validators.test.ts
+index 7403734..4e9f3a0 100644
+--- a/tests/src/browser/validators.test.ts
++++ b/tests/src/browser/validators.test.ts
+@@ -5,6 +5,7 @@ import {
+ 	isCollapseEvent,
+ 	isColorModeState,
+ 	isSelector,
++	isToastEvent,
+ } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+ import { build } from '@orkestrel/test/browser'
+@@ -166,3 +167,40 @@ describe('isCollapseEvent', () => {
+ 		expect(isCollapseEvent(event)).toBe(false)
+ 	})
+ })
++
++describe('isToastEvent', () => {
++	it('requires a custom event whose detail the platform reads as absent', () => {
++		expect(isToastEvent(new CustomEvent('shown.vn.toast'))).toBe(true)
++		expect(isToastEvent(new CustomEvent('show.vn.toast', { detail: undefined }))).toBe(true)
++		expect(isToastEvent(new CustomEvent('hide.vn.toast', { detail: null }))).toBe(true)
++		expect(isToastEvent(new CustomEvent('hidden.vn.toast', { detail: { shown: false } }))).toBe(
++			false,
++		)
++		expect(isToastEvent(new CustomEvent('hidden.vn.toast', { detail: 0 }))).toBe(false)
++		expect(isToastEvent(new Event('hidden.vn.toast'))).toBe(false)
++		expect(isToastEvent(undefined)).toBe(false)
++		expect(isToastEvent(null)).toBe(false)
++	})
++
++	it('returns false when a prototype or detail accessor throws', () => {
++		expect(
++			isToastEvent(
++				new Proxy(
++					{},
++					{
++						getPrototypeOf() {
++							throw new Error('Unreadable')
++						},
++					},
++				),
++			),
++		).toBe(false)
++		const event = new CustomEvent('hidden.vn.toast')
++		Object.defineProperty(event, 'detail', {
++			get() {
++				throw new Error('Unreadable')
++			},
++		})
++		expect(isToastEvent(event)).toBe(false)
++	})
++})

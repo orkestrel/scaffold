@@ -1,0 +1,129 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Dropdown.test.ts tests/src/browser/Placement.test.ts tests/src/browser/Delegate.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/dropdown
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+·············································x······························xx···············x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Delegate.test.ts:1387:2 > Delegate > focuses no entry after an arrow press when a listener to the show destroys the delegate
+AssertionError: expected <button type="button" …(2)></button> to be <button type="button" …(1)></button> // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  <button[22m
+[32m-   id="elsewhere"[39m
+[31m+   class="dropdown-item"[39m
+[31m+   id="one"[39m
+[2m    type="button"[22m
+[2m  >[22m
+[32m-   Elsewhere[39m
+[31m+   One[39m
+[2m  </button>[22m
+
+ ❯ tests/src/browser/Delegate.test.ts:1414:33
+    1412|   const key = new KeyboardEvent('keydown', { bubbles: true, cancelable…
+    1413|   expect(toggle.dispatchEvent(key)).toBe(false)
+    1414|   expect(document.activeElement).toBe(elsewhere)
+       |                                 ^
+    1415|   expect(Dropdown.find(toggle)).toBe(dropdown)
+    1416|   expect(dropdown.shown).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1245:2 > Dropdown > restores its placement before a destroy called from the closing promotion returns, writing nothing afterwards
+AssertionError: expected [ [ 'manual', 'bottom', …(1) ] ] to deeply equal [ [ null, null, null ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[32m-     null,[39m
+[32m-     null,[39m
+[32m-     null,[39m
+[31m+     "manual",[39m
+[31m+     "bottom",[39m
+[31m+     "overflow: visible; position: fixed; inset: auto; margin: 2px 0px 0px; position-anchor: --vn-placement-42; position-area: span-right bottom; position-try: flip-block;",[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Dropdown.test.ts:1280:25
+    1278|   await Promise.resolve()
+    1279|   await new Promise((resolve) => requestAnimationFrame(resolve))
+    1280|   expect(readings.calls).toEqual([[null, null, null]])
+       |                         ^
+    1281|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    1282|   expect(Dropdown.find(toggle)).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:1288:2 > Dropdown > completes its restoration when a destroy called from the closing promotion runs inside its own destroy
+AssertionError: expected [ [ 'manual', 'bottom', …(3) ] ] to deeply equal [ [ null, null, null, null, …(1) ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[32m-     null,[39m
+[32m-     null,[39m
+[32m-     null,[39m
+[32m-     null,[39m
+[32m-     "dropdown-menu",[39m
+[31m+     "manual",[39m
+[31m+     "bottom",[39m
+[31m+     "overflow: visible; position: fixed; inset: auto; margin: 2px 0px 0px; position-anchor: --vn-placement-43; position-area: span-right bottom; position-try: flip-block;",[39m
+[31m+     "true",[39m
+[31m+     "dropdown-menu show",[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Dropdown.test.ts:1328:25
+    1326|   await Promise.resolve()
+    1327|   await new Promise((resolve) => requestAnimationFrame(resolve))
+    1328|   expect(readings.calls).toEqual([[null, null, null, null, 'dropdown-m…
+       |                         ^
+    1329|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    1330|   expect(menu.matches(':popover-open')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:523:2 > Placement > completes its restoration in a destroy called from the closing promotion, the outer destroy writing nothing more
+AssertionError: expected [ [ 'manual', 'bottom', …(1) ] ] to deeply equal [ [ null, null, null ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[32m-     null,[39m
+[32m-     null,[39m
+[32m-     null,[39m
+[31m+     "manual",[39m
+[31m+     "bottom",[39m
+[31m+     "anchor-name: --vn-placement-33;",[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Placement.test.ts:555:25
+    553|   await Promise.resolve()
+    554|   await new Promise((resolve) => requestAnimationFrame(resolve))
+    555|   expect(readings.calls).toEqual([[null, null, null]])
+       |                         ^
+    556|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    557|   expect(element.matches(':popover-open')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  4 failed | 90 passed (94)
+   Start at  02:04:32
+   Duration  3.00s (transform 0ms, setup 421ms, import 410ms, tests 733ms, environment 0ms)
+
