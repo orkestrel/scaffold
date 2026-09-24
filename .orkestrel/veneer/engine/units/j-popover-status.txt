@@ -1,0 +1,13 @@
+ M guides/veneer.md
+ M src/browser/Placement.ts
+ A src/browser/Popover.ts
+ M src/browser/Tooltip.ts
+ M src/browser/constants.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Placement.test.ts
+ A tests/src/browser/Popover.test.ts
+ M tests/src/browser/Tooltip.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/validators.test.ts
