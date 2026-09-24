@@ -1,6 +1,6 @@
 # Writes the round-1 audit lane briefs and the Astra launcher for PAGE-FRAME (`pf`) and BCF (`bcf`), derived from
 # cl-audit-briefs.py with every subject field rewritten for the units cut from dc92a09.
-# Usage: python3 pb-audit-briefs.py <unit keys>; the keys are pf, bcf, xo, ct, fr, and fo
+# Usage: python3 pb-audit-briefs.py <unit keys>; the keys are pf, bcf, xo, ct, fr, fo, and fu
 import pathlib, sys
 
 U = pathlib.Path('/home/user/scaffold/.orkestrel/veneer/units')
@@ -71,6 +71,17 @@ UNITS = {
         analyst='claims 2, 4, 5, 6, and 7 (each proof against its mutation and its red run, the scroll cause, the reach probe, and the strip reading)',
         reviewer='claims 2, 3, 5, 6, 7, and 8 (open every frame the report names and rule whether it shows the state it closes; the specimens\' fit), and the guide sentences',
         checker='claims 1, 6, and 9'),
+    'fu': dict(
+        name='UTIL-FRAMES', worktree='/home/user/veneer-fu', base='cf5e447',
+        law=("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{tests,browser,styles,names,typescript,architecture,documentation,writing,quality}.md`; "
+             "the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` and its references (the verdict shape)"),
+        family='the portfolio verdict `/home/user/scaffold/.orkestrel/veneer/b-portfolio-verify-verdict.md` (rows P17 and P18; P9 dropped from this unit) with the lens returns `pv-utilities-lenses.json`, the brief `b-util-frames-brief.md`, the page-frame note `pf-design-verdict.md`, and `w2-w3-note-1.md` and `w2-w3-note-2.md`',
+        precedent='the base utility specimen tables in `app/browser/constants.ts`, the base registry in `tests/setup.ts` and its mode-word refusal in `tests/setup.test.ts`, the `nav-underline-focus` case in `tests/app/browser/integration.test.ts` (the lift pattern), and `app/browser/Showcase.ts` (the mount order)',
+        evidence='`fu.diff`, `fu-status.txt`, `fu-shared.patch`, `b-util-frames-report.md`, `fu-instruments/` (`fu-mutations.log.txt`, `fu-mutate.sh`, `fu-mutate.py`, `fu-hover-reach.log.txt`, the `fu-red-*`, `fu-gate-*`, `fu-capture-*`, and `fu-scratch-*` logs, and the dropped P9 logs under `fu-p9-dropped/`), and the frames under `/home/user/veneer-fu/tmp/capture/states/` (every scenario the report lists under Frames, at `light-1280` and `dark-390`)',
+        subject='the specimens, the driven scenarios, the frames, and § Showcase against the portfolio verdict\'s P17 and P18 rows',
+        analyst='claims 1, 2, 3, 4, and 5 (each proof against its mutation and its red run, the reach log, and the derived populations)',
+        reviewer='claims 2, 3, 4, 6, and 7 (open every frame the report names and rule whether it shows the state it closes; the specimens\' fit; the § Showcase prose against the mount order)',
+        checker='claims 1, 5, and 8'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]
