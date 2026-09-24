@@ -1,0 +1,87 @@
+diff --git a/src/browser/Tooltip.ts b/src/browser/Tooltip.ts
+index 6ecd196..85d21a7 100644
+--- a/src/browser/Tooltip.ts
++++ b/src/browser/Tooltip.ts
+@@ -46,7 +46,7 @@ import {
+ } from './parsers.js'
+ import { Placement } from './Placement.js'
+ import { Registry } from './Registry.js'
+-import { NativeSanitizer } from './sanitizers/NativeSanitizer.js'
++import { ConfigSanitizer } from './sanitizers/ConfigSanitizer.js'
+ import { isAttributeName, isClassToken, isSelector, isTooltipEvent } from './validators.js'
+ 
+ /**
+@@ -315,7 +315,7 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 		this.#offset = placement.offset ?? defaults.placement.offset
+ 		this.#fallbacks = placement.fallbacks ?? defaults.placement.fallbacks
+ 		this.#descendants = descendants
+-		this.#sanitizer = options?.sanitizer ?? new NativeSanitizer()
++		this.#sanitizer = options?.sanitizer ?? new ConfigSanitizer()
+ 		this.#options = settings
+ 		// A delegating tooltip keeps its trigger's `title` attribute, as Bootstrap's does.
+ 		const title = descendants === undefined ? host.getAttribute('title') : null
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index 292e0c0..7f5b3a6 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -41,6 +41,7 @@ import type {
+ 	PopoverClassMap,
+ 	PopoverEventMap,
+ 	PopoverSelectorMap,
++	SanitizerBaseline,
+ 	SanitizerConfig,
+ 	ScrollLockSelectorMap,
+ 	ScrollSpyAttributeMap,
+@@ -619,7 +620,7 @@ export const POPOVER_DEFAULTS: TooltipDefaults = Object.freeze({
+ })
+ 
+ /**
+- * Lists the elements and attributes the native sanitizer keeps by default, the platform dictionary built from Bootstrap's default allowlist.
++ * Lists the elements and attributes the `ConfigSanitizer` class keeps by default, the platform dictionary built from Bootstrap's default allowlist.
+  *
+  * @remarks
+  * Each element Bootstrap's `DefaultAllowlist` names is kept, `a` and `img` with their own
+@@ -729,3 +730,43 @@ export const SANITIZER_ALLOWLIST: SanitizerConfig = Object.freeze({
+ 	]),
+ 	dataAttributes: false,
+ })
++
++/**
++ * Names the namespace a sanitizer configuration's element names designate, the HTML namespace.
++ *
++ * @remarks
++ * The HTML standard's sanitizer reads an element name that carries no namespace as an HTML element
++ * name, so a listed `a` keeps an HTML `a` element and not an SVG one.
++ */
++export const SANITIZER_NAMESPACE = 'http://www.w3.org/1999/xhtml'
++
++/**
++ * Declares the safety floor the `ConfigSanitizer` class's walk applies whatever its configuration lists.
++ *
++ * @remarks
++ * The elements are the platform's built-in safe baseline as Chromium 153 reports it: the HTML
++ * `base`, `embed`, `frame`, `iframe`, `object`, and `script` elements and the SVG `script`
++ * and `use` elements. The `urls` names are the navigating attributes the HTML standard checks for a
++ * `javascript:` URL, and the `animations` entries are the SVG animation elements whose
++ * `attributeName` attribute can retarget one of them.
++ */
++export const SANITIZER_BASELINE: SanitizerBaseline = Object.freeze({
++	elements: Object.freeze([
++		Object.freeze({ name: 'base', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'embed', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'frame', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'iframe', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'object', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'script', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'script', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'use', namespace: 'http://www.w3.org/2000/svg' }),
++	]),
++	handlers: 'on',
++	urls: Object.freeze(['action', 'formaction', 'href', 'xlink:href']),
++	animations: Object.freeze([
++		Object.freeze({ name: 'animate', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'animateMotion', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'animateTransform', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'set', namespace: 'http://www.w3.org/2000/svg' }),
++	]),
++})
