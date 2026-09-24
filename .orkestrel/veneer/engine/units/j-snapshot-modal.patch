@@ -1,0 +1,23 @@
+diff --git a/tests/src/browser/Modal.test.ts b/tmp/j-snapshot/Modal.test.ts
+index a530744..610de7a 100644
+--- a/tests/src/browser/Modal.test.ts
++++ b/tmp/j-snapshot/Modal.test.ts
+@@ -605,7 +605,7 @@ describe('Modal', () => {
+ 		expect(document.querySelectorAll('body > [inert]')).toHaveLength(0)
+ 	})
+ 
+-	it('leaves an empty class attribute on the body when two modals holding different open tokens release in the order they took them', async () => {
++	it('removes the class attribute the body lacked when two modals holding different open tokens release in the order they took them', async () => {
+ 		const root = scene.mount(`
+ 			<div id="first" class="modal"><div class="modal-dialog"></div></div>
+ 			<div id="second" class="modal"><div class="modal-dialog"></div></div>`)
+@@ -628,8 +628,7 @@ describe('Modal', () => {
+ 		expect(await one.hide()).toBe(true)
+ 		expect(Array.from(body.classList)).toEqual(['is-open'])
+ 		expect(await two.hide()).toBe(true)
+-		// The E13 bound: the second restoration recorded the attribute present, so it keeps it empty.
+-		expect(body.getAttribute('class')).toBe('')
++		expect(body.hasAttribute('class')).toBe(false)
+ 	})
+ 
+ 	it('pads the host by the scrollbar width when update finds it overflowing, on a window resize, and removes the padding on hide', async () => {
