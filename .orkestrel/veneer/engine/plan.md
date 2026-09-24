@@ -33,7 +33,7 @@ The executable plan of record is Veneer's `ROADMAP.md` (§ Protocol › § The e
 
 ## Carried findings
 
-Every finding an audit round left open names exactly one carrier here until that unit lands it; a row is struck when its carrier's landing integrates the patch. The J-ROWS reconciliation of 2026-09-24 (`units/j-rows-reconcile-distillate.md`, Grok session `636e749c`, each closed row's evidence re-read by the Orchestrator on Veneer `e3031a3`) struck thirteen rows the landed source closes and re-routed the open code rows.
+Every finding an audit round left open names exactly one carrier here until that unit lands it; a row is struck when its carrier's landing integrates the patch. The J-ROWS reconciliation of 2026-09-24 (`units/j-rows-reconcile-distillate.md`, Grok session `636e749c`, each closed row's evidence re-read by the Orchestrator on Veneer `e3031a3`) struck every row the landed source closes and re-routed the open code rows.
 
 | Finding | Source | Carrier | Closes with |
 | --- | --- | --- | --- |
