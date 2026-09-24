@@ -1,0 +1,39 @@
+=== npm 11.19.1 HEAD 712ae72 registry @orkestrel/test@0.0.24 range ^0.0.23
+=== install ^0.0.24 (20:44:54)
+=== install ^0.0.24 exit=0
+=== npm ci (20:44:58)
+=== npm ci exit=0
+=== installed 0.0.24; marker bc233b33981751dd
+=== installed browser bundle equals Test 960dd75's build (20:45:03)
+=== installed browser bundle equals Test 960dd75's build exit=0
+=== re-pin commit 867b63f status: []
+=== apply rp-3.diff (20:45:03)
+=== apply rp-3.diff exit=0
+=== RP diff: 
+=== format:check (20:45:03)
+=== format:check exit=0
+=== lint:check (20:45:20)
+=== lint:check exit=0
+=== check (20:45:23)
+=== check exit=0
+=== test:setup (20:45:51)
+ Test Files  4 passed (4)
+      Tests  319 passed (319)
+=== test:setup exit=0
+=== test:setup:browser (20:46:14)
+ Test Files  1 passed (1)
+      Tests  83 passed (83)
+=== test:setup:browser exit=0
+=== test:guides (20:46:42)
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+=== test:guides exit=0
+=== test:journey (every variant) (20:46:47)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:3465:2 > portfolio > reads every frame this variant left in the portfolio directory inside its declared region
+Error: The declared region clips to nothing inside a 624x312 frame
+    215|    `The declared region clips to nothing inside a ${String(image.width…
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 251 passed (252)
+=== test:journey (every variant) exit=1
+=== stopped at test:journey (every variant)
