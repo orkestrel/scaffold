@@ -63,3 +63,19 @@ dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
 
  RUN  v4.1.11 /home/user/veneer
 
+························
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  12:48:15
+   Duration  26.67s (transform 873ms, setup 174ms, import 13.84s, tests 12.46s, environment 0ms)
+
+=== test:conformance exit=0 (12:48:42)
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+················
