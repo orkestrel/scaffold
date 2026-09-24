@@ -1,0 +1,8 @@
+ M guides/veneer.md
+ M src/browser/Collapse.ts
+ M src/browser/Delegate.ts
+ M src/browser/parsers.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Collapse.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/parsers.test.ts

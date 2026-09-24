@@ -1,0 +1,25 @@
+# J-COLLAPSE audit round 3 — the checker's brief
+
+## Role and lane
+
+`checker` on Sonnet, reached as a native Claude subagent with `Read`, `Grep`, and `Glob`; mechanical conformance only. State that in your first line.
+
+## Subject
+
+The J-COLLAPSE unit's round 3 in the worktree `C:/Users/mikes/WebstormProjects/veneer-collapse` (branch `unit/collapse`; round 1 committed as `0ad71cd`, Veneer `main` `468a118` merged as `eab447e`, the round-2 and round-3 edits uncommitted on top). Review evidence, all under `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/engine/units/`: the diff `j-collapse-3.diff` and the round-2 state `j-collapse-2.diff` (the round-3 delta is what the later diff carries beyond the earlier); the status `j-collapse-3-status.txt`; the brief `j-collapse-brief-3.md` (§ The edits, § Acceptance criteria); the report `j-collapse-report-3.md`; the readings `j-collapse-round3-red.log.txt` and `j-collapse-round3-green.log.txt`; the Orchestrator's run `j-collapse-gates-3.log.txt`; the instruments `j-collapse-mutations-2.py` and `j-collapse-mutations-3.py` with the log `j-collapse-mutations-round-3.log.txt`; the patches under `j-collapse-patches-2/`; the worktree's `src/browser/*.ts`, `tests/src/browser/*.ts`, and `guides/veneer.md`.
+
+## Claims
+
+Rule on claims 6, 7, and 8 of `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/engine/units/j-collapse-audit-claims-3.md`, on the mechanical clauses of claim 3 (the three "within the parent" sites; the token-order departure's wording present verbatim), of claim 4 (no "two bounds"; the three sentences present), and of claim 9 (the round-3 delta touches only the sites the claim lists), and on these mechanical items, one piece of evidence each (`file:line` or the grep): the status lists exactly the eight files, all `M`; no off-limits file changed in the tree (`types.ts`, `index.ts`, `HostSnapshot.ts`, `helpers.ts`, `Button.ts`, `constants.ts`, `tests/setupBrowser.ts`, `ROADMAP.md`); every case title the report names appears in the worktree's test files verbatim, the retargeted title included, and the round-2 title "drives the button route and the collapse route once each when the button host is the panel itself" appears nowhere unextended; `j-collapse-mutations-3.py` differs from `j-collapse-mutations-2.py` by the four added rows and its log and report paths alone (name any other difference); the log carries one row per mutation the instrument lists, the `GREEN?` rows at 0 failed with the totals 32, 33, 10, 3, 3, and the receipt; the red reading names the two D1 and D2 cases as the only failures of 65 and the green reading names the four cases passing; `grep -n "#open\|#close\|#moving\|#taken" src/browser/Collapse.ts` hits nothing; `#conflicts` is declared once and called once, before `#routeButton` in `#activate`; `#writeTriggers` has one declaration with the parameters `change, present, absent, triggers, expanded` and two call sites (`show` passing `during, []`, `hide` passing `during, [shown]`); the added lines carry no `any`, `as `, non-null `!`, `@ts-`, `eslint-disable`, `public`, `protected`, `private`, a parameter property, a default export, or a nested function declaration outside an anonymous callback; every line over 100 columns in the four sources is a `@param` or `@throws` tag line or a line the round did not add (compare against `j-collapse-2.diff`); the `#### Collapse` takeover paragraph carries the orphan line "finds the" around line 710 of `guides/veneer.md` and no other paragraph the round touched carries a line under 20 columns mid-sentence (name any); no term `writing.md` § Substitutions bans unconditionally appears in the added prose (name the pattern and the paths you swept); the report records the refused `prove` call; each patch under `j-collapse-patches-2/` names only `types.ts`, `guides/veneer.md`, or `ROADMAP.md`, and `j-collapse-returns.diff` carries "or the panel's tokens read the change as taken over" in both hunks. A claim whose only evidence is the report's quoted command is `UNRESOLVED`; the Orchestrator's log named under Subject is independent evidence. The Orchestrator's replay `j-collapse-mutations-3-orchestrator.log.txt` runs after you return; record its clause `UNRESOLVED` without ruling the claim `BROKEN` on that absence alone.
+
+## Law
+
+`C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md`; `.claude/rules/typescript.md`, `names.md`, `architecture.md`, `tests.md`, `documentation.md`, `writing.md`; E6 in `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/engine/decisions.md`; skill: `.agents/skills/orkestrel-falsify/SKILL.md` § Verdict shape.
+
+## Execution
+
+**A native subagent:** perform the assignment directly and spawn nothing.
+
+## Output
+
+The `orkestrel-falsify` verdict shape as your final message and nothing else: verdicts on claims 3, 4, 6, 7, 8, and 9 (numbered as in the claims file, the mechanical clauses only for 3, 4, and 9), the checklist of mechanical items (met or not met with evidence), referrals for any judgment question, and exactly one terminal line naming the failed claims where there are any.

@@ -1,0 +1,76 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project src:browser tests/src/browser/Collapse.test.ts tests/src/browser/Delegate.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer-collapse
+
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:22:2 > Collapse > publishes frozen default tables that name the cascade tokens, Bootstrap attributes, and wire events 2ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:51:2 > Collapse > reads the shipped collapse declarations the motion proofs run under 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:66:2 > Collapse > shows and hides through the transition token and an inline pixel size, keeping every trigger in step 1431ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:127:2 > Collapse > sizes the width of a panel carrying the horizontal token, and its height never 713ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:161:2 > Collapse > collapses a trigger naming several panels only when none of them is shown 5ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:184:2 > Collapse > hides the open first-level sibling in its parent through the sibling engine and its own events, and owns the engine it constructs 347ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:249:2 > Collapse > hides an open sibling through the collapse a consumer constructed for it, which it leaves live on destruction 5ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:282:2 > Collapse > leaves tokens, size, and triggers untouched when a listener prevents show or hide, and resolves false 3ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:330:2 > Collapse > resolves false for a call while the panel or an open sibling transitions, and completes the transition in flight once 690ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:370:2 > Collapse > keeps focus on the trigger a trusted click activated, before and after the panel shows 500ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:400:2 > Collapse > dispatches shown after the height transition finishes, with no animation left on the panel 717ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:440:2 > Collapse > dispatches shown with no animation created under staged reduced motion 68ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:463:2 > Collapse > abandons the transition in flight on destruction, resolving false and restoring the panel and its triggers 3ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:510:2 > Collapse > restores the panel, its size, and its triggers after a completed show, keeping consumer edits 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:530:2 > Collapse > dispatches bubbling events, the pre-change ones cancelable, with no detail, and binds only engine-shaped events to hooks 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:578:2 > Collapse > writes, removes, tests, reads, and matches only the replacing values when every group is replaced 2ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:627:2 > Collapse > refuses a group value that is not a class token, an attribute name, or a selector, and a parent attribute naming no element, before claiming the host 2ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:664:2 > Collapse > refuses an invalid host and a second owner, then permits reconstruction after destruction 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:689:2 > Collapse > destroys the collapse when its signal aborts, and at construction when it arrived aborted 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:707:2 > Collapse > stops writing when a reaction to its own write destroys it, resolving false and restoring the panel and its triggers 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:754:2 > Collapse > writes nothing when a listener to its show event destroys it, resolving false 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:780:2 > Collapse > runs one transition and one shown event when a listener to its show event shows it again, the inner call resolving true and the outer false 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:834:2 > Collapse > resolves false for the call whose transition another call took over during the await, and dispatches shown once 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:854:2 > Collapse > stops a show whose transition-token write a reaction answers by removing that token, writing nothing more 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:899:2 > Collapse > stops a show whose completing token write a reaction answers by removing the shown token, dispatching no shown event 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:934:2 > Collapse > stops a hide whose size write a reaction answers by removing the shown token, writing no transition token 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:967:2 > Collapse > stops a hide whose transition-token write a reaction answers by removing that token, writing nothing more 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1006:2 > Collapse > stops a hide whose trigger write a reaction answers by adding the shown token, writing nothing more 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1045:2 > Collapse > stops a hide whose completing token write a reaction answers by adding the shown token, dispatching no hidden event 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1086:2 > Collapse > destroys a sibling collapse it constructed at its next change after that sibling panel leaves the document 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1110:2 > Collapse > restores a shared trigger to its original when the restoration that saved first destroys the button inside its token write 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1148:2 > Collapse > restores a shared trigger to its original when the restoration that saved last destroys the button inside its token write 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:10:2 > Delegate > toggles a child click host, prevents its default, and reuses its engine 2ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:40:2 > Delegate > reuses a fragment-rooted engine across clicks 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:58:2 > Delegate > drives the engine a consumer constructed and leaves it to that consumer on destruction 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:93:2 > Delegate > toggles a host under nested roots once per click and restores it with the delegate that acquired it 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:131:2 > Delegate > drives a host inserted after construction on the default document root 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:146:2 > Delegate > acquires and toggles a native disabled host on a dispatched click 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:165:2 > Delegate > keeps toggling a host through its engine after the disabled class arrives 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:184:2 > Delegate > acquires and toggles a host already carrying the disabled class, and restores it 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:209:2 > Delegate > acquires and toggles an aria-disabled anchor, and leaves the attribute alone 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:224:2 > Delegate > registers exactly one root listener and releases the listener and its engines 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:262:2 > Delegate > restores removed hosts at the observer delivery after their removal and releases their ownership 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:295:2 > Delegate > releases a connected host moved outside the root at the observer delivery after the move 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:321:2 > Delegate > keeps the engine and the state of a host removed and reinserted in the same synchronous run, before the observer delivers 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:343:2 > Delegate > releases and restores a host reinserted after the observer delivered its removal 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:359:2 > Delegate > acquires a released host again with a fresh engine after reinsertion 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:378:2 > Delegate > drops an engine a consumer destroyed at the next delivery or click and stops observing its root 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:411:2 > Delegate > routes by a replaced trigger selector alone and constructs each engine with its group 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:437:2 > Delegate > refuses a button group value that is not a class token or a selector at construction 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:454:2 > Delegate > drives a live engine for a click a restoration reaction sends, never the destroyed one 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:512:2 > Delegate > hands the originals to the engine a click acquires while a consumer destroys the delegate engine 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:563:2 > Delegate > hands the originals to the engine an inner delegate acquires while the outer one restores the host 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:618:2 > Delegate > ignores unmatched targets and a closest host outside the root 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:640:2 > Delegate > accepts a fragment root and ignores a matching SVG host 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:656:2 > Delegate > toggles each panel a collapse trigger names by its target attribute, its href fragment, and a selector naming several 25ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:701:2 > Delegate > routes collapse clicks by a replaced trigger selector alone and constructs each engine with the collapse group 12ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:733:2 > Delegate > drives each route once per click over one host matching the button and the collapse trigger selectors under nested roots 26ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:775:2 > Delegate > leaves a panel outside its root alone and releases a removed panel at the observer delivery 12ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:797:2 > Delegate > drives no route and no panel after a listener destroys the delegate during the click 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:834:2 > Delegate > leaves a panel outside an inner root to the outer delegate whose root contains it 12ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:858:2 > Delegate > leaves the panels a delegate destroyed during the click has not reached to a live outer delegate 12ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:888:2 > Delegate > refuses a click whose button host is a panel the collapse trigger names when neither engine exists, driving neither route 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:918:2 > Delegate > drives the button route and the collapse route once each when the button host is the panel itself and carries a button a consumer constructed 11ms
+ ✓ |src:browser (chromium)| tests/src/browser/Delegate.test.ts:946:2 > Delegate > refuses a collapse group value that is not a class token, an attribute name, or a selector at construction 1ms
+
+ Test Files  2 passed (2)
+      Tests  65 passed (65)
+   Start at  22:14:34
+   Duration  6.10s (transform 0ms, setup 225ms, import 276ms, tests 4.63s, environment 0ms)
+
