@@ -1,0 +1,67 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2732,22 +2732,32 @@
+ compiled `base` layer's type selectors name, intersected with the tags Veneer's elements partials
+ style — renders one neutral element per tag, and reads every longhand that layer declares, as
+ Chromium expands it, before and after the profile loads. Each property Veneer's own rules declare
+-for the tag is asserted unchanged, and each property that moved is a row of the following table.
++for the tag is asserted unchanged, and each property that moved, other than a form control's
++height, is a row of the following table.
+ 
+ The border style and the tab size move on every overlapping element, because the reset's universal
+ rule declares them: it sets a border style the elements never paint, because it sets the border
+ width to zero beside it, and it lowers the tab size. The rest of the rows are the form controls and
+ the document root, which preflight resets to inherit the page's own font, color, and background.
+ 
++The reset declares no height for a form control, so the height of an `input`, a `select`, or a
++`textarea` element drops by the padding and border widths the reset zeroes, around a content box
++whose height is the build's own: Chromium 141 renders a `select` content box 18px tall, and
++Chromium 153 one 21px tall. The table records no height, and the proof holds each moved height to
++its content extent, which the profile leaves where the standalone cascade put it.
++
+ The `Tag`, `Property`, `Standalone`, and `Preflight` columns name the element, the property, the
+ value the shipped cascade alone resolves for it, and the value the `preflight` profile resolves,
+-each read on Chromium 141. A build's own user-agent default for an element such as `select` or
+-`table` moves the standalone column across a Chromium version, so the proof compares each measured
+-move by tag, property, and the preflight value alone, and asserts the measured standalone value
+-differs from it, rather than equating a user-agent default with a recorded reading. The Standalone
+-column stays the Chromium 141 reading, informational. The proof holds the measured pairs and the
+-recorded rows equal by tag, property, and preflight value, in both directions, so a move this table
+-does not carry and a row the pairing no longer produces each redden.
++each read on Chromium 141. A build's own user-agent defaults move the Standalone column across
++Chromium versions: Chromium 153 fills a `select` element with another background and draws a
++`table` border in the text color, so the `table` border colors do not move there at all. The proof
++therefore compares each move by tag, property, and the preflight value alone, and the Standalone
++column stays the Chromium 141 reading, informational. Every measured move is a row of the
++following table, and every row is the value the profile resolves for its pair, whether or not the
++build's own default already held it, so a move this table does not carry and a row whose preflight
++value the profile no longer resolves each redden. The proof reads the pairing under the host's own
++defaults and under the Chromium 153 `select` and `table` defaults, staged beneath the cascade in a
++sublayer of the `theme` layer, and reads the same under both.
+ 
+ | Tag        | Property                      | Standalone            | Preflight                                                                                                                                                                               |
+ | ---------- | ----------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+@@ -2833,7 +2843,6 @@
+ | `input`    | `border-top-style`            | `inset`               | `solid`                                                                                                                                                                                 |
+ | `input`    | `border-top-width`            | `2px`                 | `0px`                                                                                                                                                                                   |
+ | `input`    | `color`                       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
+-| `input`    | `height`                      | `27px`                | `21px`                                                                                                                                                                                  |
+ | `input`    | `padding-block-end`           | `1px`                 | `0px`                                                                                                                                                                                   |
+ | `input`    | `padding-block-start`         | `1px`                 | `0px`                                                                                                                                                                                   |
+ | `input`    | `padding-bottom`              | `1px`                 | `0px`                                                                                                                                                                                   |
+@@ -2882,7 +2891,6 @@
+ | `select`   | `border-top-color`            | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
+ | `select`   | `border-top-width`            | `1px`                 | `0px`                                                                                                                                                                                   |
+ | `select`   | `color`                       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
+-| `select`   | `height`                      | `20px`                | `18px`                                                                                                                                                                                  |
+ | `select`   | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
+ | `select`   | `text-decoration-color`       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
+ | `small`    | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
+@@ -2935,7 +2943,6 @@
+ | `textarea` | `border-top-color`            | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
+ | `textarea` | `border-top-width`            | `1px`                 | `0px`                                                                                                                                                                                   |
+ | `textarea` | `color`                       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
+-| `textarea` | `height`                      | `48px`                | `42px`                                                                                                                                                                                  |
+ | `textarea` | `padding-block-end`           | `2px`                 | `0px`                                                                                                                                                                                   |
+ | `textarea` | `padding-block-start`         | `2px`                 | `0px`                                                                                                                                                                                   |
+ | `textarea` | `padding-bottom`              | `2px`                 | `0px`                                                                                                                                                                                   |

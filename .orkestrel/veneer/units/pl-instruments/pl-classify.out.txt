@@ -1,0 +1,403 @@
+properties has height: true
+=== emulate false
+html | border-top-style | none -> solid | declared
+html | border-right-style | none -> solid | declared
+html | border-bottom-style | none -> solid | declared
+html | border-left-style | none -> solid | declared
+html | line-height | normal -> 24px | declared
+html | tab-size | 8 -> 4 | declared
+html | font-family | "Times New Roman" -> -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" | declared
+html | -webkit-tap-highlight-color | rgba(0, 0, 0, 0.18) -> rgba(0, 0, 0, 0) | declared
+hr | tab-size | 8 -> 4 | CONSEQUENCE
+abbr | border-top-style | none -> solid | declared
+abbr | border-right-style | none -> solid | declared
+abbr | border-bottom-style | none -> solid | declared
+abbr | border-left-style | none -> solid | declared
+abbr | tab-size | 8 -> 4 | CONSEQUENCE
+h1 | border-top-style | none -> solid | declared
+h1 | border-right-style | none -> solid | declared
+h1 | border-bottom-style | none -> solid | declared
+h1 | border-left-style | none -> solid | declared
+h1 | tab-size | 8 -> 4 | CONSEQUENCE
+h2 | border-top-style | none -> solid | declared
+h2 | border-right-style | none -> solid | declared
+h2 | border-bottom-style | none -> solid | declared
+h2 | border-left-style | none -> solid | declared
+h2 | tab-size | 8 -> 4 | CONSEQUENCE
+h3 | border-top-style | none -> solid | declared
+h3 | border-right-style | none -> solid | declared
+h3 | border-bottom-style | none -> solid | declared
+h3 | border-left-style | none -> solid | declared
+h3 | tab-size | 8 -> 4 | CONSEQUENCE
+h4 | border-top-style | none -> solid | declared
+h4 | border-right-style | none -> solid | declared
+h4 | border-bottom-style | none -> solid | declared
+h4 | border-left-style | none -> solid | declared
+h4 | tab-size | 8 -> 4 | CONSEQUENCE
+h5 | border-top-style | none -> solid | declared
+h5 | border-right-style | none -> solid | declared
+h5 | border-bottom-style | none -> solid | declared
+h5 | border-left-style | none -> solid | declared
+h5 | tab-size | 8 -> 4 | CONSEQUENCE
+h6 | border-top-style | none -> solid | declared
+h6 | border-right-style | none -> solid | declared
+h6 | border-bottom-style | none -> solid | declared
+h6 | border-left-style | none -> solid | declared
+h6 | tab-size | 8 -> 4 | CONSEQUENCE
+a | border-top-style | none -> solid | declared
+a | border-right-style | none -> solid | declared
+a | border-bottom-style | none -> solid | declared
+a | border-left-style | none -> solid | declared
+a | tab-size | 8 -> 4 | CONSEQUENCE
+b | border-top-style | none -> solid | declared
+b | border-right-style | none -> solid | declared
+b | border-bottom-style | none -> solid | declared
+b | border-left-style | none -> solid | declared
+b | tab-size | 8 -> 4 | CONSEQUENCE
+strong | border-top-style | none -> solid | declared
+strong | border-right-style | none -> solid | declared
+strong | border-bottom-style | none -> solid | declared
+strong | border-left-style | none -> solid | declared
+strong | tab-size | 8 -> 4 | CONSEQUENCE
+code | border-top-style | none -> solid | declared
+code | border-right-style | none -> solid | declared
+code | border-bottom-style | none -> solid | declared
+code | border-left-style | none -> solid | declared
+code | tab-size | 8 -> 4 | CONSEQUENCE
+kbd | tab-size | 8 -> 4 | CONSEQUENCE
+samp | border-top-style | none -> solid | declared
+samp | border-right-style | none -> solid | declared
+samp | border-bottom-style | none -> solid | declared
+samp | border-left-style | none -> solid | declared
+samp | tab-size | 8 -> 4 | CONSEQUENCE
+pre | tab-size | 8 -> 4 | CONSEQUENCE
+small | border-top-style | none -> solid | declared
+small | border-right-style | none -> solid | declared
+small | border-bottom-style | none -> solid | declared
+small | border-left-style | none -> solid | declared
+small | tab-size | 8 -> 4 | CONSEQUENCE
+sub | border-top-style | none -> solid | declared
+sub | border-right-style | none -> solid | declared
+sub | border-bottom-style | none -> solid | declared
+sub | border-left-style | none -> solid | declared
+sub | tab-size | 8 -> 4 | CONSEQUENCE
+sup | border-top-style | none -> solid | declared
+sup | border-right-style | none -> solid | declared
+sup | border-bottom-style | none -> solid | declared
+sup | border-left-style | none -> solid | declared
+sup | tab-size | 8 -> 4 | CONSEQUENCE
+table | border-top-style | none -> solid | declared
+table | border-right-style | none -> solid | declared
+table | border-bottom-style | none -> solid | declared
+table | border-left-style | none -> solid | declared
+table | border-top-color | rgb(128, 128, 128) -> oklch(0.208 0.042 265.755) | declared
+table | border-right-color | rgb(128, 128, 128) -> oklch(0.208 0.042 265.755) | declared
+table | border-bottom-color | rgb(128, 128, 128) -> oklch(0.208 0.042 265.755) | declared
+table | border-left-color | rgb(128, 128, 128) -> oklch(0.208 0.042 265.755) | declared
+table | tab-size | 8 -> 4 | CONSEQUENCE
+progress | border-top-style | none -> solid | declared
+progress | border-right-style | none -> solid | declared
+progress | border-bottom-style | none -> solid | declared
+progress | border-left-style | none -> solid | declared
+progress | tab-size | 8 -> 4 | CONSEQUENCE
+summary | border-top-style | none -> solid | declared
+summary | border-right-style | none -> solid | declared
+summary | border-bottom-style | none -> solid | declared
+summary | border-left-style | none -> solid | declared
+summary | tab-size | 8 -> 4 | CONSEQUENCE
+ol | border-top-style | none -> solid | declared
+ol | border-right-style | none -> solid | declared
+ol | border-bottom-style | none -> solid | declared
+ol | border-left-style | none -> solid | declared
+ol | tab-size | 8 -> 4 | CONSEQUENCE
+ul | border-top-style | none -> solid | declared
+ul | border-right-style | none -> solid | declared
+ul | border-bottom-style | none -> solid | declared
+ul | border-left-style | none -> solid | declared
+ul | tab-size | 8 -> 4 | CONSEQUENCE
+img | border-top-style | none -> solid | declared
+img | border-right-style | none -> solid | declared
+img | border-bottom-style | none -> solid | declared
+img | border-left-style | none -> solid | declared
+img | tab-size | 8 -> 4 | CONSEQUENCE
+svg | border-top-style | none -> solid | declared
+svg | border-right-style | none -> solid | declared
+svg | border-bottom-style | none -> solid | declared
+svg | border-left-style | none -> solid | declared
+svg | tab-size | 8 -> 4 | CONSEQUENCE
+svg | display | inline -> block | declared
+iframe | tab-size | 8 -> 4 | CONSEQUENCE
+iframe | vertical-align | baseline -> middle | declared
+iframe | display | inline -> block | declared
+button | tab-size | 8 -> 4 | CONSEQUENCE
+input | padding-top | 1px -> 0px | declared
+input | padding-right | 2px -> 0px | declared
+input | padding-bottom | 1px -> 0px | declared
+input | padding-left | 2px -> 0px | declared
+input | border-top-width | 2px -> 0px | declared
+input | border-right-width | 2px -> 0px | declared
+input | border-bottom-width | 2px -> 0px | declared
+input | border-left-width | 2px -> 0px | declared
+input | border-top-style | inset -> solid | declared
+input | border-right-style | inset -> solid | declared
+input | border-bottom-style | inset -> solid | declared
+input | border-left-style | inset -> solid | declared
+input | border-top-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+input | border-right-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+input | border-bottom-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+input | border-left-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+input | tab-size | 8 -> 4 | CONSEQUENCE
+input | height | 27px -> 21px | CONSEQUENCE
+input | color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+input | text-decoration-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | CONSEQUENCE
+input | background-color | rgb(255, 255, 255) -> rgba(0, 0, 0, 0) | declared
+input | padding-inline-start | 2px -> 0px | CONSEQUENCE
+input | padding-block-start | 1px -> 0px | CONSEQUENCE
+input | padding-block-end | 1px -> 0px | CONSEQUENCE
+input | width | 182px -> 174px | CONSEQUENCE
+select | border-top-width | 1px -> 0px | declared
+select | border-right-width | 1px -> 0px | declared
+select | border-bottom-width | 1px -> 0px | declared
+select | border-left-width | 1px -> 0px | declared
+select | border-top-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+select | border-right-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+select | border-bottom-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+select | border-left-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+select | tab-size | 8 -> 4 | CONSEQUENCE
+select | height | 20px -> 18px | CONSEQUENCE
+select | color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+select | text-decoration-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | CONSEQUENCE
+select | background-color | rgb(239, 239, 239) -> rgba(0, 0, 0, 0) | declared
+select | width | 69px -> 67px | CONSEQUENCE
+optgroup | border-top-style | none -> solid | declared
+optgroup | border-right-style | none -> solid | declared
+optgroup | border-bottom-style | none -> solid | declared
+optgroup | border-left-style | none -> solid | declared
+optgroup | border-top-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | border-right-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | border-bottom-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | border-left-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | tab-size | 8 -> 4 | CONSEQUENCE
+optgroup | color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | text-decoration-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | CONSEQUENCE
+optgroup | font-weight | 700 -> 400 | declared
+textarea | padding-top | 2px -> 0px | declared
+textarea | padding-right | 2px -> 0px | declared
+textarea | padding-bottom | 2px -> 0px | declared
+textarea | padding-left | 2px -> 0px | declared
+textarea | border-top-width | 1px -> 0px | declared
+textarea | border-right-width | 1px -> 0px | declared
+textarea | border-bottom-width | 1px -> 0px | declared
+textarea | border-left-width | 1px -> 0px | declared
+textarea | border-top-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+textarea | border-right-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+textarea | border-bottom-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+textarea | border-left-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+textarea | tab-size | 8 -> 4 | CONSEQUENCE
+textarea | height | 48px -> 42px | CONSEQUENCE
+textarea | color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+textarea | text-decoration-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | CONSEQUENCE
+textarea | background-color | rgb(255, 255, 255) -> rgba(0, 0, 0, 0) | declared
+textarea | padding-inline-start | 2px -> 0px | CONSEQUENCE
+textarea | padding-block-start | 2px -> 0px | CONSEQUENCE
+textarea | padding-block-end | 2px -> 0px | CONSEQUENCE
+textarea | width | 163px -> 157px | CONSEQUENCE
+=== emulate true
+html | border-top-style | none -> solid | declared
+html | border-right-style | none -> solid | declared
+html | border-bottom-style | none -> solid | declared
+html | border-left-style | none -> solid | declared
+html | line-height | normal -> 24px | declared
+html | tab-size | 8 -> 4 | declared
+html | font-family | "Times New Roman" -> -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" | declared
+html | -webkit-tap-highlight-color | rgba(0, 0, 0, 0.18) -> rgba(0, 0, 0, 0) | declared
+hr | tab-size | 8 -> 4 | CONSEQUENCE
+abbr | border-top-style | none -> solid | declared
+abbr | border-right-style | none -> solid | declared
+abbr | border-bottom-style | none -> solid | declared
+abbr | border-left-style | none -> solid | declared
+abbr | tab-size | 8 -> 4 | CONSEQUENCE
+h1 | border-top-style | none -> solid | declared
+h1 | border-right-style | none -> solid | declared
+h1 | border-bottom-style | none -> solid | declared
+h1 | border-left-style | none -> solid | declared
+h1 | tab-size | 8 -> 4 | CONSEQUENCE
+h2 | border-top-style | none -> solid | declared
+h2 | border-right-style | none -> solid | declared
+h2 | border-bottom-style | none -> solid | declared
+h2 | border-left-style | none -> solid | declared
+h2 | tab-size | 8 -> 4 | CONSEQUENCE
+h3 | border-top-style | none -> solid | declared
+h3 | border-right-style | none -> solid | declared
+h3 | border-bottom-style | none -> solid | declared
+h3 | border-left-style | none -> solid | declared
+h3 | tab-size | 8 -> 4 | CONSEQUENCE
+h4 | border-top-style | none -> solid | declared
+h4 | border-right-style | none -> solid | declared
+h4 | border-bottom-style | none -> solid | declared
+h4 | border-left-style | none -> solid | declared
+h4 | tab-size | 8 -> 4 | CONSEQUENCE
+h5 | border-top-style | none -> solid | declared
+h5 | border-right-style | none -> solid | declared
+h5 | border-bottom-style | none -> solid | declared
+h5 | border-left-style | none -> solid | declared
+h5 | tab-size | 8 -> 4 | CONSEQUENCE
+h6 | border-top-style | none -> solid | declared
+h6 | border-right-style | none -> solid | declared
+h6 | border-bottom-style | none -> solid | declared
+h6 | border-left-style | none -> solid | declared
+h6 | tab-size | 8 -> 4 | CONSEQUENCE
+a | border-top-style | none -> solid | declared
+a | border-right-style | none -> solid | declared
+a | border-bottom-style | none -> solid | declared
+a | border-left-style | none -> solid | declared
+a | tab-size | 8 -> 4 | CONSEQUENCE
+b | border-top-style | none -> solid | declared
+b | border-right-style | none -> solid | declared
+b | border-bottom-style | none -> solid | declared
+b | border-left-style | none -> solid | declared
+b | tab-size | 8 -> 4 | CONSEQUENCE
+strong | border-top-style | none -> solid | declared
+strong | border-right-style | none -> solid | declared
+strong | border-bottom-style | none -> solid | declared
+strong | border-left-style | none -> solid | declared
+strong | tab-size | 8 -> 4 | CONSEQUENCE
+code | border-top-style | none -> solid | declared
+code | border-right-style | none -> solid | declared
+code | border-bottom-style | none -> solid | declared
+code | border-left-style | none -> solid | declared
+code | tab-size | 8 -> 4 | CONSEQUENCE
+kbd | tab-size | 8 -> 4 | CONSEQUENCE
+samp | border-top-style | none -> solid | declared
+samp | border-right-style | none -> solid | declared
+samp | border-bottom-style | none -> solid | declared
+samp | border-left-style | none -> solid | declared
+samp | tab-size | 8 -> 4 | CONSEQUENCE
+pre | tab-size | 8 -> 4 | CONSEQUENCE
+small | border-top-style | none -> solid | declared
+small | border-right-style | none -> solid | declared
+small | border-bottom-style | none -> solid | declared
+small | border-left-style | none -> solid | declared
+small | tab-size | 8 -> 4 | CONSEQUENCE
+sub | border-top-style | none -> solid | declared
+sub | border-right-style | none -> solid | declared
+sub | border-bottom-style | none -> solid | declared
+sub | border-left-style | none -> solid | declared
+sub | tab-size | 8 -> 4 | CONSEQUENCE
+sup | border-top-style | none -> solid | declared
+sup | border-right-style | none -> solid | declared
+sup | border-bottom-style | none -> solid | declared
+sup | border-left-style | none -> solid | declared
+sup | tab-size | 8 -> 4 | CONSEQUENCE
+table | border-top-style | none -> solid | declared
+table | border-right-style | none -> solid | declared
+table | border-bottom-style | none -> solid | declared
+table | border-left-style | none -> solid | declared
+table | tab-size | 8 -> 4 | CONSEQUENCE
+progress | border-top-style | none -> solid | declared
+progress | border-right-style | none -> solid | declared
+progress | border-bottom-style | none -> solid | declared
+progress | border-left-style | none -> solid | declared
+progress | tab-size | 8 -> 4 | CONSEQUENCE
+summary | border-top-style | none -> solid | declared
+summary | border-right-style | none -> solid | declared
+summary | border-bottom-style | none -> solid | declared
+summary | border-left-style | none -> solid | declared
+summary | tab-size | 8 -> 4 | CONSEQUENCE
+ol | border-top-style | none -> solid | declared
+ol | border-right-style | none -> solid | declared
+ol | border-bottom-style | none -> solid | declared
+ol | border-left-style | none -> solid | declared
+ol | tab-size | 8 -> 4 | CONSEQUENCE
+ul | border-top-style | none -> solid | declared
+ul | border-right-style | none -> solid | declared
+ul | border-bottom-style | none -> solid | declared
+ul | border-left-style | none -> solid | declared
+ul | tab-size | 8 -> 4 | CONSEQUENCE
+img | border-top-style | none -> solid | declared
+img | border-right-style | none -> solid | declared
+img | border-bottom-style | none -> solid | declared
+img | border-left-style | none -> solid | declared
+img | tab-size | 8 -> 4 | CONSEQUENCE
+svg | border-top-style | none -> solid | declared
+svg | border-right-style | none -> solid | declared
+svg | border-bottom-style | none -> solid | declared
+svg | border-left-style | none -> solid | declared
+svg | tab-size | 8 -> 4 | CONSEQUENCE
+svg | display | inline -> block | declared
+iframe | tab-size | 8 -> 4 | CONSEQUENCE
+iframe | vertical-align | baseline -> middle | declared
+iframe | display | inline -> block | declared
+button | tab-size | 8 -> 4 | CONSEQUENCE
+input | padding-top | 1px -> 0px | declared
+input | padding-right | 2px -> 0px | declared
+input | padding-bottom | 1px -> 0px | declared
+input | padding-left | 2px -> 0px | declared
+input | border-top-width | 2px -> 0px | declared
+input | border-right-width | 2px -> 0px | declared
+input | border-bottom-width | 2px -> 0px | declared
+input | border-left-width | 2px -> 0px | declared
+input | border-top-style | inset -> solid | declared
+input | border-right-style | inset -> solid | declared
+input | border-bottom-style | inset -> solid | declared
+input | border-left-style | inset -> solid | declared
+input | border-top-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+input | border-right-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+input | border-bottom-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+input | border-left-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+input | tab-size | 8 -> 4 | CONSEQUENCE
+input | height | 27px -> 21px | CONSEQUENCE
+input | color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+input | text-decoration-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | CONSEQUENCE
+input | background-color | rgb(255, 255, 255) -> rgba(0, 0, 0, 0) | declared
+input | padding-inline-start | 2px -> 0px | CONSEQUENCE
+input | padding-block-start | 1px -> 0px | CONSEQUENCE
+input | padding-block-end | 1px -> 0px | CONSEQUENCE
+input | width | 182px -> 174px | CONSEQUENCE
+select | border-top-width | 1px -> 0px | declared
+select | border-right-width | 1px -> 0px | declared
+select | border-bottom-width | 1px -> 0px | declared
+select | border-left-width | 1px -> 0px | declared
+select | border-top-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+select | border-right-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+select | border-bottom-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+select | border-left-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+select | tab-size | 8 -> 4 | CONSEQUENCE
+select | height | 23px -> 21px | CONSEQUENCE
+select | color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+select | text-decoration-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | CONSEQUENCE
+select | background-color | rgb(255, 255, 255) -> rgba(0, 0, 0, 0) | declared
+select | width | 22px -> 20px | CONSEQUENCE
+optgroup | border-top-style | none -> solid | declared
+optgroup | border-right-style | none -> solid | declared
+optgroup | border-bottom-style | none -> solid | declared
+optgroup | border-left-style | none -> solid | declared
+optgroup | border-top-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | border-right-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | border-bottom-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | border-left-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | tab-size | 8 -> 4 | CONSEQUENCE
+optgroup | color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+optgroup | text-decoration-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | CONSEQUENCE
+optgroup | font-weight | 700 -> 400 | declared
+textarea | padding-top | 2px -> 0px | declared
+textarea | padding-right | 2px -> 0px | declared
+textarea | padding-bottom | 2px -> 0px | declared
+textarea | padding-left | 2px -> 0px | declared
+textarea | border-top-width | 1px -> 0px | declared
+textarea | border-right-width | 1px -> 0px | declared
+textarea | border-bottom-width | 1px -> 0px | declared
+textarea | border-left-width | 1px -> 0px | declared
+textarea | border-top-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+textarea | border-right-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+textarea | border-bottom-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+textarea | border-left-color | rgb(118, 118, 118) -> oklch(0.208 0.042 265.755) | declared
+textarea | tab-size | 8 -> 4 | CONSEQUENCE
+textarea | height | 48px -> 42px | CONSEQUENCE
+textarea | color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | declared
+textarea | text-decoration-color | rgb(0, 0, 0) -> oklch(0.208 0.042 265.755) | CONSEQUENCE
+textarea | background-color | rgb(255, 255, 255) -> rgba(0, 0, 0, 0) | declared
+textarea | padding-inline-start | 2px -> 0px | CONSEQUENCE
+textarea | padding-block-start | 2px -> 0px | CONSEQUENCE
+textarea | padding-block-end | 2px -> 0px | CONSEQUENCE
+textarea | width | 163px -> 157px | CONSEQUENCE

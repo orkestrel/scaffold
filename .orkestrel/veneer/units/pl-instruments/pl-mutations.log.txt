@@ -1,0 +1,183 @@
+=== M1a a preflight value changed (Tailwind's reset aligns replaced elements to the top)
+site: tests/service/tailwind/preflight.test.ts compiled profile, vertical-align: middle -> top
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  2 failed | 2 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under the host build
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected [ 'iframe | vertical-align | top' ] to deeply equal []
+received: +   "iframe | vertical-align | top",
+
+=== M1b a preflight value changed (Tailwind's reset leaves replaced elements inline)
+site: tests/service/tailwind/preflight.test.ts compiled profile, display: block -> inline on the replaced-element rule
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  2 failed | 2 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under the host build
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected [ 'iframe | display | block', …(1) ] to deeply equal []
+received: +   "iframe | display | block",
+received: +   "svg | display | block",
+
+=== M2 a Veneer elements-layer declaration stops holding its value (ul list-style-type reverts to the layer beneath)
+site: src/styles/elements/_ul.scss list-style-type: disc -> revert-layer
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: 0
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  2 failed | 2 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under the host build
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected 'ul | list-style-type | none' to be 'ul | list-style-type | disc' // Object.is equality
+restore build exit: 0
+
+=== M3 a guide row removed (a | tab-size)
+site: guides/veneer.md the a | tab-size row
+mutation applied exit: 0
+ 1 file changed, 18 insertions(+), 12 deletions(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  2 failed | 2 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under the host build
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected [ 'a | tab-size | 4' ] to deeply equal []
+received: +   "a | tab-size | 4",
+
+=== M4 a guide row's preflight value changed (html | tab-size 4 -> 2)
+site: guides/veneer.md the html | tab-size row
+mutation applied exit: 0
+ 1 file changed, 19 insertions(+), 12 deletions(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  2 failed | 2 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under the host build
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected [ 'html | tab-size | 4' ] to deeply equal []
+message: AssertionError: expected [ 'html | tab-size | 4' ] to deeply equal []
+received: +   "html | tab-size | 4",
+received: +   "html | tab-size | 4",
+
+=== M5 a guide row records a dimension (the select | height row of the unpatched table)
+site: guides/veneer.md the select | height row
+mutation applied exit: 0
+ 1 file changed, 18 insertions(+), 10 deletions(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  2 failed | 2 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under the host build
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected [ 'select | height' ] to deeply equal []
+message: AssertionError: expected [ 'select | height | 18px' ] to deeply equal []
+received: +   "select | height",
+received: +   "select | height | 18px",
+
+=== M6 a dimension edge dropped (height without padding-top)
+site: tests/setupStyles.ts PREFLIGHT_DIMENSIONS height edges
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  2 failed | 2 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under the host build
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected 'input | height | 21' to be 'input | height | 22' // Object.is equality
+
+=== M7 the staged defaults sit above the cascade (a top-level layer rather than a theme sublayer)
+site: tests/setupStyles.ts PREFLIGHT_BUILDS Chromium 153 sheet
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  2 failed | 2 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > stages the Chromium 153 defaults beneath the cascade and the profile
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected 'rgb(255, 255, 255)' not to be 'rgb(255, 255, 255)' // Object.is equality
+message: AssertionError: expected [ Array(1) ] to deeply equal []
+received: +   "select | background-color | rgba(0, 0, 0, 0)",
+
+=== M8 the staged defaults never reach the page (the Chromium 153 row stages an empty layer)
+site: tests/setupStyles.ts PREFLIGHT_BUILDS Chromium 153 sheet
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  1 failed | 3 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > stages the Chromium 153 defaults beneath the cascade and the profile
+message: AssertionError: expected 'rgb(128, 128, 128)' to be 'oklch(0.208 0.042 265.755)' // Object.is equality
+
+=== M9 setup proof: the host row's layer is not a theme sublayer
+site: tests/setupStyles.ts PREFLIGHT_BUILDS host row
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts)
+test exit: 1
+summary:       Tests  1 failed | 148 passed (149)
+failing:  FAIL  |setup| tests/setupStyles.test.ts > styles setup > stages the defaults of every build in a sublayer of the layer the built cascade places first
+message: AssertionError: expected 'the host build | defaults' to be 'the host build | theme.defaults' // Object.is equality
+
+=== M10 setup proof: the content extent ignores box-sizing
+site: tests/setupStyles.ts computeContentExtent
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts)
+test exit: 1
+summary:       Tests  1 failed | 148 passed (149)
+failing:  FAIL  |setup| tests/setupStyles.test.ts > styles setup > computes the content extent a reading resolves, less its edges only under border-box sizing
+message: AssertionError: expected 19 to be 20.5 // Object.is equality
+
+=== M11 setup proof: a dimension edge is not a padding or border width
+site: tests/setupStyles.ts PREFLIGHT_DIMENSIONS height edges
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts)
+test exit: 1
+summary:       Tests  1 failed | 148 passed (149)
+failing:  FAIL  |setup| tests/setupStyles.test.ts > styles setup > reads each preflight dimension through padding and border edges alone
+message: AssertionError: expected 'height | margin-top' to be 'height | ' // Object.is equality
+
+=== M12 a guide row records a pair Veneer declares (hr | border-top-style)
+site: guides/veneer.md an hr | border-top-style row
+mutation applied exit: 0
+ 1 file changed, 19 insertions(+), 11 deletions(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  2 failed | 2 passed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under the host build
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected [ 'hr | border-top-style' ] to deeply equal []
+received: +   "hr | border-top-style",
+
+=== M13 the dimensions table names a dimension the pairing never moves (width in place of height)
+site: tests/setupStyles.ts PREFLIGHT_DIMENSIONS dimension
+mutation applied exit: 0
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+build exit: not run
+command: (cd tmp/probe/pl-scratch && npx vitest run --config vite.config.ts --no-cache --reporter=dot --project service tests/service/tailwind/preflight.test.ts)
+test exit: 1
+summary:       Tests  4 failed (4)
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > derives the overlapping tags and the properties the reset declares
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > stages the Chromium 153 defaults beneath the cascade and the profile
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under the host build
+failing:  FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and holds every move the profile makes to its recorded preflight value, under Chromium 153
+message: AssertionError: expected [ 'box-sizing', 'margin-top', …(77) ] to include 'width'
+message: Error: The dimensions table reads no height
+message: AssertionError: expected [] to include 'select | height'
+
+=== scratch restored
