@@ -1,0 +1,34 @@
+# The Orchestrator's mutation replay for J-BINDER-PRECEDENCE round 5 (2026-09-23, Chromium 153.0.8010.12, precedence-mutate.mjs over precedence-mutations-5.json, retained as j-binder-precedence-mutations-5.json)
+worktree: 1395361 Merge branch 'main' into unit/binder
+--- results
+{
+ "name": "HostSnapshot: #publish ignores the stamp (the throwing inner restoration then keeps nothing to withdraw)",
+ "tally": "6 failed | 18 passed (24)",
+ "failed": [
+  "HostSnapshot > removes a shared class attribute using the presence the earlier token save recorded",
+  "HostSnapshot > withdraws an overlapping earliest recording when its restoration throws inside a reaction",
+  "HostSnapshot > restores an overlapping target neither restoration has written back from its earliest recording, whichever restoration starts first",
+  "HostSnapshot > preserves the save order of a value taken from a pending restoration",
+  "HostSnapshot > preserves the order of a taken class presence recording when it competes in an overlap",
+  "HostSnapshot > preserves the order of a taken style presence recording when it competes in an overlap"
+ ]
+}
+{
+ "name": "readTag: reads tagName from any non-null object carrying it",
+ "tally": "2 failed | 28 passed (30)",
+ "failed": [
+  "readTag > returns undefined for an element created in a same-origin iframe document",
+  "readTag > reads element tag names and returns undefined for other values and hostile prototypes"
+ ]
+}
+--- restore check
+every source restored byte for byte
+--- status after
+ M guides/veneer.md
+ M src/browser/Button.ts
+ M src/browser/HostSnapshot.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M tests/src/browser/HostSnapshot.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts

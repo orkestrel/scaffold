@@ -1,0 +1,9 @@
+Checkpoint J-COLLAPSE round 1 on its unit branch before merging main
+
+The Collapse engine, the parseElement reader, the delegate's collapse route, and their proofs and
+guide sections as round 1 returned them, audited FAIL 1, 2, 4, 6, 7, 8 with F1; committed on the
+unit branch so Veneer main (the J-BINDER-PRECEDENCE landing and the baseline's wave 2) can merge in
+before round 2 runs. Not a landing: the branch lands as a whole after round 2's audit. J-ENGINE
+campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

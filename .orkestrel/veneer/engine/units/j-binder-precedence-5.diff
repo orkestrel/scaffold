@@ -1,0 +1,1160 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 18efd99..7a0c629 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -36,6 +36,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `ButtonInterface`                         | interface | Controls the `pressed` token and the `aria-pressed` attribute on a host.                                                                               |
+ | `ButtonOptions`                           | interface | Configures a button's markup vocabulary, hooks, and lifetime.                                                                                          |
+ | `ButtonVocabulary`                        | interface | Carries a button's resolved markup vocabulary: each group with every key present.                                                                      |
++| `CollapseVocabulary`                      | interface | Carries a collapse's resolved markup vocabulary: each group with every key present.                                                                    |
+ | `Delegate`                                | class     | Activates data-attribute button hosts through a root's delegated click listener.                                                                       |
+ | `DelegateInterface`                       | interface | Owns delegated activation and the button engines it constructs.                                                                                        |
+ | `DelegateOptions`                         | interface | Configures the root of delegated activation and the markup vocabulary of each entity it routes.                                                        |
+@@ -55,6 +56,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `HostSnapshot`                            | class     | Records host state before an engine first writes it, and writes that state back on restore.                                                            |
+ | `settleAnimations`                        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                                   |
+ | `reflow`                                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                                               |
++| `readTag`                                 | function  | Reads the tag name of a value that is an element.                                                                                                      |
+ | `readTarget`                              | function  | Returns the first HTML element a trigger's target attribute, or its `href` fragment, names in its document.                                            |
+ | `readTargets`                             | function  | Returns the HTML elements a trigger's target attribute, or its `href` fragment, names in its document.                                                 |
+ | `TARGET_ATTRIBUTE`                        | const     | Names the attribute a trigger carries its target selector in by default, Bootstrap's attribute name.                                                   |
+@@ -88,7 +90,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `SetHTMLOptions`                          | interface | Mirrors the HTML standard's dictionary the platform's `setHTML` method reads its sanitizer from.                                                       |
+ | `SanitizeTargetInterface`                 | interface | Describes a node whose `setHTML` method parses markup through a sanitizer.                                                                             |
+ | `TipContent`                              | type      | Describes the content of a tip slot: text, an element moved in, or a function of the trigger returning either.                                         |
+-| `CollapseEventMap`                        | interface | Maps each verb to the collapse event it names.                                                                                                         |
++| `CollapseEventMap`                        | interface | Maps each verb to the collapse event it names, carrying null detail.                                                                                   |
+ | `CollapseHooks`                           | type      | Configures the initial DOM event subscriptions for a collapse.                                                                                         |
+ | `CollapseClassMap`                        | interface | Names the class tokens a collapse writes, removes, and tests; each default is the token the cascade selects on.                                        |
+ | `CollapseAttributeMap`                    | interface | Names the attributes a collapse reads; each default is Bootstrap's attribute name.                                                                     |
+@@ -136,28 +138,28 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `OffcanvasSelectorMap`                    | interface | Names the selectors an offcanvas panel matches with; each default is Bootstrap's selector.                                                             |
+ | `OffcanvasOptions`                        | interface | Configures an offcanvas panel's backdrop, dismissal, scrolling, markup vocabulary, hooks, and lifetime.                                                |
+ | `OffcanvasInterface`                      | interface | Slides an `.offcanvas` panel in and out, with an optional backdrop, scroll lock, and focus isolation.                                                  |
+-| `TooltipEventMap`                         | interface | Maps each verb to the tooltip event it names.                                                                                                          |
++| `TooltipEventMap`                         | interface | Maps each verb to the tooltip event it names, carrying null detail.                                                                                    |
+ | `TooltipHooks`                            | type      | Configures the initial DOM event subscriptions for a tooltip.                                                                                          |
+ | `TooltipClassMap`                         | interface | Names the class tokens a tooltip writes and tests; each default is the token the cascade selects on.                                                   |
+ | `TooltipAttributeMap`                     | interface | Names the attributes a tooltip reads and writes; each default is Bootstrap's attribute name.                                                           |
+ | `TooltipSelectorMap`                      | interface | Names the selector a tooltip matches with; its default is Bootstrap's selector.                                                                        |
+ | `TooltipOptions`                          | interface | Configures a tooltip's content, triggers, timing, tip, placement, sanitizer, markup vocabulary, hooks, and lifetime.                                   |
+ | `TooltipInterface`                        | interface | Shows a tip anchored to its trigger in the top layer on hover, focus, click, or call.                                                                  |
+-| `PopoverEventMap`                         | interface | Maps each verb to the popover event it names.                                                                                                          |
++| `PopoverEventMap`                         | interface | Maps each verb to the popover event it names, carrying null detail.                                                                                    |
+ | `PopoverHooks`                            | type      | Configures the initial DOM event subscriptions for a popover.                                                                                          |
+ | `PopoverClassMap`                         | interface | Names the class tokens a popover writes and tests: the tooltip's keys, with the popover's own arrow-placement token.                                   |
+ | `PopoverAttributeMap`                     | interface | Names the attributes a popover reads and writes: the tooltip's keys, with the attribute that feeds the body slot.                                      |
+ | `PopoverSelectorMap`                      | interface | Names the selectors a popover matches with: the header slot in place of the tooltip's text slot, and the body slot.                                    |
+ | `PopoverOptions`                          | interface | Configures a popover: the tooltip options, a body slot, the popover's markup vocabulary, and the popover defaults.                                     |
+ | `PopoverInterface`                        | interface | Shows a header-and-body tip anchored to its trigger: the tooltip contract under the `.vn.popover` event names.                                         |
+-| `AlertEventMap`                           | interface | Maps each verb to the alert event it names.                                                                                                            |
++| `AlertEventMap`                           | interface | Maps each verb to the alert event it names, carrying null detail.                                                                                      |
+ | `AlertHooks`                              | type      | Configures the initial DOM event subscriptions for an alert.                                                                                           |
+ | `AlertClassMap`                           | interface | Names the class tokens an alert writes and tests; each default is the token the cascade selects on.                                                    |
+ | `AlertAttributeMap`                       | interface | Names the attribute an alert reads; its default is Bootstrap's attribute name.                                                                         |
+ | `AlertSelectorMap`                        | interface | Names the selector an alert matches with; its default is Bootstrap's selector.                                                                         |
+ | `AlertOptions`                            | interface | Configures an alert's markup vocabulary, hooks, and lifetime.                                                                                          |
+ | `AlertInterface`                          | interface | Closes an `.alert` by fading it out and removing it from the document.                                                                                 |
+-| `ToastEventMap`                           | interface | Maps each verb to the toast event it names.                                                                                                            |
++| `ToastEventMap`                           | interface | Maps each verb to the toast event it names, carrying null detail.                                                                                      |
+ | `ToastHooks`                              | type      | Configures the initial DOM event subscriptions for a toast.                                                                                            |
+ | `ToastClassMap`                           | interface | Names the class tokens a toast writes and tests; each default is the token the cascade selects on.                                                     |
+ | `ToastAttributeMap`                       | interface | Names the attributes a toast reads; each default is Bootstrap's attribute name.                                                                        |
+@@ -541,19 +543,30 @@ already aborted.
+ 
+ Each engine keeps one `HostSnapshot` instance. It records every attribute, class token, and inline
+ property the engine writes before the first write, and destruction writes each recorded value back:
+-a value recorded as absent is removed, and a `class` attribute the engine's writes created is
+-removed when no token remains in it. Restoration writes class tokens first, then removes each
+-`class` attribute the snapshot recorded as absent and the tokens left empty, then writes inline
+-properties, and writes attributes last. The snapshot owns what its restoration publishes: the
+-targets it has still to write back, each withdrawn as soon as it is written back. A snapshot saved
+-for one of those targets, by an engine of any class and from any caller, the restoring snapshot
+-included, records the value the restoration recorded rather than the half-restored host, and the
+-restoration leaves that target to it; a target already written back is read from the host. An engine
+-constructed in reaction to any restoration write therefore records none of the destroyed engine's
+-writes: it takes each value the restoration has still to write back and reads each target already
+-written back from the host, edits you made included, and no later write of the destroyed engine
+-overwrites it. Where two restorations overlap on one target, the restoration that started first
+-writes it back. State the snapshot never recorded keeps every edit you made.
++a value recorded as absent is removed. The first token save records whether the host carried a
++`class` attribute, and the first property save records whether it carried a `style` attribute.
++Restoration writes class tokens first, then removes each `class` attribute the snapshot recorded as
++absent and the tokens left empty, then writes inline properties, removes each `style` attribute
++recorded as absent and left empty by the properties, and writes attributes last. The snapshot owns
++what its restoration publishes: the targets it has still to write back, each withdrawn as soon as
++it is written back. A snapshot saved for one of those targets, by an engine of any class and from
++any caller, the restoring snapshot included, records the value the restoration recorded rather
++than the half-restored host, and the restoration leaves that target to it; a target already written
++back is read from the host. An engine constructed in reaction to any restoration write therefore
++records none of the destroyed engine's writes: it takes each value the restoration has still to
++write back and reads each target already written back from the host, edits you made included, and
++no later write of the destroyed engine overwrites it.
++Where two restorations overlap on a target neither has yet written back, the restoration holding
++the earliest recording of that target writes it back, a taken value keeping the order of the
++recording it came from, because the earliest recording holds the value the target carried before
++either engine wrote it. A restoration that publishes a target another restoration already wrote
++back writes its own recorded value. A restoration whose write throws withdraws every target it has
++not written back, a target whose earliest recording it held included, so no restoration writes that
++target back. State the snapshot never recorded keeps every edit you made.
++Each restoration judges the removal of a `class` or `style` attribute it recorded as absent once,
++after its own token or property writes, so an overlapping or later restoration by another engine
++can leave that attribute present and empty; the tokens and properties themselves are restored
++unless a write throws.
+ 
+ Two doors let other code run inside an engine's write sequence: a custom element's reaction runs
+ inside each attribute, class, style, or child-list write, and a synchronous listener runs inside
+diff --git a/src/browser/Button.ts b/src/browser/Button.ts
+index c75f97b..dc909a7 100644
+--- a/src/browser/Button.ts
++++ b/src/browser/Button.ts
+@@ -2,7 +2,7 @@ import type { ButtonClassMap, ButtonInterface, ButtonOptions } from './types.js'
+ import { AppError } from '@src/core'
+ import { instanceOf } from '@orkestrel/contract'
+ import { BUTTON_CLASSES, BUTTON_EVENTS, BUTTON_SELECTORS } from './constants.js'
+-import { bindEventMap, emitEvent, resolveVocabulary } from './helpers.js'
++import { bindEventMap, emitEvent, readTag, resolveVocabulary } from './helpers.js'
+ import { HostSnapshot } from './HostSnapshot.js'
+ import { Registry } from './Registry.js'
+ import { isButtonEvent, isClassToken, isSelector } from './validators.js'
+@@ -39,14 +39,9 @@ export class Button implements ButtonInterface {
+ 	 */
+ 	constructor(host: HTMLElement, options?: ButtonOptions) {
+ 		if (!instanceOf(HTMLElement)(host)) {
+-			let tag: string | undefined
+-			try {
+-				const value: unknown = host
+-				if (value instanceof Element) tag = value.tagName
+-			} catch {
+-				tag = undefined
+-			}
+-			throw new AppError('Button requires an HTMLElement host', 'BUTTON_HOST_INVALID', { tag })
++			throw new AppError('Button requires an HTMLElement host', 'BUTTON_HOST_INVALID', {
++				tag: readTag(host),
++			})
+ 		}
+ 		this.#classes = resolveVocabulary(
+ 			'BUTTON_OPTION_INVALID',
+diff --git a/src/browser/HostSnapshot.ts b/src/browser/HostSnapshot.ts
+index a4853c7..2ffbdbb 100644
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -6,21 +6,30 @@ import type { HostSnapshotCategory, HostSnapshotInterface, HostSnapshotTarget }
+  * @remarks
+  * A recording holds an attribute's value, whether a class token is present, or an inline property's
+  * value and priority, and treats absence as a value of its own. The first token recorded on an
+- * element also records whether the element carried a `class` attribute, so restoring removes an
+- * attribute the engine's writes created when no token remains in it. Restoring forgets the records
+- * first, then writes class tokens, then removes each `class` attribute it recorded as absent that
+- * the tokens left empty, then writes inline properties, and writes attributes last, whatever order
+- * the targets were saved in.
++ * element also records whether the element carried a `class` attribute. The first property recorded
++ * also records whether the element carried a `style` attribute. Restoring forgets the records
++ * first, then writes class tokens, removes each `class` attribute it recorded as absent that the
++ * tokens left empty, writes inline properties, removes each `style` attribute it recorded as absent
++ * that the properties left empty, and writes attributes last, whatever order the targets were saved in.
+  *
+  * The snapshot owns what its restoration publishes: the targets it has still to write back, with
+  * the values it recorded, per element, each withdrawn as soon as it is written back. A snapshot
+  * saved for a published target, by any engine of any class and by the restoring snapshot itself,
+  * records the published value instead of the half-restored element and takes the target over, and
+- * the restoration then leaves that target alone; the `class`-attribute record of a token passes
+- * over the same way. Where two restorations overlap on one target, the restoration that started
+- * first writes it back. A restoration runs synchronously, so only a synchronous reaction to one of
+- * its writes, such as a custom element's attribute reaction, can save or restore during it; an
+- * observer delivery is a microtask and runs after it.
++ * the restoration then leaves that target alone; the attribute-presence records pass over the same
++ * way. Where two restorations overlap on a target neither has yet written back, the restoration
++ * holding the earliest recording of that target writes it back, a taken value keeping the order
++ * of the recording it came from, because the earliest recording holds the value the target
++ * carried before either engine wrote it. A restoration that publishes a target another
++ * restoration already wrote back writes its own recorded value.
++ * A restoration whose write throws withdraws every target it has not written back, a target
++ * whose earliest recording it held included, so no restoration writes that target back.
++ * Each restoration judges the removal of a `class` or `style` attribute it recorded as absent
++ * once, after its own token or property writes, so an overlapping or later restoration by another
++ * engine can leave that attribute present and empty; the tokens and properties themselves are
++ * restored unless a write throws. A restoration runs synchronously, so only a synchronous reaction
++ * to one of its writes, such as a custom element's attribute reaction, can save or restore during
++ * it; an observer delivery is a microtask and runs after it.
+  *
+  * @example
+  * ```ts
+@@ -31,11 +40,13 @@ import type { HostSnapshotCategory, HostSnapshotInterface, HostSnapshotTarget }
+  * ```
+  */
+ export class HostSnapshot implements HostSnapshotInterface {
+-	// The key a token's `class`-attribute record is published under; every target key holds a colon.
++	// Attribute-presence records use keys without the colon every target key holds.
+ 	static readonly #classed = 'classed'
++	static readonly #styled = 'styled'
++	static #order = 0
+ 	// The targets each restoration in progress has still to write back, per element and target key,
+-	// with the snapshot that owns each one and the value it recorded. A value for the `classed` key is
+-	// `''` when the element carried a `class` attribute and undefined when it carried none.
++	// with the snapshot that owns each one, its value, and its first-save stamp. Presence records hold
++	// `''` when the element carried their attribute and undefined when it carried none.
+ 	static readonly #pending = new WeakMap<
+ 		HTMLElement,
+ 		Map<
+@@ -44,6 +55,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 				readonly owner: HostSnapshot
+ 				readonly value: string | undefined
+ 				readonly priority: string
++				readonly stamp: number
+ 			}
+ 		>
+ 	>()
+@@ -51,8 +63,12 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		readonly target: HostSnapshotTarget
+ 		readonly value: string | undefined
+ 		readonly priority: string
++		readonly stamp: number
+ 	}> = []
+-	#classes: ReadonlyMap<HTMLElement, boolean> = new Map()
++	#classes: ReadonlyMap<HTMLElement, { readonly present: boolean; readonly stamp: number }> =
++		new Map()
++	#styles: ReadonlyMap<HTMLElement, { readonly present: boolean; readonly stamp: number }> =
++		new Map()
+ 
+ 	save(target: HostSnapshotTarget): void {
+ 		const { category, element, name } = target
+@@ -64,6 +80,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		)
+ 		if (recorded) return
+ 		const taken = HostSnapshot.#take(element, HostSnapshot.#key(category, name))
++		const stamp = HostSnapshot.#order++
+ 		let value = taken?.value
+ 		let priority = taken?.priority ?? ''
+ 		if (taken === undefined) {
+@@ -84,25 +101,59 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			const classed = HostSnapshot.#take(element, HostSnapshot.#classed)
+ 			const present =
+ 				classed === undefined ? element.hasAttribute('class') : classed.value !== undefined
+-			this.#classes = new Map([...this.#classes, [element, present]])
++			this.#classes = new Map([
++				...this.#classes,
++				[element, { present, stamp: classed?.stamp ?? stamp }],
++			])
+ 		}
+-		this.#records = [...this.#records, { target: { category, element, name }, value, priority }]
++		if (category === 'property' && !this.#styles.has(element)) {
++			const styled = HostSnapshot.#take(element, HostSnapshot.#styled)
++			const present =
++				styled === undefined ? element.hasAttribute('style') : styled.value !== undefined
++			this.#styles = new Map([
++				...this.#styles,
++				[element, { present, stamp: styled?.stamp ?? stamp }],
++			])
++		}
++		this.#records = [
++			...this.#records,
++			{ target: { category, element, name }, value, priority, stamp: taken?.stamp ?? stamp },
++		]
+ 	}
+ 
+ 	restore(): void {
+ 		const records = this.#records
+ 		const classes = this.#classes
++		const styles = this.#styles
+ 		this.#records = []
+ 		this.#classes = new Map()
++		this.#styles = new Map()
+ 		// A reaction to one of these writes can call restore on this snapshot again. That nested
+ 		// restoration touches only keys saved after this one began, because every such save took its
+-		// target first, and the finally block walks only this call's captured records and class map.
+-		for (const { target, value, priority } of records) {
++		// target first, and the finally block walks only this call's captured records and presence maps.
++		for (const { target, value, priority, stamp } of records) {
+ 			const key = HostSnapshot.#key(target.category, target.name)
+-			HostSnapshot.#publish(target.element, key, this, value, priority)
++			HostSnapshot.#publish(target.element, key, this, value, priority, stamp)
++		}
++		for (const [element, { present, stamp }] of classes) {
++			HostSnapshot.#publish(
++				element,
++				HostSnapshot.#classed,
++				this,
++				present ? '' : undefined,
++				'',
++				stamp,
++			)
+ 		}
+-		for (const [element, classed] of classes) {
+-			HostSnapshot.#publish(element, HostSnapshot.#classed, this, classed ? '' : undefined, '')
++		for (const [element, { present, stamp }] of styles) {
++			HostSnapshot.#publish(
++				element,
++				HostSnapshot.#styled,
++				this,
++				present ? '' : undefined,
++				'',
++				stamp,
++			)
+ 		}
+ 		try {
+ 			for (const { target, value } of records) {
+@@ -112,9 +163,9 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 					target.element.classList.toggle(target.name, value !== undefined),
+ 				)
+ 			}
+-			for (const [element, classed] of classes) {
++			for (const [element, { present }] of classes) {
+ 				HostSnapshot.#writeBack(element, HostSnapshot.#classed, this, () => {
+-					if (!classed && element.classList.length === 0) element.removeAttribute('class')
++					if (!present && element.classList.length === 0) element.removeAttribute('class')
+ 				})
+ 			}
+ 			for (const { target, value, priority } of records) {
+@@ -125,6 +176,14 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 					else target.element.style.setProperty(target.name, value, priority)
+ 				})
+ 			}
++			for (const [element, { present }] of styles) {
++				HostSnapshot.#writeBack(element, HostSnapshot.#styled, this, () => {
++					// Reading presence synchronizes Chromium's pending inline-style attribute before removal.
++					if (!present && element.style.length === 0 && element.hasAttribute('style')) {
++						element.removeAttribute('style')
++					}
++				})
++			}
+ 			for (const { target, value } of records) {
+ 				if (target.category !== 'attribute') continue
+ 				const key = HostSnapshot.#key(target.category, target.name)
+@@ -144,6 +203,9 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			for (const element of classes.keys()) {
+ 				HostSnapshot.#withdraw(element, HostSnapshot.#classed, this)
+ 			}
++			for (const element of styles.keys()) {
++				HostSnapshot.#withdraw(element, HostSnapshot.#styled, this)
++			}
+ 		}
+ 	}
+ 
+@@ -152,17 +214,25 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		return `${category}:${name}`
+ 	}
+ 
+-	// Publishes one value a restoration has still to write back, unless another snapshot already owns
+-	// that target on the element; the restoration that started first writes it.
++	// Where two restorations overlap on a target neither has yet written back, the restoration
++	// holding the earliest recording of that target writes it back, a taken value keeping the order
++	// of the recording it came from, because the earliest recording holds the value the target
++	// carried before either engine wrote it. A restoration that publishes a target another
++	// restoration already wrote back writes its own recorded value.
++	// A restoration whose write throws withdraws every target it has not written back, a target
++	// whose earliest recording it held included, so no restoration writes that target back.
+ 	static #publish(
+ 		element: HTMLElement,
+ 		key: string,
+ 		owner: HostSnapshot,
+ 		value: string | undefined,
+ 		priority: string,
++		stamp: number,
+ 	): void {
+ 		const pending = HostSnapshot.#pending.get(element) ?? new Map()
+-		if (!pending.has(key)) pending.set(key, { owner, value, priority })
++		const entry = pending.get(key)
++		if (entry === undefined || stamp < entry.stamp)
++			pending.set(key, { owner, value, priority, stamp })
+ 		HostSnapshot.#pending.set(element, pending)
+ 	}
+ 
+@@ -186,7 +256,9 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	static #take(
+ 		element: HTMLElement,
+ 		key: string,
+-	): { readonly value: string | undefined; readonly priority: string } | undefined {
++	):
++		| { readonly value: string | undefined; readonly priority: string; readonly stamp: number }
++		| undefined {
+ 		const pending = HostSnapshot.#pending.get(element)
+ 		const entry = pending?.get(key)
+ 		if (entry === undefined) return undefined
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index f4497d4..d1630fd 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -15,7 +15,7 @@ import { instanceOf } from '@orkestrel/contract'
+  * The detail travels in the event's `detail` member alone; no field of it is defined on the event.
+  * @example
+  * ```ts
+- * if (!emitEvent(host, 'show.vn.collapse', undefined, true)) return false
++ * if (!emitEvent(host, 'show.vn.collapse', null, true)) return false
+  * ```
+  */
+ export function emitEvent<T>(
+@@ -196,13 +196,14 @@ export function readTarget(
+  * @param parsers - The declared keys, each mapped to the parser that coerces its attribute value.
+  * @param options - The constructor object, when supplied.
+  * @returns A new options object; an explicit `false` or `0` survives every layer.
+- * @throws Thrown when a declared attribute fails coercion, as an `AppError` carrying the code, the attribute's name, and the host's tag.
++ * @throws Thrown when a declared attribute not overridden by the constructor fails coercion, as an `AppError` carrying the code, the attribute's name, and the host's tag.
+  * @remarks
+  * Each layer overrides the one before it. A declared key is an option key the entity's attribute
+  * table also carries, and its attribute is the name the table gives that key, such as
+  * `data-bs-interval` for the `interval` key by default. An undeclared attribute is ignored, no JSON
+  * configuration attribute is read, and a constructor value that is `undefined` keeps the layer
+- * beneath it.
++ * beneath it. An attribute is parsed only when the constructor leaves its key undefined, so an
++ * invalid attribute under an overridden key is left unparsed.
+  * @example
+  * ```ts
+  * const resolved = resolveOptions(host, attributes, 'CAROUSEL_OPTION_INVALID', defaults, { interval: parseNumber }, options)
+@@ -218,6 +219,7 @@ export function resolveOptions<T extends object, TKey extends keyof T & string>(
+ ): T {
+ 	const resolved: T = { ...defaults }
+ 	for (const key in parsers) {
++		if (options?.[key] !== undefined) continue
+ 		const name = attributes[key]
+ 		const attribute = element.getAttribute(name)
+ 		if (attribute === null) continue
+@@ -270,3 +272,25 @@ export function resolveVocabulary<T extends Readonly<Record<keyof T, string>>>(
+ 	}
+ 	return Object.freeze(resolved)
+ }
++
++/**
++ * Reads the tag name of a value that is an element.
++ *
++ * @param value - The value to read.
++ * @returns The value's string tag name, or undefined when the value fails this realm's `instanceof Element` check, its tag name is not a string, or reading it throws.
++ * @remarks
++ * A hostile value, such as a proxy whose prototype trap throws, reads as undefined rather than
++ * replacing the caller's own error with its throw.
++ * @example
++ * ```ts
++ * readTag(document.createElementNS('http://www.w3.org/2000/svg', 'svg')) // 'svg'
++ * ```
++ */
++export function readTag(value: unknown): string | undefined {
++	try {
++		const tag: unknown = value instanceof Element ? value.tagName : undefined
++		return typeof tag === 'string' ? tag : undefined
++	} catch {
++		return undefined
++	}
++}
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 5522d6d..8d68cbf 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -91,6 +91,16 @@ export interface ButtonVocabulary {
+ 	readonly selectors: ButtonSelectorMap
+ }
+ 
++/** Carries a collapse's resolved markup vocabulary: each group with every key present. */
++export interface CollapseVocabulary {
++	/** Names the class tokens the collapse writes, removes, and tests. */
++	readonly classes: CollapseClassMap
++	/** Names the attributes the collapse reads. */
++	readonly attributes: CollapseAttributeMap
++	/** Names the selector the collapse matches with. */
++	readonly selectors: CollapseSelectorMap
++}
++
+ /**
+  * Configures the root of delegated activation and the markup vocabulary of each entity it routes.
+  *
+@@ -273,14 +283,26 @@ export interface HostSnapshotInterface {
+ 	 * @remarks
+ 	 * An attribute or a property recorded as absent is removed, and a class token recorded as absent
+ 	 * is taken off the list. State the snapshot never recorded keeps every consumer edit. A token's
+-	 * first save for an element also records whether the element carried a `class` attribute. The
++	 * first save for an element also records whether the element carried a `class` attribute, and a
++	 * property's first save records whether it carried a `style` attribute. The
+ 	 * writes run in a fixed order: class tokens, then the removal of each `class` attribute the
+-	 * snapshot recorded as absent and the tokens left empty, then inline properties, and attributes
++	 * snapshot recorded as absent and the tokens left empty, then inline properties, then the removal
++	 * of each `style` attribute recorded as absent and left empty by the properties, and attributes
+ 	 * last. The snapshot owns what its restoration publishes: the targets it has still to write back,
+ 	 * each withdrawn as soon as it is written back. A snapshot saved for one of those targets while the restoration
+ 	 * runs, this snapshot included, records the value the restoration recorded rather than the
+-	 * half-restored element, and the restoration then leaves that target to it. Where two
+-	 * restorations overlap on one target, the restoration that started first writes it back.
++	 * half-restored element, and the restoration then leaves that target to it.
++	 * Where two restorations overlap on a target neither has yet written back, the restoration
++	 * holding the earliest recording of that target writes it back, a taken value keeping the order
++	 * of the recording it came from, because the earliest recording holds the value the target
++	 * carried before either engine wrote it. A restoration that publishes a target another
++	 * restoration already wrote back writes its own recorded value.
++	 * A restoration whose write throws withdraws every target it has not written back, a target
++	 * whose earliest recording it held included, so no restoration writes that target back.
++	 * Each restoration judges the removal of a `class` or `style` attribute it recorded as absent
++	 * once, after its own token or property writes, so an overlapping or later restoration by another
++	 * engine can leave that attribute present and empty; the tokens and properties themselves are
++	 * restored unless a write throws.
+ 	 * @example
+ 	 * ```ts
+ 	 * snapshot.restore()
+@@ -609,16 +631,16 @@ export interface SanitizeTargetInterface {
+ /** Describes the content of a tip slot: text, an element moved in, or a function of the trigger returning either. */
+ export type TipContent = string | Element | ((trigger: HTMLElement) => string | Element | undefined)
+ 
+-/** Maps each verb to the collapse event it names. */
++/** Maps each verb to the collapse event it names, carrying null detail. */
+ export interface CollapseEventMap {
+ 	/** Names the `show.vn.collapse` event, whose prevention refuses the show. */
+-	readonly show: CustomEvent<undefined>
++	readonly show: CustomEvent<null>
+ 	/** Names the `shown.vn.collapse` event, dispatched after the panel's transition settles; it is not cancelable. */
+-	readonly shown: CustomEvent<undefined>
++	readonly shown: CustomEvent<null>
+ 	/** Names the `hide.vn.collapse` event, whose prevention refuses the hide. */
+-	readonly hide: CustomEvent<undefined>
++	readonly hide: CustomEvent<null>
+ 	/** Names the `hidden.vn.collapse` event, dispatched after the panel's transition settles; it is not cancelable. */
+-	readonly hidden: CustomEvent<undefined>
++	readonly hidden: CustomEvent<null>
+ }
+ 
+ /** Configures the initial DOM event subscriptions for a collapse. */
+@@ -1367,18 +1389,18 @@ export interface OffcanvasInterface {
+ 	destroy(): void
+ }
+ 
+-/** Maps each verb to the tooltip event it names. */
++/** Maps each verb to the tooltip event it names, carrying null detail. */
+ export interface TooltipEventMap {
+ 	/** Names the `show.vn.tooltip` event, whose prevention refuses the show. */
+-	readonly show: CustomEvent<undefined>
++	readonly show: CustomEvent<null>
+ 	/** Names the `shown.vn.tooltip` event, dispatched after the tip's transition settles; it is not cancelable. */
+-	readonly shown: CustomEvent<undefined>
++	readonly shown: CustomEvent<null>
+ 	/** Names the `hide.vn.tooltip` event, whose prevention refuses the hide. */
+-	readonly hide: CustomEvent<undefined>
++	readonly hide: CustomEvent<null>
+ 	/** Names the `hidden.vn.tooltip` event, dispatched after the tip is removed; it is not cancelable. */
+-	readonly hidden: CustomEvent<undefined>
++	readonly hidden: CustomEvent<null>
+ 	/** Names the `inserted.vn.tooltip` event, dispatched after the tip enters its container; it is not cancelable. */
+-	readonly inserted: CustomEvent<undefined>
++	readonly inserted: CustomEvent<null>
+ }
+ 
+ /** Configures the initial DOM event subscriptions for a tooltip. */
+@@ -1580,18 +1602,18 @@ export interface TooltipInterface {
+ 	destroy(): void
+ }
+ 
+-/** Maps each verb to the popover event it names. */
++/** Maps each verb to the popover event it names, carrying null detail. */
+ export interface PopoverEventMap {
+ 	/** Names the `show.vn.popover` event, whose prevention refuses the show. */
+-	readonly show: CustomEvent<undefined>
++	readonly show: CustomEvent<null>
+ 	/** Names the `shown.vn.popover` event, dispatched after the tip's transition settles; it is not cancelable. */
+-	readonly shown: CustomEvent<undefined>
++	readonly shown: CustomEvent<null>
+ 	/** Names the `hide.vn.popover` event, whose prevention refuses the hide. */
+-	readonly hide: CustomEvent<undefined>
++	readonly hide: CustomEvent<null>
+ 	/** Names the `hidden.vn.popover` event, dispatched after the tip is removed; it is not cancelable. */
+-	readonly hidden: CustomEvent<undefined>
++	readonly hidden: CustomEvent<null>
+ 	/** Names the `inserted.vn.popover` event, dispatched after the tip enters its container; it is not cancelable. */
+-	readonly inserted: CustomEvent<undefined>
++	readonly inserted: CustomEvent<null>
+ }
+ 
+ /** Configures the initial DOM event subscriptions for a popover. */
+@@ -1729,12 +1751,12 @@ export interface PopoverInterface {
+ 	destroy(): void
+ }
+ 
+-/** Maps each verb to the alert event it names. */
++/** Maps each verb to the alert event it names, carrying null detail. */
+ export interface AlertEventMap {
+ 	/** Names the `close.vn.alert` event, whose prevention refuses the close. */
+-	readonly close: CustomEvent<undefined>
++	readonly close: CustomEvent<null>
+ 	/** Names the `closed.vn.alert` event, dispatched on the removed host after it leaves the document; it is not cancelable. */
+-	readonly closed: CustomEvent<undefined>
++	readonly closed: CustomEvent<null>
+ }
+ 
+ /** Configures the initial DOM event subscriptions for an alert. */
+@@ -1803,16 +1825,16 @@ export interface AlertInterface {
+ 	destroy(): void
+ }
+ 
+-/** Maps each verb to the toast event it names. */
++/** Maps each verb to the toast event it names, carrying null detail. */
+ export interface ToastEventMap {
+ 	/** Names the `show.vn.toast` event, whose prevention refuses the show. */
+-	readonly show: CustomEvent<undefined>
++	readonly show: CustomEvent<null>
+ 	/** Names the `shown.vn.toast` event, dispatched after the toast's transition settles; it is not cancelable. */
+-	readonly shown: CustomEvent<undefined>
++	readonly shown: CustomEvent<null>
+ 	/** Names the `hide.vn.toast` event, whose prevention refuses the hide. */
+-	readonly hide: CustomEvent<undefined>
++	readonly hide: CustomEvent<null>
+ 	/** Names the `hidden.vn.toast` event, dispatched after the toast's transition settles; it is not cancelable. */
+-	readonly hidden: CustomEvent<undefined>
++	readonly hidden: CustomEvent<null>
+ }
+ 
+ /** Configures the initial DOM event subscriptions for a toast. */
+diff --git a/tests/src/browser/HostSnapshot.test.ts b/tests/src/browser/HostSnapshot.test.ts
+index bcae20b..8160a30 100644
+--- a/tests/src/browser/HostSnapshot.test.ts
++++ b/tests/src/browser/HostSnapshot.test.ts
+@@ -1,4 +1,4 @@
+-import { HostSnapshot } from '@src/browser'
++import { Button, HostSnapshot } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder } from '@orkestrel/test'
+ import { build } from '@orkestrel/test/browser'
+@@ -69,6 +69,64 @@ describe('HostSnapshot', () => {
+ 		expect(host.style.getPropertyValue('width')).toBe('20px')
+ 	})
+ 
++	it('removes a style attribute created by property writes while preserving an original empty attribute and consumer properties', () => {
++		const bare = build('div')
++		const empty = build('div', { attributes: { style: '' } })
++		const edited = build('div')
++		const snapshot = new HostSnapshot()
++		for (const element of [bare, empty, edited]) {
++			snapshot.save({ category: 'property', element, name: 'height' })
++			element.style.setProperty('height', '40px')
++		}
++		edited.style.setProperty('width', '20px')
++		snapshot.restore()
++		expect(bare.hasAttribute('style')).toBe(false)
++		expect(empty.getAttribute('style')).toBe('')
++		expect(edited.style.getPropertyValue('height')).toBe('')
++		expect(edited.style.getPropertyValue('width')).toBe('20px')
++		expect(edited.hasAttribute('style')).toBe(true)
++	})
++
++	it('removes a shared class attribute using the presence the earlier token save recorded', () => {
++		const name = 'vn-probe-snapshot-classed'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		const earlier = new HostSnapshot()
++		earlier.save({ category: 'token', element: host, name: 'active' })
++		host.classList.add('active')
++		const later = new HostSnapshot()
++		later.save({ category: 'token', element: host, name: 'show' })
++		host.classList.add('show')
++		reactions.set(host, () => {
++			reactions.delete(host)
++			earlier.restore()
++		})
++		later.restore()
++		expect(host.hasAttribute('class')).toBe(false)
++
++		earlier.save({ category: 'token', element: host, name: 'active' })
++		host.classList.add('active', 'consumer')
++		later.save({ category: 'token', element: host, name: 'show' })
++		later.save({ category: 'token', element: host, name: 'consumer' })
++		host.classList.add('show')
++		host.classList.remove('consumer')
++		reactions.set(host, () => {
++			reactions.delete(host)
++			earlier.restore()
++		})
++		later.restore()
++		expect(host.getAttribute('class')).toBe('consumer')
++	})
++
+ 	it('restores class tokens, then inline properties, then attributes, whatever the save order', () => {
+ 		const host = build('div')
+ 		const snapshot = new HostSnapshot()
+@@ -86,6 +144,7 @@ describe('HostSnapshot', () => {
+ 			'class',
+ 			'class',
+ 			'style',
++			'style',
+ 			'aria-expanded',
+ 		])
+ 	})
+@@ -246,7 +305,55 @@ describe('HostSnapshot', () => {
+ 		expect(host.getAttribute('aria-expanded')).toBe('true')
+ 	})
+ 
+-	it('lets the restoration that started first write a target two snapshots saved, whichever saved it first', () => {
++	it('withdraws an overlapping earliest recording when its restoration throws inside a reaction', () => {
++		const name = 'vn-probe-snapshot-throwing-overlap'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		const earlier = new HostSnapshot()
++		earlier.save({ category: 'token', element: host, name: '' })
++		earlier.save({ category: 'property', element: host, name: 'height' })
++		host.style.setProperty('height', '10px')
++		const started = new HostSnapshot()
++		started.save({ category: 'token', element: host, name: 'show' })
++		started.save({ category: 'property', element: host, name: 'height' })
++		host.classList.add('show')
++		host.style.setProperty('height', '20px')
++		const errors = createRecorder<readonly [unknown]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		window.addEventListener(
++			'error',
++			(event) => {
++				errors.handler(event.error)
++				event.preventDefault()
++			},
++			{ signal: controller.signal },
++		)
++		reactions.set(host, () => {
++			reactions.delete(host)
++			earlier.restore()
++		})
++		started.restore()
++		expect(errors.calls).toEqual([[expect.objectContaining({ name: 'SyntaxError' })]])
++		expect(host.style.getPropertyValue('height')).toBe('20px')
++		host.style.setProperty('height', '30px')
++		const later = new HostSnapshot()
++		later.save({ category: 'property', element: host, name: 'height' })
++		host.style.setProperty('height', '40px')
++		later.restore()
++		expect(host.style.getPropertyValue('height')).toBe('30px')
++	})
++
++	it('restores an overlapping target neither restoration has written back from its earliest recording, whichever restoration starts first', () => {
+ 		const name = 'vn-probe-snapshot-overlap'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -275,14 +382,270 @@ describe('HostSnapshot', () => {
+ 			readings.handler(host.getAttribute('data-state'))
+ 		})
+ 		started.restore()
+-		expect(readings.calls).toEqual([['started']])
+-		expect(host.getAttribute('data-state')).toBe('earlier')
++		expect(readings.calls).toEqual([['original']])
++		expect(host.getAttribute('data-state')).toBe('original')
+ 		host.setAttribute('data-state', 'live')
+ 		const later = new HostSnapshot()
+ 		later.save({ category: 'attribute', element: host, name: 'data-state' })
+ 		host.setAttribute('data-state', 'later')
+ 		later.restore()
+ 		expect(host.getAttribute('data-state')).toBe('live')
++
++		const reversed = document.createElement(name)
++		reversed.setAttribute('data-state', 'original')
++		earlier.save({ category: 'token', element: reversed, name: 'show' })
++		earlier.save({ category: 'attribute', element: reversed, name: 'data-state' })
++		reversed.classList.add('show')
++		reversed.setAttribute('data-state', 'earlier')
++		started.save({ category: 'attribute', element: reversed, name: 'data-state' })
++		reversed.setAttribute('data-state', 'started')
++		reactions.set(reversed, () => {
++			reactions.delete(reversed)
++			started.restore()
++			readings.handler(reversed.getAttribute('data-state'))
++		})
++		earlier.restore()
++		expect(readings.calls).toEqual([['original'], ['started']])
++		expect(reversed.getAttribute('data-state')).toBe('original')
++		reversed.setAttribute('data-state', 'live')
++		later.save({ category: 'attribute', element: reversed, name: 'data-state' })
++		reversed.setAttribute('data-state', 'later')
++		later.restore()
++		expect(reversed.getAttribute('data-state')).toBe('live')
++	})
++
++	it('preserves the save order of a value taken from a pending restoration', () => {
++		const name = 'vn-probe-snapshot-stamp'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		host.setAttribute('data-state', 'original')
++		const first = new HostSnapshot()
++		first.save({ category: 'token', element: host, name: 'show' })
++		first.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.classList.add('show')
++		host.setAttribute('data-state', 'first')
++		const middle = new HostSnapshot()
++		middle.save({ category: 'token', element: host, name: 'active' })
++		middle.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.classList.add('active')
++		host.setAttribute('data-state', 'middle')
++		const replacement = new HostSnapshot()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			replacement.save({ category: 'attribute', element: host, name: 'data-state' })
++			reactions.set(host, () => {
++				reactions.delete(host)
++				replacement.restore()
++			})
++			middle.restore()
++		})
++		first.restore()
++		expect(host.getAttribute('data-state')).toBe('original')
++	})
++
++	it('writes its own recorded value when another restoration has already written the target back', () => {
++		const name = 'vn-probe-snapshot-written-overlap'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['data-other']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		host.setAttribute('data-state', 'original')
++		const earlier = new HostSnapshot()
++		earlier.save({ category: 'attribute', element: host, name: 'data-state' })
++		earlier.save({ category: 'attribute', element: host, name: 'data-other' })
++		host.setAttribute('data-state', 'earlier')
++		host.setAttribute('data-other', 'changed')
++		const later = new HostSnapshot()
++		later.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'later')
++		const readings = createRecorder<readonly [string | null]>()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			readings.handler(host.getAttribute('data-state'))
++			later.restore()
++		})
++		earlier.restore()
++		expect(readings.calls).toEqual([['original']])
++		expect(host.getAttribute('data-state')).toBe('earlier')
++		expect(host.hasAttribute('data-other')).toBe(false)
++	})
++
++	it('leaves an empty class attribute when a later restoration starts after a button judged removal', () => {
++		const name = 'vn-probe-snapshot-button-overlap'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['aria-pressed']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		const button = new Button(host)
++		onTestFinished(() => button.destroy())
++		button.toggle()
++		const later = new HostSnapshot()
++		later.save({ category: 'token', element: host, name: 'collapsed' })
++		host.classList.add('collapsed')
++		const readings = createRecorder<readonly [string | null]>()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			readings.handler(host.getAttribute('class'))
++			later.restore()
++		})
++		button.destroy()
++		expect(readings.calls).toEqual([['collapsed']])
++		expect(host.classList.length).toBe(0)
++		expect(host.getAttribute('class')).toBe('')
++		expect(host.hasAttribute('aria-pressed')).toBe(false)
++	})
++
++	it('leaves an empty class attribute when a later token write empties the list after removal was judged', () => {
++		const name = 'vn-probe-snapshot-late-empty'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		const earlier = new HostSnapshot()
++		earlier.save({ category: 'token', element: host, name: 'active' })
++		host.classList.add('active')
++		const later = new HostSnapshot()
++		later.save({ category: 'token', element: host, name: 'collapsed' })
++		later.save({ category: 'token', element: host, name: 'show' })
++		host.classList.add('collapsed', 'show')
++		earlier.save({ category: 'token', element: host, name: 'show' })
++		const readings = createRecorder<readonly [string | null]>()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			earlier.restore()
++			readings.handler(host.getAttribute('class'))
++		})
++		later.restore()
++		expect(readings.calls).toEqual([['show']])
++		expect(host.classList.length).toBe(0)
++		expect(host.getAttribute('class')).toBe('')
++	})
++
++	it('hands pending style presence to a property saved inside a restoration property write', () => {
++		const name = 'vn-probe-snapshot-style-handoff'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['style']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		const first = new HostSnapshot()
++		first.save({ category: 'property', element: host, name: 'height' })
++		host.style.setProperty('height', '10px')
++		const second = new HostSnapshot()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			second.save({ category: 'property', element: host, name: 'height' })
++			host.style.setProperty('height', '20px')
++		})
++		first.restore()
++		expect(host.style.getPropertyValue('height')).toBe('20px')
++		second.restore()
++		expect(host.style.getPropertyValue('height')).toBe('')
++		expect(host.hasAttribute('style')).toBe(false)
++	})
++
++	it('preserves the order of a taken class presence recording when it competes in an overlap', () => {
++		const name = 'vn-probe-snapshot-class-presence-stamp'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		const first = new HostSnapshot()
++		first.save({ category: 'token', element: host, name: 'show' })
++		host.classList.add('show')
++		const middle = new HostSnapshot()
++		middle.save({ category: 'token', element: host, name: 'active' })
++		host.classList.add('active')
++		const replacement = new HostSnapshot()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			replacement.save({ category: 'token', element: host, name: 'show' })
++			reactions.set(host, () => {
++				reactions.delete(host)
++				replacement.restore()
++			})
++			middle.restore()
++		})
++		first.restore()
++		expect(host.classList.length).toBe(0)
++		expect(host.hasAttribute('class')).toBe(false)
++	})
++
++	it('preserves the order of a taken style presence recording when it competes in an overlap', () => {
++		const name = 'vn-probe-snapshot-style-presence-stamp'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['style']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		const first = new HostSnapshot()
++		first.save({ category: 'property', element: host, name: 'height' })
++		host.style.setProperty('height', '10px')
++		const middle = new HostSnapshot()
++		middle.save({ category: 'property', element: host, name: 'width' })
++		host.style.setProperty('width', '20px')
++		const replacement = new HostSnapshot()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			replacement.save({ category: 'property', element: host, name: 'height' })
++			reactions.set(host, () => {
++				reactions.delete(host)
++				replacement.restore()
++			})
++			middle.restore()
++		})
++		first.restore()
++		expect(host.style.length).toBe(0)
++		expect(host.hasAttribute('style')).toBe(false)
+ 	})
+ 
+ 	it('keeps the first recording of a target saved twice', () => {
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index 0724fdc..6cb3eb4 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -7,6 +7,7 @@ import {
+ 	isButtonEvent,
+ 	isClassToken,
+ 	isSelector,
++	readTag,
+ 	readTarget,
+ 	readTargets,
+ 	reflow,
+@@ -90,8 +91,8 @@ describe('bindEventMap', () => {
+ 		const host = build('div')
+ 		const controller = new AbortController()
+ 		onTestFinished(() => controller.abort())
+-		const shown = createRecorder<readonly [CustomEvent<undefined>]>()
+-		const hidden = createRecorder<readonly [CustomEvent<undefined>]>()
++		const shown = createRecorder<readonly [CustomEvent<null>]>()
++		const hidden = createRecorder<readonly [CustomEvent<null>]>()
+ 		const hooks: CollapseHooks = { shown: shown.handler, hidden: hidden.handler }
+ 		bindEventMap(
+ 			host,
+@@ -101,12 +102,12 @@ describe('bindEventMap', () => {
+ 				hide: 'hide.vn.collapse',
+ 				hidden: 'hidden.vn.collapse',
+ 			},
+-			(value: unknown): value is CustomEvent<undefined> => value instanceof CustomEvent,
++			(value: unknown): value is CustomEvent<null> => value instanceof CustomEvent,
+ 			hooks,
+ 			controller.signal,
+ 		)
+-		const first = new CustomEvent<undefined>('shown.vn.collapse')
+-		const second = new CustomEvent<undefined>('hidden.vn.collapse')
++		const first = new CustomEvent<null>('shown.vn.collapse')
++		const second = new CustomEvent<null>('hidden.vn.collapse')
+ 		host.dispatchEvent(new CustomEvent('show.vn.collapse'))
+ 		host.dispatchEvent(first)
+ 		host.dispatchEvent(second)
+@@ -364,7 +365,77 @@ describe('readTargets', () => {
+ 	})
+ })
+ 
++describe('readTag', () => {
++	it('returns undefined for an element created in a same-origin iframe document', () => {
++		const frame = mount(build('iframe'))
++		onTestFinished(() => frame.remove())
++		const document = frame.contentDocument
++		if (document === null) throw new Error('Expected the iframe document')
++		const element = document.createElement('div')
++		expect(element.tagName).toBe('DIV')
++		expect(element instanceof Element).toBe(false)
++		expect(readTag(element)).toBeUndefined()
++	})
++
++	it('returns undefined when an element proxy supplies a non-string tag name', () => {
++		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
++		const hostile: unknown = new Proxy(svg, {
++			get(target, key, receiver) {
++				return key === 'tagName' ? 23 : Reflect.get(target, key, receiver)
++			},
++		})
++		expect(hostile instanceof Element).toBe(true)
++		expect(readTag(hostile)).toBeUndefined()
++		expect(readTag(svg)).toBe('svg')
++		expect(readTag(build('div'))).toBe('DIV')
++	})
++
++	it('reads element tag names and returns undefined for other values and hostile prototypes', () => {
++		expect(readTag(build('div'))).toBe('DIV')
++		expect(readTag(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))).toBe('svg')
++		expect(readTag(null)).toBeUndefined()
++		expect(readTag({ tagName: 'DIV' })).toBeUndefined()
++		expect(
++			readTag(
++				new Proxy(
++					{},
++					{
++						getPrototypeOf() {
++							throw new Error('Unreadable')
++						},
++					},
++				),
++			),
++		).toBeUndefined()
++	})
++})
++
+ describe('resolveOptions', () => {
++	it('leaves an invalid overridden attribute unparsed and rejects it when the constructor leaves the key undefined', () => {
++		const host = build('div', { attributes: { 'data-bs-delay': 'invalid' } })
++		expect(
++			resolveOptions(
++				host,
++				{ delay: 'data-bs-delay' },
++				'PROBE_OPTION_INVALID',
++				{ delay: 300 },
++				{ delay: parseNumber },
++				{ delay: 0 },
++			),
++		).toEqual({ delay: 0 })
++		expect(
++			attempt(() =>
++				resolveOptions(
++					host,
++					{ delay: 'data-bs-delay' },
++					'PROBE_OPTION_INVALID',
++					{ delay: 300 },
++					{ delay: parseNumber },
++					undefined,
++				),
++			),
++		).toMatchObject({ success: false, error: { code: 'PROBE_OPTION_INVALID' } })
++	})
+ 	it('merges the defaults, the declared attributes, and the constructor object in that order', () => {
+ 		const host = build('div', {
+ 			attributes: {
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index 00b6f2c..c6bcd74 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -1,7 +1,17 @@
+-import { describe, expect, it } from 'vitest'
++import type { CollapseEventMap, CollapseOptions, CollapseVocabulary } from '@src/browser'
++import { describe, expect, expectTypeOf, it } from 'vitest'
+ import { recordListeners } from '../../setupBrowser.js'
+ 
+ describe('src browser entry', () => {
++	it('exposes the resolved collapse vocabulary and platform detail types', () => {
++		expectTypeOf<CollapseVocabulary>().toEqualTypeOf<{
++			readonly classes: Required<NonNullable<CollapseOptions['classes']>>
++			readonly attributes: Required<NonNullable<CollapseOptions['attributes']>>
++			readonly selectors: Required<NonNullable<CollapseOptions['selectors']>>
++		}>()
++		expectTypeOf<CollapseEventMap['show']['detail']>().toEqualTypeOf<null>()
++		expect(new CustomEvent('show.vn.collapse', { detail: undefined }).detail).toBeNull()
++	})
+ 	it('exports the browser surface without registering document or window listeners', async () => {
+ 		let names: readonly string[] = []
+ 		const targets = await recordListeners(async () => {
+@@ -27,6 +37,7 @@ describe('src browser entry', () => {
+ 			'isClassToken',
+ 			'isColorModeState',
+ 			'isSelector',
++			'readTag',
+ 			'readTarget',
+ 			'readTargets',
+ 			'reflow',

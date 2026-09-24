@@ -1,0 +1,24 @@
+[
+ {
+  "name": "HostSnapshot: #publish ignores the stamp (the throwing inner restoration then keeps nothing to withdraw)",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\tif (entry === undefined || stamp < entry.stamp)\n\t\t\tpending.set(key, { owner, value, priority, stamp })",
+    "replace": "\t\tif (entry === undefined) pending.set(key, { owner, value, priority, stamp })"
+   }
+  ]
+ },
+ {
+  "name": "readTag: reads tagName from any non-null object carrying it",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/helpers.ts",
+    "find": "\t\tconst tag: unknown = value instanceof Element ? value.tagName : undefined",
+    "replace": "\t\tconst tag: unknown = typeof value === 'object' && value !== null && 'tagName' in value ? value.tagName : undefined"
+   }
+  ]
+ }
+]
