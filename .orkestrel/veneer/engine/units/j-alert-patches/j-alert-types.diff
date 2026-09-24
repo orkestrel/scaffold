@@ -1,0 +1,16 @@
+diff --git a/src/browser/types.ts b/tmp/j-alert/patch/src/browser/types.ts
+index a537b6a..ab30d17 100644
+--- a/src/browser/types.ts
++++ b/tmp/j-alert/patch/src/browser/types.ts
+@@ -1806,9 +1806,9 @@ export interface AlertInterface {
+ 	/** Carries the alert. */
+ 	readonly host: HTMLElement
+ 	/**
+-	 * Fades the alert out, removes it from the document, and dispatches `closed` on it.
++	 * Fades the alert out, removes it from the document, dispatches `closed` on it, and releases it.
+ 	 *
+-	 * @returns Resolves true after the `closed` event; false when a transition was in flight, a listener prevented `close`, or the alert is destroyed.
++	 * @returns Resolves true after the `closed` event; false when a close was in flight, a listener prevented `close`, the alert is destroyed or already closed, or the alert's tokens or its place in the document read the change as taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const removed = await alert.close()

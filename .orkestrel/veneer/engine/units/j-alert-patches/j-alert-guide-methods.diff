@@ -1,0 +1,19 @@
+diff --git a/guides/veneer.md b/tmp/j-alert/patch/guides/veneer.md
+index 54a8c70..a493e6b 100644
+--- a/guides/veneer.md
++++ b/tmp/j-alert/patch/guides/veneer.md
+@@ -373,10 +373,10 @@ The interface exposes the following lifecycle operations.
+ 
+ #### `AlertInterface`
+ 
+-| Method    | Summary                                                                           |
+-| --------- | --------------------------------------------------------------------------------- |
+-| `close`   | Fades the alert out, removes it from the document, and dispatches `closed` on it. |
+-| `destroy` | Releases hooks and restores the alert without removing it.                        |
++| Method    | Summary                                                                                        |
++| --------- | ---------------------------------------------------------------------------------------------- |
++| `close`   | Fades the alert out, removes it from the document, dispatches `closed` on it, and releases it. |
++| `destroy` | Releases hooks and restores the alert without removing it.                                     |
+ 
+ #### `ToastInterface`
+ 
