@@ -1,8 +1,0 @@
-?? app/browser/sections/InteractionSection.ts
-?? app/browser/sections/SpacingSection.ts
-?? src/styles/utilities/_interaction.scss
-?? src/styles/utilities/_spacing.scss
-?? tests/app/browser/sections/InteractionSection.test.ts
-?? tests/app/browser/sections/SpacingSection.test.ts
-?? tests/src/styles/utilities/interaction.test.ts
-?? tests/src/styles/utilities/spacing.test.ts

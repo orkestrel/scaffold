@@ -1,2 +1,0 @@
- M tests/fixtures/oracle/inventory.json
- M tests/setupServer.test.ts

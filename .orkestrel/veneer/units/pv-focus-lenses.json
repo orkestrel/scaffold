@@ -1,0 +1,270 @@
+{
+ "family": "FOCUS-FRAME scoping (every focus scenario across the portfolio)",
+ "lenses": [
+  {
+   "slice": "focus-a",
+   "lens": "ring",
+   "reviewed": [
+    "accordion-base-focus--light-1280.png",
+    "accordion-base-focus--dark-1280.png",
+    "accordion-base-focus--light-390.png",
+    "accordion-base-focus--dark-390.png",
+    "captioned-carousel-focus--light-1280.png",
+    "captioned-carousel-focus--dark-1280.png",
+    "captioned-carousel-focus--light-390.png",
+    "captioned-carousel-focus--dark-390.png",
+    "check-group-focus--light-1280.png",
+    "check-group-focus--dark-1280.png",
+    "check-group-focus--light-390.png",
+    "check-group-focus--dark-390.png",
+    "close-control-focus--light-1280.png",
+    "close-control-focus--dark-1280.png",
+    "close-control-focus--light-390.png",
+    "close-control-focus--dark-390.png",
+    "default-focus-ring-focus--light-1280.png",
+    "default-focus-ring-focus--dark-1280.png",
+    "default-focus-ring-focus--light-390.png",
+    "default-focus-ring-focus--dark-390.png",
+    "dropdown-menu-focus--light-1280.png",
+    "dropdown-menu-focus--dark-1280.png",
+    "dropdown-menu-focus--light-390.png",
+    "dropdown-menu-focus--dark-390.png",
+    "focus-ring-roles-focus--light-1280.png",
+    "focus-ring-roles-focus--dark-1280.png",
+    "focus-ring-roles-focus--light-390.png",
+    "focus-ring-roles-focus--dark-390.png",
+    "form-check-box-focus--light-1280.png",
+    "form-check-box-focus--dark-1280.png",
+    "form-check-box-focus--light-390.png",
+    "form-check-box-focus--dark-390.png",
+    "form-control-text-focus--light-1280.png",
+    "form-control-text-focus--dark-1280.png",
+    "form-control-text-focus--light-390.png",
+    "form-control-text-focus--dark-390.png",
+    "form-floating-empty-focus--light-1280.png",
+    "form-floating-empty-focus--dark-1280.png",
+    "form-floating-empty-focus--light-390.png",
+    "form-floating-empty-focus--dark-390.png"
+   ],
+   "findings": [
+    {
+     "frame": "form-check-box-focus--dark-1280.png (also form-check-box-focus--light-1280.png)",
+     "region": "Top-left corner, the 'Email a receipt' checkbox at about x=0-14, y=102-116, in a 1280x800 page frame.",
+     "seen": "The focused control is a checkbox about 16px square, flush with the frame's left edge, at the top of a mostly empty 1280x800 frame. The ring's left side sits outside the frame, so only its top, right, and bottom edges show. In dark-1280 the ring is a dim blue halo on the near-black page, and it differs from the resting checkboxes under it ('Keep me signed in', 'Morning') only by a slightly brighter border. You must already know which box is focused to find it. At 390 the same checkbox is easier to find because the frame is smaller.",
+     "expected": "_forms/_form-check.scss `.form-check-input:focus` sets `border-color: $form-check-input-focus-border` (#86b7fe) and `box-shadow: $form-check-input-focus-box-shadow`, a 0.25rem ring at rgba(13,110,253,.25) all around the box. `.form-check` has 1.5em left padding, and the input's -1.5em margin puts it at the container's left edge. The page has no gutter, so the ring's left 4px falls outside the frame.",
+     "severity": "minor",
+     "confidence": "high"
+    },
+    {
+     "frame": "close-control-focus--light-1280.png (also close-control-focus--dark-1280.png, close-control-focus--light-390.png, close-control-focus--dark-390.png)",
+     "region": "Top-left, the resting close control at about x=0-22, y=120-142. The frame is 1280x800 (390x844 at the narrow width).",
+     "seen": "A ring about 24px across surrounds the first X glyph. The control is flush with x=0, so the ring's left edge is cropped by the frame. In the 1280x800 frames this ring is a tiny mark in the upper-left corner of an empty page. You can find it because it is the only X with a halo, but only if you search that corner. In dark mode the ring reads as a grey-white halo.",
+     "expected": "_close.scss `.btn-close:focus` sets `outline: 0; box-shadow: var(--bs-btn-close-focus-shadow)`, which is $btn-close-focus-shadow, a 0.25rem focus ring on all four sides. In dark mode the `.btn-close` filter greys that ring too. The frame loses the ring's left 4px because the specimen sits at x=0 with no gutter.",
+     "severity": "minor",
+     "confidence": "high"
+    },
+    {
+     "frame": "default-focus-ring-focus--light-1280.png (also default-focus-ring-focus--dark-1280.png, default-focus-ring-focus--light-390.png, default-focus-ring-focus--dark-390.png)",
+     "region": "The 'focus-ring' link at about x=0-72, y=99-119. The frame is 1280x800 (390x844 at the narrow width).",
+     "seen": "A light-blue rectangle frames the link (dark teal in dark mode). The link starts at x=0, so the ring's left side is at the frame edge or outside it. The top, right, and bottom edges are clear, so the ring is still findable.",
+     "expected": "helpers/_focus-ring.scss `.focus-ring:focus` sets `box-shadow: var(--bs-focus-ring-x,0) var(--bs-focus-ring-y,0) var(--bs-focus-ring-blur,0) var(--bs-focus-ring-width) var(--bs-focus-ring-color)`, a 0.25rem spread on every side, 4px of it to the left of the link. With no page gutter that 4px falls outside the frame.",
+     "severity": "minor",
+     "confidence": "medium"
+    },
+    {
+     "frame": "form-control-text-focus--light-1280.png (also form-control-text-focus--dark-1280.png, form-control-text-focus--light-390.png, form-control-text-focus--dark-390.png)",
+     "region": "The 'Enter your full name' control at y=118-158, spanning the full frame width. The frame is 1280x800 (390x844 at the narrow width).",
+     "seen": "Only the top of the ring shows, as a light-blue band at about y=117-121, with the blue focus border. The control runs from x=0 to the frame's right edge, so both side arms of the ring are outside the frame. The 'Small control' field starts directly under the focused one and covers the bottom arm. In dark-1280 the visible top band is a thin dim line, and the ring reads mainly as the border colour change.",
+     "expected": "_forms/_form-control.scss `.form-control:focus` sets `border-color: $input-focus-border-color; outline: 0; box-shadow: $input-focus-box-shadow`, a 0.25rem rgba(13,110,253,.25) ring on all four sides. The border colour is enough to find the control, but the frame shows about a quarter of the ring.",
+     "severity": "minor",
+     "confidence": "high"
+    },
+    {
+     "frame": "form-floating-empty-focus--light-1280.png (also form-floating-empty-focus--dark-1280.png, form-floating-empty-focus--light-390.png, form-floating-empty-focus--dark-390.png)",
+     "region": "The 'Email address' floating field at y=97-157, spanning the full frame width. The frame is 1280x800 (390x844 at the narrow width).",
+     "seen": "The ring shows only as a top band, which touches the descenders of the paragraph line above it, plus the blue focus border. The field fills the frame's width, so the side arms are outside the frame. The 'Delivery city' field starts directly underneath and hides the bottom arm. The field is still findable from its border colour.",
+     "expected": "_forms/_form-control.scss `.form-control:focus` sets the $input-focus-border-color border and a $input-focus-box-shadow ring 0.25rem wide on every side. `.form-floating > .form-control` inherits that rule unchanged.",
+     "severity": "minor",
+     "confidence": "high"
+    },
+    {
+     "frame": "accordion-base-focus--dark-1280.png (also accordion-base-focus--light-1280.png, accordion-base-focus--light-390.png, accordion-base-focus--dark-390.png)",
+     "region": "The 'Return policy' header button at y=205-258 (y=289-342 at 390), spanning the full frame width. The frame is 1280x800 (390x844 at the narrow width).",
+     "seen": "The ring shows as two horizontal bands, one above the button's top edge and one below its bottom edge. The accordion runs from x=0 to the frame's right edge, so the ring's side arms are outside the frame. In light mode the bands are clear pale blue. In dark-1280 they are thin navy lines on the near-black surface, and they are hard to tell apart from the item borders unless you compare them with the 'Warranty terms' border underneath.",
+     "expected": "_accordion.scss `.accordion-button:focus` sets `z-index: 3; outline: 0; box-shadow: var(--bs-accordion-btn-focus-box-shadow)` (from $accordion-button-focus-box-shadow, a 0.25rem ring at rgba(13,110,253,.25) on every side). Nothing clips it, so its full perimeter paints in Bootstrap, and its side arms are lost here only because the page has no gutter.",
+     "severity": "minor",
+     "confidence": "medium"
+    },
+    {
+     "frame": "captioned-carousel-focus--light-1280.png (also captioned-carousel-focus--dark-1280.png)",
+     "region": "The previous control's chevron at about x=88-104, y=187-213, and the next control's area at about x=1170-1195, y=187-213. The frame is 1280x400.",
+     "seen": "The only focus cue is that the previous chevron is at full strength. In light-1280 the resting next chevron sits on the white page surface past the 800px-wide slide image and cannot be seen at all. That leaves no resting control to compare the focused one with, so the frame alone cannot show that the previous control is focused. In dark-1280 the resting next chevron is a faint black glyph on the dark surface, while the previous one sits on the slate slide, so the backgrounds differ and the comparison does not work. At 390x195 both chevrons sit on the slide, and the focused one reads brighter than the other.",
+     "expected": "_carousel.scss `.carousel-control-prev, .carousel-control-next` under `&:hover, &:focus` sets `outline: 0; opacity: $carousel-control-hover-opacity` (.9), against a resting $carousel-control-opacity of .5. Bootstrap paints no ring, so the focus indicator is visible only as a contrast with the resting control. Both controls sit over the slide.",
+     "severity": "minor",
+     "confidence": "medium"
+    },
+    {
+     "frame": "check-group-focus--dark-1280.png",
+     "region": "'Row copy' at about x=191-283, y=99-133, compared with the focused 'Align center' at about x=86-199, y=305-340. The frame is 1280x800.",
+     "seen": "The focus ring around 'Align center' is visible as a darker cyan frame around the checked button. 'Row copy' in the top toolbar also carries a filled grey background with bright text, a state the light-1280 and 390 frames do not show. This gives the frame two emphasised controls, and a reader looking for focus without being told could pick 'Row copy'.",
+     "expected": "_buttons.scss: `.btn-check:focus-visible + .btn` paints `box-shadow: var(--bs-btn-focus-box-shadow)` (0 0 0 .25rem rgba(var(--bs-btn-focus-shadow-rgb),.5)) on the focused button only. A resting `.btn-outline-*` in the toolbar keeps a transparent background. The grey fill matches the `&:hover` paint (--bs-btn-hover-bg), which suggests a leftover pointer state. Refer that to the state-leak lens for its cause.",
+     "severity": "minor",
+     "confidence": "medium"
+    }
+   ],
+   "clean": [
+    "dropdown-menu-focus (every variant: in these element frames, 1280 and 390 wide by about 270 tall, the focused 'Track shipment' item carries the tertiary-bg fill from _dropdown.scss `.dropdown-item:hover, &:focus`. The fill is faint in light mode but is Bootstrap's own paint, and it is not cropped)",
+    "focus-ring-roles-focus (every variant: the danger ring around 'focus-ring-danger' is complete, not cropped, and easy to find at 1280x800 and 390x844. The maroon ring in dark mode is low in contrast but follows rgba(var(--bs-danger-rgb), .25) from helpers/_focus-ring.scss)",
+    "check-group-focus light-1280, light-390, and dark-390 (the 'Align center' ring is complete and easy to find, and it separates the focused button from the checked but unfocused 'Column center')",
+    "captioned-carousel-focus light-390 and dark-390 (both chevrons sit on the slide, and the focused previous control reads brighter than the resting next one)"
+   ]
+  },
+  {
+   "slice": "focus-b",
+   "lens": "ring",
+   "reviewed": [
+    "form-select-base-focus--light-1280.png",
+    "form-select-base-focus--dark-1280.png",
+    "form-select-base-focus--light-390.png",
+    "form-select-base-focus--dark-390.png",
+    "input-group-button-focus--light-1280.png",
+    "input-group-button-focus--dark-1280.png",
+    "input-group-button-focus--light-390.png",
+    "input-group-button-focus--dark-390.png",
+    "invalid-control-focus--light-1280.png",
+    "invalid-control-focus--dark-1280.png",
+    "invalid-control-focus--light-390.png",
+    "invalid-control-focus--dark-390.png",
+    "list-group-actions-focus--light-1280.png",
+    "list-group-actions-focus--dark-1280.png",
+    "list-group-actions-focus--light-390.png",
+    "list-group-actions-focus--dark-390.png",
+    "nav-base-focus--light-1280.png",
+    "nav-base-focus--dark-1280.png",
+    "nav-base-focus--light-390.png",
+    "nav-base-focus--dark-390.png",
+    "navbar-collapsed-focus--light-1280.png",
+    "navbar-collapsed-focus--dark-1280.png",
+    "navbar-collapsed-focus--light-390.png",
+    "navbar-collapsed-focus--dark-390.png",
+    "page-strip-focus--light-1280.png",
+    "page-strip-focus--dark-1280.png",
+    "page-strip-focus--light-390.png",
+    "page-strip-focus--dark-390.png",
+    "primary-focus--light-1280.png",
+    "primary-focus--dark-1280.png",
+    "primary-focus--light-390.png",
+    "primary-focus--dark-390.png",
+    "range-focus--light-1280.png",
+    "range-focus--dark-1280.png",
+    "range-focus--light-390.png",
+    "range-focus--dark-390.png",
+    "skip-link-focus--light-1280.png",
+    "skip-link-focus--dark-1280.png",
+    "skip-link-focus--light-390.png",
+    "skip-link-focus--dark-390.png",
+    "valid-control-focus--light-1280.png",
+    "valid-control-focus--dark-1280.png",
+    "valid-control-focus--light-390.png",
+    "valid-control-focus--dark-390.png"
+   ],
+   "findings": [
+    {
+     "frame": "valid-control-focus--dark-1280.png, valid-control-focus--dark-390.png",
+     "region": "The 'Valid material' input (the Oak field), about y 120-157 at 1280x800 and about y 141-178 at 390x844",
+     "seen": "No focus band shows around the focused Oak input. Its green border and surroundings look the same as the resting 'Accepted batch' input lower in the same frame, so a reader can't tell which control holds focus. The light variants of the same scenario show a pale green band at the top edge.",
+     "expected": "bootstrap/scss/mixins/_forms.scss form-validation-state, `.form-control.is-valid:focus`: border-color stays var(--bs-form-valid-border-color), which matches the resting border, and box-shadow is a 0.25rem spread of rgba(var(--bs-success-rgb), .25). Veneer's src/styles/components/_validation.scss `.form-control.is-#{$state}:focus` (around line 52) writes the same values. So the only focus cue is a dark-green band at 25% alpha on the dark surface, and these frames don't show it. The source matches Bootstrap, so the frame can't evidence the ring the scenario claims.",
+     "severity": "minor",
+     "confidence": "medium"
+    },
+    {
+     "frame": "invalid-control-focus--dark-1280.png, invalid-control-focus--dark-390.png",
+     "region": "The 'Invalid material' input, about y 179-216 at 1280x800 and about y 200-237 at 390x844",
+     "seen": "No focus band shows around the focused empty invalid input. It looks the same as the resting 'Rejected batch' and 'Required destination' inputs in the same frame, so the focused one can't be found without being told. The light variants show a faint pink band.",
+     "expected": "bootstrap/scss/mixins/_forms.scss form-validation-state `&:focus`: border-color var(--bs-form-invalid-border-color), the same as at rest, plus box-shadow 0 0 0 .25rem rgba(var(--bs-danger-rgb), .25). Veneer's _validation.scss (around line 52) matches. The ring is a 25% alpha maroon band on the dark surface, and these frames don't show it. The frames don't evidence the ring.",
+     "severity": "minor",
+     "confidence": "medium"
+    },
+    {
+     "frame": "skip-link-focus--dark-1280.png, skip-link-focus--dark-390.png",
+     "region": "The 'Skip to main content' link at the end of the 'Press Tab to reveal...' line, about x 298-444, y 164-180 at 1280x800. At 390x844 it wraps across y 248-285.",
+     "seen": "The link is revealed, which shows that it holds focus, but no ring or outline surrounds it. The light variants show a dark 2px outline box around the same link.",
+     "expected": "Bootstrap paints no ring of its own here. `.visually-hidden-focusable` (bootstrap/scss/mixins/_visually-hidden.scss) only un-hides the link on focus, and _reboot.scss leaves the anchor's UA focus outline in place. Veneer sets `color-scheme: dark` exactly as Bootstrap _root.scss does (src/styles/_theme.scss). So the missing outline comes from the UA outline under the dark scheme, not from a Veneer departure. Under this lens, the dark frames show no focus indicator at all.",
+     "severity": "minor",
+     "confidence": "medium"
+    },
+    {
+     "frame": "list-group-actions-focus--dark-1280.png, list-group-actions-focus--dark-390.png",
+     "region": "The top row, 'Dispatch lane', about y 0-38 of the element frame (1280x115 and 390x115)",
+     "seen": "The focused row shows only the lighter hover fill. No outline surrounds it. The light variants show a dark outline around the same row.",
+     "expected": "bootstrap/scss/_list-group.scss `.list-group-item-action:not(.active):focus` sets only z-index 1, the hover color, and --bs-list-group-action-hover-bg, with no box-shadow. Veneer's _list-group.scss (around line 95) matches, so the indicator is the UA focus outline. Under the dark scheme the frame shows no outline, and the fill alone is the same paint the hover scenario uses. So these frames can't tell focus from hover.",
+     "severity": "minor",
+     "confidence": "medium"
+    },
+    {
+     "frame": "form-select-base-focus--light-1280.png, form-select-base-focus--dark-1280.png, form-select-base-focus--light-390.png, form-select-base-focus--dark-390.png",
+     "region": "The first select ('Northworks'), full frame width, about y 97-137 at 1280x800 and about y 139-179 at 390x844",
+     "seen": "The ring shows only along the top edge. The select spans x 0 to the frame's right edge, so the frame edges clip the left and right sides of the 4px ring. The next select, the small one, starts directly below and covers the bottom side. In the dark variants the top band is faint, and the lighter focus border colour is the main cue. The indicator can still be found through the top band and the border colour.",
+     "expected": "bootstrap/scss/forms/_form-select.scss `&:focus`: border-color $form-select-focus-border-color plus box-shadow $form-select-focus-box-shadow (0 0 0 .25rem rgba(primary, .25)) on all four sides. The component matches. The page frame places the control flush against the viewport edges, so three sides of the ring fall outside or under other paint.",
+     "severity": "minor",
+     "confidence": "high"
+    },
+    {
+     "frame": "valid-control-focus--light-1280.png, valid-control-focus--light-390.png, invalid-control-focus--light-1280.png, invalid-control-focus--light-390.png",
+     "region": "The focused full-width input: Oak at y 120-157 for valid, Invalid material at y 179-216 for invalid (1280x800)",
+     "seen": "The pale band is readable along the top edge, where it runs into the label text above it. The frame edges clip the left and right sides at x 0 and x 1280.",
+     "expected": "bootstrap/scss/mixins/_forms.scss form-validation-state `&:focus` box-shadow, a .25rem spread on all sides. The component matches, and the page frame's flush layout clips the side bands.",
+     "severity": "minor",
+     "confidence": "high"
+    },
+    {
+     "frame": "input-group-button-focus--light-1280.png, input-group-button-focus--light-390.png, primary-focus--light-1280.png, primary-focus--light-390.png, nav-base-focus--light-1280.png, nav-base-focus--light-390.png",
+     "region": "The focused element at the left edge. Input group: the 'orders@veneer.test' control at about y 194-234. Primary: the 'Primary' button at about x 0-80, y 98-134. Nav: 'Base overview' at about x 0-136, y 117-157 (1280x800 and 390x844).",
+     "seen": "In each frame, the ring is clear on the top, right, and bottom sides. The frame edge at x 0 clips its left side, because the focused element starts at x 0. The test comment in tests/app/browser/integration.test.ts near FRAMES.page('input-group-button-focus') chooses a page frame so the ring isn't cropped, but the left side is still cropped. The ring remains findable.",
+     "expected": "The button focus-visible ring (bootstrap/scss/_buttons.scss, box-shadow var(--bs-btn-focus-box-shadow)), the nav-link focus-visible ring (bootstrap/scss/_nav.scss, $nav-link-focus-box-shadow), and the input focus ring (bootstrap/scss/forms/_form-control.scss, $input-focus-box-shadow) each paint on all four sides. The component matches, and the frame layout places the subject flush against the viewport's left edge.",
+     "severity": "minor",
+     "confidence": "high"
+    }
+   ],
+   "clean": [
+    "navbar-collapsed-focus",
+    "page-strip-focus",
+    "range-focus"
+   ]
+  }
+ ],
+ "critic": {
+  "unopened": [
+   "Lane held: subjective (reviewer, Opus 5.5), as the completeness critic. Both lenses report full counts (focus-a reviewed 40 of 40, focus-b reviewed 44 of 44), but the following frames got no verdict: neither a finding nor a clean entry. Each is UNRESOLVED until a lens rules on it.",
+   "focus-a: form-check-box-focus--light-390.png and form-check-box-focus--dark-390.png. The only mention is an aside ('At 390 the same checkbox is easier to find'). That aside is not a ruling on either frame.",
+   "focus-b: input-group-button-focus--dark-1280.png and input-group-button-focus--dark-390.png. The input-group finding names only the light variants. When I opened dark-1280, it shows a cyan ring around 'orders@veneer.test' with the left side at x=0, plus a blue text-selection highlight over the value. The light-1280 frame also has that selection highlight, and the lens did not mention it there either.",
+   "focus-b: nav-base-focus--dark-1280.png and nav-base-focus--dark-390.png. The nav finding names only the light variants. When I opened dark-1280, it shows a dim navy ring around 'Base overview' (x about 0-136, y about 117-157) with the left side at the frame edge. That ring has much lower contrast than the light variant, and it is a likely finding that no lens recorded.",
+   "focus-b: primary-focus--dark-1280.png and primary-focus--dark-390.png. The primary finding names only the light variants. When I opened dark-1280, it shows a visible ring around 'Primary' at x=0 with the left side cropped, which is the same shape as the light finding. It needs a recorded verdict.",
+   "focus-b: list-group-actions-focus--light-1280.png, list-group-actions-focus--light-390.png, skip-link-focus--light-1280.png, and skip-link-focus--light-390.png. These appear only as the comparison inside the dark-variant findings ('The light variants show a dark outline'). No lens ruled on them. The light-1280 frames I opened do show a dark outline on 'Dispatch lane' and on 'Skip to main content'."
+  ],
+  "unframed": [
+   "Comparison method: I compared the focus selectors in /home/user/veneer/src/styles with the focus scenarios in DRIVEN_KEYS (/home/user/veneer/tests/setup.ts, around line 2358) and with the frames directory. No focus scenario covers any of the following selectors.",
+   "/home/user/veneer/src/styles/components/_input-group.scss `.input-group .btn:focus` (around line 45). The 'input-group-button-focus' scenario is named for the button, but it drives focus to the `.form-control` (integration.test.ts, around lines 1771-1784: traverseAccessible(readName(control)), then the frame). So the grouped button's focus lift has no frame. `.input-group > .form-select:focus` and `.input-group > .form-floating:focus-within` (around lines 33-34) have no frame either.",
+   "/home/user/veneer/src/styles/components/_form-check.scss `.form-switch .form-check-input:focus` (around line 129, the switch-focus knob icon). There is no switch focus frame, and a radio input (round ring, same `.form-check-input:focus` rule) has none either. The family frames only form-check-box-focus.",
+   "/home/user/veneer/src/styles/components/_nav.scss `.nav-tabs .nav-link:focus` (around line 80) and `.nav-underline .nav-link:focus` (around line 133). Only nav-base-focus is framed. nav-tabs has a hover scenario and no focus scenario.",
+   "/home/user/veneer/src/styles/components/_button.scss `.btn-link:focus-visible` (around line 195), `.btn.active:focus-visible`, `.btn.show:focus-visible`, and `:not(.btn-check) + .btn:active:focus-visible` (around lines 99-102). Only primary-focus and check-group-focus are framed. No outline role, other fill role, or size step (`.btn-sm`, `.btn-lg`) has a focus frame.",
+   "/home/user/veneer/src/styles/elements/_button.scss `button:not([class], [data-bs-target]):focus-visible` (around line 59), the calibrated class-less button ring. No frame.",
+   "/home/user/veneer/src/styles/utilities/_link.scss `.link-{role}:focus` (around line 14) and `.link-body-emphasis:focus` (around line 30). No frame.",
+   "/home/user/veneer/src/styles/components/_icon-link.scss `.icon-link-hover:focus-visible > .bi` (around line 26). No frame.",
+   "/home/user/veneer/src/styles/components/_navbar.scss `.navbar-brand:focus` (around line 55) and `.navbar-text a:focus` (around line 91). Only the toggler is framed (navbar-collapsed-focus).",
+   "/home/user/veneer/src/styles/components/_form-control.scss `.form-control-plaintext:focus` (around line 130), and /home/user/veneer/src/styles/components/_form-floating.scss `.form-control-plaintext:focus` and `textarea:focus ~ label::after` (around lines 66 and 106). No frame. form-floating-empty-focus covers only the input.",
+   "/home/user/veneer/src/styles/components/_validation.scss `.form-select.is-{state}:focus` (around line 84) and `.form-check-input.is-{state}:focus` (around line 108). Only the text-control pair valid-control-focus and invalid-control-focus is framed, although the same showcase section renders a valid and an invalid select and checkbox.",
+   "/home/user/veneer/src/styles/components/_focus-ring.scss per-role `focus-ring-{role}` colours (around lines 17-25). focus-ring-roles-focus frames only the danger ring. No other role's ring has a frame.",
+   "/home/user/veneer/src/styles/components/_carousel.scss `.carousel-control-next:focus` (around line 112). Only the previous control is focused in captioned-carousel-focus. It shares one rule, so this gap is lower priority than the others.",
+   "Size steps: the `.form-control-sm`/`-lg` and `.form-select-sm`/`-lg` focus rings have no frame, although the form-control and form-select frames show the small field directly under the focused one."
+  ],
+  "contradictions": [
+   "Same-frame contradictions: none. The focus-a and focus-b slices are disjoint, and within each lens no frame carries both a finding and a clean verdict. Each of the following items compares frames of the same scenario across variants, or two lenses applying different standards. I name which side each opened frame supports.",
+   "check-group-focus--dark-1280.png (focus-a finding) against the lens's own clean verdict on light-1280, light-390, and dark-390. I opened dark-1280 and light-1280. They support the finding: in dark-1280, 'Row copy' (x about 191-283, y about 99-133) carries a filled slate background that light-1280 lacks, while 'Align center' carries the ring in both frames. The fill looks like a hover state left by the pointer, not an emphasis style. So the frame contains an unclaimed state, and 'a reader could pick Row copy' understates it. Referral to the objective lane: check whether the pointer is parked over 'Row copy' when the dark variant is shot (FRAMES.page('check-group-focus'), integration.test.ts around line 1046).",
+   "The standards conflict. focus-a rules dropdown-menu-focus clean with a fill-only focus cue ('Bootstrap's own paint'), while focus-b rules list-group-actions-focus dark as a finding for having only the fill. I opened list-group-actions-focus--dark-1280.png and --light-1280.png. They support focus-b: the light frame has a dark outline around 'Dispatch lane' and the dark frame has none. The gap is between variants of one scenario, not a question of the product's fill-only design. Keep the finding. The dropdown clean verdict stands, because its variants do not differ that way.",
+   "skip-link-focus dark against light (focus-b finding). I opened both 1280 frames. They support the finding: light-1280 draws a 2px dark outline around 'Skip to main content', and dark-1280 draws none, with the link revealed at x about 298-444, y about 164-180. Referral to the objective lane: skip-link (link.focus(), around line 1968) and list-group (host.focus(), around line 1306) are both focused by script. Both lose the user agent's outline only in dark. Primary and nav-base are reached by Tab traversal, and both keep their ring in dark (primary-focus--dark-1280.png and nav-base-focus--dark-1280.png, opened). That pattern fits a dark shot whose earlier pointer press on the Dark mode control makes `:focus-visible` false, so the dark frames might not show the state the scenario names. This is NOT-EVIDENCED from the captures alone. The test must settle it.",
+   "valid-control-focus--dark-1280.png (focus-b finding: no band). I opened dark-1280 and light-1280. They support the finding at frame resolution: light-1280 shows a pale green band above 'Oak' (y about 117-121), and dark-1280 shows no band that I can tell from the resting 'Accepted batch' input. Whether the band is painted at a contrast too low to see, or not painted at all, is NOT-EVIDENCED from the frame. Referral to the objective lane: read the box-shadow on the focused control in the dark variant.",
+   "Severity. Every finding in both slices is rated 'minor', including the four where the dark frame shows no focus indicator a reader can find (valid-control, invalid-control, skip-link, list-group-actions). Those frames do not show the state their scenario names, so they rate higher than the edge-cropping findings. The Orchestrator must re-rate them when reconciling."
+  ]
+ }
+}

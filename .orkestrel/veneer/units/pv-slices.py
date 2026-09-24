@@ -58,13 +58,13 @@ for fam, slices in FAMILIES.items():
             for v in VARIANTS:
                 f = f'{sc}--{v}.png'
                 (files if (FR / f).exists() else missing).append(f)
-        out[name] = {'files': files, 'sources': [BS + s for s in sources]}
+        out[name] = {'stems': stems, 'sources': [BS + s for s in sources]}
     (OUT / f'pv-{fam}-args.json').write_text(json.dumps(out, indent=1))
-    print(fam, {k: len(v['files']) for k, v in out.items()})
+    print(fam, {k: len(v['stems']) for k, v in out.items()})
 # The focus frames, for FOCUS-FRAME's ring-findability reading.
-focus = sorted(f.name for f in FR.glob('*-focus--*.png'))
+focus = sorted({f.name.split('--')[0] for f in FR.glob('*-focus--*.png')})
 half = len(focus) // 2
-(OUT / 'pv-focus-args.json').write_text(json.dumps({'focus-a': {'files': focus[:half], 'sources': []}, 'focus-b': {'files': focus[half:], 'sources': []}}, indent=1))
+(OUT / 'pv-focus-args.json').write_text(json.dumps({'focus-a': {'stems': focus[:half], 'sources': []}, 'focus-b': {'stems': focus[half:], 'sources': []}}, indent=1))
 print('focus', len(focus))
 ruled = {'ACCORDION_SPECIMENS', 'COLLAPSE_SPECIMENS', 'DROPDOWN_SPECIMENS', 'NAV_SPECIMENS', 'NAVBAR_SPECIMENS', 'CONTENT_SPECIMENS', 'MEDIA_SPECIMENS', 'TABLE_SPECIMENS', 'SHOWCASE'}
 unplaced = sorted(sc for t, scs in by.items() if t not in ruled for sc in scs if sc not in placed)

@@ -1,0 +1,15 @@
+== npx oxfmt --config .oxfmtrc.json --check tests/app/browser/sections/NavbarSection.test.ts tests/setupBrowser.ts
+All matched files use the correct format.
+exit 0 (whole output: tmp/units/bcf-gates-4-1.log.txt)
+== npm run lint:check
+exit 0 (whole output: tmp/units/bcf-gates-4-2.log.txt)
+== npm run check
+exit 0 (whole output: tmp/units/bcf-gates-4-3.log.txt)
+== npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+ Test Files  5 passed (5)
+      Tests  28 passed (28)
+exit 0 (whole output: tmp/units/bcf-gates-4-4.log.txt)
+== npm run test:setup:browser
+ Test Files  1 passed (1)
+      Tests  75 passed (75)
+exit 0 (whole output: tmp/units/bcf-gates-4-5.log.txt)

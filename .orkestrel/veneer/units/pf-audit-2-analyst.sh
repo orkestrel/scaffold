@@ -1,7 +1,0 @@
-#!/bin/bash
-# Audit round 2 — PAGE-FRAME (`pf`), objective lane: `analyst` on GPT-6 Astra, read-only, rooted at /home/user/veneer-pf.
-# Written by w23-audit-2-briefs.py. Launched through codex-queue-2.sh; the bench round-tripped at 10:39 (bcf-audit returned exit 0 through this queue); the cap is 1800 s (comparable objective lanes ran 7 to 12 min over retained logs, plus slack for the loaded container).
-# Brief: .orkestrel/veneer/units/pf-audit-2-analyst-brief.md  Claims: .orkestrel/veneer/units/pf-audit-2-claims.md  Journal: tmp/codex/pf-audit-2-analyst.jsonl  Last message: tmp/codex/pf-audit-2-analyst-last.md
-cd /home/user/scaffold || exit 1
-timeout 1800 codex exec --json -C /home/user/veneer-pf --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message /home/user/scaffold/tmp/codex/pf-audit-2-analyst-last.md "Your working directory is /home/user/veneer-pf. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/pf-audit-2-analyst-brief.md exactly. Rule on every numbered claim in /home/user/scaffold/.orkestrel/veneer/units/pf-audit-2-claims.md holding the objective lane. Make your final message the report the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/pf-audit-2-analyst.jsonl 2> /home/user/scaffold/tmp/codex/pf-audit-2-analyst.err
-echo "exit=$?" >> /home/user/scaffold/tmp/codex/pf-audit-2-analyst.err

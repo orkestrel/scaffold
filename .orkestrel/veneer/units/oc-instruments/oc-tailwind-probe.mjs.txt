@@ -1,9 +1,0 @@
-import { compile } from '@tailwindcss/node'
-const base = process.cwd()
-const names = ['offcanvas','offcanvas-sm','offcanvas-md','offcanvas-lg','offcanvas-xl','offcanvas-xxl','offcanvas-start','offcanvas-end','offcanvas-top','offcanvas-bottom','offcanvas-backdrop','offcanvas-header','offcanvas-title','offcanvas-body','showing','hiding','show','fade','top-0','collapse']
-for (const name of names) {
-  const compiler = await compile('@import "tailwindcss/theme"; @import "tailwindcss/utilities";', { base, onDependency() {} })
-  const empty = compiler.build([]).length
-  const css = compiler.build([name])
-  console.log(name, css.length > empty ? 'SHARED' : 'free')
-}

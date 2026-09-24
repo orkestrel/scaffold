@@ -1,2 +1,0 @@
-conf exit 0
-app exit 0

@@ -1,8 +1,0 @@
-?? app/browser/sections/BackgroundSection.ts
-?? app/browser/sections/BorderSection.ts
-?? src/styles/utilities/_background.scss
-?? src/styles/utilities/_border.scss
-?? tests/app/browser/sections/BackgroundSection.test.ts
-?? tests/app/browser/sections/BorderSection.test.ts
-?? tests/src/styles/utilities/background.test.ts
-?? tests/src/styles/utilities/border.test.ts

@@ -1,8 +1,0 @@
-=== before 3c085080645f09b1 (the chain's build at dc92a09)
-=== build:src exit=0
-=== after 3c085080645f09b1 at 015fc90
- Test Files  4 passed (4)
-      Tests  114 passed (114)
-=== styles exit=0
-      Tests  22 passed (22)
-[2m      Tests [22m [1m[32m19 passed[39m[22m[90m (19)[39m
