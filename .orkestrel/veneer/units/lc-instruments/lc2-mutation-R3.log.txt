@@ -1,0 +1,24 @@
+# command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/button.test.ts -t consumer scheme
+# build exit 0
+ RUN  v4.1.11 /home/user/veneer-lc2
+--------------------------------------·x--------------------------------------------
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:163:2 > button classes > reads the primary label a 'lowered' consumer scheme gives it, and keeps the fill
+AssertionError: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:173:59
+    171|    const inside = requireValue(schemed, 'No schemed button')
+    172|    await stageMedia({ motion: false })
+    173|    expect(matchesColor(readStyle(inside, 'color'), label)).toBe(true)
+       |                                                           ^
+    174|    expect(readStyle(inside, 'background-color')).toBe(readStyle(outsid…
+    175|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 82 skipped (84)
+   Start at  15:01:45
+   Duration  12.64s (transform 0ms, setup 1.23s, import 64ms, tests 170ms, environment 0ms)
+# vitest exit 1

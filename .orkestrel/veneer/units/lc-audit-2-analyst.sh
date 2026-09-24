@@ -1,0 +1,7 @@
+#!/bin/bash
+# Audit round 2 — LABEL (`lc`), objective lane: `analyst` on GPT-6 Astra, read-only, rooted at /home/user/veneer-lc2.
+# Written by audit-fix-briefs.py. Launched through codex-queue-2.sh; the bench round-tripped at 15:05 (fp-audit-3 returned exit 0); the cap is 1800 s (comparable objective lanes ran 7 to 12 min over retained logs, plus slack for the loaded container).
+# Brief: .orkestrel/veneer/units/lc-audit-2-analyst-brief.md  Claims: .orkestrel/veneer/units/lc-audit-2-claims.md  Journal: tmp/codex/lc-audit-2-analyst.jsonl  Last message: tmp/codex/lc-audit-2-analyst-last.md
+cd /home/user/scaffold || exit 1
+timeout 1800 codex exec --json -C /home/user/veneer-lc2 --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message /home/user/scaffold/tmp/codex/lc-audit-2-analyst-last.md "Your working directory is /home/user/veneer-lc2. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/lc-audit-2-analyst-brief.md exactly. Rule on every numbered claim in /home/user/scaffold/.orkestrel/veneer/units/lc-audit-2-claims.md holding the objective lane. Make your final message the report the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/lc-audit-2-analyst.jsonl 2> /home/user/scaffold/tmp/codex/lc-audit-2-analyst.err
+echo "exit=$?" >> /home/user/scaffold/tmp/codex/lc-audit-2-analyst.err

@@ -50,7 +50,8 @@ unfiltered capture variants, the whole suite, and `npm run test:service` are the
 
 **Off-limits.** `src/**`, `app/**`, `tests/fixtures/oracle/**`, `configs/**`, the manifests, the vendored
 `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts`, and `ROADMAP.md`. The engine session's
-J-TESTPIN edits `holdOraclePointer` in `tests/setupBrowser.ts`; leave that function as it stands.
+J-TESTPIN (`f22f02c`, merged into the session branch as `42d51fc`) removed `holdOraclePointer` and routes the
+`pointer.hold` oracle row through `driveHold`; leave the oracle rows as they stand.
 
 **Standing conditions.** LABEL writes `tests/setup.ts` (`UNDER_BAR`) and two journey cases (the composed-contrast case
 and the link case) in its own worktree; keep each edit local so the landings merge three-way. The container is loaded;

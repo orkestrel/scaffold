@@ -94,10 +94,22 @@ UNITS = {
         checker='claims 2 and 3',
         lanes='the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, by the user\'s instruction to put implementation first, because the round adds one assertion and two sentences and no frame',
         bench='the bench round-tripped at 14:49 (lc-audit returned exit 0)'),
+    'lc': dict(name='LABEL', worktree='/home/user/veneer-lc2', base='7852481',
+        evidence='`lc-2.diff` and `lc-2-status.txt` (round 2 against `7852481`), `b-label-lc-report-2.md`, `b-label-lc-brief-2.md`, `lc-instruments/` (the `lc2-*` logs and instruments and `lc-mutations-2.log.txt`), round 1\'s `lc.diff`, `lc-shared.patch`, `lc-theme-owned.patch`, `lc-journey-link.patch`, and `b-label-lc-report.md`, the round-1 verdict `lc-audit-verdict.md` and its lane verdicts, and the design verdict `/home/user/scaffold/.orkestrel/veneer/label-contrast-design-verdict.md`',
+        focus='claims 1, 2, 3, 4, and 5 (the downstream runs, the root-attribute case and its mutations, the consumer-scheme cases, the link arithmetic, and the byte comparison)',
+        checker='claims 1, 6, and 7',
+        lanes='the subjective lane (`reviewer` on Opus 5.5) and the checker (Sonnet) run blind beside you',
+        bench='the bench round-tripped at 15:05 (fp-audit-3 returned exit 0)'),
+    'ff3': dict(name='FOCUS-FRAME', worktree='/home/user/veneer-ff', base='e4a6d7c', key='ff',
+        evidence='`ff-3.diff` and `ff-3-status.txt` (all rounds against `e4a6d7c`), `b-focus-frame-report-3.md`, `b-focus-frame-brief-3.md`, `ff-instruments/` (`ff-mutations-3.log.txt` and the `ff-3-gate-*` and `ff-case3-*` logs), round 2\'s `ff-2.diff` and `b-focus-frame-report-2.md`, and the round-2 verdict `ff-audit-2-verdict.md` and its lane verdicts',
+        focus='claims 1 and 2 (each helper branch against a deciding row and its mutation, and the list-group control)',
+        checker='claims 3 and 4',
+        lanes='the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, by the user\'s instruction to put implementation first, because the round adds one row, deletes one branch, and renames one directory',
+        bench='the bench round-tripped at 15:05 (fp-audit-3 returned exit 0)'),
 }
 N = sys.argv[1]
-for key in sys.argv[2:]:
-    u = UNITS[key]; claims = f'{key}-audit-{N}-claims.md'; title = f"Audit round {N} — {u['name']} (`{key}`)"
+for arg in sys.argv[2:]:
+    u = UNITS[arg]; key = u.get('key', arg); claims = f'{key}-audit-{N}-claims.md'; title = f"Audit round {N} — {u['name']} (`{key}`)"
     (U / f'{key}-audit-{N}-analyst-brief.md').write_text(f"""# {title}: objective lane on GPT-6 Astra
 
 `analyst` route on GPT-6 Astra (`gpt-6-astra`), `codex exec --sandbox read-only` rooted at `{u['worktree']}`. You are the engine behind the CLI: perform the audit directly and spawn nothing. You hold the **objective** lane over the numbered claims in `/home/user/scaffold/.orkestrel/veneer/units/{claims}`: correctness, constraints, and what the code, the logs, and the contracts permit. The unit was written by `opus` on Opus 5.5, so you are an auditor engine that did not write it; the checker (Sonnet) runs blind beside you; {u.get('lanes', 'the subjective lane is not run this round, as the round-1 verdict records')}. Bound: rule within 25 minutes.

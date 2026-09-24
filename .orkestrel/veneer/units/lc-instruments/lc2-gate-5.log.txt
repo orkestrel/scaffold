@@ -1,0 +1,3 @@
+# command: cmp tmp/units/lc2-round1-index.css dist/src/styles/index.css && echo byte-identical
+byte-identical
+# exit 0

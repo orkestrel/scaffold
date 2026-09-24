@@ -1,0 +1,9 @@
+# cwd: /home/user/veneer-lc2
+# command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:light-1280 -t measures the composed contrast of every variant and state against its control|drives a link of each link specimen to the pointer and to keyboard focus
+ RUN  v4.1.11 /home/user/veneer-lc2
+---------·----------------------------·----------
+ Test Files  1 passed (1)
+      Tests  2 passed | 47 skipped (49)
+   Start at  15:08:44
+   Duration  31.05s (transform 0ms, setup 837ms, import 2.05s, tests 16.09s, environment 0ms)
+# exit 0

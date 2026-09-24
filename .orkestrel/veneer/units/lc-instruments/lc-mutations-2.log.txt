@@ -1,0 +1,59 @@
+## R1: the root scheme rule follows the mode scopes
+site: src/styles/_theme.scss
+# command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/button.test.ts -t root-level button|island the button sits in
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 82 skipped (84)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:145:2 > button classes > reads the black primary label on a root-level button once the root carries the dark attribute
+full log: tmp/units/lc2-mutation-R1.log.txt
+
+## R2: the root-attribute case reads the label with the transition running
+site: tests/src/styles/components/button.test.ts
+# command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/button.test.ts -t root-level button
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  1 failed | 83 skipped (84)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:145:2 > button classes > reads the black primary label on a root-level button once the root carries the dark attribute
+full log: tmp/units/lc2-mutation-R2.log.txt
+
+## R3: the lowered consumer scheme is expected to keep the white label, as round 1 stated
+site: tests/setupStyles.ts
+# command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/button.test.ts -t consumer scheme
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 82 skipped (84)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:163:2 > button classes > reads the primary label a 'lowered' consumer scheme gives it, and keeps the fill
+full log: tmp/units/lc2-mutation-R3.log.txt
+
+## R4: the colored-link shift moves from 20% to 10%
+site: src/styles/utilities/_link.scss
+# command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/link.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  16 failed | 66 passed (82)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in dark mode > moves the danger hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in dark mode > moves the dark hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in dark mode > moves the info hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in dark mode > moves the light hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in dark mode > moves the primary hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in dark mode > moves the secondary hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in dark mode > moves the success hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in dark mode > moves the warning hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in light mode > moves the danger hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in light mode > moves the dark hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in light mode > moves the info hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in light mode > moves the light hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in light mode > moves the primary hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in light mode > moves the secondary hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in light mode > moves the success hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:43:2 > link classes in light mode > moves the warning hover and focus color away from its label, and scales it by the opacity variables
+full log: tmp/units/lc2-mutation-R4.log.txt
+

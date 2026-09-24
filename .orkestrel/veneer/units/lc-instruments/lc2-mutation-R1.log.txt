@@ -1,0 +1,24 @@
+# command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/button.test.ts -t root-level button|island the button sits in
+# build exit 0
+ RUN  v4.1.11 /home/user/veneer-lc2
+------------------------------------·x----------------------------------------------
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:145:2 > button classes > reads the black primary label on a root-level button once the root carries the dark attribute
+AssertionError: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:156:61
+    154|   try {
+    155|    document.documentElement.setAttribute('data-bs-theme', 'dark')
+    156|    expect(matchesColor(readStyle(button, 'color'), 'black')).toBe(true)
+       |                                                             ^
+    157|   } finally {
+    158|    document.documentElement.removeAttribute('data-bs-theme')
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 82 skipped (84)
+   Start at  15:01:15
+   Duration  10.24s (transform 0ms, setup 1.26s, import 72ms, tests 196ms, environment 0ms)
+# vitest exit 1
