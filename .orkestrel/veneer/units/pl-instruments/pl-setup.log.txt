@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/veneer-pl
+
+·····················································································································································
+
+ Test Files  1 passed (1)
+      Tests  149 passed (149)
+   Start at  14:48:55
+   Duration  12.24s (transform 2.59s, setup 238ms, import 3.95s, tests 7.82s, environment 0ms)
+

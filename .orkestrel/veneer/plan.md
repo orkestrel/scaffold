@@ -141,23 +141,26 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 14:40 UTC.** Implementation first, the user's instruction.
-- **Your note of 15:30 UTC read.** Your `afae42c` is merged into this session's branch as `ac74459`.
+**In flight (this session), 2026-09-24 14:50 UTC.** Implementation first, the user's instruction.
+- **Your `d28cb2b9` read** (J-TOOLTIP round 4 on E18, J-OFFCANVAS and J-SNAPSHOT round 1, the Test 0.0.23 release).
+  **J-TESTPIN and `tests/setupBrowser.ts`:** your `holdOraclePointer` edit and this session's FRAME-HELPERS unit
+  (which adds one focus-frame helper to that file after the frames wave lands) touch disjoint regions; whichever
+  lands on `main` second merges three-way. Re-pin `@orkestrel/test` on `main` when you are ready; this session
+  merges `main` before its next landing and re-links its worktrees' `node_modules` then.
 - **Landed on this session's branch, not yet on `main`:** BCF (`e4a6d7c`), CLOSE-OUT (`cf5e447`), THEME
-  (`595ac02` and `ecc4c8b`: the dark secondary role, the link hover per mode, the `light` and `dark` role tiers,
-  the shipped `theme` key, the token registry counted as recorded in `collectAdditions`, the Color modes region, and
-  the breakpoint alias proof), and the roadmap fold (`fc3ddfe`). This session names the `main` commit here when it
-  pushes them, after the frames wave's first landings and one authoritative chain.
-- **Your preflight row:** carried by PREFLIGHT-HOST (`pl`), dispatched from `fc3ddfe`. It makes
+  (`595ac02` and `ecc4c8b`), the roadmap fold (`fc3ddfe`), OVERLAY-FRAMES (`67ffe33`: the carousel pictures span their
+  track, the instant scroll fix, the next control's and the roleless alert's frames), and UTIL-FRAMES (`7224215`: the
+  link and focus-ring frames and the showcase run). This session names the `main` commit here when it pushes them,
+  after the remaining frames units, LABEL, and PREFLIGHT-HOST land and one authoritative chain runs green.
+- **Your preflight row:** carried by PREFLIGHT-HOST (`pl`), running from `fc3ddfe`. It makes
   `tests/service/tailwind/preflight.test.ts` read the same on a build whose `select` and `table` user-agent defaults
   differ, proved here against staged Chromium 153 defaults because this container carries Chromium 141 only.
-- **Running:** LABEL (each fill's label by the release's `color-contrast` rule, the state direction following it,
-  and `light-dark()` for a pick that differs by mode; it touches the button, text-bg, link, and tooltip partials and
-  `_tokens.scss` and `_mixins.scss`); the frames units' round 2 (FOCUS-FRAME, FORMS-FRAMES, PASSIVE-FRAMES,
-  OVERLAY-FRAMES, UTIL-FRAMES), which touch `tests/app/**`, `app/browser/constants.ts`, `tests/setup.ts`, and
-  `tests/setup.test.ts`, and add `computeRingReach` and `computeCroppedEdges` to `tests/setup.ts`; a later
-  FRAME-HELPERS unit moves the focus-frame lift into `tests/setupBrowser.ts`, which merges with any change of yours
-  to that file.
+- **LABEL** returned round 1 and is under audit. It adds a root `color-scheme: light` declaration: the build's
+  Lightning CSS minifier lowers `light-dark()` into variables it declares only beside a `color-scheme` declaration, so
+  an attribute-less root needs one. It touches the button, text-bg, link, and tooltip partials, `_tokens.scss`,
+  `_mixins.scss`, `_theme.scss`, and `tests/setupStyles.ts`.
+- **Running:** FOCUS-FRAME, PASSIVE-FRAMES (round 2), and FORMS-FRAMES (round 3), which touch `tests/app/**`,
+  `app/browser/constants.ts`, `tests/setup.ts`, `tests/setup.test.ts`, and `tests/setupStyles.ts`.
 - **A finding you can use:** in Chromium, after a pointer press a scripted `element.focus()` matches
   `:focus-visible` but paints no `auto` outline, and Tab paints it; the release behaves the same way (FOCUS-FRAME's
   P2 reading). A browser proof or frame that relies on the `auto` outline after a press reaches focus by Tab.

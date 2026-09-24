@@ -1,0 +1,53 @@
+# build: npm run build:src:styles (in /home/user/veneer-lc/tmp/probe/lc-scratch)
+# build exit 0
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/link.test.ts
+ RUN  v4.1.11 /home/user/veneer-lc/tmp/probe/lc-scratch
+········xxxxxxxx·······························xxxxxxxx···························
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the primary hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the secondary hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the success hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the info hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the warning hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the danger hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the dark hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the secondary hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the success hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the info hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the warning hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the danger hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the dark hover and focus color away from its label, and scales it by the opacity variables
+AssertionError: expected +0 to be -1 // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- -1[39m
+[31m+ 0[39m
+ ❯ tests/src/styles/utilities/link.test.ts:59:71
+     57|    // A link whose role takes the white label darkens toward the shade…
+     58|    // role takes the black label lightens toward white, as the release…
+     59|    expect(Math.sign(measureLuminance(moved) - measureLuminance(rest)))…
+       |                                                                       ^
+     60|     label === 'white' ? -1 : 1,
+     61|    )
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the light hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the primary hover and focus color away from its label, and scales it by the opacity variables
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the light hover and focus color away from its label, and scales it by the opacity variables
+AssertionError: expected +0 to be 1 // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- 1[39m
+[31m+ 0[39m
+ ❯ tests/src/styles/utilities/link.test.ts:59:71
+     57|    // A link whose role takes the white label darkens toward the shade…
+     58|    // role takes the black label lightens toward white, as the release…
+     59|    expect(Math.sign(measureLuminance(moved) - measureLuminance(rest)))…
+       |                                                                       ^
+     60|     label === 'white' ? -1 : 1,
+     61|    )
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+ Test Files  1 failed (1)
+      Tests  16 failed | 66 passed (82)
+   Start at  14:22:46
+   Duration  17.33s (transform 0ms, setup 1.50s, import 85ms, tests 4.43s, environment 0ms)
+# vitest exit 1

@@ -1,0 +1,55 @@
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -14,7 +14,9 @@
+ 	extractStyles,
+ 	holdAccessible,
+ 	hoverAccessible,
++	measureLuminance,
+ 	mount,
++	parseCSSColor,
+ 	pressKeys,
+ 	readCensus,
+ 	readContrast,
+@@ -2491,9 +2493,11 @@
+ 		).toStrictEqual([])
+ 		// The emphasis link's own `:hover` and `:focus` rule steps its color down, and that rule is
+ 		// important in the utilities layer, so the bare link's element rule cannot move this color:
+-		// a moved color is the emphasis rule. Each role link keeps its resting paint under the
+-		// pointer and under focus, the departure § Color utilities records, so a role link whose
+-		// paint moved reports here.
++		// a moved color is the emphasis rule. Each role link moves its color and its underline together
++		// under the pointer and under focus, toward the endpoint that leads away from the label the
++		// contrast rule picks against its role, the departure § Color utilities records: the primary
++		// link darkens under the white label it takes in light and lightens under the black label it
++		// takes in dark, so a role link whose paint held or moved the other way reports here.
+ 		const emphasis = [...readings].filter(([, reading]) => reading.subject === 'Body emphasis link')
+ 		const roles = [...readings].filter(([, reading]) => reading.subject === 'Role links')
+ 		expect([emphasis.length > 0, roles.length > 0]).toStrictEqual([true, true])
+@@ -2501,10 +2505,23 @@
+ 			emphasis.filter(([, reading]) => reading.driven.color === reading.rest.color),
+ 		).toStrictEqual([])
+ 		expect(
+-			roles.filter(([, reading]) =>
+-				LINK_PAINT_PROPERTIES.some(
+-					(property) => reading.driven[property] !== reading.rest[property],
+-				),
++			roles.filter(
++				([, reading]) =>
++					reading.driven['text-decoration-color'] !== reading.driven.color ||
++					Math.sign(
++						measureLuminance(
++							requireValue(
++								parseCSSColor(requireValue(reading.driven.color, 'No driven color')),
++								'No driven paint',
++							),
++						) -
++							measureLuminance(
++								requireValue(
++									parseCSSColor(requireValue(reading.rest.color, 'No resting color')),
++									'No resting paint',
++								),
++							),
++					) !== (VARIANT === DARK ? 1 : -1),
+ 			),
+ 		).toStrictEqual([])
+ 		ARTIFACT.push(

@@ -1,0 +1,64 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-ff
+
+····························stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-9U6GV2'
+    at finishWithoutResolve (/home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-9U6GV2'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-9U6GV2 or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-9U6GV2/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+······································································x·············································································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > reads a ring reach from an outline as its width plus its offset, unless its style is none
+AssertionError: expected [ 1, 2, 2, 1, +0 ] to strictly equal [ 2, 2, +0, +0, +0 ]
+
+- Expected
++ Received
+
+  [
++   1,
+    2,
+    2,
+-   0,
+-   0,
++   1,
+    0,
+  ]
+
+ ❯ tests/setup.test.ts:232:20
+    230|   )
+    231|   expect(RING_OUTLINE_CASES).not.toStrictEqual([])
+    232|   expect(readings).toStrictEqual(RING_OUTLINE_CASES.map((outline) => o…
+       |                    ^
+    233|  })
+    234|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 303 passed (304)
+   Start at  14:29:58
+   Duration  23.41s (transform 3.91s, setup 284ms, import 12.71s, tests 35.50s, environment 1ms)
+

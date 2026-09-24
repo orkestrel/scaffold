@@ -1,0 +1,15 @@
+command: npm run check (with the planted swap in place; the plant is removed after the run)
+=== PLANT: the tag and type columns of the 'Valid control' row in VALIDATION_HOST_CASES swapped (tests/setupStyles.ts)
+replaced: tag: 'INPUT', type: 'text'
+with: tag: 'text', type: 'INPUT'
+command: npm run check
+
+> @orkestrel/veneer@0.0.1 check
+> tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+
+tests/setupStyles.ts(4918,14): error TS2322: Type 'readonly (Readonly<{ name: "Valid control"; tag: "text"; type: "INPUT"; control: "form-control is-valid"; holder: undefined; feedback: undefined; }> | Readonly<{ name: "Invalid control"; tag: "INPUT"; type: "text"; control: "form-control is-invalid"; holder: undefined; feedback: undefined; }> | ... 15 more ... | Rea...' is not assignable to type 'readonly ValidationHostCase[]'.
+  Type 'Readonly<{ name: "Valid control"; tag: "text"; type: "INPUT"; control: "form-control is-valid"; holder: undefined; feedback: undefined; }> | Readonly<{ name: "Invalid control"; tag: "INPUT"; type: "text"; control: "form-control is-invalid"; holder: undefined; feedback: undefined; }> | ... 15 more ... | Readonly<...>' is not assignable to type 'ValidationHostCase'.
+    Type 'Readonly<{ name: "Valid control"; tag: "text"; type: "INPUT"; control: "form-control is-valid"; holder: undefined; feedback: undefined; }>' is not assignable to type 'ValidationHostCase'.
+      Types of property 'tag' are incompatible.
+        Type '"text"' is not assignable to type '"INPUT" | "SELECT" | "TEXTAREA"'.
+exit 2

@@ -1,0 +1,5 @@
+1604,1605c1604
+< 			lifted.focus()
+< 			expect(await traverseAccessible('Dispatch lane')).toBe(host)
+---
+> 			host.focus()

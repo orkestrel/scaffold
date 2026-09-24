@@ -1,0 +1,15 @@
+command: (in tmp/probe/fp-scratch, a copy of the worktree with fp-shared-2.patch applied and node_modules hard-linked) npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/index.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-fp/tmp/probe/fp-scratch
+
+Port 63315 is in use, trying another one...
+2:41:19 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+2:41:21 PM [vite] (client) [optimizer] bundling dependencies...
+ ✓ |app:browser (chromium)| tests/app/browser/index.test.ts:8:2 > app browser entry > exports the showcase surface, the specimen table, and the sections family 3ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  14:41:19
+   Duration  8.38s (transform 0ms, setup 530ms, import 446ms, tests 4ms, environment 0ms)
+
+exit 0

@@ -1,0 +1,61 @@
+
+ RUN  v4.1.11 /home/user/veneer-pl
+
+··x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every property the elements layer declares, and records every property the profile moves, under Chromium 153
+AssertionError: expected [ …(195) ] to deeply equal [ …(199) ]
+
+- Expected
++ Received
+
+@@ -128,11 +128,11 @@
+    "select | border-right-color | oklch(0.208 0.042 265.755)",
+    "select | border-right-width | 0px",
+    "select | border-top-color | oklch(0.208 0.042 265.755)",
+    "select | border-top-width | 0px",
+    "select | color | oklch(0.208 0.042 265.755)",
+-   "select | height | 18px",
++   "select | height | 21px",
+    "select | tab-size | 4",
+    "select | text-decoration-color | oklch(0.208 0.042 265.755)",
+    "small | border-bottom-style | solid",
+    "small | border-left-style | solid",
+    "small | border-right-style | solid",
+@@ -162,17 +162,13 @@
+    "svg | border-left-style | solid",
+    "svg | border-right-style | solid",
+    "svg | border-top-style | solid",
+    "svg | display | block",
+    "svg | tab-size | 4",
+-   "table | border-bottom-color | oklch(0.208 0.042 265.755)",
+    "table | border-bottom-style | solid",
+-   "table | border-left-color | oklch(0.208 0.042 265.755)",
+    "table | border-left-style | solid",
+-   "table | border-right-color | oklch(0.208 0.042 265.755)",
+    "table | border-right-style | solid",
+-   "table | border-top-color | oklch(0.208 0.042 265.755)",
+    "table | border-top-style | solid",
+    "table | tab-size | 4",
+    "textarea | background-color | rgba(0, 0, 0, 0)",
+    "textarea | border-bottom-color | oklch(0.208 0.042 265.755)",
+    "textarea | border-bottom-width | 0px",
+
+ ❯ tests/service/tailwind/preflight.test.ts:158:32
+    156|    .map((row) => `${row.tag} | ${row.property} | ${row.preflight}`)
+    157|    .sort()
+    158|   expect([...measured].sort()).toEqual(recorded)
+       |                                ^
+    159|  })
+    160| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  14:30:50
+   Duration  11.60s (transform 1.04s, setup 2.96s, import 440ms, tests 7.97s, environment 0ms)
+

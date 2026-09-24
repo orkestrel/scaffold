@@ -1,0 +1,6 @@
+command: npx oxfmt --config .oxfmtrc.json --check app/browser/constants.ts tests/app/browser/integration.test.ts tests/setup.ts tests/setup.test.ts tests/setupStyles.ts tests/setupStyles.test.ts tests/src/styles/components/form-range.test.ts tests/app/browser/sections/FormControlSection.test.ts tests/app/browser/sections/FormFloatingSection.test.ts tests/app/browser/sections/InputGroupSection.test.ts tests/app/browser/sections/ValidationSection.test.ts src/styles/components/_form-range.scss
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 297ms on 12 files using 4 threads.
+exit 0

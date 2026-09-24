@@ -1,6 +1,6 @@
 # Writes the round-1 audit lane briefs and the Astra launcher for PAGE-FRAME (`pf`) and BCF (`bcf`), derived from
 # cl-audit-briefs.py with every subject field rewritten for the units cut from dc92a09.
-# Usage: python3 pb-audit-briefs.py <unit keys>; the keys are pf, bcf, xo, ct, fr, fo, fu, ff, and fp
+# Usage: python3 pb-audit-briefs.py <unit keys>; the keys are pf, bcf, xo, ct, fr, fo, fu, ff, fp, lc, and pl
 import pathlib, sys
 
 U = pathlib.Path('/home/user/scaffold/.orkestrel/veneer/units')
@@ -104,6 +104,28 @@ UNITS = {
         analyst='claims 2, 3, 4, 5, 6, and 7 (each proof against its mutation and its red run, the paused keyframe reading, and the derived populations)',
         reviewer='claims 3, 4, 5, 6, and 8 (open every frame the report names and rule whether it shows the state it closes; the specimens\' labels and fit), and the guide sentences',
         checker='claims 1, 7, and 9'),
+    'lc': dict(
+        name='LABEL', worktree='/home/user/veneer-lc', base='ac74459',
+        law=("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{styles,tests,browser,names,typescript,architecture,patterns,documentation,writing,quality}.md`; "
+             "the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` and its references (the verdict shape)"),
+        family='the design verdict `/home/user/scaffold/.orkestrel/veneer/label-contrast-design-verdict.md` (L1 to L9) and the two design proposals beside it (`label-contrast-design-planner-proposal.md`, `label-contrast-design-analyst-proposal.md`), THEME\'s verdicts `ct-audit-verdict.md` and `ct-audit-subjective-verdict.md` (F1 and F2), the brief `b-label-lc-brief.md`, and `w2-w3-note-1.md` and `w2-w3-note-2.md`',
+        precedent='the base `src/styles/_tokens.scss`, `_theme.scss`, `_mixins.scss`, and `components/_button.scss`, the release functions `node_modules/bootstrap/scss/_functions.scss` (`color-contrast`) and `helpers/_colored-links.scss`, the release stylesheet `node_modules/bootstrap/dist/css/bootstrap.css`, and the build configuration `vite.config.ts` (its `cssMinify` setting)',
+        evidence='`lc.diff`, `lc-status.txt`, `lc-shared.patch`, `b-label-lc-report.md`, and `lc-instruments/` (`lc-mutations.log.txt`, `lc-mutate.py`, the `lc-mutation-M*.log.txt` logs, `lc-red.sh` and the `lc-red-*.log.txt` logs, the `lc-green-*.log.txt` logs, the `lc-probe-*.log.txt` readings, `lc-compare.mjs` and the `lc-compare-*.log.txt` logs, `lc-base-index.css`, `lc-gates.sh`, `lc-gates.log.txt` and the `lc-gate-*.log.txt` logs, `lc-styles-final.log.txt`, `lc-theme-owned.patch` and `lc-theme-owned-check.log.txt`, `lc-journey-link.patch`, and `lc-ledger.py`)',
+        subject='the contrast functions and their names, the label and direction per role, the root color scheme, the proofs\' shape, and the guide prose',
+        analyst='claims 2, 3, 4, 5, and 6 (the rule against the release function, each resolved pick and direction against the design verdict\'s table, the byte comparisons, each proof against its mutation, and the lowering reading behind the root scheme)',
+        reviewer='claims 3 (the direction and the named exceptions), 6 (the root scheme against its alternative, and the set of files the change makes false), and 7 (the function names, the comments, the guide prose against what ships, and the writing rule)',
+        checker='claims 1 and 7'),
+    'pl': dict(
+        name='PREFLIGHT-HOST', worktree='/home/user/veneer-pl', base='fc3ddfe',
+        law=("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{tests,styles,typescript,names,architecture,documentation,writing,quality}.md`; "
+             "the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` and its references (the verdict shape)"),
+        family='the rule D45 in `decisions-round-2.md`, the engine session\'s reading `/home/user/scaffold/.orkestrel/veneer/engine/units/host-chromium-153-reading.md` (the preflight row), the brief `b-preflight-host-brief.md`, and `w2-w3-note-1.md` and `w2-w3-note-2.md`',
+        precedent='the base `tests/service/tailwind/preflight.test.ts`, the base `readPreflightDepartures` reader in `tests/setupStyles.ts`, the installed Tailwind preflight `node_modules/tailwindcss/preflight.css`, and the base guide rows in `guides/veneer.md`',
+        evidence='`pl.diff`, `pl-status.txt`, `pl-shared.patch`, `b-preflight-host-report.md`, and `pl-instruments/` (`pl-mutations.log.txt`, `pl-mutations.sh`, `pl-scratch.sh`, `pl-mutation-run.log.txt`, `pl-mutations-driver.log.txt`, `pl-mutation-build.log.txt`, `pl-classify-probe.test.ts.txt` and `pl-classify.out.txt`, `pl-red-baseline.log.txt`, `pl-green.log.txt`, `pl-worktree-unpatched.log.txt`, `pl-setup.log.txt`, `pl-test-guides.log.txt`, `pl-test-service.log.txt`, and the `pl-gate-*.log.txt` logs), and the patched guide copy `/home/user/veneer-pl/tmp/probe/pl-guide-patched.md`',
+        subject='the comparison\'s shape, the tables\' and helper\'s names and placement, the emulation\'s honesty, and the guide prose',
+        analyst='claims 2, 3, 4, 5, and 6 (the classification against the profile, the comparison against both builds, the emulation and its control, each proof against its mutation, and the helper)',
+        reviewer='claims 3 (the case\'s shape and title), 4 (whether the emulation stands in for the real build as the report says), 6 (the names and placement), and 7 (every guide sentence against what ships, and the writing rule)',
+        checker='claims 1, 6, and 8'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]

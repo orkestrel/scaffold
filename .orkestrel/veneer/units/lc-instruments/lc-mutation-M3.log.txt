@@ -1,0 +1,271 @@
+# build: npm run build:src:styles (in /home/user/veneer-lc/tmp/probe/lc-scratch)
+# build exit 0
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/button.test.ts
+ RUN  v4.1.11 /home/user/veneer-lc/tmp/probe/lc-scratch
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+·x·················x················x··x·························x···············
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark filled rest label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:68:78
+     66|    readings.push(['filled disabled', readStyle(filled, 'color'), readC…
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+       |                                                                              ^
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+     70|    }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark filled rest contrast: expected 2.585598980085744 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/button.test.ts:69:60
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+       |                                                            ^
+     70|    }
+     71|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark filled hover label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:68:78
+     66|    readings.push(['filled disabled', readStyle(filled, 'color'), readC…
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+       |                                                                              ^
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+     70|    }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark filled hover contrast: expected 2.3476257497087305 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/button.test.ts:69:60
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+       |                                                            ^
+     70|    }
+     71|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark filled active label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:68:78
+     66|    readings.push(['filled disabled', readStyle(filled, 'color'), readC…
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+       |                                                                              ^
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+     70|    }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark filled active contrast: expected 2.15847863143527 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/button.test.ts:69:60
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+       |                                                            ^
+     70|    }
+     71|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark outline hover label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:68:78
+     66|    readings.push(['filled disabled', readStyle(filled, 'color'), readC…
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+       |                                                                              ^
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+     70|    }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark outline hover contrast: expected 2.585598980085744 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/button.test.ts:69:60
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+       |                                                            ^
+     70|    }
+     71|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark outline active label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:68:78
+     66|    readings.push(['filled disabled', readStyle(filled, 'color'), readC…
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+       |                                                                              ^
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+     70|    }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark outline active contrast: expected 2.15847863143527 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/button.test.ts:69:60
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+       |                                                            ^
+     70|    }
+     71|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark outline checked label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:68:78
+     66|    readings.push(['filled disabled', readStyle(filled, 'color'), readC…
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+       |                                                                              ^
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+     70|    }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark outline checked contrast: expected 2.15847863143527 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/button.test.ts:69:60
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+       |                                                            ^
+     70|    }
+     71|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark filled disabled label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:68:78
+     66|    readings.push(['filled disabled', readStyle(filled, 'color'), readC…
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+       |                                                                              ^
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+     70|    }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+AssertionError: primary dark filled disabled contrast: expected 2.585598980085744 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/button.test.ts:69:60
+     67|    for (const [state, color, ratio] of readings) {
+     68|     expect.soft(matchesColor(color, label), `${role} ${mode} ${state} …
+     69|     expect.soft(ratio, `${role} ${mode} ${state} contrast`).toBeGreate…
+       |                                                            ^
+     70|    }
+     71|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the primary hover and active fills in dark mode the way its black label and tint direction name
+AssertionError: primary dark filled hover label contrast rises: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:110:81
+    108|     const [from, to] = [requireValue(before, `No ${name} origin`), req…
+    109|     expect.soft(Math.sign(to[0] - from[0]), `${role} ${mode} ${name} f…
+    110|     expect.soft(to[1] > from[1], `${role} ${mode} ${name} label contra…
+       |                                                                                 ^
+    111|    }
+    112|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the primary hover and active fills in dark mode the way its black label and tint direction name
+AssertionError: primary dark filled active label contrast rises: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:110:81
+    108|     const [from, to] = [requireValue(before, `No ${name} origin`), req…
+    109|     expect.soft(Math.sign(to[0] - from[0]), `${role} ${mode} ${name} f…
+    110|     expect.soft(to[1] > from[1], `${role} ${mode} ${name} label contra…
+       |                                                                                 ^
+    111|    }
+    112|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the primary hover and active fills in dark mode the way its black label and tint direction name
+AssertionError: primary dark outline active label contrast rises: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:110:81
+    108|     const [from, to] = [requireValue(before, `No ${name} origin`), req…
+    109|     expect.soft(Math.sign(to[0] - from[0]), `${role} ${mode} ${name} f…
+    110|     expect.soft(to[1] > from[1], `${role} ${mode} ${name} label contra…
+       |                                                                                 ^
+    111|    }
+    112|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:115:2 > button classes > reads the primary label in the island the button sits in, and never from a bare scheme
+AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+[32m- Expected[39m
+[31m+ Received[39m
+[2m  [[22m
+[2m    "Root primary rgb(255, 255, 255)",[22m
+[32m-   "Dark primary rgb(0, 0, 0)",[39m
+[31m+   "Dark primary rgb(255, 255, 255)",[39m
+[2m    "Nested primary rgb(255, 255, 255)",[22m
+[2m    "Own primary rgb(255, 255, 255)",[22m
+[2m    "Scheme primary rgb(255, 255, 255)",[22m
+[2m  ][22m
+ ❯ tests/src/styles/components/button.test.ts:132:4
+    130|     (button) => `${button.textContent} ${readStyle(button, 'color')}`,
+    131|    ),
+    132|   ).toEqual([
+       |    ^
+    133|    'Root primary rgb(255, 255, 255)',
+    134|    'Dark primary rgb(0, 0, 0)',
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints primary in dark mode across rest, focus, hover, active, pressed, and disabled states
+AssertionError: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:174:58
+    172|    expect(readPixels(button, 'padding-top')).toBe(6)
+    173|    expect(readPixels(button, 'padding-left')).toBe(12)
+    174|    expect(matchesColor(readStyle(button, 'color'), text)).toBe(true)
+       |                                                          ^
+    175|    expect(matchesColor(readStyle(button, 'background-color'), fill)).t…
+    176|    expect(matchesColor(readStyle(button, 'border-left-color'), fill)).…
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/20]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline primary in dark mode across rest, hover, active, focus, and disabled states
+AssertionError: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/button.test.ts:231:58
+    229|    await hoverAccessible(`Outline ${role}`)
+    230|    expect(matchesColor(readStyle(button, 'background-color'), color)).…
+    231|    expect(matchesColor(readStyle(button, 'color'), text)).toBe(true)
+       |                                                          ^
+    232|    await holdAccessible(`Outline ${role}`)
+    233|    expect(button.matches(':active')).toBe(true)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/20]⎯
+ Test Files  1 failed (1)
+      Tests  5 failed | 76 passed (81)
+   Start at  14:18:35
+   Duration  40.08s (transform 0ms, setup 1.56s, import 92ms, tests 27.18s, environment 0ms)
+# vitest exit 1

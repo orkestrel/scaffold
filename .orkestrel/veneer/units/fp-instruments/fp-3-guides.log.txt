@@ -1,0 +1,16 @@
+command: (in tmp/probe/fp-scratch, a copy of the worktree with fp-shared-3.patch applied and node_modules hard-linked) npm run test:guides
+
+> @orkestrel/veneer@0.0.1 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/veneer-fp/tmp/probe/fp-scratch[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 14:58:04
+[2m   Duration [22m 3.88s[2m (transform 1.16s, setup 198ms, import 2.93s, tests 558ms, environment 0ms)[22m
+
+exit 0

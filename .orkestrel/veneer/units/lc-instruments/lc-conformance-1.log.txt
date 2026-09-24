@@ -1,0 +1,401 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lc/tmp/probe/lc-scratch
+
+·······xxxx·x··········x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(70) ], [ …(65) ] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "btn | .btn-primary | --bs-btn-color",
++     "btn | .btn-primary | --bs-btn-hover-color",
++     "btn | .btn-primary | --bs-btn-hover-bg",
++     "btn | .btn-primary | --bs-btn-active-color",
++     "btn | .btn-primary | --bs-btn-active-bg",
++     "btn | .btn-primary | --bs-btn-disabled-color",
++     "btn | .btn-secondary | --bs-btn-hover-bg",
++     "btn | .btn-secondary | --bs-btn-active-bg",
++     "btn | .btn-success | --bs-btn-hover-bg",
++     "btn | .btn-success | --bs-btn-active-bg",
++     "btn | .btn-info | --bs-btn-hover-bg",
++     "btn | .btn-info | --bs-btn-active-bg",
++     "btn | .btn-warning | --bs-btn-hover-bg",
++     "btn | .btn-warning | --bs-btn-active-bg",
++     "btn | .btn-danger | --bs-btn-hover-bg",
++     "btn | .btn-danger | --bs-btn-active-bg",
++     "btn | .btn-light | --bs-btn-hover-bg",
++     "btn | .btn-light | --bs-btn-active-bg",
++     "btn | .btn-dark | --bs-btn-hover-bg",
++     "btn | .btn-dark | --bs-btn-active-bg",
++     "btn | .btn-outline-primary | --bs-btn-hover-color",
++     "btn | .btn-outline-primary | --bs-btn-active-color",
++     "btn | .btn-outline-primary | --bs-btn-active-bg",
++     "btn | .btn-outline-secondary | --bs-btn-active-bg",
++     "btn | .btn-outline-success | --bs-btn-active-bg",
++     "btn | .btn-outline-info | --bs-btn-active-bg",
++     "btn | .btn-outline-warning | --bs-btn-active-bg",
++     "btn | .btn-outline-danger | --bs-btn-active-bg",
++     "btn | .btn-outline-light | --bs-btn-active-bg",
++     "btn | .btn-outline-dark | --bs-btn-active-bg",
++     "link | .link-primary:hover | color",
++     "link | .link-primary:hover | text-decoration-color",
++     "link | .link-primary:focus | color",
++     "link | .link-primary:focus | text-decoration-color",
++     "link | .link-secondary:hover | color",
++     "link | .link-secondary:hover | text-decoration-color",
++     "link | .link-secondary:focus | color",
++     "link | .link-secondary:focus | text-decoration-color",
++     "link | .link-success:hover | color",
++     "link | .link-success:hover | text-decoration-color",
++     "link | .link-success:focus | color",
++     "link | .link-success:focus | text-decoration-color",
++     "link | .link-info:hover | color",
++     "link | .link-info:hover | text-decoration-color",
++     "link | .link-info:focus | color",
++     "link | .link-info:focus | text-decoration-color",
++     "link | .link-warning:hover | color",
++     "link | .link-warning:hover | text-decoration-color",
++     "link | .link-warning:focus | color",
++     "link | .link-warning:focus | text-decoration-color",
++     "link | .link-danger:hover | color",
++     "link | .link-danger:hover | text-decoration-color",
++     "link | .link-danger:focus | color",
++     "link | .link-danger:focus | text-decoration-color",
++     "link | .link-light:hover | color",
++     "link | .link-light:hover | text-decoration-color",
++     "link | .link-light:focus | color",
++     "link | .link-light:focus | text-decoration-color",
++     "link | .link-dark:hover | color",
++     "link | .link-dark:hover | text-decoration-color",
++     "link | .link-dark:focus | color",
++     "link | .link-dark:focus | text-decoration-color",
++     "text | .text-bg-primary | color",
++     "text | .text-bg-info | color",
++     "text | .text-bg-warning | color",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "btn | .btn-primary | --bs-btn-color",
++     "btn | .btn-primary | --bs-btn-hover-color",
++     "btn | .btn-primary | --bs-btn-hover-bg",
++     "btn | .btn-primary | --bs-btn-active-color",
++     "btn | .btn-primary | --bs-btn-active-bg",
++     "btn | .btn-primary | --bs-btn-disabled-color",
++     "btn | .btn-secondary | --bs-btn-hover-bg",
++     "btn | .btn-secondary | --bs-btn-active-bg",
++     "btn | .btn-success | --bs-btn-hover-bg",
++     "btn | .btn-success | --bs-btn-active-bg",
++     "btn | .btn-info | --bs-btn-hover-bg",
++     "btn | .btn-info | --bs-btn-active-bg",
++     "btn | .btn-warning | --bs-btn-hover-bg",
++     "btn | .btn-warning | --bs-btn-active-bg",
++     "btn | .btn-danger | --bs-btn-hover-bg",
++     "btn | .btn-danger | --bs-btn-active-bg",
++     "btn | .btn-light | --bs-btn-hover-bg",
++     "btn | .btn-light | --bs-btn-active-bg",
++     "btn | .btn-dark | --bs-btn-hover-bg",
++     "btn | .btn-dark | --bs-btn-active-bg",
++     "btn | .btn-outline-primary | --bs-btn-hover-color",
++     "btn | .btn-outline-primary | --bs-btn-active-color",
++     "btn | .btn-outline-primary | --bs-btn-active-bg",
++     "btn | .btn-outline-secondary | --bs-btn-active-bg",
++     "btn | .btn-outline-success | --bs-btn-active-bg",
++     "btn | .btn-outline-info | --bs-btn-active-bg",
++     "btn | .btn-outline-warning | --bs-btn-active-bg",
++     "btn | .btn-outline-danger | --bs-btn-active-bg",
++     "btn | .btn-outline-light | --bs-btn-active-bg",
++     "btn | .btn-outline-dark | --bs-btn-active-bg",
++     "link | .link-primary:hover | color",
++     "link | .link-primary:hover | text-decoration-color",
++     "link | .link-primary:focus | color",
++     "link | .link-primary:focus | text-decoration-color",
++     "link | .link-secondary:hover | color",
++     "link | .link-secondary:hover | text-decoration-color",
++     "link | .link-secondary:focus | color",
++     "link | .link-secondary:focus | text-decoration-color",
++     "link | .link-success:hover | color",
++     "link | .link-success:hover | text-decoration-color",
++     "link | .link-success:focus | color",
++     "link | .link-success:focus | text-decoration-color",
++     "link | .link-info:hover | color",
++     "link | .link-info:hover | text-decoration-color",
++     "link | .link-info:focus | color",
++     "link | .link-info:focus | text-decoration-color",
++     "link | .link-warning:hover | color",
++     "link | .link-warning:hover | text-decoration-color",
++     "link | .link-warning:focus | color",
++     "link | .link-warning:focus | text-decoration-color",
++     "link | .link-danger:hover | color",
++     "link | .link-danger:hover | text-decoration-color",
++     "link | .link-danger:focus | color",
++     "link | .link-danger:focus | text-decoration-color",
++     "link | .link-light:hover | color",
++     "link | .link-light:hover | text-decoration-color",
++     "link | .link-light:focus | color",
++     "link | .link-light:focus | text-decoration-color",
++     "link | .link-dark:hover | color",
++     "link | .link-dark:hover | text-decoration-color",
++     "link | .link-dark:focus | color",
++     "link | .link-dark:focus | text-decoration-color",
++     "text | .text-bg-primary | color",
++     "text | .text-bg-info | color",
++     "text | .text-bg-warning | color",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:328:20
+    326|
+    327|  it('measures the dark component rules under the theme key, and leaves…
+    328|   expect(darkened).toEqual([
+       |                    ^
+    329|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    330|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ …(65) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "btn | .btn-primary | --bs-btn-color | — | #fff | light-dark(var(--vn-palette-white-base), var(--vn-palette-black-base)) | tokenized",
++   "btn | .btn-primary | --bs-btn-hover-color | — | #fff | light-dark(var(--vn-palette-white-base), var(--vn-palette-black-base)) | tokenized",
++   "btn | .btn-primary | --bs-btn-hover-bg | — | #0b5ed7 | color-mix( in srgb, light-dark(color(srgb 0.00742457 0.0232852 0.0925134), var(--vn-palette-white-base)) var(--vn-state-hover), var(--vn-color-primary-base) ) | tokenized",
++   "btn | .btn-primary | --bs-btn-active-color | — | #fff | light-dark(var(--vn-palette-white-base), var(--vn-palette-black-base)) | tokenized",
++   "btn | .btn-primary | --bs-btn-active-bg | — | #0a58ca | color-mix( in srgb, light-dark(color(srgb 0.00742457 0.0232852 0.0925134), var(--vn-palette-white-base)) var(--vn-state-active), var(--vn-color-primary-base) ) | tokenized",
++   "btn | .btn-primary | --bs-btn-disabled-color | — | #fff | light-dark(var(--vn-palette-white-base), var(--vn-palette-black-base)) | tokenized",
++   "btn | .btn-secondary | --bs-btn-hover-bg | — | #5c636a | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-hover), var(--vn-color-secondary-base) ) | tokenized",
++   "btn | .btn-secondary | --bs-btn-active-bg | — | #565e64 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-secondary-base) ) | tokenized",
++   "btn | .btn-success | --bs-btn-hover-bg | — | #157347 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-hover), var(--vn-color-success-base) ) | tokenized",
++   "btn | .btn-success | --bs-btn-active-bg | — | #146c43 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-success-base) ) | tokenized",
++   "btn | .btn-info | --bs-btn-hover-bg | — | #31d2f2 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-hover), var(--vn-color-info-base) ) | tokenized",
++   "btn | .btn-info | --bs-btn-active-bg | — | #3dd5f3 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-info-base) ) | tokenized",
++   "btn | .btn-warning | --bs-btn-hover-bg | — | #ffca2c | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-hover), var(--vn-color-warning-base) ) | tokenized",
++   "btn | .btn-warning | --bs-btn-active-bg | — | #ffcd39 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-warning-base) ) | tokenized",
++   "btn | .btn-danger | --bs-btn-hover-bg | — | #bb2d3b | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-hover), var(--vn-color-danger-base) ) | tokenized",
++   "btn | .btn-danger | --bs-btn-active-bg | — | #b02a37 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-danger-base) ) | tokenized",
++   "btn | .btn-light | --bs-btn-hover-bg | — | #d3d4d5 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-hover), var(--vn-color-light-base) ) | tokenized",
++   "btn | .btn-light | --bs-btn-active-bg | — | #c6c7c8 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-light-base) ) | tokenized",
++   "btn | .btn-dark | --bs-btn-hover-bg | — | #424649 | color-mix( in srgb, var(--vn-palette-white-base) var(--vn-state-hover), var(--vn-color-dark-base) ) | tokenized",
++   "btn | .btn-dark | --bs-btn-active-bg | — | #4d5154 | color-mix( in srgb, var(--vn-palette-white-base) var(--vn-state-active), var(--vn-color-dark-base) ) | tokenized",
++   "btn | .btn-outline-primary | --bs-btn-hover-color | — | #fff | light-dark(var(--vn-palette-white-base), var(--vn-palette-black-base)) | tokenized",
++   "btn | .btn-outline-primary | --bs-btn-active-color | — | #fff | light-dark(var(--vn-palette-white-base), var(--vn-palette-black-base)) | tokenized",
++   "btn | .btn-outline-primary | --bs-btn-active-bg | — | #0d6efd | color-mix( in srgb, light-dark(color(srgb 0.00742457 0.0232852 0.0925134), var(--vn-palette-white-base)) var(--vn-state-active), var(--vn-color-primary-base) ) | tokenized",
++   "btn | .btn-outline-secondary | --bs-btn-active-bg | — | #6c757d | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-secondary-base) ) | tokenized",
++   "btn | .btn-outline-success | --bs-btn-active-bg | — | #198754 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-success-base) ) | tokenized",
++   "btn | .btn-outline-info | --bs-btn-active-bg | — | #0dcaf0 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-info-base) ) | tokenized",
++   "btn | .btn-outline-warning | --bs-btn-active-bg | — | #ffc107 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-warning-base) ) | tokenized",
++   "btn | .btn-outline-danger | --bs-btn-active-bg | — | #dc3545 | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-danger-base) ) | tokenized",
++   "btn | .btn-outline-light | --bs-btn-active-bg | — | #f8f9fa | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-light-base) ) | tokenized",
++   "btn | .btn-outline-dark | --bs-btn-active-bg | — | #212529 | color-mix( in srgb, var(--vn-palette-white-base) var(--vn-state-active), var(--vn-color-dark-base) ) | tokenized",
++   "link | .link-primary:hover | color | — | RGBA(10, 88, 202, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, light-dark(color(srgb 0.00742457 0.0232852 0.0925134), var(--vn-palette-white-base)) 20%, rgb(var(--vn-color-primary-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-primary:hover | text-decoration-color | — | RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, light-dark(color(srgb 0.00742457 0.0232852 0.0925134), var(--vn-palette-white-base)) 20%, rgb(var(--vn-color-primary-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-primary:focus | color | — | RGBA(10, 88, 202, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, light-dark(color(srgb 0.00742457 0.0232852 0.0925134), var(--vn-palette-white-base)) 20%, rgb(var(--vn-color-primary-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-primary:focus | text-decoration-color | — | RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, light-dark(color(srgb 0.00742457 0.0232852 0.0925134), var(--vn-palette-white-base)) 20%, rgb(var(--vn-color-primary-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-secondary:hover | color | — | RGBA(86, 94, 100, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-secondary-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-secondary:hover | text-decoration-color | — | RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-secondary-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-secondary:focus | color | — | RGBA(86, 94, 100, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-secondary-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-secondary:focus | text-decoration-color | — | RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-secondary-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-success:hover | color | — | RGBA(20, 108, 67, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-success-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-success:hover | text-decoration-color | — | RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-success-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-success:focus | color | — | RGBA(20, 108, 67, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-success-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-success:focus | text-decoration-color | — | RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-success-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-info:hover | color | — | RGBA(61, 213, 243, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-info-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-info:hover | text-decoration-color | — | RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-info-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-info:focus | color | — | RGBA(61, 213, 243, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-info-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-info:focus | text-decoration-color | — | RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-info-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-warning:hover | color | — | RGBA(255, 205, 57, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-warning-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-warning:hover | text-decoration-color | — | RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-warning-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-warning:focus | color | — | RGBA(255, 205, 57, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-warning-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-warning:focus | text-decoration-color | — | RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-warning-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-danger:hover | color | — | RGBA(176, 42, 55, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-danger-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-danger:hover | text-decoration-color | — | RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-danger-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-danger:focus | color | — | RGBA(176, 42, 55, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-danger-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-danger:focus | text-decoration-color | — | RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-danger-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-light:hover | color | — | RGBA(249, 250, 251, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, var(--vn-palette-white-base) 20%, rgb(var(--vn-color-light-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-light:hover | text-decoration-color | — | RGBA(249, 250, 251, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, var(--vn-palette-white-base) 20%, rgb(var(--vn-color-light-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-light:focus | color | — | RGBA(249, 250, 251, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, var(--vn-palette-white-base) 20%, rgb(var(--vn-color-light-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-light:focus | text-decoration-color | — | RGBA(249, 250, 251, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, var(--vn-palette-white-base) 20%, rgb(var(--vn-color-light-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-dark:hover | color | — | RGBA(26, 30, 33, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-dark-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-dark:hover | text-decoration-color | — | RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-dark-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-dark:focus | color | — | RGBA(26, 30, 33, var(--bs-link-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-dark-rgb))) r g b/var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-dark:focus | text-decoration-color | — | RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1)) | rgb(from color-mix(in srgb, color(srgb 0.00742457 0.0232852 0.0925134) 20%, rgb(var(--vn-color-dark-rgb))) r g b/var(--bs-link-underline-opacity, 1)) | tokenized",
++   "text | .text-bg-primary | color | — | #fff | light-dark(var(--vn-palette-white-base), var(--vn-palette-black-base)) | tokenized",
++   "text | .text-bg-info | color | — | #000 | var(--vn-palette-white-base) | tokenized",
++   "text | .text-bg-warning | color | — | #000 | var(--vn-palette-white-base) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:336:33
+    334|
+    335|  it('records every measured value difference in the guide ledger', () …
+    336|   expect(departures.unrecorded).toEqual([])
+       |                                 ^
+    337|  })
+    338|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+AssertionError: expected [ …(65) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "btn | .btn-primary | --bs-btn-color | — | #fff | var(--vn-palette-white-base) | tokenized",
++   "btn | .btn-primary | --bs-btn-hover-color | — | #fff | var(--vn-palette-white-base) | tokenized",
++   "btn | .btn-primary | --bs-btn-hover-bg | — | #0b5ed7 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-color-primary-base) ) | tokenized",
++   "btn | .btn-primary | --bs-btn-active-color | — | #fff | var(--vn-palette-white-base) | tokenized",
++   "btn | .btn-primary | --bs-btn-active-bg | — | #0a58ca | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-primary-base) ) | tokenized",
++   "btn | .btn-primary | --bs-btn-disabled-color | — | #fff | var(--vn-palette-white-base) | tokenized",
++   "btn | .btn-secondary | --bs-btn-hover-bg | — | #5c636a | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-color-secondary-base) ) | tokenized",
++   "btn | .btn-secondary | --bs-btn-active-bg | — | #565e64 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-secondary-base) ) | tokenized",
++   "btn | .btn-success | --bs-btn-hover-bg | — | #157347 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-color-success-base) ) | tokenized",
++   "btn | .btn-success | --bs-btn-active-bg | — | #146c43 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-success-base) ) | tokenized",
++   "btn | .btn-info | --bs-btn-hover-bg | — | #31d2f2 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-color-info-base) ) | tokenized",
++   "btn | .btn-info | --bs-btn-active-bg | — | #3dd5f3 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-info-base) ) | tokenized",
++   "btn | .btn-warning | --bs-btn-hover-bg | — | #ffca2c | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-color-warning-base) ) | tokenized",
++   "btn | .btn-warning | --bs-btn-active-bg | — | #ffcd39 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-warning-base) ) | tokenized",
++   "btn | .btn-danger | --bs-btn-hover-bg | — | #bb2d3b | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-color-danger-base) ) | tokenized",
++   "btn | .btn-danger | --bs-btn-active-bg | — | #b02a37 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-danger-base) ) | tokenized",
++   "btn | .btn-light | --bs-btn-hover-bg | — | #d3d4d5 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-color-light-base) ) | tokenized",
++   "btn | .btn-light | --bs-btn-active-bg | — | #c6c7c8 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-light-base) ) | tokenized",
++   "btn | .btn-dark | --bs-btn-hover-bg | — | #424649 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-color-dark-base) ) | tokenized",
++   "btn | .btn-dark | --bs-btn-active-bg | — | #4d5154 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-dark-base) ) | tokenized",
++   "btn | .btn-outline-primary | --bs-btn-hover-color | — | #fff | var(--vn-palette-white-base) | tokenized",
++   "btn | .btn-outline-primary | --bs-btn-active-color | — | #fff | var(--vn-palette-white-base) | tokenized",
++   "btn | .btn-outline-primary | --bs-btn-active-bg | — | #0d6efd | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-primary-base) ) | tokenized",
++   "btn | .btn-outline-secondary | --bs-btn-active-bg | — | #6c757d | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-secondary-base) ) | tokenized",
++   "btn | .btn-outline-success | --bs-btn-active-bg | — | #198754 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-success-base) ) | tokenized",
++   "btn | .btn-outline-info | --bs-btn-active-bg | — | #0dcaf0 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-info-base) ) | tokenized",
++   "btn | .btn-outline-warning | --bs-btn-active-bg | — | #ffc107 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-warning-base) ) | tokenized",
++   "btn | .btn-outline-danger | --bs-btn-active-bg | — | #dc3545 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-danger-base) ) | tokenized",
++   "btn | .btn-outline-light | --bs-btn-active-bg | — | #f8f9fa | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-light-base) ) | tokenized",
++   "btn | .btn-outline-dark | --bs-btn-active-bg | — | #212529 | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-color-dark-base) ) | tokenized",
++   "link | .link-primary:hover | color | — | RGBA(10, 88, 202, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-primary-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-primary:hover | text-decoration-color | — | RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-primary-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-primary:focus | color | — | RGBA(10, 88, 202, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-primary-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-primary:focus | text-decoration-color | — | RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-primary-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-secondary:hover | color | — | RGBA(86, 94, 100, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-secondary-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-secondary:hover | text-decoration-color | — | RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-secondary-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-secondary:focus | color | — | RGBA(86, 94, 100, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-secondary-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-secondary:focus | text-decoration-color | — | RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-secondary-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-success:hover | color | — | RGBA(20, 108, 67, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-success-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-success:hover | text-decoration-color | — | RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-success-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-success:focus | color | — | RGBA(20, 108, 67, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-success-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-success:focus | text-decoration-color | — | RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-success-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-info:hover | color | — | RGBA(61, 213, 243, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-info-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-info:hover | text-decoration-color | — | RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-info-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-info:focus | color | — | RGBA(61, 213, 243, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-info-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-info:focus | text-decoration-color | — | RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-info-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-warning:hover | color | — | RGBA(255, 205, 57, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-warning-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-warning:hover | text-decoration-color | — | RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-warning-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-warning:focus | color | — | RGBA(255, 205, 57, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-warning-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-warning:focus | text-decoration-color | — | RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-warning-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-danger:hover | color | — | RGBA(176, 42, 55, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-danger-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-danger:hover | text-decoration-color | — | RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-danger-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-danger:focus | color | — | RGBA(176, 42, 55, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-danger-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-danger:focus | text-decoration-color | — | RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-danger-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-light:hover | color | — | RGBA(249, 250, 251, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-light-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-light:hover | text-decoration-color | — | RGBA(249, 250, 251, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-light-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-light:focus | color | — | RGBA(249, 250, 251, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-light-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-light:focus | text-decoration-color | — | RGBA(249, 250, 251, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-light-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-dark:hover | color | — | RGBA(26, 30, 33, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-dark-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-dark:hover | text-decoration-color | — | RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-dark-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "link | .link-dark:focus | color | — | RGBA(26, 30, 33, var(--bs-link-opacity, 1)) | rgba(var(--vn-color-dark-rgb), var(--bs-link-opacity, 1)) | tokenized",
++   "link | .link-dark:focus | text-decoration-color | — | RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1)) | rgba(var(--vn-color-dark-rgb), var(--bs-link-underline-opacity, 1)) | tokenized",
++   "text | .text-bg-primary | color | — | #fff | var(--vn-palette-white-base) | tokenized",
++   "text | .text-bg-info | color | — | #000 | var(--vn-palette-black-base) | tokenized",
++   "text | .text-bg-warning | color | — | #000 | var(--vn-palette-black-base) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:340:28
+    338|
+    339|  it('names no departure the compiled cascade no longer carries', () =>…
+    340|   expect(departures.stale).toEqual([])
+       |                            ^
+    341|  })
+    342|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "theme | :root { color-scheme } | — | declaration",
++ ]
+
+ ❯ tests/conformance.test.ts:344:32
+    342|
+    343|  it('records every emitted name the official inventory lacks', () => {
+    344|   expect(additions.unrecorded).toEqual([])
+       |                                ^
+    345|  })
+    346|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "theme | :root { color-scheme } | — | declaration",
+    "form-control | .form-control { letter-spacing } | — | declaration",
+  ]
+
+ ❯ tests/conformance.test.ts:356:30
+    354|   // browser case reads only the properties a row values. This ledger …
+    355|   // it, and the unmodified cascade is the control that reports nothin…
+    356|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    357|    'form-control | .form-control { letter-spacing } | — | declaration',
+    358|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+Error: ENOENT: no such file or directory, open '/home/user/veneer-lc/tmp/probe/lc-scratch/dist/src/core/index.js'
+ ❯ scanForbiddenBuild tests/setupServer.ts:944:16
+    942|  signatures: readonly string[],
+    943| ): string | undefined {
+    944|  const built = readFileSync(path, 'utf8')
+       |                ^
+    945|  return (
+    946|   scanForbiddenSource(built, names) ??
+ ❯ tests/conformance.test.ts:823:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 20 passed (26)
+   Start at  14:03:24
+   Duration  42.62s (transform 831ms, setup 239ms, import 29.83s, tests 12.29s, environment 0ms)
+
