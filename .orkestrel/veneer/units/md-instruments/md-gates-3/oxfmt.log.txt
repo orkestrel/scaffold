@@ -1,0 +1,5 @@
+$ npx oxfmt --config .oxfmtrc.json --check guides/veneer.md tests/setupStyles.ts tests/setupStyles.test.ts
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 7909ms on 3 files using 4 threads.
