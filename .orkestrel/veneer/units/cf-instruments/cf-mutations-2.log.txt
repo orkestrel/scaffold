@@ -1,0 +1,136 @@
+=== Red: the tree without the fade partial
+barrel diff against the patched barrel:
+@@ -57,7 +57,6 @@
+ @use 'components/form-floating';
+ @use 'components/input-group';
+ @use 'components/validation';
+-@use 'components/fade';
+ @use 'components/collapse';
+ @use 'components/dropdown';
+ @use 'components/button-group';
+build: npm run build:src, exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+exit: 1
+summary: Tests  8 failed (8)
+failing cases:
+  - writes the recorded fade selectors and no other rule on the fade and show classes alone
+  - declares the transition over the motion token, no transition under the reduced-motion condition, and the hidden opacity
+  - hides an element carrying the fade class until the show class joins it, and keeps the hidden box and hit target
+  - transitions the opacity linearly over the feedback duration and collapses the transition under the reduced-motion preference
+  - rescales the transition with the published motion factor
+  - yields the transition to the collapsing rule on an element carrying the fade and collapsing classes
+  - fades the alert, toast, tooltip, popover, tab pane, and modal, and leaves each shown component its own opacity
+  - resolves every state the same inside a dark island as inside a light one
+full log: /home/user/veneer-cf/tmp/units/cf-2-nopartial-fade.log.txt
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/FadeSection.test.ts
+exit: 1
+summary: Tests  1 failed | 2 passed (3)
+failing cases:
+  - renders each body in the state its specimen names, inside a card that keeps its box
+full log: /home/user/veneer-cf/tmp/units/cf-2-nopartial-section.log.txt
+
+=== Green: the tree with the fade partial
+barrel diff against the patched barrel:
+build: npm run build:src, exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+exit: 0
+summary: Tests  8 passed (8)
+failing cases:
+full log: /home/user/veneer-cf/tmp/units/cf-2-partial-fade.log.txt
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/FadeSection.test.ts
+exit: 0
+summary: Tests  3 passed (3)
+failing cases:
+full log: /home/user/veneer-cf/tmp/units/cf-2-partial-section.log.txt
+
+=== Red extract: the failing readings of the component case, from cf-2-nopartial-fade.log.txt
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:174:2 > fade classes > fades the alert, toast, tooltip, popover, tab pane, and modal, and leaves each shown component its own opacity
+AssertionError: expected [ { component: 'alert', …(2) }, …(5) ] to deeply equal [ { component: 'alert', …(2) }, …(5) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "component": "alert",
+      "hidden": [
+-       "0",
+-       "opacity",
++       "1",
++       "all",
+      ],
+      "shown": [
+        "1",
+-       "opacity",
++       "all",
+      ],
+    },
+    {
+      "component": "toast",
+      "hidden": [
+        "0",
+-       "opacity",
++       "all",
+      ],
+      "shown": [
+        "1",
+-       "opacity",
++       "all",
+      ],
+    },
+    {
+      "component": "tooltip",
+      "hidden": [
+        "0",
+-       "opacity",
++       "all",
+      ],
+      "shown": [
+        "0.9",
+-       "opacity",
++       "all",
+      ],
+    },
+    {
+      "component": "popover",
+      "hidden": [
+-       "0",
+-       "opacity",
++       "1",
++       "all",
+      ],
+      "shown": [
+        "1",
+-       "opacity",
++       "all",
+      ],
+    },
+    {
+      "component": "nav",
+      "hidden": [
+-       "0",
+-       "opacity",
++       "1",
++       "all",
+      ],
+      "shown": [
+        "1",
+-       "opacity",
++       "all",
+      ],
+    },
+    {
+      "component": "modal",
+      "hidden": [
+-       "0",
+-       "opacity",
++       "1",
++       "all",
+      ],
+      "shown": [
+        "1",
+-       "opacity",
++       "all",
+      ],
+    },
+  ]

@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 /home/user/veneer-cf/tmp/probe/cf2-copy
+
+5:28:13 AM [vite] (client) Re-optimizing dependencies because vite config has changed
+5:28:14 AM [vite] (client) [optimizer] bundling dependencies...
+·x·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/FadeSection.test.ts:56:2 > FadeSection > renders each body in the state its specimen names, inside a card that keeps its box
+AssertionError: expected [ { state: 'shown', …(4) }, …(1) ] to deeply equal [ { state: 'shown', …(4) }, …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -6,11 +6,11 @@[39m
+[2m      "shown": true,[22m
+[2m      "state": "shown",[22m
+[2m    },[22m
+[2m    {[22m
+[2m      "hidden": "true",[22m
+[32m-     "opacity": "0",[39m
+[31m+     "opacity": "1",[39m
+[2m      "reserved": true,[22m
+[2m      "shown": false,[22m
+[2m      "state": "hidden",[22m
+[2m    },[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/sections/FadeSection.test.ts:81:20
+     79|    })
+     80|    expect(new Set(readings.map(({ state }) => state))).toEqual(new Set…
+     81|    expect(readings).toEqual(
+       |                    ^
+     82|     readings.map(({ state }) =>
+     83|      state === 'shown'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  05:28:12
+   Duration  9.08s (transform 0ms, setup 236ms, import 287ms, tests 1.83s, environment 0ms)
+

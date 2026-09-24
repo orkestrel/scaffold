@@ -40,6 +40,11 @@ UNITS = {
         focus='claims 1, 2, and 4 (the delta against round 1, every rewritten sentence against the code, and the refusal against its plants and the measurement)',
         checker='claims 1, 3, and 5',
         bench='the bench round-tripped at 05:19 (cl-audit returned exit 0 through this queue)'),
+    'cf': dict(name='FADE', worktree='/home/user/veneer-cf', base='42fd88e',
+        evidence='`cf-2.diff`, `cf-2-status.txt`, `cf-shared-2.patch`, `b-cross-cf-report-2.md`, `b-cross-cf-brief-2.md`, `cf-instruments/` (`cf-offlimits.patch`, and the round-2 records: `cf-mutations-2.log.txt`, `cf-2-red.sh`, the `cf-2-nopartial-*` and `cf-2-partial-*` logs, `cf-2-gates.sh` and the `cf-2-gate-*` logs, and `cf-2-guide.py`), round 1\'s `cf.diff`, `cf-shared.patch`, and `b-cross-cf-report.md`, and the round-1 verdict `cf-audit-verdict.md` and its lane verdicts; the design verdict `/home/user/scaffold/.orkestrel/veneer/b-cross-design-verdict.md` (X5)',
+        focus='claims 1, 2, 3, and 5 (the delta against round 1, the added rows against the release\'s plugins, the registry remark against the declined states, and the failing-first runs under the shipped titles)',
+        checker='claims 1, 4, and 6',
+        bench='the bench round-tripped at 05:34 (cl-audit-2 launched through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"

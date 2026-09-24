@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/veneer-cf/tmp/probe/cf2-copy
+
+Port 63315 is in use, trying another one...
+···
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  05:28:47
+   Duration  10.97s (transform 0ms, setup 326ms, import 390ms, tests 2.48s, environment 0ms)
+
