@@ -1,0 +1,18 @@
+Read the release's media conditions and keyframes into the ledger
+
+The ledger reads every media condition the release records and every keyframe name a shipped key
+records. The readConditions function returns each condition in the form this cascade writes and the
+form the release writes, expanding the breakpoint template over the release's own breakpoints and its
+exclusive upper bound, and the guide's Media conditions table names the mixin or partial that writes
+each. The readKeyframes function returns each recorded animation under its key with the reduced-motion
+treatment the release writes, the presence scan names a shipped key's missing keyframes, and the
+collectAdditions function refuses any animation the inventory records under no shipped key, so an
+animation is never an addition. The priority case compares each declaration's priority at its own media
+condition, so a priority swapped between the two conditions of a responsive pair reddens it, and the
+inventory reader keeps a __proto__ digest key in maps with no prototype.
+
+B-CROSS, unit LEDGER: two rounds on `opus`, the first audited by `analyst` on Astra, `reviewer` on
+Opus 5.5, and `checker`, the second by `analyst` on Astra and `checker`.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
