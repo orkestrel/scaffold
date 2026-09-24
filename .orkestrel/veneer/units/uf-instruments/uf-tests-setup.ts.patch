@@ -1,0 +1,51 @@
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -277,6 +277,11 @@
+ 	| 'Navbar expand lg'
+ 	| 'Navbar expand xl'
+ 	| 'Navbar expand xxl'
++	| 'Font sizes'
++	| 'Font weights'
++	| 'Font styles'
++	| 'Line heights'
++	| 'Monospace'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -1648,6 +1653,36 @@
+ 		selector: '.navbar-expand-xxl',
+ 		property: 'flex-wrap',
+ 	}),
++	Object.freeze({
++		scenario: 'font-sizes',
++		subject: 'Font sizes',
++		selector: '.fs-1',
++		property: 'font-size',
++	}),
++	Object.freeze({
++		scenario: 'font-weights',
++		subject: 'Font weights',
++		selector: '.fw-bolder',
++		property: 'font-weight',
++	}),
++	Object.freeze({
++		scenario: 'font-styles',
++		subject: 'Font styles',
++		selector: '.fst-italic',
++		property: 'font-style',
++	}),
++	Object.freeze({
++		scenario: 'line-heights',
++		subject: 'Line heights',
++		selector: '.lh-lg',
++		property: 'line-height',
++	}),
++	Object.freeze({
++		scenario: 'monospace',
++		subject: 'Monospace',
++		selector: '.font-monospace',
++		property: 'font-family',
++	}),
+ ])
+ 
+ /**

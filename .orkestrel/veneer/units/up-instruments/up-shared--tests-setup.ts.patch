@@ -1,0 +1,109 @@
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 74c28ed..8de0146 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -277,6 +277,19 @@ export type CaptureSubject =
+ 	| 'Navbar expand lg'
+ 	| 'Navbar expand xl'
+ 	| 'Navbar expand xxl'
++	| 'Background roles'
++	| 'Subtle backgrounds'
++	| 'Body backgrounds'
++	| 'Background opacity'
++	| 'Background gradient'
++	| 'Additive borders'
++	| 'Subtractive borders'
++	| 'Border roles'
++	| 'Subtle borders'
++	| 'Border widths'
++	| 'Border opacity'
++	| 'Rounded corners'
++	| 'Rounded sizes'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -1648,6 +1661,84 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.navbar-expand-xxl',
+ 		property: 'flex-wrap',
+ 	}),
++	Object.freeze({
++		scenario: 'background-roles',
++		subject: 'Background roles',
++		selector: '.bg-primary',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'subtle-backgrounds',
++		subject: 'Subtle backgrounds',
++		selector: '.bg-primary-subtle',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'body-backgrounds',
++		subject: 'Body backgrounds',
++		selector: '.bg-body-secondary',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'background-opacity',
++		subject: 'Background opacity',
++		selector: '.bg-opacity-50',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'background-gradient',
++		subject: 'Background gradient',
++		selector: '.bg-primary.bg-gradient',
++		property: 'background-image',
++	}),
++	Object.freeze({
++		scenario: 'additive-borders',
++		subject: 'Additive borders',
++		selector: '.border-top',
++		property: 'border-top-width',
++	}),
++	Object.freeze({
++		scenario: 'subtractive-borders',
++		subject: 'Subtractive borders',
++		selector: '.border-top-0',
++		property: 'border-top-width',
++	}),
++	Object.freeze({
++		scenario: 'border-roles',
++		subject: 'Border roles',
++		selector: '.border-primary',
++		property: 'border-top-color',
++	}),
++	Object.freeze({
++		scenario: 'subtle-borders',
++		subject: 'Subtle borders',
++		selector: '.border-primary-subtle',
++		property: 'border-top-color',
++	}),
++	Object.freeze({
++		scenario: 'border-widths',
++		subject: 'Border widths',
++		selector: '.border-5',
++		property: 'border-top-width',
++	}),
++	Object.freeze({
++		scenario: 'border-opacity',
++		subject: 'Border opacity',
++		selector: '.border-opacity-50',
++		property: 'border-top-color',
++	}),
++	Object.freeze({
++		scenario: 'rounded-corners',
++		subject: 'Rounded corners',
++		selector: '.rounded-top-4',
++		property: 'border-top-left-radius',
++	}),
++	Object.freeze({
++		scenario: 'rounded-sizes',
++		subject: 'Rounded sizes',
++		selector: '.rounded-5',
++		property: 'border-top-left-radius',
++	}),
+ ])
+ 
+ /**

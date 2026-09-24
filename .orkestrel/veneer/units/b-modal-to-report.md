@@ -11,7 +11,7 @@ Owned (untracked in the worktree; `git status --porcelain` lists the owned files
 - `app/browser/sections/ToastSection.ts` (+20): the `ToastSection` class over `TOAST_COPY` and `TOAST_SPECIMENS`.
 - `tests/app/browser/sections/ToastSection.test.ts` (+180): the section proof.
 
-Shared (report-only; exact patch `tmp/units/to-shared.patch`, checked with `git apply --check` on a fresh `git archive 2a3f223` extract, exit 0):
+Shared (report-only; exact patch `.orkestrel/veneer/units/to-shared.patch`, checked with `git apply --check` on a fresh `git archive 2a3f223` extract, exit 0):
 
 | File | Diffstat | Change |
 | --- | --- | --- |
@@ -84,7 +84,7 @@ The section proof `tests/app/browser/sections/ToastSection.test.ts` covers the r
 
 ## Failing-first and mutation record
 
-Every run below took place on the validation copy `tmp/probe/base` (`git archive 2a3f223`, `cp -al node_modules`, owned files copied over it, shared patch applied). The instruments are retained as `tmp/units/to-mutate-styles.py`, `tmp/units/to-mutate-section.py`, `tmp/units/to-gates.sh`, `tmp/units/to-sync.sh`, and `tmp/units/to-patch.sh`. Each mutation rebuilt the styles with `npm run build:src:styles` and restored the file afterwards.
+Every run below took place on the validation copy `tmp/probe/base` (`git archive 2a3f223`, `cp -al node_modules`, owned files copied over it, shared patch applied). The instruments are retained as `.orkestrel/veneer/units/to-instruments/to-mutate-styles.py`, `.orkestrel/veneer/units/to-instruments/to-mutate-section.py`, `.orkestrel/veneer/units/to-instruments/to-gates.sh`, `.orkestrel/veneer/units/to-instruments/to-sync.sh`, and `.orkestrel/veneer/units/to-instruments/to-patch.sh`. Each mutation rebuilt the styles with `npm run build:src:styles` and restored the file afterwards.
 
 Baseline in the worktree, before any edit:
 
@@ -140,12 +140,12 @@ Section proof command: `npx vitest run --config vite.config.ts --no-cache --repo
 | `npm run test:guides` | 0 | `Tests 19 passed (19)` |
 | `npm run test:policy` | 0 | `Tests 109 passed \| 1 skipped (110)` |
 
-In the worktree: `npm run format:check` exit 0 ("All matched files use the correct format.") and `npm run lint:check` exit 0. `tmp/probe/` is deleted. The logs are retained as `tmp/units/to-gate-*.log.txt`.
+In the worktree: `npm run format:check` exit 0 ("All matched files use the correct format.") and `npm run lint:check` exit 0. `tmp/probe/` is deleted. The logs are retained as `.orkestrel/veneer/units/to-instruments/to-gate-*.log.txt`.
 
 Observations, not criteria:
 
 - One `npm run test:setup` run timed out an unrelated case at 10100 ms: `tests/setupServer.test.ts` › records and reads official control state and rejects contradicted or absent obligation steps. That run gave `1 failed | 266 passed`. The load average was 12 with the sibling units live. The earlier and later runs on the same tree read `267 passed (267)`. The deciding re-run is the Orchestrator's.
-- Journey subset on the copy: `npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot -t "resting cascade key|names a specimen the showcase declares"` exited 0 with `Tests 8 passed | 168 skipped (176)` across `Test Files 4 passed (4)`. The resting-key case read the toast rows in every variant. The log is `tmp/units/to-journey-observation.log.txt`. The whole journey, `CAPTURE=1`, `test:service`, and the whole styles project were not run.
+- Journey subset on the copy: `npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot -t "resting cascade key|names a specimen the showcase declares"` exited 0 with `Tests 8 passed | 168 skipped (176)` across `Test Files 4 passed (4)`. The resting-key case read the toast rows in every variant. The log is `.orkestrel/veneer/units/to-instruments/to-journey-observation.log.txt`. The whole journey, `CAPTURE=1`, `test:service`, and the whole styles project were not run.
 
 ## Shared-name reading
 
@@ -180,11 +180,11 @@ The `### Toast classes` section, the § Files row, the `#### toast` table, the c
 
 ## Review evidence
 
-- `tmp/units/to.diff`: `git diff 2a3f223`, empty for tracked files, plus each new file through `git diff --no-index /dev/null`.
-- `tmp/units/to-status.txt`: `git status --porcelain` at hand-back.
-- `tmp/units/to-shared.patch`: the exact shared patch, also reproduced here.
+- `.orkestrel/veneer/units/to.diff`: `git diff 2a3f223`, empty for tracked files, plus each new file through `git diff --no-index /dev/null`.
+- `.orkestrel/veneer/units/to-status.txt`: `git status --porcelain` at hand-back.
+- `.orkestrel/veneer/units/to-shared.patch`: the exact shared patch, also reproduced here.
 
-## Exact shared patch (`tmp/units/to-shared.patch`)
+## Exact shared patch (`.orkestrel/veneer/units/to-shared.patch`)
 
 ```diff
 --- a/src/styles/index.scss

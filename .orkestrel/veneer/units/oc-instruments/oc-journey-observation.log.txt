@@ -1,0 +1,296 @@
+
+ RUN  v4.1.11 /home/user/veneer-oc/tmp/probe/base
+
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+1:10:51 AM [vite] (client) [optimizer] scanning dependencies...
+1:10:51 AM [vite] (client) [optimizer] scanning dependencies...
+1:10:51 AM [vite] (client) [optimizer] scanning dependencies...
+1:10:51 AM [vite] (client) [optimizer] scanning dependencies...
+1:10:53 AM [vite] (client) [optimizer] bundling dependencies...
+1:10:53 AM [vite] (client) [optimizer] bundling dependencies...
+1:10:54 AM [vite] (client) [optimizer] bundling dependencies...
+1:10:54 AM [vite] (client) [optimizer] bundling dependencies...
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:11 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+-------------1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:12 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+-------------1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:14 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:11:16 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+--------------------------·-------------------------·----·-------------------------·----·-------------------------·----·-------------------------·----
+
+ Test Files  4 passed (4)
+      Tests  8 passed | 168 skipped (176)
+   Start at  01:10:49
+   Duration  72.94s (transform 0ms, setup 8.61s, import 8.84s, tests 162.68s, environment 0ms)
+

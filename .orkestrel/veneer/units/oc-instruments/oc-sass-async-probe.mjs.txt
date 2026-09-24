@@ -1,0 +1,6 @@
+import * as sass from '/home/user/veneer-oc/node_modules/sass/sass.node.mjs'
+const src = `@use 'sass:meta';
+@mixin wrap { @media print { @content; } }
+.a { @include meta.apply(meta.get-mixin('wrap')) { color: red; } }`
+console.log(sass.compileString(src).css)
+try { console.log((await sass.compileStringAsync(src)).css) } catch (e) { console.log('ASYNC', e.message.split('\n')[0]) }

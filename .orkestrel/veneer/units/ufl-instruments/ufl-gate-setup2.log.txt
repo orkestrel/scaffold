@@ -1,0 +1,148 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-ufl/tmp/probe/base
+
+·································stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-IuHvlG'
+    at finishWithoutResolve (/home/user/veneer-ufl/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-ufl/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-ufl/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ufl/tmp/probe/base/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ufl/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ufl/tmp/probe/base/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-ufl/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ufl/tmp/probe/base/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ufl/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ufl/tmp/probe/base/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-IuHvlG'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-IuHvlG or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-IuHvlG/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+··············x···········································x·········································x·------------····························································································x···························
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions
+Error: Hook timed out in 10100ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/setupServer.test.ts:667:3
+    665|  describe('oracle action bindings and exclusions', () => {
+    666|   let fixture: OracleFixture
+    667|   beforeAll(async () => {
+       |   ^
+    668|    fixture = await recordButtonOracle()
+    669|   }, ORACLE_TIMEOUT)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > records and reads official control state and rejects contradicted or absent obligation steps
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupServer.test.ts:616:2
+    614|  })
+    615|
+    616|  it(
+       |  ^
+    617|   'records and reads official control state and rejects contradicted o…
+    618|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > compiles the authored styles entry with every value as the source writes it
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupServer.test.ts:2291:2
+    2289|  })
+    2290|
+    2291|  it('compiles the authored styles entry with every value as the source…
+       |  ^
+    2292|   const cascade = compileExpandedCascade()
+    2293|   expect(cascade).toContain('@layer elements')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > styles setup > repeats no partial's written declaration block in another partial beyond the coincidence floor
+AssertionError: expected [ { left: { …(3) }, …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "declarations": [
++       "position: absolute",
++       "top: 0",
++       "right: 0",
++       "bottom: 0",
++       "left: 0",
++     ],
++     "left": {
++       "declarations": [
++         "position: absolute",
++         "top: 0",
++         "right: 0",
++         "bottom: 0",
++         "left: 0",
++         "padding: var(--bs-card-img-overlay-padding)",
++         "border-radius: var(--bs-card-inner-border-radius)",
++       ],
++       "line": 140,
++       "path": "components/_card.scss",
++     },
++     "right": {
++       "declarations": [
++         "position: absolute",
++         "top: 0",
++         "right: 0",
++         "bottom: 0",
++         "left: 0",
++         "z-index: 1",
++         "content: ''",
++       ],
++       "line": 6,
++       "path": "components/_stretched-link.scss",
++     },
++   },
++ ]
+
+ ❯ tests/setupStyles.test.ts:661:41
+    659|   for (const folder of ['elements', 'components', 'utilities'])
+    660|    expect(sweep.files.some((path) => dirname(path) === folder)).toBe(t…
+    661|   expect(findDuplication(sweep.shared)).toEqual([])
+       |                                         ^
+    662|  })
+    663|  it('reads the width out of either spelling of a width condition, and …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds every range rule to the inventory, to its engine, and each declaration to the tokens its row names for that property
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupStyles.test.ts:2370:2
+    2368|   expect(normalizeDeclaration('0.75rem')).not.toBe(normalizeDeclaratio…
+    2369|  })
+    2370|  it('binds every range rule to the inventory, to its engine, and each …
+       |  ^
+    2371|   const rules = requireValue(
+    2372|    readOracleInventory().components['form-range'],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed | 2 passed (4)
+      Tests  4 failed | 251 passed | 12 skipped (267)
+   Start at  01:40:15
+   Duration  47.06s (transform 7.50s, setup 1.42s, import 29.28s, tests 78.51s, environment 0ms)
+

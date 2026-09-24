@@ -1,0 +1,27 @@
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1410,12 +1410,16 @@
+ 				'figure',
+ 				'fixed',
+ 				'flex',
++				'font',
+ 				'form',
+ 				'form-check',
+ 				'form-control',
+ 				'form-floating',
+ 				'form-range',
+ 				'form-select',
++				'fs',
++				'fst',
++				'fw',
+ 				'g',
+ 				'gap',
+ 				'gx',
+@@ -1439,6 +1443,7 @@
+ 				'is-valid',
+ 				'justify-content',
+ 				'lead',
++				'lh',
+ 				'link',
+ 				'list-group',
+ 				'list-inline',

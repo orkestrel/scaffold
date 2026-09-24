@@ -1,0 +1,236 @@
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index d75c65a..d12b3eb 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -41,11 +41,15 @@ import {
+ 	ACCORDION_MARKUP,
+ 	ACCORDION_SELECTORS,
+ 	ALIGN_VALUES,
++	BACKGROUND_FILL_CASES,
+ 	BADGE_GEOMETRY_CASES,
+ 	BADGE_SELECTORS,
+ 	BOOTSTRAP_DARK_VARIABLES,
+ 	BOOTSTRAP_ROOT_VARIABLES,
+ 	BOOTSTRAP_SCOPE_PATTERNS,
++	BORDER_COLOR_CASES,
++	BORDER_SIDE_CASES,
++	BORDER_WIDTH_CASES,
+ 	BREADCRUMB_ITEM_CASES,
+ 	BREADCRUMB_MARKUP,
+ 	BREADCRUMB_SELECTORS,
+@@ -146,6 +150,7 @@ import {
+ 	NAVBAR_MARKUP,
+ 	NAVBAR_PAINT_MOVE_CASES,
+ 	NAVBAR_SELECTORS,
++	PAINT_OPACITY_CASES,
+ 	PAGINATION_MARKUP,
+ 	PAGINATION_PARENT_CASES,
+ 	PAGINATION_SELECTORS,
+@@ -162,6 +167,8 @@ import {
+ 	PROGRESS_SELECTORS,
+ 	PROGRESS_VARIABLE_CASES,
+ 	QUOTE_FOOTER_CASES,
++	RADIUS_SIDE_CASES,
++	RADIUS_STEP_CASES,
+ 	RATIO_CASES,
+ 	REDUCED_MOTION,
+ 	REFERENCE_MARKUP,
+@@ -169,6 +176,7 @@ import {
+ 	RETAINED_LENGTH_ALIASES,
+ 	SIZING_STEP_CASES,
+ 	SIZING_ENTRY_CASES,
++	SUBTLE_TIER_CASES,
+ 	SPINNER_SELECTORS,
+ 	SPINNER_SIZE_CASES,
+ 	SPINNER_VARIABLE_CASES,
+@@ -258,11 +266,15 @@ describe('styles setup', () => {
+ 				'ALERT_SELECTORS',
+ 				'ALERT_SPACE_CASES',
+ 				'ALIGN_VALUES',
++				'BACKGROUND_FILL_CASES',
+ 				'BADGE_GEOMETRY_CASES',
+ 				'BADGE_SELECTORS',
+ 				'BOOTSTRAP_DARK_VARIABLES',
+ 				'BOOTSTRAP_ROOT_VARIABLES',
+ 				'BOOTSTRAP_SCOPE_PATTERNS',
++				'BORDER_COLOR_CASES',
++				'BORDER_SIDE_CASES',
++				'BORDER_WIDTH_CASES',
+ 				'BREADCRUMB_ITEM_CASES',
+ 				'BREADCRUMB_MARKUP',
+ 				'BREADCRUMB_SELECTORS',
+@@ -382,6 +394,7 @@ describe('styles setup', () => {
+ 				'PAGINATION_SELECTORS',
+ 				'PAGINATION_SIZE_CASES',
+ 				'PAGINATION_STATE_CASES',
++				'PAINT_OPACITY_CASES',
+ 				'PLACEHOLDER_MARKUP',
+ 				'PLACEHOLDER_SELECTORS',
+ 				'PLACEHOLDER_SIZE_CASES',
+@@ -393,6 +406,8 @@ describe('styles setup', () => {
+ 				'PROGRESS_SELECTORS',
+ 				'PROGRESS_VARIABLE_CASES',
+ 				'QUOTE_FOOTER_CASES',
++				'RADIUS_SIDE_CASES',
++				'RADIUS_STEP_CASES',
+ 				'RATIO_CASES',
+ 				'REDUCED_MOTION',
+ 				'REFERENCE_MARKUP',
+@@ -405,6 +420,7 @@ describe('styles setup', () => {
+ 				'SPINNER_VARIABLE_CASES',
+ 				'STACK_LEVEL_CASES',
+ 				'STICKY_SCROLLER',
++				'SUBTLE_TIER_CASES',
+ 				'TABLE_GEOMETRY_CASES',
+ 				'TABLE_MARKUP',
+ 				'TABLE_RESPONSIVE_CASES',
+@@ -1815,6 +1831,149 @@ describe('styles setup', () => {
+ 		])
+ 			expect(Object.isFrozen(entry)).toBe(true)
+ 	})
++	it('binds the paint fills, tiers, opacity steps, border sides and widths, and radius steps to the inventory', () => {
++		// Each reading is derived from the inventory's own rules under the paint keys, read by the
++		// value each rule records rather than by the case tables, so a table narrowed, widened,
++		// reordered, or pointed at the wrong alias reddens here.
++		const recorded = new Map(
++			Object.entries({
++				bg: oracle.components.bg,
++				border: oracle.components.border,
++				rounded: oracle.components.rounded,
++			}).map(([key, { selectors }]) => [
++				key,
++				selectors.flatMap(({ selector, declarations }) =>
++					declarations.map(({ property, value }) => ({ selector, property, value })),
++				),
++			]),
++		)
++		const bg = requireValue(recorded.get('bg'), 'No bg key')
++		const border = requireValue(recorded.get('border'), 'No border key')
++		const rounded = requireValue(recorded.get('rounded'), 'No rounded key')
++		// A channelled color is the release's `rgba()` over one channel alias and the entry's opacity
++		// local, and its key is the rest of the class name after the entry's class.
++		for (const [cases, key, rules, property] of [
++			[BACKGROUND_FILL_CASES, 'bg', bg, 'background-color'],
++			[BORDER_COLOR_CASES, 'border', border, 'border-color'],
++		] as const) {
++			expect(cases.map((entry) => [entry.key, entry.alias])).toEqual(
++				rules.flatMap((rule) => {
++					const match = new RegExp(
++						`^rgba\\(var\\((--bs-[\\w-]+-rgb)\\), var\\(--bs-${key}-opacity\\)\\)$`,
++						'u',
++					).exec(rule.value)
++					return rule.property === property && match !== null
++						? [[rule.selector.replace(`.${key}-`, ''), match[1]]]
++						: []
++				}),
++			)
++		}
++		// A subtle tier is a bare `var()` over the role's subtle alias of that tier.
++		for (const [key, rules, property, tier] of [
++			['bg', bg, 'background-color', 'background'],
++			['border', border, 'border-color', 'border'],
++		] as const) {
++			expect(
++				SUBTLE_TIER_CASES.map((entry) => [`.${key}-${entry.role}-subtle`, entry[tier]]),
++			).toEqual(
++				rules.flatMap((rule) => {
++					const match = new RegExp(`^var\\((--bs-[\\w-]+-${key}-subtle)\\)$`, 'u').exec(rule.value)
++					return rule.property === property && match !== null ? [[rule.selector, match[1]]] : []
++				}),
++			)
++		}
++		// Each opacity step is the custom property its opacity class sets, read as a number.
++		for (const [key, rules] of [
++			['bg', bg],
++			['border', border],
++		] as const) {
++			expect(PAINT_OPACITY_CASES.map(({ step, alpha }) => [step, alpha])).toEqual(
++				rules.flatMap((rule) => {
++					const match = new RegExp(`^\\.${key}-opacity-(\\d+)$`, 'u').exec(rule.selector)
++					return match !== null && rule.property === `--bs-${key}-opacity`
++						? [[match[1], Number(rule.value)]]
++						: []
++				}),
++			)
++		}
++		// A side entry's bare class draws one physical side with the border shorthand's value.
++		expect(
++			BORDER_SIDE_CASES.map(({ name, side }) => [`.border-${name}`, `border-${side}`]),
++		).toEqual(
++			border.flatMap((rule) =>
++				/^\.border-[a-z]+$/u.test(rule.selector) &&
++				/^border-(?:top|right|bottom|left)$/u.test(rule.property)
++					? [[rule.selector, rule.property]]
++					: [],
++			),
++		)
++		expect(
++			BORDER_WIDTH_CASES.map(({ step, pixels }) => [`.border-${step}`, `${pixels}px`]),
++		).toEqual(
++			border.flatMap((rule) =>
++				rule.property === 'border-width' ? [[rule.selector, rule.value]] : [],
++			),
++		)
++		// The radius steps are the `rounded` entry's own; its bare class writes the `2` step's value.
++		const radii = rounded.filter((rule) => rule.property === 'border-radius')
++		expect(radii[0]).toEqual({
++			selector: '.rounded',
++			property: 'border-radius',
++			value: RADIUS_STEP_CASES.find(({ step }) => step === '2')?.value,
++		})
++		expect(RADIUS_STEP_CASES.map(({ step, value }) => [`.rounded-${step}`, value])).toEqual(
++			radii.slice(1).map((rule) => [rule.selector, rule.value]),
++		)
++		// Each side entry's bare class rounds its corners in the order the release writes them, and
++		// every step of the entry rounds the same corners with the step's value.
++		const sides = [
++			...new Set(
++				rounded.flatMap((rule) => {
++					const match = /^\.rounded-(top|end|bottom|start)(?:-|$)/u.exec(rule.selector)
++					return match === null ? [] : [match[1]]
++				}),
++			),
++		]
++		expect(RADIUS_SIDE_CASES.map(({ name }) => name)).toEqual(sides)
++		for (const { name, corners } of RADIUS_SIDE_CASES)
++			expect(
++				rounded.filter(
++					(rule) =>
++						rule.selector === `.rounded-${name}` || rule.selector.startsWith(`.rounded-${name}-`),
++				),
++			).toEqual(
++				radii.flatMap((radius) =>
++					corners.map((corner) => ({
++						selector: radius.selector.replace('.rounded', `.rounded-${name}`),
++						property: `border-${corner}-radius`,
++						value: radius.value,
++					})),
++				),
++			)
++		for (const table of [
++			BACKGROUND_FILL_CASES,
++			BORDER_COLOR_CASES,
++			SUBTLE_TIER_CASES,
++			PAINT_OPACITY_CASES,
++			BORDER_SIDE_CASES,
++			BORDER_WIDTH_CASES,
++			RADIUS_STEP_CASES,
++			RADIUS_SIDE_CASES,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of [
++			...BACKGROUND_FILL_CASES,
++			...BORDER_COLOR_CASES,
++			...SUBTLE_TIER_CASES,
++			...PAINT_OPACITY_CASES,
++			...BORDER_SIDE_CASES,
++			...BORDER_WIDTH_CASES,
++			...RADIUS_STEP_CASES,
++			...RADIUS_SIDE_CASES,
++		])
++			expect(Object.isFrozen(entry)).toBe(true)
++		expect(RADIUS_SIDE_CASES.every(({ corners }) => Object.isFrozen(corners))).toBe(true)
++	})
+ 	it('pins the frozen container variants and payload widths against the retained scale', () => {
+ 		expect(CONTAINER_CLASS_CASES.map(({ name, boundary }) => [name, boundary])).toEqual([
+ 			['container', 0],

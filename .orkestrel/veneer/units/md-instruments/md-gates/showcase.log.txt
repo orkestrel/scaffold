@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/veneer-md/tmp/probe/base
+
+Port 63315 is in use, trying another one...
+·····
+
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
+   Start at  01:39:48
+   Duration  17.64s (transform 0ms, setup 621ms, import 627ms, tests 7.29s, environment 0ms)
+

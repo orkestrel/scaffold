@@ -1,0 +1,16 @@
+mutation: clear-omitted
+site: src/styles/components/_clearfix.scss
+--- replaced
+		clear: both;
+
+--- with
+
+---
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/clearfix.test.ts
+build exit: 0
+command exit: 1
+summary: Tests  3 failed | 1 passed (4)
+failing cases:
+tests/src/styles/components/clearfix.test.ts:15:2 > clearfix helper > stretches its host around its floated children, where a bare host collapses
+tests/src/styles/components/clearfix.test.ts:30:2 > clearfix helper > writes its generated box as an empty block that clears both sides
+tests/src/styles/components/clearfix.test.ts:46:2 > clearfix helper > holds its floats inside a dark island, reading no token or mode

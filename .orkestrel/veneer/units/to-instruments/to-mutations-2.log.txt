@@ -1,0 +1,109 @@
+== mutation: none (section proof)
+   site: tests/app/browser/sections/ToastSection.test.ts
+   old: None
+   new: None
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ToastSection.test.ts
+   exit: 0
+   summary: ['Tests  5 passed (5)']
+   failing:
+
+== mutation: T5 geometry derivation drops a framed specimen
+   site: tests/app/browser/sections/ToastSection.test.ts
+   old: '\t\t\t\tconst framed = TOAST_SPECIMENS.filter(({ markup }) =>\n\t\t\t\t\tmarkup.includes(\'class="viewport"\'),\n\t\t\t\t).map(({ name }) => name)'
+   new: '\t\t\t\tconst framed = TOAST_SPECIMENS.filter(({ markup }) =>\n\t\t\t\t\tmarkup.includes(\'class="viewport"\'),\n\t\t\t\t).map(({ name }) => name).slice(1)'
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ToastSection.test.ts
+   exit: 1
+   summary: ['Tests  2 failed | 3 passed (5)']
+   failing:
+     - ToastSection > holds every framed toast inside its frame, where the placement classes of its container put it, at the 1280 variant
+     - ToastSection > holds every framed toast inside its frame, where the placement classes of its container put it, at the 390 variant
+
+== mutation: T5 container derivation drops a framed specimen
+   site: tests/app/browser/sections/ToastSection.test.ts
+   old: 'const framed = TOAST_SPECIMENS.filter(({ markup }) => markup.includes(\'class="viewport"\'))'
+   new: 'const framed = TOAST_SPECIMENS.filter(({ markup }) => markup.includes(\'class="viewport"\')).slice(1)'
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ToastSection.test.ts
+   exit: 1
+   summary: ['Tests  1 failed | 4 passed (5)']
+   failing:
+     - ToastSection > renders each container inside the shell frame, placed with the shipped position utilities
+
+== mutation: T5 stacked container rendered outside the frame
+   site: app/browser/constants.ts
+   old: '\'<div class="viewport"><div class="toast-container top-0 end-0">'
+   new: '\'<div><div class="toast-container top-0 end-0">'
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ToastSection.test.ts
+   exit: 1
+   summary: ['Tests  1 failed | 4 passed (5)']
+   failing:
+     - ToastSection > renders each container inside the shell frame, placed with the shipped position utilities
+
+== mutation: T5 centered container placed off center (translate-middle-y)
+   site: app/browser/constants.ts
+   old: 'toast-container top-50 start-50 translate-middle"'
+   new: 'toast-container top-50 start-50 translate-middle-y"'
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ToastSection.test.ts
+   exit: 1
+   summary: ['Tests  2 failed | 3 passed (5)']
+   failing:
+     - ToastSection > holds every framed toast inside its frame, where the placement classes of its container put it, at the 1280 variant
+     - ToastSection > holds every framed toast inside its frame, where the placement classes of its container put it, at the 390 variant
+
+== mutation: T5 stacked container carries an unshipped placement class (top-25)
+   site: app/browser/constants.ts
+   old: 'toast-container top-0 end-0'
+   new: 'toast-container top-25 end-0'
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ToastSection.test.ts
+   exit: 1
+   summary: ['Tests  1 failed | 4 passed (5)']
+   failing:
+     - ToastSection > renders each container inside the shell frame, placed with the shipped position utilities
+
+== mutation: none (setup proof)
+   site: tests/setupStyles.ts
+   old: None
+   new: None
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts
+   exit: 0
+   summary: ['Tests  122 passed (122)']
+   failing:
+
+== mutation: T6 padding-x row names --vn-space-8
+   site: tests/setupStyles.ts
+   old: "property: '--bs-toast-padding-x', token: TOKEN_NAMES.space[6]"
+   new: "property: '--bs-toast-padding-x', token: TOKEN_NAMES.space[8]"
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts
+   exit: 1
+   summary: ['Tests  1 failed | 121 passed (122)']
+   failing:
+     - toast case tables > binds the toast tables to the official inventory and the recorded header close margins
+
+== mutation: T6 font-size row names --vn-size-3
+   site: tests/setupStyles.ts
+   old: "property: '--bs-toast-font-size', token: TOKEN_NAMES.size[2]"
+   new: "property: '--bs-toast-font-size', token: TOKEN_NAMES.size[3]"
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts
+   exit: 1
+   summary: ['Tests  1 failed | 121 passed (122)']
+   failing:
+     - toast case tables > binds the toast tables to the official inventory and the recorded header close margins
+
+== mutation: T6 spacing row names --vn-space-12 (same 1.5rem length)
+   site: tests/setupStyles.ts
+   old: "property: '--bs-toast-spacing', token: TOKEN_NAMES.gutter.x"
+   new: "property: '--bs-toast-spacing', token: TOKEN_NAMES.space[12]"
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts
+   exit: 0
+   summary: ['Tests  122 passed (122)']
+   failing:
+
+== mutation: T6 spacing row names --vn-space-12, read by the style proof
+   site: tests/setupStyles.ts
+   old: "property: '--bs-toast-spacing', token: TOKEN_NAMES.gutter.x"
+   new: "property: '--bs-toast-spacing', token: TOKEN_NAMES.space[12]"
+   command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/toast.test.ts
+   exit: 1
+   summary: ['Tests  1 failed | 16 passed (17)']
+   failing:
+     - toast box > reads '--bs-toast-spacing' from its own token
+

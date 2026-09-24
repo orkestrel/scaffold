@@ -1,0 +1,23 @@
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 86e41d8..0041f8c 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -42,7 +42,9 @@ import {
+ 	ALERT_SPECIMENS,
+ 	ACCORDION_SPECIMENS,
+ 	BUTTON_GROUP_SPECIMENS,
++	BACKGROUND_SPECIMENS,
+ 	BADGE_SPECIMENS,
++	BORDER_SPECIMENS,
+ 	BREADCRUMB_SPECIMENS,
+ 	BUTTON_SPECIMENS,
+ 	CARD_SPECIMENS,
+@@ -2131,6 +2133,8 @@ describe('portfolio', () => {
+ 				POSITION_SPECIMENS,
+ 				SIZING_SPECIMENS,
+ 				VISIBILITY_SPECIMENS,
++				BACKGROUND_SPECIMENS,
++				BORDER_SPECIMENS,
+ 			].flatMap((table) => table.map((specimen) => specimen.name)),
+ 			SHOWCASE_COPY.region,
+ 		])

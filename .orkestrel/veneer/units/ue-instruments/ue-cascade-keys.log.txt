@@ -1,0 +1,19 @@
+{
+ "recorded": 18,
+ "emittedUnconditioned": 18,
+ "conditioned": [
+  {
+   "selector": ".focus-ring:focus",
+   "condition": "(forced-colors:active)",
+   "declarations": [
+    {
+     "property": "outline",
+     "important": false
+    }
+   ]
+  }
+ ],
+ "missing": [],
+ "extra": [],
+ "priorityMismatches": []
+}

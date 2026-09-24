@@ -1,0 +1,75 @@
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer-ue/tmp/probe/base
+
+··x··x············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > derives the shared class names, and mounts an element for every one of them
+AssertionError: expected [ 'caption-bottom', …(28) ] to deeply equal [ 'caption-bottom', …(27) ]
+
+- Expected
++ Received
+
+@@ -17,10 +17,11 @@
+    "collapse",
+    "container",
+    "end-0",
+    "end-100",
+    "end-50",
++   "opacity-50",
+    "shadow",
+    "shadow-lg",
+    "shadow-none",
+    "shadow-sm",
+    "start-0",
+
+ ❯ tests/service/tailwind/consumer.test.ts:130:32
+    128|    'The consumer profile declares no exclusion line',
+    129|   ).names
+    130|   expect([...excluded].sort()).toEqual(shared.filter((name) => !import…
+       |                                ^
+    131|   // The fixture is held to the derived set rather than maintained bes…
+    132|   // set gains is a name the markup has to carry before this proof can…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > keeps a shared name on the line while its importance covers only some of the longhands Tailwind declares
+AssertionError: expected [ 'caption-bottom', …(28) ] to deeply equal [ 'caption-bottom', …(27) ]
+
+- Expected
++ Received
+
+@@ -17,10 +17,11 @@
+    "collapse",
+    "container",
+    "end-0",
+    "end-100",
+    "end-50",
++   "opacity-50",
+    "shadow",
+    "shadow-lg",
+    "shadow-none",
+    "shadow-sm",
+    "start-0",
+
+ ❯ tests/service/tailwind/consumer.test.ts:240:32
+    238|   ).names
+    239|   expect(excluded).toContain('col-1')
+    240|   expect([...excluded].sort()).toEqual(shared.filter((name) => !import…
+       |                                ^
+    241|  })
+    242|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 16 passed (18)
+   Start at  01:26:51
+   Duration  44.89s (transform 1.61s, setup 15.70s, import 3.79s, tests 23.58s, environment 0ms)
+

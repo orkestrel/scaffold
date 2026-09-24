@@ -1,0 +1,10 @@
+diff --git a/tests/fixtures/tailwind/preflight.css b/tests/fixtures/tailwind/preflight.css
+index 32cab72..beb2594 100644
+--- a/tests/fixtures/tailwind/preflight.css
++++ b/tests/fixtures/tailwind/preflight.css
+@@ -3,4 +3,4 @@
+ @layer theme, reset, base, elements, components, utilities;
+ @import 'tailwindcss' source(none);
+ @source '../../../tmp/tailwind/candidates.txt';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 border-1 border-2 border-3 border-4 border-5");

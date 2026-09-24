@@ -1,0 +1,137 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -752,6 +752,7 @@
+ | `src/styles/utilities/_vertical-align.scss`  | The vertical-alignment utilities in the utilities layer.                                                                                                                                                                                           |
+ | `src/styles/utilities/_display.scss`         | The display utilities and their print pass in the utilities layer.                                                                                                                                                                                 |
+ | `src/styles/utilities/_flex.scss`            | The flex, alignment, and order utilities in the utilities layer.                                                                                                                                                                                   |
++| `src/styles/utilities/_font.scss`            | The font family, size, style, weight, and line-height utilities in the utilities layer.                                                                                                                                                            |
+ | `src/styles/index.scss`                      | The compilation barrel.                                                                                                                                                                                                                            |
+ | `src/styles/index.ts`                        | The side-effect entry, and the build's library entry.                                                                                                                                                                                              |
+ | `configs/src/vite.styles.config.ts`          | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
+@@ -2928,6 +2929,59 @@
+ or not that rule is important, the escape inside the utilities layer, and a dark island. The
+ visibility keys carry no recorded departure.
+ 
++### Font utilities
++
++The font keys ship whole in the utilities layer from the `src/styles/utilities/_font.scss`
++partial: the `.font-monospace` class, the `.fs-1` to `.fs-6` size classes, the `.fst-italic` and
++`.fst-normal` style classes, the `.fw-lighter` to `.fw-bolder` weight classes, and the `.lh-1`,
++`.lh-sm`, `.lh-base`, and `.lh-lg` line-height classes. The release writes none of these entries
++responsive, so each class ships at the empty infix alone and no font class writes a breakpoint
++infix.
++
++A size class resolves what the heading class of the same level resolves: the `.fs-1` class reads
++the `--vn-size-8` token the `.h1` class reads, down to the `.fs-6` class, which reads the
++`--vn-size-3` token the `.h6` class reads. So a retuned size token moves a size class and its
++heading class together, and a size class holds one size at every viewport. The release scales its
++first four sizes with the viewport and caps them from a 1200px viewport; Veneer writes neither the
++fluid formula nor the cap, as the heading classes write neither.
++
++The `.lh-base` class reads the `--vn-line-body` token the body text reads, so a retuned body line
++moves the class with the body text. The `.font-monospace` class reads the `--bs-font-monospace`
++alias, as the release writes it, and the `_tokens.scss` partial declares that alias over the
++`--vn-font-mono-base` token, so a root retune of either name moves the class. The weights, the
++styles, and the other line heights stay literal, because no published Veneer token carries them.
++The `.fw-lighter` and `.fw-bolder` classes resolve against the weight their parent resolves, as the
++release's relative keywords do. No font class reads the density factor or the color mode.
++
++The partial writes every entry through the `utility` mixin that § Styles describes, in the
++release's map order: the family, size, style, weight, and line-height entries. No two entries set
++one property, so the order that decides a resolution is the order inside an entry: an element
++carrying the `.fw-bold` and `.fw-light` classes resolves the `700` weight, because the map writes
++the bold step after the light step. Every declaration carries the `!important` flag the release
++writes. The classes sit in the utilities layer, so a size class beats a heading or display class
++on the same element: an element carrying the `.h1` and `.fs-6` classes resolves the size the
++`--vn-size-3` token carries. § Styles shows the escape from an important utility inside the
++utilities layer.
++
++The `tests/src/styles/utilities/font.test.ts` proof reads each size class against its heading
++class at the 390 and 1280 viewports and under its retuned size token, the base line height under a
++retuned body line, the monospace class under a retuned alias and a retuned token, each weight under
++two parent weights, each style inside an oblique parent, each line height over a fixed font size,
++the absence of an infixed class, a dark island and the density factor, the order inside an entry,
++the size class over a heading class, the priority over a later unlayered rule, and the escape
++inside the utilities layer.
++
++These are the keys' recorded departures.
++
++- **The size classes read Veneer's heading scale.** The release writes the `.fs-1` to `.fs-4`
++  classes as a fluid `calc()` expression of a rem length and a viewport share, capped at a literal
++  size from a 1200px viewport, and the `.fs-5` and `.fs-6` classes as literal sizes. Veneer writes
++  the `var(--vn-size-8)` to `var(--vn-size-3)` values and no cap, so each class resolves its
++  heading class's size at every viewport.
++- **The base line height reads Veneer's body line.** The release writes the `1.5` factor; Veneer
++  writes the `var(--vn-line-body)` value, which resolves to the same factor and moves with the body
++  text.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -3960,6 +4014,21 @@
+ | `fixed`   | `.fixed-top`    | `z-index` | —         | `1030`          | `var(--vn-stack-fixed)` | tokenized |
+ | `fixed`   | `.fixed-bottom` | `z-index` | —         | `1030`          | `var(--vn-stack-fixed)` | tokenized |
+ 
++#### `fs`
++
++| Component | Selector | Property    | Condition                    | Bootstrap 5.3.8          | Veneer             | Departure |
++| --------- | -------- | ----------- | ---------------------------- | ------------------------ | ------------------ | --------- |
++| `fs`      | `.fs-1`  | `font-size` | —                            | `calc(1.375rem + 1.5vw)` | `var(--vn-size-8)` | tokenized |
++| `fs`      | `.fs-1`  | `font-size` | `@media (min-width: 1200px)` | `2.5rem`                 | —                  | dropped   |
++| `fs`      | `.fs-2`  | `font-size` | —                            | `calc(1.325rem + 0.9vw)` | `var(--vn-size-7)` | tokenized |
++| `fs`      | `.fs-2`  | `font-size` | `@media (min-width: 1200px)` | `2rem`                   | —                  | dropped   |
++| `fs`      | `.fs-3`  | `font-size` | —                            | `calc(1.3rem + 0.6vw)`   | `var(--vn-size-6)` | tokenized |
++| `fs`      | `.fs-3`  | `font-size` | `@media (min-width: 1200px)` | `1.75rem`                | —                  | dropped   |
++| `fs`      | `.fs-4`  | `font-size` | —                            | `calc(1.275rem + 0.3vw)` | `var(--vn-size-5)` | tokenized |
++| `fs`      | `.fs-4`  | `font-size` | `@media (min-width: 1200px)` | `1.5rem`                 | —                  | dropped   |
++| `fs`      | `.fs-5`  | `font-size` | —                            | `1.25rem`                | `var(--vn-size-4)` | tokenized |
++| `fs`      | `.fs-6`  | `font-size` | —                            | `1rem`                   | `var(--vn-size-3)` | tokenized |
++
+ #### `g`
+ 
+ | Component | Selector   | Property        | Condition                  | Bootstrap 5.3.8 | Veneer            | Departure |
+@@ -4236,6 +4305,12 @@
+ | --------- | -------- | ----------- | --------- | --------------- | ------------------ | --------- |
+ | `lead`    | `.lead`  | `font-size` | —         | `1.25rem`       | `var(--vn-size-5)` | tokenized |
+ 
++#### `lh`
++
++| Component | Selector   | Property      | Condition | Bootstrap 5.3.8 | Veneer                | Departure |
++| --------- | ---------- | ------------- | --------- | --------------- | --------------------- | --------- |
++| `lh`      | `.lh-base` | `line-height` | —         | `1.5`           | `var(--vn-line-body)` | tokenized |
++
+ #### `link`
+ 
+ | Component | Selector                    | Property                        | Condition | Bootstrap 5.3.8                                                              | Veneer                                                                      | Departure |
+@@ -5490,6 +5565,11 @@
+ | visually-hidden  | selector       | The official `.visually-hidden` helper and its focusable form ship in the utilities layer ahead of every utility partial; the hidden box and the focus reveal are proved in `tests/src/styles/utilities/visually-hidden.test.ts`.                                                                                                                                                                                                                                | —                     | shipped  |
+ | visible          | selector       | The official `.visible` selector ships in the utilities layer; the resolved visibility is proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
+ | invisible        | selector       | The official `.invisible` selector ships in the utilities layer; the hidden paint and the kept box are proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                | —                     | shipped  |
++| font             | selector       | The official `.font-monospace` selector ships in the utilities layer, reading the `--bs-font-monospace` alias; the monospace stack and its retune are proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                                                             | —                     | shipped  |
++| fs               | selector       | Every official `.fs-*` selector ships in the utilities layer, reading the size token its heading class reads; each size at the 390 and 1280 viewports and under its retuned token is proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                              | —                     | shipped  |
++| fst              | selector       | Every official `.fst-*` selector ships in the utilities layer; each resolved style is proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
++| fw               | selector       | Every official `.fw-*` selector ships in the utilities layer; each resolved weight, the relative weights under two parent weights included, is proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                                                                    | —                     | shipped  |
++| lh               | selector       | Every official `.lh-*` selector ships in the utilities layer, the `.lh-base` selector reading the `--vn-line-body` token; each resolved line height is proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                                                            | —                     | shipped  |
+ | navbar           | selector       | Every official `.navbar` selector ships in the components layer, the brand, nav list, text, collapsible content, toggler and its icon, scrolling list, expand ramp, expanded offcanvas panel, and dark retunes included, and the container combinators the key records ship from the container partial; resolved behavior is proved in `tests/src/styles/components/navbar.test.ts`.                                                                             | —                     | shipped  |
+ | navbar           | variable       | Every official `--bs-navbar-*` custom property is declared on the `.navbar` class, the color and toggler slots are retuned by the `.navbar-dark` class and the bar's own dark attribute, and the `.navbar-nav` class retunes the `--bs-nav-link-*` slots it records; each one is read beside the property it drives in `tests/src/styles/components/navbar.test.ts`.                                                                                             | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+@@ -5553,7 +5633,8 @@
+ belongs to rather than in a region of its own, which is how every other section is grouped: the icon
+ links sit in Links, the aspect-ratio boxes share Media with the image classes and the figure
+ classes, the vertical rule and the gap steps sit in Layout beside the gutters, the stacks sit in
+-Flex beside the flex utilities, and the list and quotation classes sit in Type. The
++Flex beside the flex utilities, and the list and quotation classes sit in Type. The font
++utilities join Type beside the heading and display classes whose sizes they share. The
+ showcase's own button drives the controller and announces the selected mode, and its entry
+ constructs a `Delegate` instance beside the showcase. The shell's own stylesheet reaches that button
+ through the `control` class the showcase sets on it, so no rule of the shell's reaches a specimen
+@@ -5760,7 +5841,8 @@
+ [the position helpers](../tests/src/styles/components/position.test.ts),
+ [the sizing utilities](../tests/src/styles/utilities/sizing.test.ts),
+ [the visibility utilities](../tests/src/styles/utilities/visibility.test.ts),
+-[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts), and
++[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts),
++[the font utilities](../tests/src/styles/utilities/font.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.

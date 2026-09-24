@@ -1,0 +1,1011 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index 3038781..65d0ee0 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -29,6 +29,7 @@ import { ListGroupSection } from './sections/ListGroupSection.js'
+ import { MediaSection } from './sections/MediaSection.js'
+ import { NavSection } from './sections/NavSection.js'
+ import { NavbarSection } from './sections/NavbarSection.js'
++import { OffcanvasSection } from './sections/OffcanvasSection.js'
+ import { PaginationSection } from './sections/PaginationSection.js'
+ import { PlaceholderSection } from './sections/PlaceholderSection.js'
+ import { PositionSection } from './sections/PositionSection.js'
+@@ -132,6 +133,7 @@ export class Showcase implements ShowcaseInterface {
+ 			new AlertSection(this.#main),
+ 			new CarouselSection(this.#main),
+ 			new AccordionSection(this.#main),
++			new OffcanvasSection(this.#main),
+ 			new DisplaySection(this.#main),
+ 			new FlexSection(this.#main),
+ 			new PositionSection(this.#main),
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 2594d55..7abd7cf 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -2156,6 +2156,53 @@ export const ACCORDION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	}),
+ ])
+ 
++/** Holds the Offcanvas section's visible copy and accessible name. */
++export const OFFCANVAS_COPY = Object.freeze({
++	region: 'Offcanvas',
++	paragraph:
++		'Compare a shown panel against each edge of the frame it renders in, the backdrop behind the start panel, and a panel for each breakpoint that is fixed below that breakpoint and sits in the flow from it up, each state set as a class in markup.',
++})
++
++/**
++ * Lists the offcanvas specimens the section renders, one state each, in render order: a shown
++ * panel at each edge, then a shown responsive panel for each breakpoint.
++ *
++ * @remarks
++ * A fixed panel is placed against its containing block rather than against its parent, so every
++ * specimen renders inside the shell's `viewport` frame, which is the containing block of each fixed
++ * descendant and clips what it overflows. Each panel carries the `show` class, as the offcanvas
++ * script leaves a shown panel, and no specimen carries an inline style. The start panel carries the
++ * backdrop the script appends to the panel's parent, as a sibling inside the same frame, and no
++ * other specimen carries one. Each panel is a dialog named by its title, and it announces no modal
++ * state, because a static specimen holds no focus and locks no scrolling. Each close control is
++ * named through its `aria-label` attribute.
++ *
++ * Each responsive panel is fixed below its breakpoint and sits in the flow from it up, so its frame
++ * at a viewport narrower than its breakpoint is a shown panel and its frame at a wider one is the
++ * inline panel. The engine's `showing` and `hiding` classes and the backdrop carrying the `fade`
++ * class alone render no specimen: each is a moment of a transition, and the
++ * `tests/src/styles/components/offcanvas.test.ts` file reads each of them on its own elements.
++ */
++export const OFFCANVAS_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	...[
++		{ placement: 'start', label: 'Start', copy: 'slides in from the start edge of its frame' },
++		{ placement: 'end', label: 'End', copy: 'slides in from the end edge of its frame' },
++		{ placement: 'top', label: 'Top', copy: 'slides down from the top edge of its frame' },
++		{ placement: 'bottom', label: 'Bottom', copy: 'slides up from the bottom edge of its frame' },
++	].map(({ placement, label, copy }) =>
++		Object.freeze({
++			name: `${label} offcanvas`,
++			markup: `<div class="viewport"><div class="offcanvas offcanvas-${placement} show" tabindex="-1" role="dialog" aria-labelledby="offcanvas-${placement}-title"><div class="offcanvas-header"><h5 class="offcanvas-title" id="offcanvas-${placement}-title">${label} panel</h5><button type="button" class="btn-close" aria-label="Close"></button></div><div class="offcanvas-body"><p>The ${placement} panel ${copy}.</p></div></div>${placement === 'start' ? '<div class="offcanvas-backdrop fade show"></div>' : ''}</div>`,
++		}),
++	),
++	...['sm', 'md', 'lg', 'xl', 'xxl'].map((step) =>
++		Object.freeze({
++			name: `Responsive offcanvas ${step}`,
++			markup: `<div class="viewport"><div class="offcanvas-${step} offcanvas-end show" tabindex="-1" role="dialog" aria-labelledby="offcanvas-${step}-title"><div class="offcanvas-header"><h5 class="offcanvas-title" id="offcanvas-${step}-title">Responsive ${step} panel</h5><button type="button" class="btn-close" aria-label="Close"></button></div><div class="offcanvas-body"><p>The responsive ${step} panel is fixed below the ${step} breakpoint and sits in the flow from it up.</p></div></div></div>`,
++		}),
++	),
++])
++
+ /** Holds the Display section's visible copy and accessible name. */
+ export const DISPLAY_COPY = Object.freeze({
+ 	region: 'Display',
+@@ -2464,7 +2511,7 @@ export const VISIBILITY_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ export const NAVBAR_COPY = Object.freeze({
+ 	region: 'Navbar',
+ 	paragraph:
+-		'Compare the always-expanded bar, a collapsed bar and the same bar opened, a scrolling list, the dark attribute and the dark class, then the bar that expands at each breakpoint, each state set in markup.',
++		'Compare the always-expanded bar, a collapsed bar and the same bar opened, a scrolling list, the dark attribute and the dark class, the bar that expands at each breakpoint, then a bar whose links sit in an offcanvas panel, each state set in markup.',
+ })
+ 
+ /**
+@@ -2485,8 +2532,13 @@ export const NAVBAR_COPY = Object.freeze({
+  * steps cannot drift apart, and each link announces a name of its own, qualified by its
+  * specimen's word, because the journey reaches a link by that name.
+  *
+- * No specimen renders the expanded offcanvas panel: the panel's own partial has not shipped, and the
+- * `tests/src/styles/components/navbar.test.ts` file reads those rules on its own elements.
++ * The offcanvas bar renders its links in a shown offcanvas panel inside the shell's `viewport`
++ * frame, which is the containing block of the fixed panel. It expands at the large breakpoint, so
++ * its frame at a narrower viewport is the panel fixed over the frame and its frame at a wider one
++ * is the panel laid into the bar's row. Its toggler names the panel it controls and announces no
++ * expanded state, because the offcanvas script writes none; the panel's `show` class is its state.
++ * The `tests/src/styles/components/offcanvas.test.ts` file reads the expanded panel at every
++ * expand class on its own elements.
+  */
+ export const NAVBAR_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -2525,4 +2577,9 @@ export const NAVBAR_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 			markup: `<nav class="navbar navbar-expand-${step}" aria-label="Expand ${step} bar"><div class="container-fluid"><a class="navbar-brand" href="#main">Expand ${step} harbor</a><button class="navbar-toggler collapsed" type="button" aria-controls="navbar-expand-${step}-content" aria-expanded="false" aria-label="Toggle the expand ${step} bar links"><span class="navbar-toggler-icon"></span></button><div class="collapse navbar-collapse" id="navbar-expand-${step}-content"><ul class="navbar-nav navbar-nav-scroll"><li class="nav-item"><a class="nav-link active" aria-current="page" href="#main">Expand ${step} home</a></li><li class="nav-item"><a class="nav-link" href="#main">Expand ${step} routes</a></li><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#main" role="button" aria-expanded="false">Expand ${step} depots</a><ul class="dropdown-menu"><li><a class="dropdown-item" href="#main">Expand ${step} north depot</a></li></ul></li></ul></div></div></nav>`,
+ 		}),
+ 	),
++	Object.freeze({
++		name: 'Navbar with offcanvas',
++		markup:
++			'<div class="viewport"><nav class="navbar navbar-expand-lg" aria-label="Offcanvas bar"><div class="container-fluid"><a class="navbar-brand" href="#main">Offcanvas harbor</a><button class="navbar-toggler" type="button" aria-controls="navbar-offcanvas" aria-label="Toggle the offcanvas bar links"><span class="navbar-toggler-icon"></span></button><div class="offcanvas offcanvas-end show" tabindex="-1" id="navbar-offcanvas" role="dialog" aria-labelledby="navbar-offcanvas-title"><div class="offcanvas-header"><h5 class="offcanvas-title" id="navbar-offcanvas-title">Offcanvas harbor links</h5><button type="button" class="btn-close" aria-label="Close"></button></div><div class="offcanvas-body"><ul class="navbar-nav"><li class="nav-item"><a class="nav-link active" aria-current="page" href="#main">Offcanvas home</a></li><li class="nav-item"><a class="nav-link" href="#main">Offcanvas routes</a></li></ul></div></div></div></nav></div>',
++	}),
+ ])
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 474aa0a..a919685 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -33,6 +33,7 @@ export * from './sections/NavSection.js'
+ export * from './sections/AlertSection.js'
+ export * from './sections/CarouselSection.js'
+ export * from './sections/AccordionSection.js'
++export * from './sections/OffcanvasSection.js'
+ export * from './sections/DisplaySection.js'
+ export * from './sections/FlexSection.js'
+ export * from './sections/PositionSection.js'
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 1395a59..0422083 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -683,6 +683,7 @@ The following files carry the axis.
+ | `src/styles/components/_carousel.scss`       | The carousel track, its slides and their advancing and fading states, the controls and their marks, the indicators, the caption, and the dark retune in the components layer.                                                                      |
+ | `src/styles/components/_progress.scss`       | The progress track, its stacked form, and the bar families in the components layer.                                                                                                                                                                |
+ | `src/styles/components/_spinner.scss`        | The border and grow spinners, their small twins, and their keyframes in the components layer.                                                                                                                                                      |
++| `src/styles/components/_offcanvas.scss`      | The offcanvas panel, its placements and shown state, the responsive ramp, the backdrop, the header and the close control it fits, the title, and the body in the components layer.                                                                 |
+ | `src/styles/components/_placeholder.scss`    | The placeholder, its height floors, its button box, and the glow and wave animations in the components layer.                                                                                                                                      |
+ | `src/styles/components/_dropdown.scss`       | The dropdown wrappers, the caret in each direction, the menu with its placements and alignment ramp, the item states, header, divider, item text, and dark menu in the components layer, read by `tests/src/styles/components/dropdown.test.ts`.   |
+ | `src/styles/components/_button-group.scss`   | The button group, its vertical twin, their joining relationships, and the toolbar in the components layer, read by `tests/src/styles/components/button-group.test.ts`.                                                                             |
+@@ -2064,10 +2065,9 @@ release's `!important` flag.
+ 
+ The expanded bar also turns an offcanvas panel into part of its row: the panel stops being
+ positioned, grows into the row, and drops its header, and the release's `!important` flags on its
+-size, visibility, fill, border, and transform win over the hidden state the panel's own classes
+-write. Those rules ship ahead of the panel's own partial. The Navbar region renders no offcanvas
+-panel until the Offcanvas unit of B-MODAL … B-CAROUSEL ships that partial, and the proof reads the
+-rules on elements of its own.
++size, visibility, fill, border, and transform win over the fixed, hidden, and sliding state the
++panel's own classes write, although the offcanvas partial loads after this one. The offcanvas key
++records these rules as well, and they ship from this partial; § Offcanvas classes gives the panel.
+ 
+ The `.navbar-nav-scroll` class clamps the list to the height the `--bs-scroll-height` property
+ names, and to three quarters of the viewport while no scope sets that property; the list scrolls
+@@ -2095,12 +2095,16 @@ a template puts them, and no rule here sets or clears one. The Collapse and Drop
+ in § Compatibility record the behavior that moves them under the J-ENGINE owner.
+ 
+ The Navbar region renders the always-expanded bar, the collapsed bar, the same bar opened, the
+-scrolling list, the dark attribute and the dark class each on a card carrying the dark mode, and a
+-bar for each expand class. The card's dark scope alone paints a plain bar's brand white, so the
++scrolling list, the dark attribute and the dark class each on a card carrying the dark mode, a
++bar for each expand class, and a bar whose links sit in a shown offcanvas panel. The card's dark
++scope alone paints a plain bar's brand white, so the
+ class bar carries the `data-bs-theme="light"` attribute, a light island inside the card, and the
+ white it shows is the class's paint. The journey renders at 390 and 1280 pixels wide, so the
+ `.navbar-expand-xxl` bar has no expanded frame: its boundary is wider than either width, and the
+-proof reads its expanded state at the boundary instead.
++proof reads its expanded state at the boundary instead. The offcanvas bar renders inside an element
++carrying the shell's `viewport` class, the containing block of its fixed panel, and it expands at
++the large step, so its frame at 390 is the panel fixed over the bar and its frame at 1280 is the
++panel laid into the bar's row.
+ 
+ The `tests/src/styles/components/navbar.test.ts` proof reads each resolved treatment in the browser:
+ the bar's layout, each published length and light color beside the property it drives and retuned
+@@ -2627,6 +2631,108 @@ the direction-flipping annotation the release carries on that keyframe does not
+ The `tests/src/styles/components/spinner.test.ts` proof reads the resolved box, border, paint, and
+ running animation in the browser, under each motion preference and in each color mode.
+ 
++### Offcanvas classes
++
++The offcanvas key ships whole: the panel, its placements and its shown state, a responsive panel
++for each breakpoint, the backdrop, the header and the close control it fits, the title, and the
++body. The expanded navbar combinators the key records ship from the navbar partial, and § Navbar
++classes gives them. Each state is a class set in markup. This section describes what each class
++renders, and § Compatibility records the plugin that moves a panel between the classes as an
++engine obligation.
++
++Each `--bs-offcanvas-*` property is declared on the `.offcanvas` class and on each responsive class,
++so the panel itself is where a consumer retunes one, and the same override on an ancestor is
++shadowed. The inset variables read the `--vn-space-8` token, so the `--vn-factor-density` factor
++rescales the header's and the body's padding and the close control's fit, and the title's
++line-height variable reads the `--vn-line-body` token. The `400px` width, the `30vh` height, and the
++`transform 0.3s ease-in-out` transition keep the release's literals, because no Veneer token
++resolves to them. The fixed panel paints its text and its fill from the `--bs-body-color` and
++`--bs-body-bg` aliases and its edge from the `--bs-border-color-translucent` alias, so a panel
++inside a dark island paints that island's surface.
++
++The `.offcanvas` class fixes the panel as a hidden column at every width, and each placement class
++pins it to one edge of its containing block. The `.offcanvas-start` and `.offcanvas-end` classes pin
++a side panel the recorded width across the whole height, and the `.offcanvas-top` and
++`.offcanvas-bottom` classes pin an edge panel the recorded height across the whole width, never
++taller than its containing block. Each placement draws the border on the panel's inner side and
++slides the panel one whole width or height out past its edge. The `show` class clears the slide and
++shows the panel. The placements are physical, so the start panel sits at the left whatever the
++document's writing direction.
++
++The offcanvas script writes the `showing` class while a panel slides in and the `hiding` class
++while it slides out: a showing panel paints as a shown one, and a hiding panel stays visible while
++it slides back past its edge. The script appends the backdrop to the panel's parent carrying the
++`fade` class and then adds the `show` class. The `.offcanvas-backdrop` rule covers the viewport from
++the corner of its containing block in the `--vn-palette-black-base` token, transparent while it
++carries the `fade` class alone and at the release's `0.5` opacity after the `show` class arrives.
++The `overlay-backdrop` mixin in the `src/styles/_mixins.scss` partial writes that backdrop.
++
++Each panel class declares the `--bs-offcanvas-zindex` variable over the `--vn-stack-drawer-base`
++token, and the fixed panel's `z-index` property reads that variable. The backdrop's `z-index`
++property reads the `--vn-stack-drawer-backdrop` token, the rung beneath. A scope retuning either
++rung moves the fixed panel's level or the backdrop's with it, and the panel stays over its backdrop.
++
++Each `.offcanvas-sm`, `.offcanvas-md`, `.offcanvas-lg`, `.offcanvas-xl`, and `.offcanvas-xxl` class
++is the fixed panel below its breakpoint and part of the page's flow at and above it. Below the
++breakpoint the class paints the panel, its placements, and its states as the `.offcanvas` class
++does. At and above the breakpoint the panel is visible whatever its classes, drops its fill and its
++edge, hides its header, and lays its body out as a row with no inset. The release marks the panel's
++clear fill and the body's clear fill important, so a background utility on either does not paint the
++inline panel. The class also sets the `--bs-offcanvas-height` variable to `auto` and the
++`--bs-offcanvas-border-width` variable to `0` there, as the release does; no rule reads either
++variable at that width, because the placement rules apply below the breakpoint alone. The
++`breakpoint-down` and `breakpoint-up` mixins write each pair at one breakpoint, so the fixed state
++ends at the width where the inline state begins.
++
++The `.offcanvas-header` class lays the title and the close control out in a centered row inside the
++panel's inset. The `.offcanvas-header .btn-close` rule fits the control into that inset: half the
++inset around the control, and a negative margin of that half on the top, the right, and the bottom,
++while the automatic left margin pushes the control to the end of the row. The rule selects the
++control through the header, so a close control elsewhere in the panel keeps the close partial's own
++treatment, which § Close classes gives. The `.offcanvas-title` class clears the title's bottom
++margin and sets its line height, and the `.offcanvas-body` class grows to fill the panel, insets
++its content, and scrolls it.
++
++The panel's transition is written through the `transition` mixin, so the reduced-motion rule the
++release records beside it, for the bare panel and for each responsive panel below its breakpoint, is
++emitted with it.
++
++These are the key's recorded departures.
++
++- **The stacking levels read the drawer rungs.** The `--bs-offcanvas-zindex` variable on every panel
++  class reads the `--vn-stack-drawer-base` token in place of the recorded `1045` value, and the
++  backdrop's `z-index` property reads the `--vn-stack-drawer-backdrop` token in place of the
++  recorded `1040` value. Each rung holds the release's number.
++- **The insets and the title line read Veneer's scale.** The `--bs-offcanvas-padding-x` and
++  `--bs-offcanvas-padding-y` variables read the `--vn-space-8` token in place of the recorded `1rem`
++  value, and the `--bs-offcanvas-title-line-height` variable reads the `--vn-line-body` token in
++  place of the recorded `1.5` value. Each token resolves to the recorded value, and the insets
++  rescale with the `--vn-factor-density` factor.
++- **The backdrop paints the black token.** The backdrop's fill reads the `--vn-palette-black-base`
++  token in place of the recorded `#000` value, and the token holds the same bytes.
++
++The Offcanvas region renders a shown panel at each edge and a shown responsive panel for each
++breakpoint, each responsive panel at the end edge. A fixed panel is placed against its containing
++block, so every specimen renders inside an element carrying the shell's `viewport` class, and no
++specimen carries an inline style. The start panel carries the backdrop as a sibling inside the same
++frame, and no other specimen carries one. Each panel is a dialog named by its title and announces no
++modal state, because a static specimen holds no focus and locks no scrolling, and each close
++control is named through its `aria-label` attribute. The region renders no panel carrying the
++`showing` class or the `hiding` class and no backdrop carrying the `fade` class alone, and the
++capture registry declines those frames: each is a moment of a transition a template never writes,
++a showing panel paints the shown frame, a hiding panel rests past its edge where the frame clips
++it, and a fading backdrop paints nothing. The journey renders at 390 and 1280 pixels wide, so the
++`.offcanvas-xxl` panel has no inline frame: its breakpoint is wider than either width, and the
++proof reads its inline state at the breakpoint instead.
++
++The `tests/src/styles/components/offcanvas.test.ts` proof reads each resolved treatment in the
++browser: the written selectors, each placement's edge, span, border, and slide, the shown state
++beside the engine's showing and hiding classes, the stacking levels and a retuned rung, the backdrop
++fading and shown, each responsive panel one pixel below its breakpoint, at it, and one pixel above
++it, the bare panel at every width, the header's close control beside a control outside the header,
++the title and the body, the density factor, the light and dark modes, the transition under the
++staged reduced-motion preference, and a shown and a resting panel inside each expanded navbar step.
++
+ ### Placeholder classes
+ 
+ The placeholder key ships whole: the placeholder itself, the `xs`, `sm`, and `lg` height floors, the
+@@ -2956,7 +3062,6 @@ name this release declares nowhere is recorded in § Outside the ledger instead.
+ | `.form-control-lg::-webkit-file-upload-button`                                   | Excluded | The component rule on the same selector ships the standard `::file-selector-button` part in its place, so the prefixed alias is redundant; omitting its authored rule preserves that absence.                   |
+ | `.toast-header .btn-close`                                                       | Overlays | The owning component supplies this relationship.                                                                                                                                                                |
+ | `.modal-header .btn-close`                                                       | Overlays | The owning component supplies this relationship.                                                                                                                                                                |
+-| `.offcanvas-header .btn-close`                                                   | Overlays | The owning component supplies this relationship.                                                                                                                                                                |
+ 
+ ### Departures from the workspace rows
+ 
+@@ -3302,7 +3407,7 @@ variables it answers, and a row whose dark mode differs writes the dark reading
+ | `--vn-form-invalid`                                      | `var(--vn-color-danger-base)`, dark `var(--vn-color-danger-emphasis)`            | `bootstrap` — Bootstrap's own pairing                                                                                                               | `--bs-form-invalid-color`, `--bs-form-invalid-border-color` |
+ | `--vn-breakpoint-xs` through `--vn-breakpoint-xxl`       | `0`, `576px`, `768px`, `992px`, `1200px`, `1400px`                               | `bootstrap` — the documented wire vocabulary                                                                                                        | `--bs-breakpoint-xs` … `-xxl`                               |
+ | `--vn-stack-dropdown`, `-sticky`, `-fixed`               | `1000`, `1020`, `1030`                                                           | `bootstrap` — retained from `$zindex-dropdown`, `$zindex-sticky`, and `$zindex-fixed`                                                               | none                                                        |
+-| `--vn-stack-drawer-backdrop`, `-drawer-base`             | `1040`, `1045`                                                                   | `bootstrap` — retained from `$zindex-offcanvas-backdrop` and `$zindex-offcanvas`                                                                    | none                                                        |
++| `--vn-stack-drawer-backdrop`, `-drawer-base`             | `1040`, `1045`                                                                   | `bootstrap` — retained from `$zindex-offcanvas-backdrop` and `$zindex-offcanvas`                                                                    | the backdrop `z-index` literal, `--bs-offcanvas-zindex`     |
+ | `--vn-stack-dialog-backdrop`, `-dialog-base`             | `1050`, `1055`                                                                   | `bootstrap` — retained from `$zindex-modal-backdrop` and `$zindex-modal`                                                                            | none                                                        |
+ | `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                           | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | none                                                        |
+ 
+@@ -5056,6 +5161,37 @@ declaration.
+ | `carousel` | `.carousel-dark`               | `--bs-carousel-indicator-active-bg` | —         | `#000`               | `var(--vn-palette-black-base)`                              | tokenized |
+ | `carousel` | `.carousel-dark`               | `--bs-carousel-caption-color`       | —         | `#000`               | `var(--vn-palette-black-base)`                              | tokenized |
+ 
++#### `offcanvas`
++
++| Component   | Selector              | Property                           | Condition | Bootstrap 5.3.8 | Veneer                            | Departure |
++| ----------- | --------------------- | ---------------------------------- | --------- | --------------- | --------------------------------- | --------- |
++| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
++| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas`          | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
++| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
++| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-xxl`      | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
++| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
++| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-xl`       | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
++| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
++| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-lg`       | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
++| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
++| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-md`       | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
++| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-zindex`            | —         | `1045`          | `var(--vn-stack-drawer-base)`     | tokenized |
++| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-padding-x`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-padding-y`         | —         | `1rem`          | `var(--vn-space-8)`               | tokenized |
++| `offcanvas` | `.offcanvas-sm`       | `--bs-offcanvas-title-line-height` | —         | `1.5`           | `var(--vn-line-body)`             | tokenized |
++| `offcanvas` | `.offcanvas-backdrop` | `z-index`                          | —         | `1040`          | `var(--vn-stack-drawer-backdrop)` | tokenized |
++| `offcanvas` | `.offcanvas-backdrop` | `background-color`                 | —         | `#000`          | `var(--vn-palette-black-base)`    | tokenized |
++
+ #### `placeholder`
+ 
+ | Component     | Selector            | Property             | Condition | Bootstrap 5.3.8                                                       | Veneer                                                                                                                                    | Departure |
+@@ -5492,6 +5628,8 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | invisible        | selector       | The official `.invisible` selector ships in the utilities layer; the hidden paint and the kept box are proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                | —                     | shipped  |
+ | navbar           | selector       | Every official `.navbar` selector ships in the components layer, the brand, nav list, text, collapsible content, toggler and its icon, scrolling list, expand ramp, expanded offcanvas panel, and dark retunes included, and the container combinators the key records ship from the container partial; resolved behavior is proved in `tests/src/styles/components/navbar.test.ts`.                                                                             | —                     | shipped  |
+ | navbar           | variable       | Every official `--bs-navbar-*` custom property is declared on the `.navbar` class, the color and toggler slots are retuned by the `.navbar-dark` class and the bar's own dark attribute, and the `.navbar-nav` class retunes the `--bs-nav-link-*` slots it records; each one is read beside the property it drives in `tests/src/styles/components/navbar.test.ts`.                                                                                             | —                     | shipped  |
++| offcanvas        | selector       | Every official `.offcanvas` selector ships in the components layer, the placements, the shown and transition states, the responsive ramp, the backdrop, the header's close control, the title, and the body included, and the expanded navbar combinators ship from the navbar partial; the `tests/src/styles/components/offcanvas.test.ts` proof reads resolved placement, ramp, stacking, paint, and motion.                                                   | —                     | shipped  |
++| offcanvas        | variable       | Every official `--bs-offcanvas-*` custom property is declared on the bare panel and on each responsive panel, which redeclares the `--bs-offcanvas-height` and `--bs-offcanvas-border-width` variables at and above its boundary as the release does; the `tests/src/styles/components/offcanvas.test.ts` proof reads each variable a rule applies beside the property it drives.                                                                                | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+ | engine           | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                                                                                                                                                                                                                                                         | —                     | accepted |
+ | engine           | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                                                                                                                                                                                                                                                    | —                     | accepted |
+@@ -5519,6 +5657,7 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | engine           | plugin         | ScrollSpy: `[data-bs-spy="scroll"]` observes the sections its `target` links name through `IntersectionObserver` (`rootMargin`, `threshold`, `offset`, `smoothScroll`); `refresh()`, `dispose()`; fires `activate.bs.scrollspy` with `relatedTarget` and no cancelable event; moves the `active` class. Owner: J-ENGINE.                                                                                                                                         | —                     | accepted |
+ | engine           | plugin         | Alert: a `[data-bs-dismiss="alert"]` trigger closes the alert it names, or the `.alert` ancestor it sits in; no defaults; the `close` method; the cancelable `close.bs.alert` event, then the `closed.bs.alert` event after removal; the `close` method removes the `show` class and waits on the transition only when the alert carries the `fade` class, then removes the element and disposes the instance; no key, focus, or ARIA handling. Owner: J-ENGINE. | —                     | accepted |
+ | engine           | plugin         | Carousel: `[data-bs-slide]` and `[data-bs-slide-to]` triggers and `[data-bs-ride="carousel"]` on load; `interval: 5000`, `keyboard: true`, `pause: 'hover'`, `ride: false`, `touch: true`, and `wrap: true` defaults; `next`, `prev`, `pause`, `cycle`, and `to` methods; cancelable `slide.bs.carousel`, then `slid.bs.carousel`; arrow keys; `aria-current` on the active indicator; the `Swipe` utility adds the `pointer-event` class. Owner: J-ENGINE.      | —                     | accepted |
++| engine           | plugin         | Offcanvas: a `[data-bs-toggle="offcanvas"]` trigger toggles its panel; the `backdrop`, `keyboard`, and `scroll` options; the `toggle`, `show`, `hide`, and `dispose` methods; the cancelable `show` and `hide` events, then the `shown`, `hidden`, and `hidePrevented` events; `Escape` key hiding; the `showing` and `hiding` classes; the `aria-modal` and `role` attributes; the `Backdrop`, `FocusTrap`, and `ScrollBarHelper` utilities. Owner: J-ENGINE.   | —                     | accepted |
+ 
+ A `plugin` row records a behavior J-ENGINE owns, while the classes that behavior sets ship in the
+ cascade and render in markup.
+@@ -5567,9 +5706,10 @@ the containing block of every fixed and absolute element inside it, and paint co
+ clip keeps what such an element overflows inside the frame without making the frame scroll. So a
+ fixed bar holds to the frame's edge, and a backdrop sized to the viewport raises no scrollbar on the
+ frame or on the page. The frame's bounded height holds a default dialog at the 390 viewport and
+-gives a percentage height or offset a definite height to resolve against. Every Position specimen
+-and the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes` specimens render
+-inside an element carrying the shell's `viewport` class. The sticky bars scroll inside an element
++gives a percentage height or offset a definite height to resolve against. Every Position specimen,
++every Offcanvas specimen, the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes`
++specimens, and the Navbar region's `Navbar with offcanvas` specimen render inside an element
++carrying the shell's `viewport` class. The sticky bars scroll inside an element
+ carrying the shell's `scroller` class within the frame, because the frame clips rather than
+ scrolls; see [position specimens](../tests/app/browser/sections/PositionSection.test.ts), which
+ proves the frame at the 390 and 1280 viewports.
+@@ -5601,6 +5741,12 @@ declines both frames for the reason § Carousel classes states; see
+ [carousel specimens](../tests/app/browser/sections/CarouselSection.test.ts) and
+ [cascade carousel classes](../tests/src/styles/components/carousel.test.ts).
+ 
++The Offcanvas region renders no panel carrying the `showing` class or the `hiding` class and no
++backdrop carrying the `fade` class alone, and the capture registry declines those frames for the
++reason § Offcanvas classes states; see
++[offcanvas specimens](../tests/app/browser/sections/OffcanvasSection.test.ts) and
++[cascade offcanvas classes](../tests/src/styles/components/offcanvas.test.ts).
++
+ ## Tests
+ 
+ The core proof reads the registry's export set, its freeze, and its path law; see
+@@ -5635,6 +5781,7 @@ The application proofs drive the shell through its interface; see
+ [link specimens](../tests/app/browser/sections/LinkSection.test.ts),
+ [list group specimens](../tests/app/browser/sections/ListGroupSection.test.ts),
+ [navbar specimens](../tests/app/browser/sections/NavbarSection.test.ts),
++[offcanvas specimens](../tests/app/browser/sections/OffcanvasSection.test.ts),
+ [pagination specimens](../tests/app/browser/sections/PaginationSection.test.ts),
+ [placeholder specimens](../tests/app/browser/sections/PlaceholderSection.test.ts),
+ [position specimens](../tests/app/browser/sections/PositionSection.test.ts),
+@@ -5733,6 +5880,7 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the accordion classes](../tests/src/styles/components/accordion.test.ts),
+ [the dropdown classes](../tests/src/styles/components/dropdown.test.ts),
+ [the carousel classes](../tests/src/styles/components/carousel.test.ts),
++[the offcanvas classes](../tests/src/styles/components/offcanvas.test.ts),
+ [the icon link classes](../tests/src/styles/components/icon-link.test.ts),
+ [the ratio classes](../tests/src/styles/components/ratio.test.ts),
+ [the vertical rule](../tests/src/styles/components/vr.test.ts),
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index fabb089..c5851c1 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -436,3 +436,24 @@
+ 		}
+ 	}
+ }
++
++// Paints the viewport-sized backdrop a modal or an offcanvas panel places behind itself, at the
++// `$zindex` stack rung in `$color`, transparent while it carries `fade` alone and at `$opacity`
++// after the engine adds `show`, as the release writes its shared backdrop.
++@mixin overlay-backdrop($zindex, $color, $opacity) {
++	position: fixed;
++	top: 0;
++	left: 0;
++	z-index: $zindex;
++	width: 100vw;
++	height: 100vh;
++	background-color: $color;
++
++	&.fade {
++		opacity: 0;
++	}
++
++	&.show {
++		opacity: $opacity;
++	}
++}
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index 6a8b24c..9dc585d 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -73,6 +73,7 @@
+ @use 'components/close';
+ @use 'components/carousel';
+ @use 'components/spinner';
++@use 'components/offcanvas';
+ @use 'components/placeholder';
+ @use 'components/icon-link';
+ @use 'components/ratio';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index a08372d..07bf744 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -27,6 +27,7 @@ import {
+ 	MEDIA_SPECIMENS,
+ 	NAV_SPECIMENS,
+ 	NAVBAR_SPECIMENS,
++	OFFCANVAS_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
+ 	POSITION_SPECIMENS,
+@@ -129,6 +130,7 @@ describe('Showcase', () => {
+ 				'Alert',
+ 				'Carousel',
+ 				'Accordion',
++				'Offcanvas',
+ 				'Display',
+ 				'Flex',
+ 				'Position',
+@@ -172,6 +174,7 @@ describe('Showcase', () => {
+ 					...ALERT_SPECIMENS,
+ 					...CAROUSEL_SPECIMENS,
+ 					...ACCORDION_SPECIMENS,
++					...OFFCANVAS_SPECIMENS,
+ 					...DISPLAY_SPECIMENS,
+ 					...FLEX_SPECIMENS,
+ 					...POSITION_SPECIMENS,
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 4ea1d98..5f3d7ed 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -92,6 +92,9 @@ describe('app browser entry', () => {
+ 			'NAV_SPECIMENS',
+ 			'NavSection',
+ 			'NavbarSection',
++			'OFFCANVAS_COPY',
++			'OFFCANVAS_SPECIMENS',
++			'OffcanvasSection',
+ 			'PAGINATION_COPY',
+ 			'PAGINATION_SPECIMENS',
+ 			'PLACEHOLDER_COPY',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 86e41d8..ad2819b 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -66,6 +66,7 @@ import {
+ 	MEDIA_SPECIMENS,
+ 	NAV_SPECIMENS,
+ 	NAVBAR_SPECIMENS,
++	OFFCANVAS_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
+ 	POSITION_SPECIMENS,
+@@ -2120,6 +2121,7 @@ describe('portfolio', () => {
+ 				MEDIA_SPECIMENS,
+ 				NAV_SPECIMENS,
+ 				NAVBAR_SPECIMENS,
++				OFFCANVAS_SPECIMENS,
+ 				PAGINATION_SPECIMENS,
+ 				BUTTON_GROUP_SPECIMENS,
+ 				PLACEHOLDER_SPECIMENS,
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 4f3faba..9c49e7e 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -163,6 +163,7 @@ describe('Bootstrap component oracle', () => {
+ 			'mw',
+ 			'nav',
+ 			'navbar',
++			'offcanvas',
+ 			'offset',
+ 			'order',
+ 			'pagination',
+@@ -288,7 +289,12 @@ describe('cascade ledger', () => {
+ describe('declaration priority', () => {
+ 	// D39a: the oracle fixture records a declaration's value without its priority, so the ledger's
+ 	// value comparison cannot carry a dropped or added `!important`. This case holds D39's rule
+-	// directly against the release's compiled CSS instead, where the priority is held equal.
++	// directly against the release's compiled CSS instead, where the priority is held equal. The
++	// sheet reader names no condition, and the release writes one selector's property at both
++	// priorities where each sits under its own condition, as each responsive offcanvas panel's fill
++	// is normal below its boundary and important at and above it. So each sheet's priorities for a
++	// selector's property are compared as a set, and a priority either sheet writes that the other
++	// does not reddens here.
+ 	it('carries the priority the release writes on every declaration both sheets make, and adds none', () => {
+ 		const release = new SheetReader(
+ 			readFileSync(
+@@ -297,24 +303,25 @@ describe('declaration priority', () => {
+ 			),
+ 		)
+ 		const cascade = new SheetReader(readBuiltCascade())
+-		const key = (selector: string, property: string): string => `${selector} { ${property} }`
+-		const shipped = new Map<string, boolean>()
++		const written = new Map<string, ReadonlySet<boolean>>()
++		for (const declaration of release.declarations) {
++			const pair = `${declaration.selector} { ${declaration.property} }`
++			written.set(pair, new Set([...(written.get(pair) ?? []), declaration.important]))
++		}
++		const shipped = new Map<string, ReadonlySet<boolean>>()
+ 		for (const declaration of cascade.declarations) {
+-			const pair = key(declaration.selector, declaration.property)
+-			shipped.set(pair, (shipped.get(pair) ?? false) || declaration.important)
++			const pair = `${declaration.selector} { ${declaration.property} }`
++			shipped.set(pair, new Set([...(shipped.get(pair) ?? []), declaration.important]))
+ 		}
+-		const seen = new Set<string>()
+ 		const mismatches: string[] = []
+ 		let compared = 0
+-		for (const declaration of release.declarations) {
+-			const pair = key(declaration.selector, declaration.property)
+-			const important = shipped.get(pair)
+-			if (important === undefined || seen.has(pair)) continue
+-			seen.add(pair)
++		for (const [pair, priorities] of written) {
++			const carried = shipped.get(pair)
++			if (carried === undefined) continue
+ 			compared += 1
+-			if (important !== declaration.important)
++			if (priorities.size !== carried.size || [...priorities].some((entry) => !carried.has(entry)))
+ 				mismatches.push(
+-					`${pair}: release ${declaration.important ? 'important' : 'normal'}, cascade ${important ? 'important' : 'normal'}`,
++					`${pair}: release ${[...priorities].map((entry) => (entry ? 'important' : 'normal')).join(' and ')}, cascade ${[...carried].map((entry) => (entry ? 'important' : 'normal')).join(' and ')}`,
+ 				)
+ 		}
+ 		expect(compared).toBeGreaterThan(0)
+@@ -429,6 +436,7 @@ describe('Bootstrap source order', () => {
+ 			'close',
+ 			'carousel',
+ 			'spinners',
++			'offcanvas',
+ 			'placeholders',
+ 		])
+ 		const bootstrapSource = readFileSync(
+@@ -455,6 +463,7 @@ describe('Bootstrap source order', () => {
+ 			'close',
+ 			'carousel',
+ 			'spinner',
++			'offcanvas',
+ 			'placeholder',
+ 		])
+ 		const scss = resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'scss')
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 74c28ed..2b9e2d2 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -277,6 +277,16 @@ export type CaptureSubject =
+ 	| 'Navbar expand lg'
+ 	| 'Navbar expand xl'
+ 	| 'Navbar expand xxl'
++	| 'Start offcanvas'
++	| 'End offcanvas'
++	| 'Top offcanvas'
++	| 'Bottom offcanvas'
++	| 'Responsive offcanvas sm'
++	| 'Responsive offcanvas md'
++	| 'Responsive offcanvas lg'
++	| 'Responsive offcanvas xl'
++	| 'Responsive offcanvas xxl'
++	| 'Navbar with offcanvas'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -473,6 +483,14 @@ export const SHOWCASE_KEYS: readonly CaptureKey[] = Object.freeze([
+  * frames already carry. The Carousel region renders none of these, and the
+  * `tests/src/styles/components/carousel.test.ts` file reads each of them on its own elements.
+  *
++ * An offcanvas panel carrying the engine's `showing` or `hiding` class and a backdrop carrying the
++ * `fade` class alone are declined because each is a moment of a transition a template never
++ * writes: a showing panel paints the shown frame, a hiding panel rests past its edge where the
++ * shell's frame clips it, and a fading backdrop paints nothing. The Offcanvas region renders none of
++ * these, and the `tests/src/styles/components/offcanvas.test.ts` file reads each of them on its own
++ * elements. The `.offcanvas-xxl` panel's inline state takes no frame either, because its breakpoint
++ * is wider than every registered variant, and that file reads it at the breakpoint.
++ *
+  * A key whose recorded rule resolves `display: none` at rest names the surrounding region rather
+  * than the element the key ships: that element's own box clips to no pixel, so a frame declared on
+  * it reads back nothing. Its declared region is the element that hosts it, and the collapse itself
+@@ -1648,6 +1666,66 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.navbar-expand-xxl',
+ 		property: 'flex-wrap',
+ 	}),
++	Object.freeze({
++		scenario: 'start-offcanvas',
++		subject: 'Start offcanvas',
++		selector: '.offcanvas-start',
++		property: 'transform',
++	}),
++	Object.freeze({
++		scenario: 'end-offcanvas',
++		subject: 'End offcanvas',
++		selector: '.offcanvas-end',
++		property: 'transform',
++	}),
++	Object.freeze({
++		scenario: 'top-offcanvas',
++		subject: 'Top offcanvas',
++		selector: '.offcanvas-top',
++		property: 'transform',
++	}),
++	Object.freeze({
++		scenario: 'bottom-offcanvas',
++		subject: 'Bottom offcanvas',
++		selector: '.offcanvas-bottom',
++		property: 'transform',
++	}),
++	Object.freeze({
++		scenario: 'responsive-offcanvas-sm',
++		subject: 'Responsive offcanvas sm',
++		selector: '.offcanvas-sm',
++		property: 'position',
++	}),
++	Object.freeze({
++		scenario: 'responsive-offcanvas-md',
++		subject: 'Responsive offcanvas md',
++		selector: '.offcanvas-md',
++		property: 'position',
++	}),
++	Object.freeze({
++		scenario: 'responsive-offcanvas-lg',
++		subject: 'Responsive offcanvas lg',
++		selector: '.offcanvas-lg',
++		property: 'position',
++	}),
++	Object.freeze({
++		scenario: 'responsive-offcanvas-xl',
++		subject: 'Responsive offcanvas xl',
++		selector: '.offcanvas-xl',
++		property: 'position',
++	}),
++	Object.freeze({
++		scenario: 'responsive-offcanvas-xxl',
++		subject: 'Responsive offcanvas xxl',
++		selector: '.offcanvas-xxl',
++		property: 'position',
++	}),
++	Object.freeze({
++		scenario: 'navbar-with-offcanvas',
++		subject: 'Navbar with offcanvas',
++		selector: '.navbar-expand-lg .offcanvas',
++		property: 'position',
++	}),
+ ])
+ 
+ /**
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index e6b3798..ae30c40 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1449,6 +1449,7 @@ describe('server setup', () => {
+ 				'mw',
+ 				'nav',
+ 				'navbar',
++				'offcanvas',
+ 				'offset',
+ 				'order',
+ 				'pagination',
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index d75c65a..1897405 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -146,6 +146,10 @@ import {
+ 	NAVBAR_MARKUP,
+ 	NAVBAR_PAINT_MOVE_CASES,
+ 	NAVBAR_SELECTORS,
++	OFFCANVAS_GEOMETRY,
++	OFFCANVAS_PLACEMENTS,
++	OFFCANVAS_SELECTORS,
++	OFFCANVAS_STATE_CASES,
+ 	PAGINATION_MARKUP,
+ 	PAGINATION_PARENT_CASES,
+ 	PAGINATION_SELECTORS,
+@@ -375,6 +379,12 @@ describe('styles setup', () => {
+ 				'NAV_ROW_CASES',
+ 				'NAV_SELECTORS',
+ 				'NEUTRAL_MARKUP',
++				'OFFCANVAS_FRAME',
++				'OFFCANVAS_GEOMETRY',
++				'OFFCANVAS_MARKUP',
++				'OFFCANVAS_PLACEMENTS',
++				'OFFCANVAS_SELECTORS',
++				'OFFCANVAS_STATE_CASES',
+ 				'OFFSET_EDGES',
+ 				'OFFSET_STEP_CASES',
+ 				'PAGINATION_MARKUP',
+@@ -2909,6 +2919,124 @@ describe('carousel case tables', () => {
+ 	})
+ })
+ 
++describe('offcanvas case tables', () => {
++	it('partitions the recorded offcanvas vocabulary between the offcanvas selectors and the navbar combinators', () => {
++		const recorded = new Set(oracle.components.offcanvas.selectors.map(({ selector }) => selector))
++		// The expanded navbar combinators are recorded under the offcanvas key and the navbar key alike
++		// and ship from the navbar partial, so the navbar list carries them and this table does not.
++		// A selector neither side carries reddens here, and so does one the inventory stops recording.
++		const combinators = NAVBAR_SELECTORS.filter((selector) => recorded.has(selector))
++		expect(combinators).not.toStrictEqual([])
++		expect(combinators.filter((selector) => !selector.startsWith('.navbar-expand'))).toEqual([])
++		expect(new Set([...OFFCANVAS_SELECTORS, ...combinators])).toEqual(recorded)
++		expect(OFFCANVAS_SELECTORS.filter((selector) => combinators.includes(selector))).toEqual([])
++		expect(new Set(OFFCANVAS_SELECTORS).size).toBe(OFFCANVAS_SELECTORS.length)
++		// The header's close combinator is recorded under the close key as well, and ships from the
++		// offcanvas partial rather than waiting under the deferred list.
++		expect(OFFCANVAS_SELECTORS).toContain('.offcanvas-header .btn-close')
++		expect(CLOSE_SELECTORS).toContain('.offcanvas-header .btn-close')
++		expect(CLOSE_DEFERRED).not.toContain('.offcanvas-header .btn-close')
++	})
++	it('derives each placement, each state, and the panel geometry from the official declarations', () => {
++		// Each declaration is keyed by its selector, its condition, and its property, because the
++		// release writes the panel's own declarations again under each responsive boundary.
++		const declared = new Map<string, string>(
++			oracle.components.offcanvas.selectors.flatMap(({ selector, condition, declarations }) =>
++				declarations.map(
++					({ property, value }) =>
++						[`${selector} ${condition ?? ''} { ${property} }`, value] as const,
++				),
++			),
++		)
++		const bare = oracle.components.offcanvas.selectors.filter(
++			({ condition }) => condition === undefined,
++		)
++		// Each placement's row is read back from the bare panel's recorded rule for that placement:
++		// the offsets it writes as zero, the side its border is drawn on, and the axis and direction
++		// of its translation.
++		const placed = bare.flatMap(({ selector, declarations }) => {
++			const placement = /^\.offcanvas\.offcanvas-([a-z]+)$/u.exec(selector)?.[1]
++			if (placement === undefined) return []
++			const values = new Map(declarations.map(({ property, value }) => [property, value]))
++			const slide = /^translate([XY])\((-?)100%\)$/u.exec(values.get('transform') ?? '')
++			return [
++				{
++					placement,
++					edges: ['top', 'right', 'bottom', 'left'].filter((edge) => values.get(edge) === '0'),
++					side: declarations
++						.map(({ property }) => /^border-([a-z]+)$/u.exec(property)?.[1])
++						.find((edge) => edge !== undefined),
++					axis: slide?.[1],
++					sign: slide?.[2] === '-' ? -1 : 1,
++				},
++			]
++		})
++		expect(OFFCANVAS_PLACEMENTS.map((entry) => ({ ...entry, edges: [...entry.edges] }))).toEqual(
++			placed,
++		)
++		expect(declared.get('.offcanvas  { bottom }')).toBe('0')
++		// Each state row is read back from the bare panel's recorded state rules: a state paints where
++		// a rule naming one of its classes writes the visible value, and keeps its slide where no
++		// rule clearing the transform matches its classes, a negated class included.
++		const states = bare.flatMap(({ selector, declarations: written }) => {
++			const match = /^\.offcanvas\.([a-z]+)(?::not\(\.([a-z]+)\))?$/u.exec(selector)
++			return match === null
++				? []
++				: written.map(({ property, value }) => ({
++						present: match[1] ?? '',
++						absent: match[2],
++						property,
++						value,
++					}))
++		})
++		for (const { classes, visible, slid } of OFFCANVAS_STATE_CASES) {
++			const carried = classes.split(' ').filter((name) => name.length > 0)
++			const matched = states.filter(
++				({ present, absent }) =>
++					carried.includes(present) && (absent === undefined || !carried.includes(absent)),
++			)
++			expect({ classes, visible, slid }).toEqual({
++				classes,
++				visible: matched.some(
++					({ property, value }) => property === 'visibility' && value === 'visible',
++				),
++				slid: !matched.some(({ property, value }) => property === 'transform' && value === 'none'),
++			})
++		}
++		expect(
++			OFFCANVAS_STATE_CASES.flatMap(({ classes }) => classes.split(' ')).filter(
++				(name) => name.length > 0 && !states.some(({ present }) => present === name),
++			),
++		).toEqual([])
++		const { width, height, inset, opacity, panel, backdrop } = OFFCANVAS_GEOMETRY
++		expect(declared.get('.offcanvas  { --bs-offcanvas-width }')).toBe(`${String(width)}px`)
++		expect(declared.get('.offcanvas  { --bs-offcanvas-height }')).toBe(`${String(height)}vh`)
++		expect(declared.get('.offcanvas  { --bs-offcanvas-padding-x }')).toBe(
++			`${String(inset / 16)}rem`,
++		)
++		expect(declared.get('.offcanvas  { --bs-offcanvas-padding-y }')).toBe(
++			`${String(inset / 16)}rem`,
++		)
++		expect(declared.get('.offcanvas  { --bs-offcanvas-zindex }')).toBe(panel)
++		expect(declared.get('.offcanvas-backdrop  { z-index }')).toBe(backdrop)
++		expect(declared.get('.offcanvas-backdrop.fade  { opacity }')).toBe('0')
++		expect(declared.get('.offcanvas-backdrop.show  { opacity }')).toBe(opacity)
++	})
++	it('freezes every offcanvas case table and each of its entries', () => {
++		for (const table of [
++			OFFCANVAS_SELECTORS,
++			OFFCANVAS_PLACEMENTS,
++			OFFCANVAS_STATE_CASES,
++			OFFCANVAS_GEOMETRY,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		expect(OFFCANVAS_STATE_CASES.every((entry) => Object.isFrozen(entry))).toBe(true)
++		expect(
++			OFFCANVAS_PLACEMENTS.every((entry) => Object.isFrozen(entry) && Object.isFrozen(entry.edges)),
++		).toBe(true)
++	})
++})
++
+ describe('check case tables', () => {
+ 	it('partitions the recorded check vocabulary between the check selectors and the validation rules', () => {
+ 		const recorded = new Set(
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index b5af4ea..bcff8b3 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -4572,13 +4572,13 @@ export const CLOSE_SELECTORS = Object.freeze([
+ 	'.btn-close.disabled',
+ 	'.btn-close-white',
+ 	'.alert-dismissible .btn-close',
++	'.offcanvas-header .btn-close',
+ ])
+ 
+ /** Lists the official `.btn-close` combinators the overlay components still owe. */
+ export const CLOSE_DEFERRED = Object.freeze([
+ 	'.toast-header .btn-close',
+ 	'.modal-header .btn-close',
+-	'.offcanvas-header .btn-close',
+ ])
+ 
+ /**
+@@ -4664,6 +4664,145 @@ export const CAROUSEL_MARKS = Object.freeze({
+ /** Holds the recorded filter the dark carousel class and the dark theme scope both declare. */
+ export const CAROUSEL_INVERSION = 'invert(1) grayscale(100)'
+ 
++/**
++ * Lists every official `.offcanvas` selector the offcanvas partial writes, once each.
++ *
++ * @remarks
++ * The release writes each placement and state rule for the bare panel and again for each
++ * responsive panel below its boundary, and records the panel's transition again under the
++ * reduced-motion query. The list carries each selector once. The key also records the expanded
++ * navbar combinators, which ship from the navbar partial and sit in the {@link NAVBAR_SELECTORS}
++ * constant, so they are not listed here: the `tests/setupStyles.test.ts` proof adds them back from
++ * that list and holds the union against the offcanvas key. The header's close combinator is
++ * recorded under the offcanvas key and under the close key alike, so it sits in this table and in
++ * the {@link CLOSE_SELECTORS} constant.
++ */
++export const OFFCANVAS_SELECTORS: readonly string[] = Object.freeze([
++	...GRID_BREAKPOINT_CASES.flatMap(({ name, boundary }) => {
++		const panel = boundary === 0 ? '.offcanvas' : `.offcanvas-${name}`
++		return [
++			panel,
++			`${panel}.offcanvas-start`,
++			`${panel}.offcanvas-end`,
++			`${panel}.offcanvas-top`,
++			`${panel}.offcanvas-bottom`,
++			`${panel}.showing`,
++			`${panel}.show:not(.hiding)`,
++			`${panel}.hiding`,
++			`${panel}.show`,
++			...(boundary === 0 ? [] : [`${panel} .offcanvas-header`, `${panel} .offcanvas-body`]),
++		]
++	}),
++	'.offcanvas-backdrop',
++	'.offcanvas-backdrop.fade',
++	'.offcanvas-backdrop.show',
++	'.offcanvas-header',
++	'.offcanvas-header .btn-close',
++	'.offcanvas-title',
++	'.offcanvas-body',
++])
++
++/**
++ * Pins each placement class to the edges it holds a fixed panel against, the side it draws the
++ * panel's inner border on, and the axis and direction it slides the panel out along.
++ *
++ * @remarks
++ * The `edges` field names the offsets the placement writes as zero, beside the bottom offset every
++ * fixed panel carries. The `axis` field names the translation the placement writes, and the `sign`
++ * field its direction: a whole panel's width or height toward the edge it is pinned to.
++ */
++export const OFFCANVAS_PLACEMENTS = Object.freeze([
++	Object.freeze({
++		placement: 'start',
++		edges: Object.freeze(['top', 'left'] as const),
++		side: 'right',
++		axis: 'X',
++		sign: -1,
++	}),
++	Object.freeze({
++		placement: 'end',
++		edges: Object.freeze(['top', 'right'] as const),
++		side: 'left',
++		axis: 'X',
++		sign: 1,
++	}),
++	Object.freeze({
++		placement: 'top',
++		edges: Object.freeze(['top', 'right', 'left'] as const),
++		side: 'bottom',
++		axis: 'Y',
++		sign: -1,
++	}),
++	Object.freeze({
++		placement: 'bottom',
++		edges: Object.freeze(['right', 'left'] as const),
++		side: 'top',
++		axis: 'Y',
++		sign: 1,
++	}),
++])
++
++/**
++ * Holds the inline style of the frame an offcanvas proof mounts its panels in.
++ *
++ * @remarks
++ * A fixed panel is placed against its containing block, and paint containment makes the frame that
++ * block, as the shell's `viewport` frame is for the showcase. The frame is wider than a side panel's
++ * recorded width, so a side panel takes that width rather than the frame's.
++ */
++export const OFFCANVAS_FRAME =
++	'position: relative; width: 800px; height: 600px; contain: layout paint'
++
++/**
++ * Supplies the header and body of one offcanvas panel: a title and a close control in the header,
++ * and a paragraph and a close control of the body's own.
++ *
++ * @remarks
++ * A proof wraps it in a panel carrying the class and state the case reads. Each close control is
++ * marked by its `data-control` attribute, so a case reads the header's control beside the one
++ * outside the header.
++ */
++export const OFFCANVAS_MARKUP =
++	'<div class="offcanvas-header"><h5 class="offcanvas-title">Harbor routes</h5><button type="button" class="btn-close" aria-label="Close" data-control="header"></button></div><div class="offcanvas-body"><p>North pier and south pier.</p><button type="button" class="btn-close" aria-label="Close" data-control="body"></button></div>'
++
++/**
++ * Lists each state a panel's classes can set, with whether the panel paints and whether it rests
++ * slid past its edge.
++ *
++ * @remarks
++ * The `classes` field is the class list beside the panel and placement classes, empty for a
++ * resting panel. The `showing` and `hiding` classes are the ones the offcanvas script writes while
++ * a panel slides in and out, and the `show` class is the one it leaves on a shown panel. The
++ * `visible` field is whether the panel paints and the `slid` field whether it keeps the slide its
++ * placement writes.
++ */
++export const OFFCANVAS_STATE_CASES = Object.freeze([
++	Object.freeze({ classes: '', visible: false, slid: true }),
++	Object.freeze({ classes: 'show', visible: true, slid: false }),
++	Object.freeze({ classes: 'showing', visible: true, slid: false }),
++	Object.freeze({ classes: 'hiding', visible: true, slid: true }),
++	Object.freeze({ classes: 'show hiding', visible: true, slid: true }),
++])
++
++/**
++ * Pins the offcanvas panel's recorded lengths, the backdrop's shown opacity, and the stacking level
++ * of the panel and the backdrop, in CSS pixels and viewport units at the published factors.
++ *
++ * @remarks
++ * The `width` field is a side panel's width and the `height` field an edge panel's height in
++ * viewport-height units. The `inset` field is the header's and the body's inset. The `panel` and
++ * `backdrop` fields are the levels the release writes, which the drawer rungs of the stacking
++ * ladder hold.
++ */
++export const OFFCANVAS_GEOMETRY = Object.freeze({
++	width: 400,
++	height: 30,
++	inset: 16,
++	opacity: '0.5',
++	panel: '1045',
++	backdrop: '1040',
++})
++
+ /**
+  * Lists every selector the official check vocabulary records that the check partial emits, once
+  * each.

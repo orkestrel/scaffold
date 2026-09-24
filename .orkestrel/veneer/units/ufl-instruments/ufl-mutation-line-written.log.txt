@@ -1,0 +1,16 @@
+mutation: line-written
+site: tests/fixtures/tailwind/consumer.css
+--- replaced
+end-100 start-0
+--- with
+end-100 float-start start-0
+---
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project service
+build exit: skipped
+command exit: 1
+summary: Tests  4 failed | 14 passed (18)
+failing cases:
+tests/service/tailwind/consumer.test.ts > the consumer pairing > executes the recipe the guide ships, apart from the markup line each one names
+tests/service/tailwind/consumer.test.ts > the consumer pairing > derives the shared class names, and mounts an element for every one of them
+tests/service/tailwind/consumer.test.ts > the consumer pairing > keeps a shared name on the line while its importance covers only some of the longhands Tailwind declares
+tests/service/tailwind/profiles.test.ts > stylesheet profiles > holds every written copy of the exclusion line equal to the profile that declares it

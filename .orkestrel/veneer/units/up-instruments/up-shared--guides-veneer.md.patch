@@ -1,0 +1,184 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -746,8 +746,10 @@
+ | `src/styles/elements/_progress.scss`         | The progress family and its mandated pairs in the elements layer.                                                                                                                                                                                  |
+ | `src/styles/utilities/_visually-hidden.scss` | The visually hidden helper and its focusable form in the utilities layer, ahead of every utility partial.                                                                                                                                          |
+ | `src/styles/utilities/_position.scss`        | The position, offset, translation, and stacking utilities in the utilities layer.                                                                                                                                                                  |
++| `src/styles/utilities/_border.scss`          | The border side, color, width, and opacity utilities and the rounded utilities in the utilities layer.                                                                                                                                             |
+ | `src/styles/utilities/_sizing.scss`          | The width, height, maximum-size, and viewport-size utilities in the utilities layer.                                                                                                                                                               |
+ | `src/styles/utilities/_gap.scss`             | The gutter and gap step utilities in the utilities layer.                                                                                                                                                                                          |
++| `src/styles/utilities/_background.scss`      | The background fill, opacity, subtle, and gradient utilities in the utilities layer.                                                                                                                                                               |
+ | `src/styles/utilities/_visibility.scss`      | The visible and invisible utilities in the utilities layer.                                                                                                                                                                                        |
+ | `src/styles/utilities/_vertical-align.scss`  | The vertical-alignment utilities in the utilities layer.                                                                                                                                                                                           |
+ | `src/styles/utilities/_display.scss`         | The display utilities and their print pass in the utilities layer.                                                                                                                                                                                 |
+@@ -853,7 +855,7 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 border-1 border-2 border-3 border-4 border-5");
+ ```
+ 
+ The following recipe is the `preflight` profile, which takes the bare import so Tailwind's own reset
+@@ -866,7 +868,7 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 border-1 border-2 border-3 border-4 border-5");
+ ```
+ 
+ The workspace compiles the `tailwind` recipe as written. The `tests/fixtures/tailwind/consumer.css`
+@@ -928,15 +930,22 @@
+ longhand Veneer declares with `!important`. The `start-*` and `end-*` offsets stay on the line:
+ Tailwind's rule for each declares the logical `inset-inline-start` or `inset-inline-end` longhand,
+ and Veneer's important declaration is on the physical `left` or `right` longhand, which does not
+-cover it. The proof asserts that the `gap-3` name is in the branch and reads what the rule claims:
+-with the exclusion line dropped and Tailwind's own rule on the page, every element carrying a name
+-in the branch resolves, for every property that rule declares, what it resolves under the cascade
+-alone. Each element is read on the longhands its own name's rule declares, because a longhand
+-another name declares can move for a reason outside the equality: the gap rows sit inside the
+-`.container` element, whose width moves when the line is dropped, and the width steps declare the
+-`width` longhand. A planted rule drives the partial-importance case: it declares `!important` on the
+-`grid-column-start` longhand alone, leaving the `grid-column-end` longhand that Tailwind's `col-1`
+-rule also declares normal, and the equality still holds with the `col-1` class on the line.
++cover it. The `bg-black`, `bg-white`, `bg-transparent`, `border-black`, `border-white`, and
++`rounded` classes are shipped names off the line: Tailwind's rule for each declares the background
++color, the border color, or the corner radii that Veneer declares with the `!important` flag. So are
++the `border` and `border-0` classes: Tailwind's rule for each declares the border style and width
++longhands, and Veneer's `border` shorthand sets both with the `!important` flag. The `border-1` to
++`border-5` widths stay on the line: Tailwind's rule for each declares the border style longhands
++beside the widths, and Veneer's important declaration is on the widths alone. The proof asserts that
++the `gap-3` name is in the branch and reads what the rule claims: with the exclusion line dropped
++and Tailwind's own rule on the page, every element carrying a name in the branch resolves, for every
++property that rule declares, what it resolves under the cascade alone. Each element is read on the
++longhands its own name's rule declares, because a longhand another name declares can move for a
++reason outside the equality: the gap rows sit inside the `.container` element, whose width moves
++when the line is dropped, and the width steps declare the `width` longhand. A planted rule drives
++the partial-importance case: it declares `!important` on the `grid-column-start` longhand alone,
++leaving the `grid-column-end` longhand that Tailwind's `col-1` rule also declares normal, and the
++equality still holds with the `col-1` class on the line.
+ 
+ The workspace executes the profiles from `tests/setup.css` for the `tailwind` profile and
+ `tests/fixtures/tailwind/preflight.css` for the `preflight` profile. Those profiles scan a
+@@ -2928,6 +2937,86 @@
+ or not that rule is important, the escape inside the utilities layer, and a dark island. The
+ visibility keys carry no recorded departure.
+ 
++### Background utilities
++
++The background keys ship whole in the utilities layer from the
++`src/styles/utilities/_background.scss` partial: the `.bg-*` role, black, white, body, and
++transparent fills, the `.bg-opacity-*` steps, the `.bg-*-subtle` tiers, and the `.bg-gradient`
++class.
++
++Each role fill reads its role's channel alias, such as the `--bs-primary-rgb` property for the
++`.bg-primary` class, at the alpha the `--bs-bg-opacity` local holds, and the fill's own rule sets
++that local to `1`. So a retuned channel alias moves its fill, and an opacity step on the same
++element sets the fill's alpha: an element carrying the `.bg-success` and `.bg-opacity-25` classes
++paints the success role at a quarter of its opacity. A step alone paints nothing, and a step on an
++ancestor reaches no nested fill, because each fill sets the local in its own rule. The fills walk
++the roles Bootstrap names, so Veneer's own `tertiary` role writes no `.bg-tertiary` class. The
++`.bg-body`, `.bg-body-secondary`, and `.bg-body-tertiary` classes read the body surface channel
++aliases, and each `.bg-*-subtle` tier reads its role's `--bs-*-bg-subtle` alias. The theme
++re-declares those aliases in each mode, so the same class paints the dark surface inside a
++`data-bs-theme="dark"` island. The `.bg-gradient` class lays the image the `--bs-gradient` alias
++holds over whatever fill the element carries.
++
++The partial writes every fill, tier, and gradient through the `utility` mixin that § Styles
++describes, and the opacity steps through the `utility-variable` mixin. So each of those
++declarations carries the `!important` flag the release writes, and the opacity local and the
++opacity steps are normal declarations, as the release writes them: an unlayered rule of your own
++that sets the `--bs-bg-opacity` property reaches a fill, and one that sets the `background-color`
++property does not. The partial writes the entries in the release's map order, so every opacity step
++follows the fills it dims. No background key writes a breakpoint infix. § Styles shows the escape
++from an important utility inside the utilities layer.
++
++The `tests/src/styles/utilities/background.test.ts` proof reads each fill against its channel alias
++and a retune of every alias, the absence of a `tertiary` class, each opacity step and a step alone,
++the local on a nested fill, the subtle and body tiers in a light and a dark island, the gradient and
++its retune, the density factor, each class written once at no infix and read at every boundary and
++one pixel below it, the priority over a later unlayered rule, and the escape inside the utilities
++layer. The background keys carry no recorded departure.
++
++### Border utilities
++
++The border and rounded keys ship whole in the utilities layer from the
++`src/styles/utilities/_border.scss` partial: the `.border` class and its `.border-0` removal, the
++`.border-top`, `.border-end`, `.border-bottom`, and `.border-start` sides with their `-0` removals,
++the role, black, white, and subtle border colors, the `.border-1` to `.border-5` widths, the
++`.border-opacity-*` steps, and the `.rounded` class with its `.rounded-top`, `.rounded-end`,
++`.rounded-bottom`, and `.rounded-start` sides, each at the `0` to `5`, `circle`, and `pill` steps.
++
++The `.border` class draws the `--bs-border-width`, `--bs-border-style`, and `--bs-border-color`
++aliases. Those read the `--vn-border-width` token, the `--vn-border-style` token, and the border
++color the theme re-declares in each mode, so a retuned width token widens every default border and
++a dark island draws the dark border color. Each side class sets the physical side the release sets:
++the `.border-end` class sets the `border-right` property and the `.border-start` class the
++`border-left` property. The side entries follow the `border` entry in the release's map, so an
++element carrying the `.border` and `.border-top-0` classes draws every side but the top, whatever
++order the classes are written in. A border color reads its role's channel alias at the alpha the
++`--bs-border-opacity` local holds, as a background fill reads its own, and an opacity step sets that
++alpha. The widths stay literal, because no published Veneer token carries them.
++
++The rounded steps read the `--bs-border-radius-*` aliases, which read the `--vn-radius-*` tokens, so
++the `--vn-factor-radius` token scales the `.rounded` class and the `1` to `5` steps: a factor of `2`
++doubles the `.rounded-2` class from 6px to 12px. The `.rounded` class writes the `2` step's radius.
++Each side class rounds two corners, and the side entries follow the `rounded` entry in the map, so
++an element carrying the `.rounded-3` and `.rounded-top-0` classes squares its top corners and keeps
++its bottom ones. The release writes the rounded entries later in its map than the border entries;
++no utility between them sets a radius, so the partial writes them beside the border entries, and
++the placement moves no resolution.
++
++The partial writes every border, color, width, and radius through the `utility` mixin, so each
++declaration carries the `!important` flag the release writes, and it writes the opacity steps
++through the `utility-variable` mixin, so they and the opacity local stay normal. No border or
++rounded key writes a breakpoint infix. § Styles shows the escape from an important utility inside
++the utilities layer.
++
++The `tests/src/styles/utilities/border.test.ts` proof reads the default border against its aliases
++and a retuned width token, each side and each removal, each color against its channel alias and a
++retune of every alias, the absence of a `tertiary` class, each opacity step and a step alone, the
++default and subtle colors in a light and a dark island, each width over a whole border, each radius
++step against the value the release writes and under the radius factor, each side's corners and
++their order, the density factor, each class written once at no infix and read at every boundary and
++one pixel below it, the priority over a later unlayered rule, and the escape inside the utilities
++layer. The border and rounded keys carry no recorded departure.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -5492,6 +5581,11 @@
+ | invisible        | selector       | The official `.invisible` selector ships in the utilities layer; the hidden paint and the kept box are proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                | —                     | shipped  |
+ | navbar           | selector       | Every official `.navbar` selector ships in the components layer, the brand, nav list, text, collapsible content, toggler and its icon, scrolling list, expand ramp, expanded offcanvas panel, and dark retunes included, and the container combinators the key records ship from the container partial; resolved behavior is proved in `tests/src/styles/components/navbar.test.ts`.                                                                             | —                     | shipped  |
+ | navbar           | variable       | Every official `--bs-navbar-*` custom property is declared on the `.navbar` class, the color and toggler slots are retuned by the `.navbar-dark` class and the bar's own dark attribute, and the `.navbar-nav` class retunes the `--bs-nav-link-*` slots it records; each one is read beside the property it drives in `tests/src/styles/components/navbar.test.ts`.                                                                                             | —                     | shipped  |
++| bg               | selector       | Every official `.bg-*` role, body, transparent, subtle, and gradient selector and every `.bg-opacity-*` selector ships in the utilities layer; each resolved fill is proved in the `tests/src/styles/utilities/background.test.ts` proof.                                                                                                                                                                                                                        | —                     | shipped  |
++| bg               | variable       | The official `--bs-bg-opacity` property is declared on every role, black, white, body, and transparent fill and set by every `.bg-opacity-*` class; the alpha it drives is read in the `tests/src/styles/utilities/background.test.ts` proof.                                                                                                                                                                                                                    | —                     | shipped  |
++| border           | selector       | Every official `.border`, side, color, subtle, width, and `.border-opacity-*` selector ships in the utilities layer; each resolved edge is proved in the `tests/src/styles/utilities/border.test.ts` proof.                                                                                                                                                                                                                                                      | —                     | shipped  |
++| border           | variable       | The official `--bs-border-opacity` property is declared on every role, black, and white border color and set by every `.border-opacity-*` class; the alpha it drives is read in the `tests/src/styles/utilities/border.test.ts` proof.                                                                                                                                                                                                                           | —                     | shipped  |
++| rounded          | selector       | Every official `.rounded`, `.rounded-top`, `.rounded-end`, `.rounded-bottom`, and `.rounded-start` selector ships in the utilities layer; each resolved radius is proved in the `tests/src/styles/utilities/border.test.ts` proof.                                                                                                                                                                                                                               | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+ | engine           | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                                                                                                                                                                                                                                                         | —                     | accepted |
+ | engine           | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                                                                                                                                                                                                                                                    | —                     | accepted |
+@@ -5614,7 +5708,9 @@
+ [typography class specimens](../tests/app/browser/sections/TypeSection.test.ts),
+ [media class specimens](../tests/app/browser/sections/MediaSection.test.ts),
+ [alert specimens](../tests/app/browser/sections/AlertSection.test.ts),
++[background specimens](../tests/app/browser/sections/BackgroundSection.test.ts),
+ [badge specimens](../tests/app/browser/sections/BadgeSection.test.ts),
++[border specimens](../tests/app/browser/sections/BorderSection.test.ts),
+ [breadcrumb specimens](../tests/app/browser/sections/BreadcrumbSection.test.ts),
+ [button group specimens](../tests/app/browser/sections/ButtonGroupSection.test.ts),
+ [card specimens](../tests/app/browser/sections/CardSection.test.ts),
+@@ -5760,7 +5856,9 @@
+ [the position helpers](../tests/src/styles/components/position.test.ts),
+ [the sizing utilities](../tests/src/styles/utilities/sizing.test.ts),
+ [the visibility utilities](../tests/src/styles/utilities/visibility.test.ts),
+-[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts), and
++[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts),
++[the background utilities](../tests/src/styles/utilities/background.test.ts),
++[the border and rounded utilities](../tests/src/styles/utilities/border.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.

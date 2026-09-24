@@ -1,0 +1,108 @@
+recorded selector-condition sites: 105 built sites naming offcanvas classes: 105
+missing from cascade: []
+built beyond the record: []
+.navbar-expand .offcanvas @  | z-index: auto; flex-grow: 1; transition: none; position: static; visibility: visible !important; background-color: #0000 !important; border: 0 !important; width: auto !important; height: auto !important; transform: none !important
+.navbar-expand .offcanvas .offcanvas-header @  | display: none
+.navbar-expand .offcanvas .offcanvas-body @  | flex-grow: 0; padding: 0; display: flex; overflow-y: visible
+.navbar-expand-sm .offcanvas @ (width>=576px) | z-index: auto; flex-grow: 1; transition: none; position: static; visibility: visible !important; background-color: #0000 !important; border: 0 !important; width: auto !important; height: auto !important; transform: none !important
+.navbar-expand-sm .offcanvas .offcanvas-header @ (width>=576px) | display: none
+.navbar-expand-sm .offcanvas .offcanvas-body @ (width>=576px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible
+.navbar-expand-md .offcanvas @ (width>=768px) | z-index: auto; flex-grow: 1; transition: none; position: static; visibility: visible !important; background-color: #0000 !important; border: 0 !important; width: auto !important; height: auto !important; transform: none !important
+.navbar-expand-md .offcanvas .offcanvas-header @ (width>=768px) | display: none
+.navbar-expand-md .offcanvas .offcanvas-body @ (width>=768px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible
+.navbar-expand-lg .offcanvas @ (width>=992px) | z-index: auto; flex-grow: 1; transition: none; position: static; visibility: visible !important; background-color: #0000 !important; border: 0 !important; width: auto !important; height: auto !important; transform: none !important
+.navbar-expand-lg .offcanvas .offcanvas-header @ (width>=992px) | display: none
+.navbar-expand-lg .offcanvas .offcanvas-body @ (width>=992px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible
+.navbar-expand-xl .offcanvas @ (width>=1200px) | z-index: auto; flex-grow: 1; transition: none; position: static; visibility: visible !important; background-color: #0000 !important; border: 0 !important; width: auto !important; height: auto !important; transform: none !important
+.navbar-expand-xl .offcanvas .offcanvas-header @ (width>=1200px) | display: none
+.navbar-expand-xl .offcanvas .offcanvas-body @ (width>=1200px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible
+.navbar-expand-xxl .offcanvas @ (width>=1400px) | z-index: auto; flex-grow: 1; transition: none; position: static; visibility: visible !important; background-color: #0000 !important; border: 0 !important; width: auto !important; height: auto !important; transform: none !important
+.navbar-expand-xxl .offcanvas .offcanvas-header @ (width>=1400px) | display: none
+.navbar-expand-xxl .offcanvas .offcanvas-body @ (width>=1400px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible
+.offcanvas @  | --bs-offcanvas-zindex: var(--vn-stack-drawer-base); --bs-offcanvas-width: 400px; --bs-offcanvas-height: 30vh; --bs-offcanvas-padding-x: var(--vn-space-8); --bs-offcanvas-padding-y: var(--vn-space-8); --bs-offcanvas-color: var(--bs-body-color); --bs-offcanvas-bg: var(--bs-body-bg); --bs-offcanvas-border-width: var(--bs-border-width); --bs-offcanvas-border-color: var(--bs-border-color-translucent); --bs-offcanvas-box-shadow: var(--bs-box-shadow-sm); --bs-offcanvas-transition: transform .3s ease-in-out; --bs-offcanvas-title-line-height: var(--vn-line-body); z-index: var(--bs-offcanvas-zindex); max-width: 100%; color: var(--bs-offcanvas-color); visibility: hidden; background-color: var(--bs-offcanvas-bg); transition: var(--bs-offcanvas-transition); background-clip: padding-box; outline: 0; flex-direction: column; display: flex; position: fixed; bottom: 0
+.offcanvas-sm @  | --bs-offcanvas-zindex: var(--vn-stack-drawer-base); --bs-offcanvas-width: 400px; --bs-offcanvas-height: 30vh; --bs-offcanvas-padding-x: var(--vn-space-8); --bs-offcanvas-padding-y: var(--vn-space-8); --bs-offcanvas-color: var(--bs-body-color); --bs-offcanvas-bg: var(--bs-body-bg); --bs-offcanvas-border-width: var(--bs-border-width); --bs-offcanvas-border-color: var(--bs-border-color-translucent); --bs-offcanvas-box-shadow: var(--bs-box-shadow-sm); --bs-offcanvas-transition: transform .3s ease-in-out; --bs-offcanvas-title-line-height: var(--vn-line-body)
+.offcanvas-md @  | --bs-offcanvas-zindex: var(--vn-stack-drawer-base); --bs-offcanvas-width: 400px; --bs-offcanvas-height: 30vh; --bs-offcanvas-padding-x: var(--vn-space-8); --bs-offcanvas-padding-y: var(--vn-space-8); --bs-offcanvas-color: var(--bs-body-color); --bs-offcanvas-bg: var(--bs-body-bg); --bs-offcanvas-border-width: var(--bs-border-width); --bs-offcanvas-border-color: var(--bs-border-color-translucent); --bs-offcanvas-box-shadow: var(--bs-box-shadow-sm); --bs-offcanvas-transition: transform .3s ease-in-out; --bs-offcanvas-title-line-height: var(--vn-line-body)
+.offcanvas-lg @  | --bs-offcanvas-zindex: var(--vn-stack-drawer-base); --bs-offcanvas-width: 400px; --bs-offcanvas-height: 30vh; --bs-offcanvas-padding-x: var(--vn-space-8); --bs-offcanvas-padding-y: var(--vn-space-8); --bs-offcanvas-color: var(--bs-body-color); --bs-offcanvas-bg: var(--bs-body-bg); --bs-offcanvas-border-width: var(--bs-border-width); --bs-offcanvas-border-color: var(--bs-border-color-translucent); --bs-offcanvas-box-shadow: var(--bs-box-shadow-sm); --bs-offcanvas-transition: transform .3s ease-in-out; --bs-offcanvas-title-line-height: var(--vn-line-body)
+.offcanvas-xl @  | --bs-offcanvas-zindex: var(--vn-stack-drawer-base); --bs-offcanvas-width: 400px; --bs-offcanvas-height: 30vh; --bs-offcanvas-padding-x: var(--vn-space-8); --bs-offcanvas-padding-y: var(--vn-space-8); --bs-offcanvas-color: var(--bs-body-color); --bs-offcanvas-bg: var(--bs-body-bg); --bs-offcanvas-border-width: var(--bs-border-width); --bs-offcanvas-border-color: var(--bs-border-color-translucent); --bs-offcanvas-box-shadow: var(--bs-box-shadow-sm); --bs-offcanvas-transition: transform .3s ease-in-out; --bs-offcanvas-title-line-height: var(--vn-line-body)
+.offcanvas-xxl @  | --bs-offcanvas-zindex: var(--vn-stack-drawer-base); --bs-offcanvas-width: 400px; --bs-offcanvas-height: 30vh; --bs-offcanvas-padding-x: var(--vn-space-8); --bs-offcanvas-padding-y: var(--vn-space-8); --bs-offcanvas-color: var(--bs-body-color); --bs-offcanvas-bg: var(--bs-body-bg); --bs-offcanvas-border-width: var(--bs-border-width); --bs-offcanvas-border-color: var(--bs-border-color-translucent); --bs-offcanvas-box-shadow: var(--bs-box-shadow-sm); --bs-offcanvas-transition: transform .3s ease-in-out; --bs-offcanvas-title-line-height: var(--vn-line-body)
+.offcanvas-sm @ (width<576px) | z-index: var(--bs-offcanvas-zindex); max-width: 100%; color: var(--bs-offcanvas-color); visibility: hidden; background-color: var(--bs-offcanvas-bg); transition: var(--bs-offcanvas-transition); background-clip: padding-box; outline: 0; flex-direction: column; display: flex; position: fixed; bottom: 0
+.offcanvas-sm @ (width<576px)and(prefers-reduced-motion:reduce) | transition: none
+.offcanvas-sm.offcanvas-start @ (width<576px) | width: var(--bs-offcanvas-width); border-right: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; left: 0; transform: translate(-100%)
+.offcanvas-sm.offcanvas-end @ (width<576px) | width: var(--bs-offcanvas-width); border-left: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; right: 0; transform: translate(100%)
+.offcanvas-sm.offcanvas-top @ (width<576px) | height: var(--bs-offcanvas-height); border-bottom: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; top: 0; left: 0; right: 0; transform: translateY(-100%)
+.offcanvas-sm.offcanvas-bottom @ (width<576px) | height: var(--bs-offcanvas-height); border-top: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; left: 0; right: 0; transform: translateY(100%)
+.offcanvas-sm.showing @ (width<576px) | transform: none; visibility: visible
+.offcanvas-sm.show:not(.hiding) @ (width<576px) | transform: none
+.offcanvas-sm.hiding @ (width<576px) | visibility: visible
+.offcanvas-sm.show @ (width<576px) | visibility: visible
+.offcanvas-sm @ (width>=576px) | --bs-offcanvas-height: auto; --bs-offcanvas-border-width: 0; background-color: #0000 !important
+.offcanvas-sm .offcanvas-header @ (width>=576px) | display: none
+.offcanvas-sm .offcanvas-body @ (width>=576px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible; background-color: #0000 !important
+.offcanvas-md @ (width<768px) | z-index: var(--bs-offcanvas-zindex); max-width: 100%; color: var(--bs-offcanvas-color); visibility: hidden; background-color: var(--bs-offcanvas-bg); transition: var(--bs-offcanvas-transition); background-clip: padding-box; outline: 0; flex-direction: column; display: flex; position: fixed; bottom: 0
+.offcanvas-md @ (width<768px)and(prefers-reduced-motion:reduce) | transition: none
+.offcanvas-md.offcanvas-start @ (width<768px) | width: var(--bs-offcanvas-width); border-right: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; left: 0; transform: translate(-100%)
+.offcanvas-md.offcanvas-end @ (width<768px) | width: var(--bs-offcanvas-width); border-left: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; right: 0; transform: translate(100%)
+.offcanvas-md.offcanvas-top @ (width<768px) | height: var(--bs-offcanvas-height); border-bottom: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; top: 0; left: 0; right: 0; transform: translateY(-100%)
+.offcanvas-md.offcanvas-bottom @ (width<768px) | height: var(--bs-offcanvas-height); border-top: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; left: 0; right: 0; transform: translateY(100%)
+.offcanvas-md.showing @ (width<768px) | transform: none; visibility: visible
+.offcanvas-md.show:not(.hiding) @ (width<768px) | transform: none
+.offcanvas-md.hiding @ (width<768px) | visibility: visible
+.offcanvas-md.show @ (width<768px) | visibility: visible
+.offcanvas-md @ (width>=768px) | --bs-offcanvas-height: auto; --bs-offcanvas-border-width: 0; background-color: #0000 !important
+.offcanvas-md .offcanvas-header @ (width>=768px) | display: none
+.offcanvas-md .offcanvas-body @ (width>=768px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible; background-color: #0000 !important
+.offcanvas-lg @ (width<992px) | z-index: var(--bs-offcanvas-zindex); max-width: 100%; color: var(--bs-offcanvas-color); visibility: hidden; background-color: var(--bs-offcanvas-bg); transition: var(--bs-offcanvas-transition); background-clip: padding-box; outline: 0; flex-direction: column; display: flex; position: fixed; bottom: 0
+.offcanvas-lg @ (width<992px)and(prefers-reduced-motion:reduce) | transition: none
+.offcanvas-lg.offcanvas-start @ (width<992px) | width: var(--bs-offcanvas-width); border-right: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; left: 0; transform: translate(-100%)
+.offcanvas-lg.offcanvas-end @ (width<992px) | width: var(--bs-offcanvas-width); border-left: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; right: 0; transform: translate(100%)
+.offcanvas-lg.offcanvas-top @ (width<992px) | height: var(--bs-offcanvas-height); border-bottom: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; top: 0; left: 0; right: 0; transform: translateY(-100%)
+.offcanvas-lg.offcanvas-bottom @ (width<992px) | height: var(--bs-offcanvas-height); border-top: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; left: 0; right: 0; transform: translateY(100%)
+.offcanvas-lg.showing @ (width<992px) | transform: none; visibility: visible
+.offcanvas-lg.show:not(.hiding) @ (width<992px) | transform: none
+.offcanvas-lg.hiding @ (width<992px) | visibility: visible
+.offcanvas-lg.show @ (width<992px) | visibility: visible
+.offcanvas-lg @ (width>=992px) | --bs-offcanvas-height: auto; --bs-offcanvas-border-width: 0; background-color: #0000 !important
+.offcanvas-lg .offcanvas-header @ (width>=992px) | display: none
+.offcanvas-lg .offcanvas-body @ (width>=992px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible; background-color: #0000 !important
+.offcanvas-xl @ (width<1200px) | z-index: var(--bs-offcanvas-zindex); max-width: 100%; color: var(--bs-offcanvas-color); visibility: hidden; background-color: var(--bs-offcanvas-bg); transition: var(--bs-offcanvas-transition); background-clip: padding-box; outline: 0; flex-direction: column; display: flex; position: fixed; bottom: 0
+.offcanvas-xl @ (width<1200px)and(prefers-reduced-motion:reduce) | transition: none
+.offcanvas-xl.offcanvas-start @ (width<1200px) | width: var(--bs-offcanvas-width); border-right: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; left: 0; transform: translate(-100%)
+.offcanvas-xl.offcanvas-end @ (width<1200px) | width: var(--bs-offcanvas-width); border-left: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; right: 0; transform: translate(100%)
+.offcanvas-xl.offcanvas-top @ (width<1200px) | height: var(--bs-offcanvas-height); border-bottom: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; top: 0; left: 0; right: 0; transform: translateY(-100%)
+.offcanvas-xl.offcanvas-bottom @ (width<1200px) | height: var(--bs-offcanvas-height); border-top: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; left: 0; right: 0; transform: translateY(100%)
+.offcanvas-xl.showing @ (width<1200px) | transform: none; visibility: visible
+.offcanvas-xl.show:not(.hiding) @ (width<1200px) | transform: none
+.offcanvas-xl.hiding @ (width<1200px) | visibility: visible
+.offcanvas-xl.show @ (width<1200px) | visibility: visible
+.offcanvas-xl @ (width>=1200px) | --bs-offcanvas-height: auto; --bs-offcanvas-border-width: 0; background-color: #0000 !important
+.offcanvas-xl .offcanvas-header @ (width>=1200px) | display: none
+.offcanvas-xl .offcanvas-body @ (width>=1200px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible; background-color: #0000 !important
+.offcanvas-xxl @ (width<1400px) | z-index: var(--bs-offcanvas-zindex); max-width: 100%; color: var(--bs-offcanvas-color); visibility: hidden; background-color: var(--bs-offcanvas-bg); transition: var(--bs-offcanvas-transition); background-clip: padding-box; outline: 0; flex-direction: column; display: flex; position: fixed; bottom: 0
+.offcanvas-xxl @ (width<1400px)and(prefers-reduced-motion:reduce) | transition: none
+.offcanvas-xxl.offcanvas-start @ (width<1400px) | width: var(--bs-offcanvas-width); border-right: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; left: 0; transform: translate(-100%)
+.offcanvas-xxl.offcanvas-end @ (width<1400px) | width: var(--bs-offcanvas-width); border-left: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; right: 0; transform: translate(100%)
+.offcanvas-xxl.offcanvas-top @ (width<1400px) | height: var(--bs-offcanvas-height); border-bottom: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; top: 0; left: 0; right: 0; transform: translateY(-100%)
+.offcanvas-xxl.offcanvas-bottom @ (width<1400px) | height: var(--bs-offcanvas-height); border-top: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; left: 0; right: 0; transform: translateY(100%)
+.offcanvas-xxl.showing @ (width<1400px) | transform: none; visibility: visible
+.offcanvas-xxl.show:not(.hiding) @ (width<1400px) | transform: none
+.offcanvas-xxl.hiding @ (width<1400px) | visibility: visible
+.offcanvas-xxl.show @ (width<1400px) | visibility: visible
+.offcanvas-xxl @ (width>=1400px) | --bs-offcanvas-height: auto; --bs-offcanvas-border-width: 0; background-color: #0000 !important
+.offcanvas-xxl .offcanvas-header @ (width>=1400px) | display: none
+.offcanvas-xxl .offcanvas-body @ (width>=1400px) | flex-grow: 0; padding: 0; display: flex; overflow-y: visible; background-color: #0000 !important
+.offcanvas @ (prefers-reduced-motion:reduce) | transition: none
+.offcanvas.offcanvas-start @  | width: var(--bs-offcanvas-width); border-right: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; left: 0; transform: translate(-100%)
+.offcanvas.offcanvas-end @  | width: var(--bs-offcanvas-width); border-left: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); top: 0; right: 0; transform: translate(100%)
+.offcanvas.offcanvas-top @  | height: var(--bs-offcanvas-height); border-bottom: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; top: 0; left: 0; right: 0; transform: translateY(-100%)
+.offcanvas.offcanvas-bottom @  | height: var(--bs-offcanvas-height); border-top: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color); max-height: 100%; left: 0; right: 0; transform: translateY(100%)
+.offcanvas.showing @  | transform: none; visibility: visible
+.offcanvas.show:not(.hiding) @  | transform: none
+.offcanvas.hiding @  | visibility: visible
+.offcanvas.show @  | visibility: visible
+.offcanvas-backdrop @  | z-index: var(--vn-stack-drawer-backdrop); background-color: var(--vn-palette-black-base); width: 100vw; height: 100vh; position: fixed; top: 0; left: 0
+.offcanvas-backdrop.fade @  | opacity: 0
+.offcanvas-backdrop.show @  | opacity: .5
+.offcanvas-header @  | padding: var(--bs-offcanvas-padding-y) var(--bs-offcanvas-padding-x); align-items: center; display: flex
+.offcanvas-header .btn-close @  | padding: calc(var(--bs-offcanvas-padding-y) * .5) calc(var(--bs-offcanvas-padding-x) * .5); margin-top: calc(-.5 * var(--bs-offcanvas-padding-y)); margin-right: calc(-.5 * var(--bs-offcanvas-padding-x)); margin-bottom: calc(-.5 * var(--bs-offcanvas-padding-y)); margin-left: auto
+.offcanvas-title @  | line-height: var(--bs-offcanvas-title-line-height); margin-bottom: 0
+.offcanvas-body @  | padding: var(--bs-offcanvas-padding-y) var(--bs-offcanvas-padding-x); flex-grow: 1; overflow-y: auto

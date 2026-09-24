@@ -1,0 +1,68 @@
+diff --git a/tests/service/tailwind/profiles.test.ts b/tests/service/tailwind/profiles.test.ts
+index dddcfe5..0419ea7 100644
+--- a/tests/service/tailwind/profiles.test.ts
++++ b/tests/service/tailwind/profiles.test.ts
+@@ -41,17 +41,16 @@ describe('stylesheet profiles', () => {
+ 		// followed by the loaded profile. That sheet sequence is the one `stage.open` and
+ 		// `stage.load` fix, so this proof assumes it rather than observing it on a page.
+ 		expect(new SheetReader(cascade).order).toEqual(ORDER)
+-		for (const compiled of [tailwindProfile, preflightProfile]) {
+-			expect(new SheetReader(compiled).statement).toEqual(ORDER)
+-			expect(new SheetReader(`${cascade}\n${compiled}`).order).toEqual(ORDER)
++		// A generated utility that registers a custom property — the instrument's control, and the
++		// `border` and `border-0` names every executed profile emits off the exclusion line — makes
++		// Tailwind prepend a generated layer statement of its own, and the order line follows it. The
++		// following case reads that placement; the reading here is that the order line is declared
++		// unchanged behind it, and that the page resolves the cascade's own order first.
++		for (const compiled of [tailwindProfile, preflightProfile, instrumentProfile]) {
++			expect(new SheetReader(compiled).statement).toEqual(['properties'])
++			expect(new SheetReader(compiled).order.slice(-ORDER.length)).toEqual(ORDER)
++			expect(new SheetReader(`${cascade}\n${compiled}`).order.slice(0, ORDER.length)).toEqual(ORDER)
+ 		}
+-		// The instrument's control registers a custom property, so Tailwind prepends a generated
+-		// layer statement of its own and the order line follows it. The following case reads that
+-		// placement; the reading here is that the order line is declared unchanged behind it.
+-		expect(new SheetReader(instrumentProfile).order.slice(-ORDER.length)).toEqual(ORDER)
+-		expect(
+-			new SheetReader(`${cascade}\n${instrumentProfile}`).order.slice(0, ORDER.length),
+-		).toEqual(ORDER)
+ 	})
+ 
+ 	it('fills Tailwind reset only under the preflight profile', () => {
+@@ -62,14 +61,30 @@ describe('stylesheet profiles', () => {
+ 		// the `base` layer with Tailwind's reset and declares Tailwind's own font tokens beside it.
+ 		// Both scan the one candidate list under the one exclusion line, so both generate the same
+ 		// utilities, and the reset and its tokens are all that tells them apart.
++		// Both profiles also fill the generated `properties` layer the preceding case places, which
++		// is Tailwind's registration of a custom property rather than a part either profile imports.
+ 		const tailwind = new SheetReader(tailwindProfile)
+-		expect(tailwind.layers.map((layer) => layer.name)).toEqual(['theme', 'utilities'])
+-		// The generated gap steps read the spacing scale and no other theme variable, so the
+-		// profile keeps that one variable, and a token the reset or a static theme would declare
+-		// breaks the equality.
+-		expect(tailwind.variables).toEqual(['--spacing'])
++		expect(
++			tailwind.layers.map((layer) => layer.name).filter((name) => name !== 'properties'),
++		).toEqual(['theme', 'utilities'])
++		// The generated gap steps read the spacing scale, and the black and white paint names read
++		// the black and white colors, and no emitted name reads another theme variable, so the
++		// profile's `theme` block keeps those variables alone, and a token the reset or a static
++		// theme would declare breaks the equality. The reading names the block, because the
++		// `properties` layer declares the custom property a registering utility falls back on.
++		expect(
++			tailwind.layers
++				.flatMap((layer) =>
++					layer.name === 'theme'
++						? layer.declarations.map((declaration) => declaration.property)
++						: [],
++				)
++				.sort(),
++		).toEqual(['--color-black', '--color-white', '--spacing'])
+ 		const preflight = new SheetReader(preflightProfile)
+-		expect(preflight.layers.map((layer) => layer.name)).toEqual(['theme', 'base', 'utilities'])
++		expect(
++			preflight.layers.map((layer) => layer.name).filter((name) => name !== 'properties'),
++		).toEqual(['theme', 'base', 'utilities'])
+ 		expect(preflight.variables).toContain('--font-sans')
+ 		expect(
+ 			preflight.layers.flatMap((layer) => (layer.name === 'base' ? layer.selectors : [])),

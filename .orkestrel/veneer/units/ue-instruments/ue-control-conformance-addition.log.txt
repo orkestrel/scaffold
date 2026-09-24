@@ -1,0 +1,72 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-ue/tmp/probe/base
+
+·····x··x·x···········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:206:2
+    204|  })
+    205|
+    206|  it(
+       |  ^
+    207|   'records official Button behavior and matches each named fixture ste…
+    208|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "focus-ring | .focus-ring:focus { outline } | @media (forced-colors: active) | declaration",
++ ]
+
+ ❯ tests/conformance.test.ts:258:32
+    256|
+    257|  it('records every emitted name the official inventory lacks', () => {
+    258|   expect(additions.unrecorded).toEqual([])
+       |                                ^
+    259|  })
+    260|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "focus-ring | .focus-ring:focus { outline } | @media (forced-colors: active) | declaration",
+    "form-control | .form-control { letter-spacing } | — | declaration",
+  ]
+
+ ❯ tests/conformance.test.ts:270:30
+    268|   // browser case reads only the properties a row values. This ledger …
+    269|   // it, and the unmodified cascade is the control that reports nothin…
+    270|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    271|    'form-control | .form-control { letter-spacing } | — | declaration',
+    272|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 19 passed (22)
+   Start at  01:28:27
+   Duration  61.21s (transform 2.59s, setup 886ms, import 34.34s, tests 25.25s, environment 0ms)
+

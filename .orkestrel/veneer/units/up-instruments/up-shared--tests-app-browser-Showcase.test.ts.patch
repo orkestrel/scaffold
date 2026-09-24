@@ -1,0 +1,32 @@
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index a08372d..f38b483 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -3,7 +3,9 @@ import {
+ 	ACCORDION_SPECIMENS,
+ 	BUTTON_COPY,
+ 	BUTTON_GROUP_SPECIMENS,
++	BACKGROUND_SPECIMENS,
+ 	BADGE_SPECIMENS,
++	BORDER_SPECIMENS,
+ 	BREADCRUMB_SPECIMENS,
+ 	BUTTON_SPECIMENS,
+ 	CAROUSEL_SPECIMENS,
+@@ -134,6 +136,8 @@ describe('Showcase', () => {
+ 				'Position',
+ 				'Sizing',
+ 				'Visibility',
++				'Background',
++				'Border',
+ 				'Navbar',
+ 			])
+ 			expect(
+@@ -177,6 +181,8 @@ describe('Showcase', () => {
+ 					...POSITION_SPECIMENS,
+ 					...SIZING_SPECIMENS,
+ 					...VISIBILITY_SPECIMENS,
++					...BACKGROUND_SPECIMENS,
++					...BORDER_SPECIMENS,
+ 					...NAVBAR_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)

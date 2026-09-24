@@ -1,0 +1,4 @@
+?? app/browser/sections/ModalSection.ts
+?? src/styles/components/_modal.scss
+?? tests/app/browser/sections/ModalSection.test.ts
+?? tests/src/styles/components/modal.test.ts

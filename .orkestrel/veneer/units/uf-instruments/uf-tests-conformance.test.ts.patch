@@ -1,0 +1,47 @@
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -124,12 +124,16 @@
+ 			'figure',
+ 			'fixed',
+ 			'flex',
++			'font',
+ 			'form',
+ 			'form-check',
+ 			'form-control',
+ 			'form-floating',
+ 			'form-range',
+ 			'form-select',
++			'fs',
++			'fst',
++			'fw',
+ 			'g',
+ 			'gap',
+ 			'gx',
+@@ -153,6 +157,7 @@
+ 			'is-valid',
+ 			'justify-content',
+ 			'lead',
++			'lh',
+ 			'link',
+ 			'list-group',
+ 			'list-inline',
+@@ -532,6 +537,11 @@
+ 			'min-viewport-height': 'utilities/sizing',
+ 			'row-gap': 'utilities/gap',
+ 			'column-gap': 'utilities/gap',
++			'font-family': 'utilities/font',
++			'font-size': 'utilities/font',
++			'font-style': 'utilities/font',
++			'font-weight': 'utilities/font',
++			'line-height': 'utilities/font',
+ 			'z-index': 'utilities/position',
+ 		}
+ 		const helperOrder = helpers.map((name) => helperPaths[name] ?? `components/${name}`)
+@@ -550,6 +560,7 @@
+ 				'utilities/display',
+ 				'utilities/flex',
+ 				'utilities/gap',
++				'utilities/font',
+ 			]),
+ 		)
+ 		const components = helperOrder.filter((path) => path.startsWith('components/'))

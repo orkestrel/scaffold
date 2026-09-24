@@ -1,0 +1,14 @@
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index 6a8b24c..fb247b7 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -83,7 +83,9 @@
+ @use 'utilities/vertical-align';
+ @use 'utilities/display';
+ @use 'utilities/position';
++@use 'utilities/border';
+ @use 'utilities/sizing';
+ @use 'utilities/flex';
+ @use 'utilities/gap';
++@use 'utilities/background';
+ @use 'utilities/visibility';

@@ -1,0 +1,120 @@
+== npm run format:check (validation copy)
+All matched files use the correct format.
+exit: 0
+
+== npm run lint:check (validation copy)
+exit: 0
+
+== npm run check (validation copy)
+exit: 0
+
+== npm run build:src (validation copy)
+✓ built in 202ms
+✓ built in 84ms
+✓ built in 2.09s
+exit: 0
+
+== npm run test:setup (validation copy)
+ Test Files  4 passed (4)
+      Tests  269 passed (269)
+exit: 0
+
+== npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/offcanvas.test.ts tests/src/styles/components/close.test.ts tests/src/styles/components/navbar.test.ts (validation copy)
+ Test Files  3 passed (3)
+      Tests  86 passed (86)
+exit: 0
+
+== npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/OffcanvasSection.test.ts tests/app/browser/sections/NavbarSection.test.ts (validation copy)
+ Test Files  2 passed (2)
+      Tests  7 passed (7)
+exit: 0
+
+== npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts (validation copy)
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
+exit: 0
+
+== npm run test:conformance (validation copy)
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+exit: 0
+
+== npm run test:guides (validation copy)
+ Test Files  1 passed (1)
+exit: 0
+
+== npm run test:policy (validation copy)
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+exit: 0
+
+== npm run format:check (worktree /home/user/veneer-oc)
+All matched files use the correct format.
+exit: 0
+
+== npm run lint:check (worktree /home/user/veneer-oc)
+> oxlint --config .oxlintrc.json --deny-warnings .
+exit: 0
+
+== baseline at 2a3f223 in /home/user/veneer-oc before any edit (2026-09-24 00:26 UTC)
+npm run test:conformance: Test Files 1 passed (1), Tests 22 passed (22), exit 0
+npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/close.test.ts tests/src/styles/components/navbar.test.ts: Test Files 2 passed (2), Tests 57 passed (57), exit 0
+
+== observation: journey, resting cascade keys and scenario subjects (validation copy, no CAPTURE)
+npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot -t "resting cascade key|names a specimen the showcase declares"
+Test Files 4 passed (4), Tests 8 passed | 168 skipped (176), exit 0
+== rerun after the compatibility rows were shortened to the table's existing column width and the Alias cell to its column width
+== npm run format:check (validation copy)
+All matched files use the correct format.
+exit: 0
+
+== npm run lint:check (validation copy)
+exit: 0
+
+== npm run test:conformance (validation copy)
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+exit: 0
+
+== npm run test:guides (validation copy)
+ Test Files  1 passed (1)
+exit: 0
+
+== npm run test:policy (validation copy)
+ Test Files  1 failed (1)
+      Tests  1 failed | 108 passed | 1 skipped (110)
+exit: 1
+
+== npm run test:setup (validation copy)
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 256 passed | 12 skipped (269)
+exit: 1
+
+apply-check exit 0
+ 14 files changed, 622 insertions(+), 29 deletions(-)
+== note: the preceding test:policy and test:setup failures were read from an output file the session-scratchpad cleanup (mid-campaign note 2) removed, so their failing case names are not retained. Nothing in the validation copy changed before the reruns that follow.
+== npm run test:setup, rerun 1 (validation copy)
+ Test Files  4 passed (4)
+      Tests  269 passed (269)
+exit: 0
+
+== npm run test:policy, rerun 1 (validation copy)
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+exit: 0
+
+== npm run test:setup, rerun 2 (validation copy)
+ Test Files  4 passed (4)
+      Tests  269 passed (269)
+exit: 0
+
+== npm run test:policy, rerun 2 (validation copy)
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+exit: 0
+
+== final criterion 3 rerun after the mutation runs restored the copy (validation copy)
+ Test Files  3 passed (3)
+      Tests  86 passed (86)
+exit: 0
+

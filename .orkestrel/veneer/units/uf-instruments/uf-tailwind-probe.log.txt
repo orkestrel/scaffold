@@ -1,0 +1,21 @@
+# UTIL-FONT Tailwind probe, 2026-09-24T01:51:09Z, tailwindcss 4.3.3
+## instrument
+// Compiles the unit's 20 class names and three Tailwind controls through the installed PostCSS
+// plugin, and prints every selector the compiler emits.
+import postcss from 'postcss'
+import tailwind from '@tailwindcss/postcss'
+import { writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+const names = ['font-monospace', 'fs-1', 'fs-2', 'fs-3', 'fs-4', 'fs-5', 'fs-6', 'fst-italic', 'fst-normal', 'fw-lighter', 'fw-light', 'fw-normal', 'fw-medium', 'fw-semibold', 'fw-bold', 'fw-bolder', 'lh-1', 'lh-sm', 'lh-base', 'lh-lg', 'font-mono', 'italic', 'leading-6']
+const from = resolve('tmp/probe/uf-tw.css')
+const source = `@import 'tailwindcss/utilities.css' layer(utilities) source(none);\n@import 'tailwindcss/theme.css' layer(theme);\n@source inline("${names.join(' ')}");\n`
+writeFileSync(from, source)
+const result = await postcss([tailwind()]).process(source, { from })
+console.log('candidates:', names.join(' '))
+console.log('emitted selectors:', result.css.split('\n').filter((line) => /^\s*\.[a-z]/.test(line)).map((line) => line.trim().replace(/ \{$/, '')).join(' '))
+## output
+candidates: font-monospace fs-1 fs-2 fs-3 fs-4 fs-5 fs-6 fst-italic fst-normal fw-lighter fw-light fw-normal fw-medium fw-semibold fw-bold fw-bolder lh-1 lh-sm lh-base lh-lg font-mono italic leading-6
+emitted selectors: .font-mono .leading-6 .italic
+exit=0
+## candidates list the readiness step wrote, filtered to the unit names
+font-monospace fs-1 fs-2 fs-3 fs-4 fs-5 fs-6 fst-italic fst-normal fw-bold fw-bolder fw-light fw-lighter fw-medium fw-normal fw-semibold lh-1 lh-base lh-lg lh-sm 

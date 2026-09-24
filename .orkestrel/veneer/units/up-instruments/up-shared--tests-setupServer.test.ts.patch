@@ -1,0 +1,22 @@
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index e6b3798..339f7c3 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1388,7 +1388,9 @@ describe('server setup', () => {
+ 				'align-items',
+ 				'align-self',
+ 				'badge',
++				'bg',
+ 				'blockquote',
++				'border',
+ 				'bottom',
+ 				'breadcrumb',
+ 				'btn',
+@@ -1457,6 +1459,7 @@ describe('server setup', () => {
+ 				'progress',
+ 				'ratio',
+ 				'reboot',
++				'rounded',
+ 				'row',
+ 				'row-gap',
+ 				'small',

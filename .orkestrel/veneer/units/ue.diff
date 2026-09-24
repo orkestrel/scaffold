@@ -1,0 +1,988 @@
+diff --git a/app/browser/sections/FocusRingSection.ts b/app/browser/sections/FocusRingSection.ts
+new file mode 100644
+index 0000000..f23781a
+--- /dev/null
++++ b/app/browser/sections/FocusRingSection.ts
+@@ -0,0 +1,21 @@
++import { FOCUS_RING_COPY, FOCUS_RING_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared focus ring and role ring specimens into a named Focus ring region.
++ *
++ * @example
++ * ```ts
++ * const section = new FocusRingSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class FocusRingSection extends SpecimenSection {
++	/**
++	 * Mounts the Focus ring region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, FOCUS_RING_COPY, FOCUS_RING_SPECIMENS)
++	}
++}
+diff --git a/app/browser/sections/OpacitySection.ts b/app/browser/sections/OpacitySection.ts
+new file mode 100644
+index 0000000..a2cfd72
+--- /dev/null
++++ b/app/browser/sections/OpacitySection.ts
+@@ -0,0 +1,21 @@
++import { OPACITY_COPY, OPACITY_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared opacity specimen into a named Opacity region.
++ *
++ * @example
++ * ```ts
++ * const section = new OpacitySection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class OpacitySection extends SpecimenSection {
++	/**
++	 * Mounts the Opacity region and its specimen.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, OPACITY_COPY, OPACITY_SPECIMENS)
++	}
++}
+diff --git a/app/browser/sections/ShadowSection.ts b/app/browser/sections/ShadowSection.ts
+new file mode 100644
+index 0000000..26fb6d7
+--- /dev/null
++++ b/app/browser/sections/ShadowSection.ts
+@@ -0,0 +1,21 @@
++import { SHADOW_COPY, SHADOW_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared shadow specimen into a named Shadow region.
++ *
++ * @example
++ * ```ts
++ * const section = new ShadowSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class ShadowSection extends SpecimenSection {
++	/**
++	 * Mounts the Shadow region and its specimen.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, SHADOW_COPY, SHADOW_SPECIMENS)
++	}
++}
+diff --git a/src/styles/components/_focus-ring.scss b/src/styles/components/_focus-ring.scss
+new file mode 100644
+index 0000000..1a5fd63
+--- /dev/null
++++ b/src/styles/components/_focus-ring.scss
+@@ -0,0 +1,26 @@
++@use 'sass:map';
++@use '../mixins' as *;
++@use '../tokens';
++
++@layer components {
++	// The release writes the helper with normal declarations, so a rule of the consumer's own
++	// overrides it. It reads the ring's offsets and blur through fallbacks, because the release
++	// declares no `--bs-focus-ring-x`, `--bs-focus-ring-y`, or `--bs-focus-ring-blur` property.
++	// Forced colors paint no shadow, so the focused element takes the system-highlight outline there.
++	.focus-ring:focus {
++		outline: 0;
++		box-shadow: var(--bs-focus-ring-x, 0) var(--bs-focus-ring-y, 0) var(--bs-focus-ring-blur, 0)
++			var(--bs-focus-ring-width) var(--bs-focus-ring-color);
++		@include forced-ring;
++	}
++
++	// The release's `focus-ring` map entry is a `css-var` utility over the theme colors that carry a
++	// Bootstrap alias, which the `$aliased` list names: the `tertiary` role carries no
++	// `--bs-tertiary-rgb` alias. Each class sets the ring color the helper reads, with a normal
++	// declaration, so it sits beside the helper.
++	$colors: ();
++	@each $role in tokens.$aliased {
++		$colors: map.set($colors, $role, rgba(var(--bs-#{$role}-rgb), var(--bs-focus-ring-opacity)));
++	}
++	@include utility-variable(focus-ring, focus-ring-color, $colors);
++}
+diff --git a/src/styles/utilities/_opacity.scss b/src/styles/utilities/_opacity.scss
+new file mode 100644
+index 0000000..2704d68
+--- /dev/null
++++ b/src/styles/utilities/_opacity.scss
+@@ -0,0 +1,21 @@
++@use '../mixins' as *;
++
++@layer utilities {
++	// The release's `opacity` entry is not responsive, so the walk writes it at the empty infix alone,
++	// ahead of every media block. Each step stays a literal, because no published Veneer token carries
++	// an opacity scale.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(
++			opacity,
++			opacity,
++			(
++				0: 0,
++				25: 0.25,
++				50: 0.5,
++				75: 0.75,
++				100: 1,
++			),
++			$infix
++		);
++	}
++}
+diff --git a/src/styles/utilities/_shadow.scss b/src/styles/utilities/_shadow.scss
+new file mode 100644
+index 0000000..a50c3ee
+--- /dev/null
++++ b/src/styles/utilities/_shadow.scss
+@@ -0,0 +1,20 @@
++@use '../mixins' as *;
++
++@layer utilities {
++	// The release's `shadow` entry is not responsive, so the walk writes it at the empty infix alone,
++	// ahead of every media block. Each value reads the release's own `--bs-box-shadow*` alias, which
++	// the tokens bind to Veneer's elevation ladder, so the elevation factor scales every shadow step.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(
++			shadow,
++			box-shadow,
++			(
++				null: var(--bs-box-shadow),
++				sm: var(--bs-box-shadow-sm),
++				lg: var(--bs-box-shadow-lg),
++				none: none,
++			),
++			$infix
++		);
++	}
++}
+diff --git a/tests/app/browser/sections/FocusRingSection.test.ts b/tests/app/browser/sections/FocusRingSection.test.ts
+new file mode 100644
+index 0000000..44168d4
+--- /dev/null
++++ b/tests/app/browser/sections/FocusRingSection.test.ts
+@@ -0,0 +1,122 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	FOCUS_RING_COPY,
++	FOCUS_RING_SPECIMENS,
++	FocusRingSection,
++	SpecimenSection,
++} from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import {
++	build,
++	mount,
++	readName,
++	readRing,
++	readStyle,
++	traverseAccessible,
++} from '@orkestrel/test/browser'
++import { afterEach, beforeAll, describe, expect, it } from 'vitest'
++import { mountTraversalStart, scene } from '../../../setupBrowser.js'
++
++// The traversal case reads each ring as the published cascade paints it, so the cascade has to be in
++// the document before a ring is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('FocusRingSection', () => {
++	it('renders every declared ring specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new FocusRingSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Focus ring region')
++			expect(region.getAttribute('aria-label')).toBe('Focus ring')
++			expect(region.querySelector('p')?.textContent).toBe(FOCUS_RING_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Default focus ring',
++				'Focus ring roles',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				FOCUS_RING_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Each link is labeled with the full name of the ring class it carries: its role class where
++			// it carries one, and the helper's own class otherwise.
++			const links = [...region.querySelectorAll<HTMLAnchorElement>('a.focus-ring')]
++			expect(links.length).toBeGreaterThan(1)
++			expect(links.map((link) => readName(link))).toEqual(
++				links.map(
++					(link) =>
++						[...link.classList].find((token) => token.startsWith('focus-ring-')) ?? 'focus-ring',
++				),
++			)
++			expect(
++				links.filter((link) => [...link.classList].some((token) => token.startsWith('focus-ring-')))
++					.length,
++			).toBe(links.length - 1)
++			// No ring paints at rest, because the helper paints only under focus.
++			expect(links.map((link) => readStyle(link, 'box-shadow'))).toEqual(links.map(() => 'none'))
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(Object.isFrozen(FOCUS_RING_COPY)).toBe(true)
++			expect(Object.isFrozen(FOCUS_RING_SPECIMENS)).toBe(true)
++			expect(FOCUS_RING_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('paints a ring on each link the keyboard reaches, in its own color, and clears it after', async () => {
++		// The traversal starts on a focused control of the case's own ahead of the region, so the
++		// first Tab the keyboard sends lands on the region's first link.
++		mountTraversalStart()
++		const host = mount(build('div'))
++		const section: SectionInterface = new FocusRingSection(host)
++		try {
++			const links = [...host.querySelectorAll<HTMLAnchorElement>('a.focus-ring')]
++			const shadows: string[] = []
++			for (const link of links) {
++				const reached = await traverseAccessible(readName(link))
++				expect(reached).toBe(link)
++				expect(link.matches(':focus-visible')).toBe(true)
++				// The installed reader measures the painted ring against the surface behind it, so a
++				// link whose ring painted nothing reports no ratio here.
++				expect(readRing(link) ?? 0).toBeGreaterThan(1)
++				shadows.push(readStyle(link, 'box-shadow'))
++			}
++			// The default ring and every role ring are distinct paints, the default and the primary
++			// ring included, whose colors mix the same primary fill in different ways.
++			expect(new Set(shadows).size).toBe(links.length)
++			const last = requireValue(links.at(-1), 'No last link')
++			last.blur()
++			expect(readStyle(last, 'box-shadow')).toBe('none')
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new FocusRingSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Focus ring region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/app/browser/sections/OpacitySection.test.ts b/tests/app/browser/sections/OpacitySection.test.ts
+new file mode 100644
+index 0000000..9884d78
+--- /dev/null
++++ b/tests/app/browser/sections/OpacitySection.test.ts
+@@ -0,0 +1,80 @@
++import type { SectionInterface } from '@app/browser'
++import { OPACITY_COPY, OPACITY_SPECIMENS, OpacitySection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++
++// The ramp case reads each bar's opacity as the published cascade resolves it, so the cascade has to
++// be in the document before a style is read.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('OpacitySection', () => {
++	it('renders the declared opacity ramp beside visible class names through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new OpacitySection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Opacity region')
++			expect(region.getAttribute('aria-label')).toBe('Opacity')
++			expect(region.querySelector('p')?.textContent).toBe(OPACITY_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Opacity steps',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				OPACITY_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Each bar is a placeholder hidden from assistive technology, faded by the one opacity step
++			// it carries, with that step's class name beside it as visible text that no step fades.
++			const bars = [...region.querySelectorAll('.placeholder')]
++			expect(bars).not.toEqual([])
++			expect(bars.map((bar) => bar.getAttribute('aria-hidden'))).toEqual(bars.map(() => 'true'))
++			const steps = bars.map((bar) =>
++				requireValue(
++					[...bar.classList].find((token) => /^opacity-\d+$/u.test(token)),
++					'A bar carries no opacity step',
++				),
++			)
++			expect(bars.map((bar) => Number(readStyle(bar, 'opacity')))).toEqual(
++				steps.map((step) => Number(step.slice('opacity-'.length)) / 100),
++			)
++			const labels = bars.map((bar) =>
++				requireValue(bar.closest('.row')?.firstElementChild, 'No bar label'),
++			)
++			expect(labels.map((label) => label.textContent)).toEqual(steps)
++			expect(labels.map((label) => readStyle(label, 'opacity'))).toEqual(labels.map(() => '1'))
++			// The ramp runs from a bar that paints nothing to a bar at full strength.
++			expect([steps.at(0), steps.at(-1)]).toEqual(['opacity-0', 'opacity-100'])
++			for (const bar of bars) expect(bar.getBoundingClientRect().width).toBeGreaterThan(0)
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(Object.isFrozen(OPACITY_COPY)).toBe(true)
++			expect(Object.isFrozen(OPACITY_SPECIMENS)).toBe(true)
++			expect(OPACITY_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new OpacitySection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Opacity region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/app/browser/sections/ShadowSection.test.ts b/tests/app/browser/sections/ShadowSection.test.ts
+new file mode 100644
+index 0000000..05b3d38
+--- /dev/null
++++ b/tests/app/browser/sections/ShadowSection.test.ts
+@@ -0,0 +1,67 @@
++import type { SectionInterface } from '@app/browser'
++import { SHADOW_COPY, SHADOW_SPECIMENS, ShadowSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++
++// The ramp case reads each card's shadow as the published cascade resolves it, so the cascade has to
++// be in the document before a style is read.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('ShadowSection', () => {
++	it('renders the declared shadow ramp through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ShadowSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Shadow region')
++			expect(region.getAttribute('aria-label')).toBe('Shadow')
++			expect(region.querySelector('p')?.textContent).toBe(SHADOW_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(['Shadows'])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				SHADOW_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Each card is labeled with the one shadow class it carries, and the ramp opens on the card
++			// that paints no shadow, so every other card paints an elevation of its own.
++			const cards = [...region.querySelectorAll('.card')]
++			expect(cards).not.toEqual([])
++			expect(
++				cards.map((card) => [...card.classList].filter((token) => /^shadow(?:-|$)/u.test(token))),
++			).toEqual(cards.map((card) => [card.textContent]))
++			const shadows = cards.map((card) => readStyle(card, 'box-shadow'))
++			expect(cards[0]?.classList.contains('shadow-none')).toBe(true)
++			expect(shadows[0]).toBe('none')
++			expect(new Set(shadows).size).toBe(cards.length)
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(Object.isFrozen(SHADOW_COPY)).toBe(true)
++			expect(Object.isFrozen(SHADOW_SPECIMENS)).toBe(true)
++			expect(SHADOW_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new ShadowSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Shadow region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/src/styles/components/focus-ring.test.ts b/tests/src/styles/components/focus-ring.test.ts
+new file mode 100644
+index 0000000..7ec27e0
+--- /dev/null
++++ b/tests/src/styles/components/focus-ring.test.ts
+@@ -0,0 +1,235 @@
++import { requireValue } from '@orkestrel/test'
++import {
++	findRule,
++	matchesColor,
++	pressKeys,
++	readPixels,
++	readRing,
++	readRootToken,
++	readStyle,
++	readToken,
++	releaseMedia,
++	stageMedia,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { collectLayerRules, scene } from '../../../setupBrowser.js'
++import { extractShadowLayers, FOCUS_RING_ROLES } from '../../../setupStyles.js'
++
++// One link per role class beside a link carrying the helper alone, then a gauge whose width is the
++// focus width the ring spreads by.
++const RINGS = [
++	'<a class="focus-ring" href="#main">Default ring</a>',
++	...FOCUS_RING_ROLES.map(
++		(role) => `<a class="focus-ring focus-ring-${role}" href="#main">${role} ring</a>`,
++	),
++	'<div class="gauge" style="width: var(--bs-focus-ring-width)"></div>',
++].join(' ')
++
++afterEach(async () => {
++	await releaseMedia()
++	scene.clear()
++})
++
++describe('focus ring helper', () => {
++	it('paints nothing at rest and the default ring under keyboard focus, with the native outline cleared', async () => {
++		const host = scene.mount(RINGS)
++		const link = requireValue(host.querySelector<HTMLElement>('a.focus-ring'), 'No default link')
++		const gauge = requireValue(host.querySelector('.gauge'), 'No focus gauge')
++		expect(readStyle(link, 'box-shadow')).toBe('none')
++		expect(readRing(link)).toBeUndefined()
++		link.focus()
++		await pressKeys('{ArrowRight}')
++		expect(link.matches(':focus-visible')).toBe(true)
++		expect(readStyle(link, 'outline-style')).toBe('none')
++		// The ring spreads by the focus width at no offset and no blur, and paints the default ring
++		// color the theme binds, read as the painted layer rather than as the declared text.
++		const layers = extractShadowLayers(readStyle(link, 'box-shadow'))
++		expect(layers.map((layer) => layer.lengths)).toEqual([[0, 0, 0, readPixels(gauge, 'width')]])
++		expect(
++			matchesColor(
++				requireValue(layers[0], 'No ring layer').color,
++				readRootToken('--bs-focus-ring-color'),
++			),
++		).toBe(true)
++		// The installed reader composes the painted ring against the surface behind it, so a ring the
++		// cascade declared and painted at zero alpha would report nothing here.
++		expect(readRing(link) ?? 0).toBeGreaterThan(1)
++		link.blur()
++		expect(readStyle(link, 'box-shadow')).toBe('none')
++	})
++
++	it('offsets and blurs the ring through the variables the release reads with fallbacks', async () => {
++		const host = scene.mount(RINGS)
++		const link = requireValue(host.querySelector<HTMLElement>('a.focus-ring'), 'No default link')
++		scene.load(
++			'.offset { --bs-focus-ring-x: 2px; --bs-focus-ring-y: 3px; --bs-focus-ring-blur: 4px; --bs-focus-ring-width: 5px }',
++		)
++		link.classList.add('offset')
++		link.focus()
++		await pressKeys('{ArrowRight}')
++		expect(link.matches(':focus-visible')).toBe(true)
++		expect(
++			extractShadowLayers(readStyle(link, 'box-shadow')).map((layer) => layer.lengths),
++		).toEqual([[2, 3, 4, 5]])
++	})
++
++	it('paints each role class ring from its own channel alias at the ring opacity', async () => {
++		const host = scene.mount(RINGS)
++		// The alpha is retuned on the links alone, so a role class reading the alias on its own element
++		// takes the retune, and a ring left to the default color the root resolves does not. That is
++		// what separates the primary class from the default ring, whose color is a mix of the same
++		// primary fill at the same alpha.
++		scene.load('.focus-ring { --bs-focus-ring-opacity: 0.8 }')
++		const rings = new Map<string, number | undefined>()
++		for (const role of FOCUS_RING_ROLES) {
++			const link = requireValue(
++				host.querySelector<HTMLElement>(`.focus-ring-${role}`),
++				`No ${role} link`,
++			)
++			link.focus()
++			await pressKeys('{ArrowRight}')
++			expect(link.matches(':focus-visible')).toBe(true)
++			const [layer] = extractShadowLayers(readStyle(link, 'box-shadow'))
++			const channels = readRootToken(`--bs-${role}-rgb`)
++			expect({
++				role,
++				painted: matchesColor(
++					requireValue(layer, `No ${role} ring`).color,
++					`rgba(${channels}, 0.8)`,
++				),
++			}).toEqual({ role, painted: true })
++			rings.set(role, readRing(link))
++			link.blur()
++		}
++		// Each role's ring is painted, so the installed reader measures every one of them.
++		expect([...rings.values()].filter((ratio) => (ratio ?? 0) <= 1)).toEqual([])
++		const fallback = requireValue(
++			host.querySelector<HTMLElement>('a.focus-ring:not([class*="focus-ring-"])'),
++			'No default link',
++		)
++		fallback.focus()
++		await pressKeys('{ArrowRight}')
++		const [layer] = extractShadowLayers(readStyle(fallback, 'box-shadow'))
++		expect(
++			matchesColor(
++				requireValue(layer, 'No default ring').color,
++				readRootToken('--bs-focus-ring-color'),
++			),
++		).toBe(true)
++	})
++
++	it('reads each mode through its aliases, so a dark island repaints the default and the primary rings', async () => {
++		const light = scene.mount(RINGS)
++		const dark = scene.mount(`<div data-bs-theme="dark">${RINGS}</div>`)
++		const readings: string[] = []
++		for (const host of [light, dark])
++			for (const selector of ['a.focus-ring:not([class*="focus-ring-"])', '.focus-ring-primary']) {
++				const link = requireValue(host.querySelector<HTMLElement>(selector), `No ${selector}`)
++				link.focus()
++				await pressKeys('{ArrowRight}')
++				expect(link.matches(':focus-visible')).toBe(true)
++				readings.push(readStyle(link, 'box-shadow'))
++				link.blur()
++			}
++		const [lightDefault, lightPrimary, darkDefault, darkPrimary] = readings
++		expect(darkDefault).not.toBe(lightDefault)
++		expect(darkPrimary).not.toBe(lightPrimary)
++		// The dark island re-declares the primary channels, and the role class reads them on its own
++		// element inside the island.
++		const island = requireValue(dark.firstElementChild, 'No dark island')
++		const channels = readToken(island, '--bs-primary-rgb')
++		const [layer] = extractShadowLayers(darkPrimary ?? '')
++		expect(
++			matchesColor(
++				requireValue(layer, 'No dark primary ring').color,
++				`rgba(${channels}, ${readRootToken('--bs-focus-ring-opacity')})`,
++			),
++		).toBe(true)
++	})
++
++	it('writes the role classes in the release order, so a later role wins on one element', async () => {
++		const host = scene.mount(
++			'<a class="focus-ring focus-ring-danger focus-ring-primary" href="#main">Paired ring</a>',
++		)
++		const link = requireValue(host.querySelector<HTMLElement>('a'), 'No paired link')
++		link.focus()
++		await pressKeys('{ArrowRight}')
++		const [layer] = extractShadowLayers(readStyle(link, 'box-shadow'))
++		expect(
++			matchesColor(
++				requireValue(layer, 'No paired ring').color,
++				`rgba(${readRootToken('--bs-danger-rgb')}, ${readRootToken('--bs-focus-ring-opacity')})`,
++			),
++		).toBe(true)
++		expect(findRule('.focus-ring-md-primary')).toBeUndefined()
++	})
++
++	it('outlines the focused element at the focus width under forced colors, where its shadow ring is not painted', async () => {
++		const host = scene.mount(
++			`${RINGS}<div class="focus-gauge" style="width: var(--vn-focus-width)"></div>`,
++		)
++		const link = requireValue(host.querySelector<HTMLElement>('a.focus-ring'), 'No default link')
++		const gauge = requireValue(host.querySelector('.focus-gauge'), 'No focus gauge')
++		link.focus()
++		expect(link.matches(':focus')).toBe(true)
++		expect(readStyle(link, 'outline-style')).toBe('none')
++		// A color reading cannot fail under forced colors, because the installed color reader
++		// resolves each side through a probe whose color forced colors also replace, so the outline
++		// is read by its style and its width rather than by its paint.
++		await stageMedia({ forced: true })
++		expect(readStyle(link, 'outline-style')).toBe('solid')
++		expect(readPixels(link, 'outline-width')).toBe(readPixels(gauge, 'width'))
++		await releaseMedia()
++		expect(readStyle(link, 'outline-style')).toBe('none')
++	})
++
++	it('sits in the components layer with normal declarations, so a consumer rule and an important utility each win over it', async () => {
++		const components = collectLayerRules('components').flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		expect(components).toEqual(
++			expect.arrayContaining([
++				'.focus-ring:focus',
++				...FOCUS_RING_ROLES.map((role) => `.focus-ring-${role}`),
++			]),
++		)
++		expect(
++			collectLayerRules('utilities').flatMap((rule) =>
++				rule instanceof CSSStyleRule && rule.selectorText.startsWith('.focus-ring')
++					? [rule.selectorText]
++					: [],
++			),
++		).toEqual([])
++		const host = scene.mount(
++			[
++				'<a class="focus-ring consumer" href="#main">Consumer ring</a>',
++				'<a class="focus-ring focus-ring-danger consumer-color" href="#main">Consumer color</a>',
++				'<a class="focus-ring shadow-none" href="#main">Cleared ring</a>',
++				'<a class="focus-ring escaped" href="#main">Escaped ring</a>',
++			].join(' '),
++		)
++		// A normal declaration outside every layer beats a normal one inside any layer, so the
++		// consumer's own rule wins where the helper's declarations and the role's variable are normal.
++		scene.load(
++			'.consumer:focus { box-shadow: 0 0 0 1px rgb(1, 2, 3) } .consumer-color { --bs-focus-ring-color: rgb(4, 5, 6) }',
++		)
++		scene.load('@layer utilities { .escaped:focus { box-shadow: 0 0 0 2px rgb(7, 8, 9) } }')
++		const readings: string[] = []
++		for (const link of host.querySelectorAll<HTMLElement>('a')) {
++			link.focus()
++			await pressKeys('{ArrowRight}')
++			expect(link.matches(':focus-visible')).toBe(true)
++			readings.push(readStyle(link, 'box-shadow'))
++			link.blur()
++		}
++		const [consumer, color, cleared, escaped] = readings
++		expect(consumer).toBe('rgb(1, 2, 3) 0px 0px 0px 1px')
++		expect(requireValue(extractShadowLayers(color ?? '')[0], 'No consumer color ring').color).toBe(
++			'rgb(4, 5, 6)',
++		)
++		// The important shadow utility sits in a later layer than the helper, so it clears the ring,
++		// as it does in the release, where the utility follows the helper in source order.
++		expect(cleared).toBe('none')
++		expect(escaped).toBe('rgb(7, 8, 9) 0px 0px 0px 2px')
++	})
++})
+diff --git a/tests/src/styles/utilities/opacity.test.ts b/tests/src/styles/utilities/opacity.test.ts
+new file mode 100644
+index 0000000..3bead93
+--- /dev/null
++++ b/tests/src/styles/utilities/opacity.test.ts
+@@ -0,0 +1,97 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { findRule, readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { collectLayerRules, scene, visitBreakpoint } from '../../../setupBrowser.js'
++import { GRID_BREAKPOINT_CASES, OPACITY_STEPS } from '../../../setupStyles.js'
++
++// Every element rests on an inline opacity no step writes, so a reading of any step can only come
++// from the class, and the inline declaration is normal, so it yields to the utility's importance.
++const RESTING_OPACITY = '0.1'
++
++afterEach(() => {
++	document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++	scene.clear()
++})
++
++describe('opacity utilities', () => {
++	it.each(GRID_BREAKPOINT_CASES)(
++		'resolves every step at the empty infix around the $name boundary, and writes no infixed step there',
++		async ({ name, boundary, readings }) => {
++			// The release's entry is not responsive, so an infixed class exists at no boundary, and an
++			// element carrying one keeps its resting opacity on both sides of the boundary.
++			const infixed =
++				boundary === 0 ? [] : OPACITY_STEPS.map(({ step }) => `opacity-${name}-${step}`)
++			const host = scene.mount(
++				[...OPACITY_STEPS.map(({ step }) => `opacity-${step}`), ...infixed]
++					.map((token) => `<div class="${token}" style="opacity: ${RESTING_OPACITY}"></div>`)
++					.join(''),
++			)
++			for (const viewport of readings) {
++				await visitBreakpoint(viewport, () => {
++					expect(window.innerWidth).toBe(viewport)
++					for (const { step, value } of OPACITY_STEPS) {
++						const element = requireValue(
++							host.querySelector(`.opacity-${step}`),
++							`No opacity-${step} element`,
++						)
++						expect(readStyle(element, 'opacity')).toBe(value)
++					}
++					for (const token of infixed) {
++						const element = requireValue(host.querySelector(`.${token}`), `No ${token} element`)
++						expect(readStyle(element, 'opacity')).toBe(RESTING_OPACITY)
++					}
++				})
++			}
++			for (const token of infixed) expect(findRule(`.${token}`)).toBeUndefined()
++		},
++	)
++
++	it('writes the steps in the release order, so a later step wins on one element', () => {
++		const host = scene.mount(
++			'<div class="opacity-100 opacity-0"></div><div class="opacity-25 opacity-75"></div>',
++		)
++		const [whole, partial] = [...host.children]
++		// Class order in the attribute is irrelevant; the rule the cascade writes later wins.
++		expect(readStyle(requireValue(whole, 'No whole element'), 'opacity')).toBe('1')
++		expect(readStyle(requireValue(partial, 'No partial element'), 'opacity')).toBe('0.75')
++	})
++
++	it('reads no token or mode, so a dark island and a doubled density factor leave every step', () => {
++		const host = scene.mount(
++			`<div data-bs-theme="dark">${OPACITY_STEPS.map(({ step }) => `<div class="opacity-${step}"></div>`).join('')}</div>`,
++		)
++		for (const density of ['1', '2']) {
++			document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, density)
++			expect(
++				OPACITY_STEPS.map(({ step }) =>
++					readStyle(requireValue(host.querySelector(`.opacity-${step}`), 'No step'), 'opacity'),
++				),
++			).toEqual(OPACITY_STEPS.map(({ value }) => value))
++		}
++	})
++
++	it('sits in the utilities layer and keeps its priority over a later unlayered consumer rule', () => {
++		const utilities = collectLayerRules('utilities').flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		expect(utilities).toEqual(
++			expect.arrayContaining(OPACITY_STEPS.map(({ step }) => `.opacity-${step}`)),
++		)
++		const host = scene.mount('<div class="probe opacity-50"></div><div class="probe"></div>')
++		scene.load('.probe { opacity: 0.3 }')
++		const utility = requireValue(host.querySelector('.opacity-50'), 'No utility element')
++		const consumer = requireValue(host.lastElementChild, 'No consumer element')
++		expect(readStyle(consumer, 'opacity')).toBe('0.3')
++		expect(readStyle(utility, 'opacity')).toBe('0.5')
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<div class="opacity-50"></div>')
++		const element = requireValue(host.querySelector('.opacity-50'), 'No utility element')
++		scene.load('.opacity-50 { opacity: 0.3 !important }')
++		expect(readStyle(element, 'opacity')).toBe('0.5')
++		scene.load('@layer utilities { .opacity-50 { opacity: 0.2 !important } }')
++		expect(readStyle(element, 'opacity')).toBe('0.2')
++	})
++})
+diff --git a/tests/src/styles/utilities/shadow.test.ts b/tests/src/styles/utilities/shadow.test.ts
+new file mode 100644
+index 0000000..b928176
+--- /dev/null
++++ b/tests/src/styles/utilities/shadow.test.ts
+@@ -0,0 +1,185 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { findRule, readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { collectLayerRules, scene, visitBreakpoint } from '../../../setupBrowser.js'
++import { extractShadowLayers, GRID_BREAKPOINT_CASES, SHADOW_CASES } from '../../../setupStyles.js'
++
++// Every subject rests on an inline shadow no step writes, so a reading of any step can only come
++// from the class, and the inline declaration is normal, so it yields to the utility's importance.
++const RESTING_SHADOW = 'rgb(1, 2, 3) 0px 0px 0px 9px'
++
++afterEach(() => {
++	document.documentElement.style.removeProperty(TOKEN_NAMES.factor.elevation)
++	document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++	for (const { token } of SHADOW_CASES)
++		if (token !== undefined) document.documentElement.style.removeProperty(token)
++	scene.clear()
++})
++
++// One subject per shadow class, each resting on the inline shadow, beside a reference box per
++// elevation token that paints the token's own resolved shadow through a normal inline declaration.
++const SHADOWS = SHADOW_CASES.map(
++	({ name, token }) =>
++		`<div class="${name}" style="box-shadow: ${RESTING_SHADOW}"></div>${
++			token === undefined
++				? ''
++				: `<div data-token="${token}" style="box-shadow: var(${token})"></div>`
++		}`,
++).join('')
++
++describe('shadow utilities', () => {
++	it.each(GRID_BREAKPOINT_CASES)(
++		'resolves each class to the elevation step its alias reads around the $name boundary, and writes no infixed class there',
++		async ({ name, boundary, readings }) => {
++			// The release's entry is not responsive, so an infixed class exists at no boundary, and an
++			// element carrying one keeps its resting shadow on both sides of the boundary. The bare
++			// class at the sm and lg infixes spells a shipped class, so those names are read as the
++			// shipped classes they are rather than as infixed ones.
++			const infixed =
++				boundary === 0
++					? []
++					: SHADOW_CASES.map(({ name: step }) => step.replace('shadow', `shadow-${name}`)).filter(
++							(token) => !SHADOW_CASES.some(({ name: step }) => step === token),
++						)
++			const host = scene.mount(
++				`${SHADOWS}${infixed.map((token) => `<div class="${token}" style="box-shadow: ${RESTING_SHADOW}"></div>`).join('')}`,
++			)
++			for (const viewport of readings) {
++				await visitBreakpoint(viewport, () => {
++					expect(window.innerWidth).toBe(viewport)
++					for (const { name: step, token } of SHADOW_CASES) {
++						const element = requireValue(host.querySelector(`.${step}`), `No ${step} element`)
++						// The reference paints the token itself, so a class written with the release's own
++						// literal shadow, or reading a neighboring step's alias, reads apart from it.
++						const expected =
++							token === undefined
++								? 'none'
++								: readStyle(
++										requireValue(host.querySelector(`[data-token="${token}"]`), `No ${token} box`),
++										'box-shadow',
++									)
++						expect(readStyle(element, 'box-shadow')).toBe(expected)
++					}
++					for (const token of infixed) {
++						const element = requireValue(host.querySelector(`.${token}`), `No ${token} element`)
++						expect(readStyle(element, 'box-shadow')).toBe(RESTING_SHADOW)
++					}
++				})
++			}
++			for (const token of infixed) expect(findRule(`.${token}`)).toBeUndefined()
++			// Every value is a distinct paint, so the preceding reference reading cannot pass by every
++			// class resolving one shared shadow.
++			expect(
++				new Set(
++					SHADOW_CASES.map(({ name: step }) =>
++						readStyle(requireValue(host.querySelector(`.${step}`), `No ${step}`), 'box-shadow'),
++					),
++				).size,
++			).toBe(SHADOW_CASES.length)
++		},
++	)
++
++	it('scales every shadow step with the elevation factor', () => {
++		const host = scene.mount(SHADOWS)
++		const scaled = SHADOW_CASES.filter(({ token }) => token !== undefined)
++		// Each factor's reading is every scaled class's shadow layers as lengths, first at the resting
++		// factor and then at a doubled one.
++		const readings: Array<ReadonlyArray<ReadonlyArray<readonly number[]>>> = []
++		for (const factor of ['1', '2']) {
++			document.documentElement.style.setProperty(TOKEN_NAMES.factor.elevation, factor)
++			readings.push(
++				scaled.map(({ name }) =>
++					extractShadowLayers(
++						readStyle(requireValue(host.querySelector(`.${name}`), `No ${name}`), 'box-shadow'),
++					).map((layer) => layer.lengths),
++				),
++			)
++		}
++		const [resting, doubled] = readings
++		// Every step carries at least one nonzero length, so doubling the factor has something to move.
++		expect((resting ?? []).flat(2).some((length) => length !== 0)).toBe(true)
++		expect(doubled).toEqual(
++			(resting ?? []).map((layers) => layers.map((lengths) => lengths.map((length) => length * 2))),
++		)
++		const none = requireValue(host.querySelector('.shadow-none'), 'No shadow-none element')
++		expect(readStyle(none, 'box-shadow')).toBe('none')
++	})
++
++	it('moves each class with a retuned elevation step and with the alias a consumer sets on it', () => {
++		const host = scene.mount(SHADOWS)
++		for (const { name, token } of SHADOW_CASES) {
++			if (token === undefined) continue
++			const element = requireValue(host.querySelector(`.${name}`), `No ${name} element`)
++			document.documentElement.style.setProperty(token, '0 0 0 7px rgb(4, 5, 6)')
++			expect(readStyle(element, 'box-shadow')).toBe('rgb(4, 5, 6) 0px 0px 0px 7px')
++			document.documentElement.style.removeProperty(token)
++		}
++		// The release's alias is the value's own text, so a rule of the consumer's that sets it on the
++		// element repaints the class without reaching the elevation ladder.
++		scene.load('.retuned { --bs-box-shadow-lg: 0 0 0 5px rgb(7, 8, 9) }')
++		const element = requireValue(host.querySelector('.shadow-lg'), 'No shadow-lg element')
++		element.classList.add('retuned')
++		expect(readStyle(element, 'box-shadow')).toBe('rgb(7, 8, 9) 0px 0px 0px 5px')
++	})
++
++	it('reads the same elevation inside a dark island, and ignores the density factor', () => {
++		const light = scene.mount(SHADOWS)
++		const dark = scene.mount(`<div data-bs-theme="dark">${SHADOWS}</div>`)
++		// Each reading is every class's shadow on the light page, in the dark island, and on the
++		// light page again under a doubled density factor.
++		const readings: Array<readonly string[]> = []
++		for (const [host, density] of [
++			[light, '1'],
++			[dark, '1'],
++			[light, '2'],
++		] as const) {
++			document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, density)
++			readings.push(
++				SHADOW_CASES.map(({ name }) =>
++					readStyle(requireValue(host.querySelector(`.${name}`), `No ${name}`), 'box-shadow'),
++				),
++			)
++		}
++		// The elevation ladder is declared on the root alone and no mode retunes it, so a dark island
++		// inherits the same shadows the light page resolves, and no step reads the density factor.
++		const [resting, island, dense] = readings
++		expect(island).toEqual(resting)
++		expect(dense).toEqual(resting)
++	})
++
++	it('writes the values in the release order, so a later value wins on one element', () => {
++		const host = scene.mount(SHADOWS)
++		const large = readStyle(requireValue(host.querySelector('.shadow-lg'), 'No lg'), 'box-shadow')
++		const pair = scene.mount(
++			'<div class="shadow-lg shadow-sm"></div><div class="shadow-lg shadow-none"></div>',
++		)
++		const [ladder, cleared] = [...pair.children]
++		expect(readStyle(requireValue(ladder, 'No ladder element'), 'box-shadow')).toBe(large)
++		expect(readStyle(requireValue(cleared, 'No cleared element'), 'box-shadow')).toBe('none')
++	})
++
++	it('sits in the utilities layer and keeps its priority over a later unlayered consumer rule', () => {
++		const utilities = collectLayerRules('utilities').flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		expect(utilities).toEqual(expect.arrayContaining(SHADOW_CASES.map(({ name }) => `.${name}`)))
++		const host = scene.mount('<div class="probe shadow-none"></div><div class="probe"></div>')
++		scene.load('.probe { box-shadow: 0 0 0 2px rgb(1, 2, 3) }')
++		const utility = requireValue(host.querySelector('.shadow-none'), 'No utility element')
++		const consumer = requireValue(host.lastElementChild, 'No consumer element')
++		expect(readStyle(consumer, 'box-shadow')).toBe('rgb(1, 2, 3) 0px 0px 0px 2px')
++		expect(readStyle(utility, 'box-shadow')).toBe('none')
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<div class="shadow-none"></div>')
++		const element = requireValue(host.querySelector('.shadow-none'), 'No utility element')
++		scene.load('.shadow-none { box-shadow: 0 0 0 2px rgb(1, 2, 3) !important }')
++		expect(readStyle(element, 'box-shadow')).toBe('none')
++		scene.load(
++			'@layer utilities { .shadow-none { box-shadow: 0 0 0 3px rgb(4, 5, 6) !important } }',
++		)
++		expect(readStyle(element, 'box-shadow')).toBe('rgb(4, 5, 6) 0px 0px 0px 3px')
++	})
++})
