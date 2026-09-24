@@ -1,0 +1,75 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2113,7 +2113,11 @@
+ literal: the selected item holds the `--vn-palette-blue` fill behind the `--vn-palette-white-base`
+ text in both color modes, and the header reads the `--vn-gray-600` token. Each slot is declared on
+ the `.dropdown-menu` class, so a consumer's override lands when it is set on the menu, and the same
+-override on an ancestor is shadowed.
++override on an ancestor is shadowed. The header's weight is not the partial's: the release's
++`.dropdown-header` rule declares no weight and neither does Veneer's, so a header written as the
++release's `h6` element takes the heading weight, which the `reboot` row for the `h6` element in
++§ Departures records as the `var(--vn-weight-heading)` value, resolving to `600`, against the
++release's `500` value.
+ 
+ The caret is drawn from borders on an empty inline box, in one direction per wrapper: down on a
+ plain toggle, up under the `.dropup` wrapper, towards the end under the `.dropend` wrapper, and
+@@ -2353,16 +2357,18 @@
+ a template puts them, and no rule here sets or clears one. The Collapse and Dropdown `plugin` rows
+ in § Compatibility record the behavior that moves them under the J-ENGINE owner.
+ 
+-The Navbar region renders the always-expanded bar, the collapsed bar, the same bar opened, the
+-scrolling list, the dark attribute and the dark class each on a card carrying the dark mode, a bar
+-for each expand class, and a bar whose links sit in a shown offcanvas panel. The card's dark scope
+-alone paints a plain bar's brand white, so the class bar carries the `data-bs-theme="light"`
+-attribute, a light island inside the card, and the white it shows is the class's paint. The journey
+-renders at 390 and 1280 pixels wide, so the `.navbar-expand-xxl` bar has no expanded frame: its
+-boundary is wider than either width, and the proof reads its expanded state at the boundary instead.
+-The offcanvas bar renders inside an element carrying the shell's `viewport` class, the containing
+-block of its fixed panel, and it expands at the `lg` breakpoint, so its frame at 390 is the panel
+-fixed over the bar and its frame at 1280 is the panel laid into the bar's row.
++The Navbar region renders the always-expanded bar, the collapsed bar, the same bar opened, an
++always-expanded bar whose open menu hangs over the body of the card holding it, the scrolling list,
++the dark attribute and the dark class each on a card carrying the dark mode, a bar for each expand
++class, and a bar whose links sit in a shown offcanvas panel. That bar's card body is the room its
++menu lies over, so the frame shot on that specimen carries the whole menu at both widths the journey
++renders. The card's dark scope alone paints a plain bar's brand white, so the class bar carries the
++`data-bs-theme="light"` attribute, a light island inside the card, and the white it shows is the
++class's paint. The journey renders at 390 and 1280 pixels wide, so the `.navbar-expand-xxl` bar has
++no expanded frame: its boundary is wider than either width, and the proof reads its expanded state
++at the boundary instead. The offcanvas bar renders inside an element carrying the shell's `viewport`
++class, the containing block of its fixed panel, and it expands at the `lg` breakpoint, so its frame
++at 390 is the panel fixed over the bar and its frame at 1280 is the panel laid into the bar's row.
+ 
+ The `tests/src/styles/components/navbar.test.ts` proof reads each resolved treatment in the browser:
+ the bar's layout, each published length and light color beside the property it drives and retuned
+@@ -2499,9 +2505,10 @@
+   carries that literal, at the same quarter strength.
+ 
+ The Accordion region renders the release's own arrangement, the first item expanded above collapsed
+-items, and a flush accordion whose middle item is expanded, so its first and last items rest
+-collapsed. Each button announces its state through the `aria-expanded` attribute and names its panel
+-through the `aria-controls` attribute.
++items, the same group with its last item expanded, so the last panel carries the group's outer
++bottom corners, and a flush accordion whose middle item is expanded, so its first and last items
++rest collapsed. Each button announces its state through the `aria-expanded` attribute and names its
++panel through the `aria-controls` attribute.
+ 
+ The `tests/src/styles/components/accordion.test.ts` proof reads each resolved treatment in the
+ browser: the written selectors and the dark rule beside them, each published property beside the
+@@ -7746,10 +7753,12 @@
+ An element frame carries its whole specimen and the background that specimen renders against, and
+ the element the scenario is about is the frame's declared region. A crop of that element alone
+ carries one role link and none of the paint behind it, which is why the frame is the specimen and
+-the region is the reading. The written frame is read back through the installed `readFrame` function
+-for its size and the color its bottom row paints, and its declared region is read for the fraction
+-of pixels differing from that region's first pixel; a region painting one color is refused as a
+-blank.
++the region is the reading. The journey releases the pointer before it shoots the resting frames and
++lifts each copy below a padded top, so the released pointer rests off every copy and no resting
++frame carries a hover paint. The written frame is read back through the installed `readFrame`
++function for its size and the color its bottom row paints, and its declared region is read for the
++fraction of pixels differing from that region's first pixel; a region painting one color is refused
++as a blank.
+ 
+ The guard's population is the frames on disk under the `tmp/capture/states` directory, discovered
+ from the registry's own expansion and read back whether or not this run wrote a file, so an ordinary

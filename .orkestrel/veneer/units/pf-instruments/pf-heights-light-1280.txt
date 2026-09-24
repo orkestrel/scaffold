@@ -1,0 +1,59 @@
+variant light-1280 viewport 1280x800
+content 53410
+header 78.1875 top 0
+main top 78.1875 height 53331.609375
+Showcase	21.0	showcase
+Buttons	149.0	primary-focus,primary-hover,primary-active,toggle-pressed
+Content	1587.6	
+Type	1257.4	font-sizes,font-weights,font-styles,line-heights,monospace
+Media	666.3	
+Links	286.0	role-links,stretched-link
+Layout	1035.0	capped-container,numbered-columns,gap-steps,responsive-gap
+Table	4105.4	base
+Validation	543.1	valid-control,invalid-control,valid-select,invalid-select,valid-check,invalid-check,valid-feedback,invalid-feedback,validated-form,valid-control-focus,invalid-control-focus
+Pagination	222.0	page-strip,active-page,disabled-page,small-pagination,large-pagination,page-strip-hover,page-strip-focus
+Button group	508.0	horizontal-group,vertical-group,nested-groups,small-group,large-group,wrapping-toolbar,split-button,split-button-small,split-button-large,split-dropstart,check-group-checked,check-group-focus
+Placeholder	140.0	placeholder-ramp,glowing-placeholder,waving-placeholder,button-placeholder
+Progress	85.0	progress-base,striped-progress,animated-progress,stacked-progress
+Spinner	135.5	border-spinner,small-border-spinner
+Form check	305.0	form-check-box,form-check-checked,form-check-radios,form-check-disabled,form-check-reverse,form-check-inline,form-check-switch,form-check-switch-checked,form-check-switch-disabled,form-check-switch-reverse,form-check-box-focus,form-check-box-indeterminate
+Form control	470.0	form-control-text,form-control-small,form-control-large,form-control-textarea,form-control-file,form-control-date,form-control-color,form-control-plaintext,form-control-disabled,form-control-readonly,form-control-text-focus
+Form floating	369.0	form-floating-empty,form-floating-filled,form-floating-textarea,form-floating-select,form-floating-disabled,form-floating-plaintext,form-floating-empty-focus
+Form label	265.4	form-label-stacked,form-label-horizontal,form-label-horizontal-large,form-label-horizontal-small,form-label-legend
+Form range	81.0	range,range-disabled,range-focus
+Form select	344.0	form-select-base,form-select-small,form-select-large,form-select-multiple,form-select-sized,form-select-disabled,form-select-base-focus
+Card	2466.5	card-base,card-rule,card-images,card-overlay,card-list,card-list-corners,card-tabs,card-pills,card-group
+List group	1324.0	list-group-base,list-group-active,list-group-disabled,list-group-actions,list-group-numbered,list-group-flush,list-group-horizontal,list-group-horizontal-sm,list-group-horizontal-md,list-group-horizontal-lg,list-group-horizontal-xl,list-group-horizontal-xxl,list-group-roles,list-group-actions-hover,list-group-actions-focus,list-group-actions-active
+Badge	320.3	badge-counter,badge-word,badge-at-heading-scale,badge-collapsed,badge-on-a-button
+Breadcrumb	79.0	breadcrumb-trail,breadcrumb-single-step
+Close	153.0	close-control,close-inverted,close-refused-by-attribute,close-refused-by-class,close-control-hover,close-control-focus
+Input group	545.8	input-group-plain,input-group-addons,input-group-button,input-group-large,input-group-small,input-group-validation,input-group-valid-tooltip,input-group-invalid-tooltip,input-group-dropdown,input-group-dropdown-validated,input-group-button-focus
+Collapse	287.0	collapse-shown,collapse-hidden,horizontal-collapse-shown,horizontal-collapse-hidden
+Dropdown	2124.0	dropdown-closed,dropdown-menu,dropdown-menu-end,dropup,dropend,dropstart,dropdown-center,dropup-center,dropdown-menu-inverted,dropdown-align-sm,dropdown-align-md,dropdown-align-lg,dropdown-align-xl,dropdown-align-xxl,dropdown-menu-hover,dropdown-menu-focus
+Nav	426.0	nav-base,nav-tabs,nav-pills,nav-underline,nav-fill,nav-justified,tab-panes,nav-base-hover,nav-base-focus,nav-tabs-hover
+Alert	739.0	role-alerts,linked-alert,dismissible-alert
+Carousel	1642.0	captioned-carousel,fading-carousel,inverted-carousel,advancing-carousel,captioned-carousel-hover,captioned-carousel-focus
+Accordion	445.0	accordion-base,accordion-flush,accordion-base-focus
+Toast	890.0	shown-toast,stacked-toasts,centered-toast
+Modal	5138.0	shown-modal,static-modal,scrollable-modal,centered-modal,small-modal,large-modal,extra-large-modal,fullscreen-modal,fullscreen-modal-sm-down,fullscreen-modal-md-down,fullscreen-modal-lg-down,fullscreen-modal-xl-down,fullscreen-modal-xxl-down
+Tooltip	1589.0	top-tooltip,right-tooltip,bottom-tooltip,left-tooltip
+Popover	2002.0	top-popover,right-popover,bottom-popover,left-popover,untitled-popover
+Offcanvas	3570.0	start-offcanvas,end-offcanvas,top-offcanvas,bottom-offcanvas,responsive-offcanvas-sm,responsive-offcanvas-md,responsive-offcanvas-lg,responsive-offcanvas-xl,responsive-offcanvas-xxl
+Display	321.0	display-values,responsive-display,print-display,vertical-alignment
+Flex	1714.0	flex-direction,flex-wrap,justified-content,aligned-items,aligned-content,aligned-self,fill-grow-and-shrink,flex-order,horizontal-stack,vertical-stack
+Position	2394.0	position-values,edge-offsets,centered-translation,stacking-levels,fixed-bars,sticky-bars
+Sizing	1323.5	width-steps,height-steps,maximum-sizes,viewport-sizes
+Visibility	105.0	visible-and-invisible,visually-hidden,skip-link,skip-link-focus
+Shadow	76.0	shadows
+Opacity	126.0	opacity-steps
+Focus ring	63.0	focus-ring-roles,default-focus-ring-focus,focus-ring-roles-focus
+Float	317.0	float-sides,responsive-float,cleared-floats
+Object fit	601.5	object-fit-values,responsive-object-fit
+Overflow	805.0	overflow-values,axis-overflow
+Background	1497.3	background-roles,subtle-backgrounds,body-backgrounds,background-opacity,background-gradient
+Border	2369.6	additive-borders,subtractive-borders,border-roles,subtle-borders,border-widths,border-opacity,rounded-corners,rounded-sizes
+Text	420.0	text-alignment,responsive-text-alignment,wrapping,word-break,text-transform,text-decoration,truncated-text
+Color	651.0	text-roles,text-emphasis,body-text-tiers,text-opacity,text-reset,color-and-background-pairs
+Spacing	2412.5	margin-steps,padding-steps,side-margins,side-padding,auto-margins,responsive-spacing
+Interaction	168.0	text-selection,pointer-events
+Navbar	1569.0	navbar-expanded,navbar-collapsed,navbar-opened,navbar-scroll,navbar-inverted,navbar-inverted-class,navbar-expand-sm,navbar-expand-md,navbar-expand-lg,navbar-expand-xl,navbar-expand-xxl,navbar-with-offcanvas,navbar-collapsed-focus,navbar-expanded-hover

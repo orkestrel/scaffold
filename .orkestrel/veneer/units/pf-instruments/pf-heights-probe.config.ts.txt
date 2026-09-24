@@ -1,0 +1,25 @@
+import type { JourneyVariant } from '@orkestrel/test'
+import { defineConfig } from 'vitest/config'
+import { appJourney } from '../../vite.config.ts'
+
+const VARIANTS: readonly JourneyVariant[] = Object.freeze([
+	{ name: 'light-1280', width: 1280, height: 800 },
+	{ name: 'light-390', width: 390, height: 844 },
+])
+
+export default defineConfig({
+	test: {
+		projects: VARIANTS.map((variant) => () => {
+			const base = appJourney(variant, VARIANTS)
+			return {
+				...base,
+				test: {
+					...base.test,
+					name: { label: `pf:${variant.name}`, color: 'green' },
+					include: ['tmp/probe/pf-*.test.ts'],
+					testTimeout: 300_000,
+				},
+			}
+		}),
+	},
+})

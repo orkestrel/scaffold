@@ -1,0 +1,786 @@
+import type { CaptureFilename, CaptureSubject } from '../../tests/setup.js'
+import { requireValue } from '@orkestrel/test'
+import {
+	build,
+	buildCensus,
+	buildContrast,
+	buildEscapes,
+	clickAccessible,
+	createJournal,
+	createPortfolio,
+	describeFocus,
+	describeTree,
+	expandCaptures,
+	extractStyles,
+	holdAccessible,
+	hoverAccessible,
+	mount,
+	pressKeys,
+	readCensus,
+	readContrast,
+	readHit,
+	readName,
+	readFrame,
+	readPage,
+	readPerception,
+	readRefusal,
+	readRing,
+	readStates,
+	readStyle,
+	releaseMedia,
+	releasePane,
+	releasePointer,
+	stageMedia,
+	stagePane,
+	traverseAccessible,
+	waitForAnimations,
+	waitForState,
+} from '@orkestrel/test/browser'
+import { afterAll, afterEach, beforeEach, describe, expect, inject, it } from 'vitest'
+import { commands, page } from 'vitest/browser'
+import {
+	ALERT_SPECIMENS,
+	ACCORDION_SPECIMENS,
+	BUTTON_GROUP_SPECIMENS,
+	BACKGROUND_SPECIMENS,
+	BADGE_SPECIMENS,
+	BORDER_SPECIMENS,
+	BREADCRUMB_SPECIMENS,
+	BUTTON_SPECIMENS,
+	CARD_SPECIMENS,
+	CAROUSEL_SPECIMENS,
+	CLOSE_SPECIMENS,
+	COLLAPSE_SPECIMENS,
+	CONTENT_SPECIMENS,
+	DROPDOWN_SPECIMENS,
+	DISPLAY_SPECIMENS,
+	FLEX_SPECIMENS,
+	FOCUS_RING_SPECIMENS,
+	FLOAT_SPECIMENS,
+	FORM_CHECK_SPECIMENS,
+	FORM_CONTROL_SPECIMENS,
+	FORM_FLOATING_SPECIMENS,
+	FORM_LABEL_SPECIMENS,
+	FORM_RANGE_SPECIMENS,
+	INPUT_GROUP_SPECIMENS,
+	INTERACTION_SPECIMENS,
+	FORM_SELECT_SPECIMENS,
+	LAYOUT_SPECIMENS,
+	LINK_SPECIMENS,
+	LIST_GROUP_SPECIMENS,
+	MEDIA_SPECIMENS,
+	MODAL_SPECIMENS,
+	NAV_SPECIMENS,
+	NAVBAR_SPECIMENS,
+	OPACITY_SPECIMENS,
+	OBJECT_FIT_SPECIMENS,
+	OVERFLOW_SPECIMENS,
+	OFFCANVAS_SPECIMENS,
+	PAGINATION_SPECIMENS,
+	PLACEHOLDER_SPECIMENS,
+	POPOVER_SPECIMENS,
+	POSITION_SPECIMENS,
+	PROGRESS_SPECIMENS,
+	SHADOW_SPECIMENS,
+	SHOWCASE_COPY,
+	SIZING_SPECIMENS,
+	SPACING_SPECIMENS,
+	SPINNER_SPECIMENS,
+	TABLE_SPECIMENS,
+	TOAST_SPECIMENS,
+	TOOLTIP_SPECIMENS,
+	TYPE_SPECIMENS,
+	VALIDATION_SPECIMENS,
+	VISIBILITY_SPECIMENS,
+	TEXT_SPECIMENS,
+	COLOR_SPECIMENS,
+} from '@app/browser'
+import {
+	buildStem,
+	CAPTURE_KEYS,
+	CAPTURE_SCENARIOS,
+	CASCADE_KEYS,
+	CASCADE_KEY_TIMEOUT,
+	CONTRAST_BAR,
+	DISABLED_OPACITY,
+	DRIVEN_KEYS,
+	FOCUS_RING,
+	isVariantName,
+	UNDER_BAR,
+} from '../../tests/setup.js'
+import {
+	applyTheme,
+	buildOracleComparison,
+	collectPainted,
+	describeSubject,
+	driveOracle,
+	FrameManager,
+	measureVariation,
+	mountShowcase,
+	ORACLE_ACTIONS,
+	ORACLE_EXCLUDED,
+	recordState,
+	readButton,
+	readOracleButton,
+	readSpecimen,
+	readSubject,
+} from '../../tests/setupBrowser.js'
+import { FORM_CHECK_ICON_CASES } from '../../tests/setupStyles.js'
+
+const PROVIDED = inject('variant')
+if (!isVariantName(PROVIDED)) {
+	throw new Error(`The journey variant "${PROVIDED}" names no theme and viewport width`)
+}
+// The project provides the variant as a plain string, and every filename this run writes and reads
+// back is built on it, so its grammar is settled here rather than at each name.
+const VARIANT = PROVIDED
+const VARIANTS = inject('variants')
+const CAPTURE = inject('capture')
+const FAMILIES = Object.freeze(['journey', 'refusal', 'matrix', 'capture'])
+const PROVEN = new Set<string>()
+const FIXED = true
+const PROBED: Array<readonly [string, readonly string[]]> = []
+// One spelling of the portfolio's directory. The portfolio resolves it from this file and the
+// runner's own file commands resolve it from the workspace root, so a guard reading a frame back
+// and a capture writing one address the same directory.
+const STATES = 'tmp/probe/bcf-states'
+const PORTFOLIO = createPortfolio({
+	states: CAPTURE_SCENARIOS,
+	variants: VARIANTS,
+	variant: VARIANT,
+	directory: `../../${STATES}`,
+	enabled: CAPTURE,
+})
+const FRAMES = new FrameManager(PORTFOLIO)
+const JOURNAL = createJournal()
+const ARTIFACT: string[] = []
+const ACCESSIBILITY = 'accessibility'
+
+// The registered light and dark variants at this run's own viewport. A run photographs only the
+// mode its own variant names, so the theme a filename carries and the theme its frame shows are one
+// reading; and a mode string borrowed from another width would label every artifact of a 390 run
+// with a 1280 variant's name.
+const WIDTH = requireValue(
+	VARIANTS.find((variant) => variant.name === VARIANT),
+	`The variant matrix registers no variant named ${VARIANT}`,
+).width
+const LIGHT = requireValue(
+	VARIANTS.find((variant) => variant.width === WIDTH && variant.name.startsWith('light-')),
+	`The variant matrix registers no light mode at ${String(WIDTH)} wide`,
+).name
+const DARK = requireValue(
+	VARIANTS.find((variant) => variant.width === WIDTH && variant.name.startsWith('dark-')),
+	`The variant matrix registers no dark mode at ${String(WIDTH)} wide`,
+).name
+
+let mounted: Awaited<ReturnType<typeof mountShowcase>>
+// Holds what refused a teardown, for as long as the run lasts. A teardown that cannot finish leaves
+// state the next case would inherit silently: the installed media helper keeps its stage marker
+// until a read-back succeeds, so a restoration rejecting after reduced motion was staged leaves
+// every following case under that emulation, and each of them would report the emulation's own paint
+// as a defect of the surface. The marker is never cleared, because nothing after a refused teardown
+// can show the state it was meant to leave.
+let unclean: string | undefined
+
+beforeEach(async () => {
+	if (unclean !== undefined) {
+		throw new Error(`An earlier journey teardown was refused and never cleared: ${unclean}`)
+	}
+	mounted = await mountShowcase()
+	JOURNAL.start()
+})
+
+afterEach(async () => {
+	JOURNAL.stop()
+	ARTIFACT.push(JSON.stringify({ steps: JOURNAL.steps, output: JOURNAL.output }))
+	// Every step runs whatever the step before it did, and the refusals are collected and raised
+	// together at the end: a held pointer outlives the node it was pressed on, a staged preference
+	// outlives the document that read it, and a staged pane outlives the case that staged it, so a
+	// release that rejects must not leave the mounted showcase, the delegate, the staged media, or
+	// the staged pane behind for the next case to inherit. The pane is released here as well as in
+	// the case that stages it, because a case failing between the staging and the placement never
+	// reaches its own release and leaves every case after it on a surface the runner is no longer
+	// fitting. A release with nothing staged finds no recorded viewport and changes nothing.
+	const refused: unknown[] = []
+	for (const release of [releasePointer, releaseMedia, releasePane]) {
+		try {
+			await release()
+		} catch (error) {
+			refused.push(error)
+		}
+	}
+	try {
+		mounted.cleanup()
+	} catch (error) {
+		refused.push(error)
+	}
+	document.documentElement.removeAttribute('data-bs-theme')
+	if (refused.length > 0) {
+		unclean = refused.map((reason) => String(reason)).join('; ')
+		throw new AggregateError(refused, 'The journey teardown was refused')
+	}
+})
+
+afterAll(async () => {
+	await commands.writeFile(
+		`tmp/probe/bcf-${VARIANT}.txt`,
+		[VARIANT, ...ARTIFACT, ...PORTFOLIO.paths].join('\n'),
+	)
+})
+
+describe('journey', () => {
+	it('arrives at the showcase through its named region', async () => {
+		PROVEN.add('journey')
+		await applyTheme(VARIANT)
+		expect(readPerception('Showcase')).toBe('Explore the color mode with the Dark mode control.')
+		expect(readPerception('Buttons')).toContain(
+			'Every button variant, size, host, and state the cascade ships.',
+		)
+		expect(readPage()).toContain('Veneer')
+		expect(readPage()).not.toMatch(/schema|transport|engine/iu)
+		ARTIFACT.push(describeTree(mounted.host))
+		JOURNAL.record('arrive', 'Showcase', readPerception('Showcase'))
+		await FRAMES.page('showcase', readSubject(mounted.host, SHOWCASE_COPY.region))
+	})
+
+	it('switches the announced and painted mode through the control', async () => {
+		await applyTheme(LIGHT)
+		const light = readStyle(document.body, 'background-color')
+		await clickAccessible('button', 'Dark mode')
+		expect(await waitForState('button', 'Dark mode', 'pressed=true')).toContain('pressed=true')
+		expect(document.documentElement.getAttribute('data-bs-theme')).toBe('dark')
+		await waitForAnimations(document.body)
+		const dark = readStyle(document.body, 'background-color')
+		expect(dark).not.toBe(light)
+		JOURNAL.record('click', 'Dark mode', dark)
+		// No frame is shot here. The arrival frame is placed in the mode this run's own variant
+		// names, so the dark arrival frame is the dark run's, taken with no pointer on the page; a
+		// frame shot under this click would carry the hover mix the published bare-button treatment
+		// paints on the control it was clicked with, and a reader comparing the two modes would read
+		// that mark as a mode difference.
+		await releasePointer()
+		await clickAccessible('button', 'Dark mode')
+		expect(await waitForState('button', 'Dark mode', 'pressed=false')).toContain('pressed=false')
+		await waitForAnimations(document.body)
+		expect(document.documentElement.getAttribute('data-bs-theme')).toBe('light')
+		expect(readStyle(document.body, 'background-color')).toBe(light)
+	})
+
+	it('reaches and operates the mode control through the keyboard', async () => {
+		await applyTheme(LIGHT)
+		const control = await traverseAccessible('Dark mode')
+		expect(document.activeElement).toBe(control)
+		expect(readStates(control)).toContain('pressed=false')
+		ARTIFACT.push(describeFocus(mounted.host))
+		await pressKeys('{Enter}')
+		expect(await waitForState('button', 'Dark mode', 'pressed=true')).toContain('pressed=true')
+		expect(document.documentElement.getAttribute('data-bs-theme')).toBe('dark')
+		JOURNAL.record('press', 'Enter', 'pressed=true')
+	})
+
+	it('toggles a delegated host through a click on the element carrying its label', async () => {
+		const host = readButton(mounted.section, 'Label')
+		const label = requireValue(
+			host.firstElementChild,
+			'The Label specimen carries no label element',
+		)
+		expect(label.localName).toBe('span')
+		// The delegation prevents the default action of a click anywhere inside the host, so the
+		// cancellation is read from the document rather than from the host: a click landing on the
+		// label is the case the published selector's `closest` resolution exists for.
+		const targets: string[] = []
+		const cancelled: boolean[] = []
+		const controller = new AbortController()
+		document.addEventListener(
+			'click',
+			(event) => {
+				if (!(event.target instanceof Element) || !host.contains(event.target)) return
+				targets.push(event.target.localName)
+				cancelled.push(event.defaultPrevented)
+			},
+			{ signal: controller.signal },
+		)
+		try {
+			await clickAccessible('button', 'Label')
+			expect(await waitForState('button', 'Label', 'pressed=true')).toContain('pressed=true')
+			expect(host.classList.contains('active')).toBe(true)
+			expect(readStates(host)).toStrictEqual(['pressed=true'])
+			expect(targets).toStrictEqual(['span'])
+			expect(cancelled).toStrictEqual([true])
+			JOURNAL.record('click', 'Label', 'pressed=true')
+			await clickAccessible('button', 'Label')
+			expect(await waitForState('button', 'Label', 'pressed=false')).toContain('pressed=false')
+			expect(targets).toStrictEqual(['span', 'span'])
+		} finally {
+			controller.abort()
+		}
+	})
+
+	it('toggles a native host and an anchor host through the keyboard', async () => {
+		// The anchor is reached before the native host because the Button table renders it earlier:
+		// each traversal walks forward from the current focus and wraps once around the document, so
+		// reaching the earlier host second costs one stop per control the showcase renders. Measured
+		// at the wide variant, the reversed order took 30816 ms against this case's budget and this order
+		// takes 5546 ms, and the difference grows with every focusable specimen a later section adds.
+		const anchor = await traverseAccessible('Anchor')
+		expect(document.activeElement).toBe(anchor)
+		await pressKeys('{Enter}')
+		expect(await waitForState('button', 'Anchor', 'pressed=true')).toContain('pressed=true')
+		expect(anchor.classList.contains('active')).toBe(true)
+		JOURNAL.record('press', 'Anchor', 'pressed=true')
+		const native = await traverseAccessible('Toggle')
+		expect(document.activeElement).toBe(native)
+		await pressKeys(' ')
+		expect(await waitForState('button', 'Toggle', 'pressed=true')).toContain('pressed=true')
+		await pressKeys('{Enter}')
+		expect(await waitForState('button', 'Toggle', 'pressed=false')).toContain('pressed=false')
+		JOURNAL.record('press', 'Toggle', 'pressed=false')
+	})
+
+	it('refuses a native disabled host and an aria-disabled anchor with the unreachable voice', async () => {
+		const blocked = readButton(mounted.section, 'Blocked')
+		const disabled = readButton(mounted.section, 'Disabled')
+		expect(readStates(blocked)).toStrictEqual(['disabled'])
+		expect(readStates(disabled)).toStrictEqual(['disabled'])
+		// The voice is the installed resolver's own, read from it for each host rather than copied
+		// into this file. The `refusal` family is where that voice is held against the sentence this
+		// workspace raises, so a wording the package moves reddens there rather than arriving here
+		// as two hosts asserting a sentence nothing produces.
+		const refusals = new Map(
+			['Blocked', 'Disabled'].map((name): readonly [string, string] => [
+				name,
+				requireValue(readRefusal('button', name), `The ${name} host refused nothing`),
+			]),
+		)
+		expect([...refusals].filter(([name, sentence]) => !sentence.includes(name))).toStrictEqual([])
+		expect(new Set(refusals.values()).size).toBe(refusals.size)
+		const reading = await recordState(disabled, () => clickAccessible('button', 'Disabled'))
+		expect(reading.refusal).toBe(refusals.get('Disabled'))
+		expect(reading.mutations).toStrictEqual([])
+		expect(reading.clicks).toStrictEqual([])
+		JOURNAL.record('refuse', 'Disabled', requireValue(reading.refusal, 'The drive was not refused'))
+	})
+
+	it('refuses a covered host, then activates it once the cover is out of the way', async () => {
+		const host = readButton(mounted.section, 'Toggle')
+		const box = host.getBoundingClientRect()
+		const cover = mount(
+			build('div', {
+				attributes: {
+					style: `position: fixed; top: ${String(box.top)}px; left: ${String(box.left)}px; width: ${String(box.width)}px; height: ${String(box.height)}px; z-index: 9`,
+				},
+			}),
+		)
+		try {
+			expect(readHit(host)).toBe(cover)
+			await expect(holdAccessible('button', 'Toggle')).rejects.toThrow(
+				'Interactive target "Toggle" did not enter the pressed state',
+			)
+			expect(host.hasAttribute('aria-pressed')).toBe(false)
+			JOURNAL.record('refuse', 'Toggle', 'covered')
+			cover.remove()
+			expect(readHit(host)).toBe(host)
+			await clickAccessible('button', 'Toggle')
+			expect(await waitForState('button', 'Toggle', 'pressed=true')).toContain('pressed=true')
+			JOURNAL.record('click', 'Toggle', 'pressed=true')
+		} finally {
+			cover.remove()
+		}
+	})
+
+	it('paints a focus ring on every variant reached through the keyboard', async () => {
+		await applyTheme(LIGHT)
+		const painted = collectPainted(mounted.section)
+		const rings = new Map<string, number | undefined>()
+		// Tab traversal is what earns `:focus-visible`: a programmatic `focus()` call moves focus
+		// without it, and a ring reading taken then is about a state no reader ever sees. The painted
+		// buttons are traversed in document order, so each one is one Tab on from the last, and the
+		// elements traversal actually reached are collected to be set beside that population.
+		const unfocused: string[] = []
+		const traversed: HTMLElement[] = []
+		let framed = false
+		for (const specimen of painted) {
+			const name = readName(specimen)
+			const host = await traverseAccessible(name)
+			traversed.push(host)
+			if (!host.matches(':focus-visible')) unfocused.push(name)
+			await waitForAnimations(host)
+			rings.set(name, readRing(host))
+			if (name === 'Primary') {
+				// The focus frame is a page frame: the ring paints outside the host's border box and
+				// an element frame crops it away. Its declared region is the host, so a reader of a
+				// page frame over 8000 pixels tall is pointed at the part the scenario claims.
+				if (VARIANT === LIGHT) await FRAMES.page('primary-focus', host)
+				framed = host.matches(':focus-visible')
+			}
+		}
+		ARTIFACT.push(JSON.stringify({ reading: 'focus ring', mode: LIGHT, rings: [...rings] }))
+		expect(unfocused).toStrictEqual([])
+		expect(framed).toBe(true)
+		expect(traversed).toStrictEqual([...painted])
+		expect(rings.size).toBe(painted.length)
+		const primary = rings.get('Primary')
+		expect(primary).toBeTypeOf('number')
+		// The calibrated reading is pinned, not merely bounded: a uniform change of the focus token
+		// moves every specimen together and leaves an equality sweep green.
+		expect(primary ?? 0).toBeCloseTo(FOCUS_RING.light, 3)
+		// One ring serves every variant: the mixin paints the shared focus token rather than the
+		// variant's own fill, so a variant reading its own ratio is drift rather than a refinement.
+		expect([...new Set(rings.values())]).toStrictEqual([primary])
+		JOURNAL.record('focus', 'Primary', String(primary))
+	})
+
+	it('paints one focus ring on every variant in dark mode as well', async () => {
+		await applyTheme(DARK)
+		const painted = collectPainted(mounted.section)
+		const rings = new Map<string, number | undefined>()
+		const unfocused: string[] = []
+		const traversed: HTMLElement[] = []
+		let framed = false
+		for (const specimen of painted) {
+			const name = readName(specimen)
+			const host = await traverseAccessible(name)
+			traversed.push(host)
+			if (!host.matches(':focus-visible')) unfocused.push(name)
+			await waitForAnimations(host)
+			rings.set(name, readRing(host))
+			if (name === 'Primary') {
+				if (VARIANT === DARK) await FRAMES.page('primary-focus', host)
+				framed = host.matches(':focus-visible')
+			}
+		}
+		ARTIFACT.push(JSON.stringify({ reading: 'focus ring', mode: DARK, rings: [...rings] }))
+		expect(unfocused).toStrictEqual([])
+		expect(framed).toBe(true)
+		expect(traversed).toStrictEqual([...painted])
+		expect(rings.size).toBe(painted.length)
+		const primary = rings.get('Primary')
+		expect(primary).toBeTypeOf('number')
+		// The calibrated reading is pinned, not merely bounded, for the reason the light sweep states.
+		expect(primary ?? 0).toBeCloseTo(FOCUS_RING.dark, 3)
+		// The dark mode paints the shared focus token too, so one ratio answers for every variant here
+		// as it does in the light sweep, and the dark value is pinned once beside it.
+		expect([...new Set(rings.values())]).toStrictEqual([primary])
+		JOURNAL.record('focus', 'Primary', String(primary))
+	})
+
+	it('measures the composed contrast of every variant and state against its control', async () => {
+		const control = buildContrast(CONTRAST_BAR)
+		mount(control.root)
+		try {
+			expect(readContrast(control.refused)).toBeLessThan(CONTRAST_BAR)
+			expect(readContrast(control.accepted)).toBeGreaterThanOrEqual(CONTRAST_BAR)
+		} finally {
+			control.root.remove()
+		}
+		const readings = new Map<string, number>()
+		const dimmed = new Map<string, string>()
+		for (const mode of ['light', 'dark'] as const) {
+			await applyTheme(mode === 'dark' ? DARK : LIGHT)
+			for (const specimen of collectPainted(mounted.section)) {
+				readings.set(`${mode}|${readName(specimen)}|rest`, readContrast(specimen))
+			}
+			const pressed = readButton(mounted.section, 'Pressed')
+			readings.set(`${mode}|Pressed|pressed`, readContrast(pressed))
+			const blocked = readButton(mounted.section, 'Blocked')
+			readings.set(`${mode}|Blocked|disabled`, readContrast(blocked))
+			dimmed.set(mode, readStyle(blocked, 'opacity'))
+		}
+		ARTIFACT.push(
+			JSON.stringify({ reading: 'contrast', bar: CONTRAST_BAR, readings: [...readings] }),
+		)
+		expect([...dimmed]).toStrictEqual([
+			['light', DISABLED_OPACITY],
+			['dark', DISABLED_OPACITY],
+		])
+		expect(
+			[...readings].filter(([, ratio]) => !(ratio > 1) || !Number.isFinite(ratio)),
+		).toStrictEqual([])
+		expect(
+			[...readings]
+				.filter(([, ratio]) => ratio < CONTRAST_BAR)
+				.map(([key]) => key)
+				.sort(),
+		).toStrictEqual(UNDER_BAR)
+		expect(readings.get('light|Primary|rest')).not.toBe(readings.get('dark|Primary|rest'))
+		JOURNAL.record('read', 'contrast', String(readings.get('light|Primary|rest')))
+	})
+
+	it('repaints a host under the pointer while it is hovered and while it is held', async () => {
+		// The hover and the active frame are element frames of the driven host rather than page
+		// frames: staging the pane for a page frame moves the pointer off the specimen, and the frame
+		// would carry the resting fill under a name that claims otherwise, while the element frame
+		// keeps the pointer on it.
+		// Each frame's own state is read again after the shot and collected here, because a capture
+		// stages the pane: a frame labelled `hover` has to be proven to have been taken while the
+		// pointer was still on the host, and the collection names which frame was not.
+		const framed: Array<readonly [string, boolean]> = []
+		// A capture stages the tester pane before it shoots, and that staging is what a frame of a
+		// pointer state has to survive: it repositions the document under a pointer that does not
+		// move with it, and it re-triggers the feedback transition. So each frame here is taken
+		// against both. The pane is staged before the pointer is placed, so the shot finds the host
+		// under it; reduced motion is staged around the placement and released straight after, so
+		// the shot cannot land inside the transition. Every pointer reading stays under motion,
+		// which is the paint a reader with motion sees. The duration at each shot and the paint the
+		// host carries across each placement are collected beside the settled mix the frame holds.
+		const durations: Array<readonly [string, string]> = []
+		const restored: Array<readonly [string, string]> = []
+		const settled: Array<readonly [string, string]> = []
+		for (const mode of [LIGHT, DARK]) {
+			await applyTheme(mode)
+			// Both modes are driven and read in every run; the frames are placed in the mode this
+			// run's own variant names, which is the theme its filenames carry.
+			const shooting = mode === VARIANT
+			const host = readButton(mounted.section, 'Primary')
+			const rest = readStyle(host, 'background-color')
+			// The pointer is aimed at the staged layout rather than the fitted one, because a host
+			// hovered before the pane is staged is no longer under the pointer at the shot and its
+			// frame carries the rest fill. The capture's own staging finds the pane already in place
+			// and moves nothing. A held host needs none of this: the press captures the pointer, so
+			// `:active` survives a staging that `:hover` does not.
+			await stagePane(window.innerWidth, window.innerHeight)
+			await hoverAccessible('button', 'Primary')
+			await waitForAnimations(host)
+			const hovered = readStyle(host, 'background-color')
+			expect(host.matches(':hover')).toBe(true)
+			expect(hovered).not.toBe(rest)
+			await stageMedia({ motion: false })
+			durations.push([`hover ${mode}`, readStyle(host, 'transition-duration')])
+			if (shooting) await FRAMES.place('primary-hover', host)
+			// Both readings that decide the frame are taken here, before the pointer is placed
+			// again, and in the layout the shot was taken in: the capture stages the pane, shoots,
+			// and hands the pane back before it returns, and the hand-back moves the document out
+			// from under a pointer that does not move with it. A reading taken in the handed-back
+			// layout reports the state that followed the frame — it reads unhovered, at the rest
+			// fill, against a frame holding the settled hover mix — so it decides nothing about
+			// the frame. Staging the pane again at the geometry the shot used, with the pointer
+			// left where the shot found it, puts the host back under it where the capture
+			// photographed it: a capture whose shot found the host elsewhere leaves it unhovered
+			// and at its rest fill here.
+			await stagePane(window.innerWidth, window.innerHeight)
+			const framedHover = host.matches(':hover')
+			const framedPaint = readStyle(host, 'background-color')
+			expect(framedHover).toBe(true)
+			expect(framedPaint).toBe(hovered)
+			framed.push([`hover ${mode}`, framedHover])
+			restored.push([`hover ${mode}`, framedPaint])
+			settled.push([`hover ${mode}`, hovered])
+			// The capture releases the pane on its way out, and this releases it again for the run
+			// that places no frame at all: a pane left staged outlives the case and every act after
+			// it happens on a surface the runner is no longer fitting. The pointer is placed once
+			// more because the release moves the document back out from under it, and the hold that
+			// follows starts from a host the pointer is on.
+			await releasePane()
+			await hoverAccessible('button', 'Primary')
+			await releaseMedia()
+			await holdAccessible('button', 'Primary')
+			await waitForAnimations(host)
+			const held = readStyle(host, 'background-color')
+			expect(host.matches(':active')).toBe(true)
+			expect(held).not.toBe(hovered)
+			await stageMedia({ motion: false })
+			durations.push([`active ${mode}`, readStyle(host, 'transition-duration')])
+			if (shooting) await FRAMES.place('primary-active', host)
+			restored.push([`active ${mode}`, readStyle(host, 'background-color')])
+			settled.push([`active ${mode}`, held])
+			await releaseMedia()
+			framed.push([`active ${mode}`, host.matches(':active')])
+			await releasePointer()
+			await waitForAnimations(host)
+			expect(host.matches(':active')).toBe(false)
+			expect(readStyle(host, 'background-color')).toBe(rest)
+			ARTIFACT.push(JSON.stringify({ reading: 'pointer paint', mode, rest, hovered, held }))
+			JOURNAL.record('hold', 'Primary', held)
+		}
+		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
+		// The transition is held off across every shot, so no frame is taken from inside it, and the
+		// paint the host carries across each placement is set beside the settled mix the frame
+		// holds: a placement that moved the paint would report a third colour here.
+		expect(durations.filter(([, duration]) => duration !== '0s')).toStrictEqual([])
+		expect(restored).toStrictEqual(settled)
+		ARTIFACT.push(JSON.stringify({ reading: 'frame paint', settled }))
+	})
+
+	it('holds the feedback transition off while reduced motion is staged', async () => {
+		const host = readButton(mounted.section, 'Primary')
+		const moving = readStyle(host, 'transition-duration')
+		expect(moving).not.toBe('0s')
+		await stageMedia({ motion: false })
+		expect(readStyle(host, 'transition-duration')).toBe('0s')
+		await hoverAccessible('button', 'Primary')
+		await waitForAnimations(host)
+		expect(host.matches(':hover')).toBe(true)
+		ARTIFACT.push(JSON.stringify({ reading: 'motion', moving, reduced: '0s' }))
+		JOURNAL.record('stage', 'reduced motion', readStyle(host, 'transition-duration'))
+		await releaseMedia()
+		expect(readStyle(host, 'transition-duration')).toBe(moving)
+	})
+
+	it('drives a delegated host to pressed and photographs it in both modes', async () => {
+		const host = readButton(mounted.section, 'Toggle')
+		for (const mode of [LIGHT, DARK]) {
+			await applyTheme(mode)
+			await waitForAnimations(document.body)
+			expect(document.documentElement.getAttribute('data-bs-theme') === 'dark').toBe(mode === DARK)
+			expect(host.classList.contains('active')).toBe(false)
+			await clickAccessible('button', 'Toggle')
+			expect(await waitForState('button', 'Toggle', 'pressed=true')).toContain('pressed=true')
+			await waitForAnimations(host)
+			// The frame is the host's own, not the page's: a page frame at rest and a page frame
+			// with one host pressed are one document apart in 8000 pixels, and the resting page is
+			// already the arrival frame. The pressed paint is what this scenario claims, so the
+			// frame carries the host that paints it.
+			if (mode === VARIANT) await FRAMES.place('toggle-pressed', host)
+			expect(host.classList.contains('active')).toBe(true)
+			// The artifact's other tree is taken on arrival, where nothing is pressed, so the pressed
+			// moment has no record unless it is written here. The region is the narrowest subtree
+			// carrying the toggled host, and this is the tree the frame beside it was shot from.
+			const tree = describeTree(mounted.section)
+			expect(tree).toContain('button "Toggle" [pressed=true]')
+			ARTIFACT.push(tree)
+			await clickAccessible('button', 'Toggle')
+			expect(await waitForState('button', 'Toggle', 'pressed=false')).toContain('pressed=false')
+			await waitForAnimations(host)
+		}
+	})
+
+	it(
+		'reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark',
+		async () => {
+			// Each key is addressed by the specimen label its section declared, because one class
+			// answers for several specimens: the Layout table alone renders several containers.
+			const rendered = new Map<string, string>()
+			const framed = new Map<string, string>()
+			const paint = new Map<string, string>()
+			const hung = new Map<
+				string,
+				{
+					readonly edge: number
+					readonly limit: number
+					readonly shared: boolean
+					readonly hit: string | undefined
+				}
+			>()
+			for (const mode of [LIGHT, DARK]) {
+				await applyTheme(mode)
+				await waitForAnimations(document.body)
+				await releasePointer()
+				for (const key of CASCADE_KEYS) {
+					const specimen = readSpecimen(mounted.host, key.subject)
+					const element = requireValue(
+						specimen.querySelector(key.selector),
+						`The "${key.subject}" specimen renders no ${key.selector}`,
+					)
+					// The frame is shot on a copy of the whole specimen lifted to the document's start,
+					// and the copy's own element inside it is the region the written frame is read on.
+					// A page frame covers the whole document, so one shot at rest is one image whatever
+					// scenario name it carries; and an element frame taken where the showcase renders
+					// these specimens comes back blank white, measured at both registered widths. The
+					// lift is what the harness can photograph. Shooting the selector's own element
+					// instead would crop the specimen to that element, with none of the background the
+					// paint is read against. The property comparison checks only the declared
+					// treatment; the written frame is read back separately.
+					const lifted = build('div')
+					lifted.append(specimen.cloneNode(true))
+					document.body.prepend(lifted)
+					try {
+						const frame = requireValue(
+							lifted.firstElementChild,
+							`The lifted "${key.subject}" specimen carries no copy`,
+						)
+						const copy = requireValue(
+							frame.querySelector(key.selector),
+							`The lifted "${key.subject}" specimen renders no ${key.selector}`,
+						)
+						rendered.set(`${mode}|${key.scenario}`, readStyle(element, key.property))
+						framed.set(`${mode}|${key.scenario}`, readStyle(copy, key.property))
+						paint.set(`${mode}|${key.scenario}`, readStyle(copy, 'color'))
+						// A key whose top sits at or below its host's bottom edge hangs outside the host's
+						// box. The journey reads a hanging key on the copy the frame is shot on. It reads
+						// the key's bottom edge against the frame's, and it hit-tests the centre of the
+						// button that leads the group after the host, a point inside the key's box and
+						// the button's box.
+						const box = copy.getBoundingClientRect()
+						const host = requireValue(
+							copy.parentElement,
+							`The lifted "${key.subject}" specimen's ${key.selector} has no host`,
+						)
+						if (box.top >= host.getBoundingClientRect().bottom) {
+							const button = requireValue(
+								frame.querySelector('.input-group + .input-group > .btn:first-child'),
+								`The lifted "${key.subject}" specimen renders no button-led group for its hanging ${key.selector} to cover`,
+							)
+							const target = button.getBoundingClientRect()
+							const x = target.left + target.width / 2
+							const y = target.top + target.height / 2
+							const hit = readHit(button)
+							hung.set(`${mode}|${key.scenario}`, {
+								edge: box.bottom,
+								limit: frame.getBoundingClientRect().bottom,
+								shared: x > box.left && x < box.right && y > box.top && y < box.bottom,
+								hit: hit === copy ? 'tooltip' : hit?.outerHTML.slice(0, 80),
+							})
+						}
+						const entered: string[] = []
+						const listener = (event: Event): void => {
+							const target = event.target
+							if (target instanceof Element && frame.contains(target)) entered.push(`${target.tagName}.${target.className}:${(target.textContent ?? '').slice(0, 24)}:${event instanceof MouseEvent ? `${String(event.clientX)},${String(event.clientY)}` : ''}`)
+						}
+						document.addEventListener('mouseover', listener, true)
+						if (mode === VARIANT) await FRAMES.place(key.scenario, copy, frame)
+						document.removeEventListener('mouseover', listener, true)
+						if (mode === VARIANT) PROBED.push([key.scenario, entered])
+					} finally {
+						lifted.remove()
+					}
+				}
+			}
+			await commands.writeFile(`tmp/probe/bcf-entered-${FIXED ? 'fixed' : 'unfixed'}-${VARIANT}.json`, JSON.stringify(PROBED.filter(([, list]) => list.length > 0), undefined, 1))
+			ARTIFACT.push(JSON.stringify({ reading: 'cascade keys', readings: [...rendered] }))
+			// This compares each declared property after placement; it does not inspect frame pixels
+			// or establish that every property of the copy matches the original.
+			expect([...framed]).toStrictEqual([...rendered])
+			// The row and the container are laid out by rules no mode retunes, so a reading that moved
+			// with the mode would be the theme reaching a layout rule.
+			expect(rendered.get(`${LIGHT}|numbered-columns`)).toBe('flex')
+			expect(rendered.get(`${DARK}|numbered-columns`)).toBe('flex')
+			expect(rendered.get(`${LIGHT}|capped-container`)).toBe(
+				rendered.get(`${DARK}|capped-container`),
+			)
+			// Their layout stays fixed across modes, but their inherited text paint earns a dark frame.
+			expect(paint.get(`${LIGHT}|capped-container`)).not.toBe(paint.get(`${DARK}|capped-container`))
+			expect(paint.get(`${LIGHT}|numbered-columns`)).not.toBe(paint.get(`${DARK}|numbered-columns`))
+			ARTIFACT.push(JSON.stringify({ reading: 'cascade text paint', readings: [...paint] }))
+			// The table border and the link color are theme tokens, which is what earns each key a frame
+			// in each mode: a pair whose paint never moved would be one frame registered twice.
+			expect(rendered.get(`${LIGHT}|base`)).not.toBe(rendered.get(`${DARK}|base`))
+			expect(rendered.get(`${LIGHT}|role-links`)).not.toBe(rendered.get(`${DARK}|role-links`))
+			expect([...rendered].filter(([, value]) => value.length === 0)).toStrictEqual([])
+			// The tooltip keys read the reveal their sibling state writes, in both modes.
+			expect(rendered.get(`${LIGHT}|input-group-valid-tooltip`)).toBe('block')
+			expect(rendered.get(`${DARK}|input-group-valid-tooltip`)).toBe('block')
+			expect(rendered.get(`${LIGHT}|input-group-invalid-tooltip`)).toBe('block')
+			expect(rendered.get(`${DARK}|input-group-invalid-tooltip`)).toBe('block')
+			// The keys hanging below their host are the tooltip keys. Each tooltip ends inside the
+			// frame, so the frame carries the whole of it, and it paints over the button of the group
+			// it hangs over: the tooltip's stacking level is above the one a grouped button rests on.
+			// A hit that reaches no element leaves the `hit` field undefined, which reddens like a hit
+			// on the button does.
+			ARTIFACT.push(JSON.stringify({ reading: 'cascade tooltips', readings: [...hung] }))
+			expect([...hung.keys()]).toStrictEqual([
+				`${LIGHT}|input-group-valid-tooltip`,
+				`${LIGHT}|input-group-invalid-tooltip`,
+				`${DARK}|input-group-valid-tooltip`,
+				`${DARK}|input-group-invalid-tooltip`,
+			])
+			expect(
+				[...hung].filter(
+					([, reading]) =>
+						reading.edge > reading.limit || !reading.shared || reading.hit !== 'tooltip',
+				),
+			).toStrictEqual([])
+			JOURNAL.record('read', 'cascade keys', String(rendered.get(`${LIGHT}|role-links`)))
+		},
+		CASCADE_KEYS.length * CASCADE_KEY_TIMEOUT,
+	)
+})

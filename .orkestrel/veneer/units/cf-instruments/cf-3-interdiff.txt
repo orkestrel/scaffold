@@ -1,0 +1,11 @@
+--- cf-shared-2.patch
++++ cf-shared-3.patch
+@@ -426,7 +426,7 @@
+ + * body paints the card's one fill, and the frame guard refuses a one-color region as a blank, while
+ + * the card's region carries its header and its edges around the reserved box. What separates it
+ + * from the transparent states this block declines is what its frame shows. The hidden fade state is
+-+ * a resting state the release's markup writes, as on every inactive tab pane, and its frame shows
+++ * a resting state the release's markup writes, and its frame shows
+ + * the box that state reserves inside a card that paints. The grow spinner's resting step, the
+ + * resting tooltip, the toast carrying the `showing` class, and each backdrop carrying the `fade`
+ + * class alone each paint nothing in a frame of their own, so a shot of any of them carries an empty

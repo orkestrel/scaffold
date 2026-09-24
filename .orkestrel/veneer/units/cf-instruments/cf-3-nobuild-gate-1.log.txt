@@ -1,0 +1,8 @@
+
+> @orkestrel/veneer@0.0.1 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 13336ms on 419 files using 4 threads.

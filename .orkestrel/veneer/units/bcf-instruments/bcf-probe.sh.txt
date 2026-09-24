@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Runs the resting case alone under the unfixed and the fixed probe copies, one variant at a time.
+cd /home/user/veneer-bcf || exit 1
+export PATH="/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/npm11/node_modules/.bin:$PATH"
+export PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers
+for variant in dark-390 dark-1280 light-390; do
+	for file in bcf-journey bcf-journey-fixed; do
+		BCF_PROBE="tmp/probe/$file.test.ts" CAPTURE=1 timeout 1200 npx vitest run --config tmp/probe/bcf-journey.config.ts --no-cache --reporter=dot --project "journey:$variant*" -t "reads every resting cascade key" > "tmp/probe/$file-$variant.log.txt" 2>&1
+		echo "$file $variant exit $?" >> tmp/probe/bcf-probe-exits.txt
+	done
+done

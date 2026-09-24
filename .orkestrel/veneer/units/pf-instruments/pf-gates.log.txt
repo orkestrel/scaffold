@@ -1,0 +1,18 @@
+== format
+command: npx oxfmt --check tests/setupBrowser.ts tests/setupBrowser.test.ts tests/setup.ts tests/setup.test.ts tests/app/browser/integration.test.ts
+exit: 0
+All matched files use the correct format.
+== lint
+command: npm run lint:check
+exit: 0
+== check
+command: npm run check
+exit: 0
+== setup
+command: npm run test:setup
+exit: 0
+      Tests  287 passed (287)
+== setup-browser
+command: npm run test:setup:browser
+exit: 0
+      Tests  73 passed (73)

@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 /home/user/veneer-bcf/tmp/probe/bcf-scratch
+
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > installs the exact Bootstrap release this package tracks
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > pins the installed CSS and bundled JavaScript bytes
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted container navigation selector even when its fluid shell ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted link hover selector even when its resting twin ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector and custom property in the built cascade
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+ ✓ |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger 2ms
+ ✓ |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries 0ms
+ ✓ |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks 0ms
+ ✓ |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits 0ms
+ ✓ |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition 0ms
+ × |conformance| tests/conformance.test.ts > cascade ledger > defers no name the built cascade ships 178ms
+   → ENOENT: no such file or directory, open '/home/user/veneer-bcf/tmp/probe/bcf-scratch/dist/src/styles/index.css'
+ ✓ |conformance| tests/conformance.test.ts > cascade ledger > selects in the elements layer exactly the tags the partial table names 139ms
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > compares each sheet's set of priorities for every selector and property both sheets declare
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads every forms partial in the release order, validation last
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads the passive block and the helpers in the release order, after every forms partial, each important helper ahead of the utilities
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > declares no forbidden runtime dependency or peer
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > imports no forbidden runtime package from source, application, or tests
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps relative module imports inside the workspace
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps every published entry closure inside source
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > defers no name the built cascade ships
+Error: ENOENT: no such file or directory, open '/home/user/veneer-bcf/tmp/probe/bcf-scratch/dist/src/styles/index.css'
+ ❯ readBuiltCascade tests/setupServer.ts:1230:9
+    1228|  */
+    1229| export function readBuiltCascade(path: string = resolve(WORKSPACE_ROOT…
+    1230|  return readFileSync(path, 'utf8')
+       |         ^
+    1231| }
+    1232|
+ ❯ tests/conformance.test.ts:315:48
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { errno: -2, code: 'ENOENT', syscall: 'open', path: '/home/user/veneer-bcf/tmp/probe/bcf-scratch/dist/src/styles/index.css' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed | 15 skipped (22)
+   Start at  05:43:52
+   Duration  12.85s (transform 832ms, setup 193ms, import 12.14s, tests 323ms, environment 0ms)
+

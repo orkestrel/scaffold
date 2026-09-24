@@ -1,0 +1,8 @@
+pattern: To the start\|To the end -> 0 lines in guides/veneer.md
+pattern: Tabs filters\|Tabs details -> 0 lines in guides/veneer.md
+pattern: Accordion base\|Accordion flush\|Accordion last -> 0 lines in guides/veneer.md
+pattern: Navbar opened\|Navbar with\|Open menu bar -> 1 lines in guides/veneer.md
+pattern: nav-underline-\|nav-tabs-hover\|navbar-with-open-menu\|accordion-last-expanded\|dropdown-align- -> 2 lines in guides/veneer.md
+pattern: Dropdown align\|Nav underline\|Nav tabs -> 0 lines in guides/veneer.md
+pattern: region renders -> 17 lines in guides/veneer.md
+pattern: resting frame\|pointer -> 49 lines in guides/veneer.md

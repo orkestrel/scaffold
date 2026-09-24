@@ -1,0 +1,552 @@
+
+> @orkestrel/veneer@0.0.1 test:setup:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup:browser
+
+
+ RUN  v4.1.11 /home/user/veneer-pf
+
+Port 63315 is in use, trying another one...
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:25:55 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+··················x····x·················································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:432:2 > browser setup > shoots a page frame over the header and the one main child holding its subject
+AssertionError: expected [] to strictly equal [ <section …(1)>…(8)</section> ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   <section[39m
+[32m-     aria-label="Links"[39m
+[32m-   >[39m
+[32m-     <p>[39m
+[32m-       Explore link colors, opacity, underline spacing, independent underline colors, the icon links that shift their icon, and a card whose stretched link answers a pointer anywhere on the card. Hover or focus a link to compare its states.[39m
+[32m-     </p>[39m
+[32m-     <div[39m
+[32m-       data-specimen="Role links"[39m
+[32m-     >[39m
+[32m-       <p>[39m
+[32m-         <a[39m
+[32m-           class="link-primary"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Primary link[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-secondary"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Secondary link[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-success"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Success link[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-info"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Info link[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-warning"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Warning link[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-danger"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Danger link[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-light"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Light link[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-dark"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Dark link[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-body-emphasis"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Body emphasis link[39m
+[32m-         </a>[39m
+[32m-       </p>[39m
+[32m-     </div>[39m
+[32m-     <div[39m
+[32m-       data-specimen="Link opacity"[39m
+[32m-     >[39m
+[32m-       <p>[39m
+[32m-         <a[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Opaque anchor[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-10"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Link opacity 10%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-25"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Link opacity 25%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-50"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Link opacity 50%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-75"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Link opacity 75%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-100"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Link opacity 100%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-10-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover link opacity 10%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-25-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover link opacity 25%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-50-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover link opacity 50%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-75-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover link opacity 75%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-opacity-100-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover link opacity 100%[39m
+[32m-         </a>[39m
+[32m-       </p>[39m
+[32m-     </div>[39m
+[32m-     <div[39m
+[32m-       data-specimen="Underline offsets"[39m
+[32m-     >[39m
+[32m-       <p>[39m
+[32m-         <a[39m
+[32m-           class="link-offset-1"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Offset 1[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-offset-2"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Offset 2[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-offset-3"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Offset 3[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-offset-1-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover offset 1[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-offset-2-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover offset 2[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-offset-3-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover offset 3[39m
+[32m-         </a>[39m
+[32m-       </p>[39m
+[32m-     </div>[39m
+[32m-     <div[39m
+[32m-       data-specimen="Underline colors"[39m
+[32m-     >[39m
+[32m-       <p>[39m
+[32m-         <a[39m
+[32m-           class="link-underline-primary"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Primary underline[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline-secondary"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Secondary underline[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline-success"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Success underline[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline-info"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Info underline[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline-warning"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Warning underline[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline-danger"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Danger underline[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline-light"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Light underline[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline-dark"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Dark underline[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Link underline[39m
+[32m-         </a>[39m
+[32m-       </p>[39m
+[32m-     </div>[39m
+[32m-     <div[39m
+[32m-       data-specimen="Icon links"[39m
+[32m-     >[39m
+[32m-       <p>[39m
+[32m-         <a[39m
+[32m-           class="icon-link"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Resting icon link[39m
+[32m-           <svg[39m
+[32m-             aria-hidden="true"[39m
+[32m-             class="bi"[39m
+[32m-             viewBox="0 0 16 16"[39m
+[32m-           >[39m
+[32m-             <path[39m
+[32m-               d="M2 8h9l-3-3m3 3-3 3"[39m
+[32m-               fill="none"[39m
+[32m-               stroke="currentColor"[39m
+[32m-             />[39m
+[32m-           </svg>[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="icon-link icon-link-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Shifting icon link[39m
+[32m-           <svg[39m
+[32m-             aria-hidden="true"[39m
+[32m-             class="bi"[39m
+[32m-             viewBox="0 0 16 16"[39m
+[32m-           >[39m
+[32m-             <path[39m
+[32m-               d="M2 8h9l-3-3m3 3-3 3"[39m
+[32m-               fill="none"[39m
+[32m-               stroke="currentColor"[39m
+[32m-             />[39m
+[32m-           </svg>[39m
+[32m-         </a>[39m
+[32m-       </p>[39m
+[32m-     </div>[39m
+[32m-     <div[39m
+[32m-       data-specimen="Underline opacity"[39m
+[32m-     >[39m
+[32m-       <p>[39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-0"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Underline opacity 0%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-10"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Underline opacity 10%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-25"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Underline opacity 25%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-50"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Underline opacity 50%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-75"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Underline opacity 75%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-100"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Underline opacity 100%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-0-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover underline opacity 0%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-10-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover underline opacity 10%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-25-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover underline opacity 25%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-50-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover underline opacity 50%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-75-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover underline opacity 75%[39m
+[32m-         </a>[39m
+[32m-          [39m
+[32m-         <a[39m
+[32m-           class="link-underline link-underline-opacity-100-hover"[39m
+[32m-           href="#main"[39m
+[32m-         >[39m
+[32m-           Hover underline opacity 100%[39m
+[32m-         </a>[39m
+[32m-       </p>[39m
+[32m-     </div>[39m
+[32m-     <div[39m
+[32m-       data-specimen="Stretched link"[39m
+[32m-     >[39m
+[32m-       <div[39m
+[32m-         class="card"[39m
+[32m-       >[39m
+[32m-         <div[39m
+[32m-           class="card-body"[39m
+[32m-         >[39m
+[32m-           <p[39m
+[32m-             class="card-text"[39m
+[32m-           >[39m
+[32m-             Every point of this card opens the tour schedule.[39m
+[32m-           </p>[39m
+[32m-           <a[39m
+[32m-             class="stretched-link"[39m
+[32m-             href="#main"[39m
+[32m-           >[39m
+[32m-             Stretched link to the tour schedule[39m
+[32m-           </a>[39m
+[32m-         </div>[39m
+[32m-       </div>[39m
+[32m-     </div>[39m
+[32m-   </section>,[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/setupBrowser.test.ts:466:25
+    464|    // every other section out of the layout, so the document ends far …
+    465|    // showcase's edge and a section added elsewhere cannot grow it.
+    466|    expect(reading.shown).toStrictEqual([holder])
+       |                         ^
+    467|    expect(reading.header).toBeGreaterThan(0)
+    468|    expect(reading.content).toBeLessThan(whole)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:586:2 > browser setup > refuses a placement whose document grows with every pane it is staged at
+AssertionError: promise resolved "undefined" instead of rejecting
+
+[32m- Expected:[39m
+Error {
+  "message": "rejected promise",
+}
+
+[31m+ Received:[39m
+undefined
+
+ ❯ tests/setupBrowser.test.ts:591:55
+    589|   const subject = requireValue(host.querySelector('span'), 'No subject…
+    590|   const frames = new FrameManager(IDLE)
+    591|   await expect(frames.page('viewport-sizes', subject)).rejects.toThrow…
+       |                                                       ^
+    592|   expect(frames.scenarios).toStrictEqual([])
+    593|   expect(section.hasAttribute('hidden')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 71 passed (73)
+   Start at  05:25:42
+   Duration  23.74s (transform 0ms, setup 262ms, import 894ms, tests 10.57s, environment 0ms)
+

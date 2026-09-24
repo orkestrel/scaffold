@@ -1,0 +1,435 @@
+
+ RUN  v4.1.11 /home/user/veneer-bcf
+
+Port 63315 is in use, trying another one...
+5:21:27 AM [vite] (client) [optimizer] bundling dependencies...
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+5:21:34 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+xx·····xx········xxxx··xx·
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:21:2 > AccordionSection > renders an ordinary and a flush group and every resting state class in markup through the shared section contract
+AssertionError: expected [ 'Accordion base', 'Accordion flush' ] to deeply equal [ 'Accordion base', …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "Accordion base",[22m
+[32m-   "Accordion last expanded",[39m
+[2m    "Accordion flush",[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/sections/AccordionSection.test.ts:31:76
+     29|    expect(region.querySelector('p')?.textContent).toBe(ACCORDION_COPY.…
+     30|    const rendered = [...region.querySelectorAll('[data-specimen]')]
+     31|    expect(rendered.map((element) => element.getAttribute('data-specime…
+       |                                                                            ^
+     32|     'Accordion base',
+     33|     'Accordion last expanded',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:98:2 > AccordionSection > renders each item in the state its button announces, with the panel it names shown or hidden to match
+AssertionError: expected [ Array(2) ] to deeply equal [ Array(3) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -24,36 +24,10 @@[39m
+[2m          false,[22m
+[2m        ],[22m
+[2m      ],[22m
+[2m    ],[22m
+[2m    [[22m
+[32m-     "Accordion last expanded",[39m
+[32m-     [[39m
+[32m-       [[39m
+[32m-         "false",[39m
+[32m-         false,[39m
+[32m-         false,[39m
+[32m-         true,[39m
+[32m-         false,[39m
+[32m-       ],[39m
+[32m-       [[39m
+[32m-         "false",[39m
+[32m-         false,[39m
+[32m-         false,[39m
+[32m-         true,[39m
+[32m-         false,[39m
+[32m-       ],[39m
+[32m-       [[39m
+[32m-         "true",[39m
+[32m-         true,[39m
+[32m-         true,[39m
+[32m-         true,[39m
+[32m-         true,[39m
+[32m-       ],[39m
+[32m-     ],[39m
+[32m-   ],[39m
+[32m-   [[39m
+[2m      "Accordion flush",[22m
+[2m      [[22m
+[2m        [[22m
+[2m          "false",[22m
+[2m          false,[22m
+
+ ❯ tests/app/browser/sections/AccordionSection.test.ts:120:18
+    118|     }),
+    119|    ])
+    120|    expect(states).toEqual([
+       |                  ^
+    121|     [
+    122|      'Accordion base',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:156:2 > AccordionSection > rounds the ordinary group at its ends and squares the flush group throughout
+AssertionError: expected [ [ 'Accordion base', …(1) ], …(1) ] to deeply equal [ [ 'Accordion base', …(1) ], …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -18,30 +18,10 @@[39m
+[2m          1,[22m
+[2m        ],[22m
+[2m      ],[22m
+[2m    ],[22m
+[2m    [[22m
+[32m-     "Accordion last expanded",[39m
+[32m-     [[39m
+[32m-       [[39m
+[32m-         6,[39m
+[32m-         0,[39m
+[32m-         1,[39m
+[32m-       ],[39m
+[32m-       [[39m
+[32m-         0,[39m
+[32m-         0,[39m
+[32m-         1,[39m
+[32m-       ],[39m
+[32m-       [[39m
+[32m-         0,[39m
+[32m-         6,[39m
+[32m-         1,[39m
+[32m-       ],[39m
+[32m-     ],[39m
+[32m-   ],[39m
+[32m-   [[39m
+[2m      "Accordion flush",[22m
+[2m      [[22m
+[2m        [[22m
+[2m          0,[22m
+[2m          0,[22m
+
+ ❯ tests/app/browser/sections/AccordionSection.test.ts:169:19
+    167|     ]),
+    168|    ])
+    169|    expect(corners).toEqual([
+       |                   ^
+    170|     [
+    171|      'Accordion base',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:206:2 > AccordionSection > hands the outer bottom corners to the panel of an expanded last item and squares its button
+Error: No specimen in the root is named "Accordion last expanded"
+ ❯ requireValue node_modules/@orkestrel/test/dist/src/core/index.js:516:30
+ ❯ readSpecimen tests/setupBrowser.ts:368:17
+    366|   throw new Error(`${String(matched.length)} specimens in the root are…
+    367|  }
+    368|  const element = requireValue(matched[0], `No specimen in the root is …
+       |                 ^
+    369|  if (!(element instanceof HTMLElement)) {
+    370|   throw new Error(`The "${name}" specimen is not an HTML element`)
+ ❯ tests/app/browser/sections/AccordionSection.test.ts:213:9
+ ❯ tests/app/browser/sections/AccordionSection.test.ts:211:66
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:150:2 > DropdownSection > marks each toggle of a shown menu with the show class the menu carries
+AssertionError: expected [ …(18) ] to strictly equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "Shipment actions",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "Invoice actions",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "Route actions",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "Crate actions",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "Pallet actions",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "Dock actions",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "Bay actions",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "Manifest actions",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the start from sm",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the end from sm",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the start from md",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the end from md",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the start from lg",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the end from lg",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the start from xl",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the end from xl",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the start from xxl",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "menu": true,[39m
+[31m+     "name": "To the end from xxl",[39m
+[31m+     "toggle": false,[39m
+[31m+   },[39m
+[31m+ ][39m
+
+ ❯ tests/app/browser/sections/DropdownSection.test.ts:165:65
+    163|    expect(toggles.filter(({ menu }) => menu)).not.toStrictEqual([])
+    164|    expect(toggles.filter(({ menu }) => !menu)).not.toStrictEqual([])
+    165|    expect(toggles.filter(({ menu, toggle }) => menu !== toggle)).toStr…
+       |                                                                 ^
+    166|   } finally {
+    167|    section.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:176:2 > DropdownSection > fits each toggle inside the column that seats it at a 390-pixel viewport
+AssertionError: expected [ 'To the start from sm', …(6) ] to strictly equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "To the start from sm",[39m
+[31m+   "To the end from sm",[39m
+[31m+   "To the start from md",[39m
+[31m+   "To the end from md",[39m
+[31m+   "To the start from lg",[39m
+[31m+   "To the start from xxl",[39m
+[31m+   "To the end from xxl",[39m
+[31m+ ][39m
+
+ ❯ tests/app/browser/sections/DropdownSection.test.ts:205:20
+    203|     for (const step of ['sm', 'md', 'lg', 'xl', 'xxl'])
+    204|      expect(seated.filter((name) => name.endsWith(` ${step}`))).toHave…
+    205|     expect(overrun).toStrictEqual([])
+       |                    ^
+    206|    } finally {
+    207|     section.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/NavSection.test.ts:127:2 > NavSection > keeps the open tab menu inside the specimen that holds it at a 390-pixel viewport
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/NavSection.test.ts:127:2 > NavSection > keeps the open tab menu inside the specimen that holds it at a 1280-pixel viewport
+AssertionError: expected [ 'Nav tabs' ] to strictly equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "Nav tabs",[39m
+[31m+ ][39m
+
+ ❯ tests/app/browser/sections/NavSection.test.ts:163:20
+    161|      ),
+    162|     )
+    163|     expect(escaped).toStrictEqual([])
+       |                    ^
+    164|    } finally {
+    165|     section.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/NavbarSection.test.ts:17:2 > NavbarSection > renders every navbar form and every state set in markup through the shared section contract
+AssertionError: expected [ 'Navbar expanded', …(11) ] to deeply equal [ 'Navbar expanded', …(12) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,10 +1,9 @@[39m
+[2m  [[22m
+[2m    "Navbar expanded",[22m
+[2m    "Navbar collapsed",[22m
+[2m    "Navbar opened",[22m
+[32m-   "Navbar with open menu",[39m
+[2m    "Navbar scroll",[22m
+[2m    "Navbar inverted",[22m
+[2m    "Navbar inverted class",[22m
+[2m    "Navbar expand sm",[22m
+[2m    "Navbar expand md",[22m
+
+ ❯ tests/app/browser/sections/NavbarSection.test.ts:28:76
+     26|    expect(region.querySelector('p')?.textContent).toBe(NAVBAR_COPY.par…
+     27|    const rendered = [...region.querySelectorAll('[data-specimen]')]
+     28|    expect(rendered.map((element) => element.getAttribute('data-specime…
+       |                                                                            ^
+     29|     'Navbar expanded',
+     30|     'Navbar collapsed',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/NavbarSection.test.ts:181:2 > NavbarSection > hangs an open menu out of flow from the row of an always-expanded bar
+AssertionError: expected [] to deeply equal [ [ 'absolute', 'static', true ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   [[39m
+[32m-     "absolute",[39m
+[32m-     "static",[39m
+[32m-     true,[39m
+[32m-   ],[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/app/browser/sections/NavbarSection.test.ts:197:19
+    195|      ]
+    196|     })
+    197|    expect(hanging).toEqual([['absolute', 'static', true]])
+       |                   ^
+    198|   } finally {
+    199|    section.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+
+ Test Files  4 failed | 1 passed (5)
+      Tests  10 failed | 16 passed (26)
+   Start at  05:21:25
+   Duration  14.27s (transform 0ms, setup 674ms, import 1.62s, tests 3.51s, environment 0ms)
+

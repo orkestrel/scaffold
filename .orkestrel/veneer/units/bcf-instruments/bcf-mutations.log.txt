@@ -1,0 +1,102 @@
+== accordion-specimen-added (2026-09-24T05:31:51+00:00)
+site: app/browser/constants.ts: replaced "\tObject.freeze({\n\t\tname: 'Accordion flush'," with '\tObject.freeze({\n\t\tname: \'Accordion flush copy\',\n\t\tmarkup: \'<div class="accordion accordion-flush"></div>\',\n\t}),\n\tObject.freeze({\n\t\tname: \'A'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  3 failed | 23 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:156:2 > AccordionSection > rounds the ordinary group at its ends and squares the flush group throughout
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:21:2 > AccordionSection > renders an ordinary and a flush group and every resting state class in markup through the shared section contract
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:98:2 > AccordionSection > renders each item in the state its button announces, with the panel it names shown or hidden to match
+
+== v4-toggle-at-rest (2026-09-24T05:32:09+00:00)
+site: app/browser/constants.ts: replaced 'class="btn btn-secondary dropdown-toggle show" aria-expanded="true">${label}' with 'class="btn btn-secondary dropdown-toggle" aria-expanded="true">${label}'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  1 failed | 25 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:150:2 > DropdownSection > marks each toggle of a shown menu with the show class the menu carries
+
+== v5-long-labels (2026-09-24T05:32:24+00:00)
+site: app/browser/constants.ts: replaced 'aria-expanded="true">${edge} from ${step}</button>' with 'aria-expanded="true">To the ${edge} from ${step}</button>'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  1 failed | 25 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:176:2 > DropdownSection > fits each toggle inside the column that seats it at a 390-pixel viewport
+
+== v3-short-pane (2026-09-24T05:32:43+00:00)
+site: app/browser/constants.ts: replaced '<p>The pane runs on under the menu, so the whole menu lies over it.</p><p>The last line keeps the room below the menu at every width.</p>' with ''
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  1 failed | 25 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/NavSection.test.ts:127:2 > NavSection > keeps the open tab menu inside the specimen that holds it at a 1280-pixel viewport
+
+== v3-menu-tab-third (2026-09-24T05:33:03+00:00)
+site: app/browser/constants.ts: replaced '<li class="nav-item dropdown"><a class="nav-link dropdown-toggle show" href="#main" role="button" aria-expanded="true">Tabs filters</a><ul c' with '<li class="nav-item show"><a class="nav-link" href="#main">Tabs details</a></li><li class="nav-item dropdown"><a class="nav-link dropdown-to'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  1 failed | 25 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/NavSection.test.ts:127:2 > NavSection > keeps the open tab menu inside the specimen that holds it at a 390-pixel viewport
+
+== v6-navbar-no-room (2026-09-24T05:33:27+00:00)
+site: app/browser/constants.ts: replaced '<div class="card-body"><p>The open menu hangs from the bar over this card.</p><p>The bar keeps its links in one row, so the menu leaves the ' with ''
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  2 failed | 24 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/NavbarSection.test.ts:209:2 > NavbarSection > keeps each open menu inside the specimen that holds it at a 1280-pixel viewport
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/NavbarSection.test.ts:209:2 > NavbarSection > keeps each open menu inside the specimen that holds it at a 390-pixel viewport
+
+== v6-navbar-collapsed-bar (2026-09-24T05:33:45+00:00)
+site: app/browser/constants.ts: replaced '<nav class="navbar navbar-expand" aria-label="Open menu bar">' with '<nav class="navbar" aria-label="Open menu bar">'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  1 failed | 25 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/NavbarSection.test.ts:181:2 > NavbarSection > hangs an open menu out of flow from the row of an always-expanded bar
+
+== v6-accordion-last-collapsed (2026-09-24T05:34:00+00:00)
+site: app/browser/constants.ts: replaced '<button class="accordion-button" type="button" aria-expanded="true" aria-controls="accordion-claims">Damage claims</button></h2><div class="' with '<button class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="accordion-claims">Damage claims</button></h2><'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  3 failed | 23 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:206:2 > AccordionSection > hands the outer bottom corners to the panel of an expanded last item and squares its button
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:21:2 > AccordionSection > renders an ordinary and a flush group and every resting state class in markup through the shared section contract
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:98:2 > AccordionSection > renders each item in the state its button announces, with the panel it names shown or hidden to match
+
+== v2-unfixed (2026-09-24T05:37:33+00:00)
+site: tests/app/browser/integration.test.ts: replaced '\t\t\t\tawait releasePointer()\n\t\t\t\tfor (const key of CASCADE_KEYS) {' with '\t\t\t\tfor (const key of CASCADE_KEYS) {'
+site: tests/app/browser/integration.test.ts: replaced "const lifted = build('div', { classes: 'pt-5' })\n\t\t\t\t\tlifted.append(specimen.cloneNode(true))" with "const lifted = build('div')\n\t\t\t\t\tlifted.append(specimen.cloneNode(true))"
+command: CAPTURE=1 npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-390* -t 'reads every resting cascade key'
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 45 skipped (46)
+failing: FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:645:2 > journey > reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark
+
+== v2-release-only (2026-09-24T05:40:13+00:00)
+site: tests/app/browser/integration.test.ts: replaced "const lifted = build('div', { classes: 'pt-5' })\n\t\t\t\t\tlifted.append(specimen.cloneNode(true))" with "const lifted = build('div')\n\t\t\t\t\tlifted.append(specimen.cloneNode(true))"
+command: CAPTURE=1 npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-390* -t 'reads every resting cascade key'
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 45 skipped (46)
+failing: FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:645:2 > journey > reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark
+
+== v2-padding-only (2026-09-24T05:42:48+00:00)
+site: tests/app/browser/integration.test.ts: replaced '\t\t\t\tawait releasePointer()\n\t\t\t\tfor (const key of CASCADE_KEYS) {' with '\t\t\t\tfor (const key of CASCADE_KEYS) {'
+command: CAPTURE=1 npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-390* -t 'reads every resting cascade key'
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 45 skipped (46)
+failing: FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:645:2 > journey > reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark
+
+== v6-underline-unregistered (2026-09-24T05:43:05+00:00)
+site: tests/setup.ts: replaced "\tObject.freeze({ scenario: 'nav-underline-hover', subject: 'Nav underline' }),\n\tObject.freeze({ scenario: 'nav-underline-focus', subject: 'N" with ''
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-390* -t 'drives an underline link to hover and to focus'
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 45 skipped (46)
+failing: FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1880:2 > journey > drives an underline link to hover and to focus on the lifted specimen, and photographs each state
+

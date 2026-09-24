@@ -1,0 +1,1677 @@
+[
+ [
+  "capped-container",
+  [
+   "DIV.container:Capped at each layout bo:0,0"
+  ]
+ ],
+ [
+  "numbered-columns",
+  [
+   "DIV.col-12 col-md-4:One third at md:0,0"
+  ]
+ ],
+ [
+  "base",
+  [
+   "CAPTION.:Material shipments:0,0"
+  ]
+ ],
+ [
+  "role-links",
+  [
+   "P.:Primary link Secondary l:0,0"
+  ]
+ ],
+ [
+  "valid-control",
+  [
+   "LABEL.:Valid material:0,0"
+  ]
+ ],
+ [
+  "invalid-control",
+  [
+   "LABEL.:Invalid material:0,0"
+  ]
+ ],
+ [
+  "valid-select",
+  [
+   "LABEL.:Valid warehouse:0,0"
+  ]
+ ],
+ [
+  "invalid-select",
+  [
+   "LABEL.:Invalid warehouse:0,0"
+  ]
+ ],
+ [
+  "valid-check",
+  [
+   "DIV.:Valid inspection:0,0"
+  ]
+ ],
+ [
+  "invalid-check",
+  [
+   "DIV.:Invalid inspection:0,0"
+  ]
+ ],
+ [
+  "valid-feedback",
+  [
+   "LABEL.:Accepted batch:0,0"
+  ]
+ ],
+ [
+  "invalid-feedback",
+  [
+   "LABEL.:Rejected batch:0,0"
+  ]
+ ],
+ [
+  "validated-form",
+  [
+   "LABEL.:Required destination:0,0"
+  ]
+ ],
+ [
+  "page-strip",
+  [
+   "LI.page-item:Previous page:0,0"
+  ]
+ ],
+ [
+  "active-page",
+  [
+   "LI.page-item:Step 1:0,0"
+  ]
+ ],
+ [
+  "disabled-page",
+  [
+   "LI.page-item disabled:Archive start:0,0"
+  ]
+ ],
+ [
+  "small-pagination",
+  [
+   "LI.page-item:Compact 1:0,0"
+  ]
+ ],
+ [
+  "large-pagination",
+  [
+   "LI.page-item:Roomy 1:0,0"
+  ]
+ ],
+ [
+  "horizontal-group",
+  [
+   "DIV.:Row menuRow cutRow copyR:0,0"
+  ]
+ ],
+ [
+  "vertical-group",
+  [
+   "DIV.btn-group-vertical:Column cutColumn copyCol:0,0"
+  ]
+ ],
+ [
+  "nested-groups",
+  [
+   "DIV.:Joined cutJoined cut all:0,0"
+  ]
+ ],
+ [
+  "small-group",
+  [
+   "DIV.:Compact cutCompact copy:0,0"
+  ]
+ ],
+ [
+  "large-group",
+  [
+   "DIV.:Roomy cutRoomy copy:0,0"
+  ]
+ ],
+ [
+  "wrapping-toolbar",
+  [
+   "DIV.btn-toolbar:Wrapping cutWrapping cut:0,0"
+  ]
+ ],
+ [
+  "progress-base",
+  [
+   "DIV.:50%:0,0"
+  ]
+ ],
+ [
+  "striped-progress",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "animated-progress",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "stacked-progress",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "border-spinner",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "small-border-spinner",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "placeholder-ramp",
+  [
+   "P.:   :0,0"
+  ]
+ ],
+ [
+  "glowing-placeholder",
+  [
+   "P.placeholder-glow::0,0"
+  ]
+ ],
+ [
+  "waving-placeholder",
+  [
+   "P.placeholder-wave::0,0"
+  ]
+ ],
+ [
+  "button-placeholder",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "range",
+  [
+   "INPUT.form-range::0,0"
+  ]
+ ],
+ [
+  "range-disabled",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "card-base",
+  [
+   "DIV.:ShipmentOakNorthworksRea:0,0"
+  ]
+ ],
+ [
+  "card-rule",
+  [
+   "DIV.:Northworks to Brookhaven:0,0"
+  ]
+ ],
+ [
+  "card-images",
+  [
+   "DIV.:Capped above and below.:0,0"
+  ]
+ ],
+ [
+  "card-overlay",
+  [
+   "DIV.:YardReading the overlay :0,0"
+  ]
+ ],
+ [
+  "card-list",
+  [
+   "DIV.:BatchesVN20260921VN20260:0,0"
+  ]
+ ],
+ [
+  "card-list-corners",
+  [
+   "DIV.:VN20260921VN20260922The :0,0"
+  ]
+ ],
+ [
+  "card-tabs",
+  [
+   "DIV.:OpenClosedThe active tab:0,0"
+  ]
+ ],
+ [
+  "card-pills",
+  [
+   "DIV.:InboundOutboundThe pills:0,0"
+  ]
+ ],
+ [
+  "card-group",
+  [
+   "DIV.card-group:Oak is ready.ReadyAshAsh:0,0"
+  ]
+ ],
+ [
+  "list-group-base",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-active",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-disabled",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-actions",
+  [
+   "DIV.:Dispatch laneHolding lan:0,0"
+  ]
+ ],
+ [
+  "list-group-numbered",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-flush",
+  [
+   "LI.list-group-item:Oak:0,0"
+  ]
+ ],
+ [
+  "list-group-horizontal",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-horizontal-sm",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-horizontal-md",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-horizontal-lg",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-horizontal-xl",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-horizontal-xxl",
+  [
+   "DIV.:OakAshElm:0,0"
+  ]
+ ],
+ [
+  "list-group-roles",
+  [
+   "DIV.:primarysecondarysuccessi:0,0"
+  ]
+ ],
+ [
+  "breadcrumb-trail",
+  [
+   "LI.breadcrumb-item:Home:0,0"
+  ]
+ ],
+ [
+  "badge-counter",
+  [
+   "TD.:Unread shipments 4:0,0"
+  ]
+ ],
+ [
+  "close-control",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "close-inverted",
+  [
+   "TD.:Inverted notice :0,0"
+  ]
+ ],
+ [
+  "close-refused-by-attribute",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "close-refused-by-class",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "badge-word",
+  [
+   "TD.:Oak delivery New:0,0"
+  ]
+ ],
+ [
+  "badge-at-heading-scale",
+  [
+   "TD.:Materials 12:0,0"
+  ]
+ ],
+ [
+  "badge-collapsed",
+  [
+   "TD.:No unread shipments :0,0"
+  ]
+ ],
+ [
+  "badge-on-a-button",
+  [
+   "TD.:Inbox 7:0,0"
+  ]
+ ],
+ [
+  "breadcrumb-single-step",
+  [
+   "LI.breadcrumb-item active:Home:0,0"
+  ]
+ ],
+ [
+  "form-check-box",
+  [
+   "DIV.form-check:Email a receipt:0,0"
+  ]
+ ],
+ [
+  "form-check-checked",
+  [
+   "DIV.form-check:Keep me signed in:0,0"
+  ]
+ ],
+ [
+  "form-check-radios",
+  [
+   "DIV.form-check:Ship by post:0,0"
+  ]
+ ],
+ [
+  "form-check-disabled",
+  [
+   "DIV.form-check:Add gift wrap:0,0"
+  ]
+ ],
+ [
+  "form-check-reverse",
+  [
+   "DIV.form-check form-check-reverse:Hide my address:0,0"
+  ]
+ ],
+ [
+  "form-check-inline",
+  [
+   "DIV.form-check form-check-inline:Morning:0,0"
+  ]
+ ],
+ [
+  "form-check-switch",
+  [
+   "DIV.form-check form-switch:Delivery alerts:0,0"
+  ]
+ ],
+ [
+  "form-check-switch-checked",
+  [
+   "DIV.form-check form-switch:Sync my cart:0,0"
+  ]
+ ],
+ [
+  "form-check-switch-disabled",
+  [
+   "DIV.form-check form-switch:Offline orders:0,0"
+  ]
+ ],
+ [
+  "form-check-switch-reverse",
+  [
+   "DIV.form-check form-switch form-check-reverse:Order sounds:0,0"
+  ]
+ ],
+ [
+  "input-group-plain",
+  [
+   "DIV.input-group:@:0,0"
+  ]
+ ],
+ [
+  "input-group-addons",
+  [
+   "DIV.input-group:$.00:0,0"
+  ]
+ ],
+ [
+  "input-group-button",
+  [
+   "DIV.input-group:Dispatch:0,0"
+  ]
+ ],
+ [
+  "input-group-large",
+  [
+   "DIV.input-group input-group-lg:@Large lookup:0,0"
+  ]
+ ],
+ [
+  "input-group-small",
+  [
+   "DIV.input-group input-group-sm:@Small lookup:0,0"
+  ]
+ ],
+ [
+  "input-group-validation",
+  [
+   "DIV.input-group has-validation:@Choose a handle.:0,0"
+  ]
+ ],
+ [
+  "input-group-valid-tooltip",
+  [
+   "DIV.input-group has-validation:@The handle is free.:0,0"
+  ]
+ ],
+ [
+  "input-group-invalid-tooltip",
+  [
+   "DIV.input-group has-validation:@Choose another handle.:0,0"
+  ]
+ ],
+ [
+  "form-floating-empty",
+  [
+   "DIV.form-floating:Email address:0,0"
+  ]
+ ],
+ [
+  "form-floating-filled",
+  [
+   "DIV.form-floating:Delivery city:0,0"
+  ]
+ ],
+ [
+  "form-floating-textarea",
+  [
+   "DIV.form-floating:Leave the parcel at the :0,0"
+  ]
+ ],
+ [
+  "form-floating-select",
+  [
+   "DIV.form-floating:Northworks FreightHarbor:0,0"
+  ]
+ ],
+ [
+  "form-floating-disabled",
+  [
+   "DIV.form-floating:Archived at the depot.Ar:0,0"
+  ]
+ ],
+ [
+  "form-floating-plaintext",
+  [
+   "INPUT.form-control-plaintext::0,0"
+  ]
+ ],
+ [
+  "form-select-base",
+  [
+   "DIV.:NorthworksSouthgateEastf:0,0"
+  ]
+ ],
+ [
+  "form-select-small",
+  [
+   "DIV.:NorthworksSouthgateEastf:0,0"
+  ]
+ ],
+ [
+  "form-select-large",
+  [
+   "DIV.:NorthworksSouthgateEastf:0,0"
+  ]
+ ],
+ [
+  "form-select-multiple",
+  [
+   "DIV.:NorthworksSouthgateEastf:0,0"
+  ]
+ ],
+ [
+  "form-select-sized",
+  [
+   "DIV.:NorthworksSouthgateEastf:0,0"
+  ]
+ ],
+ [
+  "form-select-disabled",
+  [
+   "DIV.:NorthworksSouthgateEastf:0,0"
+  ]
+ ],
+ [
+  "form-control-text",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "form-control-small",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "form-control-large",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "form-control-textarea",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "form-control-file",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "form-control-date",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "form-control-color",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "form-control-plaintext",
+  [
+   "INPUT.form-control-plaintext::0,0"
+  ]
+ ],
+ [
+  "form-control-disabled",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "form-control-readonly",
+  [
+   "DIV.::0,0"
+  ]
+ ],
+ [
+  "form-label-stacked",
+  [
+   "LABEL.form-label:Dispatch email:0,0"
+  ]
+ ],
+ [
+  "form-label-horizontal",
+  [
+   "LABEL.col-5 col-form-label:Depot:0,0"
+  ]
+ ],
+ [
+  "form-label-horizontal-large",
+  [
+   "LABEL.col-5 col-form-label col-form-label-lg:Large depot:0,0"
+  ]
+ ],
+ [
+  "form-label-horizontal-small",
+  [
+   "LABEL.col-5 col-form-label col-form-label-sm:Small depot:0,0"
+  ]
+ ],
+ [
+  "form-label-legend",
+  [
+   "LEGEND.col-5 col-form-label:Pickup:0,0"
+  ]
+ ],
+ [
+  "gap-steps",
+  [
+   "DIV.container-fluid:Gap 0Neighbor:0,0"
+  ]
+ ],
+ [
+  "responsive-gap",
+  [
+   "DIV.container-fluid:Resize for gap stepsColu:0,0"
+  ]
+ ],
+ [
+  "dropdown-closed",
+  [
+   "DIV.dropdown:Carrier optionsChoose ca:0,0"
+  ]
+ ],
+ [
+  "dropdown-menu",
+  [
+   "DIV.col-12:Shipment actionsShipment:0,0"
+  ]
+ ],
+ [
+  "dropdown-menu-end",
+  [
+   "DIV.col-12:Invoice actionsDownload :0,0"
+  ]
+ ],
+ [
+  "dropup",
+  [
+   "DIV.row row-gap-5:Route actionsRerouteHold:0,0"
+  ]
+ ],
+ [
+  "dropend",
+  [
+   "DIV.col-12:Crate actionsOpen crateS:0,0"
+  ]
+ ],
+ [
+  "dropstart",
+  [
+   "DIV.row row-gap-5:Pallet actionsStack pall:0,0"
+  ]
+ ],
+ [
+  "dropdown-center",
+  [
+   "DIV.col-12:Dock actionsAssign dockR:0,0"
+  ]
+ ],
+ [
+  "dropup-center",
+  [
+   "DIV.row row-gap-5:Bay actionsLoad bayClear:0,0"
+  ]
+ ],
+ [
+  "dropdown-menu-inverted",
+  [
+   "DIV.col-12:Manifest actionsManifest:0,0"
+  ]
+ ],
+ [
+  "dropdown-align-sm",
+  [
+   "DIV.col-6:To the start from smWeig:0,0"
+  ]
+ ],
+ [
+  "dropdown-align-md",
+  [
+   "DIV.col-6:To the start from mdWeig:0,0"
+  ]
+ ],
+ [
+  "dropdown-align-lg",
+  [
+   "DIV.col-6:To the start from lgWeig:0,0"
+  ]
+ ],
+ [
+  "dropdown-align-xl",
+  [
+   "DIV.col-6:To the start from xlWeig:0,0"
+  ]
+ ],
+ [
+  "dropdown-align-xxl",
+  [
+   "DIV.col-6:To the start from xxlWei:0,0"
+  ]
+ ],
+ [
+  "nav-base",
+  [
+   "A.nav-link:Base overview:0,0"
+  ]
+ ],
+ [
+  "nav-tabs",
+  [
+   "LI.nav-item:Tabs summary:0,0"
+  ]
+ ],
+ [
+  "nav-pills",
+  [
+   "LI.nav-item:Pills today:0,0"
+  ]
+ ],
+ [
+  "nav-underline",
+  [
+   "A.nav-link active:Underline inbox:0,0"
+  ]
+ ],
+ [
+  "nav-fill",
+  [
+   "LI.nav-item:Fill item:0,0"
+  ]
+ ],
+ [
+  "nav-justified",
+  [
+   "LI.nav-item:Justified item:0,0"
+  ]
+ ],
+ [
+  "tab-panes",
+  [
+   "P.:The active pane is the o:0,0"
+  ]
+ ],
+ [
+  "collapse-shown",
+  [
+   "DIV.:Parcel 1042Left the Harb:0,0"
+  ]
+ ],
+ [
+  "collapse-hidden",
+  [
+   "DIV.:Parcel 1043Waiting at th:0,0"
+  ]
+ ],
+ [
+  "horizontal-collapse-shown",
+  [
+   "DIV.:Route 7Carries every par:0,0"
+  ]
+ ],
+ [
+  "horizontal-collapse-hidden",
+  [
+   "DIV.:Route 8Carries every par:0,0"
+  ]
+ ],
+ [
+  "role-alerts",
+  [
+   "DIV.:The primary notice.The s:0,0"
+  ]
+ ],
+ [
+  "linked-alert",
+  [
+   "DIV.:Oak order deliveredThe o:0,0"
+  ]
+ ],
+ [
+  "dismissible-alert",
+  [
+   "DIV.:The ash order is held at:0,0"
+  ]
+ ],
+ [
+  "captioned-carousel",
+  [
+   "BUTTON.carousel-control-prev::0,0"
+  ]
+ ],
+ [
+  "fading-carousel",
+  [
+   "BUTTON.carousel-control-prev::0,0"
+  ]
+ ],
+ [
+  "inverted-carousel",
+  [
+   "BUTTON.carousel-control-prev::0,0"
+  ]
+ ],
+ [
+  "advancing-carousel",
+  [
+   "IMG.img-fluid::0,0"
+  ]
+ ],
+ [
+  "accordion-base",
+  [
+   "DIV.accordion:Delivery windowsParcels :0,0"
+  ]
+ ],
+ [
+  "accordion-flush",
+  [
+   "BUTTON.accordion-button collapsed:Billing cycle:0,0"
+  ]
+ ],
+ [
+  "shown-toast",
+  [
+   "DIV.:Harbor office11 minutes :0,0"
+  ]
+ ],
+ [
+  "stacked-toasts",
+  [
+   "DIV.viewport:Customs desk1 minute ago:0,0"
+  ]
+ ],
+ [
+  "centered-toast",
+  [
+   "DIV.viewport:Pilot station5 minutes a:0,0"
+  ]
+ ],
+ [
+  "shown-modal",
+  [
+   "DIV.modal fade show d-block:Shown modalThe oak order:0,0"
+  ]
+ ],
+ [
+  "static-modal",
+  [
+   "DIV.modal fade show modal-static d-block:Static modalThe oak orde:0,0"
+  ]
+ ],
+ [
+  "scrollable-modal",
+  [
+   "DIV.modal fade show d-block:Scrollable modalThe oak :0,0"
+  ]
+ ],
+ [
+  "centered-modal",
+  [
+   "DIV.modal fade show d-block:Centered modalThe oak or:0,0"
+  ]
+ ],
+ [
+  "small-modal",
+  [
+   "DIV.modal fade show d-block:Small modalThe oak order:0,0"
+  ]
+ ],
+ [
+  "large-modal",
+  [
+   "DIV.modal fade show d-block:Large modalThe oak order:0,0"
+  ]
+ ],
+ [
+  "extra-large-modal",
+  [
+   "DIV.modal fade show d-block:Extra large modalThe oak:0,0"
+  ]
+ ],
+ [
+  "fullscreen-modal",
+  [
+   "DIV.modal-header:Fullscreen modal:0,0"
+  ]
+ ],
+ [
+  "fullscreen-modal-sm-down",
+  [
+   "DIV.modal-header:Fullscreen modal sm down:0,0"
+  ]
+ ],
+ [
+  "fullscreen-modal-md-down",
+  [
+   "DIV.modal-header:Fullscreen modal md down:0,0"
+  ]
+ ],
+ [
+  "fullscreen-modal-lg-down",
+  [
+   "DIV.modal-header:Fullscreen modal lg down:0,0"
+  ]
+ ],
+ [
+  "fullscreen-modal-xl-down",
+  [
+   "DIV.modal-header:Fullscreen modal xl down:0,0"
+  ]
+ ],
+ [
+  "fullscreen-modal-xxl-down",
+  [
+   "DIV.modal-header:Fullscreen modal xxl dow:0,0"
+  ]
+ ],
+ [
+  "display-values",
+  [
+   "P.:Inline Inline block:0,0"
+  ]
+ ],
+ [
+  "responsive-display",
+  [
+   "P.:Shown below the md bound:0,0"
+  ]
+ ],
+ [
+  "print-display",
+  [
+   "SPAN.d-inline-block d-print-none:Shown on screen, hidden :0,0"
+  ]
+ ],
+ [
+  "vertical-alignment",
+  [
+   "P.:Aa baseline top middle b:0,0"
+  ]
+ ],
+ [
+  "flex-direction",
+  [
+   "SPAN.:flex-row:0,0"
+  ]
+ ],
+ [
+  "flex-wrap",
+  [
+   "DIV.col-5 flex-shrink-1:flex-wrap:0,0"
+  ]
+ ],
+ [
+  "justified-content",
+  [
+   "SPAN.:justify-content-start:0,0"
+  ]
+ ],
+ [
+  "aligned-items",
+  [
+   "DIV.display-6:Tall:0,0"
+  ]
+ ],
+ [
+  "aligned-content",
+  [
+   "DIV.col-6:align-content-start:0,0"
+  ]
+ ],
+ [
+  "aligned-self",
+  [
+   "DIV.display-6:Tall:0,0"
+  ]
+ ],
+ [
+  "fill-grow-and-shrink",
+  [
+   "DIV.flex-fill:flex-fill:0,0"
+  ]
+ ],
+ [
+  "flex-order",
+  [
+   "DIV.order-first:order-first:0,0"
+  ]
+ ],
+ [
+  "horizontal-stack",
+  [
+   "SPAN.display-6:Tall:0,0"
+  ]
+ ],
+ [
+  "vertical-stack",
+  [
+   "DIV.vstack gap-2 col-6:First itemSecond itemThi:0,0"
+  ]
+ ],
+ [
+  "split-button",
+  [
+   "DIV.btn-toolbar gap-2:Split saveChoose saveSpl:0,0"
+  ]
+ ],
+ [
+  "split-button-small",
+  [
+   "DIV.btn-toolbar gap-2:Compact archiveChoose co:0,0"
+  ]
+ ],
+ [
+  "split-button-large",
+  [
+   "DIV.btn-toolbar gap-2:Roomy archiveChoose room:0,0"
+  ]
+ ],
+ [
+  "split-dropstart",
+  [
+   "DIV.:Choose printSplit print:0,0"
+  ]
+ ],
+ [
+  "input-group-dropdown",
+  [
+   "DIV.input-group:Search inOrder numbersOr:0,0"
+  ]
+ ],
+ [
+  "input-group-dropdown-validated",
+  [
+   "DIV.input-group has-validation:Weigh byScale readingWei:0,0"
+  ]
+ ],
+ [
+  "position-values",
+  [
+   "P.position-static:Static, in the flow:0,0"
+  ]
+ ],
+ [
+  "edge-offsets",
+  [
+   "DIV.position-relative h-100:Top startTop endBottom s:0,0"
+  ]
+ ],
+ [
+  "centered-translation",
+  [
+   "DIV.position-relative h-100:Centered across the topC:0,0"
+  ]
+ ],
+ [
+  "stacking-levels",
+  [
+   "DIV.position-relative h-100:Level -1Level 0Level 1Le:0,0"
+  ]
+ ],
+ [
+  "fixed-bars",
+  [
+   "P.:The frame is the contain:0,0"
+  ]
+ ],
+ [
+  "sticky-bars",
+  [
+   "DIV.scroller:Sticky at the top of the:0,0"
+  ]
+ ],
+ [
+  "width-steps",
+  [
+   "SPAN.placeholder w-auto:Auto width:0,0"
+  ]
+ ],
+ [
+  "height-steps",
+  [
+   "DIV.col::0,0"
+  ]
+ ],
+ [
+  "maximum-sizes",
+  [
+   "P.w-50::0,0"
+  ]
+ ],
+ [
+  "viewport-sizes",
+  [
+   "P.::0,0"
+  ]
+ ],
+ [
+  "visible-and-invisible",
+  [
+   "P.:Visible word Invisible w:0,0"
+  ]
+ ],
+ [
+  "visually-hidden",
+  [
+   "P.position-relative:Unread messages: 3, all :0,0"
+  ]
+ ],
+ [
+  "skip-link",
+  [
+   "P.position-relative:Press Tab to reveal the :0,0"
+  ]
+ ],
+ [
+  "navbar-expanded",
+  [
+   "NAV.navbar navbar-expand:Expanded harborExpanded :0,0"
+  ]
+ ],
+ [
+  "navbar-collapsed",
+  [
+   "NAV.navbar:Collapsed harborCollapse:0,0"
+  ]
+ ],
+ [
+  "navbar-opened",
+  [
+   "NAV.navbar:Opened harborOpened home:0,0"
+  ]
+ ],
+ [
+  "navbar-scroll",
+  [
+   "NAV.navbar navbar-expand-lg:Scroll harborScroll home:0,0"
+  ]
+ ],
+ [
+  "navbar-inverted",
+  [
+   "DIV.:Dark harborDark homeDark:0,0"
+  ]
+ ],
+ [
+  "navbar-inverted-class",
+  [
+   "DIV.:Dark class harborDark cl:0,0"
+  ]
+ ],
+ [
+  "navbar-expand-sm",
+  [
+   "NAV.navbar navbar-expand-sm:Expand sm harborExpand s:0,0"
+  ]
+ ],
+ [
+  "navbar-expand-md",
+  [
+   "NAV.navbar navbar-expand-md:Expand md harborExpand m:0,0"
+  ]
+ ],
+ [
+  "navbar-expand-lg",
+  [
+   "NAV.navbar navbar-expand-lg:Expand lg harborExpand l:0,0"
+  ]
+ ],
+ [
+  "navbar-expand-xl",
+  [
+   "NAV.navbar navbar-expand-xl:Expand xl harborExpand x:0,0"
+  ]
+ ],
+ [
+  "navbar-expand-xxl",
+  [
+   "NAV.navbar navbar-expand-xxl:Expand xxl harborExpand :0,0"
+  ]
+ ],
+ [
+  "shadows",
+  [
+   "DIV.col:shadow-none:0,0"
+  ]
+ ],
+ [
+  "opacity-steps",
+  [
+   "DIV.col-3:opacity-0:0,0"
+  ]
+ ],
+ [
+  "focus-ring-roles",
+  [
+   "A.focus-ring focus-ring-primary:focus-ring-primary:0,0"
+  ]
+ ],
+ [
+  "float-sides",
+  [
+   "P.:This text wraps between :0,0"
+  ]
+ ],
+ [
+  "responsive-float",
+  [
+   "P.:Below the md boundary th:0,0"
+  ]
+ ],
+ [
+  "cleared-floats",
+  [
+   "DIV.:float-startTaller than t:0,0"
+  ]
+ ],
+ [
+  "overflow-values",
+  [
+   "DIV.vstack gap-2:overflow-autooverflow-hi:0,0"
+  ]
+ ],
+ [
+  "axis-overflow",
+  [
+   "DIV.vstack gap-2 h-100:overflow-x-auto overflow:0,0"
+  ]
+ ],
+ [
+  "object-fit-values",
+  [
+   "DIV.ratio ratio-1x1::0,0"
+  ]
+ ],
+ [
+  "responsive-object-fit",
+  [
+   "DIV.ratio ratio-21x9 w-50::0,0"
+  ]
+ ],
+ [
+  "stretched-link",
+  [
+   "DIV.:Every point of this card:0,0"
+  ]
+ ],
+ [
+  "top-tooltip",
+  [
+   "DIV.viewport:Tooltip on top:0,0"
+  ]
+ ],
+ [
+  "right-tooltip",
+  [
+   "DIV.viewport:Tooltip on right:0,0"
+  ]
+ ],
+ [
+  "bottom-tooltip",
+  [
+   "DIV.viewport:Tooltip on bottom:0,0"
+  ]
+ ],
+ [
+  "left-tooltip",
+  [
+   "DIV.viewport:Tooltip on left:0,0"
+  ]
+ ],
+ [
+  "top-popover",
+  [
+   "DIV.viewport:Popover on topIts arrow :0,0"
+  ]
+ ],
+ [
+  "right-popover",
+  [
+   "DIV.viewport:Popover on rightIts arro:0,0"
+  ]
+ ],
+ [
+  "bottom-popover",
+  [
+   "DIV.viewport:Popover on bottomIts arr:0,0"
+  ]
+ ],
+ [
+  "left-popover",
+  [
+   "DIV.viewport:Popover on leftIts arrow:0,0"
+  ]
+ ],
+ [
+  "untitled-popover",
+  [
+   "DIV.viewport:Its header is empty, so :0,0"
+  ]
+ ],
+ [
+  "font-sizes",
+  [
+   "P.fs-1:fs-1:0,0"
+  ]
+ ],
+ [
+  "font-weights",
+  [
+   "P.:fw-lighter fw-light fw-n:0,0"
+  ]
+ ],
+ [
+  "font-styles",
+  [
+   "P.fst-italic:The fst-italic class set:0,0"
+  ]
+ ],
+ [
+  "line-heights",
+  [
+   "DIV.container-fluid:The lh-1 class sets the :0,0"
+  ]
+ ],
+ [
+  "monospace",
+  [
+   "P.:The body stack sets this:0,0"
+  ]
+ ],
+ [
+  "background-roles",
+  [
+   "DIV.ratio ratio-4x3 bg-primary::0,0"
+  ]
+ ],
+ [
+  "subtle-backgrounds",
+  [
+   "DIV.ratio ratio-4x3 bg-primary-subtle border::0,0"
+  ]
+ ],
+ [
+  "body-backgrounds",
+  [
+   "DIV.ratio ratio-4x3 bg-body border::0,0"
+  ]
+ ],
+ [
+  "background-opacity",
+  [
+   "DIV.ratio ratio-4x3 bg-success bg-opacity-100::0,0"
+  ]
+ ],
+ [
+  "background-gradient",
+  [
+   "DIV.ratio ratio-4x3 bg-primary bg-gradient::0,0"
+  ]
+ ],
+ [
+  "additive-borders",
+  [
+   "DIV.ratio ratio-4x3 border bg-body-tertiary::0,0"
+  ]
+ ],
+ [
+  "subtractive-borders",
+  [
+   "DIV.ratio ratio-4x3 border border-0 bg-body-tertiary::0,0"
+  ]
+ ],
+ [
+  "border-roles",
+  [
+   "DIV.ratio ratio-4x3 border border-3 border-primary::0,0"
+  ]
+ ],
+ [
+  "subtle-borders",
+  [
+   "DIV.ratio ratio-4x3 border border-3 border-primary-subtle::0,0"
+  ]
+ ],
+ [
+  "border-widths",
+  [
+   "DIV.ratio ratio-4x3 border border-1::0,0"
+  ]
+ ],
+ [
+  "border-opacity",
+  [
+   "DIV.ratio ratio-4x3 border border-3 border-success border-opacity-100::0,0"
+  ]
+ ],
+ [
+  "rounded-corners",
+  [
+   "DIV.ratio ratio-4x3 bg-primary rounded::0,0"
+  ]
+ ],
+ [
+  "rounded-sizes",
+  [
+   "DIV.ratio ratio-4x3 bg-primary rounded-0::0,0"
+  ]
+ ],
+ [
+  "start-offcanvas",
+  [
+   "DIV.offcanvas-header:Start panel:0,0"
+  ]
+ ],
+ [
+  "end-offcanvas",
+  [
+   "DIV.offcanvas offcanvas-end show:End panelThe end panel s:0,0"
+  ]
+ ],
+ [
+  "top-offcanvas",
+  [
+   "DIV.offcanvas-header:Top panel:0,0"
+  ]
+ ],
+ [
+  "bottom-offcanvas",
+  [
+   "DIV.viewport:Bottom panelThe bottom p:0,0",
+   "DIV.offcanvas offcanvas-bottom show:Bottom panelThe bottom p:0,0"
+  ]
+ ],
+ [
+  "responsive-offcanvas-sm",
+  [
+   "DIV.offcanvas-sm offcanvas-end show:Responsive sm panelThe r:0,0"
+  ]
+ ],
+ [
+  "responsive-offcanvas-md",
+  [
+   "DIV.offcanvas-md offcanvas-end show:Responsive md panelThe r:0,0"
+  ]
+ ],
+ [
+  "responsive-offcanvas-lg",
+  [
+   "DIV.offcanvas-lg offcanvas-end show:Responsive lg panelThe r:0,0"
+  ]
+ ],
+ [
+  "responsive-offcanvas-xl",
+  [
+   "DIV.offcanvas-xl offcanvas-end show:Responsive xl panelThe r:0,0"
+  ]
+ ],
+ [
+  "responsive-offcanvas-xxl",
+  [
+   "DIV.offcanvas-xxl offcanvas-end show:Responsive xxl panelThe :0,0"
+  ]
+ ],
+ [
+  "navbar-with-offcanvas",
+  [
+   "DIV.offcanvas offcanvas-end show:Offcanvas harbor linksOf:0,0"
+  ]
+ ],
+ [
+  "text-alignment",
+  [
+   "P.text-start:text-start:0,0"
+  ]
+ ],
+ [
+  "responsive-text-alignment",
+  [
+   "P.text-center text-md-start:text-center text-md-star:0,0"
+  ]
+ ],
+ [
+  "wrapping",
+  [
+   "P.text-nowrap:text-nowrap keeps this w:0,0"
+  ]
+ ],
+ [
+  "word-break",
+  [
+   "P.text-break:text-break splits Pneumo:0,0"
+  ]
+ ],
+ [
+  "text-transform",
+  [
+   "P.text-lowercase:TEXT-LOWERCASE SETS THIS:0,0"
+  ]
+ ],
+ [
+  "text-decoration",
+  [
+   "P.:text-decoration-none on :0,0"
+  ]
+ ],
+ [
+  "truncated-text",
+  [
+   "DIV.col-4 text-truncate:text-truncate clips this:0,0"
+  ]
+ ],
+ [
+  "text-roles",
+  [
+   "P.text-primary:text-primary:0,0"
+  ]
+ ],
+ [
+  "text-emphasis",
+  [
+   "P.text-primary-emphasis:text-primary-emphasis:0,0"
+  ]
+ ],
+ [
+  "body-text-tiers",
+  [
+   "P.text-body:text-body:0,0"
+  ]
+ ],
+ [
+  "text-opacity",
+  [
+   "P.text-primary text-opacity-100:text-primary text-opacit:0,0"
+  ]
+ ],
+ [
+  "text-reset",
+  [
+   "P.text-danger:This text-danger line ho:0,0"
+  ]
+ ],
+ [
+  "color-and-background-pairs",
+  [
+   "P.:text-bg-primary text-bg-:0,0"
+  ]
+ ],
+ [
+  "margin-steps",
+  [
+   "DIV.vstack gap-2:m-0m-1m-2m-3m-4m-5:0,0"
+  ]
+ ],
+ [
+  "padding-steps",
+  [
+   "DIV.vstack gap-2:p-0p-1p-2p-3p-4p-5:0,0"
+  ]
+ ],
+ [
+  "side-margins",
+  [
+   "DIV.vstack gap-2:mx-4my-4mt-4me-4mb-4ms-4:0,0"
+  ]
+ ],
+ [
+  "side-padding",
+  [
+   "DIV.vstack gap-2:px-4py-4pt-4pe-4pb-4ps-4:0,0"
+  ]
+ ],
+ [
+  "auto-margins",
+  [
+   "DIV.vstack gap-2:ms-autome-autoItemmx-aut:0,0"
+  ]
+ ],
+ [
+  "responsive-spacing",
+  [
+   "DIV.vstack gap-2:m-1 m-sm-2 m-md-3 m-lg-4:0,0"
+  ]
+ ],
+ [
+  "text-selection",
+  [
+   "P.user-select-all:user-select-all: one pre:0,0"
+  ]
+ ],
+ [
+  "pointer-events",
+  [
+   "P.:pe-none: a click passes :0,0"
+  ]
+ ]
+]

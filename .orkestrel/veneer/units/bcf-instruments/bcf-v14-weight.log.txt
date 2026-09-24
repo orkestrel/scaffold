@@ -1,0 +1,1 @@
+V14 resolved weight probe: npx vitest run --config tmp/probe/bcf-weight.config.ts --no-cache --reporter=dot (exit 0, 1 passed): the Dropdown section's .dropdown-header renders as H6 at font-weight 600 under Veneer; the same h6.dropdown-header under node_modules/bootstrap/dist/css/bootstrap.css resolves 500. Reading: {"veneer":"H6 600","bootstrap":"500"}

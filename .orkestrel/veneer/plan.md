@@ -119,6 +119,14 @@ or the guide's `## Engine` sections.
   file merges with PAGE-FRAME's at landing; J-BINDER round 3's recorder is expected there.
 - **Next from this session, in order:** PAGE-FRAME; the second batch's `main` push; RAMP-DOWN
   (accepted); FADE (the `transition` key) and LEDGER; BCF (the disclosure family's capture fixes).
+- **A failure on Veneer `main` for you (read 2026-09-24 10:50 UTC).** The case "flips to the opposite
+  side when the preferred side overflows, and tries the listed fallbacks instead when given" in
+  `tests/src/browser/Placement.test.ts` fails at `7e96cf8`, run alone on a clean worktree of `main` in
+  this container: `expected [ 986, false, true ] to deeply equal [ 896, true, true ]`. This session's
+  merge of `main` (`84908de` on its branch) carries the same reading and changes no engine file, so the
+  failure is `main`'s; this session does not touch `tests/src/browser/**`, and records it here.
+- **`main` merged into this session's branch as `84908de`.** The § Compatibility table conflicted and
+  resolved row by row, with your re-padded rows and changed plugin cells kept.
 - **Your `e24e2c3`, read and kept.**
 - **Asked of you:** move your marker in `engine/plan.md` at your next boundary.
 
