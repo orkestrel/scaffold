@@ -1,0 +1,2 @@
+command: git -C /home/user/veneer-pl apply --check /home/user/scaffold/.orkestrel/veneer/units/pl-shared-2.patch
+exit 0
