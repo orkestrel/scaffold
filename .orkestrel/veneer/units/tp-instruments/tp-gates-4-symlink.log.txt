@@ -1,0 +1,21 @@
+## check exit 0 :: npm run check
+## setup exit 1 :: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+ Test Files  1 failed (1)
+      Tests  5 failed | 121 passed (126)
+## guides exit 0 :: npm run test:guides
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+## policy exit 0 :: npm run test:policy
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+## build exit 0 :: npm run build:src
+## styles exit 0 :: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/tooltip.test.ts tests/src/styles/components/popover.test.ts
+ Test Files  2 passed (2)
+      Tests  20 passed (20)
+## sections exit 1 :: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/PopoverSection.test.ts
+ Test Files  1 failed (1)
+      Tests  no tests
+## fmt exit 0 :: npx oxfmt --config .oxfmtrc.json --ignore-path=../tp-empty.ignore --check app/browser/constants.ts guides/veneer.md tests/setupStyles.ts tests/src/styles/components/tooltip.test.ts tests/src/styles/components/popover.test.ts tests/app/browser/sections/PopoverSection.test.ts
+All matched files use the correct format.
+Finished in 8027ms on 6 files using 4 threads.
+## lint exit 0 :: npx oxlint --config .oxlintrc.json --deny-warnings --no-ignore app/browser/constants.ts tests/setupStyles.ts tests/src/styles/components/tooltip.test.ts tests/src/styles/components/popover.test.ts tests/app/browser/sections/PopoverSection.test.ts

@@ -51,7 +51,7 @@ round 2 is `.orkestrel/veneer/units/ufl-instruments/ufl-3-shared-interdiff.txt`.
 - **Instrument:** the `.orkestrel/veneer/units/ufl-instruments/ufl-sweep-3.py` script.
 - **Lines read:**
   - every line of the owned files that `git status --porcelain` lists;
-  - every added line of the `.orkestrel/veneer/units/ufl-instruments/ufl-shared-2.patch` and `.orkestrel/veneer/units/ufl-instruments/ufl-routeb-2.patch` files.
+  - every added line of the `.orkestrel/veneer/units/ufl-shared-2.patch` and `.orkestrel/veneer/units/ufl-routeb-2.patch` files.
 - **Lines kept:** comment and TSDoc lines, and Markdown prose lines outside tables and fences.
 - **Pattern:** ``(`[^`]+`|\{@link [^}]+\})`` followed by the line's end, by punctuation from
   `[,.;:)!?]`, or by a function word such as "and", "or", "to", "of", "the", "which", or "reaches".

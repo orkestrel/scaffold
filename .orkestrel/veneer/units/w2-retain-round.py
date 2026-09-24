@@ -32,7 +32,8 @@ if patch_file.exists():
 def target(m):
     rest = m.group(1)
     first = rest.split('/')[0]
-    return f'{R}/{first}' if first in TOP else f'{R}/{unit}-instruments/{rest}'
+    top = first in TOP or re.fullmatch(rf'{unit}(-\d+)?(\.diff|-status\.txt)|{unit}-(shared|routeb)(-\d+)?\.patch', first)
+    return f'{R}/{first}' if top else f'{R}/{unit}-instruments/{rest}'
 new = re.sub(r'tmp/units/([A-Za-z0-9_.*/-]+)', target, report)
 new = new.replace(f'{wt}/{R}', R)
 (U / name).write_text(new)

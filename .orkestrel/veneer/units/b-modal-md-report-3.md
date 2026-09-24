@@ -10,7 +10,7 @@ M10 obligation. The revised shared patch is `.orkestrel/veneer/units/md-shared-3
 - **Interdiff:** against `md-shared-2.patch`, it differs only at the M7, M8, and M9 sites and in the
   re-flow those sites carry.
 - **Owned files:** no owned file changed this round. The M9 sweep found no hit in the owned files,
-  and the `.orkestrel/veneer/units/md-3.diff` file is byte-equal to the `.orkestrel/veneer/units/md-instruments/md-2.diff` file.
+  and the `.orkestrel/veneer/units/md-3.diff` file is byte-equal to the `.orkestrel/veneer/units/md-2.diff` file.
 
 ## Fixes
 
@@ -188,7 +188,7 @@ The interdiff is `.orkestrel/veneer/units/md-instruments/md-3-shared-interdiff.t
 ## Review evidence
 
 - `.orkestrel/veneer/units/md-3.diff`: the worktree diff against `2a3f223`, plus each owned file through
-  `git diff --no-index /dev/null`. It is byte-equal to `.orkestrel/veneer/units/md-instruments/md-2.diff`.
+  `git diff --no-index /dev/null`. It is byte-equal to `.orkestrel/veneer/units/md-2.diff`.
 - `.orkestrel/veneer/units/md-3-status.txt`: the worktree's status, which lists the owned files alone, all
   untracked.
 - `.orkestrel/veneer/units/md-shared-3.patch`: the revised shared patch.

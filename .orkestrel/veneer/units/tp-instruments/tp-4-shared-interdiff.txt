@@ -1,0 +1,93 @@
+--- tp-shared-3.patch
++++ tp-shared-4.patch
+@@ -26,10 +26,10 @@
+  			new FlexSection(this.#main),
+  			new PositionSection(this.#main),
+ diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+-index 2594d55..addf4bd 100644
++index 2594d55..d1a7f6e 100644
+ --- a/app/browser/constants.ts
+ +++ b/app/browser/constants.ts
+-@@ -2156,6 +2156,111 @@ export const ACCORDION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++@@ -2156,6 +2156,112 @@ export const ACCORDION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+  	}),
+  ])
+  
+@@ -90,7 +90,8 @@
+ +})
+ +
+ +/**
+-+ * Lists the popover specimens the section renders, one per explicit placement, in render order.
+++ * Lists the popover specimens the section renders, a popover at each explicit placement and an
+++ * untitled popover at the bottom placement, in render order.
+ + *
+ + * @remarks
+ + * Each popover sits alone inside the shell's `viewport` frame, with no trigger beside it. The engine
+@@ -155,7 +156,7 @@
+  export * from './sections/FlexSection.js'
+  export * from './sections/PositionSection.js'
+ diff --git a/guides/veneer.md b/guides/veneer.md
+-index 1395a59..654cfef 100644
++index 1395a59..1ea2225 100644
+ --- a/guides/veneer.md
+ +++ b/guides/veneer.md
+ @@ -680,6 +680,8 @@ The following files carry the axis.
+@@ -270,12 +271,12 @@
+ +the side its attribute names, the header strip included.
+ +
+ +The popover classes are set in markup. The release's Popover plugin builds on the Tooltip plugin and
+-+sets the `fade` class and the `show` class, which no popover rule reads; that behavior is the
+-+engine's, and § Compatibility records it. The engine writes a popover's position and offset on the
+-+element, so the showcase stands in for them with the shipped `position-absolute`, `top-50`,
+-+`start-50`, and `translate-middle` utilities on each popover, and the `position-absolute` utility
+-+with the `start-50` and `translate-middle-x` utilities, or the `top-50` and `translate-middle-y`
+-+utilities, on its arrow.
+++sets the `show` class, and the `fade` class when the popover is animated, and no popover rule reads
+++either; that behavior is the engine's, and § Compatibility records it. The engine writes a
+++popover's position and offset on the element, so the showcase stands in for them with the shipped
+++`position-absolute`, `top-50`, `start-50`, and `translate-middle` utilities on each popover, and
+++the `position-absolute` utility with the `start-50` and `translate-middle-x` utilities, or the
+++`top-50` and `translate-middle-y` utilities, on its arrow.
+ +
+ +These are the key's recorded departures.
+ +
+@@ -1318,10 +1319,10 @@
+  	it('partitions the recorded check vocabulary between the check selectors and the validation rules', () => {
+  		const recorded = new Set(
+ diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+-index b5af4ea..5444ecb 100644
++index b5af4ea..17f8a11 100644
+ --- a/tests/setupStyles.ts
+ +++ b/tests/setupStyles.ts
+-@@ -4664,6 +4664,234 @@ export const CAROUSEL_MARKS = Object.freeze({
++@@ -4664,6 +4664,235 @@ export const CAROUSEL_MARKS = Object.freeze({
+  /** Holds the recorded filter the dark carousel class and the dark theme scope both declare. */
+  export const CAROUSEL_INVERSION = 'invert(1) grayscale(100)'
+  
+@@ -1408,9 +1409,10 @@
+ + * @remarks
+ + * The `name` field is the suffix the `bs-tooltip-*` and `bs-popover-*` classes carry. The `side`
+ + * field is the physical side the placement engine names in the `data-popper-placement` attribute
+-+ * the automatic class pairs with, and the side of the arrow's triangle that paints. The `edge` field
+-+ * is the tip edge facing the host, so the arrow's own edge on that side meets the tip's edge the
+-+ * `edge` field names. The `end` and `start` names are physical, as the release writes them.
+++ * the automatic class pairs with, and the side of the arrow's triangle that paints. The `edge`
+++ * field is the tip edge facing the host, so the arrow's edge facing the tip, on the side the `side`
+++ * field names, meets the tip's edge the `edge` field names. The `end` and `start` names are
+++ * physical, as the release writes them.
+ + */
+ +export const TIP_PLACEMENTS = Object.freeze([
+ +	Object.freeze({ name: 'top', side: 'top', edge: 'bottom' }),
+@@ -1424,9 +1426,9 @@
+ + * border of a triangle drawn inside it.
+ + *
+ + * @remarks
+-+ * A reading of every property on the arrow and on each of its triangles is what separates two
+-+ * placements, so an automatic placement resolving the same list as an explicit one resolves the
+-+ * same geometry.
+++ * A reading of each of these properties on the arrow and on each of its triangles is what
+++ * separates two placements, so an automatic placement resolving the same list as an explicit one
+++ * resolves the same geometry.
+ + */
+ +export const TIP_ARROW_PROPERTIES = Object.freeze([
+ +	'width',

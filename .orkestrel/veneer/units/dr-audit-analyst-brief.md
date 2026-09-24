@@ -1,0 +1,9 @@
+# Audit round 1 — RESIDUE (`dr`): objective lane on GPT-6 Astra
+
+`analyst` route on GPT-6 Astra (`gpt-6-astra`), `codex exec --sandbox read-only` rooted at `/home/user/veneer-dr`. You are the engine behind the CLI: perform the audit directly and spawn nothing. You hold the **objective** lane over the numbered claims in `/home/user/scaffold/.orkestrel/veneer/units/dr-audit-claims.md`. The unit was written by `builder` on Sonnet; the checker (Sonnet) runs blind beside you. Bound: rule within 10 minutes.
+
+Law: `/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{tests,writing,quality}.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` and its references (the verdict shape). Evidence, all read-only, under `/home/user/scaffold/.orkestrel/veneer/units/`: the claims file; `dr.diff`, `dr-status.txt`, `b-cross-dr-report.md`, `b-cross-dr-brief.md`, `dr-instruments/`; the ruling X9 in `/home/user/scaffold/.orkestrel/veneer/b-cross-design-verdict.md`; the worktree `/home/user/veneer-dr` (`git -C /home/user/veneer-dr diff` and `show fb0516d:<path>` read the change and the base; the `readOracleInventory` reader is in `tests/setupServer.ts`).
+
+Standing conditions: the sandbox runs no Vitest project, and denies the network and a nested install; `git show`, `git diff`, `grep`, and `node -e` that writes nothing are allowed. Rule the proof claim from the assertion and the retained logs. Never edit the worktree. Never read `.env*`, `.npmrc`, `auth.json`, or any credential file.
+
+Output: the `orkestrel-falsify` verdict shape and nothing else — numbered verdicts with `file:line`, findings outside the claims to the `BROKEN` standard, the counts the report states listed under the last claim, and one terminal line `VERDICT: PASS` or `VERDICT: FAIL <numbers>; outside the claims: <names or none>`.

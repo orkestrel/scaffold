@@ -1,0 +1,168 @@
+app/browser/sections/PopoverSection.ts:5: * Renders the declared popover specimens into a named region.
+app/browser/sections/PopoverSection.ts:6: * @example
+app/browser/sections/PopoverSection.ts:7: * ```ts
+app/browser/sections/PopoverSection.ts:8: * const section = new PopoverSection(document.body)
+app/browser/sections/PopoverSection.ts:9: * section.destroy()
+app/browser/sections/PopoverSection.ts:10: * ```
+app/browser/sections/PopoverSection.ts:14:	 * Mounts the Popover region and its specimens.
+app/browser/sections/PopoverSection.ts:15:	 * @param host - The element receiving the section.
+app/browser/sections/TooltipSection.ts:5: * Renders the declared tooltip specimens into a named region.
+app/browser/sections/TooltipSection.ts:6: * @example
+app/browser/sections/TooltipSection.ts:7: * ```ts
+app/browser/sections/TooltipSection.ts:8: * const section = new TooltipSection(document.body)
+app/browser/sections/TooltipSection.ts:9: * section.destroy()
+app/browser/sections/TooltipSection.ts:10: * ```
+app/browser/sections/TooltipSection.ts:14:	 * Mounts the Tooltip region and its specimens.
+app/browser/sections/TooltipSection.ts:15:	 * @param host - The element receiving the section.
+src/styles/components/_popover.scss:4:// Keys each explicit placement class by the physical side of its host the popover sits on, the
+src/styles/components/_popover.scss:5:// popover edge its arrow hangs from, and the widths of the arrow triangles' borders, so each side's
+src/styles/components/_popover.scss:6:// rules come from one entry. The placements are physical, as the release writes them: a popover
+src/styles/components/_popover.scss:7:// carrying the `bs-popover-end` class sits on the right of its host, and a popover carrying the
+src/styles/components/_popover.scss:8:// `bs-popover-start` class sits on its left.
+src/styles/components/_popover.scss:37:	// The popover ships Bootstrap's recorded box. It stacks on the popover rung of the stacking
+src/styles/components/_popover.scss:38:	// ladder, below the hint rung a tooltip takes, and its insets and text sizes read the density
+src/styles/components/_popover.scss:39:	// and type scales. It paints the body surface and a translucent edge in either color mode, and
+src/styles/components/_popover.scss:40:	// its header paints the secondary surface. The release positions a popover through its
+src/styles/components/_popover.scss:41:	// placement engine, which writes the position and the offset on the element, so no rule here
+src/styles/components/_popover.scss:42:	// positions the box, and no rule reads the `fade` class or the `show` class the engine sets.
+src/styles/components/_popover.scss:82:	// The arrow is two triangles stacked in one box: the `::before` triangle paints the popover's
+src/styles/components/_popover.scss:83:	// edge color, and the `::after` triangle, drawn over it, paints the popover's fill one edge width
+src/styles/components/_popover.scss:84:	// further in, so the arrow carries the popover's border around its fill.
+src/styles/components/_popover.scss:95:	// Each placement hangs the arrow outside the popover's edge that faces the host, past the
+src/styles/components/_popover.scss:96:	// popover's own border, and each triangle paints on its border on the popover's side, so the
+src/styles/components/_popover.scss:97:	// arrow points at the host. A side popover turns the arrow's box a quarter. Each automatic
+src/styles/components/_popover.scss:98:	// placement class the placement engine writes extends the explicit class of the side its
+src/styles/components/_popover.scss:99:	// attribute names, so the two resolve the same geometry, the bottom header strip included.
+src/styles/components/_popover.scss:132:	// A popover below its host points its arrow up into the header, so a strip of the header's own
+src/styles/components/_popover.scss:133:	// fill, as wide as the arrow, covers the header's top edge where the arrow's fill meets it.
+src/styles/components/_popover.scss:156:	// An empty header is removed from the flow, so a popover given no title shows its body alone.
+src/styles/components/_tooltip.scss:4:// Keys each explicit placement class by the physical side of its host the tip sits on, the tip
+src/styles/components/_tooltip.scss:5:// edge its arrow hangs from, and the widths of the arrow triangle's borders, so each side's rules
+src/styles/components/_tooltip.scss:6:// come from one entry. The placements are physical, as the release writes them: a tip carrying the
+src/styles/components/_tooltip.scss:7:// `bs-tooltip-end` class sits on the right of its host, and a tip carrying the `bs-tooltip-start`
+src/styles/components/_tooltip.scss:8:// class sits on its left.
+src/styles/components/_tooltip.scss:37:	// The tooltip ships Bootstrap's recorded tip. It stacks on the hint rung of the stacking ladder,
+src/styles/components/_tooltip.scss:38:	// its inset and its text size read the density and type scales, and it paints the emphasis
+src/styles/components/_tooltip.scss:39:	// color as its fill and the body surface as its text, so it inverts the page around it in either
+src/styles/components/_tooltip.scss:40:	// color mode. The release positions a tip through its placement engine, which writes the
+src/styles/components/_tooltip.scss:41:	// position and the offset on the element, so no rule here positions the tip. A tip rests
+src/styles/components/_tooltip.scss:42:	// transparent until it carries the `show` class.
+src/styles/components/_tooltip.scss:48:		// The release declares the margin slot with no value, so the margin that reads it resolves to
+src/styles/components/_tooltip.scss:49:		// nothing. The interpolation compiles to that same empty declaration.
+src/styles/components/_tooltip.scss:84:	// Each placement hangs the arrow outside the tip's edge that faces the host, and the arrow's
+src/styles/components/_tooltip.scss:85:	// triangle paints the tip's fill on its border on the tip's side, so the triangle points at the
+src/styles/components/_tooltip.scss:86:	// host. A side tip turns the arrow's box a quarter. Each automatic placement class the placement
+src/styles/components/_tooltip.scss:87:	// engine writes extends the explicit class of the side its attribute names, so the two resolve
+src/styles/components/_tooltip.scss:88:	// the same geometry.
+tests/app/browser/sections/PopoverSection.test.ts:9:// The frame case reads the specimens as the published cascade and the shell lay them out, so both
+tests/app/browser/sections/PopoverSection.test.ts:10:// stylesheets have to be in the document before a box is measured.
+tests/app/browser/sections/PopoverSection.test.ts:28:			// Each placement specimen is named for the physical side of its host its popover sits on,
+tests/app/browser/sections/PopoverSection.test.ts:29:			// in the placement order the table pins, and the untitled popover follows them.
+tests/app/browser/sections/PopoverSection.test.ts:39:			// Each specimen is the shell's frame holding one popover and nothing else, in the placement
+tests/app/browser/sections/PopoverSection.test.ts:40:			// order the table pins, and each popover stands in for the placement the engine would write
+tests/app/browser/sections/PopoverSection.test.ts:41:			// with the shipped position utilities on the popover and on its arrow. Each carries the
+tests/app/browser/sections/PopoverSection.test.ts:42:			// release's template order: the arrow, the `h3` header, and the body.
+tests/app/browser/sections/PopoverSection.test.ts:74:			// The untitled popover sits below its host in its own frame, with the release's template
+tests/app/browser/sections/PopoverSection.test.ts:75:			// order, an empty header, and a populated body, so the rule hiding an empty header renders.
+tests/app/browser/sections/PopoverSection.test.ts:94:			// Every popover's identity is its own, so a trigger naming one names that popover alone.
+tests/app/browser/sections/PopoverSection.test.ts:97:			// No specimen renders a trigger, claims the wiring a trigger would carry, writes the
+tests/app/browser/sections/PopoverSection.test.ts:98:			// automatic placement the engine writes, or carries the engine's `fade` and `show` classes,
+tests/app/browser/sections/PopoverSection.test.ts:99:			// which no popover rule reads.
+tests/app/browser/sections/PopoverSection.test.ts:128:						// The clip edge is in document coordinates, so each bottom is read in them too; a
+tests/app/browser/sections/PopoverSection.test.ts:129:						// part below the edge would be cut off at it, and a key hanging past its frame is
+tests/app/browser/sections/PopoverSection.test.ts:130:						// the journey's validation-tooltip case rather than this one.
+tests/app/browser/sections/PopoverSection.test.ts:156:	// The mutation this catches is a stand-in that leaves a popover its whole frame to lay out in, or
+tests/app/browser/sections/PopoverSection.test.ts:157:	// a cap the box stops reading: the `left: 50%` offset the `start-50` utility writes leaves an
+tests/app/browser/sections/PopoverSection.test.ts:158:	// absolutely positioned popover half its frame, so at the 390 variant each popover wraps narrower
+tests/app/browser/sections/PopoverSection.test.ts:159:	// than its `276px` cap, and at the 1280 variant each one reaches the cap.
+tests/app/browser/sections/TooltipSection.test.ts:9:// The frame case reads the specimens as the published cascade and the shell lay them out, so both
+tests/app/browser/sections/TooltipSection.test.ts:10:// stylesheets have to be in the document before a box is measured.
+tests/app/browser/sections/TooltipSection.test.ts:28:			// Each specimen is named for the physical side of its host its tooltip sits on, in the
+tests/app/browser/sections/TooltipSection.test.ts:29:			// placement order the table pins.
+tests/app/browser/sections/TooltipSection.test.ts:36:			// Each specimen is the shell's frame holding one tip and nothing else, in the placement
+tests/app/browser/sections/TooltipSection.test.ts:37:			// order the table pins, and each tip stands in for the placement the engine would write
+tests/app/browser/sections/TooltipSection.test.ts:38:			// with the shipped position utilities on the tip and on its arrow.
+tests/app/browser/sections/TooltipSection.test.ts:66:			// Every tip's identity is its own, so a trigger naming one names that tip alone.
+tests/app/browser/sections/TooltipSection.test.ts:69:			// No specimen renders a trigger, claims the wiring a trigger would carry, or writes the
+tests/app/browser/sections/TooltipSection.test.ts:70:			// automatic placement the engine writes, and no tip rests without the class that shows it.
+tests/app/browser/sections/TooltipSection.test.ts:99:						// The clip edge is in document coordinates, so each bottom is read in them too; a
+tests/app/browser/sections/TooltipSection.test.ts:100:						// part below the edge would be cut off at it, and a key hanging past its frame is
+tests/app/browser/sections/TooltipSection.test.ts:101:						// the journey's validation-tooltip case rather than this one.
+tests/src/styles/components/popover.test.ts:31:	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+tests/src/styles/components/popover.test.ts:32:	// release: the reading is every components-layer selector naming one of the key's own classes,
+tests/src/styles/components/popover.test.ts:33:	// so a missing rule and an extra rule on the same classes each report here. The sheet writes an
+tests/src/styles/components/popover.test.ts:34:	// attribute value in quotes and the release records it bare, so the quotes are dropped before
+tests/src/styles/components/popover.test.ts:35:	// the two are compared.
+tests/src/styles/components/popover.test.ts:59:	// The mutation this catches is a stacking level written as the release's literal: it resolves
+tests/src/styles/components/popover.test.ts:60:	// the same level at rest and follows no retuned rung. A tooltip beside the popover is the
+tests/src/styles/components/popover.test.ts:61:	// control that the popover rung sits below the hint rung.
+tests/src/styles/components/popover.test.ts:75:	// The mutation this catches is the reset dropped from the popover rule: the popover then inherits
+tests/src/styles/components/popover.test.ts:76:	// the bold, uppercase, right-aligned, unwrapped treatment its parent stages, as the plain text
+tests/src/styles/components/popover.test.ts:77:	// beside it does.
+tests/src/styles/components/popover.test.ts:88:		// The plain paragraph is the control: the parent's treatment reaches it wherever the property
+tests/src/styles/components/popover.test.ts:89:		// inherits, so a popover that stopped resetting would read that treatment too. The paragraph
+tests/src/styles/components/popover.test.ts:90:		// declaring the recorded reset inline is what the popover is read against.
+tests/src/styles/components/popover.test.ts:113:		// No popover rule reads the `fade` class or the `show` class, so the popover an engine has
+tests/src/styles/components/popover.test.ts:114:		// shown paints what the resting one paints.
+tests/src/styles/components/popover.test.ts:136:		// The header rounds its top corners one edge width inside the box's own radius, and leaves
+tests/src/styles/components/popover.test.ts:137:		// its bottom corners square above the body.
+tests/src/styles/components/popover.test.ts:145:		// The factors are published at the document root, where every token the popover reads
+tests/src/styles/components/popover.test.ts:146:		// resolves its own value, so the retune is applied there rather than on the popover.
+tests/src/styles/components/popover.test.ts:154:		// The text sizes read the type scale's steps rather than the release's literals, so a wrapper
+tests/src/styles/components/popover.test.ts:155:		// retuning those steps moves them.
+tests/src/styles/components/popover.test.ts:162:	// The mutation this catches is the empty-header rule dropped: an empty header then keeps its
+tests/src/styles/components/popover.test.ts:163:	// padding and its edge above the body.
+tests/src/styles/components/popover.test.ts:175:	// The mutation this catches is a placement's rules written for another side: that popover then
+tests/src/styles/components/popover.test.ts:176:	// hangs its arrow from the wrong edge and paints the wrong border of its triangles, which is what
+tests/src/styles/components/popover.test.ts:177:	// these readings pin. The arrow's `::before` triangle paints the popover's edge color and the
+tests/src/styles/components/popover.test.ts:178:	// `::after` triangle, one edge width further in, paints its fill, so the arrow carries the border
+tests/src/styles/components/popover.test.ts:179:	// around its fill.
+tests/src/styles/components/popover.test.ts:192:			// The arrow lies wholly outside the popover's border box, its own host-side edge on the
+tests/src/styles/components/popover.test.ts:193:			// popover's facing outer edge.
+tests/src/styles/components/popover.test.ts:214:	// The mutation this catches is one automatic placement extending another side's class: its
+tests/src/styles/components/popover.test.ts:215:	// arrow then resolves that side's geometry rather than its own. Each explicit placement is first
+tests/src/styles/components/popover.test.ts:216:	// held apart from every other, so the equality is not one every placement satisfies.
+tests/src/styles/components/popover.test.ts:252:	// The mutation this catches is the strip rule dropped: the header of a popover below its host
+tests/src/styles/components/popover.test.ts:253:	// then draws nothing where the arrow's fill meets the header's top edge.
+tests/src/styles/components/popover.test.ts:268:		// The strip is as wide as the arrow and centered on the popover, where the arrow sits.
+tests/src/styles/components/popover.test.ts:288:		// The mutation this catches is a literal color: it paints the same at rest and follows no
+tests/src/styles/components/popover.test.ts:289:		// retuned alias, in either mode.
+tests/src/styles/components/popover.test.ts:307:			// The island's own aliases are the mode's, so a dark island reads apart from the light root.
+tests/src/styles/components/popover.test.ts:332:			// The header's text slot inherits, so the header follows whatever text color the popover
+tests/src/styles/components/popover.test.ts:333:			// itself carries rather than a color of its own.
+tests/src/styles/components/tooltip.test.ts:31:	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+tests/src/styles/components/tooltip.test.ts:32:	// release: the reading is every components-layer selector naming one of the key's own classes,
+tests/src/styles/components/tooltip.test.ts:33:	// so a missing rule and an extra rule on the same classes each report here. The sheet writes an
+tests/src/styles/components/tooltip.test.ts:34:	// attribute value in quotes and the release records it bare, so the quotes are dropped before
+tests/src/styles/components/tooltip.test.ts:35:	// the two are compared.
+tests/src/styles/components/tooltip.test.ts:59:	// The mutation this catches is a stacking level written as the release's literal: it resolves
+tests/src/styles/components/tooltip.test.ts:60:	// the same level at rest and follows no retuned rung.
+tests/src/styles/components/tooltip.test.ts:72:	// The mutation this catches is the `show` rule dropped: the shown tip then rests at the
+tests/src/styles/components/tooltip.test.ts:73:	// transparent opacity the bare class writes.
+tests/src/styles/components/tooltip.test.ts:83:		// A shown tip reads its opacity through the slot, so a retune on the tip moves it; the
+tests/src/styles/components/tooltip.test.ts:84:		// release's literal would read the same at rest and follow no retune.
+tests/src/styles/components/tooltip.test.ts:89:	// The mutation this catches is the reset dropped from the tooltip rule: the tip then inherits the
+tests/src/styles/components/tooltip.test.ts:90:	// bold, uppercase, right-aligned, unwrapped treatment its parent stages, as the plain text beside
+tests/src/styles/components/tooltip.test.ts:91:	// it does.
+tests/src/styles/components/tooltip.test.ts:102:		// The plain paragraph is the control: the parent's treatment reaches it wherever the property
+tests/src/styles/components/tooltip.test.ts:103:		// inherits, so a tip that stopped resetting would read that treatment too. The paragraph
+tests/src/styles/components/tooltip.test.ts:104:		// declaring the recorded reset inline is what the tip is read against.
+tests/src/styles/components/tooltip.test.ts:117:		// The margin slot is declared empty, so the margin that reads it resolves to none at all.
+tests/src/styles/components/tooltip.test.ts:136:		// The factors are published at the document root, where every token the tip reads resolves
+tests/src/styles/components/tooltip.test.ts:137:		// its own value, so the retune is applied there rather than on the tip.
+tests/src/styles/components/tooltip.test.ts:143:		// The text size reads the type scale's step rather than the release's literal, so a wrapper
+tests/src/styles/components/tooltip.test.ts:144:		// retuning that step moves it.
+tests/src/styles/components/tooltip.test.ts:151:	// The mutation this catches is a placement's rules written for another side: that tip then hangs
+tests/src/styles/components/tooltip.test.ts:152:	// its arrow from the wrong edge and paints the wrong border of its triangle, which is what these
+tests/src/styles/components/tooltip.test.ts:153:	// readings pin.
+tests/src/styles/components/tooltip.test.ts:167:			// The arrow lies wholly outside the tip, its own host-side edge on the tip's facing edge.
+tests/src/styles/components/tooltip.test.ts:172:			// The triangle paints only its border facing the tip, in the tip's own fill, and overlaps
+tests/src/styles/components/tooltip.test.ts:173:			// the tip by one pixel on that side.
+tests/src/styles/components/tooltip.test.ts:180:			// The engine snaps a border to whole device pixels, so the painted side reads the arrow's
+tests/src/styles/components/tooltip.test.ts:181:			// depth rounded down rather than its exact length.
+tests/src/styles/components/tooltip.test.ts:192:	// The mutation this catches is one automatic placement extending another side's class: its
+tests/src/styles/components/tooltip.test.ts:193:	// arrow then resolves that side's geometry rather than its own. Each explicit placement is first
+tests/src/styles/components/tooltip.test.ts:194:	// held apart from every other, so the equality is not one every placement satisfies.
+tests/src/styles/components/tooltip.test.ts:223:		// The mutation this catches is a literal color: it paints the same at rest and follows no
+tests/src/styles/components/tooltip.test.ts:224:		// retuned alias, in either mode.
+tests/src/styles/components/tooltip.test.ts:234:			// The island's own aliases are the mode's, so a dark island reads apart from the light root.

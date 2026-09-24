@@ -1,0 +1,249 @@
+a/app/browser/Showcase.ts: import { PopoverSection } from './sections/PopoverSection.js'
+a/app/browser/Showcase.ts: import { TooltipSection } from './sections/TooltipSection.js'
+a/app/browser/constants.ts: export const TOOLTIP_COPY = Object.freeze({
+a/app/browser/constants.ts:  * Lists the tooltip specimens the section renders, one per explicit placement, in render order.
+a/app/browser/constants.ts:  *
+a/app/browser/constants.ts:  * @remarks
+a/app/browser/constants.ts:  * Each tip sits alone inside the shell's `viewport` frame, with no trigger beside it. The engine
+a/app/browser/constants.ts:  * writes a tip's placement on the element, so each specimen stands in for it with the shipped
+a/app/browser/constants.ts:  * `position-absolute`, `top-50`, `start-50`, and `translate-middle` utilities on the tip, and the
+a/app/browser/constants.ts:  * `position-absolute` utility with the `start-50` and `translate-middle-x` utilities, or the
+a/app/browser/constants.ts:  * `top-50` and `translate-middle-y` utilities, on its arrow. Each tip carries the `show`
+a/app/browser/constants.ts:  * class, because a tip without it rests transparent, the release's `tooltip` role, and an `id`
+a/app/browser/constants.ts:  * attribute a trigger's `aria-describedby` attribute would name; no specimen claims that wiring.
+a/app/browser/constants.ts:  * Each specimen is named for the physical side of its host the tip sits on, because the
+a/app/browser/constants.ts:  * `bs-tooltip-end` and `bs-tooltip-start` classes are physical.
+a/app/browser/constants.ts:  *
+a/app/browser/constants.ts:  * No specimen renders a tip without the `show` class, or the automatic placement class and the
+a/app/browser/constants.ts:  * `data-popper-placement` attribute the engine writes. A transparent tip paints nothing, and each
+a/app/browser/constants.ts:  * automatic placement resolves the geometry of the explicit placement it extends. The
+a/app/browser/constants.ts:  * `tests/src/styles/components/tooltip.test.ts` file reads each of them on its own elements.
+a/app/browser/constants.ts:  */
+a/app/browser/constants.ts: export const TOOLTIP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+a/app/browser/constants.ts: export const POPOVER_COPY = Object.freeze({
+a/app/browser/constants.ts:  * Lists the popover specimens the section renders, one per explicit placement, in render order.
+a/app/browser/constants.ts:  *
+a/app/browser/constants.ts:  * @remarks
+a/app/browser/constants.ts:  * Each popover sits alone inside the shell's `viewport` frame, with no trigger beside it. The engine
+a/app/browser/constants.ts:  * writes a popover's placement on the element, so each specimen stands in for it with the shipped
+a/app/browser/constants.ts:  * `position-absolute`, `top-50`, `start-50`, and `translate-middle` utilities on the popover, and the
+a/app/browser/constants.ts:  * `position-absolute` utility with the `start-50` and `translate-middle-x` utilities, or the
+a/app/browser/constants.ts:  * `top-50` and `translate-middle-y` utilities, on its arrow. Each popover carries the release's
+a/app/browser/constants.ts:  * `tooltip` role, which its template writes, and an `id` attribute a trigger's `aria-describedby`
+a/app/browser/constants.ts:  * attribute would name; no specimen claims that wiring. Each header is the release template's `h3`
+a/app/browser/constants.ts:  * element. Each placement specimen is named for the physical side of its host the popover sits on,
+a/app/browser/constants.ts:  * because the `bs-popover-end` and `bs-popover-start` classes are physical. The `Untitled popover`
+a/app/browser/constants.ts:  * specimen sits below its host with an empty header, which the `.popover-header:empty` rule
+a/app/browser/constants.ts:  * removes from the flow, so the popover shows its body alone.
+a/app/browser/constants.ts:  *
+a/app/browser/constants.ts:  * No specimen carries the `fade` class or the `show` class, which no popover rule reads, or the
+a/app/browser/constants.ts:  * automatic placement class and the `data-popper-placement` attribute the engine writes, because
+a/app/browser/constants.ts:  * each automatic placement resolves the geometry of the explicit placement it extends. The
+a/app/browser/constants.ts:  * `tests/src/styles/components/popover.test.ts` file reads each of them on its own elements.
+a/app/browser/constants.ts:  */
+a/app/browser/constants.ts: export const POPOVER_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+a/app/browser/index.ts: export * from './sections/TooltipSection.js'
+a/app/browser/index.ts: export * from './sections/PopoverSection.js'
+a/guides/veneer.md: The tooltip key ships whole: the tip and its shown state, the arrow at each explicit placement and at
+a/guides/veneer.md: each automatic placement the engine writes, and the inner box.
+a/guides/veneer.md: The `.tooltip` rule declares every slot it reads on itself, so a consumer retunes a tip through a
+a/guides/veneer.md: rule of their own that selects it. The tip stacks on the hint rung: the `.tooltip` rule applies its
+a/guides/veneer.md: `z-index` property from the `--bs-tooltip-zindex` property, which reads the `--vn-stack-hint` token,
+a/guides/veneer.md: so a scope retuning that token moves every tip inside it, and the hint rung sits above the popover
+a/guides/veneer.md: rung. The `.tooltip-inner` rule's inset reads Veneer's density scale, and the `.tooltip` rule's text
+a/guides/veneer.md: size reads the `--vn-size-2` token of the type scale. The inner box's fill reads the
+a/guides/veneer.md: `--bs-emphasis-color` alias and its text reads the `--bs-body-bg` alias, so a tip inverts the surface
+a/guides/veneer.md: around it in either color mode, and its radius reads the `--bs-border-radius` alias. The
+a/guides/veneer.md: `reset-text` mixin resets the text a tip inherits to the body face, weight, and rhythm, aligned to
+a/guides/veneer.md: the start of its line and wrapping as ordinary text does, and the popover writes the same reset. The
+a/guides/veneer.md: `--bs-tooltip-margin` property is declared empty, as the release declares it, so the tip's margin
+a/guides/veneer.md: resolves to none. A tip rests transparent, and the `show` class raises it to the value of the
+a/guides/veneer.md: `--bs-tooltip-opacity` property.
+a/guides/veneer.md: Each explicit placement class, the `bs-tooltip-top`, `bs-tooltip-end`, `bs-tooltip-bottom`, or
+a/guides/veneer.md: `bs-tooltip-start` class, names the side of its host the tip sits on. The arrow hangs outside the
+a/guides/veneer.md: tip's edge that faces the host, and its triangle paints the tip's fill on its border facing the tip,
+a/guides/veneer.md: so it points at the host. The placements are physical, as the release writes them: a tip carrying
+a/guides/veneer.md: the `bs-tooltip-end` class sits on the right of its host. The arrow's `0.8rem` width and `0.4rem`
+a/guides/veneer.md: depth are Bootstrap's literals, because an arrow is geometry rather than spacing and does not follow
+a/guides/veneer.md: the density factor. The engine writes the `bs-tooltip-auto` class with a `data-popper-placement`
+a/guides/veneer.md: attribute instead of an explicit class, and each automatic placement extends the explicit class of
+a/guides/veneer.md: the side its attribute names, so the two resolve the same geometry.
+a/guides/veneer.md: The tooltip classes are set in markup. The release's Tooltip plugin, which builds a tip, places it,
+a/guides/veneer.md: and moves it between rest and the `show` class, is behavior the engine owns, and § Compatibility
+a/guides/veneer.md: records it. No tooltip rule reads the `fade` class the plugin sets on an animated tip. The engine
+a/guides/veneer.md: writes a tip's position and offset on the element, so the showcase stands in for them with the
+a/guides/veneer.md: shipped `position-absolute`, `top-50`, `start-50`, and `translate-middle` utilities on each tip, and
+a/guides/veneer.md: the `position-absolute` utility with the `start-50` and `translate-middle-x` utilities, or the
+a/guides/veneer.md: `top-50` and `translate-middle-y` utilities, on its arrow.
+a/guides/veneer.md: These are the key's recorded departures.
+a/guides/veneer.md: - **The stacking level reads the hint rung.** The release writes the `1080` value for the
+a/guides/veneer.md: - **The inset and the text size read Veneer's scales.** The release writes the `0.5rem` and
+a/guides/veneer.md: - **The reset reads the body weight and rhythm, and its fallback alignment is absent.** The release
+a/guides/veneer.md: The showcase's Tooltip region renders a shown tip at each explicit placement, each alone inside the
+a/guides/veneer.md: shell's frame with no trigger, and each carrying the release's `tooltip` role and an `id` attribute
+a/guides/veneer.md: a trigger's `aria-describedby` attribute would name; no specimen claims that wiring. The region
+a/guides/veneer.md: renders no tip without the `show` class and no automatic placement, because the engine writes both:
+a/guides/veneer.md: a tip without the class paints nothing, and an automatic placement resolves the geometry of the
+a/guides/veneer.md: explicit placement it extends. The capture registry declines both frames, and the proof reads each
+a/guides/veneer.md: of them.
+a/guides/veneer.md: The `tests/src/styles/components/tooltip.test.ts` proof reads each resolved treatment in the
+a/guides/veneer.md: browser: the written selectors, the hint rung and a wrapper retuning it, the transparent and the
+a/guides/veneer.md: shown tip, the reset over an inherited treatment, the inner box's cap, inset, radius, and text size
+a/guides/veneer.md: under the density, radius, and type retunes, each placement's arrow against its tip, each automatic
+a/guides/veneer.md: placement against its explicit side, and the paint in light and inside a dark island.
+a/guides/veneer.md: The popover key ships whole: the box, the arrow at each explicit placement and at each automatic
+a/guides/veneer.md: placement the engine writes, the header with its strip under an upward arrow and its empty form,
+a/guides/veneer.md: and the body.
+a/guides/veneer.md: The `.popover` rule declares every slot it reads on itself. The box stacks on the popover rung: the
+a/guides/veneer.md: `.popover` rule applies its `z-index` property from the `--bs-popover-zindex` property, which reads
+a/guides/veneer.md: the `--vn-stack-popover` token, and that rung sits below the hint rung, so a tooltip paints over a
+a/guides/veneer.md: popover. The header and body insets read Veneer's density scale, and the box and header text sizes
+a/guides/veneer.md: read the `--vn-size-2` and `--vn-size-3` tokens of the type scale. The box paints the `--bs-body-bg`
+a/guides/veneer.md: alias inside an edge of the `--bs-border-color-translucent` alias, and its radius reads the
+a/guides/veneer.md: `--bs-border-radius-lg` alias. The header paints the `--bs-secondary-bg` alias and inherits the
+a/guides/veneer.md: popover's own text color, and the body text reads the `--bs-body-color` alias, so a popover follows
+a/guides/veneer.md: the color mode around it. The release declares the `--bs-popover-box-shadow` property and no release
+a/guides/veneer.md: rule applies it, and Veneer does the same. The popover writes the tooltip's text reset through the
+a/guides/veneer.md: same `reset-text` mixin. An empty header is removed from the flow, so a popover given no title shows
+a/guides/veneer.md: its body alone.
+a/guides/veneer.md: The arrow is two triangles in one box: the `::before` triangle paints the popover's edge color, and
+a/guides/veneer.md: the `::after` triangle, one edge width further in, paints its fill, so the arrow carries the border
+a/guides/veneer.md: around its fill. Each explicit placement class hangs the arrow outside the popover's edge that faces
+a/guides/veneer.md: its host, past the border, and the placements are physical, as the tooltip's are. A popover below
+a/guides/veneer.md: its host lays a strip of the header's fill, as wide as the arrow, along the top of the header where
+a/guides/veneer.md: the arrow meets it. The arrow's `1rem` width and `0.5rem` depth are Bootstrap's literals, kept
+a/guides/veneer.md: beside the tooltip's, because an arrow is geometry rather than spacing and does not follow the
+a/guides/veneer.md: density factor. The engine writes the `bs-popover-auto` class with a `data-popper-placement`
+a/guides/veneer.md: attribute instead of an explicit class, and each automatic placement extends the explicit class of
+a/guides/veneer.md: the side its attribute names, the header strip included.
+a/guides/veneer.md: The popover classes are set in markup. The release's Popover plugin builds on the Tooltip plugin and
+a/guides/veneer.md: sets the `fade` class and the `show` class, which no popover rule reads; that behavior is the
+a/guides/veneer.md: engine's, and § Compatibility records it. The engine writes a popover's position and offset on the
+a/guides/veneer.md: element, so the showcase stands in for them with the shipped `position-absolute`, `top-50`,
+a/guides/veneer.md: `start-50`, and `translate-middle` utilities on each popover, and the `position-absolute` utility
+a/guides/veneer.md: with the `start-50` and `translate-middle-x` utilities, or the `top-50` and `translate-middle-y`
+a/guides/veneer.md: utilities, on its arrow.
+a/guides/veneer.md: These are the key's recorded departures.
+a/guides/veneer.md: - **The stacking level reads the popover rung.** The release writes the `1070` value for the
+a/guides/veneer.md: - **The insets and the text sizes read Veneer's scales.** The release writes the `1rem` and `0.5rem`
+a/guides/veneer.md: - **The reset departs as the tooltip's does.** § Tooltip classes gives the weight, rhythm, and
+a/guides/veneer.md: The showcase's Popover region renders a popover with a header and a body at each explicit placement,
+a/guides/veneer.md: each alone inside the shell's frame with no trigger, and each carrying the `tooltip` role the
+a/guides/veneer.md: release's template writes and an `id` attribute a trigger's `aria-describedby` attribute would name;
+a/guides/veneer.md: no specimen claims that wiring. Each header is the release template's `h3` element. The offset the
+a/guides/veneer.md: `start-50` utility writes leaves a popover half its frame's width to lay out in, so at the 390
+a/guides/veneer.md: viewport a popover wraps narrower than its `276px` cap. The region renders no automatic placement,
+a/guides/veneer.md: for the reason § Tooltip classes states, and no `fade` class or `show` class. The `Untitled popover`
+a/guides/veneer.md: specimen sits below its host with an empty header, which the `.popover-header:empty` rule removes
+a/guides/veneer.md: from the flow, so it shows its body alone.
+a/guides/veneer.md: The `tests/src/styles/components/popover.test.ts` proof reads each resolved treatment in the browser:
+a/guides/veneer.md: the written selectors, the popover rung below a tooltip and a wrapper retuning it, the reset over an
+a/guides/veneer.md: inherited treatment, the box beside the engine's classes, the cap, edge, radii, insets, and text
+a/guides/veneer.md: sizes under the density, radius, and type retunes, the header's inherited text, the empty header,
+a/guides/veneer.md: each placement's two triangles against the box, each automatic placement against its explicit side,
+a/guides/veneer.md: the header strip, and the paint in light and inside a dark island.
+a/guides/veneer.md: sticky header, which fixes the offset, and the component-scoped tokens wait on the components that
+a/guides/veneer.md: paint them. The tooltip paints its hint surface from the release's `--bs-emphasis-color` and
+a/guides/veneer.md: `--bs-body-bg` aliases, so Veneer declares no hint surface token of its own. A name the cascade
+a/guides/veneer.md: never writes reaches neither table here nor § Deferred selectors, whose rows must sit in the pinned
+a/guides/veneer.md: inventory the `scanCompatibilityPresence` function reads.
+a/guides/veneer.md: closed. The popover key ships no motion, because no popover rule the release records reads the
+a/guides/veneer.md: `fade` class or the `show` class, so that asymmetry is recorded as an Elements decision for its
+a/guides/veneer.md: owners: J-ENGINE opens and closes a popover, and CROSS-FADE ships the `.fade` rule.
+a/guides/veneer.md: anchoring as an accepted difference. The sanitizer allowlist and sanitizer overrides are J-ENGINE's,
+a/guides/veneer.md: and the Tooltip row names the `Sanitizer` and `TemplateFactory` utilities that carry them.
+a/guides/veneer.md: The Tooltip and Popover regions render each tip inside an element carrying the shell's `viewport`
+a/guides/veneer.md: class, placed through the shipped position utilities that stand in for the placement the engine
+a/guides/veneer.md: writes, and each tip's box and arrow lie inside the frame at the 390 and 1280 viewports. The regions
+a/guides/veneer.md: render no tooltip without the `show` class and no automatic placement, and the capture registry
+a/guides/veneer.md: declines those frames for the reason § Tooltip classes states; see
+a/src/styles/_mixins.scss: // Emits the text reset the release writes on its tooltip and its popover, so a tip inserted beside
+a/src/styles/_mixins.scss: // any content renders the body face at the body weight and rhythm, unadorned, aligned to the start
+a/src/styles/_mixins.scss: // of its line, and wrapping as ordinary text does, whatever text treatment it inherits. The release
+a/src/styles/_mixins.scss: // writes the physical `left` alignment ahead of the logical one as a fallback for engines without
+a/src/styles/_mixins.scss: // the `start` keyword; every engine this cascade is proved on resolves the `start` keyword, so the
+a/src/styles/_mixins.scss: // fallback is not written.
+a/tests/setup.ts:  * A tooltip without the `show` class is declined because it rests transparent, so its frame would
+a/tests/setup.ts:  * carry the frame's empty surface and no subject. The automatic placement forms are declined
+a/tests/setup.ts:  * because each one resolves the geometry of the explicit placement it extends, so its frame would
+a/tests/setup.ts:  * repeat that placement's frame under a second name. The engine writes both, the Tooltip and the
+a/tests/setup.ts:  * Popover regions render neither, and the `tests/src/styles/components/tooltip.test.ts` and
+a/tests/setup.ts:  * `tests/src/styles/components/popover.test.ts` files read each of them on their own elements. Each
+a/tests/setup.ts:  * tip row reads the painted box inside the tip, which sits whole inside the shell's frame, so no tip
+a/tests/setup.ts:  * key hangs outside its host.
+a/tests/setup.ts:  *
+a/tests/setupStyles.test.ts: describe('tip case tables', () => {
+a/tests/setupStyles.test.ts: 			// The release records an arrow triangle's rule twice, so each selector's declarations are
+a/tests/setupStyles.test.ts: 			// gathered across every rule recording it before two selectors are compared.
+a/tests/setupStyles.test.ts: 			// Every automatic rule is some explicit rule's twin, and each twin records exactly the
+a/tests/setupStyles.test.ts: 			// declarations of the explicit rule it extends, so an automatic placement resolves the
+a/tests/setupStyles.test.ts: 			// geometry of the side its attribute names.
+a/tests/setupStyles.test.ts: 			// The explicit arrow rule hangs the arrow from the pinned edge, and its `::before` triangle
+a/tests/setupStyles.test.ts: 			// paints on the pinned side, which is what a proof reading the table relies on.
+a/tests/setupStyles.test.ts: 		// A border shorthand the release records on an arrow sets the longhand on each side, and a
+a/tests/setupStyles.test.ts: 		// browser reading returns those longhands, so the shorthand is expanded over the sides the
+a/tests/setupStyles.test.ts: 		// placement table pins before the recorded geometry is compared with the readings the table
+a/tests/setupStyles.test.ts: 		// lists. A declaration that sets no length or color, such as the arrow's display or content,
+a/tests/setupStyles.test.ts: 		// is no part of its geometry.
+a/tests/setupStyles.test.ts: 			// The reset is the release's one run from the face through the line breaking; every other
+a/tests/setupStyles.test.ts: 			// declaration on the rule belongs to the tip rather than to the reset.
+a/tests/setupStyles.test.ts: 			// Each pinned reset is the value the release lets stand, which is its later declaration
+a/tests/setupStyles.test.ts: 			// where it writes the property twice.
+a/tests/setupStyles.ts:  * Lists every official `.tooltip` selector the components layer ships, once each.
+a/tests/setupStyles.ts:  *
+a/tests/setupStyles.ts:  * @remarks
+a/tests/setupStyles.ts:  * Each automatic placement selector follows the explicit placement selector it extends. The forms
+a/tests/setupStyles.ts:  * tooltips the validation partial ships belong to the `valid-tooltip` and `invalid-tooltip` keys
+a/tests/setupStyles.ts:  * rather than to this one, so no selector here names them.
+a/tests/setupStyles.ts:  */
+a/tests/setupStyles.ts: export const TOOLTIP_SELECTORS = Object.freeze([
+a/tests/setupStyles.ts:  * Lists every official `.popover` selector the components layer ships, once each.
+a/tests/setupStyles.ts:  *
+a/tests/setupStyles.ts:  * @remarks
+a/tests/setupStyles.ts:  * The release records each arrow triangle's rule twice, once for the border widths both triangles
+a/tests/setupStyles.ts:  * share and once for the offset and the color each paints. The list carries each name once, and
+a/tests/setupStyles.ts:  * each automatic placement selector follows the explicit placement selector it extends.
+a/tests/setupStyles.ts:  */
+a/tests/setupStyles.ts: export const POPOVER_SELECTORS = Object.freeze([
+a/tests/setupStyles.ts:  * Pins each explicit placement class a tooltip or a popover carries to the side of its host the tip
+a/tests/setupStyles.ts:  * sits on and the tip edge its arrow hangs from.
+a/tests/setupStyles.ts:  *
+a/tests/setupStyles.ts:  * @remarks
+a/tests/setupStyles.ts:  * The `name` field is the suffix the `bs-tooltip-*` and `bs-popover-*` classes carry. The `side`
+a/tests/setupStyles.ts:  * field is the physical side the placement engine names in the `data-popper-placement` attribute
+a/tests/setupStyles.ts:  * the automatic class pairs with, and the side of the arrow's triangle that paints. The `edge` field
+a/tests/setupStyles.ts:  * is the tip edge facing the host, so the arrow's own edge on that side meets the tip's edge the
+a/tests/setupStyles.ts:  * `edge` field names. The `end` and `start` names are physical, as the release writes them.
+a/tests/setupStyles.ts:  */
+a/tests/setupStyles.ts: export const TIP_PLACEMENTS = Object.freeze([
+a/tests/setupStyles.ts:  * Lists the resolved properties that make up an arrow's geometry: its box, its offsets, and each
+a/tests/setupStyles.ts:  * border of a triangle drawn inside it.
+a/tests/setupStyles.ts:  *
+a/tests/setupStyles.ts:  * @remarks
+a/tests/setupStyles.ts:  * A reading of every property on the arrow and on each of its triangles is what separates two
+a/tests/setupStyles.ts:  * placements, so an automatic placement resolving the same list as an explicit one resolves the
+a/tests/setupStyles.ts:  * same geometry.
+a/tests/setupStyles.ts:  */
+a/tests/setupStyles.ts: export const TIP_ARROW_PROPERTIES = Object.freeze([
+a/tests/setupStyles.ts:  * Pins each declaration of the text reset a tooltip and a popover write, beside a treatment staged
+a/tests/setupStyles.ts:  * against it and the computed property that reads it.
+a/tests/setupStyles.ts:  *
+a/tests/setupStyles.ts:  * @remarks
+a/tests/setupStyles.ts:  * The `reset` field is the value the release records, the later of its two alignments included, and
+a/tests/setupStyles.ts:  * the `staged` field is a value that property resolves differently, so a reset that stopped
+a/tests/setupStyles.ts:  * declaring a property resolves the staged treatment instead. The `reading` field is the computed
+a/tests/setupStyles.ts:  * longhand a proof reads, which is the property itself except where the property is a shorthand
+a/tests/setupStyles.ts:  * whose computed value carries more than the reset sets. The `inherited` field is true where a
+a/tests/setupStyles.ts:  * treatment staged on a parent reaches the text inside it, which is what a proof staging the
+a/tests/setupStyles.ts:  * treatment on a tip's parent reads, and false for the decoration, which a parent's treatment does
+a/tests/setupStyles.ts:  * not reach.
+a/tests/setupStyles.ts:  */
+a/tests/setupStyles.ts: export const TIP_RESET_CASES = Object.freeze([
+a/tests/src/styles/fixtures/mixins.scss: // Compiles the text reset alone, so the proof reads each declaration the mixin writes against a
+a/tests/src/styles/fixtures/mixins.scss: // treatment staged beneath it rather than through a tip rule that writes more beside it.
+a/tests/src/styles/mixins.test.ts: import {
+a/tests/src/styles/mixins.test.ts: 		// The staged treatment sits in a layer, and the fixture's own rule sits in none, so the reset
+a/tests/src/styles/mixins.test.ts: 		// outranks it wherever the mixin declares the property. A declaration the mixin dropped leaves
+a/tests/src/styles/mixins.test.ts: 		// the staged value standing, and the element declaring the recorded reset inline is what the
+a/tests/src/styles/mixins.test.ts: 		// reset is read against. Each staged value resolves apart from its reset on the element beside
+a/tests/src/styles/mixins.test.ts: 		// the fixture, so no reading passes because the two already agree.

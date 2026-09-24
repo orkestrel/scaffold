@@ -1,0 +1,69 @@
+--- tp-3.diff
++++ tp-4.diff
+@@ -349,7 +349,7 @@
+ +}
+ diff --git a/tests/app/browser/sections/PopoverSection.test.ts b/tests/app/browser/sections/PopoverSection.test.ts
+ new file mode 100644
+-index 0000000..ea2a30a
++index 0000000..7e5f39a
+ --- /dev/null
+ +++ b/tests/app/browser/sections/PopoverSection.test.ts
+ @@ -0,0 +1,196 @@
+@@ -391,10 +391,10 @@
+ +			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ +				POPOVER_SPECIMENS.map(({ markup }) => markup),
+ +			)
+-+			// Each specimen is the shell's frame holding one popover and nothing else, in the placement
+-+			// order the table pins, and each popover stands in for the placement the engine would write
+-+			// with the shipped position utilities on the popover and on its arrow. Each carries the
+-+			// release's template order: the arrow, the `h3` header, and the body.
+++			// Each placement specimen is the shell's frame holding one popover and nothing else, in the
+++			// placement order the table pins, and each popover stands in for the placement the engine
+++			// would write with the shipped position utilities on the popover and on its arrow. Each
+++			// carries the release's template order: the arrow, the `h3` header, and the body.
+ +			for (const [index, { name, side }] of TIP_PLACEMENTS.entries()) {
+ +				const specimen = requireValue(rendered[index], `No ${name} specimen`)
+ +				expect(specimen.children).toHaveLength(1)
+@@ -701,7 +701,7 @@
+ +})
+ diff --git a/tests/src/styles/components/popover.test.ts b/tests/src/styles/components/popover.test.ts
+ new file mode 100644
+-index 0000000..1bf6c81
++index 0000000..8f2b9e3
+ --- /dev/null
+ +++ b/tests/src/styles/components/popover.test.ts
+ @@ -0,0 +1,338 @@
+@@ -896,8 +896,8 @@
+ +			const arrow = requireValue(popover.querySelector('.popover-arrow'), `No ${name} arrow`)
+ +			const box = popover.getBoundingClientRect()
+ +			const mark = arrow.getBoundingClientRect()
+-+			// The arrow lies wholly outside the popover's border box, its own host-side edge on the
+-+			// popover's facing outer edge.
+++			// The arrow lies wholly outside the popover's border box, its edge facing the popover on
+++			// the popover's outer edge facing the host.
+ +			expect(mark[side]).toBeCloseTo(box[edge], 1)
+ +			const across = side === 'top' || side === 'bottom'
+ +			expect(readPixels(arrow, 'width')).toBeCloseTo(across ? 16 : 8, 3)
+@@ -1045,10 +1045,10 @@
+ +})
+ diff --git a/tests/src/styles/components/tooltip.test.ts b/tests/src/styles/components/tooltip.test.ts
+ new file mode 100644
+-index 0000000..43359ac
++index 0000000..7e949fd
+ --- /dev/null
+ +++ b/tests/src/styles/components/tooltip.test.ts
+-@@ -0,0 +1,247 @@
++@@ -0,0 +1,248 @@
+ +import { TOKEN_NAMES } from '@src/core'
+ +import { requireValue } from '@orkestrel/test'
+ +import {
+@@ -1215,7 +1215,8 @@
+ +			const inner = requireValue(tip.querySelector('.tooltip-inner'), `No ${name} inner box`)
+ +			const box = tip.getBoundingClientRect()
+ +			const mark = arrow.getBoundingClientRect()
+-+			// The arrow lies wholly outside the tip, its own host-side edge on the tip's facing edge.
+++			// The arrow lies wholly outside the tip, its edge facing the tip on the tip's edge facing
+++			// the host.
+ +			expect(mark[side]).toBeCloseTo(box[edge], 1)
+ +			const across = side === 'top' || side === 'bottom'
+ +			expect(readPixels(arrow, 'width')).toBeCloseTo(across ? 12.8 : 6.4, 1)
