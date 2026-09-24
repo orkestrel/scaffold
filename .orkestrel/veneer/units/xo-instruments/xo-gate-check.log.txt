@@ -1,0 +1,6 @@
+
+> @orkestrel/veneer@0.0.1 check
+> tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+
+tests/src/styles/components/close.test.ts(19,2): error TS2305: Module '"../../../setupStyles.js"' has no exported member 'CLOSE_DEFERRED'.
+tests/src/styles/components/close.test.ts(94,33): error TS7006: Parameter 'selector' implicitly has an 'any' type.

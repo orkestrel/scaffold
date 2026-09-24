@@ -1,0 +1,18 @@
+1. **CONFIRMED — B-g.** The [navbar selector case](/home/user/veneer-bcf/tests/app/browser/sections/NavbarSection.test.ts:75) derives its infixes from the imported constant and preserves the empty infix for the bare selector. Searching the owned section proofs found no remaining literal infix list. The added `xxxl` mutation is distinguished: the [assertion](/home/user/veneer-bcf/tests/app/browser/sections/NavbarSection.test.ts:86) expects a rendered element, and the [mutation output](/home/user/scaffold/.orkestrel/veneer/units/bcf-instruments/bcf-mutation-4-navbar-infix-added.log.txt:153) reports the missing `.navbar-expand-xxxl` selector. The [mutation summary](/home/user/scaffold/.orkestrel/veneer/units/bcf-instruments/bcf-mutations-4.log.txt:4) names only that failing case. The attack that the mutation merely breaks collection fails: execution reaches the selector assertion.
+
+2. **CONFIRMED — B-h.** The [remarks](/home/user/veneer-bcf/tests/setupBrowser.ts:237) distinguish a menu outside normal flow from a menu that grows its specimen’s box. The attack that the remarks still misdescribe the opened navbar fails; the retained [cascade reading](/home/user/scaffold/.orkestrel/veneer/units/bcf-instruments/bcf-3-cascade.log.txt:3) records its static positioning and specimen growth. Comparing the function text extracted from the retained patches found the [helper implementation](/home/user/veneer-bcf/tests/setupBrowser.ts:271) unchanged. An in-memory control reversing a boundary comparison was detected by that comparison.
+
+3. **CONFIRMED — Delta and law.** Comparing the retained patches found only the navbar import and selector derivation, and the containment remarks, changed between rounds. The relevant locations are [the navbar patch](/home/user/scaffold/.orkestrel/veneer/units/bcf-4.diff:301) and [the remarks patch](/home/user/scaffold/.orkestrel/veneer/units/bcf-4.diff:524). The live diff and status match their retained artifacts by SHA-256. A TypeScript AST check of added syntax found no prohibited assertions, explicit any types, or forbidden nested functions; planted controls were detected. Anonymous callbacks passed directly as arguments conform to the contract.
+
+   The attack that the report misstates gate results also fails. The [gate runner](/home/user/scaffold/.orkestrel/veneer/units/bcf-instruments/bcf-gates-4.sh:13) records each command’s exit before filtering output. Its [summary](/home/user/scaffold/.orkestrel/veneer/units/bcf-instruments/bcf-gates-4.log.txt:1) and individual output logs support the reported exits and result lines. These rulings use the retained runs.
+
+   The report states these counts:
+   - Mutation: “Tests 1 failed | 27 passed (28)” — [mutation log](/home/user/scaffold/.orkestrel/veneer/units/bcf-instruments/bcf-mutation-4-navbar-infix-added.log.txt:8).
+   - Restored section run: “Test Files 5 passed (5)” and “Tests 28 passed (28)” — [section log](/home/user/scaffold/.orkestrel/veneer/units/bcf-instruments/bcf-gates-4-4.log.txt:145).
+   - Browser setup run: “Test Files 1 passed (1)” and “Tests 75 passed (75)” — [setup log](/home/user/scaffold/.orkestrel/veneer/units/bcf-instruments/bcf-gates-4-5.log.txt:80).
+
+Findings outside the claims: none.
+
+Attacked and held: the literal specimen names remain valid identity expectations; they do not generate breakpoint selectors. The helper correctly compares laid-out rectangles for either positioning mode without branching on that mode.
+
+VERDICT: PASS

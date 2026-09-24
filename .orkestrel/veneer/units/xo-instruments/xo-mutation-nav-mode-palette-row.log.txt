@@ -1,0 +1,41 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer-xo
+
+·············································································································································x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > nav case tables > binds the nav selectors, published properties, rows, and markup to the inventory
+AssertionError: expected [ { …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "reads": "color",
++     "target": ".nav-pills .nav-link.active",
++   },
++ ]
+
+ ❯ tests/setupStyles.test.ts:4914:5
+    4912|      !named.some((entry) => entry.target === target && entry.reads ===…
+    4913|    ),
+    4914|   ).toEqual([])
+       |     ^
+    4915|   // The published properties are closed over the tables and the readi…
+    4916|   // the weight slot is read by the type case, and the link hover colo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 143 passed (144)
+   Start at  11:56:11
+   Duration  24.19s (transform 5.19s, setup 228ms, import 7.83s, tests 15.60s, environment 0ms)
+

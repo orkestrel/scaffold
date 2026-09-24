@@ -1,0 +1,17 @@
+ app/browser/Showcase.ts                            |  21 +--
+ app/browser/constants.ts                           |   7 +-
+ app/browser/index.ts                               |  18 +--
+ src/styles/_mixins.scss                            |   9 ++
+ src/styles/components/_type.scss                   |   2 +-
+ src/styles/elements/_heading.scss                  |   2 +-
+ src/styles/utilities/_font.scss                    |   2 +-
+ tests/app/browser/Showcase.test.ts                 |  36 ++---
+ tests/app/browser/sections/CarouselSection.test.ts | 148 ++++++++++++--------
+ tests/guides.test.ts                               |   9 ++
+ tests/setupStyles.test.ts                          |  64 ++++++---
+ tests/setupStyles.ts                               | 154 +++++++++++++--------
+ tests/src/styles/components/input-group.test.ts    |  11 +-
+ tests/src/styles/components/nav.test.ts            |  20 ++-
+ tests/src/styles/fixtures/mixins.scss              |   9 ++
+ tests/src/styles/mixins.test.ts                    |  14 ++
+ 16 files changed, 326 insertions(+), 200 deletions(-)

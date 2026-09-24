@@ -1,0 +1,94 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer-xo
+
+x·························································································································xx·················x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > styles setup > exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists
+AssertionError: expected [ 'ACCORDION_COLOR_CASES', …(284) ] to deeply equal [ 'ACCORDION_COLOR_CASES', …(286) ]
+
+- Expected
++ Received
+
+@@ -103,11 +103,10 @@
+    "IMAGE_PAINT_CASES",
+    "IMAGE_SOURCE",
+    "INPUT_GROUP_CASES",
+    "INPUT_GROUP_FLOATING_CASES",
+    "INPUT_GROUP_MARKUP",
+-   "INPUT_GROUP_MODE_CASES",
+    "INPUT_GROUP_SIZE_CASES",
+    "INPUT_GROUP_TOGGLE_CASES",
+    "LINE_HEIGHT_CASES",
+    "LINK_OFFSET_CASES",
+    "LINK_OPACITY_CASES",
+@@ -142,11 +141,10 @@
+    "NAVBAR_PAINT_MOVE_CASES",
+    "NAVBAR_SELECTORS",
+    "NAV_COLOR_CASES",
+    "NAV_LENGTH_CASES",
+    "NAV_MARKUP",
+-   "NAV_MODE_CASES",
+    "NAV_ROW_CASES",
+    "NAV_SELECTORS",
+    "NEUTRAL_MARKUP",
+    "OBJECT_FIT_FIXTURE",
+    "OBJECT_FIT_PAINT_CASES",
+
+ ❯ tests/setupStyles.test.ts:310:37
+    308| describe('styles setup', () => {
+    309|  it('exports the cascade and guide readers, the selector grammar the n…
+    310|   expect(Object.keys(setup).sort()).toEqual(
+       |                                     ^
+    311|    [
+    312|     'ACCORDION_COLOR_CASES',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > input group case tables > writes each recorded input-group rule as often as the release records it, each declaration reading the tokens its row names for that property
+TypeError: Cannot read properties of undefined (reading 'filter')
+ ❯ tests/setupStyles.test.ts:4270:27
+    4268|   expect(INPUT_GROUP_MODE_CASES).not.toStrictEqual([])
+    4269|   expect(
+    4270|    INPUT_GROUP_MODE_CASES.filter(
+       |                           ^
+    4271|     ({ reads, source }) =>
+    4272|      !Object.entries(addon).some(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > input group case tables > freezes the input-group tables and carries the grouped children the proofs mount
+TypeError: Cannot read properties of undefined (reading 'every')
+ ❯ tests/setupStyles.test.ts:4285:33
+    4283|   expect(Object.isFrozen(INPUT_GROUP_TOGGLE_CASES)).toBe(true)
+    4284|   expect(Object.isFrozen(INPUT_GROUP_MODE_CASES)).toBe(true)
+    4285|   expect(INPUT_GROUP_MODE_CASES.every((entry) => Object.isFrozen(entry…
+       |                                 ^
+    4286|   for (const entry of INPUT_GROUP_CASES) {
+    4287|    expect(Object.isFrozen(entry)).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > nav case tables > binds the nav selectors, published properties, rows, and markup to the inventory
+TypeError: Cannot read properties of undefined (reading 'filter')
+ ❯ tests/setupStyles.test.ts:4910:19
+    4908|   expect(NAV_MODE_CASES).not.toStrictEqual([])
+    4909|   expect(
+    4910|    NAV_MODE_CASES.filter(
+       |                   ^
+    4911|     ({ target, reads }) =>
+    4912|      !named.some((entry) => entry.target === target && entry.reads ===…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 140 passed (144)
+   Start at  11:53:25
+   Duration  10.30s (transform 1.67s, setup 183ms, import 2.81s, tests 7.15s, environment 0ms)
+

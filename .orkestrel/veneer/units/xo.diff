@@ -1,0 +1,1039 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index d7f8440..c222673 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -156,23 +156,26 @@ export class Showcase implements ShowcaseInterface {
+ 			new TooltipSection(this.#main),
+ 			new PopoverSection(this.#main),
+ 			new OffcanvasSection(this.#main),
+-			new DisplaySection(this.#main),
+-			new FlexSection(this.#main),
+-			new PositionSection(this.#main),
+-			new SizingSection(this.#main),
+-			new VisibilitySection(this.#main),
+-			new ShadowSection(this.#main),
+-			new OpacitySection(this.#main),
++			// The utility regions follow the order in which the `src/styles/index.scss` barrel loads
++			// the partial each region is named for, so the Focus ring region, whose partial the barrel
++			// loads among the components, leads them and the Visibility region closes them.
+ 			new FocusRingSection(this.#main),
+ 			new FloatSection(this.#main),
+ 			new ObjectFitSection(this.#main),
++			new OpacitySection(this.#main),
+ 			new OverflowSection(this.#main),
+-			new BackgroundSection(this.#main),
++			new DisplaySection(this.#main),
++			new ShadowSection(this.#main),
++			new PositionSection(this.#main),
+ 			new BorderSection(this.#main),
++			new SizingSection(this.#main),
++			new FlexSection(this.#main),
++			new SpacingSection(this.#main),
+ 			new TextSection(this.#main),
+ 			new ColorSection(this.#main),
+-			new SpacingSection(this.#main),
++			new BackgroundSection(this.#main),
+ 			new InteractionSection(this.#main),
++			new VisibilitySection(this.#main),
+ 			new NavbarSection(this.#main),
+ 		]
+ 	}
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 3fedf2a..28be91d 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -372,9 +372,10 @@ export const TYPE_COPY = Object.freeze({
+  * The font utility specimens follow the class specimens, and each labels its text with the full
+  * name of the class that sets it. The weight steps share a paragraph, because the lighter and
+  * bolder steps resolve against the body weight around them. The line-height paragraphs sit in
+- * columns narrow enough to wrap at every width, because a paragraph that never wraps shows no
+- * spacing between its lines. The monospace specimens set a phrase beside the body stack and a line
+- * composed with a size, a weight, and a line height.
++ * columns narrow enough that every paragraph wraps at the 390 and 1280 journey widths, which the
++ * `line-heights` frames show, because a paragraph that never wraps shows no spacing between its
++ * lines. The monospace specimens set a phrase beside the body stack and a line composed with a
++ * size, a weight, and a line height.
+  */
+ export const TYPE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({ name: 'Heading class 1', markup: '<div class="h1">Heading class 1</div>' }),
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 3022916..706b4d9 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -40,21 +40,21 @@ export * from './sections/ModalSection.js'
+ export * from './sections/TooltipSection.js'
+ export * from './sections/PopoverSection.js'
+ export * from './sections/OffcanvasSection.js'
+-export * from './sections/DisplaySection.js'
+-export * from './sections/FlexSection.js'
+-export * from './sections/PositionSection.js'
+-export * from './sections/SizingSection.js'
+-export * from './sections/VisibilitySection.js'
+-export * from './sections/ShadowSection.js'
+-export * from './sections/OpacitySection.js'
+ export * from './sections/FocusRingSection.js'
+ export * from './sections/FloatSection.js'
+ export * from './sections/ObjectFitSection.js'
++export * from './sections/OpacitySection.js'
+ export * from './sections/OverflowSection.js'
+-export * from './sections/BackgroundSection.js'
++export * from './sections/DisplaySection.js'
++export * from './sections/ShadowSection.js'
++export * from './sections/PositionSection.js'
+ export * from './sections/BorderSection.js'
++export * from './sections/SizingSection.js'
++export * from './sections/FlexSection.js'
++export * from './sections/SpacingSection.js'
+ export * from './sections/TextSection.js'
+ export * from './sections/ColorSection.js'
+-export * from './sections/SpacingSection.js'
++export * from './sections/BackgroundSection.js'
+ export * from './sections/InteractionSection.js'
++export * from './sections/VisibilitySection.js'
+ export * from './sections/NavbarSection.js'
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index d4072a0..567d89d 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -147,6 +147,15 @@
+ 	@return map.get($widths, $name);
+ }
+ 
++// Returns the size token a heading level reads, as the one source of the heading ramp.
++//
++// The `h1` level reads the largest heading token, `--vn-size-8`, and each lower level reads the
++// step beneath it, so the heading tags, the heading classes, and the `.fs-*` utilities all call
++// this function and cannot name two different tokens for one level.
++@function heading-size($level) {
++	@return var(--vn-size-#{9 - $level});
++}
++
+ // Emits its content for every viewport at and above the named boundary.
+ //
+ // The zero boundary is at or below every viewport, so this emits the content with no media wrapper
+diff --git a/src/styles/components/_type.scss b/src/styles/components/_type.scss
+index ef45d03..a748fc0 100644
+--- a/src/styles/components/_type.scss
++++ b/src/styles/components/_type.scss
+@@ -11,7 +11,7 @@
+ 	}
+ 	@for $level from 1 through 6 {
+ 		.h#{$level} {
+-			font-size: var(--vn-size-#{9 - $level});
++			font-size: heading-size($level);
+ 		}
+ 	}
+ 
+diff --git a/src/styles/elements/_heading.scss b/src/styles/elements/_heading.scss
+index 05f82eb..c7caac8 100644
+--- a/src/styles/elements/_heading.scss
++++ b/src/styles/elements/_heading.scss
+@@ -11,7 +11,7 @@
+ 	}
+ 	@for $level from 1 through 6 {
+ 		h#{$level} {
+-			font-size: var(--vn-size-#{9 - $level});
++			font-size: heading-size($level);
+ 		}
+ 	}
+ }
+diff --git a/src/styles/utilities/_font.scss b/src/styles/utilities/_font.scss
+index 2dabb3f..ee524c5 100644
+--- a/src/styles/utilities/_font.scss
++++ b/src/styles/utilities/_font.scss
+@@ -8,7 +8,7 @@
+ 	// written, as the heading classes write neither.
+ 	$sizes: ();
+ 	@for $level from 1 through 6 {
+-		$sizes: map.set($sizes, $level, var(--vn-size-#{9 - $level}));
++		$sizes: map.set($sizes, $level, heading-size($level));
+ 	}
+ 	// None of the release's font entries is responsive, so the walk writes each at the empty infix
+ 	// alone, ahead of every media block, in the release's map order.
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index ef4fe3c..efd8680 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -153,23 +153,23 @@ describe('Showcase', () => {
+ 				'Tooltip',
+ 				'Popover',
+ 				'Offcanvas',
+-				'Display',
+-				'Flex',
+-				'Position',
+-				'Sizing',
+-				'Visibility',
+-				'Shadow',
+-				'Opacity',
+ 				'Focus ring',
+ 				'Float',
+ 				'Object fit',
++				'Opacity',
+ 				'Overflow',
+-				'Background',
++				'Display',
++				'Shadow',
++				'Position',
+ 				'Border',
++				'Sizing',
++				'Flex',
++				'Spacing',
+ 				'Text',
+ 				'Color',
+-				'Spacing',
++				'Background',
+ 				'Interaction',
++				'Visibility',
+ 				'Navbar',
+ 			])
+ 			expect(
+@@ -214,23 +214,23 @@ describe('Showcase', () => {
+ 					...TOOLTIP_SPECIMENS,
+ 					...POPOVER_SPECIMENS,
+ 					...OFFCANVAS_SPECIMENS,
+-					...DISPLAY_SPECIMENS,
+-					...FLEX_SPECIMENS,
+-					...POSITION_SPECIMENS,
+-					...SIZING_SPECIMENS,
+-					...VISIBILITY_SPECIMENS,
+-					...SHADOW_SPECIMENS,
+-					...OPACITY_SPECIMENS,
+ 					...FOCUS_RING_SPECIMENS,
+ 					...FLOAT_SPECIMENS,
+ 					...OBJECT_FIT_SPECIMENS,
++					...OPACITY_SPECIMENS,
+ 					...OVERFLOW_SPECIMENS,
+-					...BACKGROUND_SPECIMENS,
++					...DISPLAY_SPECIMENS,
++					...SHADOW_SPECIMENS,
++					...POSITION_SPECIMENS,
+ 					...BORDER_SPECIMENS,
++					...SIZING_SPECIMENS,
++					...FLEX_SPECIMENS,
++					...SPACING_SPECIMENS,
+ 					...TEXT_SPECIMENS,
+ 					...COLOR_SPECIMENS,
+-					...SPACING_SPECIMENS,
++					...BACKGROUND_SPECIMENS,
+ 					...INTERACTION_SPECIMENS,
++					...VISIBILITY_SPECIMENS,
+ 					...NAVBAR_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+diff --git a/tests/app/browser/sections/CarouselSection.test.ts b/tests/app/browser/sections/CarouselSection.test.ts
+index e94598b..4fb7329 100644
+--- a/tests/app/browser/sections/CarouselSection.test.ts
++++ b/tests/app/browser/sections/CarouselSection.test.ts
+@@ -20,8 +20,11 @@ beforeAll(async () => {
+ 	await import('../../../../app/browser/styles/index.scss')
+ })
+ 
++// Every population a case reads is taken off the specimen table by a class the specimen's markup
++// writes, so no specimen name is listed here and a specimen added to the table is read by every case
++// its markup falls under.
+ describe('CarouselSection', () => {
+-	it('renders a captioned, a fading, an inverted, and an advancing carousel through the shared section contract', () => {
++	it('renders every carousel specimen, in table order, through the shared section contract', () => {
+ 		const host = mount(build('div'))
+ 		const section: SectionInterface = new CarouselSection(host)
+ 		try {
+@@ -31,12 +34,9 @@ describe('CarouselSection', () => {
+ 			expect(region.getAttribute('aria-label')).toBe('Carousel')
+ 			expect(region.querySelector('p')?.textContent).toBe(CAROUSEL_COPY.paragraph)
+ 			const rendered = [...region.querySelectorAll('[data-specimen]')]
+-			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
+-				'Captioned carousel',
+-				'Fading carousel',
+-				'Inverted carousel',
+-				'Advancing carousel',
+-			])
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++				CAROUSEL_SPECIMENS.map(({ name }) => name),
++			)
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				CAROUSEL_SPECIMENS.map(({ markup }) => markup),
+ 			)
+@@ -65,14 +65,18 @@ describe('CarouselSection', () => {
+ 
+ 	// The mutation this catches is a specimen that drops a trigger attribute or a name: the indicator
+ 	// rule selects on the target attribute, the current indicator announces itself, and each control
+-	// carries only a mark, so a control without its label renders an unnamed button.
+-	it('names every indicator and control and marks the current indicator in the captioned and inverted carousels', () => {
++	// carries only a mark, so a control without its label renders an unnamed button. The indicated
++	// carousels are the specimens whose markup opens an indicator list.
++	it('names every indicator and control, and marks the current indicator in every indicated carousel', () => {
+ 		const host = mount(build('div'))
+ 		const section: SectionInterface = new CarouselSection(host)
+ 		try {
+ 			const region = requireValue(host.querySelector('section'), 'No Carousel region')
+-			const names = new Set<string>()
+-			for (const name of ['Captioned carousel', 'Inverted carousel']) {
++			const indicated = CAROUSEL_SPECIMENS.filter(({ markup }) =>
++				markup.includes('class="carousel-indicators"'),
++			)
++			expect(indicated).not.toStrictEqual([])
++			for (const { name } of indicated) {
+ 				const specimen = readSpecimen(region, name)
+ 				const carousel = requireValue(specimen.querySelector('.carousel'), `No carousel in ${name}`)
+ 				const pips = [...specimen.querySelectorAll('.carousel-indicators > button')]
+@@ -91,30 +95,31 @@ describe('CarouselSection', () => {
+ 				expect(slides.map((slide) => slide.classList.contains('active'))).toEqual(
+ 					slides.map((_slide, index) => index === 0),
+ 				)
+-				expect(slides.every((slide) => slide.querySelector('.carousel-caption') !== null)).toBe(
+-					true,
+-				)
+-				for (const control of specimen.querySelectorAll(
+-					'.carousel-control-prev, .carousel-control-next, .carousel-indicators > button',
+-				)) {
+-					expect(control.tagName).toBe('BUTTON')
+-					expect(control.textContent).toBe('')
+-					const label = control.getAttribute('aria-label') ?? ''
+-					expect(readName(control)).toBe(label)
+-					expect(label.length).toBeGreaterThan(0)
+-					names.add(label)
+-				}
+ 			}
+-			const fading = readSpecimen(region, 'Fading carousel')
+-			for (const control of fading.querySelectorAll(
+-				'.carousel-control-prev, .carousel-control-next',
+-			))
+-				names.add(readName(control))
++			const names = CAROUSEL_SPECIMENS.flatMap(({ name }) =>
++				[
++					...readSpecimen(region, name).querySelectorAll(
++						'.carousel-control-prev, .carousel-control-next, .carousel-indicators > button',
++					),
++				].map((control) => ({
++					tag: control.tagName,
++					text: control.textContent,
++					label: control.getAttribute('aria-label') ?? '',
++					name: readName(control),
++				})),
++			)
++			expect(names).not.toStrictEqual([])
++			expect(
++				names.filter(
++					({ tag, text, label, name }) =>
++						tag !== 'BUTTON' || text !== '' || label === '' || name !== label,
++				),
++			).toEqual([])
+ 			// Each name is unique to the region, so a drive that reaches a control by its name reaches
+ 			// one control.
+ 			expect(
+ 				[...region.querySelectorAll('button')].map((control) => readName(control)).sort(),
+-			).toEqual([...names].sort())
++			).toEqual([...new Set(names.map(({ label }) => label))].sort())
+ 		} finally {
+ 			section.destroy()
+ 			host.remove()
+@@ -125,13 +130,20 @@ describe('CarouselSection', () => {
+ 	// spans both the backdrop a picture paints and the shape painted across it, so the caption color
+ 	// is measured against every fill the picture paints and the lowest ratio must meet 4.5:1. The
+ 	// inverted carousel paints its caption black and so needs light fills, and the captioned carousel
+-	// paints its caption white over dark ones.
++	// paints its caption white over dark ones. The captioned carousels are the specimens whose markup
++	// writes a caption, and the inverted ones are those whose markup writes the `carousel-dark` class.
+ 	it('holds each caption to 4.5:1 against every fill its picture paints, the inverted carousel over light pictures', () => {
+ 		const host = mount(build('div'))
+ 		const section: SectionInterface = new CarouselSection(host)
+ 		try {
+ 			const region = requireValue(host.querySelector('section'), 'No Carousel region')
+-			const readings = ['Captioned carousel', 'Inverted carousel'].flatMap((name) =>
++			const captioned = CAROUSEL_SPECIMENS.filter(({ markup }) =>
++				markup.includes('class="carousel-caption'),
++			)
++			const inverted = captioned.filter(({ markup }) => markup.includes('carousel-dark'))
++			expect(inverted).not.toStrictEqual([])
++			expect(captioned.filter((specimen) => !inverted.includes(specimen))).not.toStrictEqual([])
++			const readings = captioned.flatMap(({ name }) =>
+ 				[...readSpecimen(region, name).querySelectorAll('.carousel-item')].map((slide) => {
+ 					const caption = requireValue(
+ 						slide.querySelector('.carousel-caption'),
+@@ -157,11 +169,15 @@ describe('CarouselSection', () => {
+ 			// fill reports here rather than passing on the one it found.
+ 			expect(readings.filter(({ shapes }) => shapes.join() !== 'rect,path')).toEqual([])
+ 			expect(readings.filter(({ lowest }) => lowest < 4.5)).toEqual([])
+-			const inverted = readSpecimen(region, 'Inverted carousel')
+-			expect(inverted.querySelector('.carousel.carousel-dark')).not.toBeNull()
+-			expect(
+-				readStyle(requireValue(inverted.querySelector('.carousel-caption'), 'No caption'), 'color'),
+-			).toBe('rgb(0, 0, 0)')
++			for (const { name } of inverted) {
++				const specimen = readSpecimen(region, name)
++				expect(specimen.querySelector('.carousel.carousel-dark')).not.toBeNull()
++				const colors = [...specimen.querySelectorAll('.carousel-caption')].map((caption) =>
++					readStyle(caption, 'color'),
++				)
++				expect(colors).not.toStrictEqual([])
++				expect(colors.filter((color) => color !== 'rgb(0, 0, 0)')).toEqual([])
++			}
+ 		} finally {
+ 			section.destroy()
+ 			host.remove()
+@@ -170,18 +186,22 @@ describe('CarouselSection', () => {
+ 
+ 	// The mutations this catches are a fade rule that stops hiding the other slides and a stacking
+ 	// rule that drops the resting slide from the fading carousel, either of which lets a hidden slide
+-	// paint over the resting one at an opacity below one.
+-	it("paints the fading carousel's resting slide at full opacity", () => {
++	// paint over the resting one at an opacity below one. The fading carousels are the specimens
++	// whose markup writes the `carousel-fade` class.
++	it("paints each fading carousel's resting slide at full opacity", () => {
+ 		const host = mount(build('div'))
+ 		const section: SectionInterface = new CarouselSection(host)
+ 		try {
+ 			const region = requireValue(host.querySelector('section'), 'No Carousel region')
+-			const fading = readSpecimen(region, 'Fading carousel')
+-			const resting = requireValue(
+-				fading.querySelector('.carousel-fade .carousel-item.active'),
+-				'No fading slide',
+-			)
+-			expect(readStyle(resting, 'opacity')).toBe('1')
++			const fading = CAROUSEL_SPECIMENS.filter(({ markup }) => markup.includes('carousel-fade'))
++			expect(fading).not.toStrictEqual([])
++			for (const { name } of fading) {
++				const resting = requireValue(
++					readSpecimen(region, name).querySelector('.carousel-fade .carousel-item.active'),
++					`No fading slide in ${name}`,
++				)
++				expect(readStyle(resting, 'opacity')).toBe('1')
++			}
+ 		} finally {
+ 			section.destroy()
+ 			host.remove()
+@@ -225,24 +245,34 @@ describe('CarouselSection', () => {
+ 
+ 	// The mutation this catches is an advancing specimen that stops carrying the direction classes:
+ 	// the resting slide then stays in the track and the incoming slide rests a width outside it, so
+-	// neither slide reads the transform its place in the advance calls for.
+-	it('paints the incoming slide in the advancing carousel while the resting slide moves out', () => {
++	// neither slide reads the transform its place in the advance calls for. The advancing carousels
++	// are the specimens whose markup writes the `carousel-item-next` class.
++	it('paints the incoming slide in each advancing carousel while the resting slide moves out', () => {
+ 		const host = mount(build('div'))
+ 		const section: SectionInterface = new CarouselSection(host)
+ 		try {
+ 			const region = requireValue(host.querySelector('section'), 'No Carousel region')
+-			const specimen = readSpecimen(region, 'Advancing carousel')
+-			const [first, second] = [...specimen.querySelectorAll('.carousel-item')]
+-			const outgoing = requireValue(first, 'No outgoing slide')
+-			const incoming = requireValue(second, 'No incoming slide')
+-			const track = requireValue(specimen.querySelector('.carousel-inner'), 'No track')
+-			const width = track.getBoundingClientRect().width
+-			expect(readStyle(outgoing, 'transform')).toBe(`matrix(1, 0, 0, 1, ${String(-width)}, 0)`)
+-			expect(readStyle(incoming, 'transform')).toBe('none')
+-			expect(incoming.getBoundingClientRect().left).toBe(track.getBoundingClientRect().left)
+-			const picture = requireValue(incoming.querySelector('img'), 'No incoming picture')
+-			picture.scrollIntoView()
+-			expect(readHit(picture)).toBe(picture)
++			const advancing = CAROUSEL_SPECIMENS.filter(({ markup }) =>
++				markup.includes('carousel-item-next'),
++			)
++			expect(advancing).not.toStrictEqual([])
++			for (const { name } of advancing) {
++				const specimen = readSpecimen(region, name)
++				const [first, second] = [...specimen.querySelectorAll('.carousel-item')]
++				const outgoing = requireValue(first, `No outgoing slide in ${name}`)
++				const incoming = requireValue(second, `No incoming slide in ${name}`)
++				const track = requireValue(specimen.querySelector('.carousel-inner'), `No track in ${name}`)
++				const width = track.getBoundingClientRect().width
++				expect(readStyle(outgoing, 'transform')).toBe(`matrix(1, 0, 0, 1, ${String(-width)}, 0)`)
++				expect(readStyle(incoming, 'transform')).toBe('none')
++				expect(incoming.getBoundingClientRect().left).toBe(track.getBoundingClientRect().left)
++				const picture = requireValue(
++					incoming.querySelector('img'),
++					`No incoming picture in ${name}`,
++				)
++				picture.scrollIntoView()
++				expect(readHit(picture)).toBe(picture)
++			}
+ 		} finally {
+ 			section.destroy()
+ 			host.remove()
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index b6dfb8c..8d0eae9 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -39,6 +39,7 @@ await new GuideCommand({
+ 	const { createMarkdown } = await import('@orkestrel/markdown')
+ 	const { requireValue } = await import('@orkestrel/test')
+ 	const { CAPTURE_KEYS, CAPTURE_SCENARIOS } = await import('./setup.js')
++	const { readCompatibility } = await import('./setupServer.js')
+ 	const { readTableCells, selectTableColumns } = await import('./setupStyles.js')
+ 	const { isColorModeState } = await import('@orkestrel/veneer/browser')
+ 	const { describe, expect, it } = await import('vitest')
+@@ -65,6 +66,14 @@ await new GuideCommand({
+ 		expect(isColorModeState('auto')).toBe(false)
+ 	})
+ 
++	it('holds each compatibility ledger row once', () => {
++		// One obligation may carry a row per proof step, so a row is keyed by every cell it holds, and
++		// a merge that copies a row whole reddens here rather than reading as a second proof.
++		const ledger = readCompatibility().map((row) => JSON.stringify(row))
++		expect(ledger.length).toBeGreaterThan(0)
++		expect(ledger.filter((row, index) => ledger.indexOf(row) !== index)).toEqual([])
++	})
++
+ 	it('names a registered scenario and the subject it declares in every stem example', () => {
+ 		const guide = requireValue(files[GUIDE_SPEC], `Missing inventory: ${GUIDE_SPEC}`)
+ 		const tables = selectSectionBlocks(createMarkdown(guide).document, 'Tests').flatMap((block) =>
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 059fc8d..43ba960 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -72,7 +72,6 @@ import {
+ 	CAROUSEL_INVERSION,
+ 	CAROUSEL_MARKS,
+ 	CAROUSEL_SELECTORS,
+-	CLOSE_DEFERRED,
+ 	CLOSE_INVERSION,
+ 	CLOSE_MARK,
+ 	CLOSE_SELECTORS,
+@@ -129,6 +128,7 @@ import {
+ 	INPUT_GROUP_CASES,
+ 	INPUT_GROUP_FLOATING_CASES,
+ 	INPUT_GROUP_MARKUP,
++	INPUT_GROUP_MODE_CASES,
+ 	INPUT_GROUP_SIZE_CASES,
+ 	INPUT_GROUP_TOGGLE_CASES,
+ 	LINE_HEIGHT_CASES,
+@@ -156,6 +156,7 @@ import {
+ 	NAV_COLOR_CASES,
+ 	NAV_LENGTH_CASES,
+ 	NAV_MARKUP,
++	NAV_MODE_CASES,
+ 	NAV_ROW_CASES,
+ 	NAV_SELECTORS,
+ 	NAVBAR_COLOR_CASES,
+@@ -357,7 +358,6 @@ describe('styles setup', () => {
+ 				'CAROUSEL_INVERSION',
+ 				'CAROUSEL_MARKS',
+ 				'CAROUSEL_SELECTORS',
+-				'CLOSE_DEFERRED',
+ 				'CLOSE_INVERSION',
+ 				'CLOSE_MARK',
+ 				'CLOSE_SELECTORS',
+@@ -415,6 +415,7 @@ describe('styles setup', () => {
+ 				'INPUT_GROUP_CASES',
+ 				'INPUT_GROUP_FLOATING_CASES',
+ 				'INPUT_GROUP_MARKUP',
++				'INPUT_GROUP_MODE_CASES',
+ 				'INPUT_GROUP_SIZE_CASES',
+ 				'INPUT_GROUP_TOGGLE_CASES',
+ 				'LINE_HEIGHT_CASES',
+@@ -453,6 +454,7 @@ describe('styles setup', () => {
+ 				'NAV_COLOR_CASES',
+ 				'NAV_LENGTH_CASES',
+ 				'NAV_MARKUP',
++				'NAV_MODE_CASES',
+ 				'NAV_ROW_CASES',
+ 				'NAV_SELECTORS',
+ 				'NEUTRAL_MARKUP',
+@@ -3495,20 +3497,12 @@ describe('passive component case tables', () => {
+ 		expect(new Set(BADGE_SELECTORS)).toEqual(
+ 			new Set(oracle.components.badge.selectors.map(({ selector }) => selector)),
+ 		)
+-		// The close key is the one of the three the inventory records more selectors for than this
+-		// release ships, so the shipped table and the deferred table are compared as one population
+-		// against the record and as two disjoint ones against each other.
+-		expect(new Set([...CLOSE_SELECTORS, ...CLOSE_DEFERRED])).toEqual(
++		// Every overlay partial ships its header combinator, so the close table holds the whole
++		// recorded population and the deferral ledger holds no row for an overlay owner to delete.
++		expect(new Set(CLOSE_SELECTORS)).toEqual(
+ 			new Set(oracle.components['btn-close'].selectors.map(({ selector }) => selector)),
+ 		)
+-		expect(CLOSE_SELECTORS.filter((selector) => CLOSE_DEFERRED.includes(selector))).toEqual([])
+-		expect(new Set(CLOSE_DEFERRED)).toEqual(
+-			new Set(
+-				readDeferrals()
+-					.filter((row) => row.owner === 'Overlays')
+-					.map((row) => row.name),
+-			),
+-		)
++		expect(readDeferrals().filter((row) => row.owner === 'Overlays')).toEqual([])
+ 	})
+ 	it('binds the alert tables to the official inventory and the recorded dismissible geometry', () => {
+ 		const recorded = oracle.components.alert.selectors
+@@ -3629,7 +3623,6 @@ describe('passive component case tables', () => {
+ 			BADGE_SELECTORS,
+ 			BADGE_GEOMETRY_CASES,
+ 			CLOSE_SELECTORS,
+-			CLOSE_DEFERRED,
+ 			CLOSE_STATE_CASES,
+ 		]) {
+ 			expect(Object.isFrozen(table)).toBe(true)
+@@ -4012,10 +4005,9 @@ describe('offcanvas case tables', () => {
+ 		expect(OFFCANVAS_SELECTORS.filter((selector) => combinators.includes(selector))).toEqual([])
+ 		expect(new Set(OFFCANVAS_SELECTORS).size).toBe(OFFCANVAS_SELECTORS.length)
+ 		// The header's close combinator is recorded under the close key as well, and ships from the
+-		// offcanvas partial rather than waiting under the deferred list.
++		// offcanvas partial.
+ 		expect(OFFCANVAS_SELECTORS).toContain('.offcanvas-header .btn-close')
+ 		expect(CLOSE_SELECTORS).toContain('.offcanvas-header .btn-close')
+-		expect(CLOSE_DEFERRED).not.toContain('.offcanvas-header .btn-close')
+ 	})
+ 	it('derives each placement, each state, and the panel geometry from the official declarations', () => {
+ 		// Each declaration is keyed by its selector, its condition, and its property, because the
+@@ -4267,12 +4259,30 @@ describe('input group case tables', () => {
+ 					`The compiled cascade writes no ${entry.selector} rule`,
+ 				),
+ 			}).toEqual({ selector: entry.selector, reads: entry.reads })
++		// Each mode reading names a variable the addon's own row reads under the property or under
++		// the shorthand that writes it, so a reading the addon's rule does not name reddens here.
++		const addon = requireValue(
++			INPUT_GROUP_CASES.find((entry) => entry.selector === '.input-group-text'),
++			'No addon row',
++		).reads
++		expect(INPUT_GROUP_MODE_CASES).not.toStrictEqual([])
++		expect(
++			INPUT_GROUP_MODE_CASES.filter(
++				({ reads, source }) =>
++					!Object.entries(addon).some(
++						([property, names]) =>
++							(reads === property || reads.startsWith(`${property}-`)) && names.includes(source),
++					),
++			),
++		).toEqual([])
+ 	})
+ 	it('freezes the input-group tables and carries the grouped children the proofs mount', () => {
+ 		expect(Object.isFrozen(INPUT_GROUP_CASES)).toBe(true)
+ 		expect(Object.isFrozen(INPUT_GROUP_SIZE_CASES)).toBe(true)
+ 		expect(Object.isFrozen(INPUT_GROUP_FLOATING_CASES)).toBe(true)
+ 		expect(Object.isFrozen(INPUT_GROUP_TOGGLE_CASES)).toBe(true)
++		expect(Object.isFrozen(INPUT_GROUP_MODE_CASES)).toBe(true)
++		expect(INPUT_GROUP_MODE_CASES.every((entry) => Object.isFrozen(entry))).toBe(true)
+ 		for (const entry of INPUT_GROUP_CASES) {
+ 			expect(Object.isFrozen(entry)).toBe(true)
+ 			expect(Object.isFrozen(entry.reads)).toBe(true)
+@@ -4892,6 +4902,16 @@ describe('nav case tables', () => {
+ 		expect(named.map(({ site }) => site?.value.split(' ')[0])).toEqual(
+ 			named.map(({ source }) => `var(${source})`),
+ 		)
++		// Each mode reading is a color row whose value the release names by a variable the color
++		// mode retunes, so a reading no color row pins and one the palette holds across modes each
++		// redden here.
++		expect(NAV_MODE_CASES).not.toStrictEqual([])
++		expect(
++			NAV_MODE_CASES.filter(
++				({ target, reads }) =>
++					!named.some((entry) => entry.target === target && entry.reads === reads),
++			),
++		).toEqual([])
+ 		// The published properties are closed over the tables and the readings named beside them:
+ 		// the weight slot is read by the type case, and the link hover color slot and the tab hover border
+ 		// color slot by the hover case, because no resting element paints them. A property the release adds and no reading covers reddens.
+@@ -4929,9 +4949,15 @@ describe('nav case tables', () => {
+ 		expect(NAV_MARKUP).not.toMatch(/class="nav-item dropdown show"|class="nav-item show dropdown"/u)
+ 		const targets = [...NAV_MARKUP.matchAll(/href="([^"]+)"/gu)].map((match) => match[1])
+ 		expect(new Set(targets).size).toBe(targets.length)
+-		for (const cases of [NAV_SELECTORS, NAV_LENGTH_CASES, NAV_COLOR_CASES, NAV_ROW_CASES])
++		for (const cases of [
++			NAV_SELECTORS,
++			NAV_LENGTH_CASES,
++			NAV_COLOR_CASES,
++			NAV_ROW_CASES,
++			NAV_MODE_CASES,
++		])
+ 			expect(Object.isFrozen(cases)).toBe(true)
+-		for (const cases of [NAV_LENGTH_CASES, NAV_COLOR_CASES, NAV_ROW_CASES])
++		for (const cases of [NAV_LENGTH_CASES, NAV_COLOR_CASES, NAV_ROW_CASES, NAV_MODE_CASES])
+ 			for (const entry of cases) expect(Object.isFrozen(entry)).toBe(true)
+ 	})
+ })
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index e5a7bcc..b084503 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1261,8 +1261,8 @@ export const TEXT_CODE_CASES = Object.freeze(
+  * Holds the mode and resolved readings for the dl element family.
+  *
+  * @remarks
+- * The `color` field is the list's own resolved color, and `description` the color resolved on its
+- * `dd` element.
++ * The `color` field is the list's own resolved color, and the `description` field is the color
++ * resolved on its `dd` element.
+  */
+ export const TEXT_DL_CASES = Object.freeze(
+ 	TEXT_MODES.map((mode) =>
+@@ -1869,8 +1869,8 @@ export const ALIGN_VALUES = Object.freeze([
+  * writes, the property it sets, and each key beside the value that key writes.
+  *
+  * @remarks
+- * A computed style reports each of these values as written, so `value` is both the declaration a
+- * class carries and the reading a proof expects from it.
++ * A computed style reports each of these values as written, so the `value` field is both the
++ * declaration a class carries and the reading a proof expects from it.
+  */
+ export const FLEX_ENTRY_CASES = Object.freeze([
+ 	Object.freeze({
+@@ -3904,9 +3904,9 @@ export const RETAINED_LENGTH_ALIASES: ReadonlyArray<
+  * Each row is a role, a mode, a tier, and the color that tier resolved to. The readings come from
+  * `dist/showcase/index.html` at commit `3b41900` on 2026-09-20, on managed Chromium
+  * `153.0.8010.12` and on Edge `153.0.4234.48`, which reported the same string for every row.
+- * `information` is the Elements name of the role Bootstrap calls `info`. The `light` and `dark`
+- * roles Bootstrap names have no Elements specimen, so no row measures them and their tiers follow
+- * the same expressions unmeasured.
++ * The `information` role is the Elements name of the role Bootstrap calls `info`. The `light` and
++ * `dark` roles Bootstrap names have no Elements specimen, so no row measures them and their tiers
++ * follow the same expressions unmeasured.
+  */
+ export const CALIBRATED_TIERS: ReadonlyArray<
+ 	readonly [role: string, mode: string, tier: string, color: string]
+@@ -4083,10 +4083,10 @@ export const PAGINATION_SELECTORS = Object.freeze([
+  * radius alias it reads.
+  *
+  * @remarks
+- * `name` is the class the row declares on, so the base row names the family class itself: the
+- * release declares the resting geometry there and each size class redeclares those same lengths
+- * over it. The pixels are the resolved readings at the published factors, and the alias is
+- * the compatibility variable the radius reads, which is what separates a size that redeclared the
++ * The `name` field is the class the row declares on, so the base row names the family class itself:
++ * the release declares the resting geometry there and each size class redeclares those same lengths
++ * over it. The pixels are the resolved readings at the published factors, and the alias is the
++ * compatibility variable the radius reads, which is what separates a size that redeclared the
+  * radius from one that inherited it.
+  */
+ export const PAGINATION_SIZE_CASES = Object.freeze([
+@@ -4123,8 +4123,8 @@ export const PAGINATION_SIZE_CASES = Object.freeze([
+  * The stacking order decides whose chrome paints over a shared edge: a hovered link lifts over the
+  * neighbour whose border it shares, and a focused or active one lifts over a hovered one. Focus and
+  * active hold the same value, so where they meet the later sibling paints over the earlier one's
+- * chrome. `stack` is undefined where the state declares no
+- * position, which the disabled state does, and a resolved reading of `auto` is what answers for it.
++ * chrome. The `stack` field is undefined where the state declares no position, which the disabled
++ * state does, and a resolved reading of the `auto` value is what answers for it.
+  */
+ export const PAGINATION_STATE_CASES = Object.freeze([
+ 	Object.freeze({
+@@ -4690,9 +4690,10 @@ export interface FormRangeCase {
+  * custom properties each of its declarations reads.
+  *
+  * @remarks
+- * The `engine` field is the axis the range family varies on: a selector naming one engine's pseudo-element is
+- * discarded whole by the other, so Bootstrap writes the thumb and the track out once per engine and
+- * this key ships both halves. `undefined` names a selector no engine prefix appears in.
++ * The `engine` field is the axis the range family varies on: a selector naming one engine's
++ * pseudo-element is discarded whole by the other, so Bootstrap writes the thumb and the track out
++ * once per engine and this key ships both halves. An `undefined` value in that field names a
++ * selector no engine prefix appears in.
+  *
+  * The consequence for a proof is what this table exists to carry. Chromium parses the WebKit
+  * selectors and keeps them in the CSSOM, so the `findRule` helper reaches those rules; it discards
+@@ -5223,9 +5224,6 @@ export const CLOSE_SELECTORS = Object.freeze([
+ 	'.modal-header .btn-close',
+ ])
+ 
+-/** Lists the official `.btn-close` combinators the overlay components still owe. */
+-export const CLOSE_DEFERRED: readonly string[] = Object.freeze([])
+-
+ /**
+  * Pins each close-control state against the recorded variable carrying its opacity.
+  *
+@@ -5977,12 +5975,12 @@ export const FORM_CHECK_SELECTORS = Object.freeze([
+  * pinning the string is what makes a retinted, re-encoded, or swapped glyph visible: the resolved
+  * `background-image` reading reports the URI byte for byte inside its own `url()` wrapper.
+  *
+- * `drive` names the state a proof puts the control in after mounting it, because neither state is
+- * one the markup can declare: `indeterminate` is a property with no attribute, and `focus` is what
+- * the control holds rather than what it carries. `undefined` names a control whose markup already
+- * reaches the site. `mode` names the mode island the control is mounted in: the resting knob is the
+- * one glyph the release repaints by mode, and its dark site is recorded under the `theme` key
+- * rather than under `form-check`.
++ * The `drive` field names the state a proof puts the control in after mounting it, because neither
++ * state is one the markup can declare: the `indeterminate` state is a property with no attribute,
++ * and the `focus` state is what the control holds rather than what it carries. An `undefined` value
++ * names a control whose markup already reaches the site. The `mode` field names the mode island the
++ * control is mounted in: the resting knob is the one glyph the release repaints by mode, and its
++ * dark site is recorded under the `theme` key rather than under the `form-check` key.
+  *
+  * The rows are held against the release's own declarations in `tests/setupStyles.test.ts`, so a
+  * glyph that drifts from the pinned inventory reddens there rather than in the browser proof that
+@@ -6219,10 +6217,10 @@ export const INPUT_GROUP_CASES: readonly InputGroupCase[] = Object.freeze([
+  * resolve to.
+  *
+  * @remarks
+- * `size` is the suffix the group's class carries. `block` and `inline` are the padding each child
+- * reads on the two axes, `font` its type size, and `radius` the corner it keeps on the group's outer
+- * edge, all in pixels at the published factors. The release writes the large size first, and the
+- * table keeps that order.
++ * The `size` field is the suffix the group's class carries. The `block` and `inline` fields are the
++ * padding each child reads on the two axes, the `font` field is its type size, and the `radius`
++ * field is the corner it keeps on the group's outer edge, all in pixels at the published factors.
++ * The release writes the large size first, and the table keeps that order.
+  */
+ export const INPUT_GROUP_SIZE_CASES = Object.freeze([
+ 	Object.freeze({ size: 'lg', block: 8, inline: 16, font: 20, radius: 8 }),
+@@ -6233,12 +6231,13 @@ export const INPUT_GROUP_SIZE_CASES = Object.freeze([
+  * Pins each floating wrapper position in a group against the corners the field inside it keeps.
+  *
+  * @remarks
+- * `group` is the group's class list and `markup` its children. `corners` lists the field's corners
+- * clockwise from the top left, where `1` is the radius the same field carries outside a group and `0`
+- * a squared corner. A leading wrapper squares its trailing pair and a trailing one its leading pair;
+- * a group reporting validation counts one child further from the end, so a wrapper followed by its
+- * feedback alone keeps all four. Every row holds one wrapper, so the fields a mounted table renders
+- * pair with the rows in order.
++ * The `group` field is the group's class list and the `markup` field its children. The `corners`
++ * field lists the field's corners clockwise from the top left, where the value `1` is the radius
++ * the same field carries outside a group and the value `0` a squared corner. A leading wrapper
++ * squares its trailing pair and a trailing one its leading pair; a group reporting validation
++ * counts one child further from the end, so a wrapper followed by its feedback alone keeps all
++ * four. Every row holds one wrapper, so the fields a mounted table renders pair with the rows in
++ * order.
+  */
+ export const INPUT_GROUP_FLOATING_CASES = Object.freeze([
+ 	Object.freeze({
+@@ -6320,6 +6319,21 @@ export const INPUT_GROUP_TOGGLE_CASES = Object.freeze([
+ 	}),
+ ])
+ 
++/**
++ * Pins each addon paint the color mode moves against the compatibility variable that carries it.
++ *
++ * @remarks
++ * The `reads` field is the property read on the `.input-group-text` addon, and the `source` field
++ * is the variable the release names for it, which the dark mode retunes. A case reads each property
++ * against its variable in dark and against the same property in light, so a rule writing a literal
++ * reddens on the first reading and a variable no mode retunes on the second.
++ */
++export const INPUT_GROUP_MODE_CASES = Object.freeze([
++	Object.freeze({ reads: 'color', source: '--bs-body-color' }),
++	Object.freeze({ reads: 'background-color', source: '--bs-tertiary-bg' }),
++	Object.freeze({ reads: 'border-top-color', source: '--bs-border-color' }),
++])
++
+ /**
+  * Supplies the children the layout, overlap, corner, and stacking proofs share: a text addon,
+  * a text control, and a button, in the order that gives each one a different pair of neighbours.
+@@ -6353,12 +6367,12 @@ export interface FormFloatingCase {
+  * under this key open on the class of the family that writes them, and this table carries none of
+  * them.
+  *
+- * `rendered` is the ladder a proof takes. True names a rule whose removal a resolved reading on a
+- * mounted element reports on its own. False names a rule no such reading separates. The installed
+- * browser exports offer no way to put a control into the autofilled state, so the autofill rules
+- * take a false row, and so does the class-qualified disabled label rule, which paints what the bare
+- * disabled rule already paints. A false row is read as the declaration the cascade authors, which
+- * is compiled-contract evidence rather than a rendered proof.
++ * The `rendered` field is the ladder a proof takes. True names a rule whose removal a resolved
++ * reading on a mounted element reports on its own. False names a rule no such reading separates.
++ * The installed browser exports offer no way to put a control into the autofilled state, so the
++ * autofill rules take a false row, and so does the class-qualified disabled label rule, which
++ * paints what the bare disabled rule already paints. A false row is read as the declaration the
++ * cascade authors, which is compiled-contract evidence rather than a rendered proof.
+  *
+  * The `reads` map is keyed by property, across every rule the selector heads outside a condition. A
+  * property the map leaves out is the claim that its declaration writes no `var()`, so an empty map
+@@ -6584,13 +6598,14 @@ export const FORM_FLOATING_MARKUP =
+  * value against the selector the official inventory records it under.
+  *
+  * @remarks
+- * `recorded` is the release's own text for that declaration, and `tests/setupStyles.test.ts` holds
+- * every row to the pinned inventory, so no row can carry a value the release does not write. The
+- * browser proof in `tests/src/styles/components/form-select.test.ts` reads each row on the element
+- * the selector matches and compares the resolved value with the value the same engine resolves for
+- * `recorded` on a reference element beside it. A rule writing a different value, or one written
+- * through a token that no longer resolves to the release's value, therefore reddens the row naming
+- * it, and no row carries a pixel figure worked out by hand.
++ * The `recorded` field is the release's own text for that declaration, and the
++ * `tests/setupStyles.test.ts` file holds every row to the pinned inventory, so no row can carry a
++ * value the release does not write. The browser proof in
++ * `tests/src/styles/components/form-select.test.ts` reads each row on the element the selector
++ * matches and compares the resolved value with the value the same engine resolves for the
++ * `recorded` field on a reference element beside it. A rule writing a different value, or one
++ * written through a token that no longer resolves to the release's value, therefore reddens the row
++ * naming it, and no row carries a pixel figure worked out by hand.
+  *
+  * The table carries no row for the `background-image` declaration on `.form-select`, for the
+  * `transition` declaration or the prefixed `appearance` aliases the ledger records as departures, or
+@@ -6918,12 +6933,12 @@ export interface FormControlCase {
+  * The `resolved` rung is a reading of the computed style of the named control, or of its named part
+  * where Chromium resolves the part's own style. The `declared` rung is the rule's declaration read
+  * out of the CSSOM, for a declaration whose computed value this engine does not expose: a part
+- * whose computed style Chromium answers with the control's own, and the file control's `overflow`,
+- * which the user agent already resolves to `clip` on every text and file control. The `compiled`
+- * rung is the declaration read out of the compiled cascade in Node, for a Gecko part whose selector
+- * Chromium discards at parse time. The `excluded` rung is the prefixed file-button alias the
+- * guide's deferral table withholds, which the cascade must not write at all. The `focus` state is
+- * driven through keyboard traversal and the `hover` state through the pointer.
++ * whose computed style Chromium answers with the control's own, and the file control's `overflow`
++ * property, which the user agent already resolves to `clip` on every text and file control. The
++ * `compiled` rung is the declaration read out of the compiled cascade in Node, for a Gecko part
++ * whose selector Chromium discards at parse time. The `excluded` rung is the prefixed file-button
++ * alias the guide's deferral table withholds, which the cascade must not write at all. The `focus`
++ * state is driven through keyboard traversal and the `hover` state through the pointer.
+  *
+  * The `values` map holds each recorded declaration as the release writes it, converted to what
+  * that reading returns at the root size and the density factor of 1: a pixel length for a
+@@ -7707,9 +7722,10 @@ export const NAV_MARKUP =
+  * there, and the length it resolves to at the published factors.
+  *
+  * @remarks
+- * `scope` is the class the release declares the property on, and `target` addresses the element in
+- * `NAV_MARKUP` whose `reads` property consumes it. The pixels are the release's own lengths, so a
+- * row whose property stopped driving its target reports the resting length it fell back to.
++ * The `scope` field is the class the release declares the property on, and the `target` field
++ * addresses the element in the `NAV_MARKUP` markup that consumes it through the property the
++ * `reads` field names. The `pixels` field holds the release's own length, so a row whose property
++ * stopped driving its target reports the resting length it fell back to.
+  */
+ export const NAV_LENGTH_CASES = Object.freeze([
+ 	Object.freeze({
+@@ -7828,10 +7844,10 @@ export const DROPDOWN_DARK_CASES = Object.freeze([
+  * the token whose value the release gives it.
+  *
+  * @remarks
+- * `source` is the compatibility variable the release names, or the palette token carrying the
+- * literal the release writes, so a resting reading is compared with a second declaration that could
+- * disagree with it rather than with the property itself. The hover slots are read under a real
+- * pointer by their own case, because no resting element paints them.
++ * The `source` field is the compatibility variable the release names, or the palette token carrying
++ * the literal the release writes, so a resting reading is compared with a second declaration that
++ * could disagree with it rather than with the property itself. The hover slots are read under a
++ * real pointer by their own case, because no resting element paints them.
+  */
+ export const NAV_COLOR_CASES = Object.freeze([
+ 	Object.freeze({
+@@ -7899,6 +7915,22 @@ export const NAV_COLOR_CASES = Object.freeze([
+ 	}),
+ ])
+ 
++/**
++ * Pins each nav paint the color mode moves: the element the `target` field addresses in the
++ * `NAV_MARKUP` markup, and the property the `reads` field names there.
++ *
++ * @remarks
++ * Each row is a row of the `NAV_COLOR_CASES` table whose `source` field names a variable the dark
++ * mode retunes. The pills are absent, because their active fill and text read palette tokens, which
++ * no mode retunes.
++ */
++export const NAV_MODE_CASES = Object.freeze([
++	Object.freeze({ target: 'nav.nav > .nav-link:not(.disabled)', reads: 'color' }),
++	Object.freeze({ target: '.nav-tabs .nav-link.active', reads: 'background-color' }),
++	Object.freeze({ target: '.nav-tabs .nav-link.active', reads: 'color' }),
++	Object.freeze({ target: '.nav-tabs', reads: 'border-bottom-color' }),
++])
++
+ /**
+  * Pairs each nav row class with the markup it lays out and whether its items share the row equally.
+  *
+diff --git a/tests/src/styles/components/input-group.test.ts b/tests/src/styles/components/input-group.test.ts
+index baa01cd..a846708 100644
+--- a/tests/src/styles/components/input-group.test.ts
++++ b/tests/src/styles/components/input-group.test.ts
+@@ -17,6 +17,7 @@ import {
+ 	BUTTON_GROUP_CORNERS,
+ 	INPUT_GROUP_FLOATING_CASES,
+ 	INPUT_GROUP_MARKUP,
++	INPUT_GROUP_MODE_CASES,
+ 	INPUT_GROUP_SIZE_CASES,
+ 	INPUT_GROUP_TOGGLE_CASES,
+ } from '../../../setupStyles.js'
+@@ -401,13 +402,9 @@ describe('input group addon', () => {
+ 			requireValue(element, 'No addon'),
+ 		)
+ 		if (light === undefined || dark === undefined) throw new Error('No addon pair')
+-		for (const [property, token] of [
+-			['color', '--bs-body-color'],
+-			['background-color', '--bs-tertiary-bg'],
+-			['border-top-color', '--bs-border-color'],
+-		] as const) {
+-			expect(matchesColor(readStyle(dark, property), readToken(dark, token))).toBe(true)
+-			expect(matchesColor(readStyle(dark, property), readStyle(light, property))).toBe(false)
++		for (const { reads, source } of INPUT_GROUP_MODE_CASES) {
++			expect(matchesColor(readStyle(dark, reads), readToken(dark, source))).toBe(true)
++			expect(matchesColor(readStyle(dark, reads), readStyle(light, reads))).toBe(false)
+ 		}
+ 	})
+ })
+diff --git a/tests/src/styles/components/nav.test.ts b/tests/src/styles/components/nav.test.ts
+index ddb58be..c4118f2 100644
+--- a/tests/src/styles/components/nav.test.ts
++++ b/tests/src/styles/components/nav.test.ts
+@@ -20,6 +20,7 @@ import {
+ 	NAV_COLOR_CASES,
+ 	NAV_LENGTH_CASES,
+ 	NAV_MARKUP,
++	NAV_MODE_CASES,
+ 	NAV_ROW_CASES,
+ 	NAV_SELECTORS,
+ 	REDUCED_MOTION,
+@@ -472,18 +473,13 @@ describe('nav classes', () => {
+ 	it('reads one link and tab paint in light and another in dark', () => {
+ 		const light = scene.mount(`<div data-bs-theme="light">${NAV_MARKUP}</div>`)
+ 		const dark = scene.mount(`<div data-bs-theme="dark">${NAV_MARKUP}</div>`)
+-		for (const [selector, property] of [
+-			['a[href="#one"]', 'color'],
+-			['.nav-tabs .nav-link.active', 'background-color'],
+-			['.nav-tabs .nav-link.active', 'color'],
+-			['.nav-tabs', 'border-bottom-color'],
+-		] as const) {
+-			const lit = requireValue(light.querySelector(selector), `No light ${selector}`)
+-			const dim = requireValue(dark.querySelector(selector), `No dark ${selector}`)
+-			expect({ selector, property, value: readStyle(lit, property) }).not.toEqual({
+-				selector,
+-				property,
+-				value: readStyle(dim, property),
++		for (const { target, reads } of NAV_MODE_CASES) {
++			const lit = requireValue(light.querySelector(target), `No light ${target}`)
++			const dim = requireValue(dark.querySelector(target), `No dark ${target}`)
++			expect({ target, reads, value: readStyle(lit, reads) }).not.toEqual({
++				target,
++				reads,
++				value: readStyle(dim, reads),
+ 			})
+ 		}
+ 	})
+diff --git a/tests/src/styles/fixtures/mixins.scss b/tests/src/styles/fixtures/mixins.scss
+index 64f6cfb..30b8f34 100644
+--- a/tests/src/styles/fixtures/mixins.scss
++++ b/tests/src/styles/fixtures/mixins.scss
+@@ -48,6 +48,15 @@
+ 	@include reset-text;
+ }
+ 
++// Writes the size the `heading-size` function returns for each heading level onto a class named for
++// that level's tag, so the proof reads the value the function returned rather than a shipped
++// caller's rule.
++@for $level from 1 through 6 {
++	.vn-fixture-heading-h#{$level} {
++		font-size: heading-size($level);
++	}
++}
++
+ // Compiles both breakpoint mixins over every published name, so the proof reads the condition the
+ // mixin emitted and the declaration it gated rather than the Sass source that authored them. The
+ // names come from `breakpoints()` itself, so a name added to the ramp arrives here with it.
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index 1907611..e055de1 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -18,6 +18,7 @@ import { collectMediaConditions, scene, visitBreakpoint } from '../../setupBrows
+ import {
+ 	BREAKPOINT_CASES,
+ 	TIP_RESET_CASES,
++	TYPE_HEADING_TOKEN_CASES,
+ 	extractShadowLayers,
+ 	parseMediaWidth,
+ } from '../../setupStyles.js'
+@@ -209,6 +210,19 @@ describe('declaration mixins', () => {
+ 	})
+ })
+ 
++describe('value functions', () => {
++	it('returns the size token each heading level names, from the largest level down', () => {
++		// The heading token table records each tag's token by hand, so a function reading a level off
++		// by one, or reversing the ramp, names a token the table does not and reddens this comparison.
++		expect(
++			TYPE_HEADING_TOKEN_CASES.map(({ twin }) => [
++				twin,
++				findRule(`.vn-fixture-heading-${twin}`)?.style.getPropertyValue('font-size'),
++			]),
++		).toEqual(TYPE_HEADING_TOKEN_CASES.map(({ twin, token }) => [twin, `var(${token})`]))
++	})
++})
++
+ describe('breakpoint mixins', () => {
+ 	// The registry's own key order is the published ramp, so the proof walks the names Veneer
+ 	// declares rather than a second list that could fall behind them.

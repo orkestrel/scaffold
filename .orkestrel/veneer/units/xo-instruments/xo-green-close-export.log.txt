@@ -1,0 +1,14 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer-xo
+
+················································································································································
+
+ Test Files  1 passed (1)
+      Tests  144 passed (144)
+   Start at  11:46:44
+   Duration  11.81s (transform 1.84s, setup 143ms, import 3.06s, tests 8.41s, environment 0ms)
+
