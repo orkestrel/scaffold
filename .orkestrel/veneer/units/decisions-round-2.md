@@ -536,3 +536,16 @@ in the Veneer root (the prompt the user pastes into the engine session).
 ## D45 — Proofs assert what the browser computes, never how one build serializes it (2026-09-23)
 
 The engine session's host runs Chromium 153, where a `background-position` written as `right <length>` serializes as `calc(100% - <length>)`, a one-value `background-size` serializes as `<length> auto`, and the `select` and `table` user-agent defaults differ from Chromium 141's (`engine/units/host-chromium-153-reading.md`). Ruling: a style proof reads the resolved geometry (the mark's rendered offset from the control's edges, the mark's rendered width and height) or accepts every serialization of the same computed value, never one build's string; the preflight proof compares each measured move by tag, property, and the value Tailwind's preflight sets, and asserts the standalone value differs from it, so the guide's preflight table keeps its standalone column as the Chromium 141 reading for the reader and the proof no longer equates a user-agent default with it. The guide names the build it measured on and states this rule. Carrier: BROWSER-SERIALIZATION (`bs`), a `builder` unit on Sonnet from `97ac9ab`, verified by `checker` and read green by the engine session on its host at its next landing.
+
+## D46 — A shared technique is a pattern, and a shared external measure is a coincidence (2026-09-24)
+
+UTIL-FLOW's `.stretched-link::after` writes `position: absolute` with zero on every edge, the block
+`.card-img-overlay` writes in `src/styles/components/_card.scss`, and `findDuplication` reports the
+overlap. The styles rule keeps inline a block two partials share because each records an external
+value, and moves to `_mixins.scss` a pattern two partials share. An absolutely positioned box with
+zero on every edge is one technique, covering the containing block, and not a recorded measure, so
+it is a pattern: both rules include one `cover-block` mixin, with its fixture case in
+`tests/src/styles/mixins.test.ts` (UTIL-FLOW's `ufl-routeb.patch`, the card partial granted to that
+change alone as a shared report-only file). A block whose shared declarations each carry a measure
+the release records (a length, a colour, a duration) stays inline. The UTIL-FLOW audit rules on this
+decision with the rest of the unit.

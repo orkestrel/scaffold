@@ -1,0 +1,5 @@
+load at start: 7.75 16.00 18.62 14/454 30017
+== setup exit 0 :: npm run test:setup
+ Test Files  4 passed (4)
+      Tests  267 passed (267)
+load at end: 9.41 15.74 18.47 3/345 30731

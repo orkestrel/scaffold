@@ -1,0 +1,11 @@
+oxfmt exit=0 :: All matched files use the correct format. 
+oxlint exit=0 :: 
+build exit=0 :: 
+check exit=0 :: 
+styles exit=0 ::  Test Files  3 passed (3)       Tests  57 passed (57) 
+section exit=0 ::  Test Files  1 passed (1)       Tests  6 passed (6) 
+showcase exit=0 ::  Test Files  2 passed (2)       Tests  5 passed (5) 
+conformance exit=0 ::  Test Files  1 passed (1)       Tests  22 passed (22) 
+guides exit=0 :: [2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m [2m      Tests [22m [1m[32m19 passed[39m[22m[90m (19)[39m 
+policy exit=0 ::  Test Files  1 passed (1)       Tests  109 passed | 1 skipped (110) 
+setupstyles exit=0 ::  Test Files  2 passed (2)       Tests  227 passed (227) 

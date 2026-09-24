@@ -81,6 +81,10 @@ patches applied), record them as the copy's readings, and delete `tmp/probe/` be
 files are off-limits, and every shared file they patch stays as the base has it in your patch. The sibling UTIL wave units run in their own
 worktrees on disjoint files; every shared file is report-only for every one of them; the
 exclusion line and its copies integrate as a set union (family ruling 7).
+The mid-campaign notes `/home/user/scaffold/.orkestrel/veneer/units/w2-w3-note-1.md` and
+`w2-w3-note-2.md` beside it bind this unit: apply every rule in each. Write every instrument,
+extract, draft, and log under this worktree's `tmp/units/` or `tmp/probe/` with the `usp` prefix,
+and nothing into the session scratchpad.
 
 ## Unknowns
 
@@ -99,7 +103,8 @@ exclusion line and its copies integrate as a set union (family ruling 7).
 **Shared (report-only).** `src/styles/index.scss` (the `@use` lines at the release's map
 position in the utilities block, and a components-layer helper at its `_helpers.scss` position,
 ruling 4), `src/styles/_mixins.scss` (a needed change is a patch with its fixture case; UTIL-SPACER
-owns the file), `tests/setup.ts` and `tests/setup.test.ts` (the `CaptureSubject` members and the
+owns the file), `tests/src/styles/fixtures/mixins.scss` and `tests/src/styles/mixins.test.ts` (the
+fixture class and the case a mixin change carries), `tests/setup.ts` and `tests/setup.test.ts` (the `CaptureSubject` members and the
 resting and driven rows appended at the end), `tests/setupStyles.ts` and `tests/setupStyles.test.ts`
 (any case table), `tests/conformance.test.ts` (the `listed` literal and the order case's expected
 list), `tests/setupServer.test.ts` (the compatibility component set), `app/browser/constants.ts`

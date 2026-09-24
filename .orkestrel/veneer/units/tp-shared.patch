@@ -1,0 +1,1173 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index 3038781..55d9294 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -31,11 +31,13 @@ import { NavSection } from './sections/NavSection.js'
+ import { NavbarSection } from './sections/NavbarSection.js'
+ import { PaginationSection } from './sections/PaginationSection.js'
+ import { PlaceholderSection } from './sections/PlaceholderSection.js'
++import { PopoverSection } from './sections/PopoverSection.js'
+ import { PositionSection } from './sections/PositionSection.js'
+ import { ProgressSection } from './sections/ProgressSection.js'
+ import { SizingSection } from './sections/SizingSection.js'
+ import { SpinnerSection } from './sections/SpinnerSection.js'
+ import { TableSection } from './sections/TableSection.js'
++import { TooltipSection } from './sections/TooltipSection.js'
+ import { TypeSection } from './sections/TypeSection.js'
+ import { ValidationSection } from './sections/ValidationSection.js'
+ import { VisibilitySection } from './sections/VisibilitySection.js'
+@@ -132,6 +134,8 @@ export class Showcase implements ShowcaseInterface {
+ 			new AlertSection(this.#main),
+ 			new CarouselSection(this.#main),
+ 			new AccordionSection(this.#main),
++			new TooltipSection(this.#main),
++			new PopoverSection(this.#main),
+ 			new DisplaySection(this.#main),
+ 			new FlexSection(this.#main),
+ 			new PositionSection(this.#main),
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 2594d55..8383547 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -2156,6 +2156,105 @@ export const ACCORDION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	}),
+ ])
+ 
++/** Holds the Tooltip section's visible copy and accessible name. */
++export const TOOLTIP_COPY = Object.freeze({
++	region: 'Tooltip',
++	paragraph:
++		'Compare the tooltip at each placement: its inverted fill, the reset text inside it, and the arrow each placement turns toward the host.',
++})
++
++/**
++ * Lists the tooltip specimens the section renders, one per explicit placement, in render order.
++ *
++ * @remarks
++ * Each tip sits alone inside the shell's `viewport` frame, with no trigger beside it. The engine
++ * writes a tip's placement on the element, so each specimen stands in for it with the shipped
++ * `position-absolute`, `top-50`, `start-50`, and `translate-middle` utilities on the tip and the
++ * `translate-middle-x` or `translate-middle-y` utility on its arrow. Each tip carries the `show`
++ * class, because a tip without it rests transparent, the release's `tooltip` role, and an `id`
++ * attribute a trigger's `aria-describedby` attribute would name; no specimen claims that wiring.
++ * Each specimen is named for the physical side of its host the tip sits on, because the
++ * `bs-tooltip-end` and `bs-tooltip-start` classes are physical.
++ *
++ * No specimen renders a tip without the `show` class, or the automatic placement class and the
++ * `data-popper-placement` attribute the engine writes. A transparent tip paints nothing, and each
++ * automatic placement resolves the geometry of the explicit placement it extends. The
++ * `tests/src/styles/components/tooltip.test.ts` file reads each of them on its own elements.
++ */
++export const TOOLTIP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Top tooltip',
++		markup:
++			'<div class="viewport"><div class="tooltip bs-tooltip-top show position-absolute top-50 start-50 translate-middle" role="tooltip" id="top-tooltip"><div class="tooltip-arrow position-absolute start-50 translate-middle-x"></div><div class="tooltip-inner">Tooltip on top</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Right tooltip',
++		markup:
++			'<div class="viewport"><div class="tooltip bs-tooltip-end show position-absolute top-50 start-50 translate-middle" role="tooltip" id="right-tooltip"><div class="tooltip-arrow position-absolute top-50 translate-middle-y"></div><div class="tooltip-inner">Tooltip on right</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Bottom tooltip',
++		markup:
++			'<div class="viewport"><div class="tooltip bs-tooltip-bottom show position-absolute top-50 start-50 translate-middle" role="tooltip" id="bottom-tooltip"><div class="tooltip-arrow position-absolute start-50 translate-middle-x"></div><div class="tooltip-inner">Tooltip on bottom</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Left tooltip',
++		markup:
++			'<div class="viewport"><div class="tooltip bs-tooltip-start show position-absolute top-50 start-50 translate-middle" role="tooltip" id="left-tooltip"><div class="tooltip-arrow position-absolute top-50 translate-middle-y"></div><div class="tooltip-inner">Tooltip on left</div></div></div>',
++	}),
++])
++
++/** Holds the Popover section's visible copy and accessible name. */
++export const POPOVER_COPY = Object.freeze({
++	region: 'Popover',
++	paragraph:
++		'Compare the popover at each placement: its header over its body, the bordered arrow each placement turns toward the host, and the strip of header fill a popover below its host lays under that arrow.',
++})
++
++/**
++ * Lists the popover specimens the section renders, one per explicit placement, in render order.
++ *
++ * @remarks
++ * Each popover sits alone inside the shell's `viewport` frame, with no trigger beside it. The engine
++ * writes a popover's placement on the element, so each specimen stands in for it with the shipped
++ * `position-absolute`, `top-50`, `start-50`, and `translate-middle` utilities on the popover and the
++ * `translate-middle-x` or `translate-middle-y` utility on its arrow. Each popover carries the
++ * release's `tooltip` role, which its template writes, and an `id` attribute a trigger's
++ * `aria-describedby` attribute would name; no specimen claims that wiring. Each header is an `h2`
++ * element, the level under the page's `h1` element, because a region carries no heading of its own.
++ * Each specimen is named for the physical side of its host the popover sits on, because the
++ * `bs-popover-end` and `bs-popover-start` classes are physical.
++ *
++ * No specimen carries the `fade` class or the `show` class, which no popover rule reads, or the
++ * automatic placement class and the `data-popper-placement` attribute the engine writes, because
++ * each automatic placement resolves the geometry of the explicit placement it extends. No specimen
++ * renders an empty header either: the release's template removes an empty header before the
++ * popover renders. The `tests/src/styles/components/popover.test.ts` file reads each of them on its
++ * own elements.
++ */
++export const POPOVER_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Top popover',
++		markup:
++			'<div class="viewport"><div class="popover bs-popover-top position-absolute top-50 start-50 translate-middle" role="tooltip" id="top-popover"><div class="popover-arrow position-absolute start-50 translate-middle-x"></div><h2 class="popover-header">Popover on top</h2><div class="popover-body">Its arrow points down at the host below it.</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Right popover',
++		markup:
++			'<div class="viewport"><div class="popover bs-popover-end position-absolute top-50 start-50 translate-middle" role="tooltip" id="right-popover"><div class="popover-arrow position-absolute top-50 translate-middle-y"></div><h2 class="popover-header">Popover on right</h2><div class="popover-body">Its arrow points left at the host beside it.</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Bottom popover',
++		markup:
++			'<div class="viewport"><div class="popover bs-popover-bottom position-absolute top-50 start-50 translate-middle" role="tooltip" id="bottom-popover"><div class="popover-arrow position-absolute start-50 translate-middle-x"></div><h2 class="popover-header">Popover on bottom</h2><div class="popover-body">Its arrow points up at the host above it.</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Left popover',
++		markup:
++			'<div class="viewport"><div class="popover bs-popover-start position-absolute top-50 start-50 translate-middle" role="tooltip" id="left-popover"><div class="popover-arrow position-absolute top-50 translate-middle-y"></div><h2 class="popover-header">Popover on left</h2><div class="popover-body">Its arrow points right at the host beside it.</div></div></div>',
++	}),
++])
++
+ /** Holds the Display section's visible copy and accessible name. */
+ export const DISPLAY_COPY = Object.freeze({
+ 	region: 'Display',
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 474aa0a..12e0b5f 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -33,6 +33,8 @@ export * from './sections/NavSection.js'
+ export * from './sections/AlertSection.js'
+ export * from './sections/CarouselSection.js'
+ export * from './sections/AccordionSection.js'
++export * from './sections/TooltipSection.js'
++export * from './sections/PopoverSection.js'
+ export * from './sections/DisplaySection.js'
+ export * from './sections/FlexSection.js'
+ export * from './sections/PositionSection.js'
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 1395a59..2fdde9a 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -680,6 +680,8 @@ The following files carry the axis.
+ | `src/styles/components/_badge.scss`          | The badge box, its empty collapse, and its offset inside a button in the components layer.                                                                                                                                                         |
+ | `src/styles/components/_alert.scss`          | The alert box, its heading and link, the dismissible room and the close control it places, and the contextual roles in the components layer.                                                                                                       |
+ | `src/styles/components/_close.scss`          | The close control, its states, and its opt-in inversion in the components layer.                                                                                                                                                                   |
++| `src/styles/components/_tooltip.scss`        | The tooltip, its shown state, its arrow at each placement, and its inner box in the components layer.                                                                                                                                              |
++| `src/styles/components/_popover.scss`        | The popover box, its bordered arrow at each placement, its header with its strip and its empty form, and its body in the components layer.                                                                                                         |
+ | `src/styles/components/_carousel.scss`       | The carousel track, its slides and their advancing and fading states, the controls and their marks, the indicators, the caption, and the dark retune in the components layer.                                                                      |
+ | `src/styles/components/_progress.scss`       | The progress track, its stacked form, and the bar families in the components layer.                                                                                                                                                                |
+ | `src/styles/components/_spinner.scss`        | The border and grow spinners, their small twins, and their keyframes in the components layer.                                                                                                                                                      |
+@@ -2524,6 +2526,139 @@ refused through the `disabled` class, and inverted over a dark surface.
+ 
+ The `tests/src/styles/components/close.test.ts` proof reads each resolved treatment in the browser.
+ 
++### Tooltip classes
++
++The tooltip key ships whole: the tip and its shown state, the arrow at each explicit placement and at
++each automatic placement the engine writes, and the inner box.
++
++The `.tooltip` rule declares every slot it reads on itself, so a consumer retunes a tip through a
++rule of their own that selects it. The tip stacks on the hint rung: the `.tooltip` rule applies its
++`z-index` property from the `--bs-tooltip-zindex` property, which reads the `--vn-stack-hint` token,
++so a scope retuning that token moves every tip inside it, and the hint rung sits above the popover
++rung. The `.tooltip-inner` rule's inset reads Veneer's density scale, and the `.tooltip` rule's text
++size reads the `--vn-size-2` token of the type scale. The inner box's fill reads the
++`--bs-emphasis-color` alias and its text reads the `--bs-body-bg` alias, so a tip inverts the surface
++around it in either color mode, and its radius reads the `--bs-border-radius` alias. The
++`reset-text` mixin resets the text a tip inherits to the body face, weight, and rhythm, aligned to
++the start of its line and wrapping as ordinary text does, and the popover writes the same reset. The
++`--bs-tooltip-margin` property is declared empty, as the release declares it, so the tip's margin
++resolves to none. A tip rests transparent, and the `show` class raises it to the value of the
++`--bs-tooltip-opacity` property.
++
++Each explicit placement class, the `bs-tooltip-top`, `bs-tooltip-end`, `bs-tooltip-bottom`, or
++`bs-tooltip-start` class, names the side of its host the tip sits on. The arrow hangs outside the
++tip's edge that faces the host, and its triangle paints the tip's fill on the side toward the host.
++The placements are physical, as the release writes them: a tip carrying the `bs-tooltip-end` class
++sits on the right of its host. The arrow's `0.8rem` width and `0.4rem` depth are Bootstrap's
++literals, because no space step resolves to either. The engine writes the `bs-tooltip-auto` class
++with a `data-popper-placement` attribute instead of an explicit class, and each automatic placement
++extends the explicit class of the side its attribute names, so the two resolve the same geometry.
++
++The tooltip classes are set in markup. The release's Tooltip plugin, which builds a tip, places it,
++and moves it between rest and the `show` class, is behavior the engine owns, and § Compatibility
++records it. The engine writes a tip's position and offset on the element, so the showcase stands in
++for them with the shipped `position-absolute`, `top-50`, `start-50`, and `translate-middle`
++utilities on each tip and the `translate-middle-x` or `translate-middle-y` utility on its arrow.
++
++These are the key's recorded departures.
++
++- **The stacking level reads the hint rung.** The release writes the `1080` value for the
++  `--bs-tooltip-zindex` property; Veneer writes the `var(--vn-stack-hint)` value, which resolves to
++  the same level.
++- **The inset and the text size read Veneer's scales.** The release writes the `0.5rem` and
++  `0.25rem` lengths for the inset and the `0.875rem` length for the text; Veneer writes the
++  `--vn-space-4`, `--vn-space-2`, and `--vn-size-2` tokens, which resolve to those lengths, so the
++  `--vn-factor-density` token moves the inset.
++- **The reset reads the body weight and rhythm, and its fallback alignment is absent.** The release
++  writes the `font-weight: 400` declaration and the `line-height: 1.5` declaration; Veneer writes the
++  `--vn-weight-body` and `--vn-line-body` tokens, which resolve to the same values. The release
++  writes the `text-align: left` declaration ahead of the `text-align: start` declaration as a
++  fallback for engines without the `start` keyword; Veneer writes the `start` keyword alone, because
++  the managed Chromium and Edge receipts this cascade is proved on resolve it. The popover carries
++  the same departures from the same mixin.
++
++The showcase's Tooltip region renders a shown tip on each side of its host, each alone inside the
++shell's frame with no trigger, and each carrying the release's `tooltip` role and an `id` attribute
++a trigger's `aria-describedby` attribute would name; no specimen claims that wiring. The region
++renders no tip without the `show` class and no automatic placement, because the engine writes both:
++a tip without the class paints nothing, and an automatic placement resolves the geometry of the
++explicit placement it extends. The capture registry declines both frames, and the proof reads each
++of them.
++
++The `tests/src/styles/components/tooltip.test.ts` proof reads each resolved treatment in the
++browser: the written selectors, the hint rung and a wrapper retuning it, the transparent and the
++shown tip, the reset over an inherited treatment, the inner box's cap, inset, radius, and text size
++under the density, radius, and type retunes, each placement's arrow against its tip, each automatic
++placement against its explicit side, and the paint in light and inside a dark island.
++
++### Popover classes
++
++The popover key ships whole: the box, the arrow at each explicit placement and at each automatic
++placement the engine writes, the header with its strip under an upward arrow and its empty form,
++and the body.
++
++The `.popover` rule declares every slot it reads on itself. The box stacks on the popover rung: the
++`.popover` rule applies its `z-index` property from the `--bs-popover-zindex` property, which reads
++the `--vn-stack-popover` token, and that rung sits below the hint rung, so a tooltip paints over a
++popover. The header and body insets read Veneer's density scale, and the box and header text sizes
++read the `--vn-size-2` and `--vn-size-3` tokens of the type scale. The box paints the `--bs-body-bg`
++alias inside an edge of the `--bs-border-color-translucent` alias, and its radius reads the
++`--bs-border-radius-lg` alias. The header paints the `--bs-secondary-bg` alias and inherits the
++popover's own text color, and the body text reads the `--bs-body-color` alias, so a popover follows
++the color mode around it. The release declares the `--bs-popover-box-shadow` property and no release
++rule applies it, and Veneer does the same. The popover writes the tooltip's text reset through the
++same `reset-text` mixin. An empty header is removed from the flow, so a popover given no title shows
++its body alone.
++
++The arrow is two triangles in one box: the first paints the popover's edge color, and the second,
++one edge width further in, paints its fill, so the arrow carries the border around its fill. Each
++explicit placement class hangs the arrow outside the popover's edge that faces its host, past the
++border, and the placements are physical, as the tooltip's are. A popover below its host lays a strip
++of the header's fill, as wide as the arrow, along the top of the header where the arrow meets it.
++The arrow's `1rem` width and `0.5rem` depth are Bootstrap's literals, kept beside the tooltip's,
++because an arrow is geometry rather than spacing and does not follow the density factor. The engine
++writes the `bs-popover-auto` class with a `data-popper-placement` attribute instead of an explicit
++class, and each automatic placement extends the explicit class of the side its attribute names, the
++header strip included.
++
++The popover classes are set in markup. The release's Popover plugin builds on the Tooltip plugin and
++sets the `fade` class and the `show` class, which no popover rule reads; that behavior is the
++engine's, and § Compatibility records it. The engine writes a popover's position and offset on the
++element, so the showcase stands in for them with the shipped `position-absolute`, `top-50`,
++`start-50`, and `translate-middle` utilities on each popover and the `translate-middle-x` or
++`translate-middle-y` utility on its arrow.
++
++These are the key's recorded departures.
++
++- **The stacking level reads the popover rung.** The release writes the `1070` value for the
++  `--bs-popover-zindex` property; Veneer writes the `var(--vn-stack-popover)` value, which resolves
++  to the same level.
++- **The insets and the text sizes read Veneer's scales.** The release writes the `1rem` and `0.5rem`
++  lengths for the header inset, the `1rem` length for the body inset, the `0.875rem` length for the
++  box's text, and the `1rem` length for the header's; Veneer writes the `--vn-space-8`,
++  `--vn-space-4`, `--vn-size-2`, and `--vn-size-3` tokens, which resolve to those lengths, so the
++  `--vn-factor-density` token moves both insets.
++- **The reset departs as the tooltip's does.** § Tooltip classes gives the weight, rhythm, and
++  alignment departures the shared mixin writes.
++
++The showcase's Popover region renders a popover with a header and a body on each side of its host,
++each alone inside the shell's frame with no trigger, and each carrying the `tooltip` role the
++release's template writes and an `id` attribute a trigger's `aria-describedby` attribute would name;
++no specimen claims that wiring. Each header is an `h2` element, the level under the page's `h1`
++element. The offset the `start-50` utility writes leaves a popover half its frame's width to lay out
++in, so at the 390 viewport a popover wraps narrower than its `276px` cap. The region renders no
++automatic placement, for the reason § Tooltip classes states, and no `fade` class or `show` class.
++It renders no empty header either, because the release's template removes an empty header before the
++popover renders, so the rule that hides one guards markup the release's plugin never writes; the
++capture registry declines that frame, and the proof reads the rule.
++
++The `tests/src/styles/components/popover.test.ts` proof reads each resolved treatment in the browser:
++the written selectors, the popover rung below a tooltip and a wrapper retuning it, the reset over an
++inherited treatment, the box beside the engine's classes, the cap, edge, radii, insets, and text
++sizes under the density, radius, and type retunes, the header's inherited text, the empty header,
++each placement's two triangles against the box, each automatic placement against its explicit side,
++the header strip, and the paint in light and inside a dark island.
++
+ ### Carousel classes
+ 
+ The carousel key ships whole: the track and its slides, the incoming and outgoing slide states, the
+@@ -3304,7 +3439,7 @@ variables it answers, and a row whose dark mode differs writes the dark reading
+ | `--vn-stack-dropdown`, `-sticky`, `-fixed`               | `1000`, `1020`, `1030`                                                           | `bootstrap` — retained from `$zindex-dropdown`, `$zindex-sticky`, and `$zindex-fixed`                                                               | none                                                        |
+ | `--vn-stack-drawer-backdrop`, `-drawer-base`             | `1040`, `1045`                                                                   | `bootstrap` — retained from `$zindex-offcanvas-backdrop` and `$zindex-offcanvas`                                                                    | none                                                        |
+ | `--vn-stack-dialog-backdrop`, `-dialog-base`             | `1050`, `1055`                                                                   | `bootstrap` — retained from `$zindex-modal-backdrop` and `$zindex-modal`                                                                            | none                                                        |
+-| `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                           | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | none                                                        |
++| `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                           | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | `--bs-popover-zindex`, `--bs-tooltip-zindex`                |
+ 
+ Veneer keeps Bootstrap's breakpoint names verbatim because a consumer predicts `--bs-breakpoint-md`
+ from `--vn-breakpoint-md`. The `src/styles/_mixins.scss` partial holds the one Sass source those
+@@ -5039,6 +5174,33 @@ declaration.
+ | `btn-close` | `.btn-close.disabled`           | `-moz-user-select`     | —         | `none`          | —                                                  | dropped   |
+ | `btn-close` | `.alert-dismissible .btn-close` | `padding`              | —         | `1.25rem 1rem`  | `calc(var(--vn-space-8) * 1.25) var(--vn-space-8)` | tokenized |
+ 
++#### `tooltip`
++
++| Component | Selector   | Property                 | Condition | Bootstrap 5.3.8 | Veneer                  | Departure |
++| --------- | ---------- | ------------------------ | --------- | --------------- | ----------------------- | --------- |
++| `tooltip` | `.tooltip` | `--bs-tooltip-zindex`    | —         | `1080`          | `var(--vn-stack-hint)`  | tokenized |
++| `tooltip` | `.tooltip` | `--bs-tooltip-padding-x` | —         | `0.5rem`        | `var(--vn-space-4)`     | tokenized |
++| `tooltip` | `.tooltip` | `--bs-tooltip-padding-y` | —         | `0.25rem`       | `var(--vn-space-2)`     | tokenized |
++| `tooltip` | `.tooltip` | `--bs-tooltip-font-size` | —         | `0.875rem`      | `var(--vn-size-2)`      | tokenized |
++| `tooltip` | `.tooltip` | `font-weight`            | —         | `400`           | `var(--vn-weight-body)` | tokenized |
++| `tooltip` | `.tooltip` | `line-height`            | —         | `1.5`           | `var(--vn-line-body)`   | tokenized |
++| `tooltip` | `.tooltip` | `text-align`             | —         | `left`          | `start`                 | declared  |
++
++#### `popover`
++
++| Component | Selector   | Property                        | Condition | Bootstrap 5.3.8 | Veneer                    | Departure |
++| --------- | ---------- | ------------------------------- | --------- | --------------- | ------------------------- | --------- |
++| `popover` | `.popover` | `--bs-popover-zindex`           | —         | `1070`          | `var(--vn-stack-popover)` | tokenized |
++| `popover` | `.popover` | `--bs-popover-font-size`        | —         | `0.875rem`      | `var(--vn-size-2)`        | tokenized |
++| `popover` | `.popover` | `--bs-popover-header-padding-x` | —         | `1rem`          | `var(--vn-space-8)`       | tokenized |
++| `popover` | `.popover` | `--bs-popover-header-padding-y` | —         | `0.5rem`        | `var(--vn-space-4)`       | tokenized |
++| `popover` | `.popover` | `--bs-popover-header-font-size` | —         | `1rem`          | `var(--vn-size-3)`        | tokenized |
++| `popover` | `.popover` | `--bs-popover-body-padding-x`   | —         | `1rem`          | `var(--vn-space-8)`       | tokenized |
++| `popover` | `.popover` | `--bs-popover-body-padding-y`   | —         | `1rem`          | `var(--vn-space-8)`       | tokenized |
++| `popover` | `.popover` | `font-weight`                   | —         | `400`           | `var(--vn-weight-body)`   | tokenized |
++| `popover` | `.popover` | `line-height`                   | —         | `1.5`           | `var(--vn-line-body)`     | tokenized |
++| `popover` | `.popover` | `text-align`                    | —         | `left`          | `start`                   | declared  |
++
+ #### `carousel`
+ 
+ | Component  | Selector                       | Property                            | Condition | Bootstrap 5.3.8      | Veneer                                                      | Departure |
+@@ -5279,17 +5441,19 @@ and `dark` roles have no Elements specimen, so each of those keeps the other pro
+ unchanged.
+ 
+ Names this release declares nowhere follow. `scroll-padding` on the document waits on the first
+-sticky header, which fixes the offset, and the hint surface and the component-scoped tokens wait on
+-the components that paint them. A name the cascade never writes reaches neither table here nor
+-§ Deferred selectors, whose rows must sit in the pinned inventory the `scanCompatibilityPresence`
+-function reads.
++sticky header, which fixes the offset, and the component-scoped tokens wait on the components that
++paint them. The tooltip paints its hint surface from the release's `--bs-emphasis-color` and
++`--bs-body-bg` aliases, so Veneer declares no hint surface token of its own. A name the cascade
++never writes reaches neither table here nor § Deferred selectors, whose rows must sit in the pinned
++inventory the `scanCompatibilityPresence` function reads.
+ 
+ The Elements behaviors this package does not copy close the list. Elements' disclosure interpolates
+ its content height when the engine reports `prefers-reduced-motion: reduce`; the `transition` mixin
+ emits the reduced-motion pair for every transition it writes, and the
+ `tests/src/styles/mixins.test.ts` proof reads the collapse. Elements' popover snaps open and fades
+-closed; that asymmetry belongs to the overlay units and is recorded as an Elements decision rather
+-than a Bootstrap one.
++closed. The popover key ships no motion, because no popover rule the release records reads the
++`fade` class or the `show` class, so that asymmetry is recorded as an Elements decision for J-ENGINE,
++which opens and closes a popover.
+ 
+ ## Compatibility
+ 
+@@ -5467,6 +5631,10 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | nav              | variable       | Every `--bs-nav-link-*`, `--bs-nav-tabs-*`, `--bs-nav-pills-*`, and `--bs-nav-underline-*` property the release declares is declared on its own class; each one is read beside the property it drives in `tests/src/styles/components/nav.test.ts`.                                                                                                                                                                                                              | —                     | shipped  |
+ | alert            | selector       | Every official `.alert` selector ships in the components layer, the dismissible close placement and the contextual roles included; resolved box, content, placement, and role paint are proved in `tests/src/styles/components/alert.test.ts`.                                                                                                                                                                                                                   | —                     | shipped  |
+ | alert            | variable       | Every official `--bs-alert-*` custom property is declared on `.alert`, and each contextual role retunes it from that role's aliases; each one is read beside the property it drives in `tests/src/styles/components/alert.test.ts`.                                                                                                                                                                                                                              | —                     | shipped  |
++| tooltip          | selector       | Every official `.tooltip` selector ships in the components layer, the shown state, the arrow at each explicit placement, and each automatic placement included; resolved stacking, reset text, opacity, arrow geometry, and paint are proved in `tests/src/styles/components/tooltip.test.ts`.                                                                                                                                                                   | —                     | shipped  |
++| tooltip          | variable       | Every official `--bs-tooltip-*` custom property is declared on the `.tooltip` class, the stacking level on the hint rung; each one is read beside the property it drives in `tests/src/styles/components/tooltip.test.ts`.                                                                                                                                                                                                                                       | —                     | shipped  |
++| popover          | selector       | Every official `.popover` selector ships in the components layer, the arrow at each explicit placement, each automatic placement, the header strip, and the empty header included; resolved stacking, reset text, arrow geometry, and paint are proved in `tests/src/styles/components/popover.test.ts`.                                                                                                                                                         | —                     | shipped  |
++| popover          | variable       | Every official `--bs-popover-*` custom property is declared on the `.popover` class, the stacking level on the popover rung; each one a release rule reads is read beside the property it drives in `tests/src/styles/components/popover.test.ts`.                                                                                                                                                                                                               | —                     | shipped  |
+ | carousel         | selector       | Every official `.carousel` selector ships in the components layer, the fade variant, the controls and their marks, the indicators, the caption, and the dark class included; resolved geometry, states, and motion are proved in `tests/src/styles/components/carousel.test.ts`.                                                                                                                                                                                 | —                     | shipped  |
+ | carousel         | variable       | Every official `--bs-carousel-*` custom property is declared, by the theme scopes and by the opt-in `.carousel-dark` class; the dark class, a dark island, and a light island nested in a dark one are proved in `tests/src/styles/components/carousel.test.ts`.                                                                                                                                                                                                 | —                     | shipped  |
+ | accordion        | selector       | Every official `.accordion` selector ships in the components layer, the expanded and collapsed buttons, the boundary item corners, the flush group, and each reduced-motion twin included; the `tests/src/styles/components/accordion.test.ts` proof reads resolved behavior.                                                                                                                                                                                    | —                     | shipped  |
+@@ -5519,6 +5687,8 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | engine           | plugin         | ScrollSpy: `[data-bs-spy="scroll"]` observes the sections its `target` links name through `IntersectionObserver` (`rootMargin`, `threshold`, `offset`, `smoothScroll`); `refresh()`, `dispose()`; fires `activate.bs.scrollspy` with `relatedTarget` and no cancelable event; moves the `active` class. Owner: J-ENGINE.                                                                                                                                         | —                     | accepted |
+ | engine           | plugin         | Alert: a `[data-bs-dismiss="alert"]` trigger closes the alert it names, or the `.alert` ancestor it sits in; no defaults; the `close` method; the cancelable `close.bs.alert` event, then the `closed.bs.alert` event after removal; the `close` method removes the `show` class and waits on the transition only when the alert carries the `fade` class, then removes the element and disposes the instance; no key, focus, or ARIA handling. Owner: J-ENGINE. | —                     | accepted |
+ | engine           | plugin         | Carousel: `[data-bs-slide]` and `[data-bs-slide-to]` triggers and `[data-bs-ride="carousel"]` on load; `interval: 5000`, `keyboard: true`, `pause: 'hover'`, `ride: false`, `touch: true`, and `wrap: true` defaults; `next`, `prev`, `pause`, `cycle`, and `to` methods; cancelable `slide.bs.carousel`, then `slid.bs.carousel`; arrow keys; `aria-current` on the active indicator; the `Swipe` utility adds the `pointer-event` class. Owner: J-ENGINE.      | —                     | accepted |
++| engine           | plugin         | Tooltip: constructed by a consumer, no data API; `placement: 'top'`, `trigger: 'hover focus'`, and `sanitize: true` defaults; `show`, `hide`, and `setContent` methods; cancelable `show.bs.tooltip` and `hide.bs.tooltip` events; the trigger's `aria-describedby` attribute names the tip's `id` attribute; the `bs-tooltip-auto` class and `data-popper-placement` attribute from placement; `Sanitizer` and `TemplateFactory` utilities. Owner: J-ENGINE.    | —                     | accepted |
++| engine           | plugin         | Popover: extends Tooltip, inheriting its construction, methods, sanitizing, and ARIA under `.bs.popover` events; `content: ''`, `offset: [0, 8]`, `placement: 'right'`, and `trigger: 'click'` defaults; the `.popover-header` element takes the title and the `.popover-body` element the content, an empty one removed; the `bs-popover-auto` class and `data-popper-placement` attribute from placement; sets the `fade` and `show` classes. Owner: J-ENGINE. | —                     | accepted |
+ 
+ A `plugin` row records a behavior J-ENGINE owns, while the classes that behavior sets ship in the
+ cascade and render in markup.
+@@ -5540,8 +5710,8 @@ ordered and unordered lists, code inside preformatted text or links, nested keyb
+ sibling after a legend. It also excludes the jQuery interface and plugin registration, the
+ window.bootstrap global and UMD namespace, and Bootstrap's Sass variables, maps, and mixins as a
+ source API. Popper pass-through positioning options remain accepted wire keys with platform
+-anchoring as an accepted difference. The sanitizer allowlist and sanitizer overrides remain in
+-scope for the overlay unit.
++anchoring as an accepted difference. The sanitizer allowlist and sanitizer overrides are J-ENGINE's,
++and the Tooltip row names the `Sanitizer` and `TemplateFactory` utilities that carry them.
+ 
+ ## Showcase
+ 
+@@ -5601,6 +5771,16 @@ declines both frames for the reason § Carousel classes states; see
+ [carousel specimens](../tests/app/browser/sections/CarouselSection.test.ts) and
+ [cascade carousel classes](../tests/src/styles/components/carousel.test.ts).
+ 
++The Tooltip and Popover regions render each tip inside an element carrying the shell's `viewport`
++class, placed through the shipped position utilities that stand in for the placement the engine
++writes, and each tip's box and arrow lie inside the frame at the 390 and 1280 viewports. The regions
++render no tooltip without the `show` class and no automatic placement, and the capture registry
++declines those frames for the reason § Tooltip classes states; see
++[tooltip specimens](../tests/app/browser/sections/TooltipSection.test.ts),
++[popover specimens](../tests/app/browser/sections/PopoverSection.test.ts),
++[cascade tooltip classes](../tests/src/styles/components/tooltip.test.ts), and
++[cascade popover classes](../tests/src/styles/components/popover.test.ts).
++
+ ## Tests
+ 
+ The core proof reads the registry's export set, its freeze, and its path law; see
+@@ -5637,12 +5817,14 @@ The application proofs drive the shell through its interface; see
+ [navbar specimens](../tests/app/browser/sections/NavbarSection.test.ts),
+ [pagination specimens](../tests/app/browser/sections/PaginationSection.test.ts),
+ [placeholder specimens](../tests/app/browser/sections/PlaceholderSection.test.ts),
++[popover specimens](../tests/app/browser/sections/PopoverSection.test.ts),
+ [position specimens](../tests/app/browser/sections/PositionSection.test.ts),
+ [progress specimens](../tests/app/browser/sections/ProgressSection.test.ts),
+ [sizing specimens](../tests/app/browser/sections/SizingSection.test.ts),
+ [specimen table rendering](../tests/app/browser/sections/SpecimenSection.test.ts),
+ [spinner specimens](../tests/app/browser/sections/SpinnerSection.test.ts),
+ [table specimens](../tests/app/browser/sections/TableSection.test.ts),
++[tooltip specimens](../tests/app/browser/sections/TooltipSection.test.ts),
+ [validation specimens](../tests/app/browser/sections/ValidationSection.test.ts),
+ [visibility specimens](../tests/app/browser/sections/VisibilitySection.test.ts), and
+ [showcase journeys](../tests/app/browser/integration.test.ts).
+@@ -5729,6 +5911,8 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the badge classes](../tests/src/styles/components/badge.test.ts),
+ [the alert classes](../tests/src/styles/components/alert.test.ts),
+ [the close classes](../tests/src/styles/components/close.test.ts),
++[the tooltip classes](../tests/src/styles/components/tooltip.test.ts),
++[the popover classes](../tests/src/styles/components/popover.test.ts),
+ [the collapse classes](../tests/src/styles/components/collapse.test.ts),
+ [the accordion classes](../tests/src/styles/components/accordion.test.ts),
+ [the dropdown classes](../tests/src/styles/components/dropdown.test.ts),
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index fabb089..a0ea364 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -436,3 +436,25 @@
+ 		}
+ 	}
+ }
++
++// Emits the text reset the release writes on its tooltip and its popover, so a tip inserted beside
++// any content renders the body face at the body weight and rhythm, unadorned, aligned to the start
++// of its line, and wrapping as ordinary text does, whatever text treatment it inherits. The release
++// writes the physical `left` alignment ahead of the logical one as a fallback for engines without
++// the `start` keyword; every engine this cascade is proved on resolves `start`, so the fallback is
++// not written.
++@mixin reset-text {
++	font-family: var(--bs-font-sans-serif);
++	font-style: normal;
++	font-weight: var(--vn-weight-body);
++	line-height: var(--vn-line-body);
++	text-align: start;
++	text-decoration: none;
++	text-shadow: none;
++	text-transform: none;
++	letter-spacing: normal;
++	word-break: normal;
++	white-space: normal;
++	word-spacing: normal;
++	line-break: auto;
++}
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index 6a8b24c..b82fbeb 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -71,6 +71,8 @@
+ @use 'components/progress' as progress-component;
+ @use 'components/list-group';
+ @use 'components/close';
++@use 'components/tooltip';
++@use 'components/popover';
+ @use 'components/carousel';
+ @use 'components/spinner';
+ @use 'components/placeholder';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index a08372d..5b14f82 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -29,6 +29,7 @@ import {
+ 	NAVBAR_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
++	POPOVER_SPECIMENS,
+ 	POSITION_SPECIMENS,
+ 	PROGRESS_SPECIMENS,
+ 	SHOWCASE_COPY,
+@@ -37,6 +38,7 @@ import {
+ 	Showcase,
+ 	TYPE_SPECIMENS,
+ 	TABLE_SPECIMENS,
++	TOOLTIP_SPECIMENS,
+ 	VALIDATION_SPECIMENS,
+ 	VISIBILITY_SPECIMENS,
+ } from '@app/browser'
+@@ -129,6 +131,8 @@ describe('Showcase', () => {
+ 				'Alert',
+ 				'Carousel',
+ 				'Accordion',
++				'Tooltip',
++				'Popover',
+ 				'Display',
+ 				'Flex',
+ 				'Position',
+@@ -172,6 +176,8 @@ describe('Showcase', () => {
+ 					...ALERT_SPECIMENS,
+ 					...CAROUSEL_SPECIMENS,
+ 					...ACCORDION_SPECIMENS,
++					...TOOLTIP_SPECIMENS,
++					...POPOVER_SPECIMENS,
+ 					...DISPLAY_SPECIMENS,
+ 					...FLEX_SPECIMENS,
+ 					...POSITION_SPECIMENS,
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 4ea1d98..bae228f 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -96,12 +96,15 @@ describe('app browser entry', () => {
+ 			'PAGINATION_SPECIMENS',
+ 			'PLACEHOLDER_COPY',
+ 			'PLACEHOLDER_SPECIMENS',
++			'POPOVER_COPY',
++			'POPOVER_SPECIMENS',
+ 			'POSITION_COPY',
+ 			'POSITION_SPECIMENS',
+ 			'PROGRESS_COPY',
+ 			'PROGRESS_SPECIMENS',
+ 			'PaginationSection',
+ 			'PlaceholderSection',
++			'PopoverSection',
+ 			'PositionSection',
+ 			'ProgressSection',
+ 			'SHOWCASE_CONTROL',
+@@ -116,9 +119,12 @@ describe('app browser entry', () => {
+ 			'SpinnerSection',
+ 			'TABLE_COPY',
+ 			'TABLE_SPECIMENS',
++			'TOOLTIP_COPY',
++			'TOOLTIP_SPECIMENS',
+ 			'TYPE_COPY',
+ 			'TYPE_SPECIMENS',
+ 			'TableSection',
++			'TooltipSection',
+ 			'TypeSection',
+ 			'VALIDATION_COPY',
+ 			'VALIDATION_SPECIMENS',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 86e41d8..ea4a54b 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -68,12 +68,14 @@ import {
+ 	NAVBAR_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
++	POPOVER_SPECIMENS,
+ 	POSITION_SPECIMENS,
+ 	PROGRESS_SPECIMENS,
+ 	SHOWCASE_COPY,
+ 	SIZING_SPECIMENS,
+ 	SPINNER_SPECIMENS,
+ 	TABLE_SPECIMENS,
++	TOOLTIP_SPECIMENS,
+ 	TYPE_SPECIMENS,
+ 	VALIDATION_SPECIMENS,
+ 	VISIBILITY_SPECIMENS,
+@@ -2131,6 +2133,8 @@ describe('portfolio', () => {
+ 				POSITION_SPECIMENS,
+ 				SIZING_SPECIMENS,
+ 				VISIBILITY_SPECIMENS,
++				TOOLTIP_SPECIMENS,
++				POPOVER_SPECIMENS,
+ 			].flatMap((table) => table.map((specimen) => specimen.name)),
+ 			SHOWCASE_COPY.region,
+ 		])
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 4f3faba..7f724d9 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -167,6 +167,7 @@ describe('Bootstrap component oracle', () => {
+ 			'order',
+ 			'pagination',
+ 			'placeholder',
++			'popover',
+ 			'position',
+ 			'progress',
+ 			'ratio',
+@@ -178,6 +179,7 @@ describe('Bootstrap component oracle', () => {
+ 			'start',
+ 			'sticky',
+ 			'table',
++			'tooltip',
+ 			'top',
+ 			'translate-middle',
+ 			'valid-feedback',
+@@ -427,6 +429,8 @@ describe('Bootstrap source order', () => {
+ 			'progress',
+ 			'list-group',
+ 			'close',
++			'tooltip',
++			'popover',
+ 			'carousel',
+ 			'spinners',
+ 			'placeholders',
+@@ -453,6 +457,8 @@ describe('Bootstrap source order', () => {
+ 			'progress',
+ 			'list-group',
+ 			'close',
++			'tooltip',
++			'popover',
+ 			'carousel',
+ 			'spinner',
+ 			'placeholder',
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 74c28ed..3242ce5 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -277,6 +277,14 @@ export type CaptureSubject =
+ 	| 'Navbar expand lg'
+ 	| 'Navbar expand xl'
+ 	| 'Navbar expand xxl'
++	| 'Top tooltip'
++	| 'Right tooltip'
++	| 'Bottom tooltip'
++	| 'Left tooltip'
++	| 'Top popover'
++	| 'Right popover'
++	| 'Bottom popover'
++	| 'Left popover'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -473,6 +481,17 @@ export const SHOWCASE_KEYS: readonly CaptureKey[] = Object.freeze([
+  * frames already carry. The Carousel region renders none of these, and the
+  * `tests/src/styles/components/carousel.test.ts` file reads each of them on its own elements.
+  *
++ * A tooltip without the `show` class is declined because it rests transparent, so its frame would
++ * carry the frame's empty surface and no subject. The automatic placement forms are declined
++ * because each one resolves the geometry of the explicit placement it extends, so its frame would
++ * repeat that placement's frame under a second name. The engine writes both, the Tooltip and the
++ * Popover regions render neither, and the `tests/src/styles/components/tooltip.test.ts` and
++ * `tests/src/styles/components/popover.test.ts` files read each of them on their own elements. An
++ * empty popover header is declined as well: the release's template removes an empty header before
++ * the popover renders, so the rule that hides one guards markup the release's plugin never writes,
++ * and the popover file reads it. Each tip row reads the painted box inside the tip, which sits
++ * whole inside the shell's frame, so no tip key hangs outside its host.
++ *
+  * A key whose recorded rule resolves `display: none` at rest names the surrounding region rather
+  * than the element the key ships: that element's own box clips to no pixel, so a frame declared on
+  * it reads back nothing. Its declared region is the element that hosts it, and the collapse itself
+@@ -1648,6 +1667,54 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.navbar-expand-xxl',
+ 		property: 'flex-wrap',
+ 	}),
++	Object.freeze({
++		scenario: 'top-tooltip',
++		subject: 'Top tooltip',
++		selector: '.bs-tooltip-top .tooltip-inner',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'right-tooltip',
++		subject: 'Right tooltip',
++		selector: '.bs-tooltip-end .tooltip-inner',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'bottom-tooltip',
++		subject: 'Bottom tooltip',
++		selector: '.bs-tooltip-bottom .tooltip-inner',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'left-tooltip',
++		subject: 'Left tooltip',
++		selector: '.bs-tooltip-start .tooltip-inner',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'top-popover',
++		subject: 'Top popover',
++		selector: '.bs-popover-top .popover-header',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'right-popover',
++		subject: 'Right popover',
++		selector: '.bs-popover-end .popover-header',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'bottom-popover',
++		subject: 'Bottom popover',
++		selector: '.bs-popover-bottom .popover-header',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'left-popover',
++		subject: 'Left popover',
++		selector: '.bs-popover-start .popover-header',
++		property: 'background-color',
++	}),
+ ])
+ 
+ /**
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index e6b3798..3b6fc81 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1453,6 +1453,7 @@ describe('server setup', () => {
+ 				'order',
+ 				'pagination',
+ 				'placeholder',
++				'popover',
+ 				'position',
+ 				'progress',
+ 				'ratio',
+@@ -1464,6 +1465,7 @@ describe('server setup', () => {
+ 				'start',
+ 				'sticky',
+ 				'table',
++				'tooltip',
+ 				'top',
+ 				'translate-middle',
+ 				'valid-feedback',
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index d75c65a..a9ec8c7 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -188,6 +188,11 @@ import {
+ 	TABLE_ROLE_CASES,
+ 	TABLE_SELECTORS,
+ 	THEME_DARK_ADDITIONS,
++	TIP_ARROW_PROPERTIES,
++	TIP_PLACEMENTS,
++	TIP_RESET_CASES,
++	TOOLTIP_SELECTORS,
++	POPOVER_SELECTORS,
+ 	TEXT_A_CASES,
+ 	TEXT_ABBR_CASES,
+ 	TEXT_ADDRESS_CASES,
+@@ -387,6 +392,7 @@ describe('styles setup', () => {
+ 				'PLACEHOLDER_SIZE_CASES',
+ 				'PLACEMENT_BOX',
+ 				'PLACEMENT_CONTAINER',
++				'POPOVER_SELECTORS',
+ 				'POSITION_ENTRY_CASES',
+ 				'POSITION_VALUES',
+ 				'PROGRESS_MARKUP',
+@@ -433,6 +439,10 @@ describe('styles setup', () => {
+ 				'TEXT_UL_CASES',
+ 				'TEXT_VAR_CASES',
+ 				'THEME_DARK_ADDITIONS',
++				'TIP_ARROW_PROPERTIES',
++				'TIP_PLACEMENTS',
++				'TIP_RESET_CASES',
++				'TOOLTIP_SELECTORS',
+ 				'TRANSLATION_BOX',
+ 				'TYPE_DISPLAY_CASES',
+ 				'TYPE_DISPLAY_TOKEN_CASES',
+@@ -2909,6 +2919,93 @@ describe('carousel case tables', () => {
+ 	})
+ })
+ 
++describe('tip case tables', () => {
++	it('binds the tooltip and popover selector tables to the official inventory, each name once', () => {
++		for (const [table, key] of [
++			[TOOLTIP_SELECTORS, 'tooltip'],
++			[POPOVER_SELECTORS, 'popover'],
++		] as const) {
++			expect(new Set(table).size).toBe(table.length)
++			expect(new Set(table)).toEqual(
++				new Set(oracle.components[key].selectors.map(({ selector }) => selector)),
++			)
++		}
++	})
++	it('pairs every explicit placement rule with the automatic rule the release extends it into', () => {
++		for (const key of ['tooltip', 'popover'] as const) {
++			// The release records an arrow triangle's rule twice, so each selector's declarations are
++			// gathered across every rule recording it before two selectors are compared.
++			const rules = new Map<string, readonly string[]>()
++			for (const { selector, declarations } of oracle.components[key].selectors)
++				rules.set(selector, [
++					...(rules.get(selector) ?? []),
++					...declarations.map(({ property, value }) => `${property}: ${value}`),
++				])
++			const pairs = TIP_PLACEMENTS.flatMap(({ name, side }) =>
++				[...rules.keys()]
++					.filter((selector) => selector.startsWith(`.bs-${key}-${name} `))
++					.map((selector) => ({
++						explicit: selector,
++						automatic: selector.replace(
++							`.bs-${key}-${name}`,
++							`.bs-${key}-auto[data-popper-placement^=${side}]`,
++						),
++					})),
++			)
++			// Every automatic rule is some explicit rule's twin, and each twin records exactly the
++			// declarations of the explicit rule it extends, so an automatic placement resolves the
++			// geometry of the side its attribute names.
++			expect(new Set(pairs.map(({ automatic }) => automatic))).toEqual(
++				new Set([...rules.keys()].filter((selector) => selector.includes(`.bs-${key}-auto`))),
++			)
++			for (const { explicit, automatic } of pairs)
++				expect(rules.get(automatic)).toEqual(rules.get(explicit))
++			// The explicit arrow rule hangs the arrow from the pinned edge, and its first triangle
++			// paints on the pinned side, which is what a proof reading the table relies on.
++			const arrow = key === 'tooltip' ? '.tooltip-arrow' : '> .popover-arrow'
++			for (const { name, side, edge } of TIP_PLACEMENTS) {
++				const hung = rules.get(`.bs-${key}-${name} ${arrow}`) ?? []
++				const painted = rules.get(`.bs-${key}-${name} ${arrow}::before`) ?? []
++				expect(hung.some((entry) => entry.startsWith(`${edge}: `))).toBe(true)
++				expect(painted.some((entry) => entry.startsWith(`border-${side}-color: `))).toBe(true)
++			}
++		}
++	})
++	it('pins the text reset both tips record, the later alignment included', () => {
++		for (const key of ['tooltip', 'popover'] as const) {
++			const declarations = requireValue(
++				oracle.components[key].selectors.find(({ selector }) => selector === `.${key}`),
++				`The inventory records no .${key} rule`,
++			).declarations
++			// The reset is the release's one run from the face through the line breaking; every other
++			// declaration on the rule belongs to the tip rather than to the reset.
++			const start = declarations.findIndex(({ property }) => property === 'font-family')
++			const end = declarations.findIndex(({ property }) => property === 'line-break')
++			expect(start).toBeGreaterThan(-1)
++			const run = declarations.slice(start, end + 1)
++			expect([...new Set(run.map(({ property }) => property))]).toEqual(
++				TIP_RESET_CASES.map(({ property }) => property),
++			)
++			// Each pinned reset is the value the release lets stand, which is its later declaration
++			// where it writes the property twice.
++			for (const { property, reset } of TIP_RESET_CASES)
++				expect(run.filter((entry) => entry.property === property).at(-1)?.value).toBe(reset)
++		}
++	})
++	it('freezes every tip case table', () => {
++		for (const table of [
++			TOOLTIP_SELECTORS,
++			POPOVER_SELECTORS,
++			TIP_PLACEMENTS,
++			TIP_ARROW_PROPERTIES,
++			TIP_RESET_CASES,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of [...TIP_PLACEMENTS, ...TIP_RESET_CASES])
++			expect(Object.isFrozen(entry)).toBe(true)
++	})
++})
++
+ describe('check case tables', () => {
+ 	it('partitions the recorded check vocabulary between the check selectors and the validation rules', () => {
+ 		const recorded = new Set(
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index b5af4ea..5444ecb 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -4664,6 +4664,234 @@ export const CAROUSEL_MARKS = Object.freeze({
+ /** Holds the recorded filter the dark carousel class and the dark theme scope both declare. */
+ export const CAROUSEL_INVERSION = 'invert(1) grayscale(100)'
+ 
++/**
++ * Lists every official `.tooltip` selector the components layer ships, once each.
++ *
++ * @remarks
++ * Each automatic placement selector follows the explicit placement selector it extends. The forms
++ * tooltips the validation partial ships belong to the `valid-tooltip` and `invalid-tooltip` keys
++ * rather than to this one, so no selector here names them.
++ */
++export const TOOLTIP_SELECTORS = Object.freeze([
++	'.tooltip',
++	'.tooltip.show',
++	'.tooltip .tooltip-arrow',
++	'.tooltip .tooltip-arrow::before',
++	'.bs-tooltip-top .tooltip-arrow',
++	'.bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow',
++	'.bs-tooltip-top .tooltip-arrow::before',
++	'.bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow::before',
++	'.bs-tooltip-end .tooltip-arrow',
++	'.bs-tooltip-auto[data-popper-placement^=right] .tooltip-arrow',
++	'.bs-tooltip-end .tooltip-arrow::before',
++	'.bs-tooltip-auto[data-popper-placement^=right] .tooltip-arrow::before',
++	'.bs-tooltip-bottom .tooltip-arrow',
++	'.bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow',
++	'.bs-tooltip-bottom .tooltip-arrow::before',
++	'.bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow::before',
++	'.bs-tooltip-start .tooltip-arrow',
++	'.bs-tooltip-auto[data-popper-placement^=left] .tooltip-arrow',
++	'.bs-tooltip-start .tooltip-arrow::before',
++	'.bs-tooltip-auto[data-popper-placement^=left] .tooltip-arrow::before',
++	'.tooltip-inner',
++])
++
++/**
++ * Lists every official `.popover` selector the components layer ships, once each.
++ *
++ * @remarks
++ * The release records each arrow triangle's rule twice, once for the border widths both triangles
++ * share and once for the offset and the color each paints. The list carries each name once, and
++ * each automatic placement selector follows the explicit placement selector it extends.
++ */
++export const POPOVER_SELECTORS = Object.freeze([
++	'.popover',
++	'.popover .popover-arrow',
++	'.popover .popover-arrow::before',
++	'.popover .popover-arrow::after',
++	'.bs-popover-top > .popover-arrow',
++	'.bs-popover-auto[data-popper-placement^=top] > .popover-arrow',
++	'.bs-popover-top > .popover-arrow::before',
++	'.bs-popover-auto[data-popper-placement^=top] > .popover-arrow::before',
++	'.bs-popover-top > .popover-arrow::after',
++	'.bs-popover-auto[data-popper-placement^=top] > .popover-arrow::after',
++	'.bs-popover-end > .popover-arrow',
++	'.bs-popover-auto[data-popper-placement^=right] > .popover-arrow',
++	'.bs-popover-end > .popover-arrow::before',
++	'.bs-popover-auto[data-popper-placement^=right] > .popover-arrow::before',
++	'.bs-popover-end > .popover-arrow::after',
++	'.bs-popover-auto[data-popper-placement^=right] > .popover-arrow::after',
++	'.bs-popover-bottom > .popover-arrow',
++	'.bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow',
++	'.bs-popover-bottom > .popover-arrow::before',
++	'.bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow::before',
++	'.bs-popover-bottom > .popover-arrow::after',
++	'.bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow::after',
++	'.bs-popover-bottom .popover-header::before',
++	'.bs-popover-auto[data-popper-placement^=bottom] .popover-header::before',
++	'.bs-popover-start > .popover-arrow',
++	'.bs-popover-auto[data-popper-placement^=left] > .popover-arrow',
++	'.bs-popover-start > .popover-arrow::before',
++	'.bs-popover-auto[data-popper-placement^=left] > .popover-arrow::before',
++	'.bs-popover-start > .popover-arrow::after',
++	'.bs-popover-auto[data-popper-placement^=left] > .popover-arrow::after',
++	'.popover-header',
++	'.popover-header:empty',
++	'.popover-body',
++])
++
++/**
++ * Pins each explicit placement class a tooltip or a popover carries to the side of its host the tip
++ * sits on and the tip edge its arrow hangs from.
++ *
++ * @remarks
++ * The `name` field is the suffix the `bs-tooltip-*` and `bs-popover-*` classes carry. The `side`
++ * field is the physical side the placement engine names in the `data-popper-placement` attribute
++ * the automatic class pairs with, and the side of the arrow's triangle that paints. The `edge` field
++ * is the tip edge facing the host, so the arrow's own edge on that side meets the tip's edge the
++ * `edge` field names. The `end` and `start` names are physical, as the release writes them.
++ */
++export const TIP_PLACEMENTS = Object.freeze([
++	Object.freeze({ name: 'top', side: 'top', edge: 'bottom' }),
++	Object.freeze({ name: 'end', side: 'right', edge: 'left' }),
++	Object.freeze({ name: 'bottom', side: 'bottom', edge: 'top' }),
++	Object.freeze({ name: 'start', side: 'left', edge: 'right' }),
++])
++
++/**
++ * Lists the resolved properties that make up an arrow's geometry: its box, its offsets, and each
++ * border of a triangle drawn inside it.
++ *
++ * @remarks
++ * A reading of every property on the arrow and on each of its triangles is what separates two
++ * placements, so an automatic placement resolving the same list as an explicit one resolves the
++ * same geometry.
++ */
++export const TIP_ARROW_PROPERTIES = Object.freeze([
++	'width',
++	'height',
++	'top',
++	'right',
++	'bottom',
++	'left',
++	'border-top-width',
++	'border-right-width',
++	'border-bottom-width',
++	'border-left-width',
++	'border-top-color',
++	'border-right-color',
++	'border-bottom-color',
++	'border-left-color',
++])
++
++/**
++ * Pins each declaration of the text reset a tooltip and a popover write, beside a treatment staged
++ * against it and the computed property that reads it.
++ *
++ * @remarks
++ * The `reset` field is the value the release records, the later of its two alignments included, and
++ * the `staged` field is a value that property resolves differently, so a reset that stopped
++ * declaring a property resolves the staged treatment instead. The `reading` field is the computed
++ * longhand a proof reads, which is the property itself except where the property is a shorthand
++ * whose computed value carries more than the reset sets. The `inherited` field is true where a
++ * treatment staged on a parent reaches the text inside it, which is what a proof staging the
++ * treatment on a tip's parent reads, and false for the decoration, which a parent's treatment does
++ * not reach.
++ */
++export const TIP_RESET_CASES = Object.freeze([
++	Object.freeze({
++		property: 'font-family',
++		staged: 'monospace',
++		reset: 'var(--bs-font-sans-serif)',
++		reading: 'font-family',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'font-style',
++		staged: 'italic',
++		reset: 'normal',
++		reading: 'font-style',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'font-weight',
++		staged: '700',
++		reset: '400',
++		reading: 'font-weight',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'line-height',
++		staged: '3',
++		reset: '1.5',
++		reading: 'line-height',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'text-align',
++		staged: 'right',
++		reset: 'start',
++		reading: 'text-align',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'text-decoration',
++		staged: 'underline',
++		reset: 'none',
++		reading: 'text-decoration-line',
++		inherited: false,
++	}),
++	Object.freeze({
++		property: 'text-shadow',
++		staged: 'rgb(1, 2, 3) 1px 1px 0px',
++		reset: 'none',
++		reading: 'text-shadow',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'text-transform',
++		staged: 'uppercase',
++		reset: 'none',
++		reading: 'text-transform',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'letter-spacing',
++		staged: '3px',
++		reset: 'normal',
++		reading: 'letter-spacing',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'word-break',
++		staged: 'break-all',
++		reset: 'normal',
++		reading: 'word-break',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'white-space',
++		staged: 'nowrap',
++		reset: 'normal',
++		reading: 'white-space',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'word-spacing',
++		staged: '5px',
++		reset: 'normal',
++		reading: 'word-spacing',
++		inherited: true,
++	}),
++	Object.freeze({
++		property: 'line-break',
++		staged: 'anywhere',
++		reset: 'auto',
++		reading: 'line-break',
++		inherited: true,
++	}),
++])
++
+ /**
+  * Lists every selector the official check vocabulary records that the check partial emits, once
+  * each.
+diff --git a/tests/src/styles/fixtures/mixins.scss b/tests/src/styles/fixtures/mixins.scss
+index 0f4c3eb..7bc4956 100644
+--- a/tests/src/styles/fixtures/mixins.scss
++++ b/tests/src/styles/fixtures/mixins.scss
+@@ -34,6 +34,12 @@
+ 	@include role-each(probe, 12%, 35%, var(--vn-surface-body-base));
+ }
+ 
++// Compiles the text reset alone, so the proof reads each declaration the mixin writes against a
++// treatment staged beneath it rather than through a tip rule that writes more beside it.
++.vn-fixture-reset {
++	@include reset-text;
++}
++
+ // Compiles both breakpoint mixins over every published name, so the proof reads the condition the
+ // mixin emitted and the declaration it gated rather than the Sass source that authored them. The
+ // names come from `breakpoints()` itself, so a name added to the ramp arrives here with it.
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index a27a26a..583a333 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -14,7 +14,12 @@ import {
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { collectMediaConditions, scene, visitBreakpoint } from '../../setupBrowser.js'
+-import { BREAKPOINT_CASES, extractShadowLayers, parseMediaWidth } from '../../setupStyles.js'
++import {
++	BREAKPOINT_CASES,
++	TIP_RESET_CASES,
++	extractShadowLayers,
++	parseMediaWidth,
++} from '../../setupStyles.js'
+ import './fixtures/mixins.scss'
+ 
+ afterEach(async () => {
+@@ -115,6 +120,33 @@ describe('declaration mixins', () => {
+ 			),
+ 		).toBe(true)
+ 	})
++	it('resets every text treatment the tip rules reset, over a treatment staged beneath it', () => {
++		// The staged treatment sits in a layer, and the fixture's own rule sits in none, so the reset
++		// outranks it wherever the mixin declares the property. A declaration the mixin dropped leaves
++		// the staged value standing, and the element declaring the recorded reset inline is what the
++		// reset is read against. Each staged value resolves apart from its reset on the element beside
++		// the fixture, so no reading passes because the two already agree.
++		scene.load(
++			`@layer elements { .vn-staged-text { ${TIP_RESET_CASES.map(({ property, staged }) => `${property}: ${staged};`).join(' ')} } }`,
++		)
++		const host = scene.mount(
++			`<p data-reading="reset" class="vn-staged-text vn-fixture-reset">Reset tip text</p><p data-reading="staged" class="vn-staged-text">Staged tip text</p><p data-reading="declared" style="${TIP_RESET_CASES.map(({ property, reset }) => `${property}: ${reset}`).join('; ')}">Declared tip text</p>`,
++		)
++		const reset = requireValue(host.querySelector('[data-reading="reset"]'), 'No reset text')
++		const staged = requireValue(host.querySelector('[data-reading="staged"]'), 'No staged text')
++		const declared = requireValue(
++			host.querySelector('[data-reading="declared"]'),
++			'No declared text',
++		)
++		const readings = TIP_RESET_CASES.map(({ property, reading }) => ({
++			property,
++			reset: readStyle(reset, reading),
++			staged: readStyle(staged, reading),
++			declared: readStyle(declared, reading),
++		}))
++		expect(readings.filter((entry) => entry.staged === entry.declared)).toEqual([])
++		expect(readings.filter((entry) => entry.reset !== entry.declared)).toEqual([])
++	})
+ })
+ 
+ describe('breakpoint mixins', () => {

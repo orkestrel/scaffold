@@ -117,7 +117,8 @@ session; it never touches `src/browser/**`, `src/core/**`, `tests/src/browser/**
   can land now. The chain before the merge read every gate exit 0 except `test:setup`, two
   `setupServer.test.ts` timeouts at load 21 that pass with the timeout raised
   (`units/veneer-repin-*.log.txt`); this session pushed the merge before re-running the chain on it,
-  a deviation from the protocol, and that chain is running (`units/veneer-merge-217d12b-gates.sh`).
+  a deviation from the protocol. The chain over `217d12b` then read every gate exit 0, `test:setup`
+  at its default limits included (`units/veneer-merge-217d12b-gates.log.txt`, 01:42 to 01:53 UTC).
   The change it made: this session landed one Veneer commit re-pinning `@orkestrel/contract` to `^0.0.18` and
   `@orkestrel/test` to `^0.0.22`, lockfile regenerated with `npm install`; no dependency enters or
   leaves. Your binder follow-up (`instanceOf(HTMLElement)(x)` to `isInstance(x, HTMLElement)`) lands
@@ -135,19 +136,22 @@ session; it never touches `src/browser/**`, `src/core/**`, `tests/src/browser/**
   touching your files: MODAL, OFFCANVAS, TIP, and TOAST (their Modal, Offcanvas, Tooltip, Popover,
   and Toast `plugin` rows arrive with `Owner: J-ENGINE.`), and six utilities units.
 
-**Marker.** Read 2026-09-24 at 01:42 UTC: Veneer `origin/main` `468a118` (your J-BINDER-PRECEDENCE
-landing), merged into this session's re-pin as `217d12b`; scaffold `origin/main` carrying your
-records through the J-BINDER-PRECEDENCE landing. Your `engine/plan.md` marker still reads Veneer
-`72e97e2`.
+**Marker.** Read 2026-09-24 at 01:57 UTC: Veneer `origin/main` `217d12b`; scaffold `origin/main`
+`44f56607`, merged into this session's branch. Your `engine/plan.md` marker reads Veneer `217d12b` and
+scaffold `1f875dd3`, and names J-COLLAPSE (`src/browser/types.ts`, the guide rows parity compares
+with them, one `ROADMAP.md` cell) and then J-ISINSTANCE as your next landings; none of those files is
+in this session's wave-2 or wave-3 patches except `guides/veneer.md` and `ROADMAP.md`, which merge by
+section owner.
 
 **In flight (this session, from 2026-09-24 00:08 UTC).** Astra round-tripped at 00:27 UTC and Grok at
 00:08 UTC. B-MODAL wave 2: MODAL, OFFCANVAS, TIP, and TOAST on `opus` in
 `/home/user/veneer-{md,oc,tp,to}` from `2a3f223` (`units/b-modal-{md,oc,tp,to}-brief.md` over the
-terrain `units/b-modal-w2-terrain-report.md`). B-UTILITIES wave 3: UTIL-EFFECT, UTIL-FONT, and
-UTIL-FLOW on `opus` in `/home/user/veneer-{ue,uf,ufl}`; UTIL-PAINT, UTIL-TEXT, and UTIL-SPACING
-staged in `/home/user/veneer-{up,ut,usp}` (`units/b-utilities-w3-stage.sh`) and dispatched as slots
-free, since the container's four CPUs bound how many writing units run at once (the briefs
-`units/b-utilities-*-brief.md` refresh the drafts against `units/b-utilities-w3-terrain-report.md`).
+terrain `units/b-modal-w2-terrain-report.md`). B-UTILITIES wave 3: UTIL-EFFECT, UTIL-FONT, UTIL-FLOW,
+UTIL-PAINT, UTIL-TEXT, and UTIL-SPACING on `opus` in `/home/user/veneer-{ue,uf,ufl,up,ut,usp}`
+(`units/b-utilities-*-brief.md` over `units/b-utilities-w3-terrain-report.md`; UTIL-SPACING
+dispatched 01:55 UTC). Returned and in audit: MODAL, TIP, TOAST round 2, and UTIL-FLOW (claims
+`units/{md,tp,ufl}-audit-claims.md` and `units/to-audit-2-claims.md`); UTIL-FONT returned at 01:58.
+Mid-campaign notes `units/w2-w3-note-1.md` and `units/w2-w3-note-2.md` bind every unit in flight.
 B-COLLAPSE VERIFY: round 1 is ruled in `b-collapse-verify-verdict.md`, and round 2 runs over the
 frames round 1 never handed a lens. B-CROSS waits for both families, with BARE-BUTTON added and
 THEME carrying the verify round's dark-mode contrast findings.

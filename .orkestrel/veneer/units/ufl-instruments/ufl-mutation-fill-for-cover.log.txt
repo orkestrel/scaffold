@@ -1,0 +1,24 @@
+mutation: fill-for-cover
+site: src/styles/utilities/_object-fit.scss
+--- replaced
+				cover: cover,
+
+--- with
+				cover: fill,
+
+---
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/object-fit.test.ts
+build exit: 0
+command exit: 1
+summary: Tests  10 failed (10)
+failing cases:
+tests/src/styles/utilities/object-fit.test.ts:24:2 > object-fit utilities > fits a picture unlike its box by every value around the 'xs' boundary
+tests/src/styles/utilities/object-fit.test.ts:24:2 > object-fit utilities > fits a picture unlike its box by every value around the 'sm' boundary
+tests/src/styles/utilities/object-fit.test.ts:24:2 > object-fit utilities > fits a picture unlike its box by every value around the 'md' boundary
+tests/src/styles/utilities/object-fit.test.ts:24:2 > object-fit utilities > fits a picture unlike its box by every value around the 'lg' boundary
+tests/src/styles/utilities/object-fit.test.ts:24:2 > object-fit utilities > fits a picture unlike its box by every value around the 'xl' boundary
+tests/src/styles/utilities/object-fit.test.ts:24:2 > object-fit utilities > fits a picture unlike its box by every value around the 'xxl' boundary
+tests/src/styles/utilities/object-fit.test.ts:92:2 > object-fit utilities > resolves a wider infix over a narrower one whatever order the classes are written in
+tests/src/styles/utilities/object-fit.test.ts:123:2 > object-fit utilities > reads no token or mode, so a dark island and a doubled density factor leave every value
+tests/src/styles/utilities/object-fit.test.ts:138:2 > object-fit utilities > keeps its priority over a later unlayered consumer rule
+tests/src/styles/utilities/object-fit.test.ts:148:2 > object-fit utilities > yields to an important override inside the utilities layer and to no unlayered one

@@ -1,0 +1,21 @@
+mutation: infix-omitted
+site: src/styles/utilities/_float.scss
+--- replaced
+			$infix,
+			true
+
+--- with
+			$infix
+
+---
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/float.test.ts
+build exit: 0
+command exit: 1
+summary: Tests  6 failed | 5 passed (11)
+failing cases:
+tests/src/styles/utilities/float.test.ts:18:2 > float utilities > resolves every side around the 'sm' boundary
+tests/src/styles/utilities/float.test.ts:18:2 > float utilities > resolves every side around the 'md' boundary
+tests/src/styles/utilities/float.test.ts:18:2 > float utilities > resolves every side around the 'lg' boundary
+tests/src/styles/utilities/float.test.ts:18:2 > float utilities > resolves every side around the 'xl' boundary
+tests/src/styles/utilities/float.test.ts:18:2 > float utilities > resolves every side around the 'xxl' boundary
+tests/src/styles/utilities/float.test.ts:73:2 > float utilities > resolves a wider infix over a narrower one whatever order the classes are written in

@@ -1,0 +1,21 @@
+mutation: inset-omitted
+site: src/styles/components/_stretched-link.scss
+--- replaced
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+
+--- with
+
+---
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/stretched-link.test.ts
+build exit: 0
+command exit: 1
+summary: Tests  5 failed | 1 passed (6)
+failing cases:
+tests/src/styles/components/stretched-link.test.ts:17:2 > stretched link helper > answers a pointer at every corner of its positioned ancestor with the link, where a bare link leaves the corner
+tests/src/styles/components/stretched-link.test.ts:40:2 > stretched link helper > writes its generated box absolute on every physical edge with empty content
+tests/src/styles/components/stretched-link.test.ts:52:2 > stretched link helper > covers the nearest positioned ancestor rather than the parent the link sits in
+tests/src/styles/components/stretched-link.test.ts:65:2 > stretched link helper > stacks its generated box at level 1, over a positioned sibling at level 0 and under one at level 2
+tests/src/styles/components/stretched-link.test.ts:76:2 > stretched link helper > reaches the link from a corner inside a dark island, reading no token or mode
