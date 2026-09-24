@@ -1,18 +1,22 @@
 Land J-BINDER-PRECEDENCE: the first-saved restoration precedence and the binder follow-ups the collapse owes
 
-Where two restorations overlap on one target, `HostSnapshot` now gives it to the restoration whose
-snapshot saved that target first, because that snapshot recorded the value the target carried
-before either engine wrote it: each record carries a save-order stamp from a class-static counter,
-a taken value keeps its older stamp, and publishing transfers a pending target only to an earlier
-stamp. A property's first save records whether the element carried a `style` attribute, and
+Where two restorations overlap on a target neither has yet written back, `HostSnapshot` now gives
+it to the restoration holding the earliest recording of that target, a taken value keeping the
+order of the recording it came from, because the earliest recording holds the value the target
+carried before either engine wrote it: each record carries a save-order stamp from a class-static
+counter, a taken value keeps its older stamp, and publishing transfers a pending target only to an
+earlier stamp. Each restoration judges the removal of a `class` or `style` attribute it recorded as
+absent once, after its own writes, so an overlapping or later restoration by another engine can
+leave that attribute present and empty, a bound the guide states and three cases pin; the presence
+record shared across snapshots that closes it is carried to a later unit. A property's first save records whether the element carried a `style` attribute, and
 restoring removes an attribute the engine's writes created when no property remains in it, the way
 the `class` attribute is handled. `resolveOptions` leaves an attribute unparsed when the
 constructor supplies its key, so an invalid attribute under an override throws nothing. `readTag`
-reads the tag of an invalid host for an error's context in one exported helper. `CollapseVocabulary`
-names the collapse's resolved groups beside `ButtonVocabulary`. Every detail-less wire event is
-typed `CustomEvent<null>`, the value the platform delivers. Every proof read red first; audited by
-Opus 5.5 on the objective lane and Astra on the subjective lane (the lanes swapped because Astra
-wrote it) and the checker, with the Orchestrator's gates and mutation replay. J-ENGINE campaign
-(D43).
+reads the tag of an invalid host for an error's context in one exported helper, and only a string.
+`CollapseVocabulary` names the collapse's resolved groups beside `ButtonVocabulary`. Every
+detail-less wire event is typed `CustomEvent<null>`, the value the platform delivers. Every proof
+read red first; three Astra rounds and two builder edits, audited by Opus 5.5 on the objective lane
+and Astra on the subjective lane (the lanes swapped because Astra wrote it) and the checker, with
+the Orchestrator's gates, Chromium reproductions, and mutation replays. J-ENGINE campaign (D43).
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
