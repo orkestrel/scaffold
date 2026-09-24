@@ -1,0 +1,45 @@
+=== up landing at 04:24:56 over 88cb691
+=== applied /home/user/scaffold/.orkestrel/veneer/units/up-shared-3.patch
+=== applied /home/user/scaffold/.orkestrel/veneer/units/up-unscoped-profiles-3.patch
+## app/browser/Showcase.ts
+concatenated: ours=6 base=0 theirs=2 -> 8
+## app/browser/constants.ts
+concatenated: ours=222 base=0 theirs=164 -> 386
+## app/browser/index.ts
+concatenated: ours=6 base=0 theirs=2 -> 8
+## guides/veneer.md
+base-union: ours=1 base=1 theirs=1 -> 2
+base-union: ours=1 base=1 theirs=1 -> 2
+base-union: ours=21 base=9 theirs=16 -> 28
+concatenated: ours=236 base=0 theirs=82 -> 318
+table: ours=236 base=210 theirs=215 -> 241
+base-union: ours=10 base=1 theirs=3 -> 12
+## src/styles/index.scss
+concatenated: ours=1 base=0 theirs=1 -> 2
+## tests/app/browser/Showcase.test.ts
+concatenated: ours=6 base=0 theirs=2 -> 8
+concatenated: ours=6 base=0 theirs=2 -> 8
+## tests/app/browser/integration.test.ts
+concatenated: ours=8 base=0 theirs=2 -> 10
+## tests/conformance.test.ts
+concatenated: ours=5 base=0 theirs=9 -> 14
+## tests/fixtures/tailwind/consumer.css
+base-union: ours=1 base=1 theirs=1 -> 2
+## tests/fixtures/tailwind/markup.html
+concatenated: ours=24 base=0 theirs=13 -> 37
+## tests/fixtures/tailwind/preflight.css
+base-union: ours=1 base=1 theirs=1 -> 2
+## tests/setup.css
+base-union: ours=1 base=1 theirs=1 -> 2
+## tests/setup.ts
+concatenated: ours=26 base=0 theirs=13 -> 39
+concatenated: ours=150 base=0 theirs=78 -> 228
+## tests/setupStyles.test.ts
+concatenated: ours=1 base=0 theirs=1 -> 2
+concatenated: ours=49 base=0 theirs=143 -> 192
+=== continued: 7fbc223
+=== land-unit exit=0
+=== oxfmt exit=0
+ M guides/veneer.md
+=== oxlint exit=0
+=== check exit=0

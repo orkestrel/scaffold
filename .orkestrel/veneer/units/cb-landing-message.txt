@@ -1,0 +1,16 @@
+Scope the elements layer's calibrated button surface to the bare button
+
+The universal button rule writes the release's reboot at the release's values, and the calibrated
+surface with its hover, active, focus-visible, disabled, and reduced-motion branches reaches only the
+bare button: a button with no class attribute and no data-bs-target attribute. A component's button
+form therefore paints as its anchor form does: a disabled nav link, a dropdown item, a list-group
+action, a carousel indicator, and the close control take their component rules and the reboot alone.
+A classed or utility-classed button in consumer markup takes the reboot alone as well; the guide
+says to add the btn class for the Button treatment. The showcase's mode control is hooked by a
+data-control attribute, and the proofs read each component's button form against its anchor form.
+
+B-CROSS, unit BARE-BUTTON: two rounds on `opus`, the first audited by `analyst` on Astra, `reviewer`
+on Opus 5.5, and `checker`, the second by `analyst` on Astra and `checker`.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
