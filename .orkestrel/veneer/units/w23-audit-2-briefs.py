@@ -35,6 +35,11 @@ UNITS = {
         focus='claims 1, 2, and 3 (the delta against round 1 and the byte equality, the fixture case against both mutations, and each comment against the compiled stylesheets)',
         checker='claims 1, 4, and 5',
         bench='the bench round-tripped at 04:48 (rd-audit returned exit 0 through this queue)'),
+    'cl': dict(name='LEDGER', worktree='/home/user/veneer-cl', base='42fd88e',
+        evidence='`cl-2.diff`, `cl-2-status.txt`, `cl-shared-2.patch`, `b-cross-cl-report-2.md`, `b-cross-cl-brief-2.md`, `cl-instruments/` (the round-2 records: `cl-mutations-2.log.txt`, `cl-mutate-3.py`, `cl-red-2.json`, the `cl-mutations-owned-2.json`, `cl-mutations-owned-3.json`, and `cl-mutations-shared-4.json` specs, `cl-setup-green-2.log.txt`, `cl-measure-2.log.txt`, `cl-width-2.log.txt`, `cl-guide-2.py`, `cl-scratch-2.sh`, `cl-gates-2.sh`, and the `cl-gate-round2-*` logs), round 1\'s `cl.diff`, `cl-shared.patch`, and `b-cross-cl-report.md`, and the round-1 verdict `cl-audit-verdict.md` and its lane verdicts; the design verdict `/home/user/scaffold/.orkestrel/veneer/b-cross-design-verdict.md` (X1, X6, and X7)',
+        focus='claims 1, 2, and 4 (the delta against round 1, every rewritten sentence against the code, and the refusal against its plants and the measurement)',
+        checker='claims 1, 3, and 5',
+        bench='the bench round-tripped at 05:19 (cl-audit returned exit 0 through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"

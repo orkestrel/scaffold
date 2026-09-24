@@ -1,0 +1,1319 @@
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 3635ba1..baa414d 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -2,6 +2,7 @@
+ // exports, read against this workspace's own installed dependency tree.
+ 
+ import type {
++	CompatibilityRow,
+ 	LonghandRule,
+ 	OracleBinding,
+ 	OracleFixture,
+@@ -42,6 +43,8 @@ import {
+ 	attributeSelector,
+ 	classifyDeparture,
+ 	collectAdditions,
++	collectBreakpoints,
++	collectDeclarationPriorities,
+ 	collectDeclarationReads,
+ 	collectElementTags,
+ 	collectImportClosure,
+@@ -50,6 +53,7 @@ import {
+ 	collectKeyframeNames,
+ 	collectLedger,
+ 	collectMandatedRelatives,
++	collectMediaFeatures,
+ 	indexRecordingKeys,
+ 	collectRuleLonghands,
+ 	collectSelectorClasses,
+@@ -63,6 +67,7 @@ import {
+ 	describeDeparture,
+ 	describeSite,
+ 	describeValueCell,
++	expandConditions,
+ 	extractSpecifiers,
+ 	filterComparableBlocks,
+ 	isAdditionCategory,
+@@ -72,6 +77,7 @@ import {
+ 	matchShippedKey,
+ 	normalizeDeclarationValue,
+ 	normalizeMediaCondition,
++	normalizeMediaFeature,
+ 	readAdditions,
+ 	readCascadeBlocks,
+ 	readCompoundTag,
+@@ -86,12 +92,15 @@ import {
+ 	readBootstrapCascade,
+ 	readBuiltCascade,
+ 	readCompatibility,
++	readConditions,
+ 	readDeferrals,
+ 	readDepartures,
++	readKeyframes,
+ 	readManifestMember,
+ 	readOracleInventory,
+ 	readVeneerGuide,
+ 	recordButtonOracle,
++	renderBreakpointTemplate,
+ 	renderRuleKey,
+ 	scanCompatibilityPresence,
+ 	scanOracleObligation,
+@@ -503,6 +512,8 @@ describe('server setup', () => {
+ 			'attributeSelector',
+ 			'classifyDeparture',
+ 			'collectAdditions',
++			'collectBreakpoints',
++			'collectDeclarationPriorities',
+ 			'collectDeclarationReads',
+ 			'collectElementTags',
+ 			'collectImportClosure',
+@@ -511,6 +522,7 @@ describe('server setup', () => {
+ 			'collectKeyframeNames',
+ 			'collectLedger',
+ 			'collectMandatedRelatives',
++			'collectMediaFeatures',
+ 			'collectRuleLonghands',
+ 			'collectSelectorClasses',
+ 			'collectSharedNames',
+@@ -523,6 +535,7 @@ describe('server setup', () => {
+ 			'describeDeparture',
+ 			'describeSite',
+ 			'describeValueCell',
++			'expandConditions',
+ 			'extractSpecifiers',
+ 			'extractStringArgument',
+ 			'filterComparableBlocks',
+@@ -539,20 +552,24 @@ describe('server setup', () => {
+ 			'matchesSignature',
+ 			'normalizeDeclarationValue',
+ 			'normalizeMediaCondition',
++			'normalizeMediaFeature',
+ 			'readAdditions',
+ 			'readBootstrapCascade',
+ 			'readBuiltCascade',
+ 			'readCascadeBlocks',
+ 			'readCompatibility',
+ 			'readCompoundTag',
++			'readConditions',
+ 			'readDeferrals',
+ 			'readDepartures',
++			'readKeyframes',
+ 			'readManifestMember',
+ 			'readOracleControl',
+ 			'readOracleInventory',
+ 			'readValueCell',
+ 			'readVeneerGuide',
+ 			'recordButtonOracle',
++			'renderBreakpointTemplate',
+ 			'renderRuleKey',
+ 			'scanCompatibilityPresence',
+ 			'scanEscapingImport',
+@@ -580,6 +597,10 @@ describe('server setup', () => {
+ 		expect(inventory.components.btn?.properties).toContain('--bs-btn-color')
+ 		expect(inventory.components.btn?.keyframes).toEqual([])
+ 		expect(inventory.components.spinner?.keyframes).toContain('spinner-border')
++		expect(inventory.media).toContain('@media (min-width: 576px)')
++		expect(inventory.media).toContain(
++			'@media (max-width: 575.98px) and (prefers-reduced-motion: reduce)',
++		)
+ 		expect(
+ 			inventory.components.container?.rules.find(
+ 				(rule) => rule.selector === '.container' && rule.condition !== undefined,
+@@ -589,23 +610,36 @@ describe('server setup', () => {
+ 		try {
+ 			const path = scratch.write('inventory.json', '{}')
+ 			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory header')
+-			scratch.write('inventory.json', '{"version":"5.3.8","digests":{"css":false},"components":{}}')
++			scratch.write('inventory.json', '{"version":"5.3.8","digests":{},"components":{}}')
++			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory header')
++			scratch.write(
++				'inventory.json',
++				'{"version":"5.3.8","digests":{},"components":{},"media":[1]}',
++			)
++			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory media 1')
++			scratch.write(
++				'inventory.json',
++				'{"version":"5.3.8","digests":{"css":false},"components":{},"media":[]}',
++			)
+ 			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory digest css')
+-			scratch.write('inventory.json', '{"version":"5.3.8","digests":{},"components":{"btn":{}}}')
++			scratch.write(
++				'inventory.json',
++				'{"version":"5.3.8","digests":{},"components":{"btn":{}},"media":[]}',
++			)
+ 			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory component btn')
+ 			scratch.write(
+ 				'inventory.json',
+-				'{"version":"5.3.8","digests":{},"components":{"btn":{"selectors":[{"selector":".btn","declarations":[{"property":"color"}]}],"properties":{},"keyframes":[]}}}',
++				'{"version":"5.3.8","digests":{},"components":{"btn":{"selectors":[{"selector":".btn","declarations":[{"property":"color"}]}],"properties":{},"keyframes":[]}},"media":[]}',
+ 			)
+ 			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory declaration btn')
+ 			scratch.write(
+ 				'inventory.json',
+-				'{"version":"5.3.8","digests":{},"components":{"btn":{"selectors":[],"properties":{},"keyframes":[{}]}}}',
++				'{"version":"5.3.8","digests":{},"components":{"btn":{"selectors":[],"properties":{},"keyframes":[{}]}},"media":[]}',
+ 			)
+ 			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory keyframes btn')
+ 			scratch.write(
+ 				'inventory.json',
+-				'{"version":"5.3.8","digests":{},"components":{"btn":{"selectors":[false],"properties":{},"keyframes":[]}}}',
++				'{"version":"5.3.8","digests":{},"components":{"btn":{"selectors":[false],"properties":{},"keyframes":[]}},"media":[]}',
+ 			)
+ 			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory selector btn')
+ 		} finally {
+@@ -613,6 +647,26 @@ describe('server setup', () => {
+ 		}
+ 	})
+ 
++	it('keeps a digest and a component the inventory records under the __proto__ key', () => {
++		// An ordinary object's prototype setter swallows a written `__proto__` key, so a reader writing
++		// into one returns neither entry and a pin over the digest keys never sees the extra digest.
++		const scratch = createScratch()
++		try {
++			const path = scratch.write(
++				'inventory.json',
++				'{"version":"5.3.8","digests":{"__proto__":"abc","bootstrap.css":"def"},"components":{"__proto__":{"selectors":[],"properties":{},"keyframes":[]}},"media":[]}',
++			)
++			const inventory = readOracleInventory(path)
++			expect(Object.keys(inventory.digests)).toEqual(['__proto__', 'bootstrap.css'])
++			expect(Object.getOwnPropertyDescriptor(inventory.digests, '__proto__')?.value).toBe('abc')
++			expect(Object.keys(inventory.components)).toEqual(['__proto__'])
++			expect(Object.getPrototypeOf(inventory.digests)).toBeNull()
++			expect(Object.getPrototypeOf(inventory.components)).toBeNull()
++		} finally {
++			scratch.destroy()
++		}
++	})
++
+ 	it(
+ 		'records and reads official control state and rejects contradicted or absent obligation steps',
+ 		async () => {
+@@ -1162,6 +1216,82 @@ describe('server setup', () => {
+ 		}
+ 	})
+ 
++	it('reads the media condition and keyframes rows only within their Styles subsections', () => {
++		const scratch = createScratch()
++		try {
++			const path = scratch.write(
++				'guide.md',
++				[
++					'## Styles',
++					'',
++					'### Media conditions',
++					'',
++					'| Condition | Bootstrap 5.3.8 | Written by |',
++					'| --- | --- | --- |',
++					'| `(width >= {breakpoint})` | `(min-width: {breakpoint})` | The `breakpoint-up` mixin |',
++					'| `(forced-colors: active)` | — | The `forced-colors` mixin |',
++					'',
++					'### Keyframes',
++					'',
++					'| Name | Key | Reduced motion |',
++					'| --- | --- | --- |',
++					'| `spinner-border` | `spinner` | Slowed to `1.5s`. |',
++					'',
++					'## Other',
++					'',
++					'### Media conditions',
++					'',
++					'| Condition | Bootstrap 5.3.8 | Written by |',
++					'| --- | --- | --- |',
++					'| print | print | Outside Styles |',
++					'',
++					'### Keyframes',
++					'',
++					'| Name | Key | Reduced motion |',
++					'| --- | --- | --- |',
++					'| ignored | ignored | Outside Styles |',
++					'',
++				].join('\n'),
++			)
++			expect(readConditions(path)).toEqual([
++				{
++					condition: '(width >= {breakpoint})',
++					recorded: '(min-width: {breakpoint})',
++					writer: 'The breakpoint-up mixin',
++				},
++				{
++					condition: '(forced-colors: active)',
++					recorded: undefined,
++					writer: 'The forced-colors mixin',
++				},
++			])
++			expect(readKeyframes(path)).toEqual([
++				{ name: 'spinner-border', component: 'spinner', motion: 'Slowed to 1.5s.' },
++			])
++			scratch.write('guide.md', '## Other\n\n### Media conditions\n')
++			expect(() => readConditions(path)).toThrow('missing Styles / Media conditions subsection')
++			expect(() => readKeyframes(path)).toThrow('missing Styles / Keyframes subsection')
++			scratch.write(
++				'guide.md',
++				'## Styles\n\n### Media conditions\n\n| Condition | Written by |\n| --- | --- |\n\n### Keyframes\n\n| Name | Reduced motion |\n| --- | --- |\n',
++			)
++			expect(() => readConditions(path)).toThrow('missing Bootstrap 5.3.8 column')
++			expect(() => readKeyframes(path)).toThrow('missing Key column')
++			scratch.write(
++				'guide.md',
++				'## Styles\n\n### Media conditions\n\n| Condition | Bootstrap 5.3.8 | Written by |\n| --- | --- | --- |\n| print | | The display partial |\n\n### Keyframes\n\n| Name | Key | Reduced motion |\n| --- | --- | --- |\n| spinner-grow | spinner | |\n',
++			)
++			expect(() => readConditions(path)).toThrow(
++				'Condition row 1 (Condition: print): missing required cell',
++			)
++			expect(() => readKeyframes(path)).toThrow(
++				'Keyframes row 1 (Name: spinner-grow): missing required cell',
++			)
++		} finally {
++			scratch.destroy()
++		}
++	})
++
+ 	it('rejects excluded names across the cascade even before their inventory key has a guide row', () => {
+ 		const scratch = createScratch()
+ 		try {
+@@ -1283,6 +1413,7 @@ describe('server setup', () => {
+ 			const inventory = {
+ 				version: BOOTSTRAP_VERSION,
+ 				digests: {},
++				media: [],
+ 				components: {
+ 					btn: {
+ 						selectors: ['.btn', '.btn > .label', '.btn-close'],
+@@ -1854,6 +1985,7 @@ describe('server setup', () => {
+ 		const inventory: OracleInventory = {
+ 			version: BOOTSTRAP_VERSION,
+ 			digests: {},
++			media: [],
+ 			components: { btn: shared, close: shared },
+ 		}
+ 		const blocks = readCascadeBlocks('@layer theme { :root { --bs-btn-close-filter: none } }')
+@@ -1910,6 +2042,7 @@ describe('server setup', () => {
+ 		const inventory: OracleInventory = {
+ 			version: BOOTSTRAP_VERSION,
+ 			digests: {},
++			media: [],
+ 			components: { btn: emitted, close: withheld },
+ 		}
+ 		const blocks = readCascadeBlocks('@layer components { .btn { --bs-btn-close-filter: none } }')
+@@ -1960,6 +2093,7 @@ describe('server setup', () => {
+ 		const inventory: OracleInventory = {
+ 			version: BOOTSTRAP_VERSION,
+ 			digests: {},
++			media: [],
+ 			components: { 'row-gap': utility, row: utility },
+ 		}
+ 		const blocks = readCascadeBlocks('@layer utilities { .row-gap-0 { row-gap: var(--vn-gap-0) } }')
+@@ -1992,6 +2126,7 @@ describe('server setup', () => {
+ 		const inventory: OracleInventory = {
+ 			version: BOOTSTRAP_VERSION,
+ 			digests: {},
++			media: [],
+ 			components: { btn: repeated },
+ 		}
+ 		const blocks = readCascadeBlocks('@layer components { .btn { color: red } }')
+@@ -2001,7 +2136,7 @@ describe('server setup', () => {
+ 		])
+ 	})
+ 
+-	it('reports a planted selector, declaration, and animation name the inventory lacks', () => {
++	it('reports a planted selector, declaration, and custom property the inventory lacks, and no recorded animation', () => {
+ 		expect(
+ 			collectAdditions(
+ 				readCascadeBlocks(LEDGER_CASCADE),
+@@ -2016,14 +2151,105 @@ describe('server setup', () => {
+ 			'btn | --vn-btn-tertiary-face | — | property',
+ 			'btn | .btn { color } | @media print | declaration',
+ 			'table | .caption-top { color } | — | declaration',
+-			'btn | btn-pulse | — | keyframes',
+ 		])
+ 		expect(collectKeyframeNames(LEDGER_CASCADE)).toEqual(['btn-pulse'])
++		expect(LEDGER_INVENTORY.components.btn?.keyframes).toEqual(['btn-pulse'])
+ 		expect(collectLedger(LEDGER_CASCADE, LEDGER_INVENTORY, LEDGER_SHIPPED).departures).toHaveLength(
+ 			9,
+ 		)
+ 	})
+ 
++	it('refuses a shipped component whose recorded animation the cascade does not define, which the ledger does not read', () => {
++		const rows: readonly CompatibilityRow[] = [
++			{
++				component: 'btn',
++				category: 'selector',
++				obligation: 'Official selectors',
++				proof: undefined,
++				status: 'shipped',
++			},
++		]
++		const inventory: OracleInventory = {
++			version: BOOTSTRAP_VERSION,
++			digests: {},
++			components: {
++				btn: {
++					selectors: ['.btn'],
++					rules: [
++						{
++							selector: '.btn',
++							condition: undefined,
++							declarations: [{ property: 'color', value: 'red' }],
++						},
++					],
++					properties: [],
++					keyframes: ['btn-pulse'],
++				},
++			},
++			media: [],
++		}
++		const written = '@layer components { .btn { color: red } }'
++		const defined = `${written}\n@keyframes btn-pulse { to { opacity: 1 } }`
++		expect(scanCompatibilityPresence(rows, inventory, [], defined)).toBeUndefined()
++		expect(scanCompatibilityPresence(rows, inventory, [], written)).toBe(
++			'Shipped component btn is missing keyframes btn-pulse',
++		)
++		// A withheld key's animation is not required, as its selectors are not.
++		expect(
++			scanCompatibilityPresence(
++				rows.map((row) => ({ ...row, status: 'accepted' })),
++				inventory,
++				[],
++				written,
++			),
++		).toBeUndefined()
++		// The deletion leaves every ledger reading as it was, so the presence scan is the only gate
++		// that reports it.
++		expect(collectLedger(defined, inventory, ['btn'])).toEqual({ departures: [], additions: [] })
++		expect(collectLedger(written, inventory, ['btn'])).toEqual({ departures: [], additions: [] })
++	})
++
++	it('refuses an animation the inventory records under no shipped key, naming it, and admits one a shipped key records', () => {
++		// X7 ships the release's animations and no other, and the keyframes parity case refuses any
++		// animation no shipped key records, so the ledger refuses the same animations rather than
++		// returning one as an addition that no green suite could hold.
++		const orphan = `${LEDGER_CASCADE}\n@keyframes orphan-spin { to { opacity: 1 } }`
++		expect(() => collectLedger(orphan, LEDGER_INVENTORY, LEDGER_SHIPPED)).toThrow(
++			'Keyframes orphan-spin is recorded under no shipped component',
++		)
++		// The name decides nothing: `btn-glow` opens with the shipped `btn` key and is still refused.
++		expect(() => collectAdditions([], ['btn-glow'], LEDGER_INVENTORY, LEDGER_SHIPPED)).toThrow(
++			'Keyframes btn-glow is recorded under no shipped component',
++		)
++		const recorded: OracleInventory = {
++			...LEDGER_INVENTORY,
++			components: {
++				...LEDGER_INVENTORY.components,
++				spinner: {
++					selectors: [],
++					rules: [],
++					properties: [],
++					keyframes: ['spinner-border'],
++				},
++				table: {
++					selectors: ['.caption-top'],
++					rules: [],
++					properties: [],
++					keyframes: ['table-flash'],
++				},
++			},
++		}
++		// A withheld key's record does not admit its animation.
++		expect(() => collectAdditions([], ['spinner-border'], recorded, LEDGER_SHIPPED)).toThrow(
++			'Keyframes spinner-border is recorded under no shipped component',
++		)
++		// A shipped key's record admits its animation, whichever key the name opens with.
++		expect(collectAdditions([], ['btn-pulse', 'table-flash'], recorded, LEDGER_SHIPPED)).toEqual([])
++		expect(collectLedger(LEDGER_CASCADE, LEDGER_INVENTORY, LEDGER_SHIPPED).additions).toHaveLength(
++			6,
++		)
++	})
++
+ 	it('names an emitted rule the release records under no such condition', () => {
+ 		const written = '@layer components { .btn { color: #fff } }'
+ 		const planted = `${written}\n@media print { @layer components { .btn { color: blue } } }`
+@@ -2097,7 +2323,6 @@ describe('server setup', () => {
+ 				'btn | --vn-btn-tertiary-face | — | property',
+ 				'btn | .btn { color } | @media print | declaration',
+ 				'table | .caption-top { color } | — | declaration',
+-				'btn | btn-pulse | — | keyframes',
+ 			])
+ 		} finally {
+ 			scratch.destroy()
+@@ -2233,6 +2458,159 @@ describe('server setup', () => {
+ 		])
+ 	})
+ 
++	it('reads a minified condition and a condition under several at-rules in the range notation', () => {
++		expect(normalizeMediaFeature('(prefers-reduced-motion:reduce)')).toBe(
++			'(prefers-reduced-motion: reduce)',
++		)
++		expect(normalizeMediaFeature('( width<=576px )')).toBe('(width <= 576px)')
++		expect(normalizeMediaFeature('(max-width: 576px)')).toBe('(width <= 576px)')
++		expect(normalizeMediaFeature('print')).toBe('print')
++		expect(normalizeMediaCondition('@media (width>=576px)')).toBe('(width >= 576px)')
++		expect(normalizeMediaCondition('@media (min-width:576px)')).toBe('(width >= 576px)')
++		expect(normalizeMediaCondition('@media (max-width:575.98px)')).toBe('(width < 576px)')
++		expect(
++			normalizeMediaCondition('@media (width<576px) and (prefers-reduced-motion:reduce)'),
++		).toBe('(width < 576px) and (prefers-reduced-motion: reduce)')
++		expect(normalizeMediaCondition('@media (forced-colors:active)')).toBe('(forced-colors: active)')
++		expect(normalizeMediaCondition('@media print')).toBe('print')
++		expect(normalizeMediaCondition('@media (width >= 576px) and @supports (display:grid)')).toBe(
++			'(width >= 576px) and (display: grid)',
++		)
++	})
++
++	it('collects each feature a list of conditions writes, once, in the range notation', () => {
++		expect(
++			collectMediaFeatures([
++				'@media (width>=576px)',
++				undefined,
++				'@media (max-width: 575.98px) and (prefers-reduced-motion: reduce)',
++				'@media (prefers-reduced-motion:reduce)',
++				'@media (min-width: 576px)',
++				'@media print',
++			]),
++		).toEqual(['(prefers-reduced-motion: reduce)', '(width < 576px)', '(width >= 576px)', 'print'])
++		expect(collectMediaFeatures([])).toEqual([])
++	})
++
++	it('collects the breakpoint ramp a sheet declares, at the first declaration of each name', () => {
++		const sheet = new SheetReader(
++			[
++				':root, [data-bs-theme=light] { --bs-breakpoint-xs: 0; --bs-breakpoint-sm: 576px; --bs-blue: #0d6efd }',
++				'.later { --bs-breakpoint-sm: 1px; --bs-breakpoint-md: 768px }',
++			].join('\n'),
++		)
++		expect([...collectBreakpoints(sheet.declarations)]).toEqual([
++			['xs', '0'],
++			['sm', '576px'],
++			['md', '768px'],
++		])
++		expect([...collectBreakpoints(new SheetReader('.x { color: red }').declarations)]).toEqual([])
++		expect([
++			...collectBreakpoints(new SheetReader(readBootstrapCascade()).declarations).keys(),
++		]).toEqual(['xs', 'sm', 'md', 'lg', 'xl', 'xxl'])
++	})
++
++	it('expands each templated condition over the nonzero boundaries of a ramp', () => {
++		const rows = [
++			{
++				condition: '(width >= {breakpoint})',
++				recorded: '(min-width: {breakpoint})',
++				writer: 'The breakpoint-up mixin',
++			},
++			{
++				condition: '(width < {breakpoint})',
++				recorded: '(max-width: {breakpoint} - 0.02px)',
++				writer: 'The breakpoint-down mixin',
++			},
++			{
++				condition: '(forced-colors: active)',
++				recorded: undefined,
++				writer: 'The forced-colors mixin',
++			},
++		]
++		const ramp = new Map([
++			['xs', '0'],
++			['sm', '576px'],
++			['xxl', '1400px'],
++		])
++		expect(expandConditions(rows, ramp)).toEqual([
++			{
++				condition: '(width >= 576px)',
++				recorded: '(min-width: 576px)',
++				writer: 'The breakpoint-up mixin',
++			},
++			{
++				condition: '(width >= 1400px)',
++				recorded: '(min-width: 1400px)',
++				writer: 'The breakpoint-up mixin',
++			},
++			{
++				condition: '(width < 576px)',
++				recorded: '(max-width: 575.98px)',
++				writer: 'The breakpoint-down mixin',
++			},
++			{
++				condition: '(width < 1400px)',
++				recorded: '(max-width: 1399.98px)',
++				writer: 'The breakpoint-down mixin',
++			},
++			{
++				condition: '(forced-colors: active)',
++				recorded: undefined,
++				writer: 'The forced-colors mixin',
++			},
++		])
++		expect(expandConditions(rows, new Map())).toEqual([rows[2]])
++		expect(renderBreakpointTemplate('(width >= {breakpoint})', 992)).toBe('(width >= 992px)')
++		expect(renderBreakpointTemplate('(max-width: {breakpoint} - 0.02px)', 1200)).toBe(
++			'(max-width: 1199.98px)',
++		)
++		expect(renderBreakpointTemplate('print', 576)).toBe('print')
++		expect(() => expandConditions(rows, new Map([['sm', '36em']]))).toThrow(
++			'Breakpoint sm width 36em is not a pixel length',
++		)
++	})
++
++	it("keys each declaration's priority by its selector, property, and condition, so a priority swapped between conditions differs", () => {
++		const release = collectDeclarationPriorities(
++			new SheetReader(
++				[
++					'@media (max-width: 575.98px) { .offcanvas-sm { background-color: var(--bs-offcanvas-bg) } }',
++					'@media (min-width: 576px) { .offcanvas-sm { background-color: transparent !important } }',
++					'.a, .b { color: red !important }',
++					'.b { color: blue }',
++				].join('\n'),
++			).declarations,
++		)
++		expect([...release]).toEqual([
++			['.offcanvas-sm { background-color } (width < 576px)', [false]],
++			['.offcanvas-sm { background-color } (width >= 576px)', [true]],
++			['.a { color }', [true]],
++			['.b { color }', [false, true]],
++		])
++		const [below, above] = [
++			'.offcanvas-sm { background-color } (width < 576px)',
++			'.offcanvas-sm { background-color } (width >= 576px)',
++		]
++		const kept = collectDeclarationPriorities(
++			new SheetReader(
++				'@layer components { @media (width<576px) { .offcanvas-sm { background-color: var(--bs-offcanvas-bg) } } @media (width>=576px) { .offcanvas-sm { background-color: #0000 !important } } }',
++			).declarations,
++		)
++		const swapped = collectDeclarationPriorities(
++			new SheetReader(
++				'@layer components { @media (width<576px) { .offcanvas-sm { background-color: var(--bs-offcanvas-bg) !important } } @media (width>=576px) { .offcanvas-sm { background-color: #0000 } } }',
++			).declarations,
++		)
++		expect([kept.get(below), kept.get(above)]).toEqual([release.get(below), release.get(above)])
++		expect([swapped.get(below), swapped.get(above)]).toEqual([[true], [false]])
++		// Read as one set per selector and property, the swapped sheet carries both priorities as the
++		// release does, which is the reading that let the swap pass.
++		expect(new Set([swapped.get(below), swapped.get(above)].flat())).toEqual(
++			new Set([release.get(below), release.get(above)].flat()),
++		)
++	})
++
+ 	it('names each departure member from the two values alone', () => {
+ 		expect(classifyDeparture('none', undefined)).toBe('dropped')
+ 		expect(classifyDeparture('var(--bs-x)', 'var(--bs-x, start)')).toBe('fallback')
+@@ -2244,7 +2622,8 @@ describe('server setup', () => {
+ 		expect(classifyDeparture('var(--bs-x)', 'var(--bs-x) solid')).toBe('declared')
+ 		expect(isDeparture('tokenized')).toBe(true)
+ 		expect(isDeparture('retuned')).toBe(false)
+-		expect(isAdditionCategory('keyframes')).toBe(true)
++		expect(isAdditionCategory('property')).toBe(true)
++		expect(isAdditionCategory('keyframes')).toBe(false)
+ 		expect(isAdditionCategory('shape')).toBe(false)
+ 	})
+ 
+@@ -2339,6 +2718,7 @@ describe('server setup', () => {
+ 		const inventory: OracleInventory = {
+ 			version: BOOTSTRAP_VERSION,
+ 			digests: {},
++			media: [],
+ 			components: Object.fromEntries(
+ 				Object.entries(recorded).map(([key, selectors]) => [
+ 					key,
+@@ -2581,13 +2961,36 @@ describe('SheetReader', () => {
+ 				'@layer components { .card { @media (width > 0px) { color: red !important } } }',
+ 			).declarations,
+ 		).toEqual([
+-			{ selector: '.card', property: 'color', value: 'red', important: true, layer: 'components' },
++			{
++				selector: '.card',
++				property: 'color',
++				value: 'red',
++				important: true,
++				layer: 'components',
++				condition: '@media (width > 0px)',
++			},
+ 		])
+ 		// A descriptor no style rule encloses is not a rule declaration.
+ 		expect(
+ 			new SheetReader("@font-face { font-family: 'Probe'; src: local('Probe') }").declarations,
+ 		).toEqual([])
+ 	})
++
++	it('reads each declaration with the conditional at-rules around it and no layer among them', () => {
++		expect(
++			new SheetReader(
++				[
++					'@layer components { @media (width >= 576px) { @supports (display: grid) { .grid { display: grid } } } }',
++					'.card { @media print { color: red } }',
++					'.plain { color: blue }',
++				].join('\n'),
++			).declarations.map((declaration) => [declaration.selector, declaration.condition]),
++		).toEqual([
++			['.grid', '@media (width >= 576px) and @supports (display: grid)'],
++			['.card', '@media print'],
++			['.plain', undefined],
++		])
++	})
+ })
+ 
+ describe('collectSharedNames', () => {
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 5824b30..304405e 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -57,11 +57,42 @@ export interface DeferralRow {
+ 	readonly reason: string
+ }
+ 
++/**
++ * Describes one media condition the guide's Media conditions table records.
++ *
++ * @remarks
++ * The `condition` member holds the form this cascade writes and the `recorded` member the form the
++ * release writes, each as the query text without its `@media` keyword. Either member can carry the
++ * `{breakpoint}` template, which the {@link expandConditions} helper replaces with each boundary's
++ * width. The `recorded` member is undefined where the release writes no such condition. The
++ * `writer` member names the mixin or partial that writes the condition, as the table's
++ * `Written by` cell states it.
++ */
++export interface ConditionRow {
++	readonly condition: string
++	readonly recorded: string | undefined
++	readonly writer: string
++}
++
++/**
++ * Describes one animation the guide's Keyframes table records.
++ *
++ * @remarks
++ * The `component` member holds the shipped key whose vocabulary records the animation, read from
++ * the table's `Key` cell, and the `motion` member holds the treatment the release writes for it
++ * under the reduced-motion preference, read from the `Reduced motion` cell.
++ */
++export interface KeyframesRow {
++	readonly name: string
++	readonly component: string
++	readonly motion: string
++}
++
+ /** Names why one declaration the built cascade emits departs from the release it tracks. */
+ export type Departure = 'tokenized' | 'aliased' | 'declared' | 'fallback' | 'dropped'
+ 
+ /** Names the axis an emitted name the official inventory lacks varies on. */
+-export type AdditionCategory = 'selector' | 'declaration' | 'property' | 'keyframes'
++export type AdditionCategory = 'selector' | 'declaration' | 'property'
+ 
+ /**
+  * Describes one measured difference between a recorded declaration and the emitted one.
+@@ -88,12 +119,13 @@ export interface DepartureRow {
+  * Names one emitted name the official inventory lacks.
+  *
+  * @remarks
+- * `name` is the selector for a `selector` addition, the custom-property name for a `property`
+- * addition, the keyframes name for a `keyframes` addition, and `selector { property }` for a
+- * `declaration` addition, whose selector the release writes without that declaration. `condition`
+- * holds the at-rule text enclosing the emitted rule, and is undefined where none encloses it, so a
+- * rule the release writes unconditionally and this cascade also writes under a query the release
+- * does not record is named at the site that carries it.
++ * The `name` member is the selector for a `selector` addition, the custom-property name for a
++ * `property` addition, and the `selector { property }` text for a `declaration` addition, whose
++ * selector the release writes without that declaration. The `condition` member holds the at-rule
++ * text enclosing the emitted rule, and is undefined where none encloses it, so a rule the release
++ * writes unconditionally and this cascade also writes under a query the release does not record is
++ * named at the site that carries it. An animation is never an addition: the {@link collectAdditions}
++ * helper refuses one no shipped key records.
+  */
+ export interface Addition {
+ 	readonly component: string
+@@ -281,11 +313,18 @@ export interface OracleVocabulary {
+ 	readonly keyframes: readonly string[]
+ }
+ 
+-/** Describes the pinned inventory projection the presence proof reads. */
++/**
++ * Describes the pinned inventory projection the presence proof reads.
++ *
++ * @remarks
++ * The `media` member carries each media condition the release writes, as the `@media` at-rule text
++ * the inventory records at its top level, compound conditions whole.
++ */
+ export interface OracleInventory {
+ 	readonly version: string
+ 	readonly digests: Readonly<Record<string, string>>
+ 	readonly components: Readonly<Record<string, OracleVocabulary>>
++	readonly media: readonly string[]
+ }
+ 
+ /**
+@@ -442,7 +481,10 @@ export const LEDGER_GUIDE = [
+ 	'',
+ ].join('\n')
+ 
+-/** Writes one cascade carrying a difference of every departure member and a name of every category. */
++/**
++ * Writes one cascade carrying a difference of every departure member, a name of every addition
++ * category, and an animation the planted inventory records under a shipped key.
++ */
+ export const LEDGER_CASCADE = [
+ 	'@layer theme { :root { --bs-btn-close-filter: none } }',
+ 	'@layer elements { body { color: red; margin: 0; text-align: var(--bs-body-text-align, start) } }',
+@@ -489,7 +531,7 @@ export const LEDGER_INVENTORY: OracleInventory = Object.freeze({
+ 				},
+ 			],
+ 			properties: ['--bs-btn-close-filter'],
+-			keyframes: [],
++			keyframes: ['btn-pulse'],
+ 		},
+ 		reboot: {
+ 			selectors: ['body'],
+@@ -522,6 +564,7 @@ export const LEDGER_INVENTORY: OracleInventory = Object.freeze({
+ 			keyframes: [],
+ 		},
+ 	},
++	media: ['@media (min-width: 576px)'],
+ })
+ 
+ /** Names the shipped keys the planted inventory carries. */
+@@ -563,9 +606,7 @@ export function isDeparture(text: string): text is Departure {
+  * @returns True when the text is one of the addition categories; false otherwise.
+  */
+ export function isAdditionCategory(text: string): text is AdditionCategory {
+-	return (
+-		text === 'selector' || text === 'declaration' || text === 'property' || text === 'keyframes'
+-	)
++	return text === 'selector' || text === 'declaration' || text === 'property'
+ }
+ 
+ /** Describes written declarations belonging to one brace block in a style partial. */
+@@ -1219,6 +1260,196 @@ export function readAdditions(
+ 	return rows
+ }
+ 
++/**
++ * Reads the media conditions from the Styles section's Media conditions subsection.
++ *
++ * @param path - The Markdown document to read; defaults to the package guide.
++ * @returns Each recorded condition in document order, templates unexpanded.
++ * @throws When the subsection, the table, a column, or a required cell is missing.
++ *
++ * @remarks
++ * A `—` cell in the release column records a condition the release does not write. Every other
++ * cell is read as its text, so a `{breakpoint}` template stays for the {@link expandConditions}
++ * helper.
++ */
++export function readConditions(
++	path: string = resolve(WORKSPACE_ROOT, VENEER_GUIDE_PATH),
++): readonly ConditionRow[] {
++	const headers = ['Condition', `Bootstrap ${BOOTSTRAP_VERSION}`, 'Written by']
++	const rows: ConditionRow[] = []
++	for (const table of selectSubsectionTables(
++		readFileSync(path, 'utf8'),
++		'Styles',
++		'Media conditions',
++		'Condition',
++	)) {
++		const columns = selectTableColumns(table, headers, 'Condition')
++		for (const [position, row] of table.rows.entries()) {
++			const [condition, recorded, writer] = readTableCells(row, columns)
++			if (!condition || !recorded || !writer) {
++				throw new Error(
++					describeIncompleteRow(
++						'Condition',
++						position,
++						new Map([
++							['Condition', condition ?? ''],
++							[`Bootstrap ${BOOTSTRAP_VERSION}`, recorded ?? ''],
++							['Written by', writer ?? ''],
++						]),
++					),
++				)
++			}
++			rows.push({
++				condition,
++				recorded: recorded === ABSENT_CELL ? undefined : recorded,
++				writer,
++			})
++		}
++	}
++	return rows
++}
++
++/**
++ * Reads the animations from the Styles section's Keyframes subsection.
++ *
++ * @param path - The Markdown document to read; defaults to the package guide.
++ * @returns Each recorded animation in document order.
++ * @throws When the subsection, the table, a column, or a required cell is missing.
++ */
++export function readKeyframes(
++	path: string = resolve(WORKSPACE_ROOT, VENEER_GUIDE_PATH),
++): readonly KeyframesRow[] {
++	const rows: KeyframesRow[] = []
++	for (const table of selectSubsectionTables(
++		readFileSync(path, 'utf8'),
++		'Styles',
++		'Keyframes',
++		'Keyframes',
++	)) {
++		const columns = selectTableColumns(table, ['Name', 'Key', 'Reduced motion'], 'Keyframes')
++		for (const [position, row] of table.rows.entries()) {
++			const [name, component, motion] = readTableCells(row, columns)
++			if (!name || !component || !motion) {
++				throw new Error(
++					describeIncompleteRow(
++						'Keyframes',
++						position,
++						new Map([
++							['Name', name ?? ''],
++							['Key', component ?? ''],
++							['Reduced motion', motion ?? ''],
++						]),
++					),
++				)
++			}
++			rows.push({ name, component, motion })
++		}
++	}
++	return rows
++}
++
++/**
++ * Collects the breakpoint ramp a stylesheet declares through its `--bs-breakpoint-*` custom
++ * properties.
++ *
++ * @param declarations - The declarations to read, as the {@link SheetReader.declarations} member
++ *   reports them for the release's stylesheet.
++ * @returns Each breakpoint name beside the width its first declaration writes, in written order,
++ *   the zero boundary included.
++ *
++ * @remarks
++ * The release declares the ramp on its root scope, and this reading takes the width from there
++ * rather than from a list written beside it, so a proof expanding a template over the ramp reads
++ * the release's own boundaries.
++ */
++export function collectBreakpoints(
++	declarations: readonly SheetDeclaration[],
++): ReadonlyMap<string, string> {
++	const ramp = new Map<string, string>()
++	for (const declaration of declarations) {
++		const name = /^--bs-breakpoint-([\w-]+)$/u.exec(declaration.property)?.[1]
++		if (name !== undefined && !ramp.has(name)) ramp.set(name, declaration.value)
++	}
++	return ramp
++}
++
++/**
++ * Renders one condition cell's `{breakpoint}` template at one boundary.
++ *
++ * @param template - The cell's text, such as `(max-width: {breakpoint} - 0.02px)`.
++ * @param width - The boundary's width in pixels.
++ * @returns The text with each template written as the width in pixels, less the amount a
++ *   ` - <amount>px` subtraction after the template names, rounded to four decimal places so the
++ *   release's `575.98px` width reads as it writes it.
++ *
++ * @example
++ * ```ts
++ * renderBreakpointTemplate('(max-width: {breakpoint} - 0.02px)', 576) // '(max-width: 575.98px)'
++ * ```
++ */
++export function renderBreakpointTemplate(template: string, width: number): string {
++	return template.replaceAll(
++		/\{breakpoint\}(?: - (\d+(?:\.\d+)?)px)?/gu,
++		(_match, offset: string | undefined) =>
++			`${String(Math.round((width - Number(offset ?? 0)) * 10_000) / 10_000)}px`,
++	)
++}
++
++/**
++ * Expands the `{breakpoint}` template in each condition row over a breakpoint ramp.
++ *
++ * @param rows - The recorded conditions, as the {@link readConditions} function reads them.
++ * @param ramp - Each breakpoint name beside its width, as the {@link collectBreakpoints} helper
++ *   collects them.
++ * @returns For a row whose condition carries the template, one row per nonzero boundary in ramp
++ *   order with the template replaced by that boundary's width in both condition cells; every other
++ *   row unchanged; each in table order.
++ * @throws When a nonzero boundary's width is not a pixel length, which the release's upper-bound
++ *   form cannot be computed from.
++ *
++ * @remarks
++ * A zero boundary is met by every viewport and exceeded by none, so it writes no condition. A
++ * template followed by a subtraction, as in `{breakpoint} - 0.02px`, writes the width less that
++ * amount, which is how the release writes an exclusive upper bound: the `(max-width: 575.98px)`
++ * feature for the `576px` boundary.
++ *
++ * @example
++ * ```ts
++ * expandConditions(
++ *   [{ condition: '(width < {breakpoint})', recorded: '(max-width: {breakpoint} - 0.02px)', writer: 'breakpoint-down' }],
++ *   new Map([['sm', '576px']]),
++ * )
++ * // [{ condition: '(width < 576px)', recorded: '(max-width: 575.98px)', writer: 'breakpoint-down' }]
++ * ```
++ */
++export function expandConditions(
++	rows: readonly ConditionRow[],
++	ramp: ReadonlyMap<string, string>,
++): readonly ConditionRow[] {
++	const expanded: ConditionRow[] = []
++	for (const row of rows) {
++		if (!row.condition.includes('{breakpoint}')) {
++			expanded.push(row)
++			continue
++		}
++		for (const [name, width] of ramp) {
++			if (Number.parseFloat(width) === 0) continue
++			const pixels = /^(\d+(?:\.\d+)?)px$/u.exec(width)?.[1]
++			if (pixels === undefined)
++				throw new Error(`Breakpoint ${name} width ${width} is not a pixel length`)
++			expanded.push({
++				condition: renderBreakpointTemplate(row.condition, Number(pixels)),
++				recorded:
++					row.recorded === undefined
++						? undefined
++						: renderBreakpointTemplate(row.recorded, Number(pixels)),
++				writer: row.writer,
++			})
++		}
++	}
++	return expanded
++}
++
+ /**
+  * Reads the built Veneer cascade whose component vocabulary must match the inventory.
+  * @param path - The built CSS artifact. Default: the {@link CASCADE_PATH} constant under
+@@ -1283,23 +1514,31 @@ export function normalizeDeclarationValue(value: string): string {
+  * equal.
+  *
+  * @param feature - One feature of a media condition, such as `(min-width: 576px)`.
+- * @returns The feature rewritten as the range comparison it expresses, or the feature unchanged
+- *   where it names no width bound.
++ * @returns The feature rewritten as the range comparison it expresses, or the feature with its
++ *   spacing written the one way the expanded compile writes it where it names no width bound.
+  *
+  * @remarks
+  * The release writes `(min-width: 576px)` and `(max-width: 575.98px)`; this cascade writes
+  * `(width >= 576px)` and `(width < 576px)`. A fractional upper bound is the release's way of
+- * writing the exclusive bound the range notation states, so it rounds up to that bound.
+- */
+-function normalizeMediaFeature(feature: string): string {
+-	const lower = /^\(min-width:\s*([\d.]+)px\)$/u.exec(feature)
++ * writing the exclusive bound the range notation states, so it rounds up to that bound. The built
++ * cascade drops the spaces the expanded compile writes, as in the `(width>=576px)` and
++ * `(forced-colors:active)` features, so a feature reads with one space after its colon and one space on each
++ * side of its comparison, whichever spacing the sheet wrote.
++ */
++export function normalizeMediaFeature(feature: string): string {
++	const named = /^\(\s*([a-z-]+)\s*:\s*(.*?)\s*\)$/u.exec(feature)
++	const plain = named === null ? feature : `(${named[1] ?? ''}: ${named[2] ?? ''})`
++	const lower = /^\(min-width: ([\d.]+)px\)$/u.exec(plain)
+ 	if (lower !== null) return `(width >= ${lower[1] ?? ''}px)`
+-	const upper = /^\(max-width:\s*([\d.]+)px\)$/u.exec(feature)
+-	if (upper === null) return feature
+-	const bound = Number(upper[1])
+-	return Number.isInteger(bound)
+-		? `(width <= ${String(bound)}px)`
+-		: `(width < ${String(Math.ceil(bound))}px)`
++	const upper = /^\(max-width: ([\d.]+)px\)$/u.exec(plain)
++	if (upper !== null) {
++		const bound = Number(upper[1])
++		return Number.isInteger(bound)
++			? `(width <= ${String(bound)}px)`
++			: `(width < ${String(Math.ceil(bound))}px)`
++	}
++	const range = /^\(\s*([a-z-]+)\s*(<=|>=|<|>|=)\s*([^\s)]+)\s*\)$/u.exec(plain)
++	return range === null ? plain : `(${range[1] ?? ''} ${range[2] ?? ''} ${range[3] ?? ''})`
+ }
+ 
+ /**
+@@ -1308,18 +1547,48 @@ function normalizeMediaFeature(feature: string): string {
+  *
+  * @param condition - The at-rule text enclosing a declaration, or undefined where none does.
+  * @returns The condition's parameters with every `min-width` and `max-width` feature inside an
+- *   `and` conjunction rewritten as the range comparison it expresses, every other feature and the
+- *   feature order unchanged, or undefined where the declaration sits under no at-rule.
++ *   `and` conjunction rewritten as the range comparison it expresses, every feature's spacing
++ *   written the one way the {@link normalizeMediaFeature} helper states, and every other feature and
++ *   the feature order unchanged, or undefined where the declaration sits under no at-rule.
++ *
++ * @remarks
++ * A declaration under several at-rules carries each one's keyword, as in the
++ * `@media (width >= 576px) and @supports (display: grid)` condition, so the keyword is dropped from
++ * every conjunct rather than from the first alone.
+  */
+ export function normalizeMediaCondition(condition: string | undefined): string | undefined {
+ 	if (condition === undefined) return undefined
+-	const text = normalizeDeclarationValue(condition.replace(/^@[a-z-]+\s*/u, ''))
+-	return text
++	return normalizeDeclarationValue(condition)
+ 		.split(/\s+and\s+/u)
+-		.map(normalizeMediaFeature)
++		.map((feature) => normalizeMediaFeature(feature.replace(/^@[a-z-]+\s*/u, '')))
+ 		.join(' and ')
+ }
+ 
++/**
++ * Collects each feature a list of media conditions writes, in the range notation.
++ *
++ * @param conditions - The at-rule texts to read, such as each rule's condition in a cascade or the
++ *   inventory's top-level `media` list; an undefined entry is a rule under no condition.
++ * @returns Each feature once, sorted, as the {@link normalizeMediaCondition} helper writes it,
++ *   with every compound condition split at its `and` joins, so the `(width < 576px)` feature
++ *   answers for the `(max-width: 575.98px) and (prefers-reduced-motion: reduce)` condition as well
++ *   as its own.
++ *
++ * @example
++ * ```ts
++ * collectMediaFeatures(['@media (min-width: 576px)', '@media print']) // ['(width >= 576px)', 'print']
++ * ```
++ */
++export function collectMediaFeatures(
++	conditions: ReadonlyArray<string | undefined>,
++): readonly string[] {
++	const features = new Set<string>()
++	for (const condition of conditions)
++		for (const feature of normalizeMediaCondition(condition)?.split(' and ') ?? [])
++			features.add(feature)
++	return [...features].sort()
++}
++
+ /**
+  * Collects every custom-property name one declaration value reads.
+  * @param value - The declaration value to read.
+@@ -1592,6 +1861,13 @@ export interface SheetDeclaration {
+ 	 * sits in no layer block.
+ 	 */
+ 	readonly layer: string | undefined
++	/**
++	 * Holds each conditional at-rule enclosing the declaration, outermost first, written as its
++	 * keyword and its parameters and joined by ` and `, or `undefined` where none encloses it. A
++	 * layer block is where a declaration sits rather than a condition it is subject to, so it
++	 * travels on the `layer` member alone.
++	 */
++	readonly condition: string | undefined
+ }
+ 
+ /**
+@@ -1772,15 +2048,19 @@ export class SheetReader {
+ 	 * Lists every declaration the stylesheet's rules write.
+ 	 *
+ 	 * @returns One entry per declaration, in written order, each carrying the selector of the
+-	 *   style rule nearest it, the property, the value, its importance, and the layer it sits in.
++	 *   style rule nearest it, the property, the value, its importance, the layer it sits in, and
++	 *   the conditional at-rules around it.
+ 	 *
+ 	 * @remarks
+ 	 * A declaration belongs to the style rule nearest it, so a rule carrying a nested rule reports
+ 	 * its own declarations and the nested rule reports the nested ones. A conditional block written
+ 	 * inside a rule is not a rule, so an authored
+ 	 * `.container { @media (width >= 40rem) { max-width: 40rem } }` rule reports `max-width` under
+-	 * `.container`, the shape the compiler emits for a responsive utility. A declaration no style
+-	 * rule encloses, such as a descriptor of an `@font-face` rule, is not reported.
++	 * `.container`, the shape the compiler emits for a responsive utility, with that block's
++	 * `@media (width >= 40rem)` text as its condition. The condition is what tells apart two
++	 * declarations of one selector's property that the release writes at different priorities under
++	 * different queries. A declaration no style rule encloses, such as a descriptor of an
++	 * `@font-face` rule, is not reported.
+ 	 */
+ 	get declarations(): readonly SheetDeclaration[] {
+ 		return this.#collect(this.#parse())
+@@ -1804,6 +2084,7 @@ export class SheetReader {
+ 				value: declaration.value.trim(),
+ 				important: declaration.important === true,
+ 				layer: this.#layer(declaration),
++				condition: this.#condition(declaration),
+ 			})
+ 		})
+ 		return declarations
+@@ -1827,6 +2108,17 @@ export class SheetReader {
+ 		return undefined
+ 	}
+ 
++	// Names the conditional at-rules enclosing a node, outermost first, as the keyword and the
++	// parameters of each joined by ` and `, passing over every layer block between them.
++	#condition(node: ChildNode): string | undefined {
++		const conditions: string[] = []
++		for (let parent: unknown = node.parent; parent instanceof Container; parent = parent.parent) {
++			if (parent instanceof AtRule && parent.name !== 'layer')
++				conditions.unshift(`@${parent.name} ${parent.params}`.trim())
++		}
++		return conditions.length === 0 ? undefined : conditions.join(' and ')
++	}
++
+ 	// Reports a node inside a keyframes rule, prefixed or not, which selects an animation position
+ 	// rather than an element.
+ 	#framed(node: ChildNode): boolean {
+@@ -1837,6 +2129,50 @@ export class SheetReader {
+ 	}
+ }
+ 
++/**
++ * Collects the priorities each selector's property carries, keyed by its selector, property, and
++ * condition.
++ *
++ * @param declarations - The declarations to read, as the {@link SheetReader.declarations} member
++ *   reports them.
++ * @returns One entry per selector, property, and condition, in the order each is first written,
++ *   keyed as `selector { property }` for a declaration under no condition and as
++ *   `selector { property } condition` otherwise. Each entry holds the priorities its declarations
++ *   carry, once each, normal before important, as `false` and `true`.
++ *
++ * @remarks
++ * A selector list contributes one key per selector, each normalized as the ledger normalizes it, so
++ * a declaration the release writes for a list and this cascade writes for one member of that list
++ * still meet at one key. The condition is normalized through the {@link normalizeMediaCondition}
++ * helper, so the release's width notation and the built cascade's minified range notation meet at
++ * one key. The release writes one selector's property at both priorities where each sits under its
++ * own condition, as each responsive offcanvas panel's fill is normal below its boundary and
++ * important at and above it, so a key without its condition would hold both and read a priority
++ * swapped between the two conditions as agreement.
++ *
++ * @example
++ * ```ts
++ * collectDeclarationPriorities(new SheetReader('@media print { .x { color: red !important } }').declarations)
++ * // Map { '.x { color } print' => [true] }
++ * ```
++ */
++export function collectDeclarationPriorities(
++	declarations: readonly SheetDeclaration[],
++): ReadonlyMap<string, readonly boolean[]> {
++	const priorities = new Map<string, readonly boolean[]>()
++	for (const declaration of declarations) {
++		const condition = normalizeMediaCondition(declaration.condition)
++		for (const selector of list.comma(declaration.selector)) {
++			const name = `${normalizeComplexSelector(selector)} { ${declaration.property} }`
++			const key = condition === undefined ? name : `${name} ${condition}`
++			const carried = priorities.get(key) ?? []
++			if (!carried.includes(declaration.important))
++				priorities.set(key, [...carried, declaration.important].sort())
++		}
++	}
++	return priorities
++}
++
+ /**
+  * Collects the class names two readings both declare rules for.
+  *
+@@ -2241,7 +2577,8 @@ export function collectValueGaps(
+  * @param inventory - The official vocabulary by component.
+  * @param shipped - The shipped component keys.
+  * @returns One addition per distinct name and condition, in written order.
+- * @throws When the {@link attributeSelector} helper refuses a rule.
++ * @throws When the {@link attributeSelector} helper refuses a rule, and when the cascade defines an
++ *   animation the inventory records under no shipped key, naming that animation.
+  *
+  * @remarks
+  * A rule no shipped component claims is outside this ledger: the theme layer's own scopes are the
+@@ -2254,6 +2591,11 @@ export function collectValueGaps(
+  * properties: the selector row names the rule, and a `property` row follows for each name the
+  * component's official vocabulary lacks, so a variable the cascade introduces is never concealed
+  * by the selector that declares it.
++ *
++ * The cascade defines the release's animations and no other, so an animation is never an addition.
++ * One a shipped key records belongs to that key's vocabulary, whichever key its name opens with.
++ * Every other animation is refused, one a withheld key records included: the keyframes parity case
++ * refuses the same animations, so no green suite could hold one as a recorded addition.
+  */
+ export function collectAdditions(
+ 	blocks: readonly CascadeBlock[],
+@@ -2317,17 +2659,8 @@ export function collectAdditions(
+ 		}
+ 	}
+ 	for (const name of keyframes) {
+-		const component = matchShippedKey(name, shipped)
+-		if (component === undefined) continue
+-		if (inventory.components[component]?.keyframes.includes(name) === true) continue
+-		if (seen.has(`${component}|keyframes|${name}`)) continue
+-		seen.add(`${component}|keyframes|${name}`)
+-		rows.push({
+-			component,
+-			name,
+-			condition: undefined,
+-			category: 'keyframes',
+-		})
++		if (!shipped.some((key) => inventory.components[key]?.keyframes.includes(name) === true))
++			throw new Error(`Keyframes ${name} is recorded under no shipped component`)
+ 	}
+ 	return rows
+ }
+@@ -2611,7 +2944,12 @@ export function collectShippedComponents(
+  * A deferral must belong to a component with a selector or variable row, even while accepted.
+  * An Excluded name requires inventory membership without a guide row for its component.
+  * Names shared by inventory keys apply to every matching key. Deferred names must be absent
+- * regardless of row status. Selector comparison uses the cascade's normalization.
++ * regardless of row status. Selector comparison uses the cascade's normalization. A shipped
++ * selector row also requires every animation its component's vocabulary records to be defined by
++ * an `@keyframes` rule of that name, as the {@link collectKeyframeNames} helper reads them, because
++ * a rule naming an animation the cascade does not define runs nothing and no ledger reading
++ * reports that: the comparison reads declarations outside keyframes, and an animation the record
++ * names is no addition.
+  */
+ export function scanCompatibilityPresence(
+ 	rows: readonly CompatibilityRow[],
+@@ -2650,6 +2988,7 @@ export function scanCompatibilityPresence(
+ 		)
+ 			return `${label} name ${name} is present in the built cascade`
+ 	}
++	const keyframes = collectKeyframeNames(cascade)
+ 	for (const row of obligations) {
+ 		if (row.status !== 'shipped') continue
+ 		const vocabulary = inventory.components[row.component]
+@@ -2665,6 +3004,11 @@ export function scanCompatibilityPresence(
+ 			if (!present)
+ 				return `Shipped component ${row.component} is missing ${row.category === 'selector' ? 'selector' : 'custom property'} ${name}`
+ 		}
++		if (row.category !== 'selector') continue
++		for (const name of vocabulary.keyframes) {
++			if (!keyframes.includes(name))
++				return `Shipped component ${row.component} is missing keyframes ${name}`
++		}
+ 	}
+ 	return undefined
+ }
+@@ -2718,8 +3062,15 @@ export async function readOracleControl(target: Locator): Promise<OracleReading>
+ /**
+  * Reads and validates the CSS inventory copied from the accepted research artifact.
+  * @param path - The JSON inventory; defaults to the oracle's data fixture.
+- * @returns Its release, digests, and component vocabulary.
+- * @throws When the inventory omits a required field or carries a malformed component.
++ * @returns Its release, digests, component vocabulary, and top-level media conditions.
++ * @throws When the inventory omits a required field, carries a malformed component, or carries a
++ *   media condition that is not text.
++ *
++ * @remarks
++ * The digests and the components are written into objects with no prototype. An ordinary object's
++ * inherited `__proto__` setter swallows an entry written under that key, so a reader writing into
++ * one would drop an inventory digest named `__proto__` and a pin over the digest keys would never
++ * see it.
+  */
+ export function readOracleInventory(
+ 	path: string = resolve(WORKSPACE_ROOT, 'tests/fixtures/oracle/inventory.json'),
+@@ -2729,15 +3080,23 @@ export function readOracleInventory(
+ 		!isRecord(inventory) ||
+ 		typeof inventory.version !== 'string' ||
+ 		!isRecord(inventory.digests) ||
+-		!isRecord(inventory.components)
++		!isRecord(inventory.components) ||
++		!Array.isArray(inventory.media)
+ 	)
+ 		throw new Error('Invalid oracle inventory header')
++	const media = inventory.media.map((condition: unknown) => {
++		if (typeof condition !== 'string')
++			throw new Error(`Invalid oracle inventory media ${String(condition)}`)
++		return condition
++	})
+ 	const digests: Record<string, string> = {}
++	Object.setPrototypeOf(digests, null)
+ 	for (const [name, digest] of Object.entries(inventory.digests)) {
+ 		if (typeof digest !== 'string') throw new Error(`Invalid oracle inventory digest ${name}`)
+ 		digests[name] = digest
+ 	}
+ 	const components: Record<string, OracleVocabulary> = {}
++	Object.setPrototypeOf(components, null)
+ 	for (const [name, component] of Object.entries(inventory.components)) {
+ 		if (
+ 			!isRecord(component) ||
+@@ -2783,7 +3142,7 @@ export function readOracleInventory(
+ 			keyframes,
+ 		}
+ 	}
+-	return { version: inventory.version, digests, components }
++	return { version: inventory.version, digests, components, media }
+ }
+ 
+ /**

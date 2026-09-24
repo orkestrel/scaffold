@@ -1,0 +1,82 @@
+=== R1 failing-first: the L-c refusal proof and its fixture expectations over the round-1 implementation
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  4 failed | 291 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > names a planted unrecorded difference, a planted stale row, and a planted unrecorded name
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > names each departure member from the two values alone
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > refuses an animation the inventory records under no shipped key, naming it, and admits one a shipped key records
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > reports a planted selector, declaration, and custom property the inventory lacks, and no recorded animation
+error: Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-VEfBA1'
+error: AssertionError: expected [ …(7) ] to deeply equal [ …(6) ]
+error: AssertionError: expected [Function] to throw error including 'Keyframes orphan-spin is recorded und…' but got 'Keyframes orphan-spin answers to no s…'
+error: AssertionError: expected [ …(7) ] to deeply equal [ …(6) ]
+error: AssertionError: expected true to be false // Object.is equality
+
+=== P1 any key's record admits an animation, a withheld key's included
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): '\t\tif (!shipped.some((key) => inventory.components[key]?.keyframes.includes(name) === true))'
+site (after): '\t\tif (!Object.keys(inventory.components).some((key) => inventory.components[key]?.keyframes.includes(name) === true))'
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  1 failed | 294 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > refuses an animation the inventory records under no shipped key, naming it, and admits one a shipped key records
+error: Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-9yb4HO'
+error: AssertionError: expected [Function] to throw an error
+
+=== P2 a name opening with a shipped key admits an animation
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): '\t\tif (!shipped.some((key) => inventory.components[key]?.keyframes.includes(name) === true))'
+site (after): '\t\tif (!shipped.some((key) => inventory.components[key]?.keyframes.includes(name) === true) && matchShippedKey(name, shipped) === undefined)'
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  1 failed | 294 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > refuses an animation the inventory records under no shipped key, naming it, and admits one a shipped key records
+error: Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-DH2Uv3'
+error: AssertionError: expected [Function] to throw an error
+
+=== P3 the guard admits the keyframes category again
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): "\treturn text === 'selector' || text === 'declaration' || text === 'property'"
+site (after): "\treturn text === 'selector' || text === 'declaration' || text === 'property' || text === 'keyframes'"
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  1 failed | 294 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > names each departure member from the two values alone
+error: Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-PDJPTS'
+error: AssertionError: expected true to be false // Object.is equality
+
+=== P4 an animation no key records planted in the built cascade (scratch)
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: dist/src/styles/index.css
+site (before): '@keyframes placeholder-wave{'
+site (after): '@keyframes btn-glow{to{opacity:1}}@keyframes placeholder-wave{'
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 23 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+error: AssertionError: expected [ 'placeholder-glow', …(4) ] to deeply equal [ Array(6) ]
+
+=== P5 @keyframes placeholder-wave deleted from the built cascade, under the retitled presence case (scratch)
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: dist/src/styles/index.css
+site (before): '@keyframes placeholder-wave{to{-webkit-mask-position:-200% 0;mask-position:-200% 0}}'
+site (after): ''
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  2 failed | 22 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector, custom property, and recorded animation in the built cascade
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+error: AssertionError: expected 'Shipped component placeholder is miss…' to be undefined
+error: AssertionError: expected [ 'placeholder-glow', …(4) ] to deeply equal [ 'placeholder-glow', …(3) ]
+
