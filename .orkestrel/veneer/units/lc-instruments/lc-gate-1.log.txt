@@ -1,6 +1,0 @@
-# cwd: /home/user/veneer-lc
-# command: npx oxfmt --config .oxfmtrc.json --check src/styles/_tokens.scss src/styles/_mixins.scss src/styles/_theme.scss src/styles/components/_button.scss src/styles/utilities/_color-bg.scss src/styles/utilities/_link.scss src/styles/components/_validation.scss tests/src/styles/fixtures/mixins.scss tests/src/styles/fixtures/contrast.scss tests/src/styles/mixins.test.ts tests/src/styles/components/button.test.ts tests/src/styles/elements/button.test.ts tests/src/styles/utilities/color-bg.test.ts tests/src/styles/utilities/link.test.ts tests/src/styles/components/validation.test.ts
-Checking formatting...
-
-All matched files use the correct format.
-Finished in 68ms on 15 files using 4 threads.

@@ -1,7 +1,0 @@
-# cwd: /home/user/veneer-lc/tmp/probe/lc-scratch
-# command: npx oxfmt --config .oxfmtrc.json --check tests/setupStyles.ts tests/setupStyles.test.ts guides/veneer.md
-Checking formatting...
-
-All matched files use the correct format.
-Finished in 23487ms on 3 files using 4 threads.
-exit 0

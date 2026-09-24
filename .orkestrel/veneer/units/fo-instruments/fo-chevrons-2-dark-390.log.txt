@@ -1,7 +1,0 @@
-captioned-carousel--dark-390: 390x195 previous mark 81 over (100, 116, 162), next mark 81 over (100, 116, 162)
-fading-carousel--dark-390: 390x195 previous mark 127 over (13, 110, 253), next mark 127 over (13, 110, 253)
-inverted-carousel--dark-390: 390x195 previous mark 125 over (248, 249, 250), next mark 125 over (248, 249, 250)
-captioned-carousel-hover--dark-390: 390x195 previous mark 146 over (100, 116, 162), next mark 81 over (100, 116, 162)
-captioned-carousel-focus--dark-390: 390x195 previous mark 146 over (100, 116, 162), next mark 81 over (100, 116, 162)
-fading-carousel-hover--dark-390: 374x187 previous mark 127 over (13, 110, 253), next mark 228 over (13, 110, 253)
-fading-carousel-focus--dark-390: 374x187 previous mark 127 over (13, 110, 253), next mark 228 over (13, 110, 253)

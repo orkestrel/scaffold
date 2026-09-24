@@ -1,7 +1,0 @@
-env: CAPTURE=
-command: npx oxfmt --config .oxfmtrc.json --check app/browser/constants.ts tests/setup.ts tests/setup.test.ts tests/app/browser/integration.test.ts tests/app/browser/sections/ButtonGroupSection.test.ts tests/app/browser/sections/PlaceholderSection.test.ts tests/app/browser/sections/ListGroupSection.test.ts
-Checking formatting...
-
-All matched files use the correct format.
-Finished in 176ms on 7 files using 4 threads.
-exit 0

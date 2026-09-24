@@ -1,4 +1,0 @@
-1629c1629
-< 				if (suppressed) host.style.setProperty('outline', 'none', 'important')
----
-> 				if (suppressed) host.style.setProperty('outline-color', 'red', 'important')

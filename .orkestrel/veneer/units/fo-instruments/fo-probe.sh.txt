@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# Runs the fo browser probe and prints its console lines and summary.
-cd /home/user/veneer-fo || exit 2
-export PATH="/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/npm11/node_modules/.bin:$PATH"
-export PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers
-timeout 500 npx vitest run --config tmp/probe/fo-probe.config.ts --no-cache "$@" >tmp/probe/fo-probe-out.txt 2>&1
-status=$?
-grep -v "externalized for browser\|Port .* is in use\|^\s*$" tmp/probe/fo-probe-out.txt | tail -n 60
-echo "exit $status"
