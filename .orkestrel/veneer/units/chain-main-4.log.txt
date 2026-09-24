@@ -1,8 +1,0 @@
-=== head cbee3bb at 15:43:12
-=== format exit=0  at 15:43:31
-=== lint exit=0  at 15:43:35
-=== check exit=0  at 15:44:03
-=== build exit=0  at 15:44:20
-=== capture exit=0       Tests  248 passed (248) at 15:52:24
-=== test exit=1       Tests  1 failed | 649 passed (650) at 15:53:22
-=== STOPPED at test

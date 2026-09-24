@@ -1,4 +1,0 @@
-2684c2684
-< 				if (suppressed) link.style.setProperty('outline', 'none', 'important')
----
-> 				if (suppressed) link.style.setProperty('outline-color', 'red', 'important')

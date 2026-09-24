@@ -1,9 +1,0 @@
-
- RUN  v4.1.11 /home/user/veneer-ff
-
-
- Test Files  2 passed (2)
-      Tests  2 passed (2)
-   Start at  14:23:58
-   Duration  67.77s (transform 0ms, setup 940ms, import 84ms, tests 53.22s, environment 0ms)
-

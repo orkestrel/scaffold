@@ -1,6 +1,0 @@
- ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:674:2 > journey > reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark 188462ms
- ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1565:2 > journey > drives a carousel control to hover and to focus and photographs each state 2641ms
- ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1658:2 > journey > drives the fading carousel's next control to hover and to focus on the lifted specimen, and photographs each state 3481ms
- Test Files  1 passed (1)
-      Tests  3 passed | 44 skipped (47)
-exit 0

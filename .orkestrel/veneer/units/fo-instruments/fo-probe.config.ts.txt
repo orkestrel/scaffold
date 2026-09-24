@@ -1,9 +1,0 @@
-import { defineConfig } from 'vitest/config'
-import { appBrowser } from '../../vite.config.ts'
-
-const browser = appBrowser()
-
-export default defineConfig({
-	...browser,
-	test: { ...browser.test, include: ['tmp/probe/**/*.test.ts'], exclude: [] },
-})

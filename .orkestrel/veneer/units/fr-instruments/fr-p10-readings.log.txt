@@ -1,5 +1,0 @@
-P10 readings: the focused thumb's box-shadow declaration resolved on a gauge in each mode (probe tmp/probe/fr-states.test.ts through tmp/probe/fr-probe.config.ts, the styles config over dist/src/styles/index.css)
-before (e4a6d7c partial):
-{"declared":"0 0 0 1px var(--vn-surface-body-base), 0 0 0 var(--vn-focus-width) var(--vn-focus-color)","light":"rgb(255, 255, 255) 0px 0px 0px 1px, oklab(0.48 -0.0266547 -0.253603 / 0.45) 0px 0px 0px 3px","dark":"oklch(0.21 0.013 256) 0px 0px 0px 1px, oklab(0.7 -0.0902723 -0.119795 / 0.45) 0px 0px 0px 3px"}
-after (this unit's partial):
-{"declared":"0 0 0 1px var(--vn-palette-white-base), 0 0 0 var(--vn-focus-width) var(--vn-focus-color)","light":"rgb(255, 255, 255) 0px 0px 0px 1px, oklab(0.48 -0.0266547 -0.253603 / 0.45) 0px 0px 0px 3px","dark":"rgb(255, 255, 255) 0px 0px 0px 1px, oklab(0.7 -0.0902723 -0.119795 / 0.45) 0px 0px 0px 3px"}

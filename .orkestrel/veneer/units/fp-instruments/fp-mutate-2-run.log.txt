@@ -1,8 +1,0 @@
-N1 the pressed faces joined in vertical groups 1 ['Test Files  1 failed (1)', 'Tests  1 failed | 7 passed (8)'] True
-N2 the disabled check label on the outline variant 1 ['Test Files  1 failed (1)', 'Tests  1 failed | 7 passed (8)'] True
-N3 the pressed list-group frame shot on the dark role row 1 ['Test Files  1 failed (1)', 'Tests  1 failed | 49 skipped (50)'] True
-N4 the Button role list without its outline roles 1 ['Test Files  1 failed (1)', 'Tests  1 failed | 7 passed (8)'] True
-N5 the List group role list without its dark role 1 ['Test Files  1 failed (1)', 'Tests  1 failed | 2 passed (3)'] True
-N6 the Link subject dropped from the exemption constant 1 ['Test Files  1 failed (1)', 'Tests  1 failed | 20 passed (21)'] True
-N7 the grow spinner held through a style that survives reinsertion 1 ['Test Files  1 failed (1)', 'Tests  1 failed | 49 skipped (50)'] True
-N8 the driven contrast bar set under a ratio a contrast reader returns 1 ['Test Files  1 failed (1)', 'Tests  1 failed | 20 passed (21)'] True
