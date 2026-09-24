@@ -1,0 +1,146 @@
+# Writes a fix round's objective-lane brief, checker brief, and Astra launcher for the named units from one table.
+# A successor of w23-audit-2-briefs.py that takes the round number first; the unit table is that script's, with the
+# ff and fr rows written for FOCUS-FRAME round 2 and FORMS-FRAMES round 3.
+# Usage: python3 audit-fix-briefs.py <round> <unit> [<unit> ...]
+import pathlib, sys
+U = pathlib.Path('/home/user/scaffold/.orkestrel/veneer/units')
+LAW = ("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{styles,tests,browser,writing,documentation,typescript,names,quality}.md`; "
+       "the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` "
+       "and its references (the verdict shape)")
+UNITS = {
+    'up': dict(name='UTIL-PAINT', worktree='/home/user/veneer-up',
+        evidence='`up-2.diff`, `up-2-status.txt`, `up-shared-2.patch`, `up-unscoped-profiles-2.patch`, `b-utilities-up-report-2.md`, `b-utilities-up-brief-2.md`, `up-instruments/` (the round-2 mutation, count, contrast, and gate logs and instruments), round 1\'s `up.diff`, `up-shared.patch`, `up-unscoped-profiles.patch`, and `b-utilities-up-report.md`, and the round-1 verdict `up-audit-verdict.md` and its lane verdicts; `b-utilities-family.md`, `b-utilities-w3-terrain-report.md`, `w2-w3-note-1.md` to `w2-w3-note-5.md`, and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-utilities-design-verdict.md`; the UTIL-TEXT and UTIL-SPACING shared patches `ut-shared.patch` and `usp-shared.patch` beside them, for the union claim 2 names',
+        focus='claims 1, 2, 4, 5, and 6 (the patch delta against round 1, the whole-order profiles assertions and their hold over the wave\'s union of shared names, the swatch helper and its red run, the contrast rule and its runs, and the re-run mutations and the count control)',
+        checker='claims 1, 3, and 8'),
+    'oc': dict(name='OFFCANVAS', worktree='/home/user/veneer-oc',
+        evidence='`oc-2.diff`, `oc-2-status.txt`, `oc-shared-2.patch`, `b-modal-oc-report-2.md`, `b-modal-oc-brief-2.md`, `oc-instruments/` (the round-2 mutation, gate, cascade-probe, and utility-reading logs and instruments, and `oc-2-guide-changes-ignoring-whitespace.txt`), round 1\'s `oc.diff`, `oc-shared.patch`, and `b-modal-oc-report.md`, and the round-1 verdict `oc-audit-verdict.md` and its lane verdicts; `w2-w3-note-1.md`, `w2-w3-note-2.md`, and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-modal-design-verdict.md`',
+        focus='claims 1, 3, 4, 5, and 6 (the patch delta against round 1, the failing-first and transition-state runs and the probe control, every clause of the plugin row against the release source, the navbar and stacking sentences against the cascade, and the utility reading and its proof)',
+        checker='claims 1, 2, 5, and 8'),
+    'usp': dict(name='UTIL-SPACING', worktree='/home/user/veneer-usp',
+        evidence='`usp-2.diff`, `usp-2-status.txt`, `usp-shared-2.patch`, `b-utilities-usp-report-2.md`, `b-utilities-usp-brief-2.md`, `usp-instruments/` (the round-2 records: `usp-mutations-2.log.txt`, `usp-mutate-2.sh`, `usp-cascade-2.mjs`, `usp-cascade-controls-2.sh`, `usp-gates-2.sh`, `usp-gates-2.log.txt`, `usp-guides-2.log.txt`, `usp-service-2.sh`, `usp-service-2.log.txt`, `usp-2-owned-interdiff.txt`, and `usp-2-shared-interdiff.txt`), round 1\'s `usp.diff`, `usp-shared.patch`, and `b-utilities-usp-report.md`, and the round-1 verdict `usp-audit-verdict.md` and its lane verdicts; `w2-w3-note-1.md` to `w2-w3-note-5.md` and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-utilities-design-verdict.md`',
+        focus='claims 1, 2, 3, and 6 (the patch delta against round 1, the derived auto-margin population and each member\'s red run, the census and its negative controls, and the renamed field\'s readers)',
+        checker='claims 1, 4, 5, 6, and 7',
+        bench='the bench round-tripped at 03:17 (dr-audit returned exit 0 through this queue)'),
+    'ut': dict(name='UTIL-TEXT', worktree='/home/user/veneer-ut',
+        evidence='`ut-2.diff`, `ut-2-status.txt`, `ut-shared-2.patch`, `b-utilities-ut-report-2.md`, `b-utilities-ut-brief-2.md`, `ut-instruments/` (the round-2 records: `ut-mutations-2.log.txt`, `ut-mutate-3.py`, `ut-mutate-3-run.log.txt`, `ut-mutate-3-run2.log.txt`, `ut-2-copy-gates.sh`, the `ut-2-copy-*.log.txt` logs, `ut-2-cascade-count.log.txt`, `ut-2-service-up2.log.txt`, `ut-2-shared-interdiff.txt`, and the `ut-2-*.py` edit scripts), round 1\'s `ut.diff`, `ut-shared.patch`, and `b-utilities-ut-report.md`, and the round-1 verdict `ut-audit-verdict.md` and its lane verdicts; `w2-w3-note-1.md` to `w2-w3-note-5.md` and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-utilities-design-verdict.md`',
+        focus='claims 1, 2, 3, 5, and 7 (the patch delta against round 1, the pairs\' partial and its order against the release, the components-layer control, the product sentences against the markup, and the moved cases)',
+        checker='claims 1, 4, 6, and 8',
+        bench='the bench round-tripped at 03:17 (dr-audit returned exit 0 through this queue)'),
+    'cb': dict(name='BARE-BUTTON', worktree='/home/user/veneer-cb', base='a9dff19',
+        evidence='`cb-2.diff`, `cb-2-status.txt`, `cb-shared-2.patch`, `b-cross-cb-report-2.md`, `b-cross-cb-brief-2.md`, `cb-instruments/` (the round-2 records: `cb-mutations-2.log.txt`, `cb-mutate-2.sh`, `cb-mutation-2-token-run.log.txt`, `cb-green-2.log.txt`, `cb-interdiff-2.diff`, `cb-shared-interdiff-2.diff`, `cb-guide-2.py`, and the `cb-gate-2-*` and `cb-scratch-2-*` logs), round 1\'s `cb.diff`, `cb-shared.patch`, and `b-cross-cb-report.md`, and the round-1 verdict `cb-audit-verdict.md` and its lane verdicts; the design verdict `/home/user/scaffold/.orkestrel/veneer/b-cross-cb-design-verdict.md`',
+        focus='claims 1, 2, 3, and 5 (the delta against round 1, the list-group case and its red runs, the token-metric wrapper and its red run, and the coverage matrix against the retained readings)',
+        checker='claims 1, 4, and 6',
+        bench='the bench round-tripped at 04:06 (cb-audit returned exit 0 through this queue)'),
+    'rd': dict(name='RAMP-DOWN', worktree='/home/user/veneer-rd', base='42fd88e',
+        evidence='`rd-2.diff`, `rd-2-status.txt`, `rd-shared.patch` (unchanged from round 1), `b-modal-rd-report-2.md`, `b-modal-rd-brief-2.md`, `rd-instruments/` (the round-2 records: `rd-mutation-2.patch`, `rd-mutation-2.log.txt`, `rd-mutation-zero-2.patch`, `rd-mutation-zero-2.log.txt`, `rd-mixins-green-2.log.txt`, `rd-guides-2.log.txt`, `rd-gates-2.sh`, `rd-gates-2.log.txt`, the `rd-gate-*-2.log.txt` logs, and `rd-base.css`), round 1\'s `rd.diff` and `b-modal-rd-report.md`, and the round-1 verdict `rd-audit-verdict.md` and its lane verdicts',
+        focus='claims 1, 2, and 3 (the delta against round 1 and the byte equality, the fixture case against both mutations, and each comment against the compiled stylesheets)',
+        checker='claims 1, 4, and 5',
+        bench='the bench round-tripped at 04:48 (rd-audit returned exit 0 through this queue)'),
+    'cl': dict(name='LEDGER', worktree='/home/user/veneer-cl', base='42fd88e',
+        evidence='`cl-2.diff`, `cl-2-status.txt`, `cl-shared-2.patch`, `b-cross-cl-report-2.md`, `b-cross-cl-brief-2.md`, `cl-instruments/` (the round-2 records: `cl-mutations-2.log.txt`, `cl-mutate-3.py`, `cl-red-2.json`, the `cl-mutations-owned-2.json`, `cl-mutations-owned-3.json`, and `cl-mutations-shared-4.json` specs, `cl-setup-green-2.log.txt`, `cl-measure-2.log.txt`, `cl-width-2.log.txt`, `cl-guide-2.py`, `cl-scratch-2.sh`, `cl-gates-2.sh`, and the `cl-gate-round2-*` logs), round 1\'s `cl.diff`, `cl-shared.patch`, and `b-cross-cl-report.md`, and the round-1 verdict `cl-audit-verdict.md` and its lane verdicts; the design verdict `/home/user/scaffold/.orkestrel/veneer/b-cross-design-verdict.md` (X1, X6, and X7)',
+        focus='claims 1, 2, and 4 (the delta against round 1, every rewritten sentence against the code, and the refusal against its plants and the measurement)',
+        checker='claims 1, 3, and 5',
+        bench='the bench round-tripped at 05:19 (cl-audit returned exit 0 through this queue)'),
+    'cf': dict(name='FADE', worktree='/home/user/veneer-cf', base='42fd88e',
+        evidence='`cf-2.diff`, `cf-2-status.txt`, `cf-shared-2.patch`, `b-cross-cf-report-2.md`, `b-cross-cf-brief-2.md`, `cf-instruments/` (`cf-offlimits.patch`, and the round-2 records: `cf-mutations-2.log.txt`, `cf-2-red.sh`, the `cf-2-nopartial-*` and `cf-2-partial-*` logs, `cf-2-gates.sh` and the `cf-2-gate-*` logs, and `cf-2-guide.py`), round 1\'s `cf.diff`, `cf-shared.patch`, and `b-cross-cf-report.md`, and the round-1 verdict `cf-audit-verdict.md` and its lane verdicts; the design verdict `/home/user/scaffold/.orkestrel/veneer/b-cross-design-verdict.md` (X5)',
+        focus='claims 1, 2, 3, and 5 (the delta against round 1, the added rows against the release\'s plugins, the registry remark against the declined states, and the failing-first runs under the shipped titles)',
+        checker='claims 1, 4, and 6',
+        bench='the bench round-tripped at 05:34 (cl-audit-2 launched through this queue)'),
+    'pf': dict(name='PAGE-FRAME', worktree='/home/user/veneer-pf', base='dc92a09',
+        evidence='`pf-2.diff`, `pf-2-status.txt`, `pf-shared-2.patch`, `b-cross-pf-report-2.md`, `b-cross-pf-brief-2.md`, `pf-instruments/` (the round-2 records, each name carrying `-2`: `pf-mutations-2.log.txt`, `pf-mutations-2.sh`, `pf-mutate-2.py`, the `pf-mutation-2-*` logs, `pf-2-red-setup-browser.log.txt`, `pf-2-green-setup-browser.log.txt`, `pf-2-gates.sh` and the `pf-2-gate-*` logs, `pf-2-guides.log.txt`, `pf-2-capture.sh`, `pf-2-capture-light-1280.log.txt`, `pf-2-frames-light-1280.log.txt`, and the two `pf-2-*-primary-hover-column.txt` readings), round 1\'s `pf.diff`, `pf-shared.patch`, `b-cross-pf-report.md`, and `b-cross-pf-brief.md`, and the round-1 verdict `pf-audit-verdict.md` and its lane verdicts; the design verdict `pf-design-verdict.md`; the frames under `/home/user/veneer-pf/tmp/capture/states/` from the round-2 `light-1280` run',
+        focus='claims 2, 3, 4, and 6 (the settle order and its proofs against their mutations, the pointer guard at every pointer-held placement and the un-lift runs, every rewritten re-read comment against the code, and the derived getter and its readers)',
+        checker='claims 1, 5, 7, and 8',
+        bench='the bench round-tripped at 10:39 (bcf-audit returned exit 0 through this queue)'),
+    'bcf': dict(name='BCF', worktree='/home/user/veneer-bcf', base='f4e5693',
+        evidence='`bcf-3.diff` and `bcf-3-status.txt` (rounds 2 and 3 together against `f4e5693`), `bcf-2.diff`, `bcf-2-status.txt`, `bcf-shared-2.patch`, `b-collapse-bcf-report-2.md`, `b-collapse-bcf-report-3.md`, `b-collapse-bcf-brief-2.md`, `b-collapse-bcf-brief-3.md`, `bcf-instruments/` (the round-2 records: `bcf-mutations-2.log.txt`, `bcf-mutate-2.py`, the `bcf-mutation-2-*` logs, `bcf-gates-2.sh` and the `bcf-gates-2*` logs, `bcf-2-stem-prefix.log.txt`, `bcf-test-guides-2.log.txt`, `bcf-2-baseline-sections.log.txt`; the round-3 records: `bcf-mutations-3.log.txt`, `bcf-mutate-3.py`, the `bcf-mutation-3-*` logs, `bcf-3-red-before-fix.log.txt`, `bcf-3-cascade.log.txt`, `bcf-3-resting-dark-390.log.txt`, `bcf-gates-3.sh` and the `bcf-gates-3*` logs), round 1\'s `bcf.diff`, `bcf-shared.patch`, `b-collapse-bcf-report.md`, `b-collapse-bcf-brief.md`, and the round-1 verdict `bcf-audit-verdict.md` and its lane verdicts; `pf-design-verdict.md`',
+        focus='claims 2, 3, 5, and 6 (each converted population against its added-row mutation, the helper and its mutations, the ring check against the placement mutation, and the attribute and in-flow readings against the release)',
+        checker='claims 1, 4, 7, and 8',
+        bench='the bench round-tripped at 11:21 (pf-audit-2 returned exit 0 through this queue)'),
+    'xo': dict(name='CLOSE-OUT', worktree='/home/user/veneer-xo', base='ec98064',
+        evidence='`xo-2.diff`, `xo-2-status.txt`, `xo-shared-2.patch`, `xo-unscoped.patch`, `b-close-out-report-2.md`, `b-close-out-brief-2.md`, `xo-instruments/` (the round-2 records: `xo-mutations-2.log.txt`, `xo-mutate-2.sh`, `xo-mutate-py-2.sh`, `xo-plant-carousel-2.py`, the `xo-mutation-*` logs of round 2, and the `xo-2-scratch-*` logs), round 1\'s `xo.diff`, `xo-shared.patch`, and `b-close-out-report.md`, and the round-1 verdict `xo-audit-verdict.md` and its lane verdicts',
+        focus='claims 2 and 4 (the class-selector populations against both controls, and the ledger key against both copies)',
+        checker='claims 1, 3, and 5',
+        bench='the bench round-tripped at 12:30 (xo-audit returned exit 0 through this queue)'),
+    'ct': dict(name='THEME', worktree='/home/user/veneer-ct2', base='ac74459',
+        evidence='`ct2.diff`, `ct2-status.txt`, `ct2-shared.patch` (all against `ac74459`, which carries round 1 as `595ac02`), `b-cross-ct-report-2.md`, `b-cross-ct-brief-3.md`, `ct2-instruments/` (`ct2-mutations.log.txt`, `ct2-mutate.py`, the `ct2-mutation-*` logs, `ct2-gates.sh`, `ct2-gates.log.txt` and the `ct2-gate-*` logs, `ct2-oracle-alone.log.txt`, `ct2-r1-green.log.txt`, and `ct2-lint-plant.log.txt`), round 1\'s `ct.diff`, `ct-shared.patch`, `ct-unscoped.patch`, and `b-cross-ct-report.md`, the round-1 verdict `ct-audit-verdict.md` and its lane verdicts, and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-cross-design-verdict.md` (X3 and X8)',
+        focus='claims 2, 3, and 4 (each population\'s home or derivation against its mutation, the added-selector plant against R1, and the breakpoint alias case against B1 and its control)',
+        checker='claims 1, 5, and 6',
+        bench='the bench round-tripped at 13:52 (fr-audit returned exit 0 through this queue)'),
+    'fu': dict(name='UTIL-FRAMES', worktree='/home/user/veneer-fu', base='cf5e447',
+        evidence='`fu-2.diff` and `fu-2-status.txt` (both rounds against `cf5e447`), `fu-shared-2.patch`, `b-util-frames-report-2.md`, `b-util-frames-brief-2.md`, `fu-instruments/` (the round-2 records: `fu-mutations-2.log.txt`, `fu-mutate-2.sh`, `fu-mutate-2.py`, and the `fu2-*` gate and capture logs), round 1\'s `fu.diff`, `fu-shared.patch`, and `b-util-frames-report.md`, the round-1 verdict `fu-audit-verdict.md` and its lane verdicts, FOCUS-FRAME\'s P2 reading in `b-focus-frame-report.md`, and the frames under `/home/user/veneer-fu/tmp/capture/states/` (`role-links-focus`, `focusable-container-focus`, `underline-offsets-hover`, `body-emphasis-link-focus`, and `icon-links-focus`, each at `light-1280` and `dark-390`)',
+        focus='claims 2, 3, and 4 (each link-state assertion against its mutation, the Tab drive against the scripted drive, and the moved tables)',
+        checker='claims 1, 4, and 5',
+        bench='the bench round-tripped at 14:18 (fp-audit returned exit 0 through this queue)'),
+    'fo': dict(name='OVERLAY-FRAMES', worktree='/home/user/veneer-fo', base='cf5e447',
+        evidence='`fo-2.diff` and `fo-2-status.txt` (both rounds against `cf5e447`), `fo-shared-2.patch`, `b-overlay-frames-report-2.md`, `b-overlay-frames-brief-2.md`, `fo-instruments/` (the round-2 records: `fo-mutations-2.log.txt`, `fo-mutate-2.py`, the `fo-chevrons-2-*` readings, and the round-2 gate and capture logs; the round-1 records beside them), round 1\'s `fo.diff`, `fo-shared.patch`, and `b-overlay-frames-report.md`, the round-1 verdict `fo-audit-verdict.md` and its lane verdicts, and the frames under `/home/user/veneer-fo/tmp/capture/states/` (the `captioned-carousel`, `captioned-carousel-hover`, and `fading-carousel-*` frames at `light-1280` and `dark-390`)',
+        focus='claims 2, 3, and 4 (the caption contrast proof against its mutation and its red run, the final spanning case\'s red and mutation runs, and the chevron readings)',
+        checker='claims 1, 4, and 5',
+        bench='the bench round-tripped at 14:18 (fp-audit returned exit 0 through this queue)'),
+    'ff': dict(name='FOCUS-FRAME', worktree='/home/user/veneer-ff', base='e4a6d7c',
+        evidence='`ff-2.diff` and `ff-2-status.txt` (both rounds against `e4a6d7c`), `ff-shared-2.patch`, `b-focus-frame-report-2.md`, `b-focus-frame-brief-2.md`, `ff-instruments/` (the round-2 records: `ff-mutations-2.log.txt`, the `ff-mut2-*` logs and diffs, the `ff-r2-*` and `ff-case-r2-*` logs, the `ff-2-gate-*` logs, the `ff-capture-r2-filtered-*` logs, `ff-final-2/` with its manifests and guard frames, and `ff-probes-2/` with the drive and pointer probes and their outputs), round 1\'s `ff.diff`, `ff-shared.patch`, and `b-focus-frame-report.md`, and the round-1 verdict `ff-audit-verdict.md` and its lane verdicts',
+        focus='claims 2, 3, 4, and 5 (the pixel guard and its control against each drive mutation, the helper logic each proof row decides, the pointer watcher, and the drive readings)',
+        checker='claims 1, 3, and 6',
+        lanes='the subjective lane (`reviewer` on Opus 5.5) and the checker (Sonnet) run blind beside you',
+        bench='the bench round-tripped at 14:49 (lc-audit returned exit 0)'),
+    'fr': dict(name='FORMS-FRAMES', worktree='/home/user/veneer-fr', base='e4a6d7c',
+        evidence='`fr-3.diff` and `fr-3-status.txt` (all rounds against `e4a6d7c`), `fr-shared-3.patch`, `b-forms-frames-report-3.md`, `b-forms-frames-brief-3.md`, `fr-instruments/` (the round-3 records: `fr-mutations-3.log.txt`, `fr3-mutate.sh`, the `fr3-mutate-*` logs, `fr3-plant-check.log.txt`, the `fr3-gate-*` logs, and `fr3-capture-light-1280-filtered.log.txt`), round 2\'s `fr-2.diff`, `fr-shared-2.patch`, and `b-forms-frames-report-2.md`, and the round-2 verdict `fr-audit-2-verdict.md` and its lane verdicts',
+        focus='claims 1, 2, and 3 (each section mutation and its red run, the typed validation table and its planted run, and the renamed specimens)',
+        checker='claims 1, 3, and 4',
+        lanes='the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, by the user\'s instruction to put implementation first, because the round adds no frame and no behavior and its subjective findings were prose',
+        bench='the bench round-tripped at 14:49 (lc-audit returned exit 0)'),
+}
+N = sys.argv[1]
+for key in sys.argv[2:]:
+    u = UNITS[key]; claims = f'{key}-audit-{N}-claims.md'; title = f"Audit round {N} — {u['name']} (`{key}`)"
+    (U / f'{key}-audit-{N}-analyst-brief.md').write_text(f"""# {title}: objective lane on GPT-6 Astra
+
+`analyst` route on GPT-6 Astra (`gpt-6-astra`), `codex exec --sandbox read-only` rooted at `{u['worktree']}`. You are the engine behind the CLI: perform the audit directly and spawn nothing. You hold the **objective** lane over the numbered claims in `/home/user/scaffold/.orkestrel/veneer/units/{claims}`: correctness, constraints, and what the code, the logs, and the contracts permit. The unit was written by `opus` on Opus 5.5, so you are an auditor engine that did not write it; the checker (Sonnet) runs blind beside you; {u.get('lanes', 'the subjective lane is not run this round, as the round-1 verdict records')}. Bound: rule within 25 minutes.
+
+Law: {LAW}. Evidence, all read-only, under `/home/user/scaffold/.orkestrel/veneer/units/`: the claims file `{claims}`; {u['evidence']}; the worktree `{u['worktree']}` (the owned files over `{u.get('base', '2a3f223')}`; read them, never edit them; `git -C {u['worktree']} show {u.get('base', '2a3f223')}:<path>` reads any base file; the inventory is `tests/fixtures/oracle/inventory.json`; `node_modules/bootstrap/` there is Bootstrap 5.3.8, its source under `scss/` and `js/src/`, and `node_modules/tailwindcss/` the installed Tailwind).
+
+Standing conditions: the sandbox runs no Vitest project and no browser, and denies the network, a loopback listener, and a nested install; `git show`, `git diff`, `git apply --check` against a scratch extract under the system temporary directory, `grep`, `sha256sum`, and `node -e` that writes nothing are allowed; rule every proof claim from the code's assertions and the retained logs, naming for each mutation whether the assertions distinguish it from the passing case, and say which log you read. Never edit the worktree. Never read `.env*`, `.npmrc`, `auth.json`, or any credential file.
+
+Focus: {u['focus']}; rule every other claim too, and rule the Orchestrator's given rulings wrong where the evidence says so.
+
+Output: the `orkestrel-falsify` verdict shape and nothing else — numbered verdicts (CONFIRMED, BROKEN, UNRESOLVED, or NOT-EVIDENCED) with `file:line` (for a CONFIRMED verdict, the attack that failed; for a claim about a proof, the mutation and whether the assertions distinguish it), findings outside the claims to the `BROKEN` standard, the counts the report states listed under the last claim, and one terminal line `VERDICT: PASS` or `VERDICT: FAIL <numbers>; outside the claims: <names or none>`.
+""")
+    (U / f'{key}-audit-{N}-checker-brief.md').write_text(f"""# {title}: checker
+
+## Role and engine
+
+`checker` on Sonnet: mechanical conformance evidence, beside the objective lane on GPT-6 Astra.
+
+## Objective
+
+Verdicts on {u['checker']} of the claims file by reading alone: the status and diff file lists, the patches' file sets against the brief's Shared list, the registry and order agreement across files, the table placement, freezing, and derivation, and every added sentence and comment against the count law, the banned-term rows, the token-noun rule, and the temporal and cross-reference rows. Where a clause needs a command you cannot run (an apply check), rule the sub-clause UNRESOLVED and name the command; the Orchestrator takes that reading. Rule a clause only on the sites you read, and name them; a sample of compliant sites does not confirm a claim about every site.
+
+## Context
+
+Law: {LAW}. Evidence, all read-only, under `/home/user/scaffold/.orkestrel/veneer/units/`: the claims file `{claims}`; {u['evidence']}; the worktree `{u['worktree']}` (the owned files over `{u.get('base', '2a3f223')}`; read them, never edit them). Execution: a native subagent, clean context; perform the assignment directly and spawn nothing; edit nothing; run nothing; use absolute paths.
+
+## Scope
+
+Read-only. No file is owned.
+
+## Execution
+
+A native subagent: perform the assignment directly and spawn nothing.
+
+## Output
+
+The `orkestrel-falsify` verdict shape and nothing else, for {u['checker']} only — per-claim verdicts with `file:line`; findings outside the claims to the BROKEN standard; the counts the report states, listed; one terminal line `VERDICT: PASS` or `VERDICT: FAIL <numbers>; outside the claims: <names or none>`.
+
+## Acceptance criteria
+
+Each named claim carries a verdict with evidence; the counts the report states are listed; the terminal line is present.
+""")
+    sh = f"""#!/bin/bash
+# {title}, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at {u['worktree']}.
+# Written by audit-fix-briefs.py. Launched through codex-queue-2.sh; {u.get('bench', 'the bench round-tripped at 02:50 (md-audit-2 and tp-audit-2 returned exit 0)')}; the cap is 1800 s (comparable objective lanes ran 7 to 12 min over retained logs, plus slack for the loaded container).
+# Brief: .orkestrel/veneer/units/{key}-audit-{N}-analyst-brief.md  Claims: .orkestrel/veneer/units/{claims}  Journal: tmp/codex/{key}-audit-{N}-analyst.jsonl  Last message: tmp/codex/{key}-audit-{N}-analyst-last.md
+cd /home/user/scaffold || exit 1
+timeout 1800 codex exec --json -C {u['worktree']} --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\\"high\\"" --output-last-message /home/user/scaffold/tmp/codex/{key}-audit-{N}-analyst-last.md "Your working directory is {u['worktree']}. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/{key}-audit-{N}-analyst-brief.md exactly. Rule on every numbered claim in /home/user/scaffold/.orkestrel/veneer/units/{claims} holding the objective lane. Make your final message the report the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/{key}-audit-{N}-analyst.jsonl 2> /home/user/scaffold/tmp/codex/{key}-audit-{N}-analyst.err
+echo "exit=$?" >> /home/user/scaffold/tmp/codex/{key}-audit-{N}-analyst.err
+"""
+    (U / f'{key}-audit-{N}-analyst.sh').write_text(sh); (pathlib.Path('/home/user/scaffold/tmp/codex') / f'{key}-audit-{N}-analyst.sh').write_text(sh)
+    print(key, 'written')

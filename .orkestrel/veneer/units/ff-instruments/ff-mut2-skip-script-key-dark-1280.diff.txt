@@ -1,0 +1,6 @@
+2656,2657c2656,2657
+< 			lifted.focus()
+< 			await pressKeys('{Tab}')
+---
+> 			link.focus()
+> 			await pressKeys('{ArrowRight}')

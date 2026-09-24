@@ -1,0 +1,2309 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index a97acb7..dc7d924 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -690,13 +690,20 @@ export const VALIDATION_COPY = Object.freeze({
+  * @remarks
+  * Each row names the host, the state, the control's own identifier, and the text it announces, and
+  * the markup is derived from that row rather than written twice, so a passing specimen and its
+- * failing twin cannot drift apart. Every class a specimen writes is one the cascade declares a rule
+- * for, and no specimen carries an inline style, which is what the showcase census and the style
+- * sweep hold the whole surface to. No row renders a validation tooltip. The release positions a
+- * tooltip against the ancestor an input group or a floating label positions, and a tooltip with no
+- * positioned ancestor resolves `top: 100%` against the initial containing block, which grows the
+- * document by the height of every pane the capture stages against it; the Input group section
+- * renders the tooltip pair inside the groups they hang from.
++ * failing twin cannot drift apart. The textarea and the color control each take the state on the
++ * control the release gives a rule of its own, and the inline check holds its feedback inside its
++ * row, where the inline rule reaches it. A check sits in a `.form-check` row, as the release's
++ * validation markup writes it, so its focus ring clears its label, and a select showing several
++ * values carries the state without the mark, which the release withholds from it. The scoped form
++ * renders failing, with its required control empty, and passing, with that control filled, which
++ * are the failing and the passing branch the `.was-validated` scope reaches. Every class a specimen
++ * writes is one the cascade declares a rule for, and no specimen carries an inline style, which is
++ * what the showcase census and the style sweep hold the whole surface to. No row renders a
++ * validation tooltip. The release positions a tooltip against the ancestor an input group or a
++ * floating label positions, and a tooltip with no positioned ancestor resolves `top: 100%` against
++ * the initial containing block, which grows the document by the height of every pane the capture
++ * stages against it; the Input group section renders the tooltip pair inside the groups they hang
++ * from.
+  */
+ export const VALIDATION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 	[
+@@ -764,6 +771,70 @@ export const VALIDATION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 			label: 'Rejected batch',
+ 			value: '',
+ 		},
++		{
++			name: 'Valid textarea',
++			host: 'textarea',
++			state: 'valid',
++			id: 'valid-notes',
++			label: 'Valid notes',
++			value: 'Stack the oak on pallets.',
++		},
++		{
++			name: 'Invalid textarea',
++			host: 'textarea',
++			state: 'invalid',
++			id: 'invalid-notes',
++			label: 'Invalid notes',
++			value: '',
++		},
++		{
++			name: 'Valid color',
++			host: 'color',
++			state: 'valid',
++			id: 'valid-shade',
++			label: 'Valid shade',
++			value: '',
++		},
++		{
++			name: 'Invalid color',
++			host: 'color',
++			state: 'invalid',
++			id: 'invalid-shade',
++			label: 'Invalid shade',
++			value: '',
++		},
++		{
++			name: 'Valid inline feedback',
++			host: 'inline',
++			state: 'valid',
++			id: 'valid-inline-box',
++			label: 'Valid inline inspection',
++			value: '',
++		},
++		{
++			name: 'Invalid inline feedback',
++			host: 'inline',
++			state: 'invalid',
++			id: 'invalid-inline-box',
++			label: 'Invalid inline inspection',
++			value: '',
++		},
++		{
++			name: 'Valid multiple select',
++			host: 'multiple',
++			state: 'valid',
++			id: 'valid-warehouses',
++			label: 'Valid warehouses',
++			value: 'Northworks',
++		},
++		{
++			name: 'Invalid multiple select',
++			host: 'multiple',
++			state: 'invalid',
++			id: 'invalid-warehouses',
++			label: 'Invalid warehouses',
++			value: 'Unassigned',
++		},
+ 		{
+ 			name: 'Validated form',
+ 			host: 'form',
+@@ -772,6 +843,14 @@ export const VALIDATION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 			label: 'Required destination',
+ 			value: '',
+ 		},
++		{
++			name: 'Validated passing form',
++			host: 'form',
++			state: 'valid',
++			id: 'filled-destination',
++			label: 'Filled destination',
++			value: 'Lisbon',
++		},
+ 	].map(({ name, host, state, id, label, value }) => {
+ 		const field = `<label for="${id}">${label}</label>`
+ 		const note = state === 'valid' ? 'Accepted.' : 'Enter a value.'
+@@ -781,10 +860,16 @@ export const VALIDATION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 				markup: `${field}<select class="form-select is-${state}" id="${id}"><option>${value}</option></select>`,
+ 			})
+ 		}
++		if (host === 'multiple') {
++			return Object.freeze({
++				name,
++				markup: `${field}<select class="form-select is-${state}" id="${id}" multiple=""><option>${value}</option><option>Southgate</option></select>`,
++			})
++		}
+ 		if (host === 'check') {
+ 			return Object.freeze({
+ 				name,
+-				markup: `<div><input class="form-check-input is-${state}" type="checkbox" id="${id}" checked=""><label class="form-check-label" for="${id}">${label}</label></div>`,
++				markup: `<div class="form-check"><input class="form-check-input is-${state}" type="checkbox" id="${id}" checked=""><label class="form-check-label" for="${id}">${label}</label></div>`,
+ 			})
+ 		}
+ 		if (host === 'feedback') {
+@@ -796,7 +881,25 @@ export const VALIDATION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 		if (host === 'form') {
+ 			return Object.freeze({
+ 				name,
+-				markup: `<form class="was-validated">${field}<input class="form-control" id="${id}" required=""><div class="invalid-feedback">${note}</div></form>`,
++				markup: `<form class="was-validated">${field}<input class="form-control" id="${id}" required=""${value === '' ? '' : ` value="${value}"`}><div class="${state}-feedback">${note}</div></form>`,
++			})
++		}
++		if (host === 'textarea') {
++			return Object.freeze({
++				name,
++				markup: `${field}<textarea class="form-control is-${state}" id="${id}" rows="3">${value}</textarea>`,
++			})
++		}
++		if (host === 'color') {
++			return Object.freeze({
++				name,
++				markup: `${field}<input class="form-control form-control-color is-${state}" type="color" id="${id}">`,
++			})
++		}
++		if (host === 'inline') {
++			return Object.freeze({
++				name,
++				markup: `<div class="form-check form-check-inline"><input class="form-check-input is-${state}" type="checkbox" id="${id}"><label class="form-check-label" for="${id}">${label}</label><div class="${state}-feedback">${note}</div></div>`,
+ 			})
+ 		}
+ 		return Object.freeze({
+@@ -1195,7 +1298,7 @@ export const FORM_CHECK_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ export const FORM_CONTROL_COPY = Object.freeze({
+ 	region: 'Form control',
+ 	paragraph:
+-		'Compare the text control at each size, the textarea, the file, date, and color controls, the plaintext form, and a disabled and a readonly control, and the ring keyboard focus paints on the text control.',
++		'Compare the text control, the textarea, the file and color controls, and the plaintext form at each size, the date control, a disabled and a readonly control, the file button under the pointer, and the ring keyboard focus paints on the text control.',
+ })
+ 
+ /**
+@@ -1208,6 +1311,12 @@ export const FORM_CONTROL_COPY = Object.freeze({
+  * The color control carries no value, so it renders the control's own default rather than a color
+  * this module would have to write as a literal. The date control carries a fixed value, so its frame
+  * shows the same filled date fields on every run.
++ *
++ * The textarea, the file control, the color control, and the plaintext form each follow with their
++ * small and large steps, each specimen its base control's markup with the size class its name
++ * claims, because the size rules write a separate treatment for each of those controls: the
++ * textarea's and the color control's heights, the file button's inset, and the plaintext form's
++ * cleared inline padding.
+  */
+ export const FORM_CONTROL_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -1229,10 +1338,30 @@ export const FORM_CONTROL_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		name: 'Form control textarea',
+ 		markup: '<textarea class="form-control" aria-label="Message" rows="3"></textarea>',
+ 	}),
++	Object.freeze({
++		name: 'Form control textarea small',
++		markup:
++			'<textarea class="form-control form-control-sm" aria-label="Small message" rows="3"></textarea>',
++	}),
++	Object.freeze({
++		name: 'Form control textarea large',
++		markup:
++			'<textarea class="form-control form-control-lg" aria-label="Large message" rows="3"></textarea>',
++	}),
+ 	Object.freeze({
+ 		name: 'Form control file',
+ 		markup: '<input class="form-control" type="file" aria-label="Attachment">',
+ 	}),
++	Object.freeze({
++		name: 'Form control file small',
++		markup:
++			'<input class="form-control form-control-sm" type="file" aria-label="Small attachment">',
++	}),
++	Object.freeze({
++		name: 'Form control file large',
++		markup:
++			'<input class="form-control form-control-lg" type="file" aria-label="Large attachment">',
++	}),
+ 	Object.freeze({
+ 		name: 'Form control date',
+ 		markup: '<input class="form-control" type="date" aria-label="Due date" value="2026-09-23">',
+@@ -1242,10 +1371,30 @@ export const FORM_CONTROL_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		markup:
+ 			'<input class="form-control form-control-color" type="color" aria-label="Accent color">',
+ 	}),
++	Object.freeze({
++		name: 'Form control color small',
++		markup:
++			'<input class="form-control form-control-color form-control-sm" type="color" aria-label="Small accent color">',
++	}),
++	Object.freeze({
++		name: 'Form control color large',
++		markup:
++			'<input class="form-control form-control-color form-control-lg" type="color" aria-label="Large accent color">',
++	}),
+ 	Object.freeze({
+ 		name: 'Form control plaintext',
+ 		markup:
+-			'<input class="form-control-plaintext" type="text" aria-label="Account email" value="reader@example.com" readonly="">',
++			'<input class="form-control-plaintext" type="text" aria-label="Reader email" value="reader@example.com" readonly="">',
++	}),
++	Object.freeze({
++		name: 'Form control plaintext small',
++		markup:
++			'<input class="form-control-plaintext form-control-sm" type="text" aria-label="Small reader email" value="reader@example.com" readonly="">',
++	}),
++	Object.freeze({
++		name: 'Form control plaintext large',
++		markup:
++			'<input class="form-control-plaintext form-control-lg" type="text" aria-label="Large reader email" value="reader@example.com" readonly="">',
+ 	}),
+ 	Object.freeze({
+ 		name: 'Form control disabled',
+@@ -1728,7 +1877,7 @@ export const MODAL_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ export const INPUT_GROUP_COPY = Object.freeze({
+ 	region: 'Input group',
+ 	paragraph:
+-		'Compare a control joined to its addons, buttons, and dropdown toggles: the shared borders, the squared inner corners, each size, the feedback a failing group reports under its row, and the tooltip a passing or a failing group hangs over the row after it.',
++		'Compare a control joined to its addons, buttons, and dropdown toggles: the shared borders, the squared inner corners, each size, the feedback a failing group reports under its row, the tooltip a passing or a failing group hangs over the row after it, a select and a floating label joined between an addon and a button, a select in a large and a small group, a group in a toolbar, and a focused button lifted over the button beside it.',
+ })
+ 
+ /**
+@@ -1760,6 +1909,17 @@ export const INPUT_GROUP_COPY = Object.freeze({
+  * the child the release's count steps over, and describes its control with that feedback. Every
+  * class is set in markup, and each toggle announces the `aria-expanded="false"` state: no script
+  * opens a menu in this region.
++ *
++ * The button pair leads its group with the `Earlier order` and the `Later order` buttons, so
++ * keyboard focus on the `Earlier order` button lifts it above the level its neighbour rests on and
++ * its ring paints over that neighbour. The select and the floating wrapper each sit between an
++ * addon and a trailing button, which is where the group squares both of a child's inline corners
++ * and where keyboard focus lifts the child's ring over the button. The floating wrapper holds an
++ * empty control and its label, so at rest the label sits over the control, and focus floats it. The
++ * sized selects are one ramp, derived from the shared size list, and each keeps the room its
++ * indicator needs. The toolbar holds a button group and a group, and inside a toolbar the group
++ * takes its content's width rather than the toolbar's, so it shares the button group's row where
++ * the row has room and wraps below it where the row does not.
+  */
+ export const INPUT_GROUP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -1828,13 +1988,42 @@ export const INPUT_GROUP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		markup:
+ 			'<div class="input-group has-validation"><button type="button" class="btn btn-outline-secondary dropdown-toggle" aria-expanded="false">Weigh by</button><ul class="dropdown-menu"><li><a class="dropdown-item" href="#weigh-scale">Scale reading</a></li></ul><input class="form-control is-invalid" type="text" id="parcel-weight" aria-label="Parcel weight" aria-describedby="parcel-weight-feedback"><button type="button" class="btn btn-outline-secondary dropdown-toggle" aria-expanded="false">Weight unit</button><ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="#unit-kilograms">Kilograms</a></li></ul><div class="invalid-feedback" id="parcel-weight-feedback">Enter the parcel weight.</div></div>',
+ 	}),
++	Object.freeze({
++		name: 'Input group buttons',
++		markup:
++			'<div class="input-group"><button type="button" class="btn btn-outline-secondary">Earlier order</button><button type="button" class="btn btn-outline-secondary">Later order</button><input class="form-control" type="text" aria-label="Order number"></div>',
++	}),
++	Object.freeze({
++		name: 'Input group select',
++		markup:
++			'<div class="input-group"><label class="input-group-text" for="grouped-warehouse">Stock from</label><select class="form-select" id="grouped-warehouse"><option>Northworks</option><option>Southgate</option></select><button type="button" class="btn btn-outline-secondary">Reserve stock</button></div>',
++	}),
++	Object.freeze({
++		name: 'Input group floating',
++		markup:
++			'<div class="input-group"><span class="input-group-text">@</span><div class="form-floating"><input type="text" class="form-control" id="grouped-recipient" placeholder="Recipient"><label for="grouped-recipient">Recipient handle</label></div><button type="button" class="btn btn-outline-secondary">Verify handle</button></div>',
++	}),
++	...[
++		{ name: 'Input group select large', size: 'lg', label: 'Large' },
++		{ name: 'Input group select small', size: 'sm', label: 'Small' },
++	].map(({ name, size, label }) =>
++		Object.freeze({
++			name,
++			markup: `<div class="input-group input-group-${size}"><label class="input-group-text" for="grouped-${size}-warehouse">${label} stock</label><select class="form-select" id="grouped-${size}-warehouse"><option>Northworks</option><option>Southgate</option></select></div>`,
++		}),
++	),
++	Object.freeze({
++		name: 'Input group toolbar',
++		markup:
++			'<div class="btn-toolbar" role="toolbar" aria-label="Order tools"><div class="btn-group me-2" role="group" aria-label="Order actions"><button type="button" class="btn btn-outline-secondary">Refresh orders</button></div><div class="input-group"><span class="input-group-text">#</span><input class="form-control" type="text" aria-label="Toolbar order number"></div></div>',
++	}),
+ ])
+ 
+ /** Holds the Form floating section's visible copy and accessible name. */
+ export const FORM_FLOATING_COPY = Object.freeze({
+ 	region: 'Form floating',
+ 	paragraph:
+-		'Compare each floating label at rest and floated: over an empty field, a filled one, a textarea, a select, a disabled field, and a read-only value.',
++		'Compare each floating label at rest and floated: over an empty field, a filled one, a filled and an empty textarea, a select, a disabled textarea, field, and select, and a filled and an empty read-only value.',
+ })
+ 
+ /**
+@@ -1846,6 +2035,16 @@ export const FORM_FLOATING_COPY = Object.freeze({
+  * keyboard traversal. The filled field, the textarea, and the plaintext value carry their text in
+  * the markup, so each renders its label floated with no drive; the disabled field is a filled
+  * textarea, which shows the disabled label and the disabled backdrop in one frame.
++ *
++ * The empty textarea carries its placeholder alone, so its label rests over the control until
++ * keyboard focus floats it and paints the backdrop behind it, which the filled textarea shows only
++ * because it carries text. The disabled text control and the disabled select show the disabled
++ * label without a backdrop, because the backdrop is the textarea's alone. The empty plaintext
++ * control carries its placeholder alone, so keyboard focus moves the empty control's content box
++ * down to the floated inset, where the filled one already sits. The move paints nothing a frame
++ * can show: the control holds no value, its placeholder is transparent, and a readonly control
++ * paints no caret, so its focus frame matches its resting frame and the journey's inset reading is
++ * the evidence for the state.
+  */
+ export const FORM_FLOATING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -1863,6 +2062,11 @@ export const FORM_FLOATING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 		markup:
+ 			'<div class="form-floating"><textarea class="form-control" id="floating-notes" placeholder="Notes">Leave the parcel at the side door.</textarea><label for="floating-notes">Delivery notes</label></div>',
+ 	}),
++	Object.freeze({
++		name: 'Form floating empty textarea',
++		markup:
++			'<div class="form-floating"><textarea class="form-control" id="floating-pickup" placeholder="Notes"></textarea><label for="floating-pickup">Pickup notes</label></div>',
++	}),
+ 	Object.freeze({
+ 		name: 'Form floating select',
+ 		markup:
+@@ -1873,11 +2077,26 @@ export const FORM_FLOATING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 		markup:
+ 			'<div class="form-floating"><textarea class="form-control" id="floating-archive" placeholder="Notes" disabled="">Archived at the depot.</textarea><label for="floating-archive">Archived notes</label></div>',
+ 	}),
++	Object.freeze({
++		name: 'Form floating disabled input',
++		markup:
++			'<div class="form-floating"><input type="text" class="form-control" id="floating-depot" placeholder="Depot" value="North depot" disabled=""><label for="floating-depot">Closed depot</label></div>',
++	}),
++	Object.freeze({
++		name: 'Form floating disabled select',
++		markup:
++			'<div class="form-floating"><select class="form-select" id="floating-route" disabled=""><option selected="">Harbor Line</option></select><label for="floating-route">Retired route</label></div>',
++	}),
+ 	Object.freeze({
+ 		name: 'Form floating plaintext',
+ 		markup:
+ 			'<div class="form-floating"><input type="email" class="form-control-plaintext" id="floating-account" placeholder="dispatch@example.com" value="dispatch@example.com" readonly=""><label for="floating-account">Account email</label></div>',
+ 	}),
++	Object.freeze({
++		name: 'Form floating empty plaintext',
++		markup:
++			'<div class="form-floating"><input type="email" class="form-control-plaintext" id="floating-unset" placeholder="dispatch@example.com" readonly=""><label for="floating-unset">Unset email</label></div>',
++	}),
+ ])
+ 
+ /** Holds the Form label section's visible copy and accessible name. */
+diff --git a/src/styles/components/_form-range.scss b/src/styles/components/_form-range.scss
+index 8c9ba0d..cce8193 100644
+--- a/src/styles/components/_form-range.scss
++++ b/src/styles/components/_form-range.scss
+@@ -39,11 +39,12 @@ $engines: (
+ 		// The ring is worn by the thumb rather than by the control, so the hairline underneath it
+ 		// separates the ring from the track the thumb sits on. Its width is Bootstrap's own
+ 		// literal rather than the border-width token, because the release writes a literal there
+-		// too and a token would invent a retune the release does not offer; its paint is the body
+-		// surface, which is the variable the release compiles to `#fff`.
++		// too and a token would invent a retune the release does not offer. Its paint is the white
++		// palette entry: the release compiles the Sass `$body-bg` variable into the shadow, which is
++		// `#fff` whatever mode the page renders, so the hairline stays white in dark mode as well.
+ 		.form-range:focus#{$thumb} {
+ 			box-shadow:
+-				0 0 0 1px var(--vn-surface-body-base),
++				0 0 0 1px var(--vn-palette-white-base),
+ 				0 0 0 var(--vn-focus-width) var(--vn-focus-color);
+ 		}
+ 
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 6d9580e..3e5aff5 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -10,6 +10,7 @@ import {
+ 	createPortfolio,
+ 	describeFocus,
+ 	describeTree,
++	driveHold,
+ 	expandCaptures,
+ 	extractStyles,
+ 	holdAccessible,
+@@ -830,10 +831,14 @@ describe('journey', () => {
+ 	it('paints a validation focus ring on the passing and the failing text control, in the variant this run renders', async () => {
+ 		await applyTheme(VARIANT)
+ 		// The resting paint of every validation specimen is already a cascade scenario, so the focus
+-		// ring is the one state left to drive. Only the text controls are driven, because the ring the
+-		// partial paints is one rule reaching every host it styles. The rows are the driven rows whose
+-		// subject the validation table declares.
+-		const declared = new Set(VALIDATION_SPECIMENS.map((specimen) => specimen.name))
++		// ring is the one state left to drive. This case drives the text controls, and the select and
++		// check hosts take their focus frames on their lifted specimens in a case of their own. The
++		// rows are the driven rows whose subject is a validation specimen rendering a text control.
++		const declared = new Set(
++			VALIDATION_SPECIMENS.filter(({ markup }) =>
++				markup.includes('<input class="form-control is-'),
++			).map((specimen) => specimen.name),
++		)
+ 		const keys = DRIVEN_KEYS.filter((key) => declared.has(key.subject))
+ 		expect(keys).not.toStrictEqual([])
+ 		const rings = new Map<string, number | undefined>()
+@@ -1143,8 +1148,13 @@ describe('journey', () => {
+ 		// The filled, textarea, select, disabled, and plaintext specimens render their label floated
+ 		// at rest, so the one state left to drive is focus on the empty field: its label floats and
+ 		// its text moves down only while it holds focus. The rows are the driven rows whose subject
+-		// the floating table declares.
+-		const declared = new Set(FORM_FLOATING_SPECIMENS.map((specimen) => specimen.name))
++		// is a floating specimen holding a text control; the empty textarea and the empty plaintext
++		// control take their focus frames on their lifted specimens in cases of their own.
++		const declared = new Set(
++			FORM_FLOATING_SPECIMENS.filter(({ markup }) =>
++				/<input[^>]* class="form-control"/u.test(markup),
++			).map((specimen) => specimen.name),
++		)
+ 		const keys = DRIVEN_KEYS.filter((key) => declared.has(key.subject))
+ 		expect(keys).not.toStrictEqual([])
+ 		for (const key of keys) {
+@@ -1766,6 +1776,641 @@ describe('journey', () => {
+ 		JOURNAL.record('read', 'Form check box', framedImage)
+ 	})
+ 
++	it('rings the switch under keyboard focus with its focus knob on the lifted specimen, and holds the ring inside the frame', async () => {
++		await applyTheme(VARIANT)
++		const specimen = readSpecimen(mounted.host, 'Form check switch')
++		const control = requireValue(
++			specimen.querySelector<HTMLElement>('.form-switch .form-check-input'),
++			'The "Form check switch" specimen renders no switch',
++		)
++		const knob = readStyle(control, 'background-image')
++		let focused = ''
++		let ring = 'none'
++		let framed = false
++		let inside: readonly boolean[] = []
++		// The specimen itself is moved to the document's start inside a padded wrapper and put back
++		// afterwards, the placement the underline focus case uses and for its reasons: the ring paints
++		// outside the switch's box, and the wrapper's padding holds it. The installed traversal sends
++		// Tab from the element holding focus, so the wrapper takes focus without joining the tab
++		// order, and the first Tab lands on the lifted switch as keyboard focus.
++		const marker = document.createComment('form-check-switch')
++		specimen.before(marker)
++		const lifted = build('div', { classes: 'p-2' })
++		lifted.tabIndex = -1
++		lifted.append(specimen)
++		document.body.prepend(lifted)
++		try {
++			expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
++			// The ring's transition would otherwise land a frame part of the way to its paint.
++			await stageMedia({ motion: false })
++			lifted.focus()
++			expect(await traverseAccessible(readName(control))).toBe(control)
++			expect(control.matches(':focus-visible')).toBe(true)
++			focused = readStyle(control, 'background-image')
++			ring = readStyle(control, 'box-shadow')
++			await FRAMES.place('form-check-switch-focus', control, lifted)
++			// The readings that decide the frame are taken again in the layout the shot was taken in.
++			await stagePane(window.innerWidth, window.innerHeight)
++			framed =
++				control.matches(':focus-visible') && readStyle(control, 'background-image') === focused
++			// The ring's painted extent is the switch's box grown by the largest length its shadow
++			// carries, read against the frame's edges in the frame's own device pixels, the reading the
++			// underline focus case takes.
++			const reach = Math.max(
++				...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
++			)
++			const { region } = requireValue(
++				FRAMES.placements.find((placement) => placement.scenario === 'form-check-switch-focus'),
++				'The switch focus frame recorded no placement',
++			)
++			const ratio = window.devicePixelRatio
++			const frame = lifted.getBoundingClientRect()
++			inside = [
++				reach > 0,
++				region.x - reach * ratio >= 0,
++				region.y - reach * ratio >= 0,
++				region.x + region.width + reach * ratio <= frame.width * ratio,
++				region.y + region.height + reach * ratio <= frame.height * ratio,
++			]
++			await releasePane()
++			control.blur()
++			await releaseMedia()
++		} finally {
++			marker.replaceWith(specimen)
++			lifted.remove()
++		}
++		// The focus rule swaps the knob for its focus glyph, so a frame taken after focus left the
++		// switch, a ring the frame crops, or a knob that never changed reports here.
++		expect(framed).toBe(true)
++		expect(focused).not.toBe(knob)
++		expect(ring).not.toBe('none')
++		expect(inside).toStrictEqual([true, true, true, true, true])
++		expect(readStyle(control, 'background-image')).toBe(knob)
++		expect(specimen.parentElement).not.toBe(lifted)
++		ARTIFACT.push(JSON.stringify({ reading: 'switch focus', mode: VARIANT, ring, inside }))
++		JOURNAL.record('focus', readName(control), ring)
++	})
++
++	it('holds each pressed form control on its lifted specimen and photographs the paint its press rule writes', async () => {
++		await applyTheme(VARIANT)
++		// The rows are the driven press rows whose subject a forms table declares.
++		const declared = new Set(
++			[
++				FORM_CHECK_SPECIMENS,
++				FORM_CONTROL_SPECIMENS,
++				FORM_FLOATING_SPECIMENS,
++				FORM_RANGE_SPECIMENS,
++				FORM_SELECT_SPECIMENS,
++				INPUT_GROUP_SPECIMENS,
++				VALIDATION_SPECIMENS,
++			].flatMap((table) => table.map((specimen) => specimen.name)),
++		)
++		const keys = DRIVEN_KEYS.filter(
++			(key) => declared.has(key.subject) && key.scenario.endsWith('-active'),
++		)
++		expect(keys).not.toStrictEqual([])
++		const shots = new Map<CaptureScenario, readonly string[]>()
++		const framed: Array<readonly [CaptureScenario, boolean]> = []
++		for (const key of keys) {
++			const specimen = readSpecimen(mounted.host, key.subject)
++			const control = requireValue(
++				specimen.querySelector<HTMLElement>('input'),
++				`The "${key.subject}" specimen renders no control`,
++			)
++			// The specimen itself is moved to the document's start inside a padded wrapper, the
++			// placement every pointer state takes, because a pointer placed where the showcase renders
++			// the specimen does not survive the staging a shot takes.
++			const marker = document.createComment(key.scenario)
++			specimen.before(marker)
++			const lifted = build('div', { classes: 'p-2' })
++			lifted.append(specimen)
++			document.body.prepend(lifted)
++			try {
++				// The press paints a part whose computed style Chromium withholds on the range thumb, so
++				// the paint is read off the pixel at the control's centre, which lies inside the
++				// checkbox and on the range thumb, whose value sits mid-track. A press also focuses the
++				// control, and the focus rules repaint the box's border and the thumb's ring, so the
++				// centre is read with the control focused and then with it held: the readings differ
++				// by the press alone. Reduced motion is staged so neither reading lands inside a
++				// transition.
++				await stageMedia({ motion: false })
++				control.focus()
++				const focused = await page.screenshot({ element: control, save: false })
++				// A held pointer captures the press, so the pressed state survives the staging a shot
++				// takes, and the reading after the shot answers for the frame.
++				await driveHold(() => control, readName(control))
++				expect(control.matches(':active')).toBe(true)
++				expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
++				const held = await page.screenshot({ element: control, save: false })
++				shots.set(key.scenario, [focused, held])
++				await FRAMES.place(key.scenario, control, lifted)
++				framed.push([key.scenario, control.matches(':active')])
++				await releasePointer()
++				await releaseMedia()
++			} finally {
++				marker.replaceWith(specimen)
++				lifted.remove()
++			}
++		}
++		const centres = new Map<CaptureScenario, readonly string[]>()
++		for (const [scenario, pair] of shots) {
++			const pixels: string[] = []
++			for (const encoded of pair) {
++				const image = new Image()
++				image.src = `data:image/png;base64,${encoded}`
++				await image.decode()
++				const context = requireValue(
++					new OffscreenCanvas(image.width, image.height).getContext('2d'),
++					'The pressed control reading requires a 2D canvas',
++				)
++				context.drawImage(image, 0, 0)
++				const [red, green, blue] = context.getImageData(
++					Math.floor(image.width / 2),
++					Math.floor(image.height / 2),
++					1,
++					1,
++				).data
++				pixels.push(`rgb(${String(red)}, ${String(green)}, ${String(blue)})`)
++			}
++			centres.set(scenario, pixels)
++		}
++		ARTIFACT.push(JSON.stringify({ reading: 'form press', mode: VARIANT, centres: [...centres] }))
++		// Every frame was taken while its press held, and every press repainted the control's centre:
++		// a press rule that stopped painting leaves the held centre at its focused color.
++		expect(framed.map(([scenario]) => scenario)).toStrictEqual(keys.map((key) => key.scenario))
++		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
++		expect([...centres.keys()]).toStrictEqual(keys.map((key) => key.scenario))
++		expect([...centres].filter(([, [focus, held]]) => focus === held)).toStrictEqual([])
++		JOURNAL.record('hold', 'forms', String(centres.size))
++	})
++
++	it('hovers the file control on its lifted specimen and photographs the button surface the pointer paints', async () => {
++		await applyTheme(VARIANT)
++		const specimen = readSpecimen(mounted.host, 'Form control file')
++		const control = requireValue(
++			specimen.querySelector<HTMLElement>('input[type="file"]'),
++			'The "Form control file" specimen renders no file control',
++		)
++		const rest = readStyle(control, 'background-color', '::file-selector-button')
++		let hovered = ''
++		let framed = false
++		let settled = ''
++		// The specimen itself is moved to the document's start inside a padded wrapper, the placement
++		// every pointer state takes, and put back afterwards.
++		const marker = document.createComment('form-control-file')
++		specimen.before(marker)
++		const lifted = build('div', { classes: 'p-2' })
++		lifted.append(specimen)
++		document.body.prepend(lifted)
++		try {
++			expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
++			// The button part's surface transitions, and the control reports none of its part's
++			// animations, so reduced motion is staged and the reading is the settled surface. The pane
++			// is staged before the pointer is placed, because a control hovered before the staging is
++			// no longer under the pointer at the shot.
++			await stageMedia({ motion: false })
++			await stagePane(window.innerWidth, window.innerHeight)
++			await hoverAccessible(readName(control))
++			expect(control.matches(':hover')).toBe(true)
++			hovered = readStyle(control, 'background-color', '::file-selector-button')
++			await FRAMES.place('form-control-file-hover', control, lifted)
++			await stagePane(window.innerWidth, window.innerHeight)
++			framed =
++				control.matches(':hover') &&
++				readStyle(control, 'background-color', '::file-selector-button') === hovered
++			await releasePane()
++			await releasePointer()
++			await page.elementLocator(control).unhover()
++			expect(control.matches(':hover')).toBe(false)
++			settled = readStyle(control, 'background-color', '::file-selector-button')
++			await releaseMedia()
++		} finally {
++			marker.replaceWith(specimen)
++			lifted.remove()
++		}
++		// The frame was taken under the pointer, and the hover rule repaints the button's surface,
++		// which falls back to rest when the pointer leaves.
++		expect(framed).toBe(true)
++		expect(hovered).not.toBe(rest)
++		expect(settled).toBe(rest)
++		expect(specimen.parentElement).not.toBe(lifted)
++		ARTIFACT.push(JSON.stringify({ reading: 'file hover', mode: VARIANT, rest, hovered }))
++		JOURNAL.record('hover', readName(control), hovered)
++	})
++
++	it('floats the empty textarea label with its backdrop under keyboard focus on the lifted specimen, and holds the ring inside the frame', async () => {
++		await applyTheme(VARIANT)
++		const specimen = readSpecimen(mounted.host, 'Form floating empty textarea')
++		const control = requireValue(
++			specimen.querySelector<HTMLElement>('.form-floating > textarea.form-control'),
++			'The "Form floating empty textarea" specimen renders no textarea',
++		)
++		const label = requireValue(
++			specimen.querySelector('.form-floating > label'),
++			'The "Form floating empty textarea" specimen renders no label',
++		)
++		const resting = [readStyle(label, 'transform'), readStyle(label, 'background-color', '::after')]
++		let floated: readonly string[] = []
++		let ring = 'none'
++		let framed = false
++		let empty = false
++		let inside: readonly boolean[] = []
++		// The specimen itself is moved to the document's start inside a padded wrapper, whose padding
++		// holds the ring the textarea paints outside its box, and put back afterwards. The wrapper
++		// takes focus without joining the tab order, the start the switch case gives its traversal.
++		const marker = document.createComment('form-floating-empty-textarea')
++		specimen.before(marker)
++		const lifted = build('div', { classes: 'p-2' })
++		lifted.tabIndex = -1
++		lifted.append(specimen)
++		document.body.prepend(lifted)
++		try {
++			expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
++			// The label transitions its transform, so reduced motion is staged and the frame shows the
++			// label floated rather than part of the way up.
++			await stageMedia({ motion: false })
++			lifted.focus()
++			expect(await traverseAccessible(readName(control))).toBe(control)
++			expect(control.matches(':focus-visible')).toBe(true)
++			floated = [readStyle(label, 'transform'), readStyle(label, 'background-color', '::after')]
++			ring = readStyle(control, 'box-shadow')
++			await FRAMES.place('form-floating-empty-textarea-focus', control, lifted)
++			await stagePane(window.innerWidth, window.innerHeight)
++			framed = document.activeElement === control && readStyle(label, 'transform') === floated[0]
++			empty = control.matches(':placeholder-shown')
++			const reach = Math.max(
++				...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
++			)
++			const { region } = requireValue(
++				FRAMES.placements.find(
++					(placement) => placement.scenario === 'form-floating-empty-textarea-focus',
++				),
++				'The empty textarea focus frame recorded no placement',
++			)
++			const ratio = window.devicePixelRatio
++			const frame = lifted.getBoundingClientRect()
++			inside = [
++				reach > 0,
++				region.x - reach * ratio >= 0,
++				region.y - reach * ratio >= 0,
++				region.x + region.width + reach * ratio <= frame.width * ratio,
++				region.y + region.height + reach * ratio <= frame.height * ratio,
++			]
++			await releasePane()
++			control.blur()
++			await releaseMedia()
++		} finally {
++			marker.replaceWith(specimen)
++			lifted.remove()
++		}
++		// Focus alone floats the label over the still empty textarea and paints the backdrop behind
++		// it, which the filled textarea's frame shows only because it carries text.
++		const [transform, backdrop] = floated
++		const [restingTransform, restingBackdrop] = resting
++		expect(framed).toBe(true)
++		expect(empty).toBe(true)
++		expect(transform).not.toBe(restingTransform)
++		expect(backdrop).not.toBe(restingBackdrop)
++		expect(inside).toStrictEqual([true, true, true, true, true])
++		expect(readStyle(label, 'transform')).toBe(restingTransform)
++		ARTIFACT.push(
++			JSON.stringify({ reading: 'empty textarea focus', mode: VARIANT, resting, floated, ring }),
++		)
++		JOURNAL.record('focus', readName(control), String(transform))
++	})
++
++	it('lifts the focused grouped button over the button beside it on the lifted specimen, and holds its ring inside the frame', async () => {
++		await applyTheme(VARIANT)
++		const specimen = readSpecimen(mounted.host, 'Input group buttons')
++		const [button, neighbour] = specimen.querySelectorAll<HTMLElement>('.input-group > .btn')
++		const leading = requireValue(button, 'The "Input group buttons" specimen renders no button')
++		const beside = requireValue(neighbour, 'The "Input group buttons" specimen renders one button')
++		// At rest each button sits one step above the control, on one level, so the later button's
++		// border paints over the line the two share.
++		const resting = [readStyle(leading, 'z-index'), readStyle(beside, 'z-index')]
++		let raised = ''
++		let ring = 'none'
++		let framed = false
++		let inside: readonly boolean[] = []
++		// The specimen itself is moved to the document's start inside a padded wrapper, whose padding
++		// holds the ring the button paints outside its box, and put back afterwards. The wrapper
++		// takes focus without joining the tab order, the start the switch case gives its traversal.
++		const marker = document.createComment('input-group-buttons')
++		specimen.before(marker)
++		const lifted = build('div', { classes: 'p-2' })
++		lifted.tabIndex = -1
++		lifted.append(specimen)
++		document.body.prepend(lifted)
++		try {
++			expect(mounted.host.querySelector('main')?.contains(leading)).toBe(false)
++			await stageMedia({ motion: false })
++			lifted.focus()
++			expect(await traverseAccessible(readName(leading))).toBe(leading)
++			expect(leading.matches(':focus-visible')).toBe(true)
++			raised = readStyle(leading, 'z-index')
++			ring = readStyle(leading, 'box-shadow')
++			await FRAMES.place('input-group-buttons-focus', leading, lifted)
++			await stagePane(window.innerWidth, window.innerHeight)
++			framed = leading.matches(':focus-visible') && readStyle(leading, 'z-index') === raised
++			const reach = Math.max(
++				...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
++			)
++			const { region } = requireValue(
++				FRAMES.placements.find((placement) => placement.scenario === 'input-group-buttons-focus'),
++				'The grouped button focus frame recorded no placement',
++			)
++			const ratio = window.devicePixelRatio
++			const frame = lifted.getBoundingClientRect()
++			inside = [
++				reach > 0,
++				region.x - reach * ratio >= 0,
++				region.y - reach * ratio >= 0,
++				region.x + region.width + reach * ratio <= frame.width * ratio,
++				region.y + region.height + reach * ratio <= frame.height * ratio,
++			]
++			await releasePane()
++			leading.blur()
++			await releaseMedia()
++		} finally {
++			marker.replaceWith(specimen)
++			lifted.remove()
++		}
++		// Focus lifts the button above the level its neighbour rests on, so its ring paints over that
++		// neighbour rather than under its border; the neighbour keeps its resting level throughout.
++		expect(resting).toStrictEqual(['2', '2'])
++		expect(framed).toBe(true)
++		expect(raised).toBe('5')
++		expect(readStyle(beside, 'z-index')).toBe('2')
++		expect(ring).not.toBe('none')
++		expect(inside).toStrictEqual([true, true, true, true, true])
++		expect(readStyle(leading, 'z-index')).toBe('2')
++		ARTIFACT.push(JSON.stringify({ reading: 'grouped button focus', mode: VARIANT, raised, ring }))
++		JOURNAL.record('focus', readName(leading), raised)
++	})
++
++	it('lifts the grouped select and the grouped floating wrapper under keyboard focus over the button beside each on the lifted specimen, and holds the ring inside the frame', async () => {
++		await applyTheme(VARIANT)
++		// The rows are the driven focus rows whose subject is an input group specimen holding a select
++		// or a floating wrapper.
++		const declared = new Set(
++			INPUT_GROUP_SPECIMENS.filter(
++				({ markup }) =>
++					markup.includes('class="form-select"') || markup.includes('class="form-floating"'),
++			).map((specimen) => specimen.name),
++		)
++		const keys = DRIVEN_KEYS.filter(
++			(key) => declared.has(key.subject) && key.scenario.endsWith('-focus'),
++		)
++		expect(keys).not.toStrictEqual([])
++		const levels: Array<readonly [CaptureScenario, readonly string[]]> = []
++		const framed: Array<readonly [CaptureScenario, boolean]> = []
++		const inside: Array<readonly [CaptureScenario, readonly boolean[]]> = []
++		for (const key of keys) {
++			const specimen = readSpecimen(mounted.host, key.subject)
++			const control = requireValue(
++				specimen.querySelector<HTMLElement>(
++					'.input-group > .form-select, .input-group > .form-floating > .form-control',
++				),
++				`The "${key.subject}" specimen renders no grouped select or floating control`,
++			)
++			// The group's own child is what the lift rule raises: the select itself, or the floating
++			// wrapper around the control.
++			const child = requireValue(
++				control.closest('.input-group > *'),
++				`The "${key.subject}" control sits in no group child`,
++			)
++			const button = requireValue(
++				specimen.querySelector('.input-group > .btn'),
++				`The "${key.subject}" specimen renders no grouped button`,
++			)
++			const resting = [readStyle(child, 'z-index'), readStyle(button, 'z-index')]
++			// The specimen itself is moved to the document's start inside a padded wrapper, whose
++			// padding holds the ring the control paints outside its box, and put back afterwards. The
++			// wrapper takes focus without joining the tab order, the start the switch case gives its
++			// traversal.
++			const marker = document.createComment(key.scenario)
++			specimen.before(marker)
++			const lifted = build('div', { classes: 'p-2' })
++			lifted.tabIndex = -1
++			lifted.append(specimen)
++			document.body.prepend(lifted)
++			try {
++				expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
++				await stageMedia({ motion: false })
++				lifted.focus()
++				expect(await traverseAccessible(readName(control))).toBe(control)
++				expect(control.matches(':focus-visible')).toBe(true)
++				const ring = readStyle(control, 'box-shadow')
++				const raised = readStyle(child, 'z-index')
++				levels.push([key.scenario, [...resting, raised, readStyle(button, 'z-index')]])
++				await FRAMES.place(key.scenario, control, lifted)
++				await stagePane(window.innerWidth, window.innerHeight)
++				framed.push([
++					key.scenario,
++					control.matches(':focus-visible') && readStyle(child, 'z-index') === raised,
++				])
++				const reach = Math.max(
++					...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
++				)
++				const { region } = requireValue(
++					FRAMES.placements.find((placement) => placement.scenario === key.scenario),
++					`The "${key.scenario}" frame recorded no placement`,
++				)
++				const ratio = window.devicePixelRatio
++				const frame = lifted.getBoundingClientRect()
++				inside.push([
++					key.scenario,
++					[
++						reach > 0,
++						region.x - reach * ratio >= 0,
++						region.y - reach * ratio >= 0,
++						region.x + region.width + reach * ratio <= frame.width * ratio,
++						region.y + region.height + reach * ratio <= frame.height * ratio,
++					],
++				])
++				await releasePane()
++				control.blur()
++				await releaseMedia()
++			} finally {
++				marker.replaceWith(specimen)
++				lifted.remove()
++			}
++		}
++		ARTIFACT.push(JSON.stringify({ reading: 'grouped lift', mode: VARIANT, levels }))
++		// At rest the child takes no level and the button rests one step up; under focus the child
++		// lifts to the group's top step and the button keeps its level, so the ring paints over it.
++		expect(levels).toStrictEqual(keys.map((key) => [key.scenario, ['auto', '2', '5', '2']]))
++		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
++		expect(inside.filter(([, edges]) => edges.includes(false))).toStrictEqual([])
++		JOURNAL.record('focus', 'grouped lift', String(levels.length))
++	})
++
++	it('focuses each plaintext control on its lifted specimen with no ring, and photographs the focused control', async () => {
++		await applyTheme(VARIANT)
++		// The rows are the driven focus rows whose subject is a specimen rendering a plaintext control.
++		const declared = new Set(
++			[...FORM_CONTROL_SPECIMENS, ...FORM_FLOATING_SPECIMENS]
++				.filter(({ markup }) => markup.includes('class="form-control-plaintext"'))
++				.map((specimen) => specimen.name),
++		)
++		const keys = DRIVEN_KEYS.filter(
++			(key) => declared.has(key.subject) && key.scenario.endsWith('-focus'),
++		)
++		expect(keys).not.toStrictEqual([])
++		const readings: Array<readonly [CaptureScenario, readonly unknown[]]> = []
++		const framed: Array<readonly [CaptureScenario, boolean]> = []
++		for (const key of keys) {
++			const specimen = readSpecimen(mounted.host, key.subject)
++			const control = requireValue(
++				specimen.querySelector<HTMLElement>('.form-control-plaintext'),
++				`The "${key.subject}" specimen renders no plaintext control`,
++			)
++			const empty = control.matches(':placeholder-shown')
++			const resting = readStyle(control, 'padding-top')
++			// The specimen itself is moved to the document's start inside a padded wrapper and put back
++			// afterwards. The pointer is released and focus is reached by Tab from the wrapper, because
++			// only Tab traversal paints the outline the user agent gives a focused control, which is
++			// the outline the plaintext rule removes.
++			const marker = document.createComment(key.scenario)
++			specimen.before(marker)
++			const lifted = build('div', { classes: 'p-2' })
++			lifted.tabIndex = -1
++			lifted.append(specimen)
++			document.body.prepend(lifted)
++			try {
++				expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
++				await releasePointer()
++				await stageMedia({ motion: false })
++				lifted.focus()
++				expect(await traverseAccessible(readName(control))).toBe(control)
++				expect(control.matches(':focus-visible')).toBe(true)
++				const focused = readStyle(control, 'padding-top')
++				readings.push([
++					key.scenario,
++					[
++						readStyle(control, 'outline-style'),
++						readStyle(control, 'box-shadow'),
++						empty,
++						focused !== resting,
++					],
++				])
++				await FRAMES.place(key.scenario, control, lifted)
++				await stagePane(window.innerWidth, window.innerHeight)
++				framed.push([
++					key.scenario,
++					control.matches(':focus-visible') && readStyle(control, 'padding-top') === focused,
++				])
++				await releasePane()
++				control.blur()
++				await releaseMedia()
++			} finally {
++				marker.replaceWith(specimen)
++				lifted.remove()
++			}
++		}
++		ARTIFACT.push(JSON.stringify({ reading: 'plaintext focus', mode: VARIANT, readings }))
++		// Focus paints no outline and no ring on a plaintext control, and it moves the text of an empty
++		// floating one down to the floated inset, where a filled one already sits.
++		expect(readings.map(([scenario, [outline, ring]]) => [scenario, outline, ring])).toStrictEqual(
++			keys.map((key) => [key.scenario, 'none', 'none']),
++		)
++		expect(
++			readings.filter(([, [, , empty, moved]]) => empty !== moved).map(([scenario]) => scenario),
++		).toStrictEqual([])
++		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
++		JOURNAL.record('focus', 'plaintext', String(readings.length))
++	})
++
++	it('rings each validated select and check under keyboard focus in its state color on the lifted specimen, and holds the ring inside the frame', async () => {
++		await applyTheme(VARIANT)
++		// The rows are the driven rows whose subject is a validation specimen rendering a select or
++		// a check; the text controls take their focus frames in the validation ring case.
++		const declared = new Set(
++			VALIDATION_SPECIMENS.filter(
++				({ markup }) => markup.includes('<select') || markup.includes('type="checkbox"'),
++			).map((specimen) => specimen.name),
++		)
++		const keys = DRIVEN_KEYS.filter((key) => declared.has(key.subject))
++		expect(keys).not.toStrictEqual([])
++		const rings = new Map<CaptureScenario, readonly [string, string]>()
++		const framed: Array<readonly [CaptureScenario, boolean]> = []
++		const inside: Array<readonly [CaptureScenario, readonly boolean[]]> = []
++		for (const key of keys) {
++			const specimen = readSpecimen(mounted.host, key.subject)
++			const control = requireValue(
++				specimen.querySelector<HTMLElement>('select, input'),
++				`The "${key.subject}" specimen renders no control`,
++			)
++			const state = control.classList.contains('is-valid') ? 'valid' : 'invalid'
++			// The specimen itself is moved to the document's start inside a padded wrapper, whose
++			// padding holds the ring the control paints outside its box, and put back afterwards. The
++			// wrapper takes focus without joining the tab order, the start the switch case gives its
++			// traversal.
++			const marker = document.createComment(key.scenario)
++			specimen.before(marker)
++			const lifted = build('div', { classes: 'p-2' })
++			lifted.tabIndex = -1
++			lifted.append(specimen)
++			document.body.prepend(lifted)
++			try {
++				expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
++				await stageMedia({ motion: false })
++				lifted.focus()
++				expect(await traverseAccessible(readName(control))).toBe(control)
++				expect(control.matches(':focus-visible')).toBe(true)
++				const ring = readStyle(control, 'box-shadow')
++				rings.set(key.scenario, [state, ring])
++				await FRAMES.place(key.scenario, control, lifted)
++				await stagePane(window.innerWidth, window.innerHeight)
++				framed.push([
++					key.scenario,
++					control.matches(':focus-visible') && readStyle(control, 'box-shadow') === ring,
++				])
++				const reach = Math.max(
++					...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
++				)
++				const { region } = requireValue(
++					FRAMES.placements.find((placement) => placement.scenario === key.scenario),
++					`The "${key.scenario}" frame recorded no placement`,
++				)
++				const ratio = window.devicePixelRatio
++				const frame = lifted.getBoundingClientRect()
++				inside.push([
++					key.scenario,
++					[
++						reach > 0,
++						region.x - reach * ratio >= 0,
++						region.y - reach * ratio >= 0,
++						region.x + region.width + reach * ratio <= frame.width * ratio,
++						region.y + region.height + reach * ratio <= frame.height * ratio,
++					],
++				])
++				await releasePane()
++				control.blur()
++				await releaseMedia()
++			} finally {
++				marker.replaceWith(specimen)
++				lifted.remove()
++			}
++		}
++		ARTIFACT.push(JSON.stringify({ reading: 'validated focus', mode: VARIANT, rings: [...rings] }))
++		// Every frame was taken while its ring held and carries that ring whole. The ring's color is
++		// the state's own: every passing host rings in one color, every failing host in another.
++		expect(framed.map(([scenario]) => scenario)).toStrictEqual(keys.map((key) => key.scenario))
++		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
++		expect(inside.filter(([, edges]) => edges.includes(false))).toStrictEqual([])
++		const valid = new Set(
++			[...rings.values()].filter(([state]) => state === 'valid').map(([, ring]) => ring),
++		)
++		const invalid = new Set(
++			[...rings.values()].filter(([state]) => state === 'invalid').map(([, ring]) => ring),
++		)
++		expect([valid.size, invalid.size]).toStrictEqual([1, 1])
++		expect([...valid][0]).not.toBe([...invalid][0])
++		expect([...rings.values()].filter(([, ring]) => ring === 'none')).toStrictEqual([])
++		JOURNAL.record('focus', 'validated hosts', String(rings.size))
++	})
++
+ 	it('reaches the input group control beside a button through the keyboard and lifts it over the button', async () => {
+ 		await applyTheme(VARIANT)
+ 		const specimen = readSpecimen(mounted.host, 'Input group button')
+diff --git a/tests/app/browser/sections/FormControlSection.test.ts b/tests/app/browser/sections/FormControlSection.test.ts
+index 167528c..bf7ab65 100644
+--- a/tests/app/browser/sections/FormControlSection.test.ts
++++ b/tests/app/browser/sections/FormControlSection.test.ts
+@@ -21,75 +21,82 @@ describe('FormControlSection', () => {
+ 			expect(region.getAttribute('aria-label')).toBe('Form control')
+ 			expect(region.querySelector('p')?.textContent).toBe(FORM_CONTROL_COPY.paragraph)
+ 			const rendered = [...region.querySelectorAll('[data-specimen]')]
+-			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
+-				'Form control text',
+-				'Form control small',
+-				'Form control large',
+-				'Form control textarea',
+-				'Form control file',
+-				'Form control date',
+-				'Form control color',
+-				'Form control plaintext',
+-				'Form control disabled',
+-				'Form control readonly',
+-			])
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++				FORM_CONTROL_SPECIMENS.map(({ name }) => name),
++			)
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				FORM_CONTROL_SPECIMENS.map(({ markup }) => markup),
+ 			)
+ 			// Every specimen renders one control, and each announces a name of its own: the journey
+ 			// reaches the text control by name through keyboard traversal, which a shared name would
+ 			// resolve to another control.
+-			const controls = rendered.map((element) =>
+-				requireValue(element.querySelector('input, textarea'), 'A specimen renders no control'),
++			const controls = new Map(
++				rendered.map((element) => [
++					element.getAttribute('data-specimen') ?? '',
++					requireValue(element.querySelector('input, textarea'), 'A specimen renders no control'),
++				]),
+ 			)
+-			const names = controls.map((element) => readName(element))
+-			expect(new Set(names).size).toBe(controls.length)
++			const names = [...controls.values()].map((element) => readName(element))
++			expect(new Set(names).size).toBe(controls.size)
+ 			expect(names.filter((name) => name.length === 0)).toEqual([])
+ 			// Each control carries the class its specimen is named for, which is the rule the frame of
+-			// that specimen shows.
+-			expect(controls.map((element) => element.className)).toEqual([
+-				'form-control',
+-				'form-control form-control-sm',
+-				'form-control form-control-lg',
+-				'form-control',
+-				'form-control',
+-				'form-control',
+-				'form-control form-control-color',
+-				'form-control-plaintext',
+-				'form-control',
+-				'form-control',
+-			])
+-			expect(controls.map((element) => element.tagName)).toEqual([
+-				'INPUT',
+-				'INPUT',
+-				'INPUT',
+-				'TEXTAREA',
+-				'INPUT',
+-				'INPUT',
+-				'INPUT',
+-				'INPUT',
+-				'INPUT',
+-				'INPUT',
+-			])
+-			expect(controls.map((element) => element.getAttribute('type'))).toEqual([
+-				'text',
+-				'text',
+-				'text',
+-				null,
+-				'file',
+-				'date',
+-				'color',
+-				'text',
+-				'text',
+-				'text',
++			// that specimen shows: every sized specimen carries its base control's classes and the size
++			// class its name claims. The expectation is keyed by the specimen, so a specimen added to
++			// the table without its row here reddens rather than passing unread.
++			expect(
++				[...controls].map(([name, element]) => [
++					name,
++					element.tagName,
++					element.getAttribute('type'),
++					element.className,
++				]),
++			).toEqual([
++				['Form control text', 'INPUT', 'text', 'form-control'],
++				['Form control small', 'INPUT', 'text', 'form-control form-control-sm'],
++				['Form control large', 'INPUT', 'text', 'form-control form-control-lg'],
++				['Form control textarea', 'TEXTAREA', null, 'form-control'],
++				['Form control textarea small', 'TEXTAREA', null, 'form-control form-control-sm'],
++				['Form control textarea large', 'TEXTAREA', null, 'form-control form-control-lg'],
++				['Form control file', 'INPUT', 'file', 'form-control'],
++				['Form control file small', 'INPUT', 'file', 'form-control form-control-sm'],
++				['Form control file large', 'INPUT', 'file', 'form-control form-control-lg'],
++				['Form control date', 'INPUT', 'date', 'form-control'],
++				['Form control color', 'INPUT', 'color', 'form-control form-control-color'],
++				[
++					'Form control color small',
++					'INPUT',
++					'color',
++					'form-control form-control-color form-control-sm',
++				],
++				[
++					'Form control color large',
++					'INPUT',
++					'color',
++					'form-control form-control-color form-control-lg',
++				],
++				['Form control plaintext', 'INPUT', 'text', 'form-control-plaintext'],
++				['Form control plaintext small', 'INPUT', 'text', 'form-control-plaintext form-control-sm'],
++				['Form control plaintext large', 'INPUT', 'text', 'form-control-plaintext form-control-lg'],
++				['Form control disabled', 'INPUT', 'text', 'form-control'],
++				['Form control readonly', 'INPUT', 'text', 'form-control'],
+ 			])
+ 			// The disabled and readonly forms declare their state in the markup rather than through a
+-			// class, so each rule that reads the state has a host to paint at rest.
+-			const [plain, , , , , , , plaintext, disabled, readonly] = controls
+-			expect(readStates(requireValue(plain, 'No text control'))).toEqual([])
+-			expect(readStates(requireValue(disabled, 'No disabled control'))).toContain('disabled')
+-			expect(readStates(requireValue(readonly, 'No readonly control'))).toContain('readonly')
+-			expect(readStates(requireValue(plaintext, 'No plaintext control'))).toContain('readonly')
++			// class, so each rule that reads the state has a host to paint at rest, and every plaintext
++			// form, at each size, is a readonly value.
++			expect(
++				readStates(requireValue(controls.get('Form control text'), 'No text control')),
++			).toEqual([])
++			expect(
++				readStates(requireValue(controls.get('Form control disabled'), 'No disabled control')),
++			).toContain('disabled')
++			expect(
++				readStates(requireValue(controls.get('Form control readonly'), 'No readonly control')),
++			).toContain('readonly')
++			const plaintext = [...controls.values()].filter((element) =>
++				element.classList.contains('form-control-plaintext'),
++			)
++			expect(plaintext).not.toStrictEqual([])
++			expect(plaintext.filter((element) => !readStates(element).includes('readonly'))).toEqual([])
+ 			expect(Object.isFrozen(FORM_CONTROL_COPY)).toBe(true)
+ 			expect(Object.isFrozen(FORM_CONTROL_SPECIMENS)).toBe(true)
+ 			expect(FORM_CONTROL_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
+diff --git a/tests/app/browser/sections/FormFloatingSection.test.ts b/tests/app/browser/sections/FormFloatingSection.test.ts
+index fedfb99..c00f11c 100644
+--- a/tests/app/browser/sections/FormFloatingSection.test.ts
++++ b/tests/app/browser/sections/FormFloatingSection.test.ts
+@@ -21,55 +21,63 @@ describe('FormFloatingSection', () => {
+ 			expect(region.getAttribute('aria-label')).toBe('Form floating')
+ 			expect(region.querySelector('p')?.textContent).toBe(FORM_FLOATING_COPY.paragraph)
+ 			const rendered = [...region.querySelectorAll('[data-specimen]')]
+-			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
+-				'Form floating empty',
+-				'Form floating filled',
+-				'Form floating textarea',
+-				'Form floating select',
+-				'Form floating disabled',
+-				'Form floating plaintext',
+-			])
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++				FORM_FLOATING_SPECIMENS.map(({ name }) => name),
++			)
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				FORM_FLOATING_SPECIMENS.map(({ markup }) => markup),
+ 			)
+ 			// Each specimen is one container holding one control and the label after it, which is the
+ 			// sibling order every floating rule selects the label through.
+-			const containers = [...region.querySelectorAll('.form-floating')]
+-			expect(containers).toHaveLength(rendered.length)
+-			const controls = containers.map((container) =>
+-				requireValue(container.firstElementChild, 'No floating control'),
++			const containers = rendered.map((element) =>
++				requireValue(element.querySelector(':scope > .form-floating'), 'No floating container'),
+ 			)
++			expect(region.querySelectorAll('.form-floating')).toHaveLength(rendered.length)
+ 			expect(
+ 				containers.map((container) => container.lastElementChild?.tagName.toLowerCase()),
+ 			).toEqual(containers.map(() => 'label'))
+-			// The label names its control, so the journey reaches the empty field by that name, and no
+-			// two controls share one.
+-			expect(controls.map((control) => readName(control))).toEqual([
+-				'Email address',
+-				'Delivery city',
+-				'Delivery notes',
+-				'Carrier',
+-				'Archived notes',
+-				'Account email',
++			const controls = new Map(
++				rendered.map((element, index) => [
++					element.getAttribute('data-specimen') ?? '',
++					requireValue(containers[index]?.firstElementChild, 'No floating control'),
++				]),
++			)
++			// The label names its control, so the journey reaches each empty control by that name, and
++			// no two controls share one. Each control's states are declared in the markup, so the
++			// disabled and read-only frames need no drive. The expectation is keyed by the specimen, so
++			// a specimen added to the table without its row here reddens rather than passing unread.
++			expect(
++				[...controls].map(([name, control]) => [
++					name,
++					control.tagName,
++					readName(control),
++					readStates(control),
++				]),
++			).toEqual([
++				['Form floating empty', 'INPUT', 'Email address', []],
++				['Form floating filled', 'INPUT', 'Delivery city', []],
++				['Form floating textarea', 'TEXTAREA', 'Delivery notes', []],
++				['Form floating empty textarea', 'TEXTAREA', 'Pickup notes', []],
++				['Form floating select', 'SELECT', 'Carrier', []],
++				['Form floating disabled', 'TEXTAREA', 'Archived notes', ['disabled']],
++				['Form floating disabled input', 'INPUT', 'Closed depot', ['disabled']],
++				['Form floating disabled select', 'SELECT', 'Retired route', ['disabled']],
++				['Form floating plaintext', 'INPUT', 'Account email', ['readonly']],
++				['Form floating empty plaintext', 'INPUT', 'Unset email', ['readonly']],
+ 			])
+ 			// A text control reports itself empty only when it carries a placeholder, so each one does,
+-			// and only the empty field shows it.
+-			const fields = controls.filter(
+-				(control) => control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement,
++			// and only the empty field, the empty textarea, and the empty plaintext control show it.
++			const fields = [...controls].filter(
++				([, control]) =>
++					control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement,
+ 			)
+-			expect(fields.filter((control) => !control.hasAttribute('placeholder'))).toEqual([])
+-			expect(fields.filter((control) => control.matches(':placeholder-shown'))).toEqual([
+-				controls[0],
+-			])
+-			// The disabled and read-only states are declared in the markup, so their frames need no
+-			// drive.
+-			expect(controls.map((control) => readStates(control))).toEqual([
+-				[],
+-				[],
+-				[],
+-				[],
+-				['disabled'],
+-				['readonly'],
++			expect(fields.filter(([, control]) => !control.hasAttribute('placeholder'))).toEqual([])
++			expect(
++				fields.filter(([, control]) => control.matches(':placeholder-shown')).map(([name]) => name),
++			).toEqual([
++				'Form floating empty',
++				'Form floating empty textarea',
++				'Form floating empty plaintext',
+ 			])
+ 			expect(Object.isFrozen(FORM_FLOATING_COPY)).toBe(true)
+ 			expect(Object.isFrozen(FORM_FLOATING_SPECIMENS)).toBe(true)
+diff --git a/tests/app/browser/sections/InputGroupSection.test.ts b/tests/app/browser/sections/InputGroupSection.test.ts
+index f4c3050..25ef135 100644
+--- a/tests/app/browser/sections/InputGroupSection.test.ts
++++ b/tests/app/browser/sections/InputGroupSection.test.ts
+@@ -6,7 +6,7 @@ import {
+ 	SpecimenSection,
+ } from '@app/browser'
+ import { requireValue } from '@orkestrel/test'
+-import { build, isRendered, mount, readName, readStates } from '@orkestrel/test/browser'
++import { build, isRendered, mount, readName, readPixels, readStates } from '@orkestrel/test/browser'
+ import { beforeAll, describe, expect, it } from 'vitest'
+ import { CASCADE_KEYS } from '../../../setup.js'
+ 
+@@ -29,18 +29,9 @@ describe('InputGroupSection', () => {
+ 			expect(region.getAttribute('aria-label')).toBe('Input group')
+ 			expect(region.querySelector('p')?.textContent).toBe(INPUT_GROUP_COPY.paragraph)
+ 			const rendered = [...region.querySelectorAll('[data-specimen]')]
+-			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
+-				'Input group plain',
+-				'Input group addons',
+-				'Input group button',
+-				'Input group large',
+-				'Input group small',
+-				'Input group validation',
+-				'Input group valid tooltip',
+-				'Input group invalid tooltip',
+-				'Input group dropdown',
+-				'Input group dropdown validated',
+-			])
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++				INPUT_GROUP_SPECIMENS.map(({ name }) => name),
++			)
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				INPUT_GROUP_SPECIMENS.map(({ markup }) => markup),
+ 			)
+@@ -63,6 +54,12 @@ describe('InputGroupSection', () => {
+ 				['Input group invalid tooltip', 2],
+ 				['Input group dropdown', 1],
+ 				['Input group dropdown validated', 1],
++				['Input group buttons', 1],
++				['Input group select', 1],
++				['Input group floating', 1],
++				['Input group select large', 1],
++				['Input group select small', 1],
++				['Input group toolbar', 1],
+ 			])
+ 			expect(
+ 				region.querySelector('[data-specimen="Input group large"] .input-group-lg'),
+@@ -73,7 +70,7 @@ describe('InputGroupSection', () => {
+ 			// Every control announces a name of its own: the journey reaches the control beside the
+ 			// grouped button by name through keyboard traversal, which a shared name would resolve to
+ 			// another control.
+-			const controls = [...region.querySelectorAll('.form-control, .btn')]
++			const controls = [...region.querySelectorAll('.form-control, .form-select, .btn')]
+ 			const names = controls.map((element) => readName(element))
+ 			expect(names.filter((name) => name.length === 0)).toEqual([])
+ 			expect(new Set(names).size).toBe(names.length)
+@@ -111,6 +108,52 @@ describe('InputGroupSection', () => {
+ 				expect(room?.firstElementChild?.classList.contains('btn')).toBe(true)
+ 				expect(room?.lastElementChild?.classList.contains('form-control')).toBe(true)
+ 			}
++			// The button pair leads its group with a button beside a button, so focus on the leading one
++			// lifts it over its neighbour. The select and the floating wrapper each sit between an addon
++			// and a trailing button, which is where the group squares both of a child's inline corners
++			// and where a child lifted under focus paints its ring over the button. The floating wrapper
++			// holds an empty control and the label after it, so the label rests over the control until
++			// focus floats it. The sized selects sit in a large and a small group, and the toolbar holds
++			// a button group and a group.
++			expect(
++				[
++					...region.querySelectorAll('[data-specimen="Input group buttons"] > .input-group > *'),
++				].map((child) => child.className),
++			).toEqual(['btn btn-outline-secondary', 'btn btn-outline-secondary', 'form-control'])
++			expect(
++				[...region.querySelectorAll('[data-specimen="Input group select"] > .input-group > *')].map(
++					(child) => child.className,
++				),
++			).toEqual(['input-group-text', 'form-select', 'btn btn-outline-secondary'])
++			expect(
++				[
++					...region.querySelectorAll('[data-specimen="Input group floating"] > .input-group > *'),
++				].map((child) => child.className),
++			).toEqual(['input-group-text', 'form-floating', 'btn btn-outline-secondary'])
++			const floating = requireValue(
++				region.querySelector<HTMLInputElement>(
++					'[data-specimen="Input group floating"] .form-floating > input',
++				),
++				'No grouped floating control',
++			)
++			expect(floating.nextElementSibling?.tagName).toBe('LABEL')
++			expect(floating.value).toBe('')
++			expect(floating.matches(':placeholder-shown')).toBe(true)
++			expect(
++				region.querySelector(
++					'[data-specimen="Input group select large"] > .input-group-lg > .form-select',
++				),
++			).not.toBeNull()
++			expect(
++				region.querySelector(
++					'[data-specimen="Input group select small"] > .input-group-sm > .form-select',
++				),
++			).not.toBeNull()
++			expect(
++				[
++					...region.querySelectorAll('[data-specimen="Input group toolbar"] > .btn-toolbar > *'),
++				].map((child) => child.className),
++			).toEqual(['btn-group me-2', 'input-group'])
+ 			expect(Object.isFrozen(INPUT_GROUP_COPY)).toBe(true)
+ 			expect(Object.isFrozen(INPUT_GROUP_SPECIMENS)).toBe(true)
+ 			expect(INPUT_GROUP_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
+@@ -120,6 +163,71 @@ describe('InputGroupSection', () => {
+ 		}
+ 	})
+ 
++	// The mutations this catches are a group that stops squaring a select's or a floating control's
++	// trailing corners, a sized group that stops keeping the select's end room, and a toolbar group
++	// that stretches to the toolbar's width instead of taking its content's width.
++	it("squares both inline corners of a grouped select and floating control, keeps the sized select room, and sizes a toolbar group to its content's width", () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new InputGroupSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Input group region')
++			const select = requireValue(
++				region.querySelector('[data-specimen="Input group select"] .form-select'),
++				'No grouped select',
++			)
++			const floating = requireValue(
++				region.querySelector(
++					'[data-specimen="Input group floating"] .form-floating > .form-control',
++				),
++				'No grouped floating control',
++			)
++			expect(
++				[select, floating].map((control) => [
++					readPixels(control, 'border-top-left-radius'),
++					readPixels(control, 'border-top-right-radius'),
++					readPixels(control, 'border-bottom-left-radius'),
++					readPixels(control, 'border-bottom-right-radius'),
++				]),
++			).toStrictEqual([
++				[0, 0, 0, 0],
++				[0, 0, 0, 0],
++			])
++			// A sized group keeps the room the select's indicator needs, four of the select's inline
++			// steps, where the plain group's select keeps its own end padding.
++			// The sized selects are the specimens whose markup sizes a group holding a select.
++			const sized = INPUT_GROUP_SPECIMENS.filter(
++				({ markup }) => /input-group-(?:lg|sm)"/u.test(markup) && markup.includes('form-select'),
++			)
++			expect(sized).not.toStrictEqual([])
++			const room = sized.map(({ name }) => [
++				name,
++				readPixels(
++					requireValue(
++						region.querySelector(`[data-specimen="${name}"] .form-select`),
++						`No select in ${name}`,
++					),
++					'padding-right',
++				),
++			])
++			expect(room).toStrictEqual(sized.map(({ name }) => [name, 48]))
++			expect(readPixels(select, 'padding-right')).not.toBe(48)
++			// Inside a toolbar the group takes its content's width rather than the toolbar's, so it
++			// shares the button group's row where the row has room. The section is mounted at the
++			// proof's own viewport, which gives the row that room; at a narrower viewport the group
++			// wraps below the button group and keeps its content's width.
++			const toolbar = requireValue(
++				region.querySelector('[data-specimen="Input group toolbar"] .btn-toolbar'),
++				'No toolbar',
++			)
++			const [buttons, group] = [...toolbar.children].map((child) => child.getBoundingClientRect())
++			expect(group?.width).toBeLessThan(toolbar.getBoundingClientRect().width)
++			expect(group?.top).toBe(buttons?.top)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
+ 	it('renders a squared and a kept dropdown toggle in each dropdown specimen, closed and followed by its closed menu', () => {
+ 		const host = mount(build('div'))
+ 		const section: SectionInterface = new InputGroupSection(host)
+diff --git a/tests/app/browser/sections/ValidationSection.test.ts b/tests/app/browser/sections/ValidationSection.test.ts
+index c032688..81af26c 100644
+--- a/tests/app/browser/sections/ValidationSection.test.ts
++++ b/tests/app/browser/sections/ValidationSection.test.ts
+@@ -8,6 +8,7 @@ import {
+ import { requireValue } from '@orkestrel/test'
+ import { build, mount } from '@orkestrel/test/browser'
+ import { describe, expect, it } from 'vitest'
++import { VALIDATION_HOST_CASES } from '../../../setupStyles.js'
+ 
+ describe('ValidationSection', () => {
+ 	it('renders a passing and a failing specimen for every host the state reaches', () => {
+@@ -20,43 +21,66 @@ describe('ValidationSection', () => {
+ 			expect(region.getAttribute('aria-label')).toBe('Validation')
+ 			expect(region.querySelector('p')?.textContent).toBe(VALIDATION_COPY.paragraph)
+ 			const rendered = [...region.querySelectorAll('[data-specimen]')]
+-			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
+-				'Valid control',
+-				'Invalid control',
+-				'Valid select',
+-				'Invalid select',
+-				'Valid check',
+-				'Invalid check',
+-				'Valid feedback',
+-				'Invalid feedback',
+-				'Validated form',
+-			])
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++				VALIDATION_SPECIMENS.map(({ name }) => name),
++			)
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				VALIDATION_SPECIMENS.map(({ markup }) => markup),
+ 			)
+-			// Every class the partial ships a rule for is rendered by at least one specimen, and the
+-			// scoped form is rendered as the release scopes it: a `.was-validated` ancestor over a
+-			// control carrying no state class of its own.
+-			for (const name of [
+-				'form-control',
+-				'form-select',
+-				'form-check-input',
+-				'form-check-label',
+-				'is-valid',
+-				'is-invalid',
+-				'valid-feedback',
+-				'invalid-feedback',
+-				'was-validated',
+-			])
+-				expect({ name, present: region.querySelector(`.${name}`) !== null }).toEqual({
++			// Every rendered specimen is held against its row in the host table, keyed by its name: the
++			// control's tag, type, and classes, the element holding the control, and the feedback inside
++			// that holder. A specimen added to the specimen table without its row reddens here, and so
++			// does a check that loses its `.form-check` row or an inline check whose feedback leaves it.
++			expect(
++				rendered.map((element) => {
++					const control = requireValue(
++						element.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
++							'input, select, textarea',
++						),
++						'A validation specimen renders no control',
++					)
++					const holder = requireValue(control.parentElement, 'A validation control has no holder')
++					return {
++						name: element.getAttribute('data-specimen'),
++						tag: control.tagName,
++						type: control.type,
++						control: control.className,
++						holder: holder === element ? undefined : holder.className,
++						feedback: holder.querySelector('.valid-feedback, .invalid-feedback')?.className,
++					}
++				}),
++			).toStrictEqual(VALIDATION_HOST_CASES.map((entry) => ({ ...entry })))
++			// The scoped forms are the rows whose holder is the `.was-validated` scope. Each one's
++			// required control carries no state class, and the scope alone decides its state: the row
++			// revealing the passing feedback holds a filled control that matches `:valid`, and the row
++			// revealing the failing feedback holds an empty one that does not.
++			const scoped = VALIDATION_HOST_CASES.filter(({ holder }) => holder === 'was-validated')
++			expect(scoped).not.toStrictEqual([])
++			expect(
++				scoped.map(({ name }) => {
++					const required = requireValue(
++						region.querySelector<HTMLInputElement>(
++							`[data-specimen="${name}"] .was-validated input`,
++						),
++						`No required control in ${name}`,
++					)
++					return [
++						name,
++						required.required,
++						required.value.length > 0,
++						required.matches(':valid'),
++						required.classList.contains('is-valid') || required.classList.contains('is-invalid'),
++					]
++				}),
++			).toStrictEqual(
++				scoped.map(({ name, feedback }) => [
+ 					name,
+-					present: true,
+-				})
+-			const validated = requireValue(region.querySelector('.was-validated'), 'No validated form')
+-			const required = requireValue(validated.querySelector('input'), 'No required control')
+-			expect(required.required).toBe(true)
+-			expect(required.value).toBe('')
+-			expect(required.classList.contains('is-invalid')).toBe(false)
++					true,
++					feedback === 'valid-feedback',
++					feedback === 'valid-feedback',
++					false,
++				]),
++			)
+ 			// Each control announces a name of its own, which is what lets the journey reach one by
+ 			// keyboard rather than by position.
+ 			const names = [...region.querySelectorAll('label')].map((label) => label.textContent)
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 05ccae4..8f08c6c 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -140,10 +140,15 @@ describe('shared setup', () => {
+ 			),
+ 		).toStrictEqual([])
+ 		// The checkbox drives reach the states no attribute declares, and the mixed state is a
+-		// property rather than a pointer or a focus, so the checkbox rows are named outright.
++		// property rather than a pointer or a focus, so the checkbox rows are named outright. The
++		// press is the pointer state its `:active` rule dims the box in.
+ 		expect(
+ 			DRIVEN_KEYS.filter((key) => key.subject === 'Form check box').map((key) => key.scenario),
+-		).toStrictEqual(['form-check-box-focus', 'form-check-box-indeterminate'])
++		).toStrictEqual([
++			'form-check-box-focus',
++			'form-check-box-indeterminate',
++			'form-check-box-active',
++		])
+ 	})
+ 	it('describes each photographed cascade key by its specimen, its element, and its property', () => {
+ 		expect(CASCADE_KEYS).not.toStrictEqual([])
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 680746d..5243dd4 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -105,17 +105,27 @@ export type CaptureSubject =
+ 	| 'Breadcrumb trail'
+ 	| 'Capped container'
+ 	| 'Input group addons'
++	| 'Input group buttons'
++	| 'Input group floating'
+ 	| 'Input group button'
+ 	| 'Input group invalid tooltip'
+ 	| 'Input group large'
+ 	| 'Input group plain'
++	| 'Input group select'
++	| 'Input group select large'
++	| 'Input group select small'
++	| 'Input group toolbar'
+ 	| 'Input group small'
+ 	| 'Input group valid tooltip'
+ 	| 'Input group validation'
+ 	| 'Invalid check'
++	| 'Invalid color'
+ 	| 'Invalid control'
+ 	| 'Invalid feedback'
++	| 'Invalid inline feedback'
++	| 'Invalid multiple select'
+ 	| 'Invalid select'
++	| 'Invalid textarea'
+ 	| 'Disabled page'
+ 	| 'Dropdown align lg'
+ 	| 'Dropdown align md'
+@@ -149,21 +159,33 @@ export type CaptureSubject =
+ 	| 'Large group'
+ 	| 'Nested groups'
+ 	| 'Form floating disabled'
++	| 'Form floating disabled input'
++	| 'Form floating disabled select'
+ 	| 'Form floating empty'
++	| 'Form floating empty plaintext'
++	| 'Form floating empty textarea'
+ 	| 'Form floating filled'
+ 	| 'Form floating plaintext'
+ 	| 'Form floating select'
+ 	| 'Form floating textarea'
+ 	| 'Form control color'
++	| 'Form control color large'
++	| 'Form control color small'
+ 	| 'Form control date'
+ 	| 'Form control disabled'
+ 	| 'Form control file'
++	| 'Form control file large'
++	| 'Form control file small'
+ 	| 'Form control large'
+ 	| 'Form control plaintext'
++	| 'Form control plaintext large'
++	| 'Form control plaintext small'
+ 	| 'Form control readonly'
+ 	| 'Form control small'
+ 	| 'Form control text'
+ 	| 'Form control textarea'
++	| 'Form control textarea large'
++	| 'Form control textarea small'
+ 	| 'Form label horizontal'
+ 	| 'Form label horizontal large'
+ 	| 'Form label horizontal small'
+@@ -219,10 +241,15 @@ export type CaptureSubject =
+ 	| 'Striped progress'
+ 	| 'Toggle'
+ 	| 'Valid check'
++	| 'Valid color'
+ 	| 'Valid control'
+ 	| 'Valid feedback'
++	| 'Valid inline feedback'
++	| 'Valid multiple select'
+ 	| 'Valid select'
++	| 'Valid textarea'
+ 	| 'Validated form'
++	| 'Validated passing form'
+ 	| 'Vertical group'
+ 	| 'Wrapping toolbar'
+ 	| 'Waving placeholder'
+@@ -718,12 +745,66 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.invalid-feedback',
+ 		property: 'color',
+ 	}),
++	Object.freeze({
++		scenario: 'valid-textarea',
++		subject: 'Valid textarea',
++		selector: 'textarea.form-control.is-valid',
++		property: 'background-position',
++	}),
++	Object.freeze({
++		scenario: 'invalid-textarea',
++		subject: 'Invalid textarea',
++		selector: 'textarea.form-control.is-invalid',
++		property: 'background-position',
++	}),
++	Object.freeze({
++		scenario: 'valid-color',
++		subject: 'Valid color',
++		selector: '.form-control-color.is-valid',
++		property: 'width',
++	}),
++	Object.freeze({
++		scenario: 'invalid-color',
++		subject: 'Invalid color',
++		selector: '.form-control-color.is-invalid',
++		property: 'width',
++	}),
++	Object.freeze({
++		scenario: 'valid-inline-feedback',
++		subject: 'Valid inline feedback',
++		selector: '.form-check-inline .valid-feedback',
++		property: 'margin-left',
++	}),
++	Object.freeze({
++		scenario: 'invalid-inline-feedback',
++		subject: 'Invalid inline feedback',
++		selector: '.form-check-inline .invalid-feedback',
++		property: 'margin-left',
++	}),
++	Object.freeze({
++		scenario: 'valid-multiple-select',
++		subject: 'Valid multiple select',
++		selector: '.form-select.is-valid[multiple]',
++		property: 'padding-right',
++	}),
++	Object.freeze({
++		scenario: 'invalid-multiple-select',
++		subject: 'Invalid multiple select',
++		selector: '.form-select.is-invalid[multiple]',
++		property: 'padding-right',
++	}),
+ 	Object.freeze({
+ 		scenario: 'validated-form',
+ 		subject: 'Validated form',
+ 		selector: '.was-validated .form-control',
+ 		property: 'background-image',
+ 	}),
++	Object.freeze({
++		scenario: 'validated-passing-form',
++		subject: 'Validated passing form',
++		selector: '.was-validated .form-control:valid',
++		property: 'background-image',
++	}),
+ 	Object.freeze({
+ 		scenario: 'page-strip',
+ 		subject: 'Page strip',
+@@ -1186,6 +1267,12 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.form-floating > textarea.form-control',
+ 		property: 'padding-top',
+ 	}),
++	Object.freeze({
++		scenario: 'form-floating-empty-textarea',
++		subject: 'Form floating empty textarea',
++		selector: '.form-floating > textarea.form-control:placeholder-shown',
++		property: 'padding-top',
++	}),
+ 	Object.freeze({
+ 		scenario: 'form-floating-select',
+ 		subject: 'Form floating select',
+@@ -1198,12 +1285,30 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.form-floating > :disabled ~ label',
+ 		property: 'color',
+ 	}),
++	Object.freeze({
++		scenario: 'form-floating-disabled-input',
++		subject: 'Form floating disabled input',
++		selector: '.form-floating > input.form-control:disabled ~ label',
++		property: 'color',
++	}),
++	Object.freeze({
++		scenario: 'form-floating-disabled-select',
++		subject: 'Form floating disabled select',
++		selector: '.form-floating > .form-select:disabled ~ label',
++		property: 'color',
++	}),
+ 	Object.freeze({
+ 		scenario: 'form-floating-plaintext',
+ 		subject: 'Form floating plaintext',
+ 		selector: '.form-floating > .form-control-plaintext ~ label',
+ 		property: 'border-left-width',
+ 	}),
++	Object.freeze({
++		scenario: 'form-floating-empty-plaintext',
++		subject: 'Form floating empty plaintext',
++		selector: '.form-floating > .form-control-plaintext:placeholder-shown',
++		property: 'padding-top',
++	}),
+ 	Object.freeze({
+ 		scenario: 'form-select-base',
+ 		subject: 'Form select base',
+@@ -1264,12 +1369,36 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.form-control:is(textarea)',
+ 		property: 'min-height',
+ 	}),
++	Object.freeze({
++		scenario: 'form-control-textarea-small',
++		subject: 'Form control textarea small',
++		selector: 'textarea.form-control-sm',
++		property: 'min-height',
++	}),
++	Object.freeze({
++		scenario: 'form-control-textarea-large',
++		subject: 'Form control textarea large',
++		selector: 'textarea.form-control-lg',
++		property: 'min-height',
++	}),
+ 	Object.freeze({
+ 		scenario: 'form-control-file',
+ 		subject: 'Form control file',
+ 		selector: '.form-control[type="file"]',
+ 		property: 'cursor',
+ 	}),
++	Object.freeze({
++		scenario: 'form-control-file-small',
++		subject: 'Form control file small',
++		selector: '.form-control-sm[type="file"]',
++		property: 'min-height',
++	}),
++	Object.freeze({
++		scenario: 'form-control-file-large',
++		subject: 'Form control file large',
++		selector: '.form-control-lg[type="file"]',
++		property: 'min-height',
++	}),
+ 	Object.freeze({
+ 		scenario: 'form-control-date',
+ 		subject: 'Form control date',
+@@ -1282,12 +1411,36 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.form-control-color',
+ 		property: 'width',
+ 	}),
++	Object.freeze({
++		scenario: 'form-control-color-small',
++		subject: 'Form control color small',
++		selector: '.form-control-color.form-control-sm',
++		property: 'height',
++	}),
++	Object.freeze({
++		scenario: 'form-control-color-large',
++		subject: 'Form control color large',
++		selector: '.form-control-color.form-control-lg',
++		property: 'height',
++	}),
+ 	Object.freeze({
+ 		scenario: 'form-control-plaintext',
+ 		subject: 'Form control plaintext',
+ 		selector: '.form-control-plaintext',
+ 		property: 'padding-left',
+ 	}),
++	Object.freeze({
++		scenario: 'form-control-plaintext-small',
++		subject: 'Form control plaintext small',
++		selector: '.form-control-plaintext.form-control-sm',
++		property: 'min-height',
++	}),
++	Object.freeze({
++		scenario: 'form-control-plaintext-large',
++		subject: 'Form control plaintext large',
++		selector: '.form-control-plaintext.form-control-lg',
++		property: 'min-height',
++	}),
+ 	Object.freeze({
+ 		scenario: 'form-control-disabled',
+ 		subject: 'Form control disabled',
+@@ -1780,6 +1933,42 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.input-group.has-validation > .dropdown-toggle:nth-last-child(n+4)',
+ 		property: 'border-top-right-radius',
+ 	}),
++	Object.freeze({
++		scenario: 'input-group-buttons',
++		subject: 'Input group buttons',
++		selector: '.input-group > .btn + .btn',
++		property: 'margin-left',
++	}),
++	Object.freeze({
++		scenario: 'input-group-select',
++		subject: 'Input group select',
++		selector: '.input-group > .form-select',
++		property: 'border-top-left-radius',
++	}),
++	Object.freeze({
++		scenario: 'input-group-floating',
++		subject: 'Input group floating',
++		selector: '.input-group > .form-floating > .form-control',
++		property: 'border-top-left-radius',
++	}),
++	Object.freeze({
++		scenario: 'input-group-select-large',
++		subject: 'Input group select large',
++		selector: '.input-group-lg > .form-select',
++		property: 'padding-right',
++	}),
++	Object.freeze({
++		scenario: 'input-group-select-small',
++		subject: 'Input group select small',
++		selector: '.input-group-sm > .form-select',
++		property: 'padding-right',
++	}),
++	Object.freeze({
++		scenario: 'input-group-toolbar',
++		subject: 'Input group toolbar',
++		selector: '.btn-toolbar .input-group',
++		property: 'width',
++	}),
+ 	Object.freeze({
+ 		scenario: 'position-values',
+ 		subject: 'Position values',
+@@ -2395,6 +2584,27 @@ export const DRIVEN_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'form-floating-empty-focus', subject: 'Form floating empty' }),
+ 	Object.freeze({ scenario: 'form-select-base-focus', subject: 'Form select base' }),
+ 	Object.freeze({ scenario: 'form-control-text-focus', subject: 'Form control text' }),
++	Object.freeze({ scenario: 'form-check-switch-focus', subject: 'Form check switch' }),
++	Object.freeze({ scenario: 'form-check-box-active', subject: 'Form check box' }),
++	Object.freeze({ scenario: 'range-active', subject: 'Range' }),
++	Object.freeze({ scenario: 'form-control-file-hover', subject: 'Form control file' }),
++	Object.freeze({
++		scenario: 'form-floating-empty-textarea-focus',
++		subject: 'Form floating empty textarea',
++	}),
++	Object.freeze({ scenario: 'input-group-buttons-focus', subject: 'Input group buttons' }),
++	Object.freeze({ scenario: 'valid-select-focus', subject: 'Valid select' }),
++	Object.freeze({ scenario: 'invalid-select-focus', subject: 'Invalid select' }),
++	Object.freeze({ scenario: 'valid-check-focus', subject: 'Valid check' }),
++	Object.freeze({ scenario: 'invalid-check-focus', subject: 'Invalid check' }),
++	Object.freeze({ scenario: 'form-check-radios-active', subject: 'Form check radios' }),
++	Object.freeze({ scenario: 'form-control-plaintext-focus', subject: 'Form control plaintext' }),
++	Object.freeze({
++		scenario: 'form-floating-empty-plaintext-focus',
++		subject: 'Form floating empty plaintext',
++	}),
++	Object.freeze({ scenario: 'input-group-floating-focus', subject: 'Input group floating' }),
++	Object.freeze({ scenario: 'input-group-select-focus', subject: 'Input group select' }),
+ 	Object.freeze({ scenario: 'dropdown-menu-hover', subject: 'Dropdown menu' }),
+ 	Object.freeze({ scenario: 'dropdown-menu-focus', subject: 'Dropdown menu' }),
+ 	Object.freeze({ scenario: 'nav-base-hover', subject: 'Nav base' }),
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 059fc8d..af12117 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -399,6 +399,7 @@ describe('styles setup', () => {
+ 				'FORM_LABEL_CASES',
+ 				'FORM_LABEL_MARKUP',
+ 				'FORM_RANGE_CASES',
++				'FORM_RANGE_HAIRLINE_CASES',
+ 				'FORM_RANGE_MARKUP',
+ 				'FORM_SELECT_CASES',
+ 				'FORM_SELECT_FOCUS',
+@@ -561,6 +562,7 @@ describe('styles setup', () => {
+ 				'TYPE_TEXT_CASES',
+ 				'UNMAPPED_TOKENS',
+ 				'USER_SELECT_VALUES',
++				'VALIDATION_HOST_CASES',
+ 				'VENEER_GUIDE_PATH',
+ 				'VIEWPORT_SIZE_CASES',
+ 				'VIEWPORT_WIDTHS',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index e5a7bcc..0c9da84 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -4741,7 +4741,7 @@ export const FORM_RANGE_CASES: readonly FormRangeCase[] = Object.freeze([
+ 		condition: undefined,
+ 		reads: Object.freeze({
+ 			'box-shadow': Object.freeze([
+-				'--vn-surface-body-base',
++				'--vn-palette-white-base',
+ 				'--vn-focus-width',
+ 				'--vn-focus-color',
+ 			]),
+@@ -4753,7 +4753,7 @@ export const FORM_RANGE_CASES: readonly FormRangeCase[] = Object.freeze([
+ 		condition: undefined,
+ 		reads: Object.freeze({
+ 			'box-shadow': Object.freeze([
+-				'--vn-surface-body-base',
++				'--vn-palette-white-base',
+ 				'--vn-focus-width',
+ 				'--vn-focus-color',
+ 			]),
+@@ -4866,6 +4866,202 @@ export const FORM_RANGE_MARKUP =
+ 	'<input class="form-range" type="range" aria-label="Disabled range value" min="0" max="100" value="50" disabled>' +
+ 	'<input type="range" aria-label="Bare range value" min="0" max="100" value="50">'
+ 
++/** Describes the paint the release compiles for the focused range thumb's hairline in one color mode. */
++export interface FormRangeHairlineCase {
++	/** Names the color mode the hairline is resolved in, as the `data-bs-theme` attribute spells it. */
++	readonly mode: 'dark' | 'light'
++	/** Holds the color the release compiles for the hairline in that mode. */
++	readonly release: string
++}
++
++/**
++ * Pins the hairline paint the release compiles for the focused range thumb in each color mode.
++ *
++ * @remarks
++ * The release compiles `$form-range-thumb-focus-box-shadow` from the Sass `$body-bg` variable, which
++ * is `#fff` whatever mode the page renders, so every mode's row carries the same white.
++ */
++export const FORM_RANGE_HAIRLINE_CASES: readonly FormRangeHairlineCase[] = Object.freeze([
++	Object.freeze({ mode: 'light', release: '#fff' }),
++	Object.freeze({ mode: 'dark', release: '#fff' }),
++])
++
++/** Describes the control one validation specimen renders, the element holding it, and its feedback. */
++export interface ValidationHostCase {
++	/** Names the specimen, as the validation specimen table declares it. */
++	readonly name: string
++	/** Holds the tag name of the specimen's control, as the `tagName` property reports it. */
++	readonly tag: 'INPUT' | 'SELECT' | 'TEXTAREA'
++	/** Holds the `type` property of the specimen's control, as the DOM reports it. */
++	readonly type: 'checkbox' | 'color' | 'select-multiple' | 'select-one' | 'text' | 'textarea'
++	/** Holds the `class` attribute of the specimen's control. */
++	readonly control: string
++	/**
++	 * Holds the `class` attribute of the element holding the control, or `undefined` where the
++	 * specimen's own container holds it.
++	 */
++	readonly holder: string | undefined
++	/** Holds the `class` attribute of the feedback inside that holder, or `undefined` where none is. */
++	readonly feedback: 'invalid-feedback' | 'valid-feedback' | undefined
++}
++
++/**
++ * Pins what each validation specimen renders, keyed by the specimen's name, in render order.
++ *
++ * @remarks
++ * The Validation section proof holds every rendered specimen against its row, so a specimen added to
++ * the table without a row here reddens that proof. A check sits in a `.form-check` row, as the
++ * release's validation markup writes it, so its focus ring clears its label; an inline check holds
++ * its feedback inside its own row, where the inline rule reaches it; and a scoped form holds a
++ * required control that carries no state class.
++ */
++export const VALIDATION_HOST_CASES: readonly ValidationHostCase[] = Object.freeze([
++	Object.freeze({
++		name: 'Valid control',
++		tag: 'INPUT',
++		type: 'text',
++		control: 'form-control is-valid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Invalid control',
++		tag: 'INPUT',
++		type: 'text',
++		control: 'form-control is-invalid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Valid select',
++		tag: 'SELECT',
++		type: 'select-one',
++		control: 'form-select is-valid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Invalid select',
++		tag: 'SELECT',
++		type: 'select-one',
++		control: 'form-select is-invalid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Valid check',
++		tag: 'INPUT',
++		type: 'checkbox',
++		control: 'form-check-input is-valid',
++		holder: 'form-check',
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Invalid check',
++		tag: 'INPUT',
++		type: 'checkbox',
++		control: 'form-check-input is-invalid',
++		holder: 'form-check',
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Valid feedback',
++		tag: 'INPUT',
++		type: 'text',
++		control: 'form-control is-valid',
++		holder: undefined,
++		feedback: 'valid-feedback',
++	}),
++	Object.freeze({
++		name: 'Invalid feedback',
++		tag: 'INPUT',
++		type: 'text',
++		control: 'form-control is-invalid',
++		holder: undefined,
++		feedback: 'invalid-feedback',
++	}),
++	Object.freeze({
++		name: 'Valid textarea',
++		tag: 'TEXTAREA',
++		type: 'textarea',
++		control: 'form-control is-valid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Invalid textarea',
++		tag: 'TEXTAREA',
++		type: 'textarea',
++		control: 'form-control is-invalid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Valid color',
++		tag: 'INPUT',
++		type: 'color',
++		control: 'form-control form-control-color is-valid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Invalid color',
++		tag: 'INPUT',
++		type: 'color',
++		control: 'form-control form-control-color is-invalid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Valid inline feedback',
++		tag: 'INPUT',
++		type: 'checkbox',
++		control: 'form-check-input is-valid',
++		holder: 'form-check form-check-inline',
++		feedback: 'valid-feedback',
++	}),
++	Object.freeze({
++		name: 'Invalid inline feedback',
++		tag: 'INPUT',
++		type: 'checkbox',
++		control: 'form-check-input is-invalid',
++		holder: 'form-check form-check-inline',
++		feedback: 'invalid-feedback',
++	}),
++	Object.freeze({
++		name: 'Valid multiple select',
++		tag: 'SELECT',
++		type: 'select-multiple',
++		control: 'form-select is-valid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Invalid multiple select',
++		tag: 'SELECT',
++		type: 'select-multiple',
++		control: 'form-select is-invalid',
++		holder: undefined,
++		feedback: undefined,
++	}),
++	Object.freeze({
++		name: 'Validated form',
++		tag: 'INPUT',
++		type: 'text',
++		control: 'form-control',
++		holder: 'was-validated',
++		feedback: 'invalid-feedback',
++	}),
++	Object.freeze({
++		name: 'Validated passing form',
++		tag: 'INPUT',
++		type: 'text',
++		control: 'form-control',
++		holder: 'was-validated',
++		feedback: 'valid-feedback',
++	}),
++])
++
+ /** Pins the card selectors outside the group family, which the {@link CARD_GROUP_CASES} constant carries. */
+ export const CARD_SELECTORS = Object.freeze([
+ 	'.card',
+diff --git a/tests/src/styles/components/form-range.test.ts b/tests/src/styles/components/form-range.test.ts
+index 68a7296..6c26d67 100644
+--- a/tests/src/styles/components/form-range.test.ts
++++ b/tests/src/styles/components/form-range.test.ts
+@@ -2,6 +2,7 @@ import { TOKEN_NAMES } from '@src/core'
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	findRule,
++	matchesColor,
+ 	readPixels,
+ 	readRing,
+ 	readRules,
+@@ -13,7 +14,12 @@ import {
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
+-import { FORM_RANGE_CASES, FORM_RANGE_MARKUP, REDUCED_MOTION } from '../../../setupStyles.js'
++import {
++	FORM_RANGE_CASES,
++	FORM_RANGE_HAIRLINE_CASES,
++	FORM_RANGE_MARKUP,
++	REDUCED_MOTION,
++} from '../../../setupStyles.js'
+ 
+ afterEach(async () => {
+ 	await releaseMedia()
+@@ -94,13 +100,48 @@ describe('form range classes', () => {
+ 		const shadow = ring.style.getPropertyValue('box-shadow')
+ 		expect(shadow).toContain(`var(${TOKEN_NAMES.focus.width})`)
+ 		expect(shadow).toContain(`var(${TOKEN_NAMES.focus.color})`)
+-		expect(shadow).toContain(`var(${TOKEN_NAMES.surface.body.base})`)
++		expect(shadow).toContain(`var(${TOKEN_NAMES.palette.white.base})`)
+ 		const button = requireValue(findRule('.btn'), 'The cascade carries no button rule')
+ 		const bound = button.style.getPropertyValue('--bs-btn-focus-box-shadow')
+ 		expect(bound).toContain(`var(${TOKEN_NAMES.focus.width})`)
+ 		expect(bound).toContain(`var(${TOKEN_NAMES.focus.color})`)
+ 	})
+ 
++	// The mutation this catches is a hairline painted with the body surface: that surface is white in
++	// light mode alone, so the dark reading turns the hairline dark while the light one still passes.
++	it('paints the focused thumb hairline white in the light and the dark mode, as the release compiles it', () => {
++		const ring = requireValue(
++			findRule('.form-range:focus::-webkit-slider-thumb'),
++			'The cascade carries no focused thumb rule',
++		)
++		const declared = ring.style.getPropertyValue('box-shadow')
++		// Chromium withholds the thumb's computed style, so the declaration the thumb wears is resolved
++		// on a gauge in each mode the case table names instead: the gauge carries the same value and
++		// inherits the same custom properties, so its computed shadow is the thumb's shadow resolved
++		// in that mode.
++		const host = scene.mount(
++			FORM_RANGE_HAIRLINE_CASES.map(
++				({ mode }) =>
++					`<div data-bs-theme="${mode}"><div data-gauge="${mode}" style="box-shadow: ${declared}"></div></div>`,
++			).join(''),
++		)
++		const hairlines = [...host.querySelectorAll('[data-gauge]')].map((gauge) => {
++			const mode = gauge.getAttribute('data-gauge')
++			const color = requireValue(
++				/^(.+?)\s0px 0px 0px 1px,/u.exec(readStyle(gauge, 'box-shadow'))?.[1],
++				`The ${String(mode)} gauge resolves no one-pixel hairline`,
++			)
++			const release = requireValue(
++				FORM_RANGE_HAIRLINE_CASES.find((entry) => entry.mode === mode),
++				`No hairline case names the ${String(mode)} mode`,
++			).release
++			return [mode, matchesColor(color, release)]
++		})
++		// The release compiles `$form-range-thumb-focus-box-shadow` from the Sass `$body-bg` variable,
++		// which is `#fff` whatever mode the page renders, so the hairline is white in dark mode too.
++		expect(hairlines).toStrictEqual(FORM_RANGE_HAIRLINE_CASES.map(({ mode }) => [mode, true]))
++	})
++
+ 	it('outlines the focused host at the focus width under forced colors, where its thumb ring is not painted', async () => {
+ 		const host = scene.mount(
+ 			`<div>${FORM_RANGE_MARKUP}<div id="focus-gauge" style="width: var(${TOKEN_NAMES.focus.width})"></div></div>`,

@@ -1,0 +1,70 @@
+=== MUTATION: Grouped trailing-corner squaring removed
+site (scratch copy tmp/probe/fr3-scratch): src/styles/components/_input-group.scss
+replaced: 	.input-group:not(.has-validation)
+		> :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),
+	.input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n + 3),
+	.input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-control,
+	.input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-select {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+with: 
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/InputGroupSection.test.ts
+output: tmp/units/fr3-mutate-Grouped-trailing-corner-squaring-removed-.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 3 passed (4)
+failing:  FAIL  |app:browser (chromium)| tests/app/browser/sections/InputGroupSection.test.ts:169:2 > InputGroupSection > squares both inline corners of a grouped select and floating control, keeps the sized select room, and sizes a toolbar group to its content's width
+reason: AssertionError: expected [ [ +0, 6, +0, 6 ], [ +0, 6, +0, 6 ] ] to strictly equal [ [ +0, +0, +0, +0 ], …(1) ]
+
+=== MUTATION: Grouped leading-corner squaring removed from the overlap rule and the floating rule
+site (scratch copy tmp/probe/fr3-scratch): src/styles/components/_input-group.scss
+replaced: 		margin-left: calc(-1 * var(--bs-border-width));
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+
+	.input-group > .form-floating:not(:first-child) > .form-control,
+	.input-group > .form-floating:not(:first-child) > .form-select {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+with: 		margin-left: calc(-1 * var(--bs-border-width));
+	}
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/InputGroupSection.test.ts
+output: tmp/units/fr3-mutate-Grouped-leading-corner-squaring-removed-from-the-overlap-rul.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 3 passed (4)
+failing:  FAIL  |app:browser (chromium)| tests/app/browser/sections/InputGroupSection.test.ts:169:2 > InputGroupSection > squares both inline corners of a grouped select and floating control, keeps the sized select room, and sizes a toolbar group to its content's width
+reason: AssertionError: expected [ [ 6, +0, 6, +0 ], [ 6, +0, 6, +0 ] ] to strictly equal [ [ +0, +0, +0, +0 ], …(1) ]
+
+=== MUTATION: Sized-group select end room removed
+site (scratch copy tmp/probe/fr3-scratch): src/styles/components/_input-group.scss
+replaced: 	.input-group-lg > .form-select,
+	.input-group-sm > .form-select {
+		padding-right: calc(var(--vn-space-6) * 4);
+	}
+with: 
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/InputGroupSection.test.ts
+output: tmp/units/fr3-mutate-Sized-group-select-end-room-removed-.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 3 passed (4)
+failing:  FAIL  |app:browser (chromium)| tests/app/browser/sections/InputGroupSection.test.ts:169:2 > InputGroupSection > squares both inline corners of a grouped select and floating control, keeps the sized select room, and sizes a toolbar group to its content's width
+reason: AssertionError: expected [ …(2) ] to strictly equal [ …(2) ]
+
+=== MUTATION: Toolbar group width restored to 100%
+site (scratch copy tmp/probe/fr3-scratch): src/styles/components/_input-group.scss
+replaced: 	.btn-toolbar .input-group {
+		width: auto;
+with: 	.btn-toolbar .input-group {
+		width: 100%;
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/InputGroupSection.test.ts
+output: tmp/units/fr3-mutate-Toolbar-group-width-restored-to-100-.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 3 passed (4)
+failing:  FAIL  |app:browser (chromium)| tests/app/browser/sections/InputGroupSection.test.ts:169:2 > InputGroupSection > squares both inline corners of a grouped select and floating control, keeps the sized select room, and sizes a toolbar group to its content's width
+reason: AssertionError: expected 414 to be less than 414
+

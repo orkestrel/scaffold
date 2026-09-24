@@ -1,0 +1,54 @@
+
+ RUN  v4.1.11 /home/user/veneer-fr/tmp/probe/fr3-scratch
+
+2:45:36 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+2:45:37 PM [vite] (client) [optimizer] bundling dependencies...
+ ✓ |app:browser (chromium)| tests/app/browser/sections/InputGroupSection.test.ts:21:2 > InputGroupSection > renders every group specimen through the shared section contract 23ms
+ × |app:browser (chromium)| tests/app/browser/sections/InputGroupSection.test.ts:169:2 > InputGroupSection > squares both inline corners of a grouped select and floating control, keeps the sized select room, and sizes a toolbar group to its content's width 7ms
+   → expected [ [ +0, 6, +0, 6 ], [ +0, 6, +0, 6 ] ] to strictly equal [ [ +0, +0, +0, +0 ], …(1) ]
+ ✓ |app:browser (chromium)| tests/app/browser/sections/InputGroupSection.test.ts:231:2 > InputGroupSection > renders a squared and a kept dropdown toggle in each dropdown specimen, closed and followed by its closed menu 5ms
+ ✓ |app:browser (chromium)| tests/app/browser/sections/InputGroupSection.test.ts:283:2 > InputGroupSection > releases the region and preserves adjacent content on repeated destruction 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/InputGroupSection.test.ts:169:2 > InputGroupSection > squares both inline corners of a grouped select and floating control, keeps the sized select room, and sizes a toolbar group to its content's width
+AssertionError: expected [ [ +0, 6, +0, 6 ], [ +0, 6, +0, 6 ] ] to strictly equal [ [ +0, +0, +0, +0 ], …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[2m      0,[22m
+[32m-     0,[39m
+[32m-     0,[39m
+[31m+     6,[39m
+[2m      0,[22m
+[31m+     6,[39m
+[2m    ],[22m
+[2m    [[22m
+[32m-     0,[39m
+[2m      0,[22m
+[31m+     6,[39m
+[2m      0,[22m
+[32m-     0,[39m
+[31m+     6,[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/sections/InputGroupSection.test.ts:191:5
+    189|      readPixels(control, 'border-bottom-right-radius'),
+    190|     ]),
+    191|    ).toStrictEqual([
+       |     ^
+    192|     [0, 0, 0, 0],
+    193|     [0, 0, 0, 0],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  14:45:36
+   Duration  19.94s (transform 0ms, setup 467ms, import 516ms, tests 2.89s, environment 0ms)
+

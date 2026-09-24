@@ -1,0 +1,172 @@
+== reach-plain-split
+site: tests/setup.ts
+mutation: 'shadow.split(/,(?![^(]*\))/u)'
+      ->  'shadow.split(',')'
+command: npm run test:setup
+exit: 0
+      Tests  304 passed (304)
+log: tmp/units/ff-mut2-reach-plain-split.log.txt
+
+== reach-no-strip
+site: tests/setup.ts
+mutation: 'layer.replace(/\([^)]*\)/gu, '').matchAll'
+      ->  'layer.matchAll'
+command: npm run test:setup
+exit: 0
+      Tests  304 passed (304)
+log: tmp/units/ff-mut2-reach-no-strip.log.txt
+
+== reach-no-split
+site: tests/setup.ts
+mutation: 'shadow === 'none' ? [] : shadow.split(',')'
+      ->  'shadow === 'none' ? [] : [shadow]'
+command: npm run test:setup
+exit: 1
+      Tests  1 failed | 303 passed (304)
+reddens:  FAIL  |setup| tests/setup.test.ts > shared setup > reads a ring reach from the largest outer shadow layer, whatever color syntax precedes it
+log: tmp/units/ff-mut2-reach-no-split.log.txt
+
+== reach-outline
+site: tests/setup.ts
+mutation: '	return Math.max(0, outline, ...shadows)'
+      ->  '	return Math.max(0, ...shadows)'
+command: npm run test:setup
+exit: 1
+      Tests  2 failed | 302 passed (304)
+reddens:  FAIL  |setup| tests/setup.test.ts > shared setup > reads a ring reach from an outline as its width plus its offset, unless its style is none
+reddens:  FAIL  |setup| tests/setup.test.ts > shared setup > reads the larger of a ring shadow and an outline worn together
+log: tmp/units/ff-mut2-reach-outline.log.txt
+
+== reach-inset
+site: tests/setup.ts
+mutation: '		if (/\binset\b/u.test(layer)) return 0'
+      ->  '		if (layer.length === 0) return 0'
+command: npm run test:setup
+exit: 1
+      Tests  1 failed | 303 passed (304)
+reddens:  FAIL  |setup| tests/setup.test.ts > shared setup > reads a ring reach from the largest outer shadow layer, whatever color syntax precedes it
+log: tmp/units/ff-mut2-reach-inset.log.txt
+
+== reach-offset
+site: tests/setup.ts
+mutation: 'Math.max(Math.abs(x), Math.abs(y)) + blur + spread'
+      ->  'blur + spread'
+command: npm run test:setup
+exit: 1
+      Tests  1 failed | 303 passed (304)
+reddens:  FAIL  |setup| tests/setup.test.ts > shared setup > reads a ring reach from the largest outer shadow layer, whatever color syntax precedes it
+log: tmp/units/ff-mut2-reach-offset.log.txt
+
+== reach-outline-offset
+site: tests/setup.ts
+mutation: 'Number.parseFloat(read('outline-width')) + Number.parseFloat(read('outline-offset'))'
+      ->  'Number.parseFloat(read('outline-width'))'
+command: npm run test:setup
+exit: 1
+      Tests  1 failed | 303 passed (304)
+reddens:  FAIL  |setup| tests/setup.test.ts > shared setup > reads a ring reach from an outline as its width plus its offset, unless its style is none
+log: tmp/units/ff-mut2-reach-outline-offset.log.txt
+
+== cropped-left
+site: tests/setup.ts
+mutation: '	if (box.x - reach < 0) edges.push('left')'
+      ->  '	if (box.x < 0) edges.push('left')'
+command: npm run test:setup
+exit: 1
+      Tests  1 failed | 303 passed (304)
+reddens:  FAIL  |setup| tests/setup.test.ts > shared setup > lists each edge a grown box crosses, in top, right, bottom, left order
+log: tmp/units/ff-mut2-cropped-left.log.txt
+
+== cropped-top
+site: tests/setup.ts
+mutation: '	if (box.y - reach < 0) edges.push('top')'
+      ->  '	if (box.y < 0) edges.push('top')'
+command: npm run test:setup
+exit: 1
+      Tests  1 failed | 303 passed (304)
+reddens:  FAIL  |setup| tests/setup.test.ts > shared setup > lists each edge a grown box crosses, in top, right, bottom, left order
+log: tmp/units/ff-mut2-cropped-top.log.txt
+
+== ring-band-inside
+site: tests/setup.ts, the computeRingBand helper
+mutation: 'y: box.y - reach' -> 'y: box.y' (the strip moves inside the box)
+command: npm run test:setup
+exit: 1
+      Tests  1 failed | 304 passed (305)
+reddens:  FAIL  |setup| tests/setup.test.ts > shared setup > returns the strip a ring paints above a box, outside the box and a reach tall
+log: tmp/units/ff-mut2-ring-band-inside.log.txt
+
+== skip-script (journey)
+site: tests/app/browser/integration.test.ts — skip link case: Tab from the wrapper replaced by a scripted focus on the link
+mutation diff: tmp/units/ff-mut2-skip-script-dark-1280.diff.txt
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-1280* -t "reveals the skip link"
+exit 1
+      Tests  1 failed | 46 skipped (47)
+reddens:  FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:2617:2 > journey > reveals the skip link under keyboard focus and photographs the revealed link with its outline
+assertion: AssertionError: expected false to be true // Object.is equality
+at: tests/app/browser/integration.test.ts:2658:42
+log: tmp/units/ff-case-mut2-skip-script-dark-1280.log.txt
+
+== skip-script-key (journey)
+site: tests/app/browser/integration.test.ts — skip link case: Tab from the wrapper replaced by a scripted focus and an ArrowRight key press
+mutation diff: tmp/units/ff-mut2-skip-script-key-dark-1280.diff.txt
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-1280* -t "reveals the skip link"
+exit 1
+      Tests  1 failed | 46 skipped (47)
+reddens:  FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:2617:2 > journey > reveals the skip link under keyboard focus and photographs the revealed link with its outline
+assertion: AssertionError: expected 0 to be greater than 0
+at: tests/app/browser/integration.test.ts:2720:33
+log: tmp/units/ff-case-mut2-skip-script-key-dark-1280.log.txt
+
+== guard-no-control (journey)
+site: tests/app/browser/integration.test.ts — skip link case: the suppressed state sets the outline color instead of suppressing the outline (the control removed)
+mutation diff: tmp/units/ff-mut2-guard-no-control-dark-1280.diff.txt
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-1280* -t "reveals the skip link"
+exit 1
+      Tests  1 failed | 46 skipped (47)
+reddens:  FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:2617:2 > journey > reveals the skip link under keyboard focus and photographs the revealed link with its outline
+assertion: AssertionError: expected 1 to be +0 // Object.is equality
+at: tests/app/browser/integration.test.ts:2721:36
+log: tmp/units/ff-case-mut2-guard-no-control-dark-1280.log.txt
+
+== row-script (journey)
+site: tests/app/browser/integration.test.ts — list-group case: Tab from the wrapper replaced by a scripted focus on the row
+mutation diff: tmp/units/ff-mut2-row-script-dark-1280.diff.txt
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-1280* -t "drives one list-group action"
+exit 1
+      Tests  1 failed | 46 skipped (47)
+reddens:  FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:1537:2 > journey > drives one list-group action to hover, focus, and press, and photographs each state
+assertion: AssertionError: expected 0 to be greater than 0
+at: tests/app/browser/integration.test.ts:1622:17
+log: tmp/units/ff-case-mut2-row-script-dark-1280.log.txt
+
+== row-script-key (journey)
+site: tests/app/browser/integration.test.ts — list-group case: Tab from the wrapper replaced by a scripted focus and an ArrowRight key press
+mutation diff: tmp/units/ff-mut2-row-script-key-dark-1280.diff.txt
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-1280* -t "drives one list-group action"
+exit 1
+      Tests  1 failed | 46 skipped (47)
+reddens:  FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:1537:2 > journey > drives one list-group action to hover, focus, and press, and photographs each state
+assertion: AssertionError: expected 0 to be greater than 0
+at: tests/app/browser/integration.test.ts:1682:33
+log: tmp/units/ff-case-mut2-row-script-key-dark-1280.log.txt
+
+== accordion-no-release (journey)
+site: tests/app/browser/integration.test.ts — accordion focus case: the pointer release deleted
+mutation diff: tmp/units/ff-mut2-accordion-no-release-dark-1280.diff.txt
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-1280* -t "collapsed accordion button"
+exit 1
+      Tests  1 failed | 46 skipped (47)
+reddens:  FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:2510:2 > journey > reaches a collapsed accordion button through the keyboard and lifts its ring over the items beside it
+assertion: AssertionError: expected [ 'Delivery windows', …(2) ] to strictly equal []
+at: tests/app/browser/integration.test.ts:2597:18
+log: tmp/units/ff-case-mut2-accordion-no-release-dark-1280.log.txt
+
+== check-group-no-release (journey, the round-1 converted case with its watcher)
+site: tests/app/browser/integration.test.ts — grouped alignment focus case: the pointer release deleted
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-1280* -t "rings the checked label of the grouped alignment control"
+exit 0
+      Tests  1 passed | 46 skipped (47)
+reddens: nothing. The watcher over the lifted specimen read an empty list; the pointer probe (ff-probes-2/ff-pointer-dark-1280.txt) records the parked pointer entering only the wrapper (DIV.p-3) in that case.
+log: tmp/units/ff-case-r2-checkgroup-norelease-dark-1280.log.txt
+
