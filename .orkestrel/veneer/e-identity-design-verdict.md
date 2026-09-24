@@ -40,13 +40,36 @@ land after APPEARANCE, serially, with the shared patches applied three-way. Each
 
 ## Addendum after round 1 (2026-09-24)
 
-- **The positional law.** `guides/veneer.md` § the styles axis says an `elements` rule treats a tag by its name, never
-  by where the markup puts it, and `tests/src/styles/index.test.ts` enforces it with `MANDATED_TAG_PAIRS`. Bootstrap
-  5.3.8's reboot writes `pre code`, `a > code`, and `kbd kbd`, so the house rule wins: the law admits the pairs the
-  release's reboot writes, held in a `RELEASE_TAG_PAIRS` table beside `MANDATED_TAG_PAIRS`, and the guide paragraph
-  names that second exception. E-ID-CODE round 2 carries it.
+- **The positional law** (superseded by § Addendum 2). `guides/veneer.md` § the styles axis says an `elements` rule
+  treats a tag by its name, never by where the markup puts it. Round 2 admitted the pairs Bootstrap 5.3.8's reboot
+  writes (`RELEASE_TAG_PAIRS`); Addendum 2 withdraws that.
 - **Specimens.** The Content and Type sections' tests pin every specimen, so a unit adding a specimen owns the section
   test that pins it: E-ID-CODE owns `tests/app/browser/sections/ContentSection.test.ts`, and E-ID-LAYOUT owns
   `tests/app/browser/sections/TypeSection.test.ts`.
 - **Command.** The styles project lives in `configs/src/vite.styles.config.ts`, not in the root `vite.config.ts`
   that `e-id-common.md` named; both units found it and used it.
+
+## Addendum 2: realigned on the tenets (2026-09-24, after the user's pointer to them)
+
+The user ruled the dropped flow margins restored, and pointed to the tenets for these decisions. Two tenets bind here:
+"Give semantic tags useful defaults without inferring components … Do not create component styling from combinations
+of tags or their surrounding structure … The meaning of a tag must not change unpredictably because it appears beside
+or inside another semantic tag", and "Preserve direct control through classes … Useful defaults and explicit control
+must coexist." The house rule stands, and it is realized with tag-only defaults and classes that carry Bootstrap's
+layout, never with selectors that read a tag's context or strip a default whenever any class appears:
+
+- **Contextual code rules withdrawn.** `pre code`, `a > code`, and `kbd kbd` style a tag by the tag around it, so they
+  do not ship; their Excluded rows stay, `RELEASE_TAG_PAIRS` goes, and the positional law keeps its single exception
+  for the pairs the content model mandates. Code keeps its treatment inside a block, a link, or a key, which is the
+  tenet's stated behavior. The border-width hook and the `samp` corner stand. E-ID-CODE round 3.
+- **No `:not([class])` scoping.** A `dl` or `blockquote` carrying any class keeps its default look; the Bootstrap class
+  that composes a component writes what Bootstrap's layout needs. `dl` keeps its grid with no `gap` (column spacing
+  through the term's inline-end padding, which a `.row` column's gutter padding overrides), so `.row` lays out the
+  horizontal description list. `blockquote` keeps its bar, inset, and italics, and `.blockquote` writes the resets.
+  E-ID-LAYOUT round 3.
+- **No `:has()` on `figure`.** The `figure` column layout drops its `gap`; `figcaption` carries its own top margin, and
+  `.blockquote-footer`'s margins lay out the attributed quotation as Bootstrap does. Bootstrap's `.figure` pattern
+  lays out as Bootstrap's. E-ID-LAYOUT round 3.
+- **Flow margins restored** (the user's ruling): `p`, the headings, the lists, `dl`, `pre`, `hr`, `figure`, and every
+  other element whose reboot margin Veneer dropped take Bootstrap's reboot margins. E-ID-FLOW, after the E-ID units
+  land, so one unit owns every margin.

@@ -1,0 +1,16 @@
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -2095,9 +2095,10 @@
+  *   {@link collectLayer} reading holds.
+  * @param tags - The tags to mount, such as the distinct values the `ELEMENT_TAGS` table in
+  *   `tests/setupStyles.ts` names.
+- * @param mandated - The ancestor and descendant pairs the HTML content model mandates, such as the
+- *   `MANDATED_TAG_PAIRS` table in `tests/setupStyles.ts`. A nesting reported for one of them is not
+- *   a finding, because the markup has nowhere else to write that child.
++ * @param mandated - The ancestor and descendant pairs the law exempts, such as the
++ *   `MANDATED_TAG_PAIRS` and `RELEASE_TAG_PAIRS` tables in `tests/setupStyles.ts`. A nesting
++ *   reported for one of them is not a finding: the markup has nowhere else to write a mandated
++ *   child, and the release's reboot writes a contextual rule for a release pair.
+  * @returns Each positional pair found, `<outer> > <inner>` for a nesting and `<outer> + <inner>`
+  *   for a sibling, in mounted order. An empty list is the claim that every tag reads the same
+  *   treatment wherever the markup puts it.

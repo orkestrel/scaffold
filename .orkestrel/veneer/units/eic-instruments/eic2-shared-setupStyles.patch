@@ -1,0 +1,35 @@
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 8f883b6..64600f2 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1469,6 +1469,7 @@ export const TEXT_SAMP_CASES = Object.freeze(
+ 				'padding-top': '1.575px',
+ 				'padding-left': '3.15px',
+ 			}),
++			radius: 4,
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
+ 			background: mode === 'light' ? 'oklch(0.968 0.007 247.896)' : 'oklch(0.265 0.014 256)',
+ 			family:
+@@ -3454,6 +3455,22 @@ export const MANDATED_TAG_PAIRS: ReadonlyArray<readonly [string, string]> = Obje
+ 	Object.freeze(['ul', 'li'] as const),
+ ])
+ 
++/**
++ * Holds the ancestor and descendant tag pairs Bootstrap 5.3.8's reboot writes a contextual rule for.
++ *
++ * @remarks
++ * The house rule matches the release, so the `elements` layer writes the contextual rules the
++ * release's reboot writes: `pre code` for code inside a block, `a > code` for code inside a link,
++ * and `kbd kbd` for a key inside a key. These pairs are the second exception, beside the
++ * {@link MANDATED_TAG_PAIRS} constant, to the rule that an `elements` rule treats a tag by its name.
++ * A pair belongs here only when the release's `scss/_reboot.scss` source writes it.
++ */
++export const RELEASE_TAG_PAIRS: ReadonlyArray<readonly [string, string]> = Object.freeze([
++	Object.freeze(['pre', 'code'] as const),
++	Object.freeze(['a', 'code'] as const),
++	Object.freeze(['kbd', 'kbd'] as const),
++])
++
+ /**
+  * Names each `elements` partial beside every tag a rendered proof has to put on the page for it.
+  *
