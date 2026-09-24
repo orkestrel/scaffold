@@ -1,0 +1,116 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index c622ce0..e609e31 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -239,9 +239,9 @@ The interface exposes the following lifecycle operations.
+ 
+ #### `DelegateInterface`
+ 
+-| Method    | Summary                                                        |
+-| --------- | -------------------------------------------------------------- |
+-| `destroy` | Releases the click listener and destroys every engine it owns. |
++| Method    | Summary                                                                 |
++| --------- | ----------------------------------------------------------------------- |
++| `destroy` | Releases the click and key listeners and destroys every engine it owns. |
+ 
+ #### `RegistryInterface`
+ 
+@@ -561,21 +561,22 @@ the engine's event guard, such as the `isButtonEvent` function, reaches no hook.
+ 
+ ### Delegation
+ 
+-The `Delegate` class is the engine's only data API. It listens for clicks on its root, the document
+-unless you pass another, and routes each click by the selectors it resolves for each entity it
+-serves. The `button` option carries the button's `classes` and `selectors` groups: a click inside a
+-host the resolved `trigger` selector matches drives that host's button, and each button the delegate
+-constructs receives the same groups. A replaced selector is not an alias, so the default selector
+-then routes nothing. The driven engine is the one the static `find` method of the `Button` class
+-returns, whoever constructed it, or an engine the delegate constructs and acquires when the host has
+-none; an engine you constructed keeps its own groups. The button route prevents the click's default
+-action, as Bootstrap's data API does. The `collapse` option carries the collapse's groups the same
+-way, and § Components states its route under Collapse. A click whose button host is one of the
+-panels its collapse trigger names inside the root is refused when neither engine exists there, as §
+-Components states under Collapse. A host under nested delegate roots is driven once per click for
+-each entity whose selector matches, by the first live delegate whose root contains it to reach it. A
+-listener that destroys a delegate during a click leaves every panel the click has not reached to the
+-delegates still live.
++The `Delegate` class is the engine's only data API. It listens for clicks and key presses on its
++root, the document unless you pass another, and routes each one by the selectors it resolves for
++each entity it serves. The `button` option carries the button's `classes` and `selectors` groups: a
++click inside a host the resolved `trigger` selector matches drives that host's button, and each
++button the delegate constructs receives the same groups. A replaced selector is not an alias, so the
++default selector then routes nothing. The driven engine is the one the static `find` method of the
++`Button` class returns, whoever constructed it, or an engine the delegate constructs and acquires
++when the host has none; an engine you constructed keeps its own groups. The button route prevents
++the click's default action, as Bootstrap's data API does. The `collapse` option carries the
++collapse's groups the same way, and § Components states its route under Collapse. The `dropdown`
++option carries the dropdown's groups, and § Components states its click and key routes under
++Dropdown. A click whose button host is one of the panels its collapse trigger names inside the root
++is refused when neither engine exists there, as § Components states under Collapse. A host under
++nested delegate roots is driven once per click for each entity whose selector matches, by the first
++live delegate whose root contains it to reach it. A listener that destroys a delegate during a click
++leaves every panel the click has not reached to the delegates still live.
+ 
+ While the delegate owns an engine it observes its root, and at the observer delivery that follows a
+ removal it restores and releases every host it acquired that the root no longer contains, whether
+@@ -6013,13 +6014,13 @@ exist, and a row of any other kind refuses the file form. Transition, dismissal,
+ engine rows record shared engine scope; they do not claim that Button dispatches transition events.
+ The jQuery rows retain the source inventory while the exclusion that follows limits the claim.
+ 
+-The compatibility claim excludes contextual Reboot selectors that combine bare tags: nested
+-ordered and unordered lists, code inside preformatted text or links, nested keyboard tags, and the
+-sibling after a legend. It also excludes the jQuery interface and plugin registration, the
+-window.bootstrap global and UMD namespace, and Bootstrap's Sass variables, maps, and mixins as a
+-source API. Popper pass-through positioning options remain accepted wire keys with platform
+-anchoring as an accepted difference. The sanitizer allowlist and sanitizer overrides remain in
+-scope for the overlay unit.
++The compatibility claim excludes contextual Reboot selectors that combine bare tags: nested ordered
++and unordered lists, code inside preformatted text or links, nested keyboard tags, and the sibling
++after a legend. It also excludes the jQuery interface and plugin registration, the window.bootstrap
++global and UMD namespace, and Bootstrap's Sass variables, maps, and mixins as a source API. Popper's
++`boundary` and `popperConfig` options are excluded, as § Components states under Dropdown, because
++platform anchoring in the top layer replaces Popper. The sanitizer allowlist and sanitizer overrides
++remain in scope for the overlay unit.
+ 
+ ## Showcase
+ 
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index a537b6a..3a9769f 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -110,7 +110,7 @@ export interface CollapseVocabulary {
+  * group, so a manual construction that spreads the same group matches the delegate's engines.
+  */
+ export interface DelegateOptions {
+-	/** Receives delegated clicks. Default: `document`. */
++	/** Receives delegated clicks and key presses. Default: `document`. */
+ 	readonly root?: ParentNode
+ 	/** Carries the button vocabulary: the delegate routes by the selectors it resolves and constructs each button engine with these groups. */
+ 	readonly button?: Pick<ButtonOptions, 'classes' | 'selectors'>
+@@ -137,7 +137,7 @@ export interface DelegateOptions {
+ /** Owns delegated activation and the engines it constructs. */
+ export interface DelegateInterface {
+ 	readonly root: ParentNode
+-	/** Releases the click listener and destroys every engine it owns. */
++	/** Releases the click and key listeners and destroys every engine it owns. */
+ 	destroy(): void
+ }
+ 
+@@ -849,7 +849,7 @@ export interface DropdownInterface {
+ 	/**
+ 	 * Opens the menu.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the menu was open, the toggle is disabled, a listener prevented `show`, or the dropdown is destroyed.
++	 * @returns Resolves true after the `shown` event; false when the menu was open, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `show`, the dropdown is destroyed, or the menu's `shown` token reads the change as taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await dropdown.show()
+@@ -859,7 +859,7 @@ export interface DropdownInterface {
+ 	/**
+ 	 * Closes the menu.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the menu was closed, the toggle is disabled, a listener prevented `hide`, or the dropdown is destroyed.
++	 * @returns Resolves true after the `hidden` event; false when the menu was closed, the toggle is disabled, another change of the dropdown was in flight, a listener prevented `hide`, the dropdown is destroyed, or the menu's `shown` token reads the change as taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await dropdown.hide()

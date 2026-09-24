@@ -1,0 +1,73 @@
+--- a/src/browser/Delegate.ts
++++ b/src/browser/Delegate.ts
+@@ -167,7 +167,9 @@
+ 		if (this.#controller.signal.aborted) return
+ 		this.#controller.abort()
+ 		this.#observer.disconnect()
+-		for (const engine of this.#owned) engine.destroy()
++		// Engines are destroyed in the reverse of their acquisition, so each restoration writes back
++		// what its engine found before the engines acquired after it wrote over the same markup.
++		for (const engine of [...this.#owned].reverse()) engine.destroy()
+ 		this.#owned.clear()
+ 	}
+ 
+@@ -348,9 +350,10 @@
+ 		}
+ 	}
+ 
+-	// Destroys and releases every owned engine whose host the root no longer contains.
++	// Destroys and releases every owned engine whose host the root no longer contains, in the reverse
++	// of their acquisition.
+ 	#release(): void {
+-		for (const engine of this.#owned) {
++		for (const engine of [...this.#owned].reverse()) {
+ 			if (this.#root.contains(engine.host)) continue
+ 			this.#owned.delete(engine)
+ 			engine.destroy()
+--- a/tests/src/browser/Delegate.test.ts
++++ b/tests/src/browser/Delegate.test.ts
+@@ -1319,6 +1319,30 @@
+ 		expect(Tab.find(requireValue(one, 'No first control'))?.active).toBe(true)
+ 	})
+ 
++	it('restores a list whose controls it drove through several tabs to the markup the list carried', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		onTestFinished(() => scene.clear())
++		const markup = root.innerHTML
++		const home = requireValue(root.querySelector<HTMLElement>('#home-tab'), 'No home control')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No profile')
++		const delegate = new Delegate({ root })
++		onTestFinished(() => delegate.destroy())
++		profile.click()
++		await waitForCondition('the profile control activates', () =>
++			profile.classList.contains('active'),
++		)
++		home.click()
++		await waitForCondition('the home control activates', () => home.classList.contains('active'))
++		delegate.destroy()
++		expect(root.innerHTML).toBe(markup)
++	})
++
+ 	it('refuses a tab group value that is not a class token, an attribute name, or a selector at construction', () => {
+ 		const root = build('div')
+ 		expect(
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -895,9 +895,8 @@
+ the sibling it deactivated, that sibling's pane, and each dropdown. Each tab records a value when it
+ first writes it, so a value another tab of the same list wrote reads to it as the markup's own;
+ destroying the tabs of one list in the reverse of their construction order restores the markup the
+-list carried. A delegate destroys the tabs it acquired in the order it acquired them, so after its
+-destruction a list whose controls it drove through more than one tab keeps the values the later tabs
+-found when they first wrote, rather than the markup the list carried.
++list carried. A delegate destroys the tabs it acquired in that reverse order, so its destruction
++restores the markup of a list whose controls it drove through more than one tab.
+ 
+ The delegate's `tab` option carries the tab's groups. A click inside a control the resolved
+ `trigger` selector matches prevents the click's default action when the control is an anchor or an

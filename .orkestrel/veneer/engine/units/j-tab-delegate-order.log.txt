@@ -1,0 +1,5 @@
+digest before: {"source": "4a6b5ab85dec1a863dd80025855d683f5b1cb3ef9c07c2e0056a01e1ba14306c", "tests": "98e4f0318d2fc7ecf864da9c893af649ba82186d8678e9dc053197b8e9601861"}
+proof case alone: 1 failed of 43 | ['restores a list whose controls it drove through several tabs to the markup the list carried']
+proof case with the source change: 0 failed of 43 | []
+digest after: {"source": "4a6b5ab85dec1a863dd80025855d683f5b1cb3ef9c07c2e0056a01e1ba14306c", "tests": "98e4f0318d2fc7ecf864da9c893af649ba82186d8678e9dc053197b8e9601861"}
+receipt: restored byte for byte

@@ -1,0 +1,70 @@
+diff --git a/src/browser/types.ts b/tmp/j-carousel/types.ts
+index a537b6a..f41f999 100644
+--- a/src/browser/types.ts
++++ b/tmp/j-carousel/types.ts
+@@ -130,7 +130,7 @@ export interface DelegateOptions {
+ 	readonly alert?: Pick<AlertOptions, 'classes' | 'attributes' | 'selectors'>
+ 	/** Carries the toast vocabulary: the delegate routes by the selectors it resolves and constructs each toast engine with these groups. */
+ 	readonly toast?: Pick<ToastOptions, 'classes' | 'attributes' | 'selectors'>
+-	/** Carries the carousel vocabulary: the delegate routes by the selectors it resolves and constructs each carousel engine with these groups. */
++	/** Carries the carousel vocabulary: the delegate routes by the `step` and `index` attributes it resolves and constructs each carousel engine with these groups. */
+ 	readonly carousel?: Pick<CarouselOptions, 'classes' | 'attributes' | 'selectors'>
+ }
+ 
+@@ -2014,7 +2014,7 @@ export interface CarouselOptions {
+ 	readonly keyboard?: boolean
+ 	/** If `true`, pointer hover pauses cycling, mirroring Bootstrap's `pause: 'hover'`; if `false`, it does not. Default: `true`. */
+ 	readonly pause?: boolean
+-	/** Starts cycling at construction for `load` and after the first interaction for `interaction`, mirroring Bootstrap's `ride` option. Default: no automatic cycling. */
++	/** Starts cycling at construction for `load`, and for `interaction` after each slide a call, a key, or a swipe asks for, mirroring Bootstrap's `ride` option. Default: no automatic cycling. */
+ 	readonly ride?: CarouselRide
+ 	/** If `true`, a touch or pen swipe moves the items; if `false`, it does not. Default: `true`. */
+ 	readonly touch?: boolean
+@@ -2041,7 +2041,7 @@ export interface CarouselInterface {
+ 	/**
+ 	 * Slides to the following item.
+ 	 *
+-	 * @returns Resolves true after the `slid` event; false when a slide was in flight, the computed following item is the active item (the last item without wrapping, or a single item), a listener prevented `slide`, or the carousel is destroyed.
++	 * @returns Resolves true after the `slid` event; false when a slide was in flight, no item is active, the computed following item is the active item (the last item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, or the items' tokens read the change as taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.next()
+@@ -2051,7 +2051,7 @@ export interface CarouselInterface {
+ 	/**
+ 	 * Slides to the preceding item.
+ 	 *
+-	 * @returns Resolves true after the `slid` event; false when a slide was in flight, the computed preceding item is the active item (the first item without wrapping, or a single item), a listener prevented `slide`, or the carousel is destroyed.
++	 * @returns Resolves true after the `slid` event; false when a slide was in flight, no item is active, the computed preceding item is the active item (the first item without wrapping, or a single item), a listener prevented `slide`, the carousel is destroyed, or the items' tokens read the change as taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.previous()
+@@ -2062,7 +2062,7 @@ export interface CarouselInterface {
+ 	 * Slides to the item at a position, waiting for a slide in flight to finish first.
+ 	 *
+ 	 * @param index - The position of the item to activate.
+-	 * @returns Resolves true after the `slid` event; false when the position is out of range or already active, a listener prevented `slide`, or the carousel is destroyed.
++	 * @returns Resolves true after the `slid` event; false when the position is out of range or already active, no item is active, a listener prevented `slide`, the carousel is destroyed, or the items' tokens read the change as taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const moved = await carousel.slide(2)
+@@ -2070,8 +2070,10 @@ export interface CarouselInterface {
+ 	 */
+ 	slide(index: number): Promise<boolean>
+ 	/**
+-	 * Starts or restarts cycling through the items at the configured interval.
++	 * Starts or restarts cycling through the items at the active item's interval or the configured interval.
+ 	 *
++	 * @remarks
++	 * Arms nothing while the view prefers reduced motion.
+ 	 * @example
+ 	 * ```ts
+ 	 * carousel.start()
+@@ -2088,7 +2090,7 @@ export interface CarouselInterface {
+ 	 */
+ 	pause(): void
+ 	/**
+-	 * Releases hooks, stops cycling and swipes, and restores the carousel's classes.
++	 * Releases hooks, stops cycling and swipes, abandons a slide in flight, and restores the items, the indicators, and the host.
+ 	 *
+ 	 * @example
+ 	 * ```ts

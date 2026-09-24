@@ -1,0 +1,107 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Dropdown.test.ts tests/src/browser/Placement.test.ts tests/src/browser/Delegate.test.ts tests/src/browser/validators.test.ts tests/src/browser/parsers.test.ts tests/src/browser/helpers.test.ts tests/src/browser/index.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/dropdown
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+·x·
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Delegate.test.ts [ tests/src/browser/Delegate.test.ts ]
+Error: Failed to import test file C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/dropdown/tests/src/browser/Delegate.test.ts
+Caused by: SyntaxError: The requested module '/src/browser/index.ts' does not provide an export named 'DROPDOWN_SELECTORS'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts [ tests/src/browser/Dropdown.test.ts ]
+Error: Failed to import test file C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/dropdown/tests/src/browser/Dropdown.test.ts
+Caused by: SyntaxError: The requested module '/src/browser/index.ts' does not provide an export named 'DROPDOWN_ATTRIBUTES'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts [ tests/src/browser/helpers.test.ts ]
+Error: Failed to import test file C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/dropdown/tests/src/browser/helpers.test.ts
+Caused by: SyntaxError: The requested module '/src/browser/index.ts' does not provide an export named 'computeNeighbor'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/parsers.test.ts [ tests/src/browser/parsers.test.ts ]
+Error: Failed to import test file C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/dropdown/tests/src/browser/parsers.test.ts
+Caused by: SyntaxError: The requested module '/src/browser/index.ts' does not provide an export named 'parseDismiss'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts [ tests/src/browser/Placement.test.ts ]
+Error: Failed to import test file C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/dropdown/tests/src/browser/Placement.test.ts
+Caused by: SyntaxError: The requested module '/src/browser/index.ts' does not provide an export named 'PLACEMENT_AREAS'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/validators.test.ts [ tests/src/browser/validators.test.ts ]
+Error: Failed to import test file C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/dropdown/tests/src/browser/validators.test.ts
+Caused by: SyntaxError: The requested module '/src/browser/index.ts' does not provide an export named 'isDropdownEvent'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/index.test.ts:15:2 > src browser entry > exports the browser surface without registering document or window listeners
+AssertionError: expected [ 'BUTTON_CLASSES', …(31) ] to strictly equal [ 'BUTTON_CLASSES', …(47) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -9,39 +9,23 @@[39m
+[2m    "COLLAPSE_SELECTORS",[22m
+[2m    "COLOR_MODE_ATTRIBUTES",[22m
+[2m    "COLOR_MODE_KEY",[22m
+[2m    "Collapse",[22m
+[2m    "ColorMode",[22m
+[32m-   "DROPDOWN_ATTRIBUTES",[39m
+[32m-   "DROPDOWN_CLASSES",[39m
+[32m-   "DROPDOWN_DEFAULTS",[39m
+[32m-   "DROPDOWN_EVENTS",[39m
+[32m-   "DROPDOWN_SELECTORS",[39m
+[2m    "Delegate",[22m
+[32m-   "Dropdown",[39m
+[2m    "HostSnapshot",[22m
+[32m-   "PLACEMENT_AREAS",[39m
+[32m-   "PLACEMENT_ATTRIBUTES",[39m
+[32m-   "PLACEMENT_DEFAULTS",[39m
+[32m-   "POPOVER_PROPERTIES",[39m
+[32m-   "Placement",[39m
+[2m    "Registry",[22m
+[2m    "TARGET_ATTRIBUTE",[22m
+[2m    "bindEventMap",[22m
+[32m-   "computeNeighbor",[39m
+[2m    "emitEvent",[22m
+[2m    "isAttributeName",[22m
+[2m    "isButtonEvent",[22m
+[2m    "isClassToken",[22m
+[2m    "isCollapseEvent",[22m
+[2m    "isColorModeState",[22m
+[32m-   "isDropdownEvent",[39m
+[2m    "isSelector",[22m
+[32m-   "parseDismiss",[39m
+[2m    "parseElement",[22m
+[32m-   "parseOffset",[39m
+[32m-   "parseStatic",[39m
+[2m    "readTag",[22m
+[2m    "readTarget",[22m
+[2m    "readTargets",[22m
+[2m    "reflow",[22m
+[2m    "resolveOptions",[22m
+
+ ❯ tests/src/browser/index.test.ts:21:16
+     19|   })
+     20|   expect(targets.filter((target) => target === document || target === …
+     21|   expect(names).toStrictEqual([
+       |                ^
+     22|    'BUTTON_CLASSES',
+     23|    'BUTTON_EVENTS',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  7 failed (7)
+      Tests  1 failed | 2 passed (3)
+   Start at  00:00:29
+   Duration  2.05s (transform 0ms, setup 349ms, import 10ms, tests 11ms, environment 0ms)
+

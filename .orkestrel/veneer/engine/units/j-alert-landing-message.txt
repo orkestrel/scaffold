@@ -1,0 +1,16 @@
+Land J-ALERT: the Alert engine and the delegate's dismiss route
+
+The Alert engine over the landed binder: close dispatches the cancelable close event, removes the
+shown token behind a door read, waits for the fade where the host carries the fade token, removes
+the host behind a connectivity read, dispatches closed on the removed host, and releases itself as
+Bootstrap's dispose after closed does; destruction before completion restores the shown token and
+keeps the host. The delegate gains the dismiss route on a shared private resolution the Modal and
+Toast routes reuse (the anchor default prevented before the disabled check, the alert resolved by
+target attribute, href, or the closest host token inside the root, marked once per click), and its
+same-host refusal is generalized to any two routes that would construct on one element (E12). The
+guard, the frozen tables, the barrel export, and the guide's Alert subsection with its plugin row
+shipped; the returned patches for the close summary and its returns sentence with the guide's
+Methods table are integrated here. Audited by the analyst on Astra, the reviewer on Opus, and the
+checker (units/j-alert-audit-verdict.md). J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
