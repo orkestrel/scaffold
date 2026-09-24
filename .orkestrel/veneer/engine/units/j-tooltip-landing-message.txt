@@ -1,30 +1,7 @@
-Land J-TOOLTIP: the Tooltip engine, the native sanitizer, the placement arrow, and their proofs
+Land J-TOOLTIP: the Tooltip engine, its Placement arrow and hint promotion, the native sanitizer, and the guarded-step door mechanism
 
-`Tooltip` (`src/browser/Tooltip.ts`) shows a tip built from a template beside its trigger in the top
-layer through `Placement` promoted with the `hint` popover value, on hover, focus, click, or call,
-with one native timer for the `delay` group, the active-trigger record Bootstrap keeps, the
-`descendants` containers, the `title` moved into the tip's content and `aria-label` written as
-Bootstrap's `_fixTitle` does, `aria-describedby` naming the tip while shown, the modal's hide
-event honoured, and a door read after every write, dispatch, content call, element move, and await.
-`NativeSanitizer` (`src/browser/sanitizers/`) writes markup and the template through the platform's
-`setHTML` over `SANITIZER_ALLOWLIST`, Bootstrap's allowlist by element with every WAI-ARIA name
-listed; a supplied `SanitizerInterface` replaces it, and no writer skips sanitizing. `Placement`
-gains an `arrow` input it points at the reference's centre from the edge facing it. The tip helpers
-`buildTip`, `fillSlot`, and `writeContent`, the parsers `parseDelay`, `parseTrigger`,
-`parsePosition`, and `parseFallbacks`, the guards `isTooltipEvent` and `isSanitizeTarget`, and the
-frozen `TOOLTIP_*` tables land with them. An element a slot receives returns home on destruction,
-on a refill, and on a rebuild that supplies another.
-
-Departures the guide records: the `.vn.` names; completed events not cancelable; `animation` as
-`animated` and `customClass` as `tip.class`; the trigger words as the `trigger` group; `sanitize`,
-`sanitizeFn`, `allowList`, `boundary`, and `popperConfig` without a counterpart; the platform's
-`aria-*` list without Bootstrap's pattern; `hide` and a leave working while disabled; `toggle`
-immediate; the hint's platform dismissal bridged after the close with one re-promotion (E17 as
-amended).
-
-Design: the J-ENGINE design verdict R9, R10 and R13 as amended, R11, R12, R17. Audit: rounds 2 and 3
-by `analyst` on Astra, `reviewer` on Opus, and `checker` on the claims in
-`j-tooltip-audit-claims-2.md` and `-3.md`, with the Orchestrator's replay of the instrument.
+The Tooltip engine builds a tip from a template through the native sanitizer, fills its slots from strings, elements, and content functions, inserts it into its container, promotes it as a hint popover through Placement, and drives it from hover, focus, click, and manual triggers, with the platform's dismissal bridged after the close and one re-promotion after a prevented hide. Every write, dispatch, element move, and sanitizer call inside a change runs as one step whose door is read after it (the tooltip live, the change its own, the tip in its container carrying the shown token exactly when expected), the build resolves every content value before its first write, the discard reads ownership before removing and reports whether the tip left the document, and the completion reads the full door before it releases the change and dispatches; a tip other code moved stays where that code put it. The arrow points at the reference's centre; descendants get tooltips of their own inside a containment; the parsers contain hostile inputs; the interface states the contract, the guide states the door mechanism and every departure, and the mutation instrument reddens every row.
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
 Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F

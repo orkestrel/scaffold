@@ -1,0 +1,54 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/probe-promotion.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/tooltip
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/probe-promotion.test.ts (1 test | 1 failed) 18ms
+   × reads the relocated tip after the promotion 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/probe-promotion.test.ts:8:1 > reads the relocated tip after the promotion
+AssertionError: expected { …(2) } to deeply equal {}
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- {}[39m
+[31m+ {[39m
+[31m+   "after": {[39m
+[31m+     "anchor": "",[39m
+[31m+     "described": null,[39m
+[31m+     "parent": "elsewhere",[39m
+[31m+     "popover": null,[39m
+[31m+     "style": null,[39m
+[31m+   },[39m
+[31m+   "reading": {[39m
+[31m+     "anchor": "--vn-placement-0",[39m
+[31m+     "described": "vn-tooltip-0",[39m
+[31m+     "open": true,[39m
+[31m+     "parent": "elsewhere",[39m
+[31m+     "popover": "hint",[39m
+[31m+     "shown": false,[39m
+[31m+     "side": "right",[39m
+[31m+     "style": "border-width: 0px; border-style: none; padding: 0px; background-color: rgba(0, 0, 0, 0); overflow: visible; position: fixed; inset: auto; margin: 0px 0px 6px; position-anchor: --vn-placement-0; position-area: top; position-try: top, right, bottom, left;",[39m
+[31m+   },[39m
+[31m+ }[39m
+
+ ❯ tests/src/browser/probe-promotion.test.ts:48:28
+     46|  }
+     47|  root.remove()
+     48|  expect({ reading, after }).toEqual({})
+       |                            ^
+     49| })
+     50|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  11:36:32
+   Duration  1.46s (transform 0ms, setup 435ms, import 8ms, tests 18ms, environment 0ms)
+

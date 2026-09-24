@@ -1,0 +1,7 @@
+Land J-OFFCANVAS: the Offcanvas engine, its delegate routes, the spared interactive backdrop, and the backdrop's removal as a step of the hide
+
+The Offcanvas engine slides a panel in and out over the cascade's backdrop, locking scrolling and isolating focus as its options ask, with every write inside a change run as one step whose door is read after it, so a takeover or a destruction at any step resolves false with nothing written after it. The backdrop's fade starts beside the slide and its removal runs as the step after the panel's post-settle door: Backdrop.hide fades and resolves without removing, and Backdrop.destroy removes. The isolation gains a spare option and the panel spares its backdrop, so the backdrop stays interactive under the isolation and receives the press itself, as Bootstrap's Backdrop does; a press on an element painted above it falls through to it. The delegate's toggle and dismiss routes, the conflict preflight, the frozen tables, the event guard, the barrel row, the OffcanvasVocabulary type, the guide's Offcanvas section with its departures, and the mutation instrument land together.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F
