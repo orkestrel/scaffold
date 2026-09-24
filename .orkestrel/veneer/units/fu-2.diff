@@ -1,0 +1,1032 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 053d32b..82fb5fe 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -498,22 +498,36 @@ export const LINK_COPY = Object.freeze({
+ 		'Explore link colors, opacity, underline spacing, independent underline colors, the icon links that shift their icon, and a card whose stretched link answers a pointer anywhere on the card. Hover or focus a link to compare its states.',
+ })
+ 
+-/** Lists the link specimens in their rendering order. */
++/**
++ * Lists the link specimens in their rendering order.
++ *
++ * @remarks
++ * Each scale specimen writes its resting steps on one line and its hover steps on the next, so the
++ * steps a pointer moves sit apart from the steps that hold still.
++ *
++ * The emphasis link sits in a specimen of its own beside the role links, because it carries its own
++ * pointer and focus paint: a scenario names one subject, so its states are photographed under a
++ * subject that names it rather than under the role links'.
++ */
+ export const LINK_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+ 		name: 'Role links',
+ 		markup:
+-			'<p><a href="#main" class="link-primary">Primary link</a> <a href="#main" class="link-secondary">Secondary link</a> <a href="#main" class="link-success">Success link</a> <a href="#main" class="link-info">Info link</a> <a href="#main" class="link-warning">Warning link</a> <a href="#main" class="link-danger">Danger link</a> <a href="#main" class="link-light">Light link</a> <a href="#main" class="link-dark">Dark link</a> <a href="#main" class="link-body-emphasis">Body emphasis link</a></p>',
++			'<p><a href="#main" class="link-primary">Primary link</a> <a href="#main" class="link-secondary">Secondary link</a> <a href="#main" class="link-success">Success link</a> <a href="#main" class="link-info">Info link</a> <a href="#main" class="link-warning">Warning link</a> <a href="#main" class="link-danger">Danger link</a> <a href="#main" class="link-light">Light link</a> <a href="#main" class="link-dark">Dark link</a></p>',
++	}),
++	Object.freeze({
++		name: 'Body emphasis link',
++		markup: '<p><a href="#main" class="link-body-emphasis">Body emphasis link</a></p>',
+ 	}),
+ 	Object.freeze({
+ 		name: 'Link opacity',
+ 		markup:
+-			'<p><a href="#main">Opaque anchor</a> <a href="#main" class="link-opacity-10">Link opacity 10%</a> <a href="#main" class="link-opacity-25">Link opacity 25%</a> <a href="#main" class="link-opacity-50">Link opacity 50%</a> <a href="#main" class="link-opacity-75">Link opacity 75%</a> <a href="#main" class="link-opacity-100">Link opacity 100%</a> <a href="#main" class="link-opacity-10-hover">Hover link opacity 10%</a> <a href="#main" class="link-opacity-25-hover">Hover link opacity 25%</a> <a href="#main" class="link-opacity-50-hover">Hover link opacity 50%</a> <a href="#main" class="link-opacity-75-hover">Hover link opacity 75%</a> <a href="#main" class="link-opacity-100-hover">Hover link opacity 100%</a></p>',
++			'<p><a href="#main">Opaque anchor</a> <a href="#main" class="link-opacity-10">Link opacity 10%</a> <a href="#main" class="link-opacity-25">Link opacity 25%</a> <a href="#main" class="link-opacity-50">Link opacity 50%</a> <a href="#main" class="link-opacity-75">Link opacity 75%</a> <a href="#main" class="link-opacity-100">Link opacity 100%</a></p><p><a href="#main" class="link-opacity-10-hover">Hover link opacity 10%</a> <a href="#main" class="link-opacity-25-hover">Hover link opacity 25%</a> <a href="#main" class="link-opacity-50-hover">Hover link opacity 50%</a> <a href="#main" class="link-opacity-75-hover">Hover link opacity 75%</a> <a href="#main" class="link-opacity-100-hover">Hover link opacity 100%</a></p>',
+ 	}),
+ 	Object.freeze({
+ 		name: 'Underline offsets',
+ 		markup:
+-			'<p><a href="#main" class="link-offset-1">Offset 1</a> <a href="#main" class="link-offset-2">Offset 2</a> <a href="#main" class="link-offset-3">Offset 3</a> <a href="#main" class="link-offset-1-hover">Hover offset 1</a> <a href="#main" class="link-offset-2-hover">Hover offset 2</a> <a href="#main" class="link-offset-3-hover">Hover offset 3</a></p>',
++			'<p><a href="#main" class="link-offset-1">Offset 1</a> <a href="#main" class="link-offset-2">Offset 2</a> <a href="#main" class="link-offset-3">Offset 3</a></p><p><a href="#main" class="link-offset-1-hover">Hover offset 1</a> <a href="#main" class="link-offset-2-hover">Hover offset 2</a> <a href="#main" class="link-offset-3-hover">Hover offset 3</a></p>',
+ 	}),
+ 	Object.freeze({
+ 		name: 'Underline colors',
+@@ -528,7 +542,7 @@ export const LINK_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+ 		name: 'Underline opacity',
+ 		markup:
+-			'<p><a href="#main" class="link-underline link-underline-opacity-0">Underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10">Underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25">Underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50">Underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75">Underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100">Underline opacity 100%</a> <a href="#main" class="link-underline link-underline-opacity-0-hover">Hover underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10-hover">Hover underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25-hover">Hover underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50-hover">Hover underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75-hover">Hover underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100-hover">Hover underline opacity 100%</a></p>',
++			'<p><a href="#main" class="link-underline link-underline-opacity-0">Underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10">Underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25">Underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50">Underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75">Underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100">Underline opacity 100%</a></p><p><a href="#main" class="link-underline link-underline-opacity-0-hover">Hover underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10-hover">Hover underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25-hover">Hover underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50-hover">Hover underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75-hover">Hover underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100-hover">Hover underline opacity 100%</a></p>',
+ 	}),
+ 	Object.freeze({
+ 		name: 'Stretched link',
+@@ -2808,7 +2822,7 @@ export const SIZING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ export const VISIBILITY_COPY = Object.freeze({
+ 	region: 'Visibility',
+ 	paragraph:
+-		'Compare an invisible word that keeps its room with the visible words beside it, a visually hidden phrase that stays in the text a screen reader announces, and a skip link that appears only while it holds focus. Press Tab to reach the skip link.',
++		'Compare an invisible word that keeps its room with the visible words beside it, a visually hidden phrase that stays in the text a screen reader announces, a skip link that appears only while it holds focus, and a container that appears while the link inside it holds focus. Press Tab to reach each link.',
+ })
+ 
+ /**
+@@ -2817,10 +2831,12 @@ export const VISIBILITY_COPY = Object.freeze({
+  * @remarks
+  * A hidden subject paints nothing of its own, so each specimen carries the visible text around it:
+  * the room an invisible word keeps shows as the gap between its neighbors, and the visually hidden
+- * phrase and the resting skip link sit inside a visible sentence. That sentence is positioned, so
+- * the hidden element, which the helper positions absolutely, is placed inside the sentence rather
+- * than against a distant ancestor. The skip link points at the `#main` fragment the link specimens
+- * point at.
++ * phrase, the resting skip link, and the resting focusable container sit inside a visible sentence.
++ * That sentence is positioned, so the hidden element, which the helper positions absolutely, is
++ * placed inside the sentence rather than against a distant ancestor. The skip link and the link
++ * inside the focusable container point at the `#main` fragment the link specimens point at. The
++ * skip link reveals itself while it holds focus, and the focusable container reveals itself while
++ * the link inside it holds focus, which are the conditions the focusable helper answers to.
+  */
+ export const VISIBILITY_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -2838,6 +2854,11 @@ export const VISIBILITY_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		markup:
+ 			'<p class="position-relative">Press Tab to reveal the link this line holds. <a class="visually-hidden-focusable" href="#main">Skip to main content</a></p>',
+ 	}),
++	Object.freeze({
++		name: 'Focusable container',
++		markup:
++			'<p class="position-relative">Press Tab to reveal the container this line holds. <span class="visually-hidden-focusable">This container shows while <a href="#main">the link inside it</a> holds focus.</span></p>',
++	}),
+ ])
+ 
+ /** Holds the Shadow section's visible copy and accessible name. */
+@@ -2908,33 +2929,26 @@ export const FOCUS_RING_COPY = Object.freeze({
+ })
+ 
+ /**
+- * Holds the focus ring specimens, each rendering links that wear a ring only while they hold focus.
++ * Holds the focus ring specimens, each rendering one link that wears a ring only while it holds focus.
+  *
+  * @remarks
+  * A ring paints only under focus, so each link is labeled with the full name of the class it carries,
+- * and the links point at the `#main` fragment the link specimens point at. The role links sit in a
+- * wrapping row whose gap leaves room for each ring.
++ * and the links point at the `#main` fragment the link specimens point at. The default ring and each
++ * role ring are specimens of their own, in the release's role order, because one element holds focus
++ * at a time: a journey photographs each ring under focus as a scenario of its own, and a scenario
++ * names one subject.
+  */
+ export const FOCUS_RING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+ 		name: 'Default focus ring',
+ 		markup: '<p><a class="focus-ring" href="#main">focus-ring</a></p>',
+ 	}),
+-	Object.freeze({
+-		name: 'Focus ring roles',
+-		markup: `<p class="d-flex flex-wrap gap-3">${[
+-			'primary',
+-			'secondary',
+-			'success',
+-			'info',
+-			'warning',
+-			'danger',
+-			'light',
+-			'dark',
+-		]
+-			.map((role) => `<a class="focus-ring focus-ring-${role}" href="#main">focus-ring-${role}</a>`)
+-			.join('')}</p>`,
+-	}),
++	...['primary', 'secondary', 'success', 'info', 'warning', 'danger', 'light', 'dark'].map((role) =>
++		Object.freeze({
++			name: `${role.charAt(0).toUpperCase()}${role.slice(1)} focus ring`,
++			markup: `<p><a class="focus-ring focus-ring-${role}" href="#main">focus-ring-${role}</a></p>`,
++		}),
++	),
+ ])
+ 
+ /** Holds the Float section's visible copy and accessible name. */
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 6d9580e..7748a6b 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -114,8 +114,12 @@ import {
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+ 	DRIVEN_KEYS,
++	FOCUS_INDICATOR_PROPERTIES,
+ 	FOCUS_RING,
+ 	isVariantName,
++	LINK_PAINT_PROPERTIES,
++	LINK_STATE_TARGETS,
++	LINK_STEP_PROPERTIES,
+ 	UNDER_BAR,
+ } from '../../setup.js'
+ import {
+@@ -2204,51 +2208,104 @@ describe('journey', () => {
+ 		ARTIFACT.push(JSON.stringify({ reading: 'navbar states', rest, hovered, ring }))
+ 		JOURNAL.record('hover', readName(link), hovered)
+ 	})
+-	it('paints the default focus ring and a role ring under keyboard focus and photographs each', async () => {
++	it('paints the default ring and each role ring under keyboard focus on its lifted specimen, and photographs each ring inside its frame', async () => {
+ 		await applyTheme(VARIANT)
+-		// The rows are the driven rows whose subject the focus ring table declares. Each frame is shot
+-		// on the specimen's danger link where the specimen renders one, and on its first ring link
+-		// otherwise, because the danger ring's color sits apart from the default ring's primary color.
++		// The rows are the driven rows whose subject the focus ring table declares: the default ring
++		// and each role ring the registry can name. Each specimen renders one ring link.
+ 		const declared = new Set(FOCUS_RING_SPECIMENS.map((specimen) => specimen.name))
+ 		const keys = DRIVEN_KEYS.filter((key) => declared.has(key.subject))
+ 		expect(keys).not.toStrictEqual([])
++		// Each specimen renders one ring link, so each ring's focus frame is a scenario of its own:
++		// one element holds focus at a time, and a scenario names one subject.
++		expect(
++			FOCUS_RING_SPECIMENS.map(
++				(specimen) =>
++					readSpecimen(mounted.host, specimen.name).querySelectorAll('a.focus-ring').length,
++			),
++		).toStrictEqual(FOCUS_RING_SPECIMENS.map(() => 1))
+ 		const rings = new Map<string, string>()
+ 		const ratios = new Map<string, number | undefined>()
++		const inside = new Map<string, readonly boolean[]>()
++		const resting: string[] = []
++		const cleared: string[] = []
+ 		const held: boolean[] = []
+ 		const names: string[] = []
++		const restored: boolean[] = []
++		// A mode switch leaves the pointer over the mode control, which sits where each lifted
++		// specimen is put, so the pointer is parked on the wrapper's padding before any shot.
++		await releasePointer()
+ 		for (const key of keys) {
+ 			const specimen = readSpecimen(mounted.host, key.subject)
+ 			const link = requireValue(
+-				specimen.querySelector<HTMLAnchorElement>('.focus-ring-danger') ??
+-					specimen.querySelector<HTMLAnchorElement>('a.focus-ring'),
++				specimen.querySelector<HTMLAnchorElement>('a.focus-ring'),
+ 				`The "${key.subject}" specimen renders no .focus-ring link`,
+ 			)
+-			expect(readStyle(link, 'box-shadow')).toBe('none')
+-			// The helper answers to focus itself, and a key press after the focus is what makes the
+-			// browser match the link as keyboard focus, which the installed ring reader requires.
+-			link.focus()
+-			await pressKeys('{ArrowRight}')
+-			expect(link.matches(':focus-visible')).toBe(true)
+-			const ring = readStyle(link, 'box-shadow')
+-			rings.set(key.scenario, ring)
+-			ratios.set(key.scenario, readRing(link))
+-			names.push(readName(link))
+-			// A page frame, for the reason the Button focus scenario is one: the ring paints outside
+-			// the link's border box and an element frame crops it away. The page frame holds the
+-			// page's opening and the Focus ring section, and the declared region is the link, so a
+-			// reader of the frame is pointed at the ring the scenario claims.
+-			await FRAMES.page(key.scenario, link)
+-			held.push(link.matches(':focus') && readStyle(link, 'box-shadow') === ring)
+-			link.blur()
+-			expect(readStyle(link, 'box-shadow')).toBe('none')
++			resting.push(readStyle(link, 'box-shadow'))
++			// The specimen itself is moved to the document's start and put back afterwards, the
++			// placement the underline focus frame uses and for its reasons. The wrapper's padding holds
++			// the ring, which paints outside the link's box, so the frame is shot on the wrapper.
++			const marker = document.createComment(key.scenario)
++			specimen.before(marker)
++			const lifted = build('div', { classes: 'p-2' })
++			lifted.append(specimen)
++			document.body.prepend(lifted)
++			try {
++				expect(mounted.host.querySelector('main')?.contains(link)).toBe(false)
++				// The helper answers to focus itself, and a key press after the focus is what makes the
++				// browser match the link as keyboard focus, which the installed ring reader requires.
++				link.focus()
++				await pressKeys('{ArrowRight}')
++				const ring = readStyle(link, 'box-shadow')
++				rings.set(key.scenario, ring)
++				ratios.set(key.scenario, readRing(link))
++				names.push(readName(link))
++				await stageMedia({ motion: false })
++				await FRAMES.place(key.scenario, link, lifted)
++				await stagePane(window.innerWidth, window.innerHeight)
++				held.push(
++					link.matches(':focus-visible') &&
++						!link.matches(':hover') &&
++						readStyle(link, 'box-shadow') === ring,
++				)
++				// The ring's painted extent is the link's box grown by the largest length its shadow
++				// carries, read against the frame's edges in the frame's own device pixels.
++				const reach = Math.max(
++					...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
++				)
++				const { region } = requireValue(
++					FRAMES.placements.find((placement) => placement.scenario === key.scenario),
++					`The "${key.scenario}" frame recorded no placement`,
++				)
++				const ratio = window.devicePixelRatio
++				const frame = lifted.getBoundingClientRect()
++				inside.set(key.scenario, [
++					reach > 0,
++					region.x - reach * ratio >= 0,
++					region.y - reach * ratio >= 0,
++					region.x + region.width + reach * ratio <= frame.width * ratio,
++					region.y + region.height + reach * ratio <= frame.height * ratio,
++				])
++				await releasePane()
++				await releaseMedia()
++				link.blur()
++				cleared.push(readStyle(link, 'box-shadow'))
++			} finally {
++				marker.replaceWith(specimen)
++				lifted.remove()
++			}
++			restored.push(specimen.parentElement !== lifted && specimen.isConnected)
+ 		}
+-		// Each frame was taken while its ring still painted, each ring painted, and the rings differ:
+-		// a frame taken after focus fell away, or a role class that stopped repainting the ring,
+-		// reports here rather than being written under a name claiming otherwise.
++		// Each frame was taken while its ring still painted, each ring lies inside the frame shot on
++		// it, each ring paints only under focus, and the rings differ: a frame taken after focus fell
++		// away, a ring the frame crops, or a role class that stopped repainting the ring reports here
++		// rather than being written under a name claiming otherwise.
+ 		expect(held).toStrictEqual(keys.map(() => true))
++		expect([...inside].filter(([, edges]) => edges.includes(false))).toStrictEqual([])
++		expect([...resting, ...cleared]).toStrictEqual([...keys, ...keys].map(() => 'none'))
+ 		expect([...rings.values()].filter((ring) => ring === 'none')).toStrictEqual([])
+ 		expect(new Set(rings.values()).size).toBe(keys.length)
+ 		expect([...ratios.values()].filter((ratio) => (ratio ?? 0) <= 1)).toStrictEqual([])
++		expect(restored).toStrictEqual(keys.map(() => true))
+ 		ARTIFACT.push(
+ 			JSON.stringify({
+ 				reading: 'focus rings',
+@@ -2259,6 +2316,281 @@ describe('journey', () => {
+ 		)
+ 		JOURNAL.record('focus', String(names.at(-1)), String([...ratios.values()].at(-1)))
+ 	})
++
++	it('drives a link of each link specimen to the pointer and to keyboard focus on its lifted specimen, and photographs each state', async () => {
++		await applyTheme(VARIANT)
++		// The rows are the driven rows whose subject the link table declares, and each row's state
++		// is the word its scenario carries after the subject's stem. The link each row drives is the
++		// one the setup table names for its scenario.
++		const declared = new Set(LINK_SPECIMENS.map((specimen) => specimen.name))
++		const keys = DRIVEN_KEYS.filter((key) => declared.has(key.subject))
++		expect(keys).not.toStrictEqual([])
++		const states = keys.map((key) => key.scenario.slice(buildStem(key.subject).length + 1))
++		expect(states.filter((state) => state !== 'hover' && state !== 'focus')).toStrictEqual([])
++		expect(keys.filter((key) => LINK_STATE_TARGETS[key.scenario] === undefined)).toStrictEqual([])
++		// Each reading holds the properties a hover step writes, the link's paint, and the transform
++		// of the icon an icon link carries.
++		const properties = [...LINK_STEP_PROPERTIES, ...LINK_PAINT_PROPERTIES]
++		const readings = new Map<
++			string,
++			{
++				readonly subject: string
++				readonly rest: Readonly<Record<string, string>>
++				readonly driven: Readonly<Record<string, string>>
++				readonly framed: Readonly<Record<string, string>>
++			}
++		>()
++		const stepped = new Set<string>()
++		const indicators = new Map<string, string>()
++		const held: Array<readonly [string, boolean]> = []
++		const inside = new Map<string, readonly boolean[]>()
++		const placed: CaptureScenario[] = []
++		const restored: boolean[] = []
++		for (const [index, key] of keys.entries()) {
++			const state = states[index]
++			const specimen = readSpecimen(mounted.host, key.subject)
++			const target = requireValue(
++				LINK_STATE_TARGETS[key.scenario],
++				`The "${key.scenario}" row names no link to drive`,
++			)
++			const link = requireValue(
++				specimen.querySelector<HTMLElement>(target),
++				`The "${key.subject}" specimen renders no ${target}`,
++			)
++			if ([...link.classList].some((token) => token.endsWith('-hover'))) stepped.add(key.scenario)
++			const icon = link.querySelector('.bi') ?? link
++			const rest = Object.fromEntries([
++				...properties.map((property): [string, string] => [property, readStyle(link, property)]),
++				['transform', readStyle(icon, 'transform')],
++			])
++			// The specimen itself is moved to the document's start and put back afterwards, the
++			// placement the underline states use and for their reasons: a pointer placed where the
++			// section renders does not survive the staging a shot takes, and a copy would answer to
++			// the link's accessible name beside the original. The wrapper's padding holds the focus
++			// indicator, which paints outside the link's box, so every frame is shot on the wrapper.
++			// The wrapper takes focus from a script, so Tab starts from it.
++			const marker = document.createComment(key.scenario)
++			specimen.before(marker)
++			const lifted = build('div', { classes: 'p-2', attributes: { tabindex: '-1' } })
++			lifted.append(specimen)
++			document.body.prepend(lifted)
++			try {
++				// The pointer-held placement sits on the lifted specimen, outside every section a
++				// bounded frame takes out of the layout.
++				expect(mounted.host.querySelector('main')?.contains(link)).toBe(false)
++				await releasePointer()
++				if (state === 'hover') {
++					await stagePane(window.innerWidth, window.innerHeight)
++					await hoverAccessible('link', readName(link))
++				} else {
++					// The link is reached by Tab from the wrapper. A dark run presses the mode control,
++					// and after a press the browser paints no `auto` outline on a scripted focus, while
++					// it paints one on a Tab.
++					lifted.focus()
++					await traverseAccessible(readName(link))
++				}
++				await waitForAnimations(icon)
++				const driven = Object.fromEntries([
++					...properties.map((property): [string, string] => [property, readStyle(link, property)]),
++					['transform', readStyle(icon, 'transform')],
++				])
++				// The icon's shift carries a transition, so reduced motion is staged around the shot
++				// and the frame cannot land inside it.
++				await stageMedia({ motion: false })
++				await FRAMES.place(key.scenario, link, lifted)
++				placed.push(key.scenario)
++				await stagePane(window.innerWidth, window.innerHeight)
++				held.push([
++					key.scenario,
++					state === 'hover'
++						? link.matches(':hover')
++						: document.activeElement === link &&
++							link.matches(':focus-visible') &&
++							!link.matches(':hover'),
++				])
++				readings.set(key.scenario, {
++					subject: key.subject,
++					rest,
++					driven,
++					framed: Object.fromEntries([
++						...properties.map((property): [string, string] => [
++							property,
++							readStyle(link, property),
++						]),
++						['transform', readStyle(icon, 'transform')],
++					]),
++				})
++				// The focus indicator's painted extent is the link's box grown by its outline's width
++				// and offset, read against the frame's edges in the frame's own device pixels.
++				indicators.set(
++					key.scenario,
++					FOCUS_INDICATOR_PROPERTIES.map((property) => readStyle(link, property)).join(' | '),
++				)
++				const reach =
++					readStyle(link, 'outline-style') === 'none'
++						? 0
++						: Number.parseFloat(readStyle(link, 'outline-width')) +
++							Number.parseFloat(readStyle(link, 'outline-offset'))
++				const { region } = requireValue(
++					FRAMES.placements.find((placement) => placement.scenario === key.scenario),
++					`The "${key.scenario}" frame recorded no placement`,
++				)
++				const ratio = window.devicePixelRatio
++				const frame = lifted.getBoundingClientRect()
++				inside.set(key.scenario, [
++					region.x - reach * ratio >= 0,
++					region.y - reach * ratio >= 0,
++					region.x + region.width + reach * ratio <= frame.width * ratio,
++					region.y + region.height + reach * ratio <= frame.height * ratio,
++				])
++				await releasePane()
++				await releaseMedia()
++				await releasePointer()
++				link.blur()
++			} finally {
++				marker.replaceWith(specimen)
++				lifted.remove()
++			}
++			restored.push(
++				specimen.parentElement !== lifted &&
++					JSON.stringify(
++						Object.fromEntries([
++							...properties.map((property): [string, string] => [
++								property,
++								readStyle(link, property),
++							]),
++							['transform', readStyle(icon, 'transform')],
++						]),
++					) === JSON.stringify(rest),
++			)
++		}
++		// Every frame was taken while its own state still held and under a scenario the registry
++		// carries, the paint read after the shot is the paint the drive left, each frame holds the
++		// link's focus indicator, and every link returned to its resting paint in its own place: a
++		// frame taken after the state fell away reports here.
++		expect(held.filter(([, state]) => !state)).toStrictEqual([])
++		expect(placed.filter((scenario) => !CAPTURE_SCENARIOS.includes(scenario))).toStrictEqual([])
++		expect(
++			[...readings].filter(
++				([, reading]) => JSON.stringify(reading.framed) !== JSON.stringify(reading.driven),
++			),
++		).toStrictEqual([])
++		expect([...inside].filter(([, edges]) => edges.includes(false))).toStrictEqual([])
++		expect(restored).toStrictEqual(keys.map(() => true))
++		// A link carrying a hover class moved a property its step writes, or its icon, under its
++		// state: a drive that never reached the class's own rule reports here.
++		expect(stepped.size).toBeGreaterThan(0)
++		expect(
++			[...readings].filter(
++				([scenario, reading]) =>
++					stepped.has(scenario) &&
++					[...LINK_STEP_PROPERTIES, 'transform'].every(
++						(property) => reading.driven[property] === reading.rest[property],
++					),
++			),
++		).toStrictEqual([])
++		// The emphasis link's own `:hover` and `:focus` rule steps its color down, and that rule is
++		// important in the utilities layer, so the bare link's element rule cannot move this color:
++		// a moved color is the emphasis rule. Each role link keeps its resting paint under the
++		// pointer and under focus, the departure § Color utilities records, so a role link whose
++		// paint moved reports here.
++		const emphasis = [...readings].filter(([, reading]) => reading.subject === 'Body emphasis link')
++		const roles = [...readings].filter(([, reading]) => reading.subject === 'Role links')
++		expect([emphasis.length > 0, roles.length > 0]).toStrictEqual([true, true])
++		expect(
++			emphasis.filter(([, reading]) => reading.driven.color === reading.rest.color),
++		).toStrictEqual([])
++		expect(
++			roles.filter(([, reading]) =>
++				LINK_PAINT_PROPERTIES.some(
++					(property) => reading.driven[property] !== reading.rest[property],
++				),
++			),
++		).toStrictEqual([])
++		ARTIFACT.push(
++			JSON.stringify({
++				reading: 'link states',
++				mode: VARIANT,
++				readings: [...readings],
++				indicators: [...indicators],
++			}),
++		)
++		JOURNAL.record(
++			'hover',
++			String(keys.at(-1)?.subject),
++			JSON.stringify([...readings.values()].at(-1)?.driven),
++		)
++	})
++
++	it('reveals the focusable container while its link holds keyboard focus, and photographs the revealed container on its lifted specimen', async () => {
++		await applyTheme(VARIANT)
++		const specimen = readSpecimen(mounted.host, 'Focusable container')
++		const container = requireValue(
++			specimen.querySelector<HTMLElement>('.visually-hidden-focusable'),
++			'The "Focusable container" specimen renders no .visually-hidden-focusable',
++		)
++		const link = requireValue(
++			container.querySelector<HTMLElement>('a[href]'),
++			'The "Focusable container" specimen renders no link inside its container',
++		)
++		const resting = container.getBoundingClientRect().width
++		let within = false
++		let revealed = 0
++		let framedWithin = false
++		let framed = 0
++		let rested = 0
++		// The specimen itself is moved to the document's start and put back afterwards, for the
++		// reasons the link states give. The container reveals itself because a descendant holds
++		// focus, not because it does, and the wrapper's padding holds the link's focus indicator.
++		// The link is reached by Tab from the wrapper, for the reason the link states give: after a
++		// press, the browser paints no `auto` outline on a scripted focus.
++		const marker = document.createComment('focusable-container')
++		specimen.before(marker)
++		const lifted = build('div', { classes: 'p-2', attributes: { tabindex: '-1' } })
++		lifted.append(specimen)
++		document.body.prepend(lifted)
++		try {
++			expect(mounted.host.querySelector('main')?.contains(container)).toBe(false)
++			await releasePointer()
++			lifted.focus()
++			await traverseAccessible(readName(link))
++			within =
++				document.activeElement === link &&
++				container.matches(':focus-within') &&
++				!container.matches(':focus')
++			revealed = container.getBoundingClientRect().width
++			await stageMedia({ motion: false })
++			await FRAMES.place('focusable-container-focus', container, lifted)
++			await stagePane(window.innerWidth, window.innerHeight)
++			framedWithin = container.matches(':focus-within') && link.matches(':focus-visible')
++			framed = container.getBoundingClientRect().width
++			await releasePane()
++			await releaseMedia()
++			link.blur()
++			rested = container.getBoundingClientRect().width
++		} finally {
++			marker.replaceWith(specimen)
++			lifted.remove()
++		}
++		// The frame is held to the state it was shot in, so a shot that found no descendant focused
++		// reddens here instead of being written under a name claiming the reveal.
++		expect([within, framedWithin]).toStrictEqual([true, true])
++		expect(framed).toBe(revealed)
++		expect([resting, rested]).toStrictEqual([1, 1])
++		expect(revealed).toBeGreaterThan(1)
++		expect(specimen.parentElement).not.toBe(lifted)
++		ARTIFACT.push(
++			JSON.stringify({
++				reading: 'focusable container',
++				mode: VARIANT,
++				resting,
++				revealed,
++				framed,
++				rested,
++			}),
++		)
++		JOURNAL.record('focus', readName(link), String(revealed))
++	})
+ })
+ 
+ describe('refusal', () => {
+diff --git a/tests/app/browser/sections/FocusRingSection.test.ts b/tests/app/browser/sections/FocusRingSection.test.ts
+index 44168d4..41d8a94 100644
+--- a/tests/app/browser/sections/FocusRingSection.test.ts
++++ b/tests/app/browser/sections/FocusRingSection.test.ts
+@@ -39,13 +39,17 @@ describe('FocusRingSection', () => {
+ 			expect(region.getAttribute('aria-label')).toBe('Focus ring')
+ 			expect(region.querySelector('p')?.textContent).toBe(FOCUS_RING_COPY.paragraph)
+ 			const rendered = [...region.querySelectorAll('[data-specimen]')]
+-			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
+-				'Default focus ring',
+-				'Focus ring roles',
+-			])
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++				FOCUS_RING_SPECIMENS.map((specimen) => specimen.name),
++			)
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				FOCUS_RING_SPECIMENS.map((specimen) => specimen.markup),
+ 			)
++			// Each specimen renders one ring link, so a journey photographs each ring under focus as a
++			// scenario of its own: one element holds focus at a time, and a scenario names one subject.
++			expect(rendered.map((element) => element.querySelectorAll('a.focus-ring').length)).toEqual(
++				rendered.map(() => 1),
++			)
+ 			// Each link is labeled with the full name of the ring class it carries: its role class where
+ 			// it carries one, and the helper's own class otherwise.
+ 			const links = [...region.querySelectorAll<HTMLAnchorElement>('a.focus-ring')]
+diff --git a/tests/app/browser/sections/LinkSection.test.ts b/tests/app/browser/sections/LinkSection.test.ts
+index e63f578..a024239 100644
+--- a/tests/app/browser/sections/LinkSection.test.ts
++++ b/tests/app/browser/sections/LinkSection.test.ts
+@@ -21,15 +21,16 @@ describe('LinkSection', () => {
+ 			expect(region.getAttribute('aria-label')).toBe('Links')
+ 			expect(region.querySelector('p')?.textContent).toBe(LINK_COPY.paragraph)
+ 			const rendered = [...region.querySelectorAll('[data-specimen]')]
+-			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
+-				'Role links',
+-				'Link opacity',
+-				'Underline offsets',
+-				'Underline colors',
+-				'Icon links',
+-				'Underline opacity',
+-				'Stretched link',
+-			])
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++				LINK_SPECIMENS.map((specimen) => specimen.name),
++			)
++			// The emphasis link is a specimen of its own beside the role links, so a journey photographs
++			// its pointer and focus states under a subject that names it, apart from the role links'.
++			expect(
++				rendered
++					.filter((element) => element.querySelector('.link-body-emphasis') !== null)
++					.map((element) => element.querySelectorAll('a').length),
++			).toEqual([1])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				LINK_SPECIMENS.map((specimen) => specimen.markup),
+ 			)
+diff --git a/tests/app/browser/sections/VisibilitySection.test.ts b/tests/app/browser/sections/VisibilitySection.test.ts
+index 13b196f..997d8e7 100644
+--- a/tests/app/browser/sections/VisibilitySection.test.ts
++++ b/tests/app/browser/sections/VisibilitySection.test.ts
+@@ -32,11 +32,9 @@ describe('VisibilitySection', () => {
+ 			expect(region.getAttribute('aria-label')).toBe('Visibility')
+ 			expect(region.querySelector('p')?.textContent).toBe(VISIBILITY_COPY.paragraph)
+ 			const rendered = [...region.querySelectorAll('[data-specimen]')]
+-			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
+-				'Visible and invisible',
+-				'Visually hidden',
+-				'Skip link',
+-			])
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++				VISIBILITY_SPECIMENS.map((specimen) => specimen.name),
++			)
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				VISIBILITY_SPECIMENS.map((specimen) => specimen.markup),
+ 			)
+@@ -46,6 +44,7 @@ describe('VisibilitySection', () => {
+ 					'[data-specimen="Visible and invisible"] p > .visible + .invisible + span',
+ 					'[data-specimen="Visually hidden"] p.position-relative > .visually-hidden',
+ 					'[data-specimen="Skip link"] p.position-relative > a.visually-hidden-focusable[href="#main"]',
++					'[data-specimen="Focusable container"] p.position-relative > span.visually-hidden-focusable > a[href="#main"]',
+ 				].filter((selector) => region.querySelector(selector) === null),
+ 			).toEqual([])
+ 			// Each hidden subject sits inside a sentence that paints, so the specimen shows context
+@@ -101,6 +100,46 @@ describe('VisibilitySection', () => {
+ 		}
+ 	})
+ 
++	it('reveals the focusable container while the keyboard holds focus on the link inside it, and hides it again after', async () => {
++		// The traversal starts on a focused control of the case's own ahead of the region, and the
++		// skip link is the region's first stop, so the container's link is the second.
++		mountTraversalStart()
++		const host = mount(build('div'))
++		const section: SectionInterface = new VisibilitySection(host)
++		try {
++			const container = requireValue(
++				host.querySelector<HTMLElement>('span.visually-hidden-focusable'),
++				'No focusable container',
++			)
++			const link = requireValue(
++				container.querySelector<HTMLAnchorElement>('a[href]'),
++				'No link inside the focusable container',
++			)
++			expect([container.getBoundingClientRect().width, readStyle(container, 'position')]).toEqual([
++				1,
++				'absolute',
++			])
++			await traverseAccessible('Skip to main content')
++			const reached = await traverseAccessible(readName(link))
++			expect(reached).toBe(link)
++			// The container reveals itself because a descendant holds focus, not because it does.
++			expect([container.matches(':focus'), container.matches(':focus-within')]).toEqual([
++				false,
++				true,
++			])
++			expect(container.getBoundingClientRect().width).toBeGreaterThan(1)
++			expect(readStyle(container, 'position')).toBe('static')
++			link.blur()
++			expect([container.getBoundingClientRect().width, readStyle(container, 'position')]).toEqual([
++				1,
++				'absolute',
++			])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
+ 	it('releases its region and preserves neighboring content through repeated destruction', () => {
+ 		const host = mount(build('div'))
+ 		const neighbor = build('p', { text: 'Existing content' })
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 05ccae4..4508787 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -10,8 +10,12 @@ import {
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+ 	DRIVEN_KEYS,
++	FOCUS_INDICATOR_PROPERTIES,
+ 	FOCUS_RING,
+ 	isVariantName,
++	LINK_PAINT_PROPERTIES,
++	LINK_STATE_TARGETS,
++	LINK_STEP_PROPERTIES,
+ 	normalizeSelectorText,
+ 	readingToProjection,
+ 	SHOWCASE_KEYS,
+@@ -56,8 +60,12 @@ describe('shared setup', () => {
+ 				'CONTRAST_BAR',
+ 				'DISABLED_OPACITY',
+ 				'DRIVEN_KEYS',
++				'FOCUS_INDICATOR_PROPERTIES',
+ 				'FOCUS_RING',
+ 				'FRAME_AREA',
++				'LINK_PAINT_PROPERTIES',
++				'LINK_STATE_TARGETS',
++				'LINK_STEP_PROPERTIES',
+ 				'SHOWCASE_KEYS',
+ 				'TOKEN_PREFIX',
+ 				'UNDER_BAR',
+@@ -123,9 +131,6 @@ describe('shared setup', () => {
+ 			// resting reading of that specimen: a resting row beside it would photograph the same
+ 			// state twice.
+ 			'Check group',
+-			// The focus ring helper paints only under focus, so its resting frame would show nothing
+-			// the key paints, and the focused frame is the specimen's frame.
+-			'Default focus ring',
+ 		])
+ 		const resting = new Set(CASCADE_KEYS.map((key) => key.subject))
+ 		expect(
+@@ -145,6 +150,33 @@ describe('shared setup', () => {
+ 			DRIVEN_KEYS.filter((key) => key.subject === 'Form check box').map((key) => key.scenario),
+ 		).toStrictEqual(['form-check-box-focus', 'form-check-box-indeterminate'])
+ 	})
++	it('names a class selector for driven rows alone, and holds the link and focus property lists apart', () => {
++		// A target is read inside its row's specimen, so a key naming a scenario the driven table
++		// does not carry would drive a link no frame is shot of.
++		const targets = Object.entries(LINK_STATE_TARGETS)
++		expect(targets).not.toStrictEqual([])
++		const driven = new Set<string>(DRIVEN_KEYS.map((key) => key.scenario))
++		expect(targets.filter(([scenario]) => !driven.has(scenario))).toStrictEqual([])
++		expect(
++			targets.filter(([, selector]) => !/^\.[a-z][a-z\d-]*$/u.test(selector ?? '')),
++		).toStrictEqual([])
++		// A step property read as paint, or paint read as a step, would let a moved color stand for a
++		// reached hover step, which is the reading the step list exists to exclude.
++		expect(
++			LINK_STEP_PROPERTIES.filter((property) => LINK_PAINT_PROPERTIES.includes(property)),
++		).toStrictEqual([])
++		for (const list of [LINK_STEP_PROPERTIES, LINK_PAINT_PROPERTIES, FOCUS_INDICATOR_PROPERTIES]) {
++			expect(list).not.toStrictEqual([])
++			expect(new Set(list).size).toBe(list.length)
++		}
++		for (const table of [
++			LINK_STATE_TARGETS,
++			LINK_STEP_PROPERTIES,
++			LINK_PAINT_PROPERTIES,
++			FOCUS_INDICATOR_PROPERTIES,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++	})
+ 	it('describes each photographed cascade key by its specimen, its element, and its property', () => {
+ 		expect(CASCADE_KEYS).not.toStrictEqual([])
+ 		// A selector leads with the class whose rule the key reads, alone or qualified by the element
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 680746d..fc7419a 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -211,6 +211,7 @@ export type CaptureSubject =
+ 	| 'Form select small'
+ 	| 'Role alerts'
+ 	| 'Role links'
++	| 'Body emphasis link'
+ 	| 'Showcase'
+ 	| 'Small pagination'
+ 	| 'Small group'
+@@ -297,6 +298,7 @@ export type CaptureSubject =
+ 	| 'Visible and invisible'
+ 	| 'Visually hidden'
+ 	| 'Skip link'
++	| 'Focusable container'
+ 	| 'Navbar expanded'
+ 	| 'Navbar collapsed'
+ 	| 'Navbar opened'
+@@ -312,7 +314,12 @@ export type CaptureSubject =
+ 	| 'Shadows'
+ 	| 'Opacity steps'
+ 	| 'Default focus ring'
+-	| 'Focus ring roles'
++	| 'Primary focus ring'
++	| 'Secondary focus ring'
++	| 'Success focus ring'
++	| 'Info focus ring'
++	| 'Warning focus ring'
++	| 'Danger focus ring'
+ 	| 'Float sides'
+ 	| 'Responsive float'
+ 	| 'Cleared floats'
+@@ -321,6 +328,11 @@ export type CaptureSubject =
+ 	| 'Object fit values'
+ 	| 'Responsive object fit'
+ 	| 'Stretched link'
++	| 'Link opacity'
++	| 'Underline offsets'
++	| 'Underline colors'
++	| 'Icon links'
++	| 'Underline opacity'
+ 	| 'Top tooltip'
+ 	| 'Right tooltip'
+ 	| 'Bottom tooltip'
+@@ -576,10 +588,24 @@ export const SHOWCASE_KEYS: readonly CaptureKey[] = Object.freeze([
+  * inline style, so the Collapse region renders no closing panel and the
+  * `tests/src/styles/components/collapse.test.ts` file reads that class on its own elements.
+  *
+- * The default focus ring's resting frame is declined too, because the `.focus-ring` helper paints
+- * only under focus: at rest its link carries no property the key's rule writes, and a resting row
+- * would read the initial value against itself. Its frame is the `default-focus-ring-focus` row of the
+- * {@link DRIVEN_KEYS} table, which the journey shoots with the ring painted.
++ * The default focus ring's resting frame shows the link the `.focus-ring` helper leaves unpainted.
++ * The helper writes its `box-shadow` property under focus alone, so the row reads that property's
++ * `none` value at rest, which is the paint the `default-focus-ring-focus` row of the
++ * {@link DRIVEN_KEYS} table departs from. Each role ring's row reads the `--bs-focus-ring-color`
++ * property its role class writes at rest.
++ *
++ * The light and dark role rings take no row. Each one's stem carries the `light` or the `dark` word,
++ * and the registry refuses a scenario carrying a mode token, because the variant names the mode. The
++ * Focus ring region renders both, and the `tests/src/styles/components/focus-ring.test.ts` file
++ * reads each role's ring under focus.
++ *
++ * These states lie outside the journey's variants, so no row photographs them. A class carrying the
++ * `xxl` infix resolves at a viewport wider than every registered variant. A `.d-print-*` class
++ * resolves under the print medium, and every variant renders the screen medium; the
++ * `tests/src/styles/utilities/display.test.ts` file reads those classes under the print medium. And
++ * the installed Playwright launches headless Chromium with the `--hide-scrollbars` switch, so an
++ * overflow key's `scroll` and `auto` values photograph without the scrollbar that tells them from
++ * the `hidden` value; the `tests/src/styles/utilities/overflow.test.ts` file reads each value.
+  *
+  * A carousel slide carrying the incoming class alone is declined because its frame would repeat
+  * another: it rests a whole width outside its track, so the track paints the resting slide and the
+@@ -1858,6 +1884,12 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.position-relative:has(> .visually-hidden-focusable)',
+ 		property: 'position',
+ 	}),
++	Object.freeze({
++		scenario: 'focusable-container',
++		subject: 'Focusable container',
++		selector: '.position-relative:has(> span.visually-hidden-focusable)',
++		property: 'position',
++	}),
+ 	Object.freeze({
+ 		scenario: 'navbar-expanded',
+ 		subject: 'Navbar expanded',
+@@ -1943,8 +1975,44 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		property: 'opacity',
+ 	}),
+ 	Object.freeze({
+-		scenario: 'focus-ring-roles',
+-		subject: 'Focus ring roles',
++		scenario: 'default-focus-ring',
++		subject: 'Default focus ring',
++		selector: '.focus-ring',
++		property: 'box-shadow',
++	}),
++	Object.freeze({
++		scenario: 'primary-focus-ring',
++		subject: 'Primary focus ring',
++		selector: '.focus-ring-primary',
++		property: '--bs-focus-ring-color',
++	}),
++	Object.freeze({
++		scenario: 'secondary-focus-ring',
++		subject: 'Secondary focus ring',
++		selector: '.focus-ring-secondary',
++		property: '--bs-focus-ring-color',
++	}),
++	Object.freeze({
++		scenario: 'success-focus-ring',
++		subject: 'Success focus ring',
++		selector: '.focus-ring-success',
++		property: '--bs-focus-ring-color',
++	}),
++	Object.freeze({
++		scenario: 'info-focus-ring',
++		subject: 'Info focus ring',
++		selector: '.focus-ring-info',
++		property: '--bs-focus-ring-color',
++	}),
++	Object.freeze({
++		scenario: 'warning-focus-ring',
++		subject: 'Warning focus ring',
++		selector: '.focus-ring-warning',
++		property: '--bs-focus-ring-color',
++	}),
++	Object.freeze({
++		scenario: 'danger-focus-ring',
++		subject: 'Danger focus ring',
+ 		selector: '.focus-ring-danger',
+ 		property: '--bs-focus-ring-color',
+ 	}),
+@@ -1996,6 +2064,42 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.card:has(.stretched-link)',
+ 		property: 'position',
+ 	}),
++	Object.freeze({
++		scenario: 'body-emphasis-link',
++		subject: 'Body emphasis link',
++		selector: '.link-body-emphasis',
++		property: 'color',
++	}),
++	Object.freeze({
++		scenario: 'link-opacity',
++		subject: 'Link opacity',
++		selector: '.link-opacity-50',
++		property: 'color',
++	}),
++	Object.freeze({
++		scenario: 'underline-offsets',
++		subject: 'Underline offsets',
++		selector: '.link-offset-2',
++		property: 'text-underline-offset',
++	}),
++	Object.freeze({
++		scenario: 'underline-colors',
++		subject: 'Underline colors',
++		selector: '.link-underline-danger',
++		property: 'text-decoration-color',
++	}),
++	Object.freeze({
++		scenario: 'icon-links',
++		subject: 'Icon links',
++		selector: '.icon-link',
++		property: 'column-gap',
++	}),
++	Object.freeze({
++		scenario: 'underline-opacity',
++		subject: 'Underline opacity',
++		selector: '.link-underline-opacity-50',
++		property: 'text-decoration-color',
++	}),
+ 	Object.freeze({
+ 		scenario: 'top-tooltip',
+ 		subject: 'Top tooltip',
+@@ -2409,7 +2513,80 @@ export const DRIVEN_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'navbar-collapsed-focus', subject: 'Navbar collapsed' }),
+ 	Object.freeze({ scenario: 'navbar-expanded-hover', subject: 'Navbar expanded' }),
+ 	Object.freeze({ scenario: 'default-focus-ring-focus', subject: 'Default focus ring' }),
+-	Object.freeze({ scenario: 'focus-ring-roles-focus', subject: 'Focus ring roles' }),
++	Object.freeze({ scenario: 'primary-focus-ring-focus', subject: 'Primary focus ring' }),
++	Object.freeze({ scenario: 'secondary-focus-ring-focus', subject: 'Secondary focus ring' }),
++	Object.freeze({ scenario: 'success-focus-ring-focus', subject: 'Success focus ring' }),
++	Object.freeze({ scenario: 'info-focus-ring-focus', subject: 'Info focus ring' }),
++	Object.freeze({ scenario: 'warning-focus-ring-focus', subject: 'Warning focus ring' }),
++	Object.freeze({ scenario: 'danger-focus-ring-focus', subject: 'Danger focus ring' }),
++	Object.freeze({ scenario: 'role-links-hover', subject: 'Role links' }),
++	Object.freeze({ scenario: 'role-links-focus', subject: 'Role links' }),
++	Object.freeze({ scenario: 'body-emphasis-link-hover', subject: 'Body emphasis link' }),
++	Object.freeze({ scenario: 'body-emphasis-link-focus', subject: 'Body emphasis link' }),
++	Object.freeze({ scenario: 'link-opacity-hover', subject: 'Link opacity' }),
++	Object.freeze({ scenario: 'underline-offsets-hover', subject: 'Underline offsets' }),
++	Object.freeze({ scenario: 'icon-links-hover', subject: 'Icon links' }),
++	Object.freeze({ scenario: 'icon-links-focus', subject: 'Icon links' }),
++	Object.freeze({ scenario: 'underline-opacity-hover', subject: 'Underline opacity' }),
++	Object.freeze({ scenario: 'focusable-container-focus', subject: 'Focusable container' }),
++])
++
++/**
++ * Names the link each link-state row of the {@link DRIVEN_KEYS} table drives, as a selector inside
++ * the row's specimen.
++ *
++ * @remarks
++ * A role link and the emphasis link are driven on the link their row's subject names. A scale
++ * specimen is driven on the hover step whose paint lies farthest from the link's resting paint: the
++ * 10% opacity step, the largest offset step, and the 0% underline opacity step. An icon link is
++ * driven on the link carrying the shifting class. At the 1280-wide variants the pointer reaches no
++ * point past about 915 CSS pixels, so each scale specimen writes its hover steps on a line of their
++ * own, which puts every target in the pointer's reach.
++ */
++export const LINK_STATE_TARGETS: Readonly<Partial<Record<CaptureScenario, string>>> = Object.freeze(
++	{
++		'role-links-hover': '.link-primary',
++		'role-links-focus': '.link-primary',
++		'body-emphasis-link-hover': '.link-body-emphasis',
++		'body-emphasis-link-focus': '.link-body-emphasis',
++		'link-opacity-hover': '.link-opacity-10-hover',
++		'underline-offsets-hover': '.link-offset-3-hover',
++		'icon-links-hover': '.icon-link-hover',
++		'icon-links-focus': '.icon-link-hover',
++		'underline-opacity-hover': '.link-underline-opacity-0-hover',
++	},
++)
++
++/**
++ * Lists the properties a link's hover step writes: the opacity variable, the underline opacity
++ * variable, and the underline offset.
++ *
++ * @remarks
++ * The element rule for a bare link repaints its color under the pointer too, so a moved color does
++ * not show that a hover step's own rule was reached, and these properties do.
++ */
++export const LINK_STEP_PROPERTIES: readonly string[] = Object.freeze([
++	'--bs-link-opacity',
++	'--bs-link-underline-opacity',
++	'text-underline-offset',
++])
++
++/** Lists the properties that carry a link's paint: its color and its underline color. */
++export const LINK_PAINT_PROPERTIES: readonly string[] = Object.freeze([
++	'color',
++	'text-decoration-color',
++])
++
++/**
++ * Lists the properties a focus indicator paints through: the outline's style, width, offset, and
++ * color, and the box shadow.
++ */
++export const FOCUS_INDICATOR_PROPERTIES: readonly string[] = Object.freeze([
++	'outline-style',
++	'outline-width',
++	'outline-offset',
++	'outline-color',
++	'box-shadow',
+ ])
+ 
+ /**

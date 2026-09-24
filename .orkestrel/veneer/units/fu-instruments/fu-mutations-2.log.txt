@@ -1,0 +1,41 @@
+UTIL-FRAMES round-2 mutation log, 2026-09-24T14:16:04Z
+
+=== mutation: emphasis-state-rule-deleted
+site: src/styles/utilities/_link.scss, .link-body-emphasis: the &:hover and &:focus block is deleted
+applied emphasis-state-rule-deleted to src/styles/utilities/_link.scss
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project "journey:light-1280*" -t 'drives a link of each link specimen'
+exit: 1
+ Test Files  1 failed (1)
+      Tests  1 failed | 47 skipped (48)
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2320:2 > journey > drives a link of each link specimen to the pointer and to keyboard focus on its lifted specimen, and photographs each state
+AssertionError: expected [ [ …(2) ], [ …(2) ] ] to strictly equal []
+output: tmp/units/fu-mutation-2-emphasis-state-rule-deleted-e149d9.log.txt
+restored src/styles/utilities/_link.scss after emphasis-state-rule-deleted
+
+=== mutation: role-link-hover-color
+site: src/styles/utilities/_link.scss: a .link-<role>:hover rule painting a darker role color is added after the colored-link helper
+applied role-link-hover-color to src/styles/utilities/_link.scss
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project "journey:light-1280*" -t 'drives a link of each link specimen'
+exit: 1
+ Test Files  1 failed (1)
+      Tests  1 failed | 47 skipped (48)
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2320:2 > journey > drives a link of each link specimen to the pointer and to keyboard focus on its lifted specimen, and photographs each state
+AssertionError: expected [ [ 'role-links-hover', { …(4) } ] ] to strictly equal []
+output: tmp/units/fu-mutation-2-role-link-hover-color-e149d9.log.txt
+restored src/styles/utilities/_link.scss after role-link-hover-color
+
+=== mutation: link-tables-absent
+site: tests/setup.ts: the LINK_STATE_TARGETS, LINK_STEP_PROPERTIES, LINK_PAINT_PROPERTIES, and FOCUS_INDICATOR_PROPERTIES declarations are removed
+applied link-tables-absent to tests/setup.ts
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts
+exit: 1
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 passed (21)
+ FAIL  |setup| tests/setup.test.ts > shared setup > exports the token prefix, the capture registry, the case matrices, the walks, and the reduction
+ FAIL  |setup| tests/setup.test.ts > shared setup > names a class selector for driven rows alone, and holds the link and focus property lists apart
+AssertionError: expected [ 'CAPTURE_CONTROLS', …(17) ] to deeply equal [ 'CAPTURE_CONTROLS', …(21) ]
+TypeError: Cannot convert undefined or null to object
+output: tmp/units/fu-mutation-2-link-tables-absent-2075ad.log.txt
+restored tests/setup.ts after link-tables-absent
+
+restored: every touched file matches its pre-run digest

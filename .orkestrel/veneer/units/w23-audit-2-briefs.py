@@ -65,6 +65,16 @@ UNITS = {
         focus='claims 2, 3, and 4 (each population\'s home or derivation against its mutation, the added-selector plant against R1, and the breakpoint alias case against B1 and its control)',
         checker='claims 1, 5, and 6',
         bench='the bench round-tripped at 13:52 (fr-audit returned exit 0 through this queue)'),
+    'fu': dict(name='UTIL-FRAMES', worktree='/home/user/veneer-fu', base='cf5e447',
+        evidence='`fu-2.diff` and `fu-2-status.txt` (both rounds against `cf5e447`), `fu-shared-2.patch`, `b-util-frames-report-2.md`, `b-util-frames-brief-2.md`, `fu-instruments/` (the round-2 records: `fu-mutations-2.log.txt`, `fu-mutate-2.sh`, `fu-mutate-2.py`, and the `fu2-*` gate and capture logs), round 1\'s `fu.diff`, `fu-shared.patch`, and `b-util-frames-report.md`, the round-1 verdict `fu-audit-verdict.md` and its lane verdicts, FOCUS-FRAME\'s P2 reading in `b-focus-frame-report.md`, and the frames under `/home/user/veneer-fu/tmp/capture/states/` (`role-links-focus`, `focusable-container-focus`, `underline-offsets-hover`, `body-emphasis-link-focus`, and `icon-links-focus`, each at `light-1280` and `dark-390`)',
+        focus='claims 2, 3, and 4 (each link-state assertion against its mutation, the Tab drive against the scripted drive, and the moved tables)',
+        checker='claims 1, 4, and 5',
+        bench='the bench round-tripped at 14:18 (fp-audit returned exit 0 through this queue)'),
+    'fo': dict(name='OVERLAY-FRAMES', worktree='/home/user/veneer-fo', base='cf5e447',
+        evidence='`fo-2.diff` and `fo-2-status.txt` (both rounds against `cf5e447`), `fo-shared-2.patch`, `b-overlay-frames-report-2.md`, `b-overlay-frames-brief-2.md`, `fo-instruments/` (the round-2 records: `fo-mutations-2.log.txt`, `fo-mutate-2.py`, the `fo-chevrons-2-*` readings, and the round-2 gate and capture logs; the round-1 records beside them), round 1\'s `fo.diff`, `fo-shared.patch`, and `b-overlay-frames-report.md`, the round-1 verdict `fo-audit-verdict.md` and its lane verdicts, and the frames under `/home/user/veneer-fo/tmp/capture/states/` (the `captioned-carousel`, `captioned-carousel-hover`, and `fading-carousel-*` frames at `light-1280` and `dark-390`)',
+        focus='claims 2, 3, and 4 (the caption contrast proof against its mutation and its red run, the final spanning case\'s red and mutation runs, and the chevron readings)',
+        checker='claims 1, 4, and 5',
+        bench='the bench round-tripped at 14:18 (fp-audit returned exit 0 through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"

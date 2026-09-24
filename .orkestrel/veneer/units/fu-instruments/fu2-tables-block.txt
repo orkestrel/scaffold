@@ -1,0 +1,57 @@
+/**
+ * Names the link each link-state row of the {@link DRIVEN_KEYS} table drives, as a selector inside
+ * the row's specimen.
+ *
+ * @remarks
+ * A role link and the emphasis link are driven on the link their row's subject names. A scale
+ * specimen is driven on the hover step whose paint lies farthest from the link's resting paint: the
+ * 10% opacity step, the largest offset step, and the 0% underline opacity step. An icon link is
+ * driven on the link carrying the shifting class. At the 1280-wide variants the pointer reaches no
+ * point past about 915 CSS pixels, so each scale specimen writes its hover steps on a line of their
+ * own, which puts every target in the pointer's reach.
+ */
+export const LINK_STATE_TARGETS: Readonly<Partial<Record<CaptureScenario, string>>> = Object.freeze(
+	{
+		'role-links-hover': '.link-primary',
+		'role-links-focus': '.link-primary',
+		'body-emphasis-link-hover': '.link-body-emphasis',
+		'body-emphasis-link-focus': '.link-body-emphasis',
+		'link-opacity-hover': '.link-opacity-10-hover',
+		'underline-offsets-hover': '.link-offset-3-hover',
+		'icon-links-hover': '.icon-link-hover',
+		'icon-links-focus': '.icon-link-hover',
+		'underline-opacity-hover': '.link-underline-opacity-0-hover',
+	},
+)
+
+/**
+ * Lists the properties a link's hover step writes: the opacity variable, the underline opacity
+ * variable, and the underline offset.
+ *
+ * @remarks
+ * The element rule for a bare link repaints its color under the pointer too, so a moved color does
+ * not show that a hover step's own rule was reached, and these properties do.
+ */
+export const LINK_STEP_PROPERTIES: readonly string[] = Object.freeze([
+	'--bs-link-opacity',
+	'--bs-link-underline-opacity',
+	'text-underline-offset',
+])
+
+/** Lists the properties that carry a link's paint: its color and its underline color. */
+export const LINK_PAINT_PROPERTIES: readonly string[] = Object.freeze([
+	'color',
+	'text-decoration-color',
+])
+
+/**
+ * Lists the properties a focus indicator paints through: the outline's style, width, offset, and
+ * color, and the box shadow.
+ */
+export const FOCUS_INDICATOR_PROPERTIES: readonly string[] = Object.freeze([
+	'outline-style',
+	'outline-width',
+	'outline-offset',
+	'outline-color',
+	'box-shadow',
+])
