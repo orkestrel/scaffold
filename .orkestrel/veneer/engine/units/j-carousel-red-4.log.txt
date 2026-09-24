@@ -1,0 +1,34 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Carousel.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/carousel
+
+·······························x··························
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1057:2 > Carousel > holds the timer under the hover after a mouse held inside the host is released following a trusted tap, and arms it when the pointer leaves
+AssertionError: expected 20 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 20[39m
+
+ ❯ tests/src/browser/Carousel.test.ts:1111:21
+    1109|   // hover would have slid the carousel before it ends.
+    1110|   await waitForDelay(CAROUSEL_TOUCH_DELAY + 400)
+    1111|   expect(slid.count).toBe(0)
+       |                     ^
+    1112|   await hoverAccessible('Outside')
+    1113|   await waitForCondition('the carousel cycles after the pointer leaves…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 57 passed (58)
+   Start at  03:25:04
+   Duration  15.83s (transform 0ms, setup 307ms, import 299ms, tests 14.28s, environment 0ms)
+
