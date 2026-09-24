@@ -1,0 +1,68 @@
+[
+ {
+  "name": "HostSnapshot: #publish ignores the stamp (the first publisher keeps the target)",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\tif (entry === undefined || stamp < entry.stamp)\n\t\t\tpending.set(key, { owner, value, priority, stamp })",
+    "replace": "\t\tif (entry === undefined) pending.set(key, { owner, value, priority, stamp })"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: a taken value discards its stamp",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\t\t{ target: { category, element, name }, value, priority, stamp: taken?.stamp ?? stamp },",
+    "replace": "\t\t\t{ target: { category, element, name }, value, priority, stamp },"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: the style removal omits its presence read",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\t\t\t\tif (!present && element.style.length === 0 && element.hasAttribute('style')) {\n\t\t\t\t\t\telement.removeAttribute('style')\n\t\t\t\t\t}",
+    "replace": "\t\t\t\t\tvoid present"
+   }
+  ]
+ },
+ {
+  "name": "HostSnapshot: the style removal ignores the original presence",
+  "proof": "tests/src/browser/HostSnapshot.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/HostSnapshot.ts",
+    "find": "\t\t\t\t\tif (!present && element.style.length === 0 && element.hasAttribute('style')) {",
+    "replace": "\t\t\t\t\tif (element.style.length === 0 && element.hasAttribute('style')) {"
+   }
+  ]
+ },
+ {
+  "name": "resolveOptions: the attribute parses under an overridden key",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/helpers.ts",
+    "find": "\t\tif (options?.[key] !== undefined) continue\n\t\tconst name = attributes[key]",
+    "replace": "\t\tconst name = attributes[key]"
+   }
+  ]
+ },
+ {
+  "name": "readTag: always undefined",
+  "proof": "tests/src/browser/helpers.test.ts",
+  "edits": [
+   {
+    "file": "src/browser/helpers.ts",
+    "find": "\t\treturn value instanceof Element ? value.tagName : undefined\n\t} catch {",
+    "replace": "\t\treturn undefined\n\t} catch {"
+   }
+  ]
+ }
+]
