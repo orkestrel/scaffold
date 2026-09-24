@@ -1,7 +1,0 @@
-
-> @orkestrel/veneer@0.0.1 lint:check
-> oxlint --config .oxlintrc.json --deny-warnings .
-
-tests/ct2-plant.ts:1:23: error typescript(no-explicit-any): Unexpected `any`. Specify a different type. help: Use `unknown` instead, this will force you to explicitly, and safely, assert the type is correct.
-tests/ct2-plant.ts:2:1: error eslint(no-debugger): `debugger` statement is not allowed help: Remove the debugger statement
-exit=1

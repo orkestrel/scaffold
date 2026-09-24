@@ -1,5 +1,0 @@
-v6-underline-unregistered
-exit
-1
-['Test Files  1 failed (1)', 'Tests  1 failed | 45 skipped (46)']
-FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1880:2 > journey > drives an underline link to hover and to focus on the lifted specimen, and photographs each state
