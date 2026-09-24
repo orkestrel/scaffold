@@ -1,0 +1,61 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts -t returns the backdrop to its shown state
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+-----------------------------x-----------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1068:2 > Modal > returns the backdrop to its shown state when the host takes a hide over during the backdrop fade, with and without the fade token
+AssertionError: expected [ [ { …(5) } ], …(1) ] to deeply equal [ [ { …(5) } ], …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "classes": "modal fade",[22m
+[2m        "connected": true,[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": "0",[39m
+[2m        "shown": true,[22m
+[2m        "tokens": [[22m
+[2m          "modal-backdrop",[22m
+[2m          "fade",[22m
+[32m-         "show",[39m
+[2m        ],[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "classes": "modal",[22m
+[2m        "connected": true,[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": "1",[39m
+[2m        "shown": true,[22m
+[2m        "tokens": [[22m
+[2m          "modal-backdrop",[22m
+[32m-         "show",[39m
+[2m        ],[22m
+[2m      },[22m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Modal.test.ts:1115:25
+    1113|    root.remove()
+    1114|   }
+    1115|   expect(readings.calls).toEqual(
+       |                         ^
+    1116|    rows.map(([classes, tokens]) => [
+    1117|     { classes, shown: true, connected: true, tokens, opacity: '0.5' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 40 skipped (41)
+   Start at  16:11:18
+   Duration  2.60s (transform 0ms, setup 459ms, import 331ms, tests 816ms, environment 0ms)
+

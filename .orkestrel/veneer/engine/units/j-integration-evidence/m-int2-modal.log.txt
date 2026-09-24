@@ -1,0 +1,66 @@
+subject: src/browser/Modal.ts
+before: d35fdab0f679882be33f33bd1729fad159845c9ba6181642fd406ead879a44f5 *src/browser/Modal.ts
+planted: 3ebbe33e772780ffb6f0269a995559042fd9e8e8306e904dad30fd0bb2cc846f *src/browser/Modal.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts -t returns the backdrop to its shown state when the host takes a hide over during the backdrop fade
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+-----------------------------x------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1065:2 > Modal > returns the backdrop to its shown state when the host takes a hide over during the backdrop fade, with and without the fade token
+AssertionError: expected [ [ { …(5) } ], …(1) ] to deeply equal [ [ { …(5) } ], …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "classes": "modal fade",[22m
+[2m        "connected": true,[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": "0",[39m
+[2m        "shown": true,[22m
+[2m        "tokens": [[22m
+[2m          "modal-backdrop",[22m
+[2m          "fade",[22m
+[32m-         "show",[39m
+[2m        ],[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "classes": "modal",[22m
+[2m        "connected": true,[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": "1",[39m
+[2m        "shown": true,[22m
+[2m        "tokens": [[22m
+[2m          "modal-backdrop",[22m
+[32m-         "show",[39m
+[2m        ],[22m
+[2m      },[22m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Modal.test.ts:1120:25
+    1118|    root.remove()
+    1119|   }
+    1120|   expect(readings.calls).toEqual(
+       |                         ^
+    1121|    rows.map(([classes, tokens]) => [
+    1122|     { classes, shown: true, connected: true, tokens, opacity: '0.5' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 41 skipped (42)
+   Start at  16:25:16
+   Duration  2.71s (transform 0ms, setup 469ms, import 339ms, tests 801ms, environment 0ms)
+
+run exit: 1
+after: d35fdab0f679882be33f33bd1729fad159845c9ba6181642fd406ead879a44f5 *src/browser/Modal.ts

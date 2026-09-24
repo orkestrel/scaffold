@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Offcanvas.ts",
+	"pairs": [
+		[
+			"appearing = this.#backdrop.show()\n\t\t\tif (!this.#holds(false)) return false\n",
+			"appearing = this.#backdrop.show()\n"
+		]
+	],
+	"backup": "tmp/j-integration/m-int5-offcanvas.backup"
+}

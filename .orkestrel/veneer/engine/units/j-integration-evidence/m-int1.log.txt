@@ -1,0 +1,32 @@
+subject: src/styles/components/_modal.scss
+before: 4d3a39306f04d77f604d750ad35602d356f62d7d0e5f4a6d1ce55f6af01f00c8 *src/styles/components/_modal.scss
+planted: e2db68cf5917e47ff9d25fc79976606b15ae353ec11f9dea964f19bd02a3c5f9 *src/styles/components/_modal.scss
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts -t reads the shipped modal declarations
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+-x----------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:85:2 > Modal > reads the shipped modal declarations the motion and stacking proofs run under
+AssertionError: expected 1050 to be greater than 1050
+ ❯ tests/src/browser/Modal.test.ts:103:48
+    101|   expect(getComputedStyle(backdrop).opacity).toBe('0')
+    102|   expect(getComputedStyle(backdrop).transitionDuration).toBe('0.15s')
+    103|   expect(Number(getComputedStyle(host).zIndex)).toBeGreaterThan(
+       |                                                ^
+    104|    Number(getComputedStyle(backdrop).zIndex),
+    105|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 41 skipped (42)
+   Start at  16:25:12
+   Duration  2.02s (transform 0ms, setup 583ms, import 358ms, tests 5ms, environment 0ms)
+
+run exit: 1
+after: 4d3a39306f04d77f604d750ad35602d356f62d7d0e5f4a6d1ce55f6af01f00c8 *src/styles/components/_modal.scss

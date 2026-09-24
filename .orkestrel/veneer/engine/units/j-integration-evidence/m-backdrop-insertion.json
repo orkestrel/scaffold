@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Backdrop.ts",
+	"pairs": [
+		[
+			"\t\t\tif (!this.#holds(change)) return false\n",
+			"\n"
+		]
+	],
+	"backup": "tmp/j-integration/m-backdrop-insertion.backup"
+}

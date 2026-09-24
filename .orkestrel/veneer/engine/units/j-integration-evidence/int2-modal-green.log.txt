@@ -1,0 +1,12 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts -t returns the backdrop to its shown state
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+-----------------------------·-----------
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 40 skipped (41)
+   Start at  16:11:54
+   Duration  2.94s (transform 0ms, setup 437ms, import 323ms, tests 1.23s, environment 0ms)
+

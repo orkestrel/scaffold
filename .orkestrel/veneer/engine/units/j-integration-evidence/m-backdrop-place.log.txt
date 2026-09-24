@@ -1,0 +1,42 @@
+subject: src/browser/Backdrop.ts
+before: f332c33165428cf188a705d9ff2e2cb1ac7f0dc2a6cc5937a2688968454a104e *src/browser/Backdrop.ts
+planted: 16ba924e351f872cb560b3c5ef358a06c18137f1c085fdac6812aed6410fbf32 *src/browser/Backdrop.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Backdrop.test.ts -t shows a backdrop its parent already holds in place
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+------x--
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Backdrop.test.ts:123:2 > Backdrop > shows a backdrop its parent already holds in place, moving nothing
+AssertionError: expected [ MutationRecord{}, MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Backdrop.test.ts:136:63
+    134|   observer.observe(section, { childList: true })
+    135|   expect(await backdrop.show()).toBe(true)
+    136|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    137|   expect(Array.from(section.children).map((child) => child.nodeName)).…
+    138|    'P',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  16:25:33
+   Duration  1.41s (transform 0ms, setup 450ms, import 14ms, tests 7ms, environment 0ms)
+
+run exit: 1
+after: f332c33165428cf188a705d9ff2e2cb1ac7f0dc2a6cc5937a2688968454a104e *src/browser/Backdrop.ts

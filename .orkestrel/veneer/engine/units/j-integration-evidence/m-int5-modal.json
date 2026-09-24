@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Modal.ts",
+	"pairs": [
+		[
+			"if (!this.#apply(false, () => backdrop.destroy())) return false",
+			"backdrop.destroy()"
+		]
+	],
+	"backup": "tmp/j-integration/m-int5-modal.backup"
+}

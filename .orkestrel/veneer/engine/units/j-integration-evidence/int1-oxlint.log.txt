@@ -1,0 +1,2 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings tests/src/browser/Modal.test.ts

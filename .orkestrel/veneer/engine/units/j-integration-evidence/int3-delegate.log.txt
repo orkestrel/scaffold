@@ -1,0 +1,12 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Delegate.test.ts -t once each for one trusted click
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+-----------------------------------------------------------------------------------------------------------------------------------------·-
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 138 skipped (139)
+   Start at  16:20:17
+   Duration  3.98s (transform 0ms, setup 433ms, import 308ms, tests 119ms, environment 0ms)
+

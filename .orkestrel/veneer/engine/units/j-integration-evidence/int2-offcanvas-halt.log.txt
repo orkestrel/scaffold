@@ -1,0 +1,112 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts -t returns it to its shown state
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+-----------------------------------------x-----
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1695:2 > Offcanvas > removes no backdrop and returns it to its shown state when the host takes a hide over after the backdrop begins to fade
+AssertionError: expected [ [ { …(8) } ], [ { …(8) } ], …(3) ] to deeply equal [ [ { …(8) } ], [ { …(8) } ], …(3) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -8,11 +8,14 @@[39m
+[2m        "row": [[22m
+[2m          "class",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[2m        "shown": true,[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV null",[39m
+[31m+         "DIV null",[39m
+[31m+       ],[39m
+[2m        "tokens": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[33m@@ -27,11 +30,14 @@[39m
+[2m        "row": [[22m
+[2m          "wait",[22m
+[2m          undefined,[22m
+[2m        ],[22m
+[2m        "shown": true,[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV null",[39m
+[31m+         "DIV null",[39m
+[31m+       ],[39m
+[2m        "tokens": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[33m@@ -46,11 +52,14 @@[39m
+[2m        "row": [[22m
+[2m          "class",[22m
+[2m          "hiding",[22m
+[2m        ],[22m
+[2m        "shown": true,[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV null",[39m
+[31m+         "DIV null",[39m
+[31m+       ],[39m
+[2m        "tokens": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[33m@@ -65,11 +74,14 @@[39m
+[2m        "row": [[22m
+[2m          "aria-modal",[22m
+[2m          undefined,[22m
+[2m        ],[22m
+[2m        "shown": true,[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV null",[39m
+[31m+         "DIV null",[39m
+[31m+       ],[39m
+[2m        "tokens": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[33m@@ -84,11 +96,14 @@[39m
+[2m        "row": [[22m
+[2m          "role",[22m
+[2m          undefined,[22m
+[2m        ],[22m
+[2m        "shown": true,[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV null",[39m
+[31m+         "DIV null",[39m
+[31m+       ],[39m
+[2m        "tokens": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[2m          "show",[22m
+[2m        ],[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1795:25
+    1793|    root.remove()
+    1794|   }
+    1795|   expect(readings.calls).toEqual(
+       |                         ^
+    1796|    rows.map((row) => [
+    1797|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 skipped (47)
+   Start at  16:16:23
+   Duration  6.72s (transform 0ms, setup 448ms, import 328ms, tests 4.83s, environment 0ms)
+

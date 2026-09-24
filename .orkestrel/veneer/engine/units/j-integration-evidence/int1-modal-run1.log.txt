@@ -1,0 +1,27 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+·x······································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:85:2 > Modal > reads the shipped modal declarations the motion and stacking proofs run under
+AssertionError: expected 'none' not to be 'none' // Object.is equality
+ ❯ tests/src/browser/Modal.test.ts:101:49
+     99|   expect(getComputedStyle(dialog).transitionProperty).toBe('transform')
+    100|   expect(getComputedStyle(dialog).transitionDuration).toBe('0.3s')
+    101|   expect(getComputedStyle(dialog).transform).not.toBe('none')
+       |                                                 ^
+    102|   expect(getComputedStyle(dialog).pointerEvents).toBe('none')
+    103|   expect(getComputedStyle(content).pointerEvents).toBe('auto')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 39 passed (40)
+   Start at  16:09:12
+   Duration  11.96s (transform 0ms, setup 498ms, import 350ms, tests 9.81s, environment 0ms)
+

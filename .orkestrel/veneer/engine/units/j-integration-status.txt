@@ -1,0 +1,9 @@
+ M guides/veneer.md
+ M src/browser/Backdrop.ts
+ M src/browser/Modal.ts
+ M src/browser/Offcanvas.ts
+ M src/browser/types.ts
+ M tests/src/browser/Backdrop.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/Modal.test.ts
+ M tests/src/browser/Offcanvas.test.ts

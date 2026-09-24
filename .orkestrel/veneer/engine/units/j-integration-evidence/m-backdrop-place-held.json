@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Backdrop.ts",
+	"pairs": [
+		[
+			"if (element.parentNode !== this.#parent) {",
+			"if (element.parentNode !== null || true) {"
+		]
+	],
+	"backup": "tmp/j-integration/m-backdrop-place-held.backup"
+}

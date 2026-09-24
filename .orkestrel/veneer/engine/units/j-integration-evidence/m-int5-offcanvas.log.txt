@@ -1,0 +1,75 @@
+subject: src/browser/Offcanvas.ts
+before: 2a5d79d8f00b546a2a870d78ee048baa699e682db52febfd5ae62b526dff7e79 *src/browser/Offcanvas.ts
+planted: e5de32315be882fe84a73d75e4760397080cf637f9315df14878b07452e90330 *src/browser/Offcanvas.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts -t after a reaction to a backdrop write stops the change
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+-------------------------------x---------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1276:2 > Offcanvas > writes and dispatches nothing more after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+AssertionError: expected [ [ { …(6) } ], [ { …(6) } ], …(8) ] to deeply equal [ [ { …(6) } ], [ { …(6) } ], …(8) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,18 +1,20 @@[39m
+[2m  [[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [],[22m
+[32m-       "modal": null,[39m
+[31m+       "modal": "true",[39m
+[2m        "opposite": undefined,[22m
+[2m        "resolved": false,[22m
+[2m        "row": [[22m
+[2m          "show",[22m
+[2m          "insertion",[22m
+[2m          "destroy",[22m
+[2m        ],[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV aria-modal",[39m
+[31m+       ],[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [],[22m
+[33m@@ -22,11 +24,13 @@[39m
+[2m        "row": [[22m
+[2m          "show",[22m
+[2m          "insertion",[22m
+[2m          "token",[22m
+[2m        ],[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV aria-modal",[39m
+[31m+       ],[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1390:25
+    1388|    root.remove()
+    1389|   }
+    1390|   expect(readings.calls).toEqual(
+       |                         ^
+    1391|    rows.map(([phase, write, reaction, modal]) => [
+    1392|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 skipped (47)
+   Start at  16:25:30
+   Duration  1.78s (transform 0ms, setup 454ms, import 347ms, tests 28ms, environment 0ms)
+
+run exit: 1
+after: 2a5d79d8f00b546a2a870d78ee048baa699e682db52febfd5ae62b526dff7e79 *src/browser/Offcanvas.ts

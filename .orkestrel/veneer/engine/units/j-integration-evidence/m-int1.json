@@ -1,0 +1,10 @@
+{
+	"file": "src/styles/components/_modal.scss",
+	"pairs": [
+		[
+			"--bs-modal-zindex: var(--vn-stack-dialog-base);",
+			"--bs-modal-zindex: var(--vn-stack-dialog-backdrop);"
+		]
+	],
+	"backup": "tmp/j-integration/m-int1.backup"
+}

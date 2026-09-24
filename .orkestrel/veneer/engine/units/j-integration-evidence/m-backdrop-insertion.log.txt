@@ -1,0 +1,42 @@
+subject: src/browser/Backdrop.ts
+before: f332c33165428cf188a705d9ff2e2cb1ac7f0dc2a6cc5937a2688968454a104e *src/browser/Backdrop.ts
+planted: 38905f24f1c1b3b86a97e063f3da17c7d40ea888be7eea5338e8f161cfccd2a7 *src/browser/Backdrop.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Backdrop.test.ts -t writes no shown token after a reaction inside its insertion
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+Port 63315 is in use, trying another one...
+-------x-
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Backdrop.test.ts:146:2 > Backdrop > writes no shown token after a reaction inside its insertion destroys it, resolving false
+AssertionError: expected [ 'modal-backdrop', 'show' ] to deeply equal [ 'modal-backdrop' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "modal-backdrop",[22m
+[31m+   "show",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Backdrop.test.ts:169:49
+    167|   expect(await backdrop.show()).toBe(false)
+    168|   expect(backdrop.element.isConnected).toBe(false)
+    169|   expect(Array.from(backdrop.element.classList)).toEqual(['modal-backd…
+       |                                                 ^
+    170|  })
+    171|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  16:25:44
+   Duration  1.52s (transform 0ms, setup 465ms, import 14ms, tests 7ms, environment 0ms)
+
+run exit: 1
+after: f332c33165428cf188a705d9ff2e2cb1ac7f0dc2a6cc5937a2688968454a104e *src/browser/Backdrop.ts

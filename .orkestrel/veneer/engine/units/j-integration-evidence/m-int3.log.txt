@@ -1,0 +1,46 @@
+subject: src/browser/Delegate.ts
+before: 8fa99441ca7ec0cae0f40f22080bc77c946bdb2304c7b5ba83aa52e80330f749 *src/browser/Delegate.ts
+planted: 65d6cec69b2a771514d5485d25a50aacefcbc0d7e141995f5561325b2f49c31c *src/browser/Delegate.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Delegate.test.ts -t once each for one trusted click
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+-----------------------------------------------------------------------------------------------------------------------------------------x-
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Delegate.test.ts:4344:2 > Delegate > drives the modal route and the offcanvas route once each for one trusted click over one host both triggers name under nested roots
+AssertionError: expected [ [ 'show.vn.modal' ], …(1) ] to deeply equal [ [ 'show.vn.modal' ], …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[2m      "show.vn.modal",[22m
+[2m    ],[22m
+[2m    [[22m
+[32m-     "hide.vn.offcanvas",[39m
+[31m+     "hide.vn.modal",[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Delegate.test.ts:4370:23
+    4368|   await userEvent.click(opener)
+    4369|   await waitForCondition('the offcanvas hides', () => !host.classList.…
+    4370|   expect(events.calls).toEqual([['show.vn.modal'], ['hide.vn.offcanvas…
+       |                       ^
+    4371|   expect(Modal.find(host)).toBe(modal)
+    4372|   expect(Offcanvas.find(host)).not.toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 138 skipped (139)
+   Start at  16:20:38
+   Duration  1.88s (transform 0ms, setup 475ms, import 292ms, tests 112ms, environment 0ms)
+
+run exit: 1
+after: 8fa99441ca7ec0cae0f40f22080bc77c946bdb2304c7b5ba83aa52e80330f749 *src/browser/Delegate.ts

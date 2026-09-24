@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/types.ts",
+	"backup": "tmp/j-integration/types.ts.backup",
+	"pairs": [
+		[
+			"/** Describes one piece of host state a snapshot records before an engine first writes it. */",
+			"/** Names the attribute a presence record reads: `class` for class tokens and `style` for inline properties. */\nexport type HostSnapshotAttribute = 'class' | 'style'\n\n/** Describes one piece of host state a snapshot records before an engine first writes it. */"
+		]
+	]
+}

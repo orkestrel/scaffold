@@ -1,0 +1,7 @@
+before: 7c019de9ab30495f46c1f818eb76ff7469e4aaed3a6a9cfe9c53b7cee584b539 *src/browser/HostSnapshot.ts
+98:	#leaving: typeof this.#joined = []
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+src/browser/HostSnapshot.ts(98,31): error TS1003: Identifier expected.
+tsc exit: 2
+after: 7c019de9ab30495f46c1f818eb76ff7469e4aaed3a6a9cfe9c53b7cee584b539 *src/browser/HostSnapshot.ts

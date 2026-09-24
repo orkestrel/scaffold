@@ -1,0 +1,8 @@
+{
+	"file": "src/browser/Delegate.ts",
+	"backup": "tmp/j-integration/Delegate.ts.backup",
+	"pairs": [
+		["const hosts = routes.get(route) ?? new WeakSet<HTMLElement>()", "const hosts = routes.get(Button) ?? new WeakSet<HTMLElement>()"],
+		["Delegate.#driven.set(event, routes.set(route, hosts.add(host)))", "Delegate.#driven.set(event, routes.set(Button, hosts.add(host)))"]
+	]
+}

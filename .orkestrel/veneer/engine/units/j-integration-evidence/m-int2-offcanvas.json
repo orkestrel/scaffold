@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Offcanvas.ts",
+	"pairs": [
+		[
+			"if (!this.#controller.signal.aborted) void backdrop?.show()\n",
+			"\n"
+		]
+	],
+	"backup": "tmp/j-integration/m-int2-offcanvas.backup"
+}

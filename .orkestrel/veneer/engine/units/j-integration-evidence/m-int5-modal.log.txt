@@ -1,0 +1,51 @@
+subject: src/browser/Modal.ts
+before: d35fdab0f679882be33f33bd1729fad159845c9ba6181642fd406ead879a44f5 *src/browser/Modal.ts
+planted: 90dffb242dd8d87d0d61426ef24f039b748f49831b287d2a2a2f557b3b029bee *src/browser/Modal.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts -t inside the backdrop removal stops the hide
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+------------------------------x-----------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1130:2 > Modal > writes and dispatches nothing more after a reaction inside the backdrop removal stops the hide
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -10,9 +10,12 @@[39m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [],[22m
+[2m        "reaction": "token",[22m
+[2m        "resolved": false,[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "BODY class",[39m
+[31m+         "BODY class",[39m
+[31m+       ],[39m
+[2m      },[22m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Modal.test.ts:1195:25
+    1193|    root.remove()
+    1194|   }
+    1195|   expect(readings.calls).toEqual(
+       |                         ^
+    1196|    ['destroy', 'token'].map((reaction) => [
+    1197|     { reaction, resolved: false, stale: [], events: [] },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 41 skipped (42)
+   Start at  16:25:20
+   Duration  1.82s (transform 0ms, setup 473ms, import 330ms, tests 11ms, environment 0ms)
+
+run exit: 1
+after: d35fdab0f679882be33f33bd1729fad159845c9ba6181642fd406ead879a44f5 *src/browser/Modal.ts
