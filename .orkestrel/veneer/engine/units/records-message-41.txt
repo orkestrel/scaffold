@@ -1,0 +1,14 @@
+Open the J-BINDER-PRECEDENCE audit after its builder fix
+
+J-BINDER-PRECEDENCE returned green on its scoped gates in its worktree: the first-saved
+restoration precedence with a save-order stamp that a taken value keeps, the style attribute
+record beside the class one, an overridden attribute left unparsed by the option resolver, the
+readTag helper, the CollapseVocabulary type, and null as the detail-less event type, each proof
+red first. The Orchestrator's tree-wide typecheck found the unit's own helper proof still typed
+with the old detail, so a builder changed those five type arguments on a successor brief, the
+diff was re-captured, and the gates re-ran green tree-wide. The audit runs with the lanes swapped
+(Opus 5.5 objective, Astra subjective, because Astra wrote the unit) plus the checker; the
+Orchestrator's own mutation instrument replays the report's rows after they return. J-ENGINE
+campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
