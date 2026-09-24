@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/veneer-to/tmp/probe/base
+
+·····
+
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
+   Start at  00:54:17
+   Duration  20.35s (transform 0ms, setup 996ms, import 748ms, tests 6.54s, environment 0ms)
+
