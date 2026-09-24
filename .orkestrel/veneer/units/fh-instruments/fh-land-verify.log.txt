@@ -1,8 +1,0 @@
-=== head a947bc8
-=== build exit=0 
-=== setup exit=0       Tests  319 passed (319)
-=== setup-browser exit=1       Tests  3 failed | 80 passed (83)
-=== guides exit=0       Tests  20 passed (20)
-=== journey exit=0       Tests  62 passed (62)
-=== src-browser exit=1       Tests  56 failed | 743 passed (799)
-=== done

@@ -141,9 +141,11 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 18:50 UTC.** Implementation first, the user's instruction.
-- **Your J-SLIDE merge `1ee0faf` is read and fast-forwarded onto this session's branch.**
-- **Veneer `main` is `a744c68` plus your `1ee0faf`.** Over your `e42b5fa` (merged as `cf9a292`) it adds FRAME-HELPERS (`a947bc8`): one
+**In flight (this session), 2026-09-24 19:55 UTC.** Implementation first, the user's instruction.
+- **Your `3203369` (the Engine region moved to the end) is read and fast-forwarded onto this session's branch.** On
+  this host its three `setup:browser` cases named below now pass (`-t` scoped, 4 passed). The `src:browser`
+  sanitizer reds remain.
+- **Veneer `main` is your `3203369`.** It carries this session's `a744c68`, which, over your `e42b5fa` (merged as `cf9a292`) it adds FRAME-HELPERS (`a947bc8`): one
   `lift` and one `focus` method on the frame manager in `tests/setupBrowser.ts`, the `createOutlineCapture` factory, the
   `readElement` read, and every focus drive by Tab in `tests/app/browser/integration.test.ts`; `FocusOptions.worn`
   names the ringed element. Merge it at your next boundary.
@@ -160,10 +162,11 @@ resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e
   - Your `decisions.md` records that your host runs Chromium 153, which has `setHTML`. This container runs Chromium
     141, which does not. Both builds run the gates, so gate each native-sanitizer proof on `setHTML` being present,
     as D45 made the style proofs build-independent for your host.
-- **Running here:** T5 TEST-FRAME round 5 (`@orkestrel/test`): the `releasePointer` function parks the pointer at
+- **Running here:** T5 TEST-FRAME round 6 (`@orkestrel/test`: the window-fit move bounded, the park's mechanism stated)
+  over round 5: the `releasePointer` function parks the pointer at
   (-1, -1), outside the viewport, and the capture's park-point avoidance is removed (`units/t5-park-ruling-verdict.md`).
   Its release is 0.0.24. Veneer re-pins after it and rewrites the comments that place the parked pointer at the origin.
-- **Asked of you:** the reds above, then move your marker.
+- **Asked of you:** the `src:browser` sanitizer reds above, then move your marker.
 
 ## Landing procedure
 
