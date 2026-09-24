@@ -1,0 +1,238 @@
+=== mutation valid-fill on src/styles/_tokens.scss; proof tests/src/styles/components/validation.test.ts -t "on-canvas tier, in both modes"
+=== file diff against HEAD while mutated:
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 0c81c43..72d33b6 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -10,6 +10,9 @@ $roles: primary, secondary, tertiary, success, info, warning, danger, light, dar
+ // The roles Bootstrap also names, whose tiers carry a `--bs-*` alias.
+ $aliased: primary, secondary, success, info, warning, danger, light, dark;
+ 
++// The neutral roles, whose text on the page keeps the role's own color rather than its on-canvas tier.
++$neutrals: light, dark;
++
+ // The light values of every theme-dependent token, as the CSS each one emits.
+ //
+ // A literal color here is either a reading of Elements' built showcase or a Bootstrap 5.3.8 value
+@@ -61,14 +64,14 @@ $light: (
+ 	'surface-tertiary-rgb': '248, 249, 250',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-white-base) 80%, var(--vn-color-warning-base))',
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+-	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 70%, var(--vn-text-body-base))',
++	'link': 'var(--vn-color-primary-emphasis)',
+ 	'link-rgb': '13, 54, 172',
+ 	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, black)',
+ 	'link-hover-rgb': '8, 35, 112',
+ 	'border': 'oklch(0.869 0.022 252.894)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)',
+ 	'valid': 'var(--vn-color-success-base)',
+-	'invalid': 'var(--vn-color-danger-base)',
++	'invalid': 'var(--vn-color-danger-emphasis)',
+ 	'close-filter': '',
+ 	'carousel-surface': 'var(--vn-palette-white-base)',
+ 	'carousel-caption': 'var(--vn-palette-white-base)',
+@@ -128,10 +131,10 @@ $dark: (
+ 	'surface-tertiary-rgb': '43, 48, 53',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-black-base) 60%, var(--vn-color-warning-base))',
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+-	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 80%, var(--vn-text-body-base))',
+-	'link-rgb': '79, 185, 238',
++	'link': 'var(--vn-color-primary-emphasis)',
++	'link-rgb': '103, 191, 238',
+ 	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, white)',
+-	'link-hover-rgb': '141, 210, 244',
++	'link-hover-rgb': '156, 214, 244',
+ 	'border': 'oklch(0.4 0.022 256)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent)',
+ 	'valid': 'var(--vn-color-success-emphasis)',
+
+=== bash -c npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/validation.test.ts -t "on-canvas tier, in both modes" (21:07:25) HEAD 712ae72
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  283.06 kB │ gzip: 33.84 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 10.22s
+
+ RUN  v4.1.11 /home/user/veneer-apc
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:08:08 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:33:2 > validation classes > paints the 'valid' border and text from the alias the theme declares, in both modes
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:33:2 > validation classes > paints the 'invalid' border and text from the alias the theme declares, in both modes
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:62:2 > validation classes > carries the 'valid' mark on a validated text control and on a single-value select
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:62:2 > validation classes > carries the 'invalid' mark on a validated text control and on a single-value select
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:111:2 > validation classes > paints the 'valid' focus ring at the width the focus token resolves to, over the role triplet
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:111:2 > validation classes > paints the 'invalid' focus ring at the width the focus token resolves to, over the role triplet
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:175:2 > validation classes > marks a required empty control on arrival inside a validated form and clears it after it is filled
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:214:2 > validation classes > reveals the 'valid' feedback only beside a sibling carrying that state
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:214:2 > validation classes > reveals the 'invalid' feedback only beside a sibling carrying that state
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:239:2 > validation classes > floats the 'valid' tooltip under its control on the release stacking level
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:239:2 > validation classes > floats the 'invalid' tooltip under its control on the release stacking level
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'valid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'invalid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:295:2 > validation classes > reads the 'valid' feedback and the checked 'valid' label at or above the contrast bar against the page, in both modes
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:295:2 > validation classes > reads the 'invalid' feedback and the checked 'invalid' label at or above the contrast bar against the page, in both modes
+ × |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:329:2 > validation classes > paints the 'valid' border, feedback, and checked fill from the 'success' on-canvas tier, in both modes 78ms
+   → light border: expected false to be true // Object.is equality
+   → light checked fill: expected false to be true // Object.is equality
+   → light feedback: expected false to be true // Object.is equality
+ ✓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:329:2 > validation classes > paints the 'invalid' border, feedback, and checked fill from the 'danger' on-canvas tier, in both modes 32ms
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:370:2 > validation classes > tints the 'valid' check label and fills the checked box from the state color
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:370:2 > validation classes > tints the 'invalid' check label and fills the checked box from the state color
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:396:2 > validation classes > reaches every host through the 'valid' scope as well as through the state class
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:396:2 > validation classes > reaches every host through the 'invalid' scope as well as through the state class
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:500:2 > validation classes > keeps the forced-colors outline on a focused 'valid' control, because the state ring writes no outline
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:500:2 > validation classes > keeps the forced-colors outline on a focused 'invalid' control, because the state ring writes no outline
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:526:2 > validation classes > widens the 'valid' swatch by the same icon room at any density and under a direct space override, through the state class and the scope
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:526:2 > validation classes > widens the 'invalid' swatch by the same icon room at any density and under a direct space override, through the state class and the scope
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:609:2 > validation classes > stacks a failing input-group child above a passing one
+ ↓ |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:624:2 > validation classes > consumes a state color override and rescales the tokenized feedback and tooltip geometry
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:329:2 > validation classes > paints the 'valid' border, feedback, and checked fill from the 'success' on-canvas tier, in both modes
+AssertionError: light border: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/components/validation.test.ts:353:6
+    351|     expect
+    352|      .soft(matchesColor(readStyle(control, 'border-top-color'), tier),…
+    353|      .toBe(true)
+       |      ^
+    354|     expect
+    355|      .soft(matchesColor(readStyle(box, 'background-color'), tier), `${…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:329:2 > validation classes > paints the 'valid' border, feedback, and checked fill from the 'success' on-canvas tier, in both modes
+AssertionError: light checked fill: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/components/validation.test.ts:356:6
+    354|     expect
+    355|      .soft(matchesColor(readStyle(box, 'background-color'), tier), `${…
+    356|      .toBe(true)
+       |      ^
+    357|     expect.soft(matchesColor(readStyle(feedback, 'color'), tier), `${m…
+    358|     // The tier is the fill mixed with the body text, so a border stil…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:329:2 > validation classes > paints the 'valid' border, feedback, and checked fill from the 'success' on-canvas tier, in both modes
+AssertionError: light feedback: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/components/validation.test.ts:357:86
+    355|      .soft(matchesColor(readStyle(box, 'background-color'), tier), `${…
+    356|      .toBe(true)
+    357|     expect.soft(matchesColor(readStyle(feedback, 'color'), tier), `${m…
+       |                                                                                      ^
+    358|     // The tier is the fill mixed with the body text, so a border stil…
+    359|     expect
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 25 skipped (27)
+   Start at  21:07:46
+   Duration  23.50s (transform 0ms, setup 4.05s, import 238ms, tests 113ms, environment 0ms)
+
+=== exit=1 (21:08:10)
+
+=== proof exit=1 (non-zero means the proof reddened)
+=== restored src/styles/_tokens.scss: byte-identical to pre-mutation copy = True

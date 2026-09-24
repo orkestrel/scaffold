@@ -1,0 +1,10 @@
+=== npm run format:check (21:15:19) HEAD 712ae72
+
+> @orkestrel/veneer@0.0.1 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 15779ms on 474 files using 4 threads.
+=== exit=0 (21:15:35)

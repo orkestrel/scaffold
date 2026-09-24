@@ -1,0 +1,32 @@
+=== npm run test:conformance (20:51:09) HEAD 712ae72
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-apc
+
+······x···················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:263:2
+    261|  })
+    262|
+    263|  it(
+       |  ^
+    264|   'records official Button behavior and matches each named fixture ste…
+    265|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 passed (26)
+   Start at  20:51:14
+   Duration  89.43s (transform 2.18s, setup 522ms, import 47.24s, tests 41.43s, environment 0ms)
+
+=== exit=1 (20:52:44)

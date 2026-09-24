@@ -1,0 +1,15 @@
+=== npm run build:src:styles (20:39:32) HEAD 712ae72
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  283.07 kB │ gzip: 33.84 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 2.10s
+=== exit=0 (20:39:35)

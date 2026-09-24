@@ -1,0 +1,992 @@
+=== sources at 712ae72: src/styles/_mixins.scss src/styles/elements/_heading.scss src/styles/components/_type.scss src/styles/utilities/_font.scss src/styles/elements/_fieldset.scss
+=== build exit 0
+
+ RUN  v4.1.11 /home/user/veneer-apt
+
+Port 63315 is in use, trying another one...
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h1' level to the size its heading class resolves at each journey viewport 37ms
+   → .fs-1 at 390: expected 36 to be close to 26.28, received difference is 9.719999999999999, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h2' level to the size its heading class resolves at each journey viewport 37ms
+   → .fs-2 at 390: expected 30 to be close to 23.925, received difference is 6.074999999999999, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h3' level to the size its heading class resolves at each journey viewport 35ms
+   → .fs-3 at 390: expected 24 to be close to 21.57, received difference is 2.4299999999999997, but expected 0.005
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h4' level to the size its heading class resolves at each journey viewport 81ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h5' level to the size its heading class resolves at each journey viewport 68ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h6' level to the size its heading class resolves at each journey viewport 69ms
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h1' level from the '--vn-size-8' token its heading class reads at each side of the boundary 30ms
+   → .fs-1 at 390: expected 101 to be close to 51.79249999999999, received difference is 49.20750000000001, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h2' level from the '--vn-size-7' token its heading class reads at each side of the boundary 34ms
+   → .fs-2 at 390: expected 102 to be close to 52.184999999999995, received difference is 49.815000000000005, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h3' level from the '--vn-size-6' token its heading class reads at each side of the boundary 34ms
+   → .fs-3 at 390: expected 103 to be close to 52.57749999999999, received difference is 50.42250000000001, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h4' level from the '--vn-size-5' token its heading class reads at each side of the boundary 32ms
+   → .fs-4 at 390: expected 104 to be close to 52.96999999999999, received difference is 51.03000000000001, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h5' level from the '--vn-size-4' token its heading class reads at each side of the boundary 34ms
+   → .fs-5 at 390: expected 105 to be close to 53.3625, received difference is 51.6375, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h6' level from the '--vn-size-3' token its heading class reads at each side of the boundary 32ms
+   → .fs-6 at 390: expected 106 to be close to 53.754999999999995, received difference is 52.245000000000005, but expected 0.005
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:90:2 > font utilities > resolves the size class on a heading tag at each journey viewport 67ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:106:2 > font utilities > resolves the '1' line height as its recorded factor of a fixed font size 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:106:2 > font utilities > resolves the 'sm' line height as its recorded factor of a fixed font size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:106:2 > font utilities > resolves the 'base' line height as its recorded factor of a fixed font size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:106:2 > font utilities > resolves the 'lg' line height as its recorded factor of a fixed font size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:120:2 > font utilities > reads the base line height from the body line token 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:134:2 > font utilities > reads the monospace stack from the alias the release names and the token the alias reads 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:163:30 > font utilities > resolves every weight step under a 400 parent weight 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:163:30 > font utilities > resolves every weight step under a 600 parent weight 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:180:2 > font utilities > resolves the relative weight steps differently under a 400 and a 600 parent weight 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:199:2 > font utilities > resolves every style step inside an oblique parent 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:216:2 > font utilities > writes no infixed class for any font entry 135ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:257:2 > font utilities > reads no mode or density factor, so a dark island and a doubled factor leave every value 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:283:2 > font utilities > resolves the later value of an entry where an element carries conflicting classes of it 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:295:2 > font utilities > overrides the heading and display classes on the same element 24ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:314:2 > font utilities > keeps its priority over a later unlayered consumer rule 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:335:2 > font utilities > yields to an important override inside the utilities layer and to no unlayered one 32ms
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h1' class to the size and line its own tag resolves to at each journey viewport 31ms
+   → .h1 at 390: expected 36 to be close to 26.28, received difference is 9.719999999999999, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h2' class to the size and line its own tag resolves to at each journey viewport 34ms
+   → .h2 at 390: expected 30 to be close to 23.925, received difference is 6.074999999999999, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h3' class to the size and line its own tag resolves to at each journey viewport 33ms
+   → .h3 at 390: expected 24 to be close to 21.57, received difference is 2.4299999999999997, but expected 0.005
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h4' class to the size and line its own tag resolves to at each journey viewport 70ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h5' class to the size and line its own tag resolves to at each journey viewport 64ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h6' class to the size and line its own tag resolves to at each journey viewport 74ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h1' class and to its own tag 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h2' class and to its own tag 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h3' class and to its own tag 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h4' class and to its own tag 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h5' class and to its own tag 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h6' class and to its own tag 0ms
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-1' from its own display token at each journey viewport 22ms
+   → .display-1 at 390: expected 80 to be close to 43.55, received difference is 36.45, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-2' from its own display token at each journey viewport 34ms
+   → .display-2 at 390: expected 72 to be close to 40.41, received difference is 31.590000000000003, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-3' from its own display token at each journey viewport 38ms
+   → .display-3 at 390: expected 64 to be close to 37.269999999999996, received difference is 26.730000000000004, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-4' from its own display token at each journey viewport 28ms
+   → .display-4 at 390: expected 56 to be close to 34.129999999999995, received difference is 21.870000000000005, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-5' from its own display token at each journey viewport 34ms
+   → .display-5 at 390: expected 48 to be close to 30.99, received difference is 17.01, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-6' from its own display token at each journey viewport 35ms
+   → .display-6 at 390: expected 40 to be close to 27.85, received difference is 12.149999999999999, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h1' size from the '--vn-size-8' token its own level names at each side of the boundary 32ms
+   → .h1 at 390: expected 101 to be close to 51.79249999999999, received difference is 49.20750000000001, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h2' size from the '--vn-size-7' token its own level names at each side of the boundary 35ms
+   → .h2 at 390: expected 102 to be close to 52.184999999999995, received difference is 49.815000000000005, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h3' size from the '--vn-size-6' token its own level names at each side of the boundary 32ms
+   → .h3 at 390: expected 103 to be close to 52.57749999999999, received difference is 50.42250000000001, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h4' size from the '--vn-size-5' token its own level names at each side of the boundary 33ms
+   → .h4 at 390: expected 104 to be close to 52.96999999999999, received difference is 51.03000000000001, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h5' size from the '--vn-size-4' token its own level names at each side of the boundary 34ms
+   → .h5 at 390: expected 105 to be close to 53.3625, received difference is 51.6375, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h6' size from the '--vn-size-3' token its own level names at each side of the boundary 34ms
+   → .h6 at 390: expected 106 to be close to 53.754999999999995, received difference is 52.245000000000005, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-1' size from the '--vn-display-1' token its own level names at each side of the boundary 33ms
+   → .display-1 at 390: expected 107 to be close to 54.1475, received difference is 52.8525, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-2' size from the '--vn-display-2' token its own level names at each side of the boundary 33ms
+   → .display-2 at 390: expected 108 to be close to 54.53999999999999, received difference is 53.46000000000001, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-3' size from the '--vn-display-3' token its own level names at each side of the boundary 33ms
+   → .display-3 at 390: expected 109 to be close to 54.93249999999999, received difference is 54.06750000000001, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-4' size from the '--vn-display-4' token its own level names at each side of the boundary 33ms
+   → .display-4 at 390: expected 110 to be close to 55.324999999999996, received difference is 54.675000000000004, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-5' size from the '--vn-display-5' token its own level names at each side of the boundary 34ms
+   → .display-5 at 390: expected 111 to be close to 55.717499999999994, received difference is 55.282500000000006, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-6' size from the '--vn-display-6' token its own level names at each side of the boundary 33ms
+   → .display-6 at 390: expected 112 to be close to 56.11, received difference is 55.89, but expected 0.005
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:161:26 > type classes > resolves the 'lead' values over the body size 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:161:26 > type classes > resolves the 'small' values over the body size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:161:26 > type classes > resolves the 'initialism' values over the body size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:178:2 > type classes > renders the mark class as the bare mark tag renders in 'light' mode 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:178:2 > type classes > renders the mark class as the bare mark tag renders in 'dark' mode 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:202:2 > type classes > reads the mark paint from the mark tokens on the tag and on the class 0ms
+ × |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:21:2 > heading scale > resolves the calibrated heading family at each journey viewport in 'light' mode 37ms
+   → h1 at 390: expected 36 to be close to 26.28, received difference is 9.719999999999999, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:21:2 > heading scale > resolves the calibrated heading family at each journey viewport in 'dark' mode 34ms
+   → h1 at 390: expected 36 to be close to 26.28, received difference is 9.719999999999999, but expected 0.005
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:57:2 > heading scale > resolves the 'h6' size from a '12px' retune of the '--vn-size-3' token at each journey viewport 67ms
+ × |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:57:2 > heading scale > resolves the 'h5' size from a '32px' retune of the '--vn-size-4' token at each journey viewport 33ms
+   → h5 at 390: expected 32 to be close to 24.71, received difference is 7.289999999999999, but expected 0.005
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:77:2 > heading scale > reads the compatible heading color from its consumer island 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/fieldset.test.ts:12:21 > fieldset retained treatment > resolves the reset and responsive legend in light mode 141ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/fieldset.test.ts:12:21 > fieldset retained treatment > resolves the reset and responsive legend in dark mode 134ms
+ × |[object Object] (chromium)| tests/src/styles/elements/fieldset.test.ts:51:2 > fieldset retained treatment > scales a retuned size token on the legend and caps it at the token 36ms
+   → legend at 390: expected 35.17 to be close to 27.85, received difference is 7.32, but expected 0.005
+
+ Test Files  5 failed (5)
+      Tests  34 failed | 39 passed (73)
+   Start at  21:17:25
+   Duration  17.81s (transform 0ms, setup 2.08s, import 110ms, tests 2.18s, environment 0ms)
+
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+13 │ @import 'bootstrap/scss/functions';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 13:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+14 │ @import 'bootstrap/scss/variables';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 14:9  root stylesheet
+
+9:17:39 PM [vite] Internal server error: [sass] Undefined mixin.
+   ╷
+64 │     @include font-size(var(--vn-size-probe));
+   │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+  tests/src/styles/fixtures/mixins.scss 64:2  root stylesheet
+  Plugin: vite:css
+  File: /home/user/veneer-apt/tests/src/styles/fixtures/mixins.scss:64:2
+  [sass] Undefined mixin.
+     ╷
+  64 │     @include font-size(var(--vn-size-probe));
+     │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     ╵
+    tests/src/styles/fixtures/mixins.scss 64:2  root stylesheet
+      at Object.wrapException (/home/user/veneer-apt/node_modules/sass/sass.dart.js:2314:47)
+      at /home/user/veneer-apt/node_modules/sass/sass.dart.js:90643:25
+      at _wrapJsFunctionForAsync_closure.$protected (/home/user/veneer-apt/node_modules/sass/sass.dart.js:4985:15)
+      at _wrapJsFunctionForAsync_closure.call$2 (/home/user/veneer-apt/node_modules/sass/sass.dart.js:38869:12)
+      at Object._asyncStartSync (/home/user/veneer-apt/node_modules/sass/sass.dart.js:4949:20)
+      at _EvaluateVisitor2._applyMixin$body$_EvaluateVisitor0 (/home/user/veneer-apt/node_modules/sass/sass.dart.js:90701:16)
+      at _EvaluateVisitor2._async_evaluate0$_applyMixin$5 (/home/user/veneer-apt/node_modules/sass/sass.dart.js:90629:19)
+      at /home/user/veneer-apt/node_modules/sass/sass.dart.js:90721:48
+      at _wrapJsFunctionForAsync_closure.$protected (/home/user/veneer-apt/node_modules/sass/sass.dart.js:4985:15)
+      at _wrapJsFunctionForAsync_closure.call$2 (/home/user/veneer-apt/node_modules/sass/sass.dart.js:38869:12)
+9:17:39 PM [vite] (client) Pre-transform error: [sass] Undefined mixin.
+   ╷
+64 │     @include font-size(var(--vn-size-probe));
+   │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+  tests/src/styles/fixtures/mixins.scss 64:2  root stylesheet
+  Plugin: vite:css
+  File: /home/user/veneer-apt/tests/src/styles/fixtures/mixins.scss:64:2
+  [sass] Undefined mixin.
+     ╷
+  64 │     @include font-size(var(--vn-size-probe));
+     │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     ╵
+    tests/src/styles/fixtures/mixins.scss 64:2  root stylesheet
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:55  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:30  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 177:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 191:13  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 217:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+     ╷
+1753 │ @import "variables-dark"; // TODO: can be removed safely in v6, only here to avoid breaking changes in v5.3
+     │         ^^^^^^^^^^^^^^^^
+     ╵
+    node_modules/bootstrap/scss/_variables.scss 1753:9  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 207:11  tint-color()
+    node_modules/bootstrap/scss/_variables.scss 79:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 212:11  shade-color()
+    node_modules/bootstrap/scss/_variables.scss 84:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_variables.scss 342:27  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:30  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:51  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 185:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 186:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 187:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:11   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:24   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+WARNING: 35 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts [ tests/src/styles/mixins.test.ts ]
+Error: Failed to import test file /home/user/veneer-apt/tests/src/styles/mixins.test.ts
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/home/user/veneer-apt/tests/src/styles/mixins.test.ts?import&browserv=1790284658785
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/35]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 34 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h1' class to the size and line its own tag resolves to at each journey viewport
+AssertionError: .h1 at 390: expected 36 to be close to 26.28, received difference is 9.719999999999999, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:39:78
+     37|     await visitBreakpoint(width, () => {
+     38|      const expected = computeFluidSize(Number.parseFloat(size), width)
+     39|      expect(readPixels(element, 'font-size'), `.${twin} at ${String(wi…
+       |                                                                              ^
+     40|       expected,
+     41|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:37:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h2' class to the size and line its own tag resolves to at each journey viewport
+AssertionError: .h2 at 390: expected 30 to be close to 23.925, received difference is 6.074999999999999, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:39:78
+     37|     await visitBreakpoint(width, () => {
+     38|      const expected = computeFluidSize(Number.parseFloat(size), width)
+     39|      expect(readPixels(element, 'font-size'), `.${twin} at ${String(wi…
+       |                                                                              ^
+     40|       expected,
+     41|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:37:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h3' class to the size and line its own tag resolves to at each journey viewport
+AssertionError: .h3 at 390: expected 24 to be close to 21.57, received difference is 2.4299999999999997, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:39:78
+     37|     await visitBreakpoint(width, () => {
+     38|      const expected = computeFluidSize(Number.parseFloat(size), width)
+     39|      expect(readPixels(element, 'font-size'), `.${twin} at ${String(wi…
+       |                                                                              ^
+     40|       expected,
+     41|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:37:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-1' from its own display token at each journey viewport
+AssertionError: .display-1 at 390: expected 80 to be close to 43.55, received difference is 36.45, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:88:78
+     86|     await visitBreakpoint(width, () => {
+     87|      const expected = computeFluidSize(Number.parseFloat(size), width)
+     88|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+     89|       expected,
+     90|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:86:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-2' from its own display token at each journey viewport
+AssertionError: .display-2 at 390: expected 72 to be close to 40.41, received difference is 31.590000000000003, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:88:78
+     86|     await visitBreakpoint(width, () => {
+     87|      const expected = computeFluidSize(Number.parseFloat(size), width)
+     88|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+     89|       expected,
+     90|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:86:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-3' from its own display token at each journey viewport
+AssertionError: .display-3 at 390: expected 64 to be close to 37.269999999999996, received difference is 26.730000000000004, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:88:78
+     86|     await visitBreakpoint(width, () => {
+     87|      const expected = computeFluidSize(Number.parseFloat(size), width)
+     88|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+     89|       expected,
+     90|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:86:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-4' from its own display token at each journey viewport
+AssertionError: .display-4 at 390: expected 56 to be close to 34.129999999999995, received difference is 21.870000000000005, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:88:78
+     86|     await visitBreakpoint(width, () => {
+     87|      const expected = computeFluidSize(Number.parseFloat(size), width)
+     88|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+     89|       expected,
+     90|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:86:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-5' from its own display token at each journey viewport
+AssertionError: .display-5 at 390: expected 48 to be close to 30.99, received difference is 17.01, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:88:78
+     86|     await visitBreakpoint(width, () => {
+     87|      const expected = computeFluidSize(Number.parseFloat(size), width)
+     88|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+     89|       expected,
+     90|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:86:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-6' from its own display token at each journey viewport
+AssertionError: .display-6 at 390: expected 40 to be close to 27.85, received difference is 12.149999999999999, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:88:78
+     86|     await visitBreakpoint(width, () => {
+     87|      const expected = computeFluidSize(Number.parseFloat(size), width)
+     88|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+     89|       expected,
+     90|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:86:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h1' size from the '--vn-size-8' token its own level names at each side of the boundary
+AssertionError: .h1 at 390: expected 101 to be close to 51.79249999999999, received difference is 49.20750000000001, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:121:78
+    119|     await visitBreakpoint(width, () => {
+    120|      const expected = computeFluidSize(Number.parseFloat(value), width)
+    121|      expect(readPixels(element, 'font-size'), `.${twin} at ${String(wi…
+       |                                                                              ^
+    122|       expected,
+    123|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:119:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h2' size from the '--vn-size-7' token its own level names at each side of the boundary
+AssertionError: .h2 at 390: expected 102 to be close to 52.184999999999995, received difference is 49.815000000000005, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:121:78
+    119|     await visitBreakpoint(width, () => {
+    120|      const expected = computeFluidSize(Number.parseFloat(value), width)
+    121|      expect(readPixels(element, 'font-size'), `.${twin} at ${String(wi…
+       |                                                                              ^
+    122|       expected,
+    123|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:119:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h3' size from the '--vn-size-6' token its own level names at each side of the boundary
+AssertionError: .h3 at 390: expected 103 to be close to 52.57749999999999, received difference is 50.42250000000001, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:121:78
+    119|     await visitBreakpoint(width, () => {
+    120|      const expected = computeFluidSize(Number.parseFloat(value), width)
+    121|      expect(readPixels(element, 'font-size'), `.${twin} at ${String(wi…
+       |                                                                              ^
+    122|       expected,
+    123|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:119:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h4' size from the '--vn-size-5' token its own level names at each side of the boundary
+AssertionError: .h4 at 390: expected 104 to be close to 52.96999999999999, received difference is 51.03000000000001, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:121:78
+    119|     await visitBreakpoint(width, () => {
+    120|      const expected = computeFluidSize(Number.parseFloat(value), width)
+    121|      expect(readPixels(element, 'font-size'), `.${twin} at ${String(wi…
+       |                                                                              ^
+    122|       expected,
+    123|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:119:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h5' size from the '--vn-size-4' token its own level names at each side of the boundary
+AssertionError: .h5 at 390: expected 105 to be close to 53.3625, received difference is 51.6375, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:121:78
+    119|     await visitBreakpoint(width, () => {
+    120|      const expected = computeFluidSize(Number.parseFloat(value), width)
+    121|      expect(readPixels(element, 'font-size'), `.${twin} at ${String(wi…
+       |                                                                              ^
+    122|       expected,
+    123|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:119:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h6' size from the '--vn-size-3' token its own level names at each side of the boundary
+AssertionError: .h6 at 390: expected 106 to be close to 53.754999999999995, received difference is 52.245000000000005, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:121:78
+    119|     await visitBreakpoint(width, () => {
+    120|      const expected = computeFluidSize(Number.parseFloat(value), width)
+    121|      expect(readPixels(element, 'font-size'), `.${twin} at ${String(wi…
+       |                                                                              ^
+    122|       expected,
+    123|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:119:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-1' size from the '--vn-display-1' token its own level names at each side of the boundary
+AssertionError: .display-1 at 390: expected 107 to be close to 54.1475, received difference is 52.8525, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:152:78
+    150|    for (const width of FLUID_WIDTHS) {
+    151|     await visitBreakpoint(width, () => {
+    152|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+    153|       computeFluidSize(Number.parseFloat(value), width),
+    154|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:151:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-2' size from the '--vn-display-2' token its own level names at each side of the boundary
+AssertionError: .display-2 at 390: expected 108 to be close to 54.53999999999999, received difference is 53.46000000000001, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:152:78
+    150|    for (const width of FLUID_WIDTHS) {
+    151|     await visitBreakpoint(width, () => {
+    152|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+    153|       computeFluidSize(Number.parseFloat(value), width),
+    154|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:151:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-3' size from the '--vn-display-3' token its own level names at each side of the boundary
+AssertionError: .display-3 at 390: expected 109 to be close to 54.93249999999999, received difference is 54.06750000000001, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:152:78
+    150|    for (const width of FLUID_WIDTHS) {
+    151|     await visitBreakpoint(width, () => {
+    152|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+    153|       computeFluidSize(Number.parseFloat(value), width),
+    154|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:151:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-4' size from the '--vn-display-4' token its own level names at each side of the boundary
+AssertionError: .display-4 at 390: expected 110 to be close to 55.324999999999996, received difference is 54.675000000000004, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:152:78
+    150|    for (const width of FLUID_WIDTHS) {
+    151|     await visitBreakpoint(width, () => {
+    152|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+    153|       computeFluidSize(Number.parseFloat(value), width),
+    154|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:151:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-5' size from the '--vn-display-5' token its own level names at each side of the boundary
+AssertionError: .display-5 at 390: expected 111 to be close to 55.717499999999994, received difference is 55.282500000000006, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:152:78
+    150|    for (const width of FLUID_WIDTHS) {
+    151|     await visitBreakpoint(width, () => {
+    152|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+    153|       computeFluidSize(Number.parseFloat(value), width),
+    154|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:151:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-6' size from the '--vn-display-6' token its own level names at each side of the boundary
+AssertionError: .display-6 at 390: expected 112 to be close to 56.11, received difference is 55.89, but expected 0.005
+ ❯ tests/src/styles/components/type.test.ts:152:78
+    150|    for (const width of FLUID_WIDTHS) {
+    151|     await visitBreakpoint(width, () => {
+    152|      expect(readPixels(element, 'font-size'), `.${name} at ${String(wi…
+       |                                                                              ^
+    153|       computeFluidSize(Number.parseFloat(value), width),
+    154|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/components/type.test.ts:151:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/fieldset.test.ts:51:2 > fieldset retained treatment > scales a retuned size token on the legend and caps it at the token
+AssertionError: legend at 390: expected 35.17 to be close to 27.85, received difference is 7.32, but expected 0.005
+ ❯ tests/src/styles/elements/fieldset.test.ts:60:77
+     58|   for (const viewport of FLUID_WIDTHS) {
+     59|    await visitBreakpoint(viewport, () => {
+     60|     expect(readPixels(legend, 'font-size'), `legend at ${String(viewpo…
+       |                                                                             ^
+     61|      computeFluidSize(40, viewport),
+     62|      2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/elements/fieldset.test.ts:59:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:21:2 > heading scale > resolves the calibrated heading family at each journey viewport in 'light' mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:21:2 > heading scale > resolves the calibrated heading family at each journey viewport in 'dark' mode
+AssertionError: h1 at 390: expected 36 to be close to 26.28, received difference is 9.719999999999999, but expected 0.005
+ ❯ tests/src/styles/elements/heading.test.ts:37:8
+     35|        readPixels(element, 'font-size'),
+     36|        `${element.localName} at ${String(width)}`,
+     37|       ).toBeCloseTo(expected, 2)
+       |        ^
+     38|       expect(
+     39|        readPixels(element, 'line-height'),
+ ❯ tests/src/styles/elements/heading.test.ts:30:14
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/elements/heading.test.ts:28:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:57:2 > heading scale > resolves the 'h5' size from a '32px' retune of the '--vn-size-4' token at each journey viewport
+AssertionError: h5 at 390: expected 32 to be close to 24.71, received difference is 7.289999999999999, but expected 0.005
+ ❯ tests/src/styles/elements/heading.test.ts:68:77
+     66|    for (const width of VIEWPORT_WIDTHS) {
+     67|     await visitBreakpoint(width, () => {
+     68|      expect(readPixels(heading, 'font-size'), `${twin} at ${String(wid…
+       |                                                                             ^
+     69|       computeFluidSize(size, width),
+     70|       2,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/elements/heading.test.ts:67:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h1' level to the size its heading class resolves at each journey viewport
+AssertionError: .fs-1 at 390: expected 36 to be close to 26.28, received difference is 9.719999999999999, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:42:7
+     40|       readPixels(utility, 'font-size'),
+     41|       `.fs-${level} at ${String(viewport)}`,
+     42|      ).toBeCloseTo(computeFluidSize(Number.parseFloat(size), viewport)…
+       |       ^
+     43|      expect(readStyle(utility, 'font-size')).toBe(readStyle(heading, '…
+     44|     })
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:38:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h2' level to the size its heading class resolves at each journey viewport
+AssertionError: .fs-2 at 390: expected 30 to be close to 23.925, received difference is 6.074999999999999, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:42:7
+     40|       readPixels(utility, 'font-size'),
+     41|       `.fs-${level} at ${String(viewport)}`,
+     42|      ).toBeCloseTo(computeFluidSize(Number.parseFloat(size), viewport)…
+       |       ^
+     43|      expect(readStyle(utility, 'font-size')).toBe(readStyle(heading, '…
+     44|     })
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:38:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h3' level to the size its heading class resolves at each journey viewport
+AssertionError: .fs-3 at 390: expected 24 to be close to 21.57, received difference is 2.4299999999999997, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:42:7
+     40|       readPixels(utility, 'font-size'),
+     41|       `.fs-${level} at ${String(viewport)}`,
+     42|      ).toBeCloseTo(computeFluidSize(Number.parseFloat(size), viewport)…
+       |       ^
+     43|      expect(readStyle(utility, 'font-size')).toBe(readStyle(heading, '…
+     44|     })
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:38:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h1' level from the '--vn-size-8' token its heading class reads at each side of the boundary
+AssertionError: .fs-1 at 390: expected 101 to be close to 51.79249999999999, received difference is 49.20750000000001, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h2' level from the '--vn-size-7' token its heading class reads at each side of the boundary
+AssertionError: .fs-2 at 390: expected 102 to be close to 52.184999999999995, received difference is 49.815000000000005, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h3' level from the '--vn-size-6' token its heading class reads at each side of the boundary
+AssertionError: .fs-3 at 390: expected 103 to be close to 52.57749999999999, received difference is 50.42250000000001, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h4' level from the '--vn-size-5' token its heading class reads at each side of the boundary
+AssertionError: .fs-4 at 390: expected 104 to be close to 52.96999999999999, received difference is 51.03000000000001, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h5' level from the '--vn-size-4' token its heading class reads at each side of the boundary
+AssertionError: .fs-5 at 390: expected 105 to be close to 53.3625, received difference is 51.6375, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/35]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h6' level from the '--vn-size-3' token its heading class reads at each side of the boundary
+AssertionError: .fs-6 at 390: expected 106 to be close to 53.754999999999995, received difference is 52.245000000000005, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/35]⎯
+
+=== vitest exit 1
+=== restored src/styles/_mixins.scss identical=True
+=== restored src/styles/elements/_heading.scss identical=True
+=== restored src/styles/components/_type.scss identical=True
+=== restored src/styles/utilities/_font.scss identical=True
+=== restored src/styles/elements/_fieldset.scss identical=True

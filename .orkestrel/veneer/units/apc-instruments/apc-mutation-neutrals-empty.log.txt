@@ -1,0 +1,214 @@
+=== mutation neutrals-empty on src/styles/_tokens.scss; proof tests/src/styles/utilities/color.test.ts -t "keeps the neutral roles on their own channels"
+=== file diff against HEAD while mutated:
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 0c81c43..7bc43ed 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -10,6 +10,9 @@ $roles: primary, secondary, tertiary, success, info, warning, danger, light, dar
+ // The roles Bootstrap also names, whose tiers carry a `--bs-*` alias.
+ $aliased: primary, secondary, success, info, warning, danger, light, dark;
+ 
++// The neutral roles, whose text on the page keeps the role's own color rather than its on-canvas tier.
++$neutrals: ();
++
+ // The light values of every theme-dependent token, as the CSS each one emits.
+ //
+ // A literal color here is either a reading of Elements' built showcase or a Bootstrap 5.3.8 value
+@@ -61,14 +64,14 @@ $light: (
+ 	'surface-tertiary-rgb': '248, 249, 250',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-white-base) 80%, var(--vn-color-warning-base))',
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+-	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 70%, var(--vn-text-body-base))',
++	'link': 'var(--vn-color-primary-emphasis)',
+ 	'link-rgb': '13, 54, 172',
+ 	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, black)',
+ 	'link-hover-rgb': '8, 35, 112',
+ 	'border': 'oklch(0.869 0.022 252.894)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)',
+-	'valid': 'var(--vn-color-success-base)',
+-	'invalid': 'var(--vn-color-danger-base)',
++	'valid': 'var(--vn-color-success-emphasis)',
++	'invalid': 'var(--vn-color-danger-emphasis)',
+ 	'close-filter': '',
+ 	'carousel-surface': 'var(--vn-palette-white-base)',
+ 	'carousel-caption': 'var(--vn-palette-white-base)',
+@@ -128,10 +131,10 @@ $dark: (
+ 	'surface-tertiary-rgb': '43, 48, 53',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-black-base) 60%, var(--vn-color-warning-base))',
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+-	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 80%, var(--vn-text-body-base))',
+-	'link-rgb': '79, 185, 238',
++	'link': 'var(--vn-color-primary-emphasis)',
++	'link-rgb': '103, 191, 238',
+ 	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, white)',
+-	'link-hover-rgb': '141, 210, 244',
++	'link-hover-rgb': '156, 214, 244',
+ 	'border': 'oklch(0.4 0.022 256)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent)',
+ 	'valid': 'var(--vn-color-success-emphasis)',
+
+=== bash -c npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/color.test.ts -t "keeps the neutral roles on their own channels" (21:06:51) HEAD 712ae72
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  283.17 kB │ gzip: 33.82 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 8.93s
+[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 8.5s of this 8.9s build (96%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:css transform (95%, 8.5s, 1 call)
+Additional hook time came from hooks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+
+ RUN  v4.1.11 /home/user/veneer-apc
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:07:24 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:45:2 > color utilities > resolves each text color to the value the release records, and each role outside the neutral roles to its on-canvas tier, in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:45:2 > color utilities > resolves each text color to the value the release records, and each role outside the neutral roles to its on-canvas tier, in dark mode
+ × |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:70:2 > color utilities > keeps the neutral roles on their own channels rather than their emphasis tiers in light mode 9ms
+   → light channels: expected false to be true // Object.is equality
+   → dark channels: expected false to be true // Object.is equality
+ × |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:70:2 > color utilities > keeps the neutral roles on their own channels rather than their emphasis tiers in dark mode 1ms
+   → dark channels: expected false to be true // Object.is equality
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:96:2 > color utilities > reads each role color outside the neutral roles at or above the contrast bar against the page in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:96:2 > color utilities > reads each role color outside the neutral roles at or above the contrast bar against the page in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:113:2 > color utilities > paints each role color outside the neutral roles and its emphasis class in one color at the default opacity in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:113:2 > color utilities > paints each role color outside the neutral roles and its emphasis class in one color at the default opacity in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:134:2 > color utilities > resolves each emphasis tier through the alias its own mode declares
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:170:2 > color utilities > paints each opacity step as the on-canvas tier of every role outside the neutral roles, at the alpha the step names, in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:170:2 > color utilities > paints each opacity step as the on-canvas tier of every role outside the neutral roles, at the alpha the step names, in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:209:2 > color utilities > retunes a role color from the fill and the body text at the scope declaring the theme, ignores the role channels and the density factor
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:256:2 > color utilities > keeps its priority over a later unlayered consumer rule
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:269:2 > color utilities > yields to an important override inside the utilities layer and to no unlayered one
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:70:2 > color utilities > keeps the neutral roles on their own channels rather than their emphasis tiers in light mode
+AssertionError: light channels: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color.test.ts:90:6
+     88|       `${role} channels`,
+     89|      )
+     90|      .toBe(true)
+       |      ^
+     91|    }
+     92|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:70:2 > color utilities > keeps the neutral roles on their own channels rather than their emphasis tiers in light mode
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:70:2 > color utilities > keeps the neutral roles on their own channels rather than their emphasis tiers in dark mode
+AssertionError: dark channels: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color.test.ts:90:6
+     88|       `${role} channels`,
+     89|      )
+     90|      .toBe(true)
+       |      ^
+     91|    }
+     92|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 12 skipped (14)
+   Start at  21:07:08
+   Duration  16.55s (transform 0ms, setup 3.65s, import 90ms, tests 12ms, environment 0ms)
+
+=== exit=1 (21:07:25)
+
+=== proof exit=1 (non-zero means the proof reddened)
+=== restored src/styles/_tokens.scss: byte-identical to pre-mutation copy = True

@@ -1,0 +1,15 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-apt
+
+··························
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  21:02:16
+   Duration  83.89s (transform 2.85s, setup 375ms, import 53.76s, tests 29.30s, environment 0ms)
+
+=== exit 0

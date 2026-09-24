@@ -1,0 +1,797 @@
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 0c81c43..6e2298d 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -10,6 +10,9 @@ $roles: primary, secondary, tertiary, success, info, warning, danger, light, dar
+ // The roles Bootstrap also names, whose tiers carry a `--bs-*` alias.
+ $aliased: primary, secondary, success, info, warning, danger, light, dark;
+ 
++// The neutral roles, whose text on the page keeps the role's own color rather than its on-canvas tier.
++$neutrals: light, dark;
++
+ // The light values of every theme-dependent token, as the CSS each one emits.
+ //
+ // A literal color here is either a reading of Elements' built showcase or a Bootstrap 5.3.8 value
+@@ -61,14 +64,14 @@ $light: (
+ 	'surface-tertiary-rgb': '248, 249, 250',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-white-base) 80%, var(--vn-color-warning-base))',
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+-	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 70%, var(--vn-text-body-base))',
++	'link': 'var(--vn-color-primary-emphasis)',
+ 	'link-rgb': '13, 54, 172',
+ 	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, black)',
+ 	'link-hover-rgb': '8, 35, 112',
+ 	'border': 'oklch(0.869 0.022 252.894)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)',
+-	'valid': 'var(--vn-color-success-base)',
+-	'invalid': 'var(--vn-color-danger-base)',
++	'valid': 'var(--vn-color-success-emphasis)',
++	'invalid': 'var(--vn-color-danger-emphasis)',
+ 	'close-filter': '',
+ 	'carousel-surface': 'var(--vn-palette-white-base)',
+ 	'carousel-caption': 'var(--vn-palette-white-base)',
+@@ -128,10 +131,10 @@ $dark: (
+ 	'surface-tertiary-rgb': '43, 48, 53',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-black-base) 60%, var(--vn-color-warning-base))',
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+-	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 80%, var(--vn-text-body-base))',
+-	'link-rgb': '79, 185, 238',
++	'link': 'var(--vn-color-primary-emphasis)',
++	'link-rgb': '103, 191, 238',
+ 	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 65%, white)',
+-	'link-hover-rgb': '141, 210, 244',
++	'link-hover-rgb': '156, 214, 244',
+ 	'border': 'oklch(0.4 0.022 256)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent)',
+ 	'valid': 'var(--vn-color-success-emphasis)',
+diff --git a/src/styles/components/_button.scss b/src/styles/components/_button.scss
+index 186ca5d..905142b 100644
+--- a/src/styles/components/_button.scss
++++ b/src/styles/components/_button.scss
+@@ -137,9 +137,15 @@ $sizes: (
+ 	// Each role's label is the release's `color-contrast` pick against the role's own fill in each
+ 	// mode, and its hover and active fills mix away from that label, or toward it for a role the
+ 	// tokens name as an end of the gray ramp, so every state keeps the label legible. The bare
+-	// `.btn` rule keeps `--vn-state-mixer`, which is the veil over a transparent ground.
++	// `.btn` rule keeps `--vn-state-mixer`, which is the veil over a transparent ground. An outline
++	// button's resting and disabled text sits on the page, so a role outside the neutral roles
++	// paints it in its on-canvas tier, the role's emphasis token, while its border keeps the fill.
+ 	@each $role in tokens.$roles {
+ 		$pair: map.get(tokens.$role-pairs, $role);
++		$text: var(--vn-color-#{$role}-emphasis);
++		@if list.index(tokens.$neutrals, $role) {
++			$text: var(--vn-color-#{$role}-base);
++		}
+ 		$label: label($pair, tokens.$candidates);
+ 		$endpoint: endpoint(
+ 			$pair,
+@@ -171,7 +177,7 @@ $sizes: (
+ 		}
+ 
+ 		.btn-outline-#{$role} {
+-			--bs-btn-color: var(--vn-color-#{$role}-base);
++			--bs-btn-color: #{$text};
+ 			--bs-btn-border-color: var(--vn-color-#{$role}-base);
+ 			--bs-btn-hover-color: #{$label};
+ 			--bs-btn-hover-bg: var(--vn-color-#{$role}-base);
+@@ -183,7 +189,7 @@ $sizes: (
+ 				var(--vn-color-#{$role}-base)
+ 			);
+ 			--bs-btn-active-border-color: var(--vn-color-#{$role}-base);
+-			--bs-btn-disabled-color: var(--vn-color-#{$role}-base);
++			--bs-btn-disabled-color: #{$text};
+ 			--bs-btn-disabled-border-color: var(--vn-color-#{$role}-base);
+ 		}
+ 	}
+diff --git a/src/styles/utilities/_color.scss b/src/styles/utilities/_color.scss
+index b989f65..ab436ef 100644
+--- a/src/styles/utilities/_color.scss
++++ b/src/styles/utilities/_color.scss
+@@ -4,12 +4,19 @@
+ @use '../mixins' as *;
+ 
+ @layer utilities {
+-	// Stand in for the release's text color maps. A role, black, white, and the body read the
+-	// release's `--bs-*` channel aliases at the `--bs-text-opacity` variable the entry sets; the
+-	// release's half-strength black and white literals read the palette's channels instead.
++	// Stand in for the release's text color maps. A role outside the neutral roles paints its
++	// on-canvas tier, the `--bs-*-text-emphasis` alias, through relative color at the
++	// `--bs-text-opacity` variable the entry sets, so its text on the page clears the contrast bar in
++	// each mode and the opacity steps still scale it. The neutral roles, black, white, and the body
++	// read the release's `--bs-*` channel aliases at the same variable; the release's half-strength
++	// black and white literals read the palette's channels instead.
+ 	$colors: ();
+ 	@each $name in list.join($aliased, ('black', 'white')) {
+-		$colors: map.set($colors, $name, rgba(var(--bs-#{$name}-rgb), var(--bs-text-opacity)));
++		$color: rgba(var(--bs-#{$name}-rgb), var(--bs-text-opacity));
++		@if list.index($aliased, $name) and not list.index($neutrals, $name) {
++			$color: rgb(from var(--bs-#{$name}-text-emphasis) r g b / var(--bs-text-opacity));
++		}
++		$colors: map.set($colors, $name, $color);
+ 	}
+ 	$colors: map.merge(
+ 		$colors,
+diff --git a/src/styles/utilities/_link.scss b/src/styles/utilities/_link.scss
+index b1af21b..6d7ce40 100644
+--- a/src/styles/utilities/_link.scss
++++ b/src/styles/utilities/_link.scss
+@@ -1,3 +1,4 @@
++@use 'sass:list';
+ @use 'sass:map';
+ @use '../tokens' as *;
+ @use '../mixins' as *;
+@@ -15,21 +16,42 @@ $shift: 20%;
+ 	// mixin. The link key's utility entries are map entries, so the `_color.scss` partial writes them
+ 	// where the release's map does, after the text colors.
+ 	//
+-	// The hover and focus color moves the role's color toward the endpoint that leads away from the
+-	// label the release's `color-contrast` function picks against it, as the release shades or tints
+-	// its own, and the opacity variables scale the moved color as they scale the resting one.
++	// A role outside the neutral roles paints its on-canvas tier, the role's emphasis token, and its
++	// hover and focus color moves that tier toward the mode's emphasis text, black in light and white
++	// in dark, so the moved color reads at no less contrast against the page than the resting one. A
++	// neutral role paints its own channels, and its hover and focus color moves them toward the
++	// endpoint that leads away from the label the release's `color-contrast` function picks against
++	// it, as the release shades or tints its own. The opacity variables scale the moved color as they
++	// scale the resting one.
+ 	@each $role in $aliased {
++		$neutral: list.index($neutrals, $role) != null;
+ 		$moved: color-mix(
+ 			in srgb,
+-			#{endpoint(map.get($role-pairs, $role), $candidates, $endpoints)} #{$shift},
+-			rgb(var(--vn-color-#{$role}-rgb))
++			var(--vn-text-emphasis-base) #{$shift},
++			var(--vn-color-#{$role}-emphasis)
+ 		);
++		@if $neutral {
++			$moved: color-mix(
++				in srgb,
++				#{endpoint(map.get($role-pairs, $role), $candidates, $endpoints)} #{$shift},
++				rgb(var(--vn-color-#{$role}-rgb))
++			);
++		}
+ 		.link-#{$role} {
+-			color: rgba(var(--vn-color-#{$role}-rgb), var(--bs-link-opacity, 1)) !important;
+-			text-decoration-color: rgba(
+-				var(--vn-color-#{$role}-rgb),
+-				var(--bs-link-underline-opacity, 1)
+-			) !important;
++			@if $neutral {
++				color: rgba(var(--vn-color-#{$role}-rgb), var(--bs-link-opacity, 1)) !important;
++				text-decoration-color: rgba(
++					var(--vn-color-#{$role}-rgb),
++					var(--bs-link-underline-opacity, 1)
++				) !important;
++			} @else {
++				color: rgb(
++					from var(--vn-color-#{$role}-emphasis) r g b / var(--bs-link-opacity, 1)
++				) !important;
++				text-decoration-color: rgb(
++					from var(--vn-color-#{$role}-emphasis) r g b / var(--bs-link-underline-opacity, 1)
++				) !important;
++			}
+ 
+ 			&:hover,
+ 			&:focus {
+diff --git a/tests/src/styles/components/button.test.ts b/tests/src/styles/components/button.test.ts
+index 58e81d5..4db3610 100644
+--- a/tests/src/styles/components/button.test.ts
++++ b/tests/src/styles/components/button.test.ts
+@@ -12,6 +12,7 @@ import {
+ 	readContrast,
+ 	readPixels,
+ 	readStyle,
++	readToken,
+ 	releaseMedia,
+ 	releasePointer,
+ 	stageMedia,
+@@ -28,8 +29,10 @@ import {
+ 	BUTTON_OUTLINE_CASES,
+ 	BUTTON_SCHEME_CASES,
+ 	BUTTON_SIZE_CASES,
++	BUTTON_TIER_ROLES,
+ 	BUTTON_TRANSITION_CASES,
+ 	extractShadowLayers,
++	TEXT_MODES,
+ } from '../../../setupStyles.js'
+ 
+ afterEach(async () => {
+@@ -261,6 +264,36 @@ describe('button classes', () => {
+ 		},
+ 	)
+ 
++	it.each(TEXT_MODES)(
++		'reads each outline button outside the neutral roles at or above the contrast bar against the page at rest in %s mode',
++		async (mode) => {
++			await stageMedia({ motion: false })
++			const container = scene.mount(
++				`<div data-bs-theme="${mode}" style="background-color: var(--bs-body-bg)">${BUTTON_TIER_ROLES.map(
++					(role) => `<button class="btn btn-outline-${role}">Outline ${role}</button>`,
++				).join('')}</div>`,
++			)
++			for (const role of BUTTON_TIER_ROLES) {
++				const button = requireValue(
++					container.querySelector(`.btn-outline-${role}`),
++					`No ${role} outline button`,
++				)
++				expect
++					.soft(
++						matchesColor(
++							readStyle(button, 'color'),
++							readToken(button, `--vn-color-${role}-emphasis`),
++						),
++						`${role} ${mode} tier`,
++					)
++					.toBe(true)
++				expect
++					.soft(readContrast(button), `${role} ${mode} contrast`)
++					.toBeGreaterThanOrEqual(CONTRAST_BAR)
++			}
++		},
++	)
++
+ 	it.each(BUTTON_OUTLINE_CASES)(
+ 		'paints outline %s in %s mode across rest, hover, active, focus, and disabled states',
+ 		async (role, mode, color, active, focus) => {
+@@ -277,7 +310,12 @@ describe('button classes', () => {
+ 				BUTTON_LABEL_CASES.find(([name, candidate]) => name === role && candidate === mode),
+ 				'No label expectation',
+ 			)[2]
+-			expect(matchesColor(readStyle(button, 'color'), color)).toBe(true)
++			// The resting and disabled text sits on the page, so a role outside the neutral roles
++			// paints its on-canvas tier there while its border keeps the fill.
++			const resting = BUTTON_TIER_ROLES.includes(role)
++				? readToken(button, `--vn-color-${role}-emphasis`)
++				: color
++			expect(matchesColor(readStyle(button, 'color'), resting)).toBe(true)
+ 			expect(matchesColor(readStyle(button, 'border-left-color'), color)).toBe(true)
+ 			expect(matchesColor(readStyle(button, 'background-color'), 'transparent')).toBe(true)
+ 			await hoverAccessible(`Outline ${role}`)
+@@ -300,7 +338,8 @@ describe('button classes', () => {
+ 			expect(matchesColor(ring.color, focus)).toBe(true)
+ 			expect(readStyle(button, 'outline-style')).toBe('none')
+ 			button.disabled = true
+-			expect(matchesColor(readStyle(button, 'color'), color)).toBe(true)
++			expect(matchesColor(readStyle(button, 'color'), resting)).toBe(true)
++			expect(matchesColor(readStyle(button, 'border-left-color'), color)).toBe(true)
+ 			expect(matchesColor(readStyle(button, 'background-color'), 'transparent')).toBe(true)
+ 		},
+ 	)
+diff --git a/tests/src/styles/components/validation.test.ts b/tests/src/styles/components/validation.test.ts
+index b9bd54d..b9c134f 100644
+--- a/tests/src/styles/components/validation.test.ts
++++ b/tests/src/styles/components/validation.test.ts
+@@ -52,8 +52,8 @@ describe('validation classes', () => {
+ 				return border
+ 			})
+ 			// The valid and invalid aliases resolve through `--vn-form-valid` and `--vn-form-invalid`,
+-			// whose values are the role's base fill in light and its emphasis tier in dark, so a mode
+-			// the theme never reached would report one color twice.
++			// whose values are the role's emphasis tier in each mode, mixed with that mode's body text,
++			// so a mode the theme never reached would report one color twice.
+ 			expect(matchesColor(readings[0] ?? '', readings[1] ?? '')).toBe(false)
+ 		},
+ 	)
+@@ -291,6 +291,81 @@ describe('validation classes', () => {
+ 		},
+ 	)
+ 
++	it.each(FORM_ICON_CASES)(
++		'reads the $state feedback and the checked $state label at or above the contrast bar against the page, in both modes',
++		({ state }) => {
++			const container = scene.mount(
++				TEXT_MODES.map(
++					(mode) =>
++						`<div data-bs-theme="${mode}" style="background-color: var(--bs-body-bg)">` +
++						`<div class="form-check"><input class="form-check-input is-${state}" type="checkbox" id="${mode}-${state}-box" style="appearance: none" checked><label class="form-check-label" for="${mode}-${state}-box">Agree</label></div>` +
++						`<div class="${state}-feedback">Read this</div></div>`,
++				).join(''),
++			)
++			for (const mode of TEXT_MODES) {
++				const scope = requireValue(
++					container.querySelector(`[data-bs-theme="${mode}"]`),
++					`No ${mode} scope`,
++				)
++				const feedback = requireValue(
++					scope.querySelector(`.${state}-feedback`),
++					`No ${mode} feedback`,
++				)
++				const label = requireValue(scope.querySelector('label'), `No ${mode} check label`)
++				expect(
++					requireValue(scope.querySelector('input'), `No ${mode} box`).matches(':checked'),
++				).toBe(true)
++				expect
++					.soft(readContrast(feedback), `${mode} feedback contrast`)
++					.toBeGreaterThanOrEqual(CONTRAST_BAR)
++				expect
++					.soft(readContrast(label), `${mode} checked label contrast`)
++					.toBeGreaterThanOrEqual(CONTRAST_BAR)
++			}
++		},
++	)
++
++	it.each(FORM_ICON_CASES)(
++		'paints the $state border, feedback, and checked fill from the $role on-canvas tier, in both modes',
++		({ state, role }) => {
++			const container = scene.mount(
++				TEXT_MODES.map(
++					(mode) =>
++						`<div data-bs-theme="${mode}"><input class="form-control is-${state}" aria-label="${mode} entry">` +
++						`<input class="form-check-input is-${state}" type="checkbox" aria-label="${mode} box" style="appearance: none" checked>` +
++						`<div class="${state}-feedback">Read this</div></div>`,
++				).join(''),
++			)
++			for (const mode of TEXT_MODES) {
++				const scope = requireValue(
++					container.querySelector(`[data-bs-theme="${mode}"]`),
++					`No ${mode} scope`,
++				)
++				const tier = readToken(scope, `--vn-color-${role}-emphasis`)
++				const control = requireValue(scope.querySelector('.form-control'), `No ${mode} control`)
++				const box = requireValue(scope.querySelector('.form-check-input'), `No ${mode} box`)
++				const feedback = requireValue(
++					scope.querySelector(`.${state}-feedback`),
++					`No ${mode} feedback`,
++				)
++				expect
++					.soft(matchesColor(readStyle(control, 'border-top-color'), tier), `${mode} border`)
++					.toBe(true)
++				expect
++					.soft(matchesColor(readStyle(box, 'background-color'), tier), `${mode} checked fill`)
++					.toBe(true)
++				expect.soft(matchesColor(readStyle(feedback, 'color'), tier), `${mode} feedback`).toBe(true)
++				// The tier is the fill mixed with the body text, so a border still on the fill reports.
++				expect
++					.soft(
++						matchesColor(tier, readToken(scope, `--vn-color-${role}-base`)),
++						`${mode} tier apart from the fill`,
++					)
++					.toBe(false)
++			}
++		},
++	)
++
+ 	it.each(FORM_ICON_CASES)(
+ 		'tints the $state check label and fills the checked box from the state color',
+ 		({ state }) => {
+diff --git a/tests/src/styles/elements/a.test.ts b/tests/src/styles/elements/a.test.ts
+index fa8df03..62912ba 100644
+--- a/tests/src/styles/elements/a.test.ts
++++ b/tests/src/styles/elements/a.test.ts
+@@ -10,8 +10,8 @@ afterEach(() => {
+ })
+ 
+ describe('anchor treatment', () => {
+-	// The record measures the primary-over-canvas mix, and its hover mix toward black in light and
+-	// toward white in dark.
++	// The record measures the primary on-canvas tier, the primary fill mixed at 70% with the body
++	// text in each mode, and its hover mix toward black in light and toward white in dark.
+ 	it.each(TEXT_A_CASES)(
+ 		'reads the link tokens and restores the no-href default in $mode mode',
+ 		async ({ mode, color, hover }) => {
+@@ -50,6 +50,20 @@ describe('anchor treatment', () => {
+ 			).toBe('underline')
+ 		},
+ 	)
++	it.each(TEXT_A_CASES)(
++		'paints the link in the primary text color, the on-canvas tier, in $mode mode',
++		({ mode }) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}"><a href="#content">Linked</a><span class="text-primary">Primary</span></div>`,
++			)
++			const linked = requireValue(host.querySelector('a'), 'No linked anchor')
++			const primary = requireValue(host.querySelector('.text-primary'), 'No primary text')
++			expect(matchesColor(readStyle(linked, 'color'), readStyle(primary, 'color'))).toBe(true)
++			expect(
++				matchesColor(readStyle(linked, 'color'), readToken(linked, '--vn-color-primary-emphasis')),
++			).toBe(true)
++		},
++	)
+ 	it('reads the compatible opacity from an island', () => {
+ 		const host = scene.mount(
+ 			'<div style="--bs-link-opacity: 0.5"><a href="#content">Translucent</a></div>',
+diff --git a/tests/src/styles/theme.test.ts b/tests/src/styles/theme.test.ts
+index 98a6803..d32d993 100644
+--- a/tests/src/styles/theme.test.ts
++++ b/tests/src/styles/theme.test.ts
+@@ -176,10 +176,19 @@ describe('theme scopes', () => {
+ 		const dark = requireValue(container.querySelector('#dark'), 'No dark label')
+ 		const inner = requireValue(container.querySelector('#inner'), 'No nested light label')
+ 		const release = requireValue(container.querySelector('#release'), 'No release label')
+-		expect(matchesColor(readStyle(dark, 'color'), THEME_SECONDARY_CASE.fill)).toBe(true)
++		// The outline's border carries the fill, and its text carries the on-canvas tier mixed from
++		// that fill, so the fill is read off the border and the text is held to the contrast bar.
+ 		expect(matchesColor(readStyle(dark, 'border-top-color'), THEME_SECONDARY_CASE.fill)).toBe(true)
+ 		expect(readContrast(dark)).toBeGreaterThanOrEqual(readContrast(release))
+-		expect(matchesColor(readStyle(light, 'color'), 'oklch(0.446 0.043 257.281)')).toBe(true)
++		expect(matchesColor(readStyle(light, 'border-top-color'), 'oklch(0.446 0.043 257.281)')).toBe(
++			true,
++		)
++		expect(
++			matchesColor(readStyle(inner, 'border-top-color'), readStyle(light, 'border-top-color')),
++		).toBe(true)
++		expect(
++			matchesColor(readStyle(dark, 'border-top-color'), readStyle(light, 'border-top-color')),
++		).toBe(false)
+ 		expect(matchesColor(readStyle(inner, 'color'), readStyle(light, 'color'))).toBe(true)
+ 		expect(matchesColor(readStyle(dark, 'color'), readStyle(light, 'color'))).toBe(false)
+ 	})
+diff --git a/tests/src/styles/utilities/color-bg.test.ts b/tests/src/styles/utilities/color-bg.test.ts
+index cc6694d..6e423bc 100644
+--- a/tests/src/styles/utilities/color-bg.test.ts
++++ b/tests/src/styles/utilities/color-bg.test.ts
+@@ -104,10 +104,7 @@ describe('color-and-background pairs', () => {
+ 		// later at the same importance and specificity, wins; the pair keeps the fill no link sets.
+ 		expect(readStyle(paired, 'color')).toBe(readStyle(link, 'color'))
+ 		expect(
+-			matchesColor(
+-				readStyle(paired, 'color'),
+-				`rgb(${readToken(paired, '--vn-color-danger-rgb')})`,
+-			),
++			matchesColor(readStyle(paired, 'color'), readToken(paired, '--vn-color-danger-emphasis')),
+ 		).toBe(true)
+ 		expect(readStyle(paired, 'background-color')).not.toBe(readStyle(link, 'background-color'))
+ 	})
+diff --git a/tests/src/styles/utilities/color.test.ts b/tests/src/styles/utilities/color.test.ts
+index c043a4c..db6be57 100644
+--- a/tests/src/styles/utilities/color.test.ts
++++ b/tests/src/styles/utilities/color.test.ts
+@@ -1,13 +1,23 @@
+ import { TOKEN_NAMES } from '@src/core'
+ import { requireValue } from '@orkestrel/test'
+-import { parseCSSColor, readStyle, readToken } from '@orkestrel/test/browser'
++import {
++	matchesColor,
++	parseCSSColor,
++	readContrast,
++	readStyle,
++	readToken,
++} from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
++import { CONTRAST_BAR } from '../../../setup.js'
+ import { scene } from '../../../setupBrowser.js'
+ import {
+ 	TEXT_COLOR_CASES,
+ 	TEXT_EMPHASIS_CASES,
+ 	TEXT_MODES,
++	TEXT_NEUTRAL_ROLES,
+ 	TEXT_OPACITY_CASES,
++	TEXT_TIER_CASES,
++	TEXT_TIER_SHARE,
+ } from '../../../setupStyles.js'
+ 
+ // A color no class writes. A scope sets it for its children to inherit, and an override writes it,
+@@ -17,17 +27,20 @@ const INHERITED = 'rgb(1, 2, 3)'
+ afterEach(() => {
+ 	document.documentElement.style.removeProperty('--vn-color-primary-rgb')
+ 	document.documentElement.style.removeProperty('--vn-color-primary-base')
++	document.documentElement.style.removeProperty('--vn-text-body-base')
+ 	scene.clear()
+ })
+ 
+ describe('color utilities', () => {
+ 	it.each(TEXT_MODES)(
+-		'resolves each text color to the value the release records in %s mode',
++		'resolves each text color to the value the release records, and each role outside the neutral roles to its on-canvas tier, in %s mode',
+ 		(mode) => {
+ 			const host = scene.mount(
++				// A role outside the neutral roles paints its on-canvas tier in place of the release's
++				// channel reading, and every other key keeps the value the release records.
+ 				`<div data-bs-theme="${mode}" style="color: ${INHERITED}">${TEXT_COLOR_CASES.map(
+ 					({ key, value }) =>
+-						`<span class="text-${key}">Class</span><span data-recorded="${key}" style="--bs-text-opacity: 1; color: ${value}">Recorded</span>`,
++						`<span class="text-${key}">Class</span><span data-recorded="${key}" style="--bs-text-opacity: 1; color: ${TEXT_TIER_CASES.find((entry) => entry.key === key)?.value ?? value}">Recorded</span>`,
+ 				).join('')}</div>`,
+ 			)
+ 			for (const { key } of TEXT_COLOR_CASES) {
+@@ -44,6 +57,71 @@ describe('color utilities', () => {
+ 		},
+ 	)
+ 
++	it.each(TEXT_MODES)(
++		'keeps the neutral roles on their own channels rather than their emphasis tiers in %s mode',
++		(mode) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}">${TEXT_NEUTRAL_ROLES.map(
++					(role) => `<span class="text-${role}">Neutral</span>`,
++				).join('')}</div>`,
++			)
++			// Each neutral tier is a gray step that differs from the role's channels in at least one
++			// mode (the light role's tier in light mode, the dark role's in dark), so a neutral role
++			// moved onto its tier reports here.
++			for (const role of TEXT_NEUTRAL_ROLES) {
++				const element = requireValue(host.querySelector(`.text-${role}`), `No ${role} text`)
++				expect
++					.soft(
++						matchesColor(
++							readStyle(element, 'color'),
++							`rgb(${readToken(element, `--bs-${role}-rgb`)})`,
++						),
++						`${role} channels`,
++					)
++					.toBe(true)
++			}
++		},
++	)
++
++	it.each(TEXT_MODES)(
++		'reads each role color outside the neutral roles at or above the contrast bar against the page in %s mode',
++		(mode) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}" style="background-color: var(--bs-body-bg)">${TEXT_TIER_CASES.map(
++					({ key }) => `<span class="text-${key}">Role text</span>`,
++				).join('')}</div>`,
++			)
++			for (const { key } of TEXT_TIER_CASES) {
++				const element = requireValue(host.querySelector(`.text-${key}`), `No ${key} text`)
++				expect
++					.soft(readContrast(element), `${key} ${mode} contrast`)
++					.toBeGreaterThanOrEqual(CONTRAST_BAR)
++			}
++		},
++	)
++
++	it.each(TEXT_MODES)(
++		'paints each role color outside the neutral roles and its emphasis class in one color at the default opacity in %s mode',
++		(mode) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}">${TEXT_TIER_CASES.map(
++					({ key }) =>
++						`<span class="text-${key}">Role</span><span class="text-${key}-emphasis">Emphasis</span>`,
++				).join('')}</div>`,
++			)
++			for (const { key } of TEXT_TIER_CASES) {
++				const role = requireValue(host.querySelector(`.text-${key}`), `No ${key} text`)
++				const emphasis = requireValue(
++					host.querySelector(`.text-${key}-emphasis`),
++					`No ${key} emphasis text`,
++				)
++				expect
++					.soft(matchesColor(readStyle(role, 'color'), readStyle(emphasis, 'color')), key)
++					.toBe(true)
++			}
++		},
++	)
++
+ 	it('resolves each emphasis tier through the alias its own mode declares', () => {
+ 		const host = scene.mount(
+ 			TEXT_MODES.map(
+@@ -79,41 +157,91 @@ describe('color utilities', () => {
+ 		).toEqual([])
+ 	})
+ 
+-	it('sets the alpha each opacity step names over a text color written ahead of it', () => {
+-		const host = scene.mount(
+-			TEXT_OPACITY_CASES.map(
+-				({ step }) => `<span class="text-primary text-opacity-${String(step)}">Faded</span>`,
+-			).join(''),
+-		)
+-		for (const { step, value } of TEXT_OPACITY_CASES) {
+-			const element = requireValue(
+-				host.querySelector(`.text-opacity-${String(step)}`),
+-				`No text-opacity-${String(step)} element`,
++	it.each(TEXT_MODES)(
++		'paints each opacity step as the on-canvas tier of every role outside the neutral roles, at the alpha the step names, in %s mode',
++		(mode) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}">${TEXT_TIER_CASES.map(
++					({ key }) =>
++						`<span class="text-${key}-emphasis">Tier</span>` +
++						TEXT_OPACITY_CASES.map(
++							({ step }) => `<span class="text-${key} text-opacity-${String(step)}">Faded</span>`,
++						).join(''),
++				).join('')}</div>`,
+ 			)
+-			// The color entry sets the variable to the `1` value on the same element, and the opacity entry
+-			// follows it in the map, so the step is what the color reads.
+-			expect(Number(readToken(element, '--bs-text-opacity'))).toBe(value)
+-			expect(requireValue(parseCSSColor(readStyle(element, 'color')), 'No color')[3]).toBe(value)
+-		}
+-	})
++			for (const { key } of TEXT_TIER_CASES) {
++				const [red, green, blue] = requireValue(
++					parseCSSColor(
++						readStyle(
++							requireValue(host.querySelector(`.text-${key}-emphasis`), `No ${key} tier`),
++							'color',
++						),
++					),
++					`No ${key} tier color`,
++				)
++				for (const { step, value } of TEXT_OPACITY_CASES) {
++					const element = requireValue(
++						host.querySelector(`.text-${key}.text-opacity-${String(step)}`),
++						`No ${key} text-opacity-${String(step)} element`,
++					)
++					// The color entry sets the variable to the `1` value on the same element, and the
++					// opacity entry follows it in the map, so the step is what the color reads.
++					expect(Number(readToken(element, '--bs-text-opacity'))).toBe(value)
++					const color = requireValue(parseCSSColor(readStyle(element, 'color')), 'No color')
++					expect.soft(color[3], `${key} ${String(step)} alpha`).toBe(value)
++					expect
++						.soft(matchesColor(color, [red, green, blue, value]), `${key} ${String(step)} channels`)
++						.toBe(true)
++				}
++			}
++		},
++	)
+ 
+-	it('retunes a role color and its emphasis tier from the tokens their aliases read, and ignores the density factor', () => {
++	it('retunes a role color from the fill and the body text at the scope declaring the theme, ignores the role channels and the density factor', () => {
+ 		const host = scene.mount(
+-			'<span class="text-primary">Role</span><span class="text-primary-emphasis">Emphasis</span>',
++			'<span class="text-primary">Role</span><span class="text-primary-emphasis">Emphasis</span>' +
++				'<span class="text-bg-primary">Channel consumer</span>' +
++				`<span id="fill-twin" style="color: color-mix(in oklab, rgb(200, 0, 0) ${TEXT_TIER_SHARE}, var(--vn-text-body-base))">Fill twin</span>` +
++				`<span id="text-twin" style="color: color-mix(in oklab, var(--vn-color-primary-base) ${TEXT_TIER_SHARE}, rgb(0, 128, 0))">Text twin</span>`,
+ 		)
+ 		const role = requireValue(host.querySelector('.text-primary'), 'No role element')
+ 		const emphasis = requireValue(host.querySelector('.text-primary-emphasis'), 'No emphasis')
++		const consumer = requireValue(host.querySelector('.text-bg-primary'), 'No channel consumer')
++		const root = document.documentElement
+ 		const resting = [readStyle(role, 'color'), readStyle(emphasis, 'color')]
+-		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		root.style.setProperty(TOKEN_NAMES.factor.density, '2')
+ 		try {
+ 			expect([readStyle(role, 'color'), readStyle(emphasis, 'color')]).toEqual(resting)
+ 		} finally {
+-			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++			root.style.removeProperty(TOKEN_NAMES.factor.density)
+ 		}
+-		document.documentElement.style.setProperty('--vn-color-primary-rgb', '20, 80, 140')
+-		expect(readStyle(role, 'color')).toBe('rgb(20, 80, 140)')
+-		document.documentElement.style.setProperty('--vn-color-primary-base', 'rgb(200, 0, 0)')
+-		expect(readStyle(emphasis, 'color')).not.toBe(resting[1])
++		// The channel moves the fills that read it and leaves the role's text on its tier.
++		root.style.setProperty('--vn-color-primary-rgb', '20, 80, 140')
++		expect(readStyle(consumer, 'background-color')).toBe('rgb(20, 80, 140)')
++		expect(readStyle(role, 'color')).toBe(resting[0])
++		root.style.removeProperty('--vn-color-primary-rgb')
++		// The fill moves the tier, and the text follows it to the mix of the retuned fill.
++		root.style.setProperty('--vn-color-primary-base', 'rgb(200, 0, 0)')
++		const fill = readStyle(role, 'color')
++		expect(fill).not.toBe(resting[0])
++		expect(
++			matchesColor(
++				fill,
++				readStyle(requireValue(host.querySelector('#fill-twin'), 'No twin'), 'color'),
++			),
++		).toBe(true)
++		expect(matchesColor(readStyle(emphasis, 'color'), fill)).toBe(true)
++		root.style.removeProperty('--vn-color-primary-base')
++		// The body text is the mix's partner, so retuning it moves the text as well.
++		root.style.setProperty('--vn-text-body-base', 'rgb(0, 128, 0)')
++		const partner = readStyle(role, 'color')
++		expect(partner).not.toBe(resting[0])
++		expect(
++			matchesColor(
++				partner,
++				readStyle(requireValue(host.querySelector('#text-twin'), 'No twin'), 'color'),
++			),
++		).toBe(true)
+ 	})
+ 
+ 	it('keeps its priority over a later unlayered consumer rule', () => {
+diff --git a/tests/src/styles/utilities/link.test.ts b/tests/src/styles/utilities/link.test.ts
+index e52e8c5..4975d79 100644
+--- a/tests/src/styles/utilities/link.test.ts
++++ b/tests/src/styles/utilities/link.test.ts
+@@ -3,11 +3,13 @@ import {
+ 	matchesColor,
+ 	measureLuminance,
+ 	parseCSSColor,
++	readContrast,
+ 	readStyle,
+ 	readToken,
+ } from '@orkestrel/test/browser'
+ import { page } from 'vitest/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
++import { CONTRAST_BAR } from '../../../setup.js'
+ import { scene } from '../../../setupBrowser.js'
+ import {
+ 	BUTTON_LABEL_CASES,
+@@ -17,6 +19,8 @@ import {
+ 	LINK_SHIFT,
+ 	LINK_UNDERLINE_OPACITY_CASES,
+ 	TEXT_MODES,
++	TEXT_NEUTRAL_ROLES,
++	TEXT_TIER_CASES,
+ } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+@@ -24,7 +28,76 @@ afterEach(() => {
+ })
+ 
+ describe.each(TEXT_MODES)('link classes in %s mode', (mode) => {
+-	it.each(LINK_ROLES)('reads the %s role channels at rest', (role) => {
++	it.each(TEXT_TIER_CASES.map(({ key }) => key))(
++		'paints the %s on-canvas tier at rest at or above the contrast bar, and scales it by the opacity variables',
++		(role) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}" style="background-color: var(--bs-body-bg)"><a href="#content" class="link-${role}">Role link</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No role link')
++			const tier = readToken(anchor, `--vn-color-${role}-emphasis`)
++			const resting = readStyle(anchor, 'color')
++			expect(matchesColor(resting, tier)).toBe(true)
++			expect(matchesColor(readStyle(anchor, 'text-decoration-color'), tier)).toBe(true)
++			expect(readContrast(anchor)).toBeGreaterThanOrEqual(CONTRAST_BAR)
++			// The role channels move the fills and the underline class, never the link's text.
++			anchor.style.setProperty(`--vn-color-${role}-rgb`, '20, 80, 140')
++			expect(readStyle(anchor, 'color')).toBe(resting)
++			anchor.style.setProperty(`--vn-color-${role}-emphasis`, 'rgb(20, 80, 140)')
++			anchor.style.setProperty('--bs-link-opacity', '0.5')
++			anchor.style.setProperty('--bs-link-underline-opacity', '0.25')
++			expect(matchesColor(readStyle(anchor, 'color'), [20, 80, 140, 0.5])).toBe(true)
++			expect(matchesColor(readStyle(anchor, 'text-decoration-color'), [20, 80, 140, 0.25])).toBe(
++				true,
++			)
++		},
++	)
++
++	it.each(TEXT_TIER_CASES.map(({ key }) => key))(
++		'moves the %s hover and focus color toward the emphasis text at or above the resting contrast, and scales it by the opacity variables',
++		async (role) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}" style="background-color: var(--bs-body-bg)"><a href="#content" class="link-${role}">Role link</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No role link')
++			const rest = requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No resting color')
++			const contrast = readContrast(anchor)
++			await page.elementLocator(anchor).hover()
++			expect(anchor.matches(':hover')).toBe(true)
++			const hovered = readStyle(anchor, 'color')
++			const moved = requireValue(parseCSSColor(hovered), 'No moved color')
++			// The move takes the release's share of the mode's emphasis text, black in light and white
++			// in dark. Each channel is weighed here in sRGB, apart from the engine's own `color-mix()`.
++			const endpoint = requireValue(
++				parseCSSColor(readToken(anchor, '--vn-text-emphasis-base')),
++				'No endpoint',
++			)
++			expect(
++				matchesColor(moved, [
++					rest[0] * (1 - LINK_SHIFT) + endpoint[0] * LINK_SHIFT,
++					rest[1] * (1 - LINK_SHIFT) + endpoint[1] * LINK_SHIFT,
++					rest[2] * (1 - LINK_SHIFT) + endpoint[2] * LINK_SHIFT,
++					1,
++				]),
++			).toBe(true)
++			expect(readContrast(anchor)).toBeGreaterThanOrEqual(Math.max(contrast, CONTRAST_BAR))
++			expect(readStyle(anchor, 'text-decoration-color')).toBe(hovered)
++			await page.elementLocator(host).hover({ position: { x: 500, y: 0 } })
++			anchor.focus()
++			expect(anchor.matches(':hover')).toBe(false)
++			expect(anchor.matches(':focus')).toBe(true)
++			expect(readStyle(anchor, 'color')).toBe(hovered)
++			anchor.style.setProperty('--bs-link-opacity', '0.5')
++			anchor.style.setProperty('--bs-link-underline-opacity', '0.25')
++			const [red, green, blue] = moved
++			expect(matchesColor(readStyle(anchor, 'color'), [red, green, blue, 0.5])).toBe(true)
++			expect(
++				matchesColor(readStyle(anchor, 'text-decoration-color'), [red, green, blue, 0.25]),
++			).toBe(true)
++		},
++	)
++
++	it.each(TEXT_NEUTRAL_ROLES)('reads the %s role channels at rest', (role) => {
+ 		const host = scene.mount(
+ 			`<div data-bs-theme="${mode}"><a href="#content" class="link-${role}">Role link</a></div>`,
+ 		)
+@@ -39,7 +112,7 @@ describe.each(TEXT_MODES)('link classes in %s mode', (mode) => {
+ 		expect(readStyle(anchor, 'text-decoration-color')).toBe('rgba(20, 80, 140, 0.25)')
+ 	})
+ 
+-	it.each(LINK_ROLES)(
++	it.each(TEXT_NEUTRAL_ROLES)(
+ 		'moves the %s hover and focus color away from its label, and scales it by the opacity variables',
+ 		async (role) => {
+ 			const host = scene.mount(
+@@ -219,7 +292,7 @@ describe('link classes in the utilities layer', () => {
+ 		expect(
+ 			matchesColor(
+ 				readStyle(link, 'text-decoration-color'),
+-				`rgb(${readToken(link, '--vn-color-primary-rgb')})`,
++				readToken(link, '--vn-color-primary-emphasis'),
+ 			),
+ 		).toBe(true)
+ 	})
