@@ -1,0 +1,1120 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 053d32b..7ac5a1f 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -948,6 +948,19 @@ export const BUTTON_GROUP_CHOICES: readonly string[] = Object.freeze(['left', 'c
+  * group carrying it, and are built from a shared size list. The dropstart specimen leads its group
+  * with the toggle, which is the only position in which the partial squares a split toggle's
+  * trailing corners.
++ *
++ * The disabled specimen renders one host for each form the Button partial dims — the native
++ * attribute, the `disabled` class, an anchor announcing `aria-disabled="true"`, a host inside a
++ * disabled fieldset, and the label of a disabled `.btn-check` input — behind one enabled host of the
++ * same variant, so its frame sets each dimmed host beside the treatment it dims. Each form reaches a
++ * host no other form reaches: the class form sits on a button that is not natively disabled, and the
++ * fieldset form on an anchor, which the native state never reaches. No dimmed host takes a tab stop.
++ *
++ * The pressed specimen renders the pressed face of every role the Button table renders, filled and
++ * outline, as a toggle announcing `aria-pressed="true"`. The `active` class selects the same
++ * declarations a held pointer does, so its frame is the held face of every role, including the roles
++ * whose own names a capture scenario cannot carry. Its hosts are mapped from the Button table's
++ * single-role hosts, so a role joining that table joins this specimen.
+  */
+ export const BUTTON_GROUP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 	[
+@@ -1003,6 +1016,30 @@ export const BUTTON_GROUP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+ 			name: 'Split dropstart',
+ 			body: '<div class="btn-group dropstart" role="group" aria-label="Split print opening before"><button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" aria-expanded="false" aria-label="More print options"></button><ul class="dropdown-menu"><li><a class="dropdown-item" href="#print-choice">Choose print</a></li></ul><button type="button" class="btn btn-outline-secondary">Split print</button></div>',
+ 		},
++		{
++			name: 'Disabled buttons',
++			body: '<div class="btn-toolbar gap-2" role="toolbar" aria-label="Disabled forms"><button type="button" class="btn btn-primary">Enabled action</button><button type="button" class="btn btn-primary" disabled>Disabled attribute</button><button type="button" class="btn btn-primary disabled" aria-disabled="true" tabindex="-1">Disabled class</button><a class="btn btn-primary" role="button" href="#main" aria-disabled="true" tabindex="-1">Disabled anchor</a><fieldset disabled><div class="btn-group" role="group" aria-label="Disabled fieldset actions"><a class="btn btn-primary" role="button" href="#main" tabindex="-1">Disabled fieldset</a></div></fieldset><input type="checkbox" class="btn-check" id="disabled-check" autocomplete="off" disabled><label class="btn btn-outline-primary" for="disabled-check">Disabled check</label></div>',
++		},
++		{
++			name: 'Pressed roles',
++			body: `<div class="btn-toolbar gap-2" role="toolbar" aria-label="Pressed faces">${[
++				{ word: 'fills', pattern: /^btn btn-[a-z]+$/u },
++				{ word: 'outlines', pattern: /^btn btn-outline-[a-z]+$/u },
++			]
++				.map(
++					({ word, pattern }) =>
++						`<div class="btn-group-vertical" role="group" aria-label="Pressed ${word}">${[
++							...new Set(BUTTON_SPECIMENS.map(({ classes }) => classes)),
++						]
++							.filter((classes) => pattern.test(classes) && classes !== 'btn btn-link')
++							.map(
++								(classes) =>
++									`<button type="button" class="${classes} active" aria-pressed="true">Pressed ${classes.slice('btn btn-'.length).replace('-', ' ')}</button>`,
++							)
++							.join('')}</div>`,
++				)
++				.join('')}</div>`,
++		},
+ 	].map(({ name, body }) => Object.freeze({ name, markup: body })),
+ )
+ 
+@@ -1097,6 +1134,14 @@ export const PLACEHOLDER_COPY = Object.freeze({
+  * announcing it as an unnamed control would report a control a reader cannot act on. An anchor
+  * without an `href` attribute is not focusable, so no `tabindex` attribute is written to take it
+  * out of the tab order.
++ *
++ * The large specimen sets the `lg` step beside the default step, each on the same column and on one
++ * top edge, so the step shows as the one difference at their bottom edges. The height ramp carries
++ * every step at a different width, and a frame of it cannot set one step against another. Both
++ * floors are written in `em`, so the pair sits at the largest font size step, where the step is
++ * several pixels tall rather than a fraction of one line's height. The pair pads its own foot, so
++ * the frame's bottom row paints the surface alone: that row is the floor the frame guard reads each
++ * bar against, and a bottom row crossing the taller bar would give the guard no floor.
+  */
+ export const PLACEHOLDER_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -1116,6 +1161,11 @@ export const PLACEHOLDER_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		name: 'Button placeholder',
+ 		markup: '<a class="btn btn-primary disabled placeholder col-4" aria-hidden="true"></a>',
+ 	}),
++	Object.freeze({
++		name: 'Large placeholder',
++		markup:
++			'<div class="d-flex align-items-start gap-2 pb-2 fs-1"><span class="placeholder col-5"></span><span class="placeholder placeholder-lg col-5"></span></div>',
++	}),
+ ])
+ 
+ /** Holds the Form check section's visible copy and accessible name. */
+@@ -1428,6 +1478,10 @@ export const LIST_GROUP_COPY = Object.freeze({
+  * specimen because a capture scenario's stem may carry no mode token, and a per-role specimen would
+  * name one `light` and one `dark`. The action specimen is the one the journey drives, and it carries
+  * an anchor host and a button host so both reach the same rules.
++ *
++ * The role list renders the resting roles, an action row for each role, and a selected row for each
++ * role, each as a specimen of its own. The journey drives the role action rows, and the selected rows
++ * carry the `active` class each role retunes.
+  */
+ export const LIST_GROUP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -1466,10 +1520,22 @@ export const LIST_GROUP_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 			markup: `<ul class="list-group list-group-horizontal${step === '' ? '' : `-${step}`}"><li class="list-group-item">Oak</li><li class="list-group-item active" aria-current="true">Ash</li><li class="list-group-item">Elm</li></ul>`,
+ 		}),
+ 	),
+-	Object.freeze({
+-		name: 'List group roles',
+-		markup: `<ul class="list-group">${['primary', 'secondary', 'success', 'info', 'warning', 'danger', 'light', 'dark'].map((role) => `<li class="list-group-item list-group-item-${role}">${role}</li>`).join('')}</ul>`,
+-	}),
++	...[['primary', 'secondary', 'success', 'info', 'warning', 'danger', 'light', 'dark']].flatMap(
++		(roles) => [
++			Object.freeze({
++				name: 'List group roles',
++				markup: `<ul class="list-group">${roles.map((role) => `<li class="list-group-item list-group-item-${role}">${role}</li>`).join('')}</ul>`,
++			}),
++			Object.freeze({
++				name: 'List group role actions',
++				markup: `<div class="list-group">${roles.map((role) => `<a class="list-group-item list-group-item-action list-group-item-${role}" href="#main">${role} action</a>`).join('')}</div>`,
++			}),
++			Object.freeze({
++				name: 'List group role selection',
++				markup: `<ul class="list-group">${roles.map((role) => `<li class="list-group-item list-group-item-${role} active" aria-current="true">${role}</li>`).join('')}</ul>`,
++			}),
++		],
++	),
+ ])
+ 
+ /** Holds the Badge section's visible copy and accessible name. */
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 6d9580e..de14b9f 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -116,6 +116,7 @@ import {
+ 	DRIVEN_KEYS,
+ 	FOCUS_RING,
+ 	isVariantName,
++	MODE_TOKEN,
+ 	UNDER_BAR,
+ } from '../../setup.js'
+ import {
+@@ -1369,6 +1370,379 @@ describe('journey', () => {
+ 		JOURNAL.record('hold', 'Dispatch lane', String(driven.get('active')))
+ 	})
+ 
++	it('repaints each role beyond the filled primary under the pointer, photographs each hover the registry names, and holds each on its pressed twin', async () => {
++		await applyTheme(VARIANT)
++		await waitForAnimations(document.body)
++		const pressed = readSpecimen(mounted.host, 'Pressed roles')
++		// The population is every host of the Button table carrying the base class and one role class
++		// and nothing else, other than the link, which its own case drives, and the filled primary,
++		// whose pointer states the Primary case drives and photographs.
++		const roles = BUTTON_SPECIMENS.filter(
++			(specimen) =>
++				/^btn btn-(?:outline-)?[a-z]+$/u.test(specimen.classes) &&
++				specimen.classes !== 'btn btn-link' &&
++				specimen.classes !== 'btn btn-primary',
++		)
++		expect(roles).not.toStrictEqual([])
++		const readings: Array<
++			readonly [string, string, string, string, readonly string[], readonly string[]]
++		> = []
++		const framed: Array<readonly [string, boolean]> = []
++		const unframed: string[] = []
++		for (const specimen of roles) {
++			const host = readButton(mounted.section, specimen.name)
++			const role = requireValue(
++				[...host.classList].find((name) => name !== 'btn'),
++				`The "${specimen.name}" host carries no role class`,
++			)
++			const twin = requireValue(
++				pressed.querySelector(`.${role}.active`),
++				`The Pressed roles specimen renders no pressed ${role} host`,
++			)
++			const registered = CAPTURE_SCENARIOS.find(
++				(scenario) => scenario === `${buildStem(specimen.name)}-hover`,
++			)
++			// Each host is moved into a padded wrapper at the document's start for its own turn and put
++			// back after it, for the reasons the Primary case states: a placement takes every section out
++			// of the layout, and a copy would answer to the host's accessible name beside the original.
++			const marker = document.createComment(specimen.name)
++			host.before(marker)
++			const lifted = build('div', { classes: 'p-2' })
++			lifted.append(host)
++			document.body.prepend(lifted)
++			try {
++				expect(host.matches(':hover')).toBe(false)
++				const rest = readStyle(host, 'background-color')
++				await stagePane(window.innerWidth, window.innerHeight)
++				await hoverAccessible('button', specimen.name)
++				await waitForAnimations(host)
++				expect(host.matches(':hover')).toBe(true)
++				const hovered = readStyle(host, 'background-color')
++				// The host sits outside the showcase's `main` element, where a placement takes nothing
++				// above it out of the layout, so the shot finds it under the pointer.
++				expect(mounted.host.querySelector('main')?.contains(host)).toBe(false)
++				if (registered === undefined) unframed.push(specimen.name)
++				else {
++					await stageMedia({ motion: false })
++					await FRAMES.place(registered, host, lifted)
++					await stagePane(window.innerWidth, window.innerHeight)
++					framed.push([
++						registered,
++						host.matches(':hover') && readStyle(host, 'background-color') === hovered,
++					])
++					await releaseMedia()
++				}
++				await releasePane()
++				await holdAccessible('button', specimen.name)
++				await waitForAnimations(host)
++				expect(host.matches(':active')).toBe(true)
++				const held = readStyle(host, 'background-color')
++				const face = ['background-color', 'color', 'border-top-color']
++				readings.push([
++					specimen.name,
++					rest,
++					hovered,
++					held,
++					face.map((property) => readStyle(host, property)),
++					face.map((property) => readStyle(twin, property)),
++				])
++				await releasePointer()
++				await waitForAnimations(host)
++				expect(host.matches(':active')).toBe(false)
++			} finally {
++				marker.replaceWith(host)
++				lifted.remove()
++			}
++		}
++		// Every role leaves its resting fill under the pointer and leaves its hover fill under a held
++		// press, and the held face is the one its pressed twin in the Pressed roles specimen paints at
++		// rest: that twin's frame is the frame of every role's held face.
++		expect(
++			readings.filter(([, rest, hovered, held]) => hovered === rest || held === hovered),
++		).toStrictEqual([])
++		expect(
++			readings.filter(([, , , , face, twin]) => face.join() !== twin.join()).map(([name]) => name),
++		).toStrictEqual([])
++		// Every photographed hover was taken while the pointer still held it, and a role goes
++		// unphotographed only where its stem would carry a mode token the filename law refuses.
++		expect(framed).not.toStrictEqual([])
++		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
++		expect(unframed.filter((name) => !MODE_TOKEN.test(buildStem(name)))).toStrictEqual([])
++		ARTIFACT.push(JSON.stringify({ reading: 'role pointer paint', readings, unframed }))
++		JOURNAL.record('hold', 'roles', String(readings.length))
++	})
++
++	it('drives the link button to hover, to focus, and to a press on its lifted host, and photographs each state', async () => {
++		await applyTheme(VARIANT)
++		await waitForAnimations(document.body)
++		const host = readButton(mounted.section, 'Link')
++		const rest = readStyle(host, 'color')
++		const driven = new Map<string, string>()
++		const framed: Array<readonly [string, boolean]> = []
++		let ring = 'none'
++		let reach = 0
++		let inside: readonly boolean[] = []
++		// The host is moved into a padded wrapper at the document's start and put back afterwards, the
++		// placement the underline case uses: the padding holds the focus ring the link paints outside
++		// its own box, and every frame of the host is shot on the wrapper.
++		const marker = document.createComment('Link')
++		host.before(marker)
++		const lifted = build('div', { classes: 'p-2' })
++		lifted.append(host)
++		document.body.prepend(lifted)
++		try {
++			expect(host.matches(':hover')).toBe(false)
++			await stagePane(window.innerWidth, window.innerHeight)
++			await hoverAccessible('button', 'Link')
++			await waitForAnimations(host)
++			expect(host.matches(':hover')).toBe(true)
++			driven.set('hover', readStyle(host, 'color'))
++			await stageMedia({ motion: false })
++			expect(mounted.host.querySelector('main')?.contains(host)).toBe(false)
++			await FRAMES.place('link-hover', host, lifted)
++			await stagePane(window.innerWidth, window.innerHeight)
++			framed.push([
++				'link-hover',
++				host.matches(':hover') && readStyle(host, 'color') === driven.get('hover'),
++			])
++			await releasePane()
++			await releaseMedia()
++			await releasePointer()
++			// A key press after the focus is what makes the browser match the host as keyboard focus, so
++			// the ring read here is the one the keyboard rule paints.
++			host.focus()
++			await pressKeys('{ArrowRight}')
++			expect(host.matches(':focus-visible')).toBe(true)
++			await waitForAnimations(host)
++			driven.set('focus', readStyle(host, 'color'))
++			ring = readStyle(host, 'box-shadow')
++			await stageMedia({ motion: false })
++			await FRAMES.place('link-focus', host, lifted)
++			await stagePane(window.innerWidth, window.innerHeight)
++			framed.push(['link-focus', host.matches(':focus-visible') && !host.matches(':hover')])
++			expect(readStyle(host, 'box-shadow')).toBe(ring)
++			// The ring's painted extent is the host's box grown by the largest length its shadow
++			// carries, and each of its edges is read against the frame's, in the frame's device pixels.
++			reach = Math.max(...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])))
++			const { region } = requireValue(
++				FRAMES.placements.find((placement) => placement.scenario === 'link-focus'),
++				'The link focus frame recorded no placement',
++			)
++			const ratio = window.devicePixelRatio
++			const frame = lifted.getBoundingClientRect()
++			inside = [
++				region.x - reach * ratio >= 0,
++				region.y - reach * ratio >= 0,
++				region.x + region.width + reach * ratio <= frame.width * ratio,
++				region.y + region.height + reach * ratio <= frame.height * ratio,
++			]
++			await releasePane()
++			await releaseMedia()
++			host.blur()
++			await holdAccessible('button', 'Link')
++			await waitForAnimations(host)
++			expect(host.matches(':active')).toBe(true)
++			driven.set('active', readStyle(host, 'color'))
++			await stageMedia({ motion: false })
++			expect(mounted.host.querySelector('main')?.contains(host)).toBe(false)
++			await FRAMES.place('link-active', host, lifted)
++			framed.push(['link-active', host.matches(':active')])
++			await releaseMedia()
++			await releasePointer()
++			await waitForAnimations(host)
++			expect(host.matches(':active')).toBe(false)
++			host.blur()
++		} finally {
++			marker.replaceWith(host)
++			lifted.remove()
++		}
++		// Every frame was taken while its own state still held and under a scenario the registry
++		// carries, the pointer states leave the resting link color, the ring paints and lies inside the
++		// frame shot on it, and the host rests again.
++		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
++		expect(
++			framed.filter(([scenario]) => !CAPTURE_SCENARIOS.some((entry) => entry === scenario)),
++		).toStrictEqual([])
++		expect(driven.get('hover')).not.toBe(rest)
++		expect(driven.get('active')).not.toBe(rest)
++		expect(ring).not.toBe('none')
++		expect(reach).toBeGreaterThan(0)
++		expect(inside).toStrictEqual([true, true, true, true])
++		expect(readStyle(host, 'color')).toBe(rest)
++		expect(host.parentElement).not.toBe(lifted)
++		ARTIFACT.push(
++			JSON.stringify({ reading: 'link states', rest, driven: [...driven], ring, reach }),
++		)
++		JOURNAL.record('focus', 'Link', String(driven.get('focus')))
++	})
++
++	it('holds each grow spinner at the keyframe that paints its whole disc and photographs the disc', async () => {
++		await applyTheme(VARIANT)
++		await waitForAnimations(document.body)
++		// The population is every spinner specimen running the grow animation, read off the table.
++		const grown = SPINNER_SPECIMENS.filter((specimen) => specimen.markup.includes('spinner-grow'))
++		expect(grown).not.toStrictEqual([])
++		const readings: Array<readonly [string, string, string, string]> = []
++		const resumed: Array<readonly [string, readonly string[]]> = []
++		for (const { name } of grown) {
++			const specimen = readSpecimen(mounted.host, name)
++			const registered = requireValue(
++				CAPTURE_SCENARIOS.find((scenario) => scenario === `${buildStem(name)}-grown`),
++				`The registry names no grown frame for the "${name}" specimen`,
++			)
++			// The specimen is moved into a padded wrapper at the document's start and put back
++			// afterwards: an element frame of a specimen this far down the document comes back blank at
++			// the narrow variants, and the padding holds the disc clear of the frame's edge.
++			const marker = document.createComment(name)
++			specimen.before(marker)
++			const lifted = build('div', { classes: 'p-2' })
++			lifted.append(specimen)
++			document.body.prepend(lifted)
++			try {
++				const spinner = requireValue(
++					specimen.querySelector('.spinner-grow'),
++					`The "${name}" specimen renders no grow spinner`,
++				)
++				const running = requireValue(
++					spinner.getAnimations().at(0),
++					`The "${name}" spinner runs no animation`,
++				)
++				const effect = running.effect
++				if (!(effect instanceof KeyframeEffect)) {
++					throw new Error(`The "${name}" spinner runs no keyframe effect`)
++				}
++				// The keyframe is read off the running effect rather than written here: it is the step the
++				// partial writes the whole disc at, and the timeline is held at its own offset.
++				const whole = requireValue(
++					effect.getKeyframes().find((keyframe) => keyframe.opacity === '1'),
++					`The "${name}" spinner declares no keyframe that paints its disc`,
++				)
++				const { duration } = effect.getComputedTiming()
++				if (typeof duration !== 'number') {
++					throw new Error(`The "${name}" spinner runs no timed animation`)
++				}
++				running.pause()
++				running.currentTime = whole.computedOffset * duration
++				expect(spinner.getBoundingClientRect().width).toBeGreaterThan(0)
++				await FRAMES.place(registered, spinner, lifted)
++				readings.push([
++					name,
++					running.playState,
++					readStyle(spinner, 'opacity'),
++					readStyle(spinner, 'transform'),
++				])
++			} finally {
++				marker.replaceWith(specimen)
++				lifted.remove()
++			}
++			// The spinner the showcase renders turns again after it is back in its region, so no held
++			// timeline outlives the frame it was held for.
++			resumed.push([
++				name,
++				[...specimen.querySelectorAll('.spinner-grow')].flatMap((element) =>
++					element.getAnimations().map((animation) => animation.playState),
++				),
++			])
++		}
++		// Each frame was shot on a held timeline at the whole disc, which is full opacity and no
++		// transform, so the frame shows the disc rather than the empty first step.
++		expect(readings).toStrictEqual(grown.map(({ name }) => [name, 'paused', '1', 'none']))
++		expect(resumed).toStrictEqual(grown.map(({ name }) => [name, ['running']]))
++		ARTIFACT.push(JSON.stringify({ reading: 'grown spinners', readings }))
++		JOURNAL.record('hold', 'grow spinners', String(readings.length))
++	})
++
++	it('drives every role action to hover and to a press on the lifted specimen, and photographs a hovered and a pressed role', async () => {
++		await applyTheme(VARIANT)
++		await waitForAnimations(document.body)
++		const specimen = readSpecimen(mounted.host, 'List group role actions')
++		const rows = [...specimen.querySelectorAll('a.list-group-item-action')]
++		// The hover frame is shot on the first role and the pressed frame on the last, so the two
++		// frames show two roles' driven paint beside the resting rows of the others.
++		const first = requireValue(rows.at(0), 'The role action specimen renders no row')
++		const last = requireValue(rows.at(-1), 'The role action specimen renders no row')
++		const readings: Array<readonly [string, string, string, string]> = []
++		const framed: Array<readonly [string, boolean]> = []
++		// The specimen is moved into a padded wrapper at the document's start and put back afterwards,
++		// the placement the underline case uses and for its reasons.
++		const marker = document.createComment('List group role actions')
++		specimen.before(marker)
++		const lifted = build('div', { classes: 'p-2' })
++		lifted.append(specimen)
++		document.body.prepend(lifted)
++		try {
++			for (const row of rows) {
++				const name = readName(row)
++				expect(row.matches(':hover')).toBe(false)
++				const rest = readStyle(row, 'background-color')
++				await stagePane(window.innerWidth, window.innerHeight)
++				await hoverAccessible('link', name)
++				await waitForAnimations(row)
++				expect(row.matches(':hover')).toBe(true)
++				const hovered = readStyle(row, 'background-color')
++				// The row sits outside the showcase's `main` element for every pointer placement, so a
++				// shot finds it under the pointer.
++				expect(mounted.host.querySelector('main')?.contains(row)).toBe(false)
++				if (row === first) {
++					await FRAMES.place('list-group-role-actions-hover', row, lifted)
++					await stagePane(window.innerWidth, window.innerHeight)
++					framed.push([
++						'list-group-role-actions-hover',
++						row.matches(':hover') &&
++							readStyle(row, 'background-color') === hovered &&
++							rows.every((other) => other === row || !other.matches(':hover, :focus')),
++					])
++				}
++				await releasePane()
++				// The press is taken in the staged layout the shot uses as well. The press captures the
++				// pointer, so the held row stays pressed across a staging, but the pointer rests over
++				// whichever row the staged layout puts under it, and a press taken in the fitted layout
++				// leaves a neighbouring row painting its hover in the pressed frame.
++				await stagePane(window.innerWidth, window.innerHeight)
++				await holdAccessible('link', name)
++				await waitForAnimations(row)
++				expect(row.matches(':active')).toBe(true)
++				const held = readStyle(row, 'background-color')
++				expect(mounted.host.querySelector('main')?.contains(row)).toBe(false)
++				if (row === last) {
++					await FRAMES.place('list-group-role-actions-active', row, lifted)
++					await stagePane(window.innerWidth, window.innerHeight)
++					framed.push([
++						'list-group-role-actions-active',
++						row.matches(':active') &&
++							rows.every((other) => other === row || !other.matches(':hover, :focus')),
++					])
++				}
++				await releasePane()
++				await releasePointer()
++				await waitForAnimations(row)
++				expect(row.matches(':active')).toBe(false)
++				readings.push([name, rest, hovered, held])
++			}
++		} finally {
++			marker.replaceWith(specimen)
++			lifted.remove()
++		}
++		// Both frames were taken while their state still held and while no other row painted a driven
++		// state, every role leaves its resting fill under the pointer and under a press, and each
++		// role's hover paints a fill of its own role.
++		expect(framed.map(([scenario]) => scenario)).toStrictEqual([
++			'list-group-role-actions-hover',
++			'list-group-role-actions-active',
++		])
++		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
++		expect(
++			framed.filter(([scenario]) => !CAPTURE_SCENARIOS.some((entry) => entry === scenario)),
++		).toStrictEqual([])
++		expect(
++			readings.filter(([, rest, hovered, held]) => hovered === rest || held === rest),
++		).toStrictEqual([])
++		expect(new Set(readings.map(([, , hovered]) => hovered)).size).toBe(readings.length)
++		expect(specimen.parentElement).not.toBe(lifted)
++		ARTIFACT.push(JSON.stringify({ reading: 'role action paint', readings }))
++		JOURNAL.record('hold', readName(last), String(readings.at(-1)?.[3]))
++	})
++
+ 	it('drives one menu item to hover and to focus and photographs each state', async () => {
+ 		await applyTheme(VARIANT)
+ 		await waitForAnimations(document.body)
+diff --git a/tests/app/browser/sections/ButtonGroupSection.test.ts b/tests/app/browser/sections/ButtonGroupSection.test.ts
+index 2447f60..2025916 100644
+--- a/tests/app/browser/sections/ButtonGroupSection.test.ts
++++ b/tests/app/browser/sections/ButtonGroupSection.test.ts
+@@ -9,10 +9,18 @@ import {
+ 	SpecimenSection,
+ } from '@app/browser'
+ import { requireValue } from '@orkestrel/test'
+-import { build, mount, readName } from '@orkestrel/test/browser'
+-import { describe, expect, it } from 'vitest'
++import { build, findRule, mount, readName, readRules, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { DISABLED_OPACITY } from '../../../setup.js'
+ import { BUTTON_GROUP_SPLIT_FORMS } from '../../../setupStyles.js'
+ 
++// The disabled and the pressed specimens are read as the published cascade paints them and against
++// the rules it ships, so the cascade has to be in the document before a style or a rule is read.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
+ describe('ButtonGroupSection', () => {
+ 	it('renders a specimen for every grouped variant through the shared section contract', () => {
+ 		const host = mount(build('div'))
+@@ -39,6 +47,8 @@ describe('ButtonGroupSection', () => {
+ 				'Split button small',
+ 				'Split button large',
+ 				'Split dropstart',
++				'Disabled buttons',
++				'Pressed roles',
+ 			])
+ 			// The declared markup is read back through the same parser the section renders it with,
+ 			// because a boolean attribute written bare comes back with an empty value and a
+@@ -239,6 +249,113 @@ describe('ButtonGroupSection', () => {
+ 		}
+ 	})
+ 
++	it('dims each disabled form the button partial writes on a host of its own, beside an enabled host', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ButtonGroupSection(host)
++		try {
++			const specimen = requireValue(
++				host.querySelector('[data-specimen="Disabled buttons"]'),
++				'No Disabled buttons specimen',
++			)
++			// The forms are read off the rule the partial ships rather than written here, so a form the
++			// partial gains reddens this case until the specimen renders a host for it.
++			const rule = requireValue(
++				findRule('a.btn[aria-disabled'),
++				'The cascade ships no disabled button rule',
++			)
++			const forms = rule.selectorText.split(',').map((selector) => selector.trim())
++			expect(forms).not.toStrictEqual([])
++			const hosts = [...specimen.querySelectorAll('.btn')]
++			// Each form reaches exactly one host, so the frame shows every form on a host no other
++			// form paints, and a form dropped from the partial leaves its own host at full strength.
++			expect(
++				forms.map((form) => [form, hosts.filter((element) => element.matches(form)).length]),
++			).toStrictEqual(forms.map((form) => [form, 1]))
++			const reached = hosts.filter((element) => forms.some((form) => element.matches(form)))
++			const enabled = hosts.filter((element) => !reached.includes(element))
++			// One host answers to no form, and it leads the specimen, so the frame sets the dimmed hosts
++			// beside the treatment they dim.
++			expect(enabled).toStrictEqual(hosts.slice(0, 1))
++			expect(
++				reached.map((element) => [
++					readName(element),
++					readStyle(element, 'opacity'),
++					readStyle(element, 'pointer-events'),
++				]),
++			).toStrictEqual(reached.map((element) => [readName(element), DISABLED_OPACITY, 'none']))
++			expect(
++				enabled.map((element) => [
++					readStyle(element, 'opacity'),
++					readStyle(element, 'pointer-events'),
++				]),
++			).toStrictEqual([['1', 'auto']])
++			// A disabled host announces its state, and none but the native one takes a tab stop, so a
++			// reader never lands on a control that refuses the pointer and answers nothing.
++			const focusable = [...specimen.querySelectorAll('button, a, input')].filter(
++				(element) =>
++					element instanceof HTMLElement && element.tabIndex >= 0 && !element.matches(':disabled'),
++			)
++			expect(focusable).toStrictEqual(enabled)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('renders the pressed face of every role the cascade ships, filled and outline, in one specimen', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ButtonGroupSection(host)
++		try {
++			const specimen = requireValue(
++				host.querySelector('[data-specimen="Pressed roles"]'),
++				'No Pressed roles specimen',
++			)
++			// The role population is the cascade's: every single-class rule that retunes the pressed
++			// fill names one role variant. The link variant is outside it, because its pressed face is
++			// a text color over no fill and the journey drives it on the Link host itself.
++			const roles = readRules().flatMap((rule) =>
++				rule instanceof CSSStyleRule &&
++				/^\.btn-(?:outline-)?[a-z]+$/u.test(rule.selectorText) &&
++				rule.selectorText !== '.btn-link' &&
++				rule.style.getPropertyValue('--bs-btn-active-bg') !== ''
++					? [rule.selectorText.slice(1)]
++					: [],
++			)
++			expect(roles.filter((role) => role.startsWith('btn-outline-'))).not.toStrictEqual([])
++			expect(roles.filter((role) => !role.startsWith('btn-outline-'))).not.toStrictEqual([])
++			const hosts = [...specimen.querySelectorAll('.btn')]
++			const rendered = hosts.map((element) =>
++				[...element.classList].filter((name) => /^btn-(?:outline-)?[a-z]+$/u.test(name)),
++			)
++			expect(rendered.flat().sort()).toStrictEqual([...new Set(roles)].sort())
++			expect(rendered.filter((names) => names.length !== 1)).toStrictEqual([])
++			// Every host carries the class the pressed rule selects and announces the state, so the
++			// frame is the face a held pointer paints and a reader hears the toggle pressed.
++			expect(
++				hosts.filter(
++					(element) =>
++						!element.classList.contains('active') ||
++						element.getAttribute('aria-pressed') !== 'true',
++				),
++			).toStrictEqual([])
++			// Each host paints the fill its own role's pressed slot resolves to, which a resting host of
++			// the same role never paints.
++			const resting = rendered.map((names) => {
++				const twin = build('button', { classes: ['btn', ...names].join(' ') })
++				specimen.append(twin)
++				const reading = readStyle(twin, 'background-color')
++				twin.remove()
++				return reading
++			})
++			expect(
++				hosts.filter((element, index) => readStyle(element, 'background-color') === resting[index]),
++			).toStrictEqual([])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
+ 	it('releases the region and preserves adjacent content on repeated destruction', () => {
+ 		const host = mount(build('div'))
+ 		const neighbor = build('p', { text: 'Existing content' })
+diff --git a/tests/app/browser/sections/ListGroupSection.test.ts b/tests/app/browser/sections/ListGroupSection.test.ts
+index 9210b77..0eb7396 100644
+--- a/tests/app/browser/sections/ListGroupSection.test.ts
++++ b/tests/app/browser/sections/ListGroupSection.test.ts
+@@ -6,8 +6,15 @@ import {
+ 	SpecimenSection,
+ } from '@app/browser'
+ import { requireValue } from '@orkestrel/test'
+-import { build, mount } from '@orkestrel/test/browser'
+-import { describe, expect, it } from 'vitest'
++import { build, mount, readRules, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++
++// The role case reads each row as the published cascade paints it and against the rules it ships,
++// so the cascade has to be in the document before a style or a rule is read.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
+ 
+ describe('ListGroupSection', () => {
+ 	it('renders the structural families, the horizontal ramp, and the contextual roles', () => {
+@@ -35,6 +42,8 @@ describe('ListGroupSection', () => {
+ 				'List group horizontal xl',
+ 				'List group horizontal xxl',
+ 				'List group roles',
++				'List group role actions',
++				'List group role selection',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				LIST_GROUP_SPECIMENS.map(({ markup }) => markup),
+@@ -100,6 +109,79 @@ describe('ListGroupSection', () => {
+ 			host.remove()
+ 		}
+ 	})
++	it('renders an action row and a selected row for every role the cascade ships, each on its own role', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ListGroupSection(host)
++		try {
++			// The role population is the cascade's: every single-class item rule that retunes the
++			// selected fill names one contextual role.
++			const roles = readRules().flatMap((rule) =>
++				rule instanceof CSSStyleRule &&
++				/^\.list-group-item-[a-z]+$/u.test(rule.selectorText) &&
++				rule.style.getPropertyValue('--bs-list-group-active-bg') !== ''
++					? [rule.selectorText.slice('.list-group-item-'.length)]
++					: [],
++			)
++			expect(roles).not.toStrictEqual([])
++			const actions = requireValue(
++				host.querySelector('[data-specimen="List group role actions"]'),
++				'No role action specimen',
++			)
++			const selection = requireValue(
++				host.querySelector('[data-specimen="List group role selection"]'),
++				'No role selection specimen',
++			)
++			const plain = requireValue(
++				host.querySelector('[data-specimen="List group roles"]'),
++				'No role specimen',
++			)
++			// Each role renders once in each specimen, in the cascade's order, so the frames of the two
++			// set every role's driven and selected rows beside the resting rows of the roles specimen.
++			const actionRows = [...actions.querySelectorAll('.list-group-item')]
++			const selectedRows = [...selection.querySelectorAll('.list-group-item')]
++			expect(
++				actionRows.map((row) =>
++					[...row.classList].filter(
++						(name) => name.startsWith('list-group-item-') && name !== 'list-group-item-action',
++					),
++				),
++			).toStrictEqual(roles.map((role) => [`list-group-item-${role}`]))
++			expect(
++				selectedRows.map((row) =>
++					[...row.classList].filter((name) => name.startsWith('list-group-item-')),
++				),
++			).toStrictEqual(roles.map((role) => [`list-group-item-${role}`]))
++			// Every action row is a link a reader can reach and the pointer can drive, and no action row
++			// carries the selected class its hover guard skips.
++			expect(
++				actionRows.filter(
++					(row) =>
++						!row.matches('a.list-group-item-action[href]') || row.classList.contains('active'),
++				),
++			).toStrictEqual([])
++			// Every selected row carries the class and announces itself as the current one.
++			expect(
++				selectedRows.filter(
++					(row) => !row.classList.contains('active') || row.getAttribute('aria-current') !== 'true',
++				),
++			).toStrictEqual([])
++			// A selected row paints its role's selected fill, which the resting row of the same role in
++			// the roles specimen never paints, and an action row at rest paints that resting fill.
++			const resting = roles.map((role) =>
++				readStyle(
++					requireValue(plain.querySelector(`.list-group-item-${role}`), `No resting ${role} row`),
++					'background-color',
++				),
++			)
++			expect(
++				selectedRows.filter((row, index) => readStyle(row, 'background-color') === resting[index]),
++			).toStrictEqual([])
++			expect(actionRows.map((row) => readStyle(row, 'background-color'))).toStrictEqual(resting)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
+ 	it('releases the region and preserves adjacent content on repeated destruction', () => {
+ 		const host = mount(build('div'))
+ 		const neighbor = build('p', { text: 'Existing content' })
+diff --git a/tests/app/browser/sections/PlaceholderSection.test.ts b/tests/app/browser/sections/PlaceholderSection.test.ts
+index 30f39cb..3e7bfb4 100644
+--- a/tests/app/browser/sections/PlaceholderSection.test.ts
++++ b/tests/app/browser/sections/PlaceholderSection.test.ts
+@@ -6,8 +6,15 @@ import {
+ 	SpecimenSection,
+ } from '@app/browser'
+ import { requireValue } from '@orkestrel/test'
+-import { build, mount } from '@orkestrel/test/browser'
+-import { describe, expect, it } from 'vitest'
++import { build, mount, readRules } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++
++// The step comparison measures the bars as the published cascade lays them out, so the cascade has
++// to be in the document before a box is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
+ 
+ describe('PlaceholderSection', () => {
+ 	it('renders the height ramp, the glow, the wave, and a button placeholder through the shared section contract', () => {
+@@ -25,6 +32,7 @@ describe('PlaceholderSection', () => {
+ 				'Glowing placeholder',
+ 				'Waving placeholder',
+ 				'Button placeholder',
++				'Large placeholder',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				PLACEHOLDER_SPECIMENS.map(({ markup }) => markup),
+@@ -65,6 +73,57 @@ describe('PlaceholderSection', () => {
+ 			host.remove()
+ 		}
+ 	})
++	it('sets the large step beside the default step, as wide and on one top edge, at the ratio the two floors declare', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new PlaceholderSection(host)
++		try {
++			const specimen = requireValue(
++				host.querySelector('[data-specimen="Large placeholder"]'),
++				'No Large placeholder specimen',
++			)
++			const bars = [...specimen.querySelectorAll('.placeholder')]
++			// The specimen carries the default step and the large step alone, so the one difference a
++			// reader of its frame compares is the step.
++			expect(
++				bars.map((bar) => [...bar.classList].filter((name) => /^placeholder-/u.test(name))),
++			).toStrictEqual([[], ['placeholder-lg']])
++			// The expected ratio is read off the two floors the cascade declares, in `em`, rather than
++			// written here, so the measurement is held to the declaration rather than to itself.
++			const floors = readRules().flatMap((rule) =>
++				rule instanceof CSSStyleRule &&
++				(rule.selectorText === '.placeholder' || rule.selectorText === '.placeholder-lg')
++					? [
++							[
++								rule.selectorText,
++								Number.parseFloat(rule.style.getPropertyValue('min-height')),
++							] as const,
++						]
++					: [],
++			)
++			const declared = new Map(floors)
++			const base = requireValue(
++				declared.get('.placeholder'),
++				'The cascade declares no default floor',
++			)
++			const large = requireValue(
++				declared.get('.placeholder-lg'),
++				'The cascade declares no large floor',
++			)
++			expect(large).toBeGreaterThan(base)
++			const [first, second] = bars.map((bar) => bar.getBoundingClientRect())
++			const plain = requireValue(first, 'No default bar')
++			const raised = requireValue(second, 'No large bar')
++			expect(plain.height).toBeGreaterThan(0)
++			expect(raised.height / plain.height).toBeCloseTo(large / base, 2)
++			// The bars share a width and a top edge, so the whole of the step shows at their bottom
++			// edges and nothing else in the frame differs between them.
++			expect(raised.width).toBeCloseTo(plain.width, 1)
++			expect(raised.top).toBeCloseTo(plain.top, 1)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
+ 	it('releases the region and preserves adjacent content on repeated destruction', () => {
+ 		const host = mount(build('div'))
+ 		const neighbor = build('p', { text: 'Existing content' })
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 05ccae4..2708db7 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -12,6 +12,7 @@ import {
+ 	DRIVEN_KEYS,
+ 	FOCUS_RING,
+ 	isVariantName,
++	MODE_TOKEN,
+ 	normalizeSelectorText,
+ 	readingToProjection,
+ 	SHOWCASE_KEYS,
+@@ -58,6 +59,7 @@ describe('shared setup', () => {
+ 				'DRIVEN_KEYS',
+ 				'FOCUS_RING',
+ 				'FRAME_AREA',
++				'MODE_TOKEN',
+ 				'SHOWCASE_KEYS',
+ 				'TOKEN_PREFIX',
+ 				'UNDER_BAR',
+@@ -90,9 +92,7 @@ describe('shared setup', () => {
+ 		// A mode inside the stem is what made one grammar mean opposite things on the two sides of
+ 		// a comparison: the token after the separator named the project that shot the frame rather
+ 		// than the theme it rendered, so `--dark` read light on one side and dark on the other.
+-		expect(
+-			CAPTURE_SCENARIOS.filter((scenario) => /(?:^|-)(?:light|dark)(?:-|$)/u.test(scenario)),
+-		).toStrictEqual([])
++		expect(CAPTURE_SCENARIOS.filter((scenario) => MODE_TOKEN.test(scenario))).toStrictEqual([])
+ 		expect(
+ 			CAPTURE_SCENARIOS.filter((scenario) => !/^[a-z\d]+(?:-[a-z\d]+)*$/u.test(scenario)),
+ 		).toStrictEqual([])
+@@ -119,6 +119,24 @@ describe('shared setup', () => {
+ 			// family registers only the states it drives.
+ 			'Primary',
+ 			'Toggle',
++			'Secondary',
++			'Tertiary',
++			'Success',
++			'Info',
++			'Warning',
++			'Danger',
++			'Outline primary',
++			'Outline secondary',
++			'Outline tertiary',
++			'Outline success',
++			'Outline info',
++			'Outline warning',
++			'Outline danger',
++			'Link',
++			// A grow spinner's resting frame is its animation's empty first step, so its held frame at
++			// the whole disc is the specimen's frame.
++			'Grow spinner',
++			'Small grow spinner',
+ 			// The check group renders its control checked at rest, so its checked frame is the
+ 			// resting reading of that specimen: a resting row beside it would photograph the same
+ 			// state twice.
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 680746d..0915a65 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -100,6 +100,8 @@ export type CaptureSubject =
+ 	| 'Badge word'
+ 	| 'Base'
+ 	| 'Border spinner'
++	| 'Grow spinner'
++	| 'Small grow spinner'
+ 	| 'Button placeholder'
+ 	| 'Breadcrumb single step'
+ 	| 'Breadcrumb trail'
+@@ -192,6 +194,8 @@ export type CaptureSubject =
+ 	| 'List group horizontal xxl'
+ 	| 'List group numbered'
+ 	| 'List group roles'
++	| 'List group role actions'
++	| 'List group role selection'
+ 	| 'Close control'
+ 	| 'Close inverted'
+ 	| 'Close refused by attribute'
+@@ -199,7 +203,22 @@ export type CaptureSubject =
+ 	| 'Numbered columns'
+ 	| 'Page strip'
+ 	| 'Placeholder ramp'
++	| 'Large placeholder'
+ 	| 'Primary'
++	| 'Secondary'
++	| 'Tertiary'
++	| 'Success'
++	| 'Info'
++	| 'Warning'
++	| 'Danger'
++	| 'Outline primary'
++	| 'Outline secondary'
++	| 'Outline tertiary'
++	| 'Outline success'
++	| 'Outline info'
++	| 'Outline warning'
++	| 'Outline danger'
++	| 'Link'
+ 	| 'Progress base'
+ 	| 'Range'
+ 	| 'Range disabled'
+@@ -225,6 +244,8 @@ export type CaptureSubject =
+ 	| 'Validated form'
+ 	| 'Vertical group'
+ 	| 'Wrapping toolbar'
++	| 'Disabled buttons'
++	| 'Pressed roles'
+ 	| 'Waving placeholder'
+ 	| 'Gap steps'
+ 	| 'Responsive gap'
+@@ -389,12 +410,15 @@ export type CaptureSubject =
+  * arrival, so it names a reading rather than a drive, and `checked` names a reading the same way,
+  * for a specimen that renders its own control already checked. `indeterminate` is a drive: the
+  * mixed state of a checkbox is a property no attribute declares, so a journey sets it on the control
+- * before the shot and reads it back after.
++ * before the shot and reads it back after. The `grown` state is a drive as well: a grow spinner's
++ * disc paints only part way through its running animation, so a journey holds that animation at the
++ * keyframe the partial writes the whole disc at before the shot and reads the disc back after.
+  */
+ export type CaptureState =
+ 	| 'active'
+ 	| 'checked'
+ 	| 'focus'
++	| 'grown'
+ 	| 'hover'
+ 	| 'indeterminate'
+ 	| 'pressed'
+@@ -457,6 +481,18 @@ export function isVariantName(name: string): name is CaptureVariantName {
+ 	return /^(?:dark|light)-\d+$/u.test(name)
+ }
+ 
++/**
++ * Matches a theme word standing as its own hyphen-separated token inside a scenario's stem.
++ *
++ * @remarks
++ * The filename law refuses such a stem, because the variant after a frame's separator is what names
++ * the mode, and a theme word inside the stem would make the name claim a mode a second time. The
++ * registry proof reads every registered scenario against this pattern, and a journey that drives a
++ * subject whose stem the law refuses reads the subject's stem against it to report why that subject
++ * takes no frame.
++ */
++export const MODE_TOKEN = /(?:^|-)(?:light|dark)(?:-|$)/u
++
+ /**
+  * Describes one scenario a journey photographs, and the showcase subject its frame shows.
+  *
+@@ -564,12 +600,13 @@ export const SHOWCASE_KEYS: readonly CaptureKey[] = Object.freeze([
+  * journey here drives. That is what separates these from the rows of the {@link DRIVEN_KEYS} table,
+  * where a journey drives or reads the state its scenario names before it shoots the frame.
+  *
+- * A specimen whose resting frame paints nothing is declined. The grow spinners are the case: their
+- * resting frame is the animation's own first step, `transform: scale(0)` at `opacity: 0`, so the
+- * element reports an empty box and paints nothing, a shot of it carries one color and no subject,
+- * and at the 1280-wide variants the declared region clips to no pixel at all. The showcase renders
+- * the grow spinners and the `tests/src/styles/components/spinner.test.ts` file reads their running
+- * timelines; what is declined here is the frame, because there is nothing in it to read.
++ * A specimen whose resting frame paints nothing takes no row here. The grow spinners are the case:
++ * their resting frame is the animation's own first step, `transform: scale(0)` at `opacity: 0`, so
++ * the element reports an empty box and paints nothing, a shot of it carries one color and no
++ * subject, and at the 1280-wide variants the declared region clips to no pixel at all. Each grow
++ * spinner's frame is its `grown` row in the {@link DRIVEN_KEYS} table instead, which the journey
++ * shoots with the running animation held at the keyframe that paints the whole disc, and the
++ * `tests/src/styles/components/spinner.test.ts` file reads their running timelines.
+  *
+  * The closing collapse box is declined for the same reason. A panel carrying the `collapsing` class
+  * rests at zero height until an engine writes an inline size on it, and the showcase renders no
+@@ -790,6 +827,18 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.btn-toolbar',
+ 		property: 'flex-wrap',
+ 	}),
++	Object.freeze({
++		scenario: 'disabled-buttons',
++		subject: 'Disabled buttons',
++		selector: '.btn:disabled',
++		property: 'opacity',
++	}),
++	Object.freeze({
++		scenario: 'pressed-roles',
++		subject: 'Pressed roles',
++		selector: '.btn.active',
++		property: 'background-color',
++	}),
+ 	Object.freeze({
+ 		scenario: 'progress-base',
+ 		subject: 'Progress base',
+@@ -850,6 +899,12 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.placeholder.btn',
+ 		property: 'opacity',
+ 	}),
++	Object.freeze({
++		scenario: 'large-placeholder',
++		subject: 'Large placeholder',
++		selector: '.placeholder + .placeholder-lg',
++		property: 'min-height',
++	}),
+ 	Object.freeze({
+ 		scenario: 'range',
+ 		subject: 'Range',
+@@ -994,6 +1049,18 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.list-group-item-primary',
+ 		property: 'background-color',
+ 	}),
++	Object.freeze({
++		scenario: 'list-group-role-actions',
++		subject: 'List group role actions',
++		selector: '.list-group-item-action.list-group-item-primary',
++		property: 'background-color',
++	}),
++	Object.freeze({
++		scenario: 'list-group-role-selection',
++		subject: 'List group role selection',
++		selector: '.list-group-item-primary.active',
++		property: 'background-color',
++	}),
+ 	Object.freeze({
+ 		scenario: 'breadcrumb-trail',
+ 		subject: 'Breadcrumb trail',
+@@ -2360,7 +2427,8 @@ export const CASCADE_KEY_TIMEOUT = 3000
+  * @remarks
+  * A row's scenario is its subject's stem followed by the state its frame shows, and that state is
+  * one no resting frame photographs: a state the journey drives beyond rest — hover, focus, a press,
+- * or a property no attribute declares — or a reading of a state a specimen renders at rest when that
++ * a property no attribute declares, or a running animation held at one of its keyframes — or a
++ * reading of a state a specimen renders at rest when that
+  * specimen takes no resting frame of its own. A state the showcase renders at rest on a
+  * specimen the resting table photographs is not registered here, because its frame would be the
+  * resting frame under a second name.
+@@ -2377,6 +2445,22 @@ export const DRIVEN_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'primary-hover', subject: 'Primary' }),
+ 	Object.freeze({ scenario: 'primary-active', subject: 'Primary' }),
+ 	Object.freeze({ scenario: 'toggle-pressed', subject: 'Toggle' }),
++	Object.freeze({ scenario: 'secondary-hover', subject: 'Secondary' }),
++	Object.freeze({ scenario: 'tertiary-hover', subject: 'Tertiary' }),
++	Object.freeze({ scenario: 'success-hover', subject: 'Success' }),
++	Object.freeze({ scenario: 'info-hover', subject: 'Info' }),
++	Object.freeze({ scenario: 'warning-hover', subject: 'Warning' }),
++	Object.freeze({ scenario: 'danger-hover', subject: 'Danger' }),
++	Object.freeze({ scenario: 'outline-primary-hover', subject: 'Outline primary' }),
++	Object.freeze({ scenario: 'outline-secondary-hover', subject: 'Outline secondary' }),
++	Object.freeze({ scenario: 'outline-tertiary-hover', subject: 'Outline tertiary' }),
++	Object.freeze({ scenario: 'outline-success-hover', subject: 'Outline success' }),
++	Object.freeze({ scenario: 'outline-info-hover', subject: 'Outline info' }),
++	Object.freeze({ scenario: 'outline-warning-hover', subject: 'Outline warning' }),
++	Object.freeze({ scenario: 'outline-danger-hover', subject: 'Outline danger' }),
++	Object.freeze({ scenario: 'link-hover', subject: 'Link' }),
++	Object.freeze({ scenario: 'link-focus', subject: 'Link' }),
++	Object.freeze({ scenario: 'link-active', subject: 'Link' }),
+ 	Object.freeze({ scenario: 'valid-control-focus', subject: 'Valid control' }),
+ 	Object.freeze({ scenario: 'invalid-control-focus', subject: 'Invalid control' }),
+ 	Object.freeze({ scenario: 'page-strip-hover', subject: 'Page strip' }),
+@@ -2387,6 +2471,10 @@ export const DRIVEN_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'list-group-actions-hover', subject: 'List group actions' }),
+ 	Object.freeze({ scenario: 'list-group-actions-focus', subject: 'List group actions' }),
+ 	Object.freeze({ scenario: 'list-group-actions-active', subject: 'List group actions' }),
++	Object.freeze({ scenario: 'list-group-role-actions-hover', subject: 'List group role actions' }),
++	Object.freeze({ scenario: 'list-group-role-actions-active', subject: 'List group role actions' }),
++	Object.freeze({ scenario: 'grow-spinner-grown', subject: 'Grow spinner' }),
++	Object.freeze({ scenario: 'small-grow-spinner-grown', subject: 'Small grow spinner' }),
+ 	Object.freeze({ scenario: 'close-control-hover', subject: 'Close control' }),
+ 	Object.freeze({ scenario: 'close-control-focus', subject: 'Close control' }),
+ 	Object.freeze({ scenario: 'form-check-box-focus', subject: 'Form check box' }),

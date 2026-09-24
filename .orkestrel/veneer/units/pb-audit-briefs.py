@@ -1,6 +1,6 @@
 # Writes the round-1 audit lane briefs and the Astra launcher for PAGE-FRAME (`pf`) and BCF (`bcf`), derived from
 # cl-audit-briefs.py with every subject field rewritten for the units cut from dc92a09.
-# Usage: python3 pb-audit-briefs.py <unit keys>; the keys are pf, bcf, xo, ct, fr, fo, fu, and ff
+# Usage: python3 pb-audit-briefs.py <unit keys>; the keys are pf, bcf, xo, ct, fr, fo, fu, ff, and fp
 import pathlib, sys
 
 U = pathlib.Path('/home/user/scaffold/.orkestrel/veneer/units')
@@ -93,6 +93,17 @@ UNITS = {
         analyst='claims 2, 3, 4, 5, and 6 (each proof against its mutation and its red run, the helpers against their proofs, and the P2 probe against the release)',
         reviewer='claims 2, 6, and 7 (open every before and after frame the report names and rule whether each shows its ring whole; the P2 ruling), and the § Tests sentences',
         checker='claims 1, 3, and 8'),
+    'fp': dict(
+        name='PASSIVE-FRAMES', worktree='/home/user/veneer-fp', base='cf5e447',
+        law=("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{tests,browser,styles,names,typescript,architecture,documentation,writing,quality}.md`; "
+             "the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` and its references (the verdict shape)"),
+        family='the portfolio verdict `/home/user/scaffold/.orkestrel/veneer/b-portfolio-verify-verdict.md` (row P14) with the lens returns `pv-passive-lenses.json`, the brief `b-passive-frames-brief.md`, the verify verdict `/home/user/scaffold/.orkestrel/veneer/b-collapse-verify-verdict.md` (V7), the page-frame note `pf-design-verdict.md`, FOCUS-FRAME\'s `auto`-outline finding in `b-focus-frame-report.md` (P2), and `w2-w3-note-1.md` and `w2-w3-note-2.md`',
+        precedent='the base passive specimen tables in `app/browser/constants.ts`, the base registry in `tests/setup.ts` and its laws in `tests/setup.test.ts`, the `nav-underline-focus` case in `tests/app/browser/integration.test.ts` (the lift pattern), and the Button, Spinner, List group, and Placeholder partials under `src/styles/components/`',
+        evidence='`fp.diff`, `fp-status.txt`, `fp-shared.patch`, `b-passive-frames-report.md`, `fp-instruments/` (`fp-mutations.log.txt`, `fp-mutate.py`, the `fp-red-*` and `fp-green-*` logs, the gate logs, `fp-capture.sh`, and the `fp-capture-*` logs), and the frames under `/home/user/veneer-fp/tmp/capture/states/` (every frame the report lists, at `light-1280` and `dark-390`)',
+        subject='the specimens, the driven scenarios, the frames, and the guide against the portfolio verdict\'s P14 row',
+        analyst='claims 2, 3, 4, 5, 6, and 7 (each proof against its mutation and its red run, the paused keyframe reading, and the derived populations)',
+        reviewer='claims 3, 4, 5, 6, and 8 (open every frame the report names and rule whether it shows the state it closes; the specimens\' labels and fit), and the guide sentences',
+        checker='claims 1, 7, and 9'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]
