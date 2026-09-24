@@ -1,0 +1,49 @@
+Scratch case "SCRATCH measurement" in tests/src/browser/sanitizers/ConfigSanitizer.test.ts (deleted after the reading),
+run at ca83afb before any source edit, Chromium 153.0.8010.12:
+
+npx vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/sanitizers/ConfigSanitizer.test.ts -t "SCRATCH"
+
+Each parse reading is "<context innerHTML> | <first element child namespace> | <child node types>".
+walk: ConfigSanitizer().write into shadowSetHTML(annotation-xml encoding=text/html), '<a>kept</a>'.
+copy: the walk's own context, an inert-document import of annotation-xml encoding=text/html.
+bare: annotation-xml with no encoding attribute, the reading a build that ignores the context's attributes gives.
+foreign / div: an SVG foreignObject and an HTML div created in the inert document.
+native: the platform setHTML with { sanitizer: {} } on annotation-xml encoding=text/html.
+
+{
+ "walk": "<a>kept</a>",
+ "copy": "<a>kept</a> | http://www.w3.org/1999/xhtml | 1",
+ "bare": "<a>kept</a> | http://www.w3.org/1998/Math/MathML | 1",
+ "foreign": "<a>kept</a> | http://www.w3.org/1999/xhtml | 1",
+ "copyCdata": "<!--[CDATA[<b-->x]]&gt;<b>y</b> | http://www.w3.org/1999/xhtml | 8,3,1",
+ "foreignCdata": "<!--[CDATA[<b-->x]]&gt;<b>y</b> | http://www.w3.org/1999/xhtml | 8,3,1",
+ "divCdata": "<!--[CDATA[<b-->x]]&gt;<b>y</b> | http://www.w3.org/1999/xhtml | 8,3,1",
+ "nativeCdata": "x]]&gt;<b>y</b>",
+ "copyEnds": "<p></p><br><b>z</b> | http://www.w3.org/1999/xhtml | 1,1,1",
+ "foreignEnds": "<p></p><br><b>z</b> | http://www.w3.org/1999/xhtml | 1,1,1",
+ "divEnds": "<p></p><br><b>z</b> | http://www.w3.org/1999/xhtml | 1,1,1",
+ "mi": "<mglyph></mglyph><a>k</a> | http://www.w3.org/1998/Math/MathML | 1,1",
+ "mo": "<mglyph></mglyph><a>k</a> | http://www.w3.org/1998/Math/MathML | 1,1",
+ "mn": "<mglyph></mglyph><a>k</a> | http://www.w3.org/1998/Math/MathML | 1,1",
+ "ms": "<mglyph></mglyph><a>k</a> | http://www.w3.org/1998/Math/MathML | 1,1",
+ "mtext": "<mglyph></mglyph><a>k</a> | http://www.w3.org/1998/Math/MathML | 1,1",
+ "foreignObject": "<a>k</a>&lt;i&gt; | http://www.w3.org/1999/xhtml | 1,3",
+ "desc": "<a>k</a>&lt;i&gt; | http://www.w3.org/1999/xhtml | 1,3",
+ "title": "<a>k</a>&lt;i&gt; | http://www.w3.org/1999/xhtml | 1,3"
+}
+
+Second scratch case "SCRATCH namespaced" (deleted after the reading), after the fix's first draft, Chromium 153:
+the annotation-xml encoding attribute in each form, read by getAttribute and getAttributeNS(null), then the
+inert copy's parse and the platform setHTML with { sanitizer: {} } of '<tr><td>cell</td></tr><a>kept</a>'
+(reading: innerHTML and the last element child's namespace).
+
+{
+ "plain": "get=text/html getNS=text/html | copy cell<a>kept</a> http://www.w3.org/1999/xhtml | native cell<a>kept</a> http://www.w3.org/1999/xhtml",
+ "nsNoPrefix": "get=text/html getNS=null | copy <tr><td>cell</td></tr><a>kept</a> http://www.w3.org/1998/Math/MathML | native <tr><td>cell</td></tr><a>kept</a> http://www.w3.org/1998/Math/MathML",
+ "nsPrefix": "get=null getNS=null | copy <tr><td>cell</td></tr><a>kept</a> http://www.w3.org/1998/Math/MathML | native <tr><td>cell</td></tr><a>kept</a> http://www.w3.org/1998/Math/MathML",
+ "spaced": "get= text/html getNS= text/html | copy <tr><td>cell</td></tr><a>kept</a> http://www.w3.org/1998/Math/MathML | native <tr><td>cell</td></tr><a>kept</a> http://www.w3.org/1998/Math/MathML",
+ "div": "cell<a>kept</a>",
+ "template": "<tr><td>cell</td></tr><a>kept</a>"
+}
+Reading: the build treats only an encoding attribute in no namespace as the integration point, so the walk reads it
+through getAttributeNS(null, 'encoding'); a template context keeps table parts that an HTML integration point drops.

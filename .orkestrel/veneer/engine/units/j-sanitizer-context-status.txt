@@ -1,0 +1,3 @@
+ M guides/veneer.md
+ M src/browser/sanitizers/ConfigSanitizer.ts
+ M tests/src/browser/sanitizers/ConfigSanitizer.test.ts

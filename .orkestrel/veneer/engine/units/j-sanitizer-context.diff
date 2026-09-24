@@ -1,0 +1,160 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 53130d3..dcd29e6 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2677,9 +2677,14 @@ The template and every markup string reach the tip through the `sanitizer` optio
+ constructs a `ConfigSanitizer` instance over the `SANITIZER_ALLOWLIST` constant. It writes through
+ the platform's `setHTML` method where the element has one. Where the element has none, as on
+ Chromium 141, it parses the markup inert, walks the parsed tree against the same dictionary and the
+-`SANITIZER_BASELINE` floor, and moves what survives into the element. That dictionary keeps the
+-elements Bootstrap's `DefaultAllowlist` names, the `a` and `img` elements with their own
+-attributes, the `class`, `dir`, `id`, `lang`, and `role` attributes, and, by name, every attribute
++`SANITIZER_BASELINE` floor, and moves what survives into the element. It parses in the element's
++context, as the `setHTML` method does. The HTML standard parses markup written into an HTML
++integration point, such as an SVG `foreignObject` element or a MathML `annotation-xml` element whose
++`encoding` is `text/html`, as the body of an HTML element. The walk therefore parses that markup in
++an HTML `div` element, so the kept elements are HTML elements whether or not the browser reads the
++element's `encoding` attribute. That dictionary keeps the elements Bootstrap's `DefaultAllowlist`
++names, the `a` and `img` elements with their own attributes, the `class`, `dir`, `id`, `lang`, and
++`role` attributes, and, by name, every attribute
+ WAI-ARIA 1.2 defines and every one the WAI-ARIA 1.3 draft adds, and it keeps no `data-*`
+ attribute. The platform dictionary lists attribute names and carries no pattern, so it cannot
+ express Bootstrap's `aria-*` pattern: an `aria-*` name no WAI-ARIA version defines is dropped,
+diff --git a/src/browser/sanitizers/ConfigSanitizer.ts b/src/browser/sanitizers/ConfigSanitizer.ts
+index c028d4c..35dea04 100644
+--- a/src/browser/sanitizers/ConfigSanitizer.ts
++++ b/src/browser/sanitizers/ConfigSanitizer.ts
+@@ -25,9 +25,16 @@ import { isSanitizerConfig, isSanitizeTarget } from '../validators.js'
+  * Chromium 141, the markup is parsed through the `innerHTML` property of a shallow copy of the
+  * target, with its attributes, imported into an inert document this window's `document` creates, so
+  * the parse runs in the target's context as the `setHTML` method's does, and no script runs and
+- * nothing loads. The parsed tree is then walked: an element the configuration does not keep is
+- * removed with its content, an attribute it does not keep is removed, a comment is removed, text and
+- * processing instructions stay, and a kept `template` element's content is walked as well. The
++ * nothing loads. The HTML standard parses markup written into an HTML integration point, an SVG
++ * `foreignObject`, `desc`, or `title` element or a MathML `annotation-xml` element whose `encoding`
++ * attribute in no namespace is `text/html` or `application/xhtml+xml` in any ASCII case, as the
++ * body of an HTML element, so the walk parses that markup in an HTML `div` element of the inert
++ * document, and the kept elements are HTML elements whether or not the build reads the target's
++ * `encoding` attribute. A MathML text integration point, such as an `mi` element, keeps its copy as
++ * the context, so an `mglyph` or `malignmark` element written into it stays a MathML element. The
++ * parsed tree is then walked: an element the configuration does not keep is removed with its
++ * content, an attribute it does not keep is removed, a comment is removed, text and processing
++ * instructions stay, and a kept `template` element's content is walked as well. The
+  * `SANITIZER_BASELINE` floor applies whatever the configuration lists, and it removes more than the
+  * platform in the places the `SanitizerBaseline` type names. The survivors move into the element, or
+  * into its content when it is a `template` element, with nothing serialized again. No engine file
+@@ -130,7 +137,21 @@ export class ConfigSanitizer implements SanitizerInterface {
+ 			})
+ 		}
+ 		const inert = implementation.createHTMLDocument('')
+-		const context = Document.prototype.importNode.call(inert, element, false)
++		// The HTML standard parses an HTML integration point's markup as the body of an HTML element, so
++		// the walk parses it in an HTML `div` element and relies on no build's reading of a foreign
++		// context element, which for `annotation-xml` hangs on its `encoding` attribute in no namespace.
++		const encoding =
++			name?.namespace === 'http://www.w3.org/1998/Math/MathML' && name.name === 'annotation-xml'
++				? Element.prototype.getAttributeNS.call(element, null, 'encoding')?.toLowerCase()
++				: undefined
++		const integration =
++			encoding === 'text/html' ||
++			encoding === 'application/xhtml+xml' ||
++			(name?.namespace === 'http://www.w3.org/2000/svg' &&
++				['foreignObject', 'desc', 'title'].includes(name.name))
++		const context = integration
++			? Document.prototype.createElement.call(inert, 'div')
++			: Document.prototype.importNode.call(inert, element, false)
+ 		if (!isInstance(context, Element)) {
+ 			throw new AppError('The target copy is not an element', 'SANITIZER_TARGET_INVALID', {
+ 				tag: readTag(element),
+diff --git a/tests/src/browser/sanitizers/ConfigSanitizer.test.ts b/tests/src/browser/sanitizers/ConfigSanitizer.test.ts
+index dc9ff33..30144be 100644
+--- a/tests/src/browser/sanitizers/ConfigSanitizer.test.ts
++++ b/tests/src/browser/sanitizers/ConfigSanitizer.test.ts
+@@ -268,6 +268,86 @@ describe('ConfigSanitizer', () => {
+ 		}
+ 	})
+ 
++	it('parses markup written into an annotation-xml element whose encoding names HTML in any ASCII case as the body of an HTML element, through the host route and the walk', () => {
++		const math = 'http://www.w3.org/1998/Math/MathML'
++		for (const encoding of [
++			'text/html',
++			'TEXT/HTML',
++			'application/xhtml+xml',
++			'Application/XHTML+XML',
++		]) {
++			const targets = [
++				document.createElementNS(math, 'annotation-xml'),
++				shadowSetHTML(document.createElementNS(math, 'annotation-xml')),
++			]
++			for (const target of targets) {
++				target.setAttribute('encoding', encoding)
++				new ConfigSanitizer().write(target, '<tr><td>cell</td></tr><a>kept</a>')
++				expect(target.innerHTML).toBe('cell<a>kept</a>')
++				expect(target.firstElementChild?.namespaceURI).toBe(SANITIZER_NAMESPACE)
++			}
++		}
++	})
++
++	it('parses markup written into an annotation-xml element whose encoding attribute in no namespace names no HTML type as MathML, through the host route and the walk', () => {
++		const math = 'http://www.w3.org/1998/Math/MathML'
++		const encodings = [
++			undefined,
++			{ namespace: null, value: 'application/mathml+xml' },
++			{ namespace: null, value: ' text/html' },
++			{ namespace: 'urn:example:annotation', value: 'text/html' },
++		]
++		for (const encoding of encodings) {
++			const targets = [
++				document.createElementNS(math, 'annotation-xml'),
++				shadowSetHTML(document.createElementNS(math, 'annotation-xml')),
++			]
++			for (const target of targets) {
++				if (encoding !== undefined) {
++					target.setAttributeNS(encoding.namespace, 'encoding', encoding.value)
++				}
++				new ConfigSanitizer({ config: {} }).write(target, '<a>kept</a>')
++				expect(target.innerHTML).toBe('<a>kept</a>')
++				expect(target.firstElementChild?.namespaceURI).toBe(math)
++			}
++		}
++	})
++
++	it('parses markup written into an SVG foreignObject, desc, or title element as the body of an HTML element, through the host route and the walk', () => {
++		const svg = 'http://www.w3.org/2000/svg'
++		for (const name of ['foreignObject', 'desc', 'title']) {
++			for (const target of [
++				document.createElementNS(svg, name),
++				shadowSetHTML(document.createElementNS(svg, name)),
++			]) {
++				new ConfigSanitizer().write(target, '<tr><td>cell</td></tr><a>kept</a>')
++				expect(target.innerHTML).toBe('cell<a>kept</a>')
++				expect(target.firstElementChild?.namespaceURI).toBe(SANITIZER_NAMESPACE)
++			}
++		}
++	})
++
++	it('parses markup written into a MathML text integration point as HTML except an mglyph or malignmark element, which stays MathML, through the host route and the walk', () => {
++		const math = 'http://www.w3.org/1998/Math/MathML'
++		for (const name of ['mi', 'mo', 'mn', 'ms', 'mtext']) {
++			for (const target of [
++				document.createElementNS(math, name),
++				shadowSetHTML(document.createElementNS(math, name)),
++			]) {
++				new ConfigSanitizer({ config: {} }).write(
++					target,
++					'<mglyph></mglyph><malignmark></malignmark><a>kept</a>',
++				)
++				expect(target.innerHTML).toBe('<mglyph></mglyph><malignmark></malignmark><a>kept</a>')
++				expect(Array.from(target.children, (child) => child.namespaceURI)).toEqual([
++					math,
++					math,
++					SANITIZER_NAMESPACE,
++				])
++			}
++		}
++	})
++
+ 	it('refuses a configuration that is not plain data before copying it', () => {
+ 		const configs = [
+ 			Object.create(SANITIZER_ALLOWLIST),

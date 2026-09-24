@@ -1,0 +1,1714 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 53130d3..e5c7c23 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -49,8 +49,11 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `bindEventMap`                            | function  | Binds an entity's hooks to the wire events its table names until the signal aborts.                                                                                                |
+ | `emitEvent`                               | function  | Dispatches a bubbling DOM event carrying the supplied detail.                                                                                                                      |
+ | `isButtonEvent`                           | function  | Checks whether a DOM event carries a boolean pressed state.                                                                                                                        |
++| `isBareEvent`                             | function  | Checks whether a DOM event is a custom event that carries no payload.                                                                                                              |
++| `isRelatedEvent`                          | function  | Checks whether a DOM event carries a detail whose related target is an HTML element or nothing.                                                                                    |
+ | `EventHooks`                              | type      | Maps each verb of an entity's event map to an optional listener for the event it names, bound until the entity is destroyed.                                                       |
+ | `EventWire`                               | type      | Maps each verb of an entity's event map to the wire name of the bubbling DOM event it names.                                                                                       |
++| `RelatedDetail`                           | interface | Describes the detail of an event whose `relatedTarget` member names the other element of a change, as Bootstrap's `relatedTarget` field does.                                      |
+ | `AttributeMap`                            | type      | Maps each key an attribute reader needs to the name of the attribute it reads.                                                                                                     |
+ | `ParserMap`                               | type      | Maps each declared option key to the parser that coerces its attribute value.                                                                                                      |
+ | `RegistryOptions`                         | interface | Configures the ownership record one engine class keeps for its hosts.                                                                                                              |
+@@ -149,7 +152,6 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `COLLAPSE_ATTRIBUTES`                     | const     | Names the attributes a collapse reads by default, Bootstrap's attribute names.                                                                                                     |
+ | `COLLAPSE_SELECTORS`                      | const     | Names the default selector a collapse finds its triggers by and the delegate routes collapse clicks by, Bootstrap's data-attribute selector.                                       |
+ | `COLLAPSE_EVENTS`                         | const     | Names the bubbling events a collapse dispatches on its panel, keyed by the verb each carries.                                                                                      |
+-| `isCollapseEvent`                         | function  | Checks whether a DOM event is a collapse event, which carries no payload.                                                                                                          |
+ | `parseElement`                            | function  | Parses a selector, or an element, to the HTML element it names in the document.                                                                                                    |
+ | `DropdownDetail`                          | interface | Describes the detail each dropdown event carries; the event is dispatched on the toggle, which is its target.                                                                      |
+ | `DropdownEventMap`                        | interface | Maps each verb to the dropdown event it names.                                                                                                                                     |
+@@ -171,8 +173,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `parseDismiss`                            | function  | Parses Bootstrap's auto-close value to the dismissal a dropdown applies.                                                                                                           |
+ | `parseOffset`                             | function  | Parses an offset to its skid and distance in pixels.                                                                                                                               |
+ | `parseStatic`                             | function  | Parses Bootstrap's display value to whether a menu stays in flow.                                                                                                                  |
+-| `TabDetail`                               | interface | Describes the detail each tab event carries.                                                                                                                                       |
+-| `TabEventMap`                             | interface | Maps each verb to the tab event it names.                                                                                                                                          |
++| `TabEventMap`                             | interface | Maps each verb to the tab event it names, whose `relatedTarget` detail member carries the other tab of the swap, or undefined when no tab was active.                              |
+ | `TabHooks`                                | type      | Configures the initial DOM event subscriptions for a tab.                                                                                                                          |
+ | `TabClassMap`                             | interface | Names the class tokens a tab writes and tests; each default is the token the cascade selects on.                                                                                   |
+ | `TabAttributeMap`                         | interface | Names the attribute a tab reads; its default is Bootstrap's attribute name.                                                                                                        |
+@@ -186,7 +187,6 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `TAB_ATTRIBUTES`                          | const     | Names the attribute a tab control carries its pane selector in by default, Bootstrap's attribute name.                                                                             |
+ | `TAB_SELECTORS`                           | const     | Names the default selectors a tab and the delegate match tab lists, controls, and dropdowns with, Bootstrap's selectors.                                                           |
+ | `TAB_EVENTS`                              | const     | Names the bubbling events a tab dispatches on its controls, keyed by the verb each carries.                                                                                        |
+-| `isTabEvent`                              | function  | Checks whether a DOM event is a tab event, whose detail carries an HTML element or nothing as its related target.                                                                  |
+ | `ScrollSpyDetail`                         | interface | Describes the detail the scrollspy event carries.                                                                                                                                  |
+ | `ScrollSpyEventMap`                       | interface | Maps the verb to the scrollspy event it names.                                                                                                                                     |
+ | `ScrollSpyHooks`                          | type      | Configures the initial DOM event subscriptions for a scrollspy.                                                                                                                    |
+@@ -205,8 +205,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `parseRootMargin`                         | function  | Parses a string to an intersection observer's root margin, returning the margin unchanged when the platform accepts it.                                                            |
+ | `parseThreshold`                          | function  | Parses a comma-separated list, a JSON array, or an array of ratios to the thresholds an intersection observer reports at.                                                          |
+ | `DismissOptions`                          | interface | Selects which close requests hide a modal or an offcanvas panel.                                                                                                                   |
+-| `ModalDetail`                             | interface | Describes the detail each modal event carries.                                                                                                                                     |
+-| `ModalEventMap`                           | interface | Maps each verb to the modal event it names.                                                                                                                                        |
++| `ModalEventMap`                           | interface | Maps each verb to the modal event it names, whose `relatedTarget` detail member carries the trigger passed to `show` on the `show` and `shown` events, else undefined.             |
+ | `ModalHooks`                              | type      | Configures the initial DOM event subscriptions for a modal.                                                                                                                        |
+ | `ModalClassMap`                           | interface | Names the class tokens a modal writes and tests; each default is the token the cascade selects on.                                                                                 |
+ | `ModalAttributeMap`                       | interface | Names the attributes a modal reads; each default is Bootstrap's attribute name.                                                                                                    |
+@@ -219,10 +218,8 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `MODAL_SELECTORS`                         | const     | Names the default selectors a modal matches with and the delegate routes modal clicks by, Bootstrap's selectors.                                                                   |
+ | `MODAL_DEFAULTS`                          | const     | Names the option values a modal takes when neither its attributes nor its constructor supply them, Bootstrap's defaults.                                                           |
+ | `MODAL_EVENTS`                            | const     | Names the bubbling events a modal dispatches on its host, keyed by the verb each carries.                                                                                          |
+-| `isModalEvent`                            | function  | Checks whether a DOM event is a modal event, whose detail may name the trigger that asked for the modal.                                                                           |
+ | `parseBackdrop`                           | function  | Parses a backdrop value to a boolean, or to `static`.                                                                                                                              |
+-| `OffcanvasDetail`                         | interface | Describes the detail each offcanvas event carries.                                                                                                                                 |
+-| `OffcanvasEventMap`                       | interface | Maps each verb to the offcanvas event it names.                                                                                                                                    |
++| `OffcanvasEventMap`                       | interface | Maps each verb to the offcanvas event it names, whose `relatedTarget` detail member carries the trigger passed to `show` on the `show` and `shown` events, else undefined.         |
+ | `OffcanvasHooks`                          | type      | Configures the initial DOM event subscriptions for an offcanvas panel.                                                                                                             |
+ | `OffcanvasClassMap`                       | interface | Names the class tokens an offcanvas panel writes and tests; each default is the token the cascade selects on.                                                                      |
+ | `OffcanvasAttributeMap`                   | interface | Names the attributes an offcanvas panel reads; each default is Bootstrap's attribute name.                                                                                         |
+@@ -235,7 +232,6 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `OFFCANVAS_SELECTORS`                     | const     | Names the default selectors the delegate routes offcanvas clicks by, Bootstrap's data-attribute selectors.                                                                         |
+ | `OFFCANVAS_DEFAULTS`                      | const     | Names the option values an offcanvas panel takes when neither its attributes nor its constructor supply them, Bootstrap's defaults.                                                |
+ | `OFFCANVAS_EVENTS`                        | const     | Names the bubbling events an offcanvas panel dispatches on its host, keyed by the verb each carries.                                                                               |
+-| `isOffcanvasEvent`                        | function  | Checks whether a DOM event is an offcanvas event, whose detail may name the trigger that asked for the panel.                                                                      |
+ | `TooltipEventMap`                         | interface | Maps each verb to the tooltip event it names, carrying null detail.                                                                                                                |
+ | `TooltipHooks`                            | type      | Configures the initial DOM event subscriptions for a tooltip.                                                                                                                      |
+ | `TooltipClassMap`                         | interface | Names the class tokens a tooltip writes and tests; each default is the token the cascade selects on.                                                                               |
+@@ -252,7 +248,6 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `TOOLTIP_TEMPLATE`                        | const     | Names the markup a tooltip builds its tip from by default, Bootstrap's tooltip template.                                                                                           |
+ | `TOOLTIP_DEFAULTS`                        | const     | Sets the options a tooltip starts from before its attributes and the constructor, Bootstrap's defaults.                                                                            |
+ | `TOOLTIP_EVENTS`                          | const     | Names the bubbling events a tooltip dispatches on its trigger, keyed by the verb each carries.                                                                                     |
+-| `isTooltipEvent`                          | function  | Checks whether a DOM event is a tooltip event, which carries no payload.                                                                                                           |
+ | `parseDelay`                              | function  | Parses a delay in milliseconds, or Bootstrap's object of a show and a hide delay, to the waits a tooltip takes before it shows and hides its tip.                                  |
+ | `parseTrigger`                            | function  | Parses Bootstrap's space-separated trigger words to the interactions that show and hide a tooltip's tip.                                                                           |
+ | `parsePosition`                           | function  | Parses a placement string to the position it names.                                                                                                                                |
+@@ -271,7 +266,6 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `POPOVER_TEMPLATE`                        | const     | Names the markup a popover builds its tip from by default, Bootstrap's popover template.                                                                                           |
+ | `POPOVER_DEFAULTS`                        | const     | Sets the options a popover starts from before its attributes and the constructor: the tooltip's defaults with Bootstrap's popover click trigger, template, position, and offset.   |
+ | `POPOVER_EVENTS`                          | const     | Names the bubbling events a popover dispatches on its trigger, keyed by the verb each carries.                                                                                     |
+-| `isPopoverEvent`                          | function  | Checks whether a DOM event is a popover event, which carries no payload.                                                                                                           |
+ | `AlertEventMap`                           | interface | Maps each verb to the alert event it names, carrying null detail.                                                                                                                  |
+ | `AlertHooks`                              | type      | Configures the initial DOM event subscriptions for an alert.                                                                                                                       |
+ | `AlertClassMap`                           | interface | Names the class tokens an alert writes and tests; each default is the token the cascade selects on.                                                                                |
+@@ -284,7 +278,6 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `ALERT_ATTRIBUTES`                        | const     | Names the attribute a dismiss trigger carries its alert's selector in by default, Bootstrap's attribute name.                                                                      |
+ | `ALERT_SELECTORS`                         | const     | Names the default selector the delegate routes alert dismiss clicks by, Bootstrap's data-attribute selector.                                                                       |
+ | `ALERT_EVENTS`                            | const     | Names the bubbling events an alert dispatches on its host, keyed by the verb each carries.                                                                                         |
+-| `isAlertEvent`                            | function  | Checks whether a DOM event is an alert event, which carries no payload.                                                                                                            |
+ | `ToastEventMap`                           | interface | Maps each verb to the toast event it names, carrying null detail.                                                                                                                  |
+ | `ToastHooks`                              | type      | Configures the initial DOM event subscriptions for a toast.                                                                                                                        |
+ | `ToastClassMap`                           | interface | Names the tokens a toast writes and tests, `shown`, `transition`, and `fade`, and those the delegate's dismiss route tests, `host` and `disabled`.                                 |
+@@ -298,7 +291,6 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `TOAST_SELECTORS`                         | const     | Names the default selector the delegate routes toast dismiss clicks by, Bootstrap's data-attribute selector.                                                                       |
+ | `TOAST_DEFAULTS`                          | const     | Sets the fade, automatic hiding, and delay a toast starts from before its attributes and the constructor, Bootstrap's defaults.                                                    |
+ | `TOAST_EVENTS`                            | const     | Names the bubbling events a toast dispatches on its host, keyed by the verb each carries.                                                                                          |
+-| `isToastEvent`                            | function  | Checks whether a DOM event is a toast event, which carries no payload.                                                                                                             |
+ | `CarouselDetail`                          | interface | Describes the detail each carousel event carries.                                                                                                                                  |
+ | `CarouselEventMap`                        | interface | Maps each verb to the carousel event it names.                                                                                                                                     |
+ | `CarouselHooks`                           | type      | Configures the initial DOM event subscriptions for a carousel.                                                                                                                     |
+@@ -2125,7 +2117,7 @@ its constructor supply them, which are Bootstrap's defaults.
+ | `focus`            | `true`  | Whether the modal isolates the page and takes focus |
+ 
+ The modal dispatches the following events on its host. Each one bubbles and carries a detail object
+-whose `relatedTarget` member names the trigger, as the following table states; the `isModalEvent`
++whose `relatedTarget` member names the trigger, as the following table states; the `isRelatedEvent`
+ function checks that shape.
+ 
+ | Key       | Wire name          | Cancelable | Detail `relatedTarget`       | Dispatched                                                                        |
+@@ -2490,7 +2482,7 @@ nor its constructor supply them, which are Bootstrap's defaults.
+ 
+ The panel dispatches the following events on its host. Each one bubbles and carries a detail object
+ whose `relatedTarget` member names the trigger, as the following table states; the
+-`isOffcanvasEvent` function checks that shape.
++`isRelatedEvent` function checks that shape.
+ 
+ | Key       | Wire name              | Cancelable | Detail `relatedTarget`       | Dispatched                                                                      |
+ | --------- | ---------------------- | ---------- | ---------------------------- | ------------------------------------------------------------------------------- |
+@@ -2627,7 +2619,7 @@ tooltip, and you construct each tooltip yourself.
+ 
+ The `Tooltip` class is also the engine the `Popover` class runs. The constructor reads the static
+ `profile` member of the class it constructs, a `TooltipProfile` record naming the entity, its
+-events and their guard, its default `classes`, `attributes`, and `selectors` tables, its
++events, its default `classes`, `attributes`, and `selectors` tables, its
+ `TooltipDefaults` record, and the popover value its tip is promoted with. The entity name is the
+ segment of the error codes, such as `TOOLTIP_HOST_OWNED`, and the prefix of the tip ids, such as
+ `vn-tooltip-0`. Each profile keeps its own registry, so a trigger carries at most one tooltip and at
+@@ -2899,7 +2891,7 @@ The `Popover` class runs the engine § Tooltip describes under the popover profi
+ `profile` member supplies, as Bootstrap's `Popover` class extends its `Tooltip` class, so every
+ sequence, door read, restoration, and interaction rule there applies with these differences. The
+ events are `show.vn.popover`, `inserted.vn.popover`, `shown.vn.popover`, `hide.vn.popover`, and
+-`hidden.vn.popover`, which the `POPOVER_EVENTS` constant names and the `isPopoverEvent` function
++`hidden.vn.popover`, which the `POPOVER_EVENTS` constant names and the `isBareEvent` function
+ guards; the error codes are `POPOVER_HOST_INVALID`, `POPOVER_OPTION_INVALID`, and
+ `POPOVER_HOST_OWNED`; and each tip id starts with `vn-popover-`. The `POPOVER_DEFAULTS` constant
+ turns the click trigger on and hover and focus off, builds the tip from the `POPOVER_TEMPLATE`
+diff --git a/src/browser/Alert.ts b/src/browser/Alert.ts
+index 81b943b..50d5cb4 100644
+--- a/src/browser/Alert.ts
++++ b/src/browser/Alert.ts
+@@ -12,7 +12,7 @@ import {
+ } from './helpers.js'
+ import { HostSnapshot } from './HostSnapshot.js'
+ import { Registry } from './Registry.js'
+-import { isAlertEvent, isAttributeName, isClassToken, isSelector } from './validators.js'
++import { isAttributeName, isBareEvent, isClassToken, isSelector } from './validators.js'
+ 
+ /**
+  * Closes an alert by removing its shown token, waiting out its fade, and removing it from the document.
+@@ -82,7 +82,7 @@ export class Alert implements AlertInterface {
+ 		resolveVocabulary('ALERT_OPTION_INVALID', ALERT_SELECTORS, isSelector, options?.selectors)
+ 		Alert.#registry.claim(host, this)
+ 		this.#host = host
+-		bindEventMap(host, ALERT_EVENTS, isAlertEvent, options?.on, this.#controller.signal)
++		bindEventMap(host, ALERT_EVENTS, isBareEvent, options?.on, this.#controller.signal)
+ 		const signal = options?.signal
+ 		if (signal?.aborted) this.destroy()
+ 		else {
+diff --git a/src/browser/Carousel.ts b/src/browser/Carousel.ts
+index 6042ecf..9a499e6 100644
+--- a/src/browser/Carousel.ts
++++ b/src/browser/Carousel.ts
+@@ -144,10 +144,7 @@ export class Carousel implements CarouselInterface {
+ 			isSelector,
+ 			options?.selectors,
+ 		)
+-		const resolved = resolveOptions<
+-			Pick<CarouselOptions, 'ride'> & typeof CAROUSEL_DEFAULTS,
+-			'interval' | 'keyboard' | 'pause' | 'ride' | 'touch' | 'wrap'
+-		>(
++		const resolved = resolveOptions<Pick<CarouselOptions, 'ride'> & typeof CAROUSEL_DEFAULTS>(
+ 			host,
+ 			this.#attributes,
+ 			'CAROUSEL_OPTION_INVALID',
+diff --git a/src/browser/Collapse.ts b/src/browser/Collapse.ts
+index b16aded..fb3c977 100644
+--- a/src/browser/Collapse.ts
++++ b/src/browser/Collapse.ts
+@@ -27,7 +27,7 @@ import {
+ import { HostSnapshot } from './HostSnapshot.js'
+ import { parseElement } from './parsers.js'
+ import { Registry } from './Registry.js'
+-import { isAttributeName, isClassToken, isCollapseEvent, isSelector } from './validators.js'
++import { isAttributeName, isBareEvent, isClassToken, isSelector } from './validators.js'
+ 
+ /**
+  * Shows and hides a panel through its size transition, keeping its triggers' expanded state in step.
+@@ -107,7 +107,7 @@ export class Collapse implements CollapseInterface {
+ 			isSelector,
+ 			options?.selectors,
+ 		)
+-		this.#parent = resolveOptions<Pick<CollapseOptions, 'parent'>, 'parent'>(
++		this.#parent = resolveOptions<Pick<CollapseOptions, 'parent'>>(
+ 			host,
+ 			this.#attributes,
+ 			'COLLAPSE_OPTION_INVALID',
+@@ -117,7 +117,7 @@ export class Collapse implements CollapseInterface {
+ 		).parent
+ 		Collapse.#registry.claim(host, this)
+ 		this.#host = host
+-		bindEventMap(host, COLLAPSE_EVENTS, isCollapseEvent, options?.on, this.#controller.signal)
++		bindEventMap(host, COLLAPSE_EVENTS, isBareEvent, options?.on, this.#controller.signal)
+ 		const signal = options?.signal
+ 		if (signal?.aborted) this.destroy()
+ 		else {
+diff --git a/src/browser/Dropdown.ts b/src/browser/Dropdown.ts
+index f8a3a3c..25e89a6 100644
+--- a/src/browser/Dropdown.ts
++++ b/src/browser/Dropdown.ts
+@@ -126,7 +126,7 @@ export class Dropdown implements DropdownInterface {
+ 				tag: host.tagName,
+ 			})
+ 		}
+-		const { dismiss } = resolveOptions<Pick<DropdownOptions, 'dismiss'>, 'dismiss'>(
++		const { dismiss } = resolveOptions<Pick<DropdownOptions, 'dismiss'>>(
+ 			host,
+ 			this.#attributes,
+ 			'DROPDOWN_OPTION_INVALID',
+@@ -138,7 +138,7 @@ export class Dropdown implements DropdownInterface {
+ 			inside: dismiss?.inside ?? DROPDOWN_DEFAULTS.dismiss.inside,
+ 			outside: dismiss?.outside ?? DROPDOWN_DEFAULTS.dismiss.outside,
+ 		}
+-		const placement = resolveOptions<DropdownDefaults['placement'], 'offset' | 'static'>(
++		const placement = resolveOptions<DropdownDefaults['placement']>(
+ 			host,
+ 			this.#attributes,
+ 			'DROPDOWN_OPTION_INVALID',
+diff --git a/src/browser/Modal.ts b/src/browser/Modal.ts
+index 3d49cd4..b19edbe 100644
+--- a/src/browser/Modal.ts
++++ b/src/browser/Modal.ts
+@@ -33,7 +33,7 @@ import { Isolation } from './Isolation.js'
+ import { parseBackdrop } from './parsers.js'
+ import { Registry } from './Registry.js'
+ import { ScrollLock } from './ScrollLock.js'
+-import { isAttributeName, isClassToken, isModalEvent, isSelector } from './validators.js'
++import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './validators.js'
+ 
+ /**
+  * Shows and hides a modal in the page's flow over the cascade's backdrop, locking scrolling and isolating focus while it is shown.
+@@ -137,14 +137,11 @@ export class Modal implements ModalInterface {
+ 		const light = options?.dismiss?.backdrop
+ 		const escape = options?.dismiss?.escape
+ 		const focus = options?.focus
+-		const read = resolveOptions<
+-			{
+-				readonly backdrop: boolean | 'static'
+-				readonly escape: boolean
+-				readonly focus: boolean
+-			},
+-			'backdrop' | 'escape' | 'focus'
+-		>(
++		const read = resolveOptions<{
++			readonly backdrop: boolean | 'static'
++			readonly escape: boolean
++			readonly focus: boolean
++		}>(
+ 			host,
+ 			attributes,
+ 			'MODAL_OPTION_INVALID',
+@@ -174,7 +171,7 @@ export class Modal implements ModalInterface {
+ 		Modal.#registry.claim(host, this)
+ 		this.#host = host
+ 		const signal = this.#controller.signal
+-		bindEventMap(host, MODAL_EVENTS, isModalEvent, options?.on, signal)
++		bindEventMap(host, MODAL_EVENTS, isRelatedEvent, options?.on, signal)
+ 		host.addEventListener('keydown', (event) => this.#escape(event), { signal })
+ 		host.addEventListener(
+ 			'mousedown',
+diff --git a/src/browser/Offcanvas.ts b/src/browser/Offcanvas.ts
+index 645c89a..501f3bf 100644
+--- a/src/browser/Offcanvas.ts
++++ b/src/browser/Offcanvas.ts
+@@ -31,7 +31,7 @@ import { Isolation } from './Isolation.js'
+ import { parseBackdrop } from './parsers.js'
+ import { Registry } from './Registry.js'
+ import { ScrollLock } from './ScrollLock.js'
+-import { isAttributeName, isClassToken, isOffcanvasEvent, isSelector } from './validators.js'
++import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './validators.js'
+ 
+ /**
+  * Slides an offcanvas panel in and out over the cascade's backdrop, locking scrolling and isolating focus as its options ask.
+@@ -141,14 +141,11 @@ export class Offcanvas implements OffcanvasInterface {
+ 		const light = options?.dismiss?.backdrop
+ 		const escape = options?.dismiss?.escape
+ 		const scroll = options?.scroll
+-		const read = resolveOptions<
+-			{
+-				readonly backdrop: boolean | 'static'
+-				readonly escape: boolean
+-				readonly scroll: boolean
+-			},
+-			'backdrop' | 'escape' | 'scroll'
+-		>(
++		const read = resolveOptions<{
++			readonly backdrop: boolean | 'static'
++			readonly escape: boolean
++			readonly scroll: boolean
++		}>(
+ 			host,
+ 			attributes,
+ 			'OFFCANVAS_OPTION_INVALID',
+@@ -176,7 +173,7 @@ export class Offcanvas implements OffcanvasInterface {
+ 		Offcanvas.#registry.claim(host, this)
+ 		this.#host = host
+ 		const signal = this.#controller.signal
+-		bindEventMap(host, OFFCANVAS_EVENTS, isOffcanvasEvent, options?.on, signal)
++		bindEventMap(host, OFFCANVAS_EVENTS, isRelatedEvent, options?.on, signal)
+ 		host.addEventListener('keydown', (event) => this.#escape(event), { signal })
+ 		host.ownerDocument.defaultView?.addEventListener('resize', () => this.#resize(), { signal })
+ 		const lifetime = options?.signal
+diff --git a/src/browser/Popover.ts b/src/browser/Popover.ts
+index 998ee82..bf38f7b 100644
+--- a/src/browser/Popover.ts
++++ b/src/browser/Popover.ts
+@@ -7,7 +7,6 @@ import {
+ 	POPOVER_SELECTORS,
+ } from './constants.js'
+ import { Tooltip } from './Tooltip.js'
+-import { isPopoverEvent } from './validators.js'
+ 
+ /**
+  * Shows a header-and-body tip built from a template beside its trigger, anchored in the top layer, on a click or a call.
+@@ -42,7 +41,7 @@ import { isPopoverEvent } from './validators.js'
+  */
+ export class Popover extends Tooltip<PopoverOptions> implements PopoverInterface {
+ 	/**
+-	 * Supplies the popover's name, events and their guard, default vocabulary and options, and `manual` popover value to the tooltip engine.
++	 * Supplies the popover's name, events, default vocabulary and options, and `manual` popover value to the tooltip engine.
+ 	 *
+ 	 * @example
+ 	 * ```ts
+@@ -52,7 +51,6 @@ export class Popover extends Tooltip<PopoverOptions> implements PopoverInterface
+ 	static override readonly profile: TooltipProfile = Object.freeze({
+ 		name: 'popover',
+ 		events: POPOVER_EVENTS,
+-		guard: isPopoverEvent,
+ 		classes: POPOVER_CLASSES,
+ 		attributes: POPOVER_ATTRIBUTES,
+ 		selectors: POPOVER_SELECTORS,
+diff --git a/src/browser/ScrollSpy.ts b/src/browser/ScrollSpy.ts
+index d56c66d..2bd3aaf 100644
+--- a/src/browser/ScrollSpy.ts
++++ b/src/browser/ScrollSpy.ts
+@@ -121,10 +121,7 @@ export class ScrollSpy implements ScrollSpyInterface {
+ 			isSelector,
+ 			options?.selectors,
+ 		)
+-		const resolved = resolveOptions<
+-			Pick<ScrollSpyOptions, 'target' | 'smooth'>,
+-			'target' | 'smooth'
+-		>(
++		const resolved = resolveOptions<Pick<ScrollSpyOptions, 'target' | 'smooth'>>(
+ 			host,
+ 			attributes,
+ 			'SCROLL_SPY_OPTION_INVALID',
+@@ -135,10 +132,7 @@ export class ScrollSpy implements ScrollSpyInterface {
+ 		// The group's keys have no top-level option key of their own, so the group is resolved as its
+ 		// own layer: its defaults, then the attributes its keys name, then the constructor's group, key
+ 		// by key.
+-		const intersection = resolveOptions<
+-			Required<NonNullable<ScrollSpyOptions['intersection']>>,
+-			'margin' | 'threshold'
+-		>(
++		const intersection = resolveOptions<Required<NonNullable<ScrollSpyOptions['intersection']>>>(
+ 			host,
+ 			attributes,
+ 			'SCROLL_SPY_OPTION_INVALID',
+diff --git a/src/browser/Tab.ts b/src/browser/Tab.ts
+index bf0f16b..7964b9f 100644
+--- a/src/browser/Tab.ts
++++ b/src/browser/Tab.ts
+@@ -23,7 +23,7 @@ import {
+ } from './helpers.js'
+ import { HostSnapshot } from './HostSnapshot.js'
+ import { Registry } from './Registry.js'
+-import { isAttributeName, isClassToken, isSelector, isTabEvent } from './validators.js'
++import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './validators.js'
+ 
+ /**
+  * Activates a tab control and its pane, deactivating the active sibling control and its pane.
+@@ -108,7 +108,7 @@ export class Tab implements TabInterface {
+ 		// The initial writes are read before the claim, so a pane selector that throws leaves the host unclaimed.
+ 		const writes = this.#planInitial()
+ 		Tab.#registry.claim(host, this)
+-		bindEventMap(host, TAB_EVENTS, isTabEvent, options?.on, this.#controller.signal)
++		bindEventMap(host, TAB_EVENTS, isRelatedEvent, options?.on, this.#controller.signal)
+ 		const signal = options?.signal
+ 		if (signal?.aborted) this.destroy()
+ 		else {
+diff --git a/src/browser/Toast.ts b/src/browser/Toast.ts
+index 40946dd..437d067 100644
+--- a/src/browser/Toast.ts
++++ b/src/browser/Toast.ts
+@@ -19,7 +19,7 @@ import {
+ } from './helpers.js'
+ import { HostSnapshot } from './HostSnapshot.js'
+ import { Registry } from './Registry.js'
+-import { isAttributeName, isClassToken, isSelector, isToastEvent } from './validators.js'
++import { isAttributeName, isBareEvent, isClassToken, isSelector } from './validators.js'
+ 
+ /**
+  * Shows and hides a toast in its container's flow, and hides it after a delay unless the pointer or focus holds it.
+@@ -97,7 +97,7 @@ export class Toast implements ToastInterface {
+ 		// The delegate routes by the selector and the toast itself matches with none, so the resolved
+ 		// group is not kept; resolving it still refuses an invalid value at construction.
+ 		resolveVocabulary('TOAST_OPTION_INVALID', TOAST_SELECTORS, isSelector, options?.selectors)
+-		const resolved = resolveOptions<typeof TOAST_DEFAULTS, 'animated' | 'autohide' | 'delay'>(
++		const resolved = resolveOptions<typeof TOAST_DEFAULTS>(
+ 			host,
+ 			attributes,
+ 			'TOAST_OPTION_INVALID',
+@@ -111,7 +111,7 @@ export class Toast implements ToastInterface {
+ 		Toast.#registry.claim(host, this)
+ 		this.#host = host
+ 		const signal = this.#controller.signal
+-		bindEventMap(host, TOAST_EVENTS, isToastEvent, options?.on, signal)
++		bindEventMap(host, TOAST_EVENTS, isBareEvent, options?.on, signal)
+ 		host.addEventListener('mouseover', () => this.#disarm(), { signal })
+ 		host.addEventListener('focusin', () => this.#disarm(), { signal })
+ 		host.addEventListener(
+diff --git a/src/browser/Tooltip.ts b/src/browser/Tooltip.ts
+index 85d21a7..97883b6 100644
+--- a/src/browser/Tooltip.ts
++++ b/src/browser/Tooltip.ts
+@@ -47,7 +47,7 @@ import {
+ import { Placement } from './Placement.js'
+ import { Registry } from './Registry.js'
+ import { ConfigSanitizer } from './sanitizers/ConfigSanitizer.js'
+-import { isAttributeName, isClassToken, isSelector, isTooltipEvent } from './validators.js'
++import { isAttributeName, isBareEvent, isClassToken, isSelector } from './validators.js'
+ 
+ /**
+  * Shows a tip built from a template beside its trigger, anchored in the top layer, on hover, focus, click, or call.
+@@ -104,8 +104,8 @@ import { isAttributeName, isClassToken, isSelector, isTooltipEvent } from './val
+  * it wrote, and the show resolves `false`.
+  *
+  * The class being constructed supplies the engine's profile through its static `profile` member:
+- * the name its error codes and tip ids carry, its events and their guard, its default vocabulary and
+- * options, and its popover value. Each profile keeps its own registry, so a trigger carries at most
++ * the name its error codes and tip ids carry, its events, its default vocabulary and options, and its
++ * popover value. Each profile keeps its own registry, so a trigger carries at most
+  * one tooltip and at most one popover. The `Popover` class runs this engine under its own profile,
+  * and a tooltip with `descendants` set constructs each descendant's engine from the same class.
+  *
+@@ -124,7 +124,7 @@ import { isAttributeName, isClassToken, isSelector, isTooltipEvent } from './val
+  */
+ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implements TooltipInterface {
+ 	/**
+-	 * Supplies the tooltip's name, events and their guard, default vocabulary and options, and `hint` popover value to the engine, which reads the profile of the class it constructs.
++	 * Supplies the tooltip's name, events, default vocabulary and options, and `hint` popover value to the engine, which reads the profile of the class it constructs.
+ 	 *
+ 	 * @example
+ 	 * ```ts
+@@ -134,7 +134,6 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 	static readonly profile: TooltipProfile = Object.freeze({
+ 		name: 'tooltip',
+ 		events: TOOLTIP_EVENTS,
+-		guard: isTooltipEvent,
+ 		classes: TOOLTIP_CLASSES,
+ 		attributes: TOOLTIP_ATTRIBUTES,
+ 		selectors: TOOLTIP_SELECTORS,
+@@ -252,8 +251,7 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 			Pick<
+ 				TooltipOptions,
+ 				'animated' | 'delay' | 'trigger' | 'title' | 'html' | 'container' | 'descendants'
+-			>,
+-			'animated' | 'delay' | 'trigger' | 'title' | 'html' | 'container' | 'descendants'
++			>
+ 		>(
+ 			host,
+ 			this.#attributes,
+@@ -279,7 +277,7 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 		if (descendants !== undefined && !isSelector(descendants)) {
+ 			throw new AppError('Option value fails validation', code, { key: 'descendants' })
+ 		}
+-		const tip = resolveOptions<NonNullable<TooltipOptions['tip']>, 'template' | 'class'>(
++		const tip = resolveOptions<NonNullable<TooltipOptions['tip']>>(
+ 			host,
+ 			this.#attributes,
+ 			code,
+@@ -287,10 +285,7 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 			{ template: parseString, class: parseString },
+ 			settings?.tip,
+ 		)
+-		const placement = resolveOptions<
+-			NonNullable<TooltipOptions['placement']>,
+-			'position' | 'offset' | 'fallbacks'
+-		>(
++		const placement = resolveOptions<NonNullable<TooltipOptions['placement']>>(
+ 			host,
+ 			this.#attributes,
+ 			code,
+@@ -332,7 +327,7 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 						[body]:
+ 							source === undefined
+ 								? settings?.content
+-								: resolveOptions<Pick<PopoverOptions, 'content'>, 'content'>(
++								: resolveOptions<Pick<PopoverOptions, 'content'>>(
+ 										host,
+ 										{ content: source },
+ 										code,
+@@ -348,7 +343,7 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 		this.#registry.claim(host, this)
+ 		this.#host = host
+ 		const signal = this.#controller.signal
+-		bindEventMap(host, profile.events, profile.guard, settings?.on, signal)
++		bindEventMap(host, profile.events, isBareEvent, settings?.on, signal)
+ 		if (hover) {
+ 			host.addEventListener('mouseover', (event) => this.#over(event), { signal })
+ 			host.addEventListener('mouseout', (event) => this.#out(event), { signal })
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 68bdd29..21d0af4 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -209,9 +209,9 @@ export function readTarget(
+  * @param attributes - The entity's resolved attribute table, naming the attribute each declared key reads.
+  * @param code - The error code a value that fails coercion throws, such as `COLLAPSE_OPTION_INVALID`.
+  * @param defaults - The entity's default options.
+- * @param parsers - The declared keys, each mapped to the parser that coerces its attribute value.
++ * @param parsers - The declared keys, each mapped to the parser that coerces its attribute value; the table names every key of the options.
+  * @param options - The constructor object, when supplied.
+- * @returns A new options object; an explicit `false` or `0` survives every layer.
++ * @returns A new options object carrying the defaults and the declared keys; an explicit `false` or `0` survives every layer.
+  * @throws Thrown when a declared attribute not overridden by the constructor fails coercion, as an `AppError` carrying the code, the attribute's name, and the host's tag.
+  * @remarks
+  * Each layer overrides the one before it. A declared key is an option key the entity's attribute
+@@ -219,23 +219,29 @@ export function readTarget(
+  * `data-bs-interval` for the `interval` key by default. An undeclared attribute is ignored, no JSON
+  * configuration attribute is read, and a constructor value that is `undefined` keeps the layer
+  * beneath it. An attribute is parsed only when the constructor leaves its key undefined, so an
+- * invalid attribute under an overridden key is left unparsed.
++ * invalid attribute under an overridden key is left unparsed. The constructor object is read once
++ * for each declared key, by property access, so an inherited or non-enumerable declared key counts,
++ * and a key the parser table does not declare is never read and never reaches the result.
+  * @example
+  * ```ts
+  * const resolved = resolveOptions(host, attributes, 'CAROUSEL_OPTION_INVALID', defaults, { interval: parseNumber }, options)
+  * ```
+  */
+-export function resolveOptions<T extends object, TKey extends keyof T & string>(
++export function resolveOptions<T extends object>(
+ 	element: HTMLElement,
+-	attributes: NoInfer<AttributeMap<TKey>>,
++	attributes: NoInfer<AttributeMap<keyof T & string>>,
+ 	code: string,
+ 	defaults: T,
+-	parsers: ParserMap<T, TKey>,
++	parsers: ParserMap<T>,
+ 	options: Partial<T> | undefined,
+ ): T {
+ 	const resolved: T = { ...defaults }
+ 	for (const key in parsers) {
+-		if (options?.[key] !== undefined) continue
++		const supplied = options?.[key]
++		if (supplied !== undefined) {
++			resolved[key] = supplied
++			continue
++		}
+ 		const name = attributes[key]
+ 		const attribute = element.getAttribute(name)
+ 		if (attribute === null) continue
+@@ -248,10 +254,6 @@ export function resolveOptions<T extends object, TKey extends keyof T & string>(
+ 		}
+ 		resolved[key] = value
+ 	}
+-	for (const key in options) {
+-		const value = options[key]
+-		if (value !== undefined) resolved[key] = value
+-	}
+ 	return resolved
+ }
+ 
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 71609e8..de62b8a 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -1,4 +1,4 @@
+-import type { Guard, Parser } from '@orkestrel/contract'
++import type { Parser } from '@orkestrel/contract'
+ 
+ /** Names the color modes Bootstrap's color-mode attribute accepts. */
+ export type ColorModeState = 'light' | 'dark'
+@@ -246,6 +246,12 @@ export type EventWire<TMap, TEntity extends string> = {
+ 	readonly [TKey in keyof TMap]: `${TKey & string}.vn.${TEntity}`
+ }
+ 
++/** Describes the detail of an event whose `relatedTarget` member names the other element of a change, as Bootstrap's `relatedTarget` field does. */
++export interface RelatedDetail {
++	/** Carries the other element of the change, which each entity's event map names, or undefined when the change has none. */
++	readonly relatedTarget: HTMLElement | undefined
++}
++
+ /**
+  * Maps each key an attribute reader needs to the name of the attribute it reads.
+  *
+@@ -263,14 +269,13 @@ export type AttributeMap<TKey extends string> = { readonly [TName in TKey]: stri
+ /**
+  * Maps each declared option key to the parser that coerces its attribute value.
+  *
+- * @typeParam T - The entity's options.
+- * @typeParam TKey - The declared option keys.
++ * @typeParam T - The options the table declares; the table names a parser for every key, an optional one included.
+  * @example
+  * ```ts
+- * const parsers: ParserMap<{ interval: number }, 'interval'> = { interval: parseNumber }
++ * const parsers: ParserMap<{ interval: number }> = { interval: parseNumber }
+  * ```
+  */
+-export type ParserMap<T, TKey extends keyof T> = { readonly [TName in TKey]: Parser<T[TName]> }
++export type ParserMap<T> = { readonly [TName in keyof T]-?: Parser<T[TName]> }
+ 
+ /** Configures the ownership record one engine class keeps for its hosts. */
+ export interface RegistryOptions {
+@@ -1049,22 +1054,16 @@ export interface DropdownInterface {
+ 	destroy(): void
+ }
+ 
+-/** Describes the detail each tab event carries. */
+-export interface TabDetail {
+-	/** Carries the other tab of the swap, as Bootstrap's `relatedTarget` field does, or undefined when no tab was active. */
+-	readonly relatedTarget: HTMLElement | undefined
+-}
+-
+-/** Maps each verb to the tab event it names. */
++/** Maps each verb to the tab event it names, whose `relatedTarget` detail member carries the other tab of the swap, or undefined when no tab was active. */
+ export interface TabEventMap {
+ 	/** Names the `show.vn.tab` event on the incoming tab, whose prevention refuses the swap. */
+-	readonly show: CustomEvent<TabDetail>
++	readonly show: CustomEvent<RelatedDetail>
+ 	/** Names the `shown.vn.tab` event on the incoming tab, dispatched after its pane shows; it is not cancelable. */
+-	readonly shown: CustomEvent<TabDetail>
++	readonly shown: CustomEvent<RelatedDetail>
+ 	/** Names the `hide.vn.tab` event on the outgoing tab, whose prevention refuses the swap. */
+-	readonly hide: CustomEvent<TabDetail>
++	readonly hide: CustomEvent<RelatedDetail>
+ 	/** Names the `hidden.vn.tab` event on the outgoing tab, dispatched after its pane hides; it is not cancelable. */
+-	readonly hidden: CustomEvent<TabDetail>
++	readonly hidden: CustomEvent<RelatedDetail>
+ }
+ 
+ /** Configures the initial DOM event subscriptions for a tab. */
+@@ -1283,24 +1282,18 @@ export interface DismissOptions {
+ 	readonly escape?: boolean
+ }
+ 
+-/** Describes the detail each modal event carries. */
+-export interface ModalDetail {
+-	/** Carries the trigger passed to `show`, as Bootstrap's `relatedTarget` field does, or undefined on every other event. */
+-	readonly relatedTarget: HTMLElement | undefined
+-}
+-
+-/** Maps each verb to the modal event it names. */
++/** Maps each verb to the modal event it names, whose `relatedTarget` detail member carries the trigger passed to `show` on the `show` and `shown` events, else undefined. */
+ export interface ModalEventMap {
+ 	/** Names the `show.vn.modal` event, whose prevention refuses the show. */
+-	readonly show: CustomEvent<ModalDetail>
++	readonly show: CustomEvent<RelatedDetail>
+ 	/** Names the `shown.vn.modal` event, dispatched after the dialog's transition settles; it is not cancelable. */
+-	readonly shown: CustomEvent<ModalDetail>
++	readonly shown: CustomEvent<RelatedDetail>
+ 	/** Names the `hide.vn.modal` event, whose prevention refuses the hide. */
+-	readonly hide: CustomEvent<ModalDetail>
++	readonly hide: CustomEvent<RelatedDetail>
+ 	/** Names the `hidden.vn.modal` event, dispatched after the host's fade and the backdrop's fade settle; it is not cancelable. */
+-	readonly hidden: CustomEvent<ModalDetail>
++	readonly hidden: CustomEvent<RelatedDetail>
+ 	/** Names the `prevent.vn.modal` event, dispatched when a static backdrop or a disabled Escape refuses a hide; it is not cancelable. */
+-	readonly prevent: CustomEvent<ModalDetail>
++	readonly prevent: CustomEvent<RelatedDetail>
+ }
+ 
+ /** Configures the initial DOM event subscriptions for a modal. */
+@@ -1430,24 +1423,18 @@ export interface ModalInterface {
+ 	destroy(): void
+ }
+ 
+-/** Describes the detail each offcanvas event carries. */
+-export interface OffcanvasDetail {
+-	/** Carries the trigger passed to `show` on the `show` and `shown` events, as Bootstrap's `relatedTarget` field does, or undefined on every other event. */
+-	readonly relatedTarget: HTMLElement | undefined
+-}
+-
+-/** Maps each verb to the offcanvas event it names. */
++/** Maps each verb to the offcanvas event it names, whose `relatedTarget` detail member carries the trigger passed to `show` on the `show` and `shown` events, else undefined. */
+ export interface OffcanvasEventMap {
+ 	/** Names the `show.vn.offcanvas` event, whose prevention refuses the show. */
+-	readonly show: CustomEvent<OffcanvasDetail>
++	readonly show: CustomEvent<RelatedDetail>
+ 	/** Names the `shown.vn.offcanvas` event, dispatched after the panel's transition settles; it is not cancelable. */
+-	readonly shown: CustomEvent<OffcanvasDetail>
++	readonly shown: CustomEvent<RelatedDetail>
+ 	/** Names the `hide.vn.offcanvas` event, whose prevention refuses the hide. */
+-	readonly hide: CustomEvent<OffcanvasDetail>
++	readonly hide: CustomEvent<RelatedDetail>
+ 	/** Names the `hidden.vn.offcanvas` event, dispatched after the panel's transition settles; it is not cancelable. */
+-	readonly hidden: CustomEvent<OffcanvasDetail>
++	readonly hidden: CustomEvent<RelatedDetail>
+ 	/** Names the `prevent.vn.offcanvas` event, dispatched when a static backdrop or a disabled Escape refuses a hide; it is not cancelable. */
+-	readonly prevent: CustomEvent<OffcanvasDetail>
++	readonly prevent: CustomEvent<RelatedDetail>
+ }
+ 
+ /** Configures the initial DOM event subscriptions for an offcanvas panel. */
+@@ -1747,8 +1734,6 @@ export interface TooltipProfile {
+ 	readonly name: string
+ 	/** Names the bubbling events the engine dispatches on the trigger, keyed by the verb each carries. */
+ 	readonly events: EventWire<TooltipEventMap, string>
+-	/** Checks each event under a bound name before an initial hook runs. */
+-	readonly guard: Guard<TooltipEventMap['show']>
+ 	/** Carries the default class tokens the `classes` group replaces. */
+ 	readonly classes: TooltipClassMap
+ 	/** Carries the default attribute names the `attributes` group replaces; a `content` key names the attribute that feeds the body slot. */
+diff --git a/src/browser/validators.ts b/src/browser/validators.ts
+index 7185ea6..62b18a1 100644
+--- a/src/browser/validators.ts
++++ b/src/browser/validators.ts
+@@ -1,19 +1,12 @@
+ import type {
+-	AlertEventMap,
+ 	ButtonEventMap,
+ 	CarouselEventMap,
+-	CollapseEventMap,
+ 	ColorModeState,
+ 	DropdownEventMap,
+-	ModalEventMap,
+-	OffcanvasEventMap,
+-	PopoverEventMap,
++	RelatedDetail,
+ 	SanitizeTargetInterface,
+ 	SanitizerConfig,
+ 	ScrollSpyEventMap,
+-	TabEventMap,
+-	ToastEventMap,
+-	TooltipEventMap,
+ } from './types.js'
+ import type { Guard } from '@orkestrel/contract'
+ import {
+@@ -146,22 +139,25 @@ export function isButtonEvent(value: unknown): value is ButtonEventMap['toggle']
+ }
+ 
+ /**
+- * Checks whether a DOM event is a collapse event, which carries no payload.
++ * Checks whether a DOM event is a custom event that carries no payload.
+  *
+  * @param value - The value to inspect.
+  * @returns True if the value is a CustomEvent whose detail is null; false otherwise.
+  * @remarks
+- * A collapse dispatches each event with no detail, and the platform reads an absent `detail` as
+- * `null`, which is the `CustomEvent<null>` type every key of the collapse event map carries, so a
+- * consumer's own event under a collapse wire name that carries a payload is refused. The
+- * containment covers a `detail` accessor that throws, as the button event guard does.
++ * A collapse, an alert, a toast, a tooltip, and a popover dispatch each event with no detail, and
++ * the platform reads an absent `detail` as `null`, which is the `CustomEvent<null>` type every key
++ * of those event maps carries. An engine binds its hooks through this guard, so a consumer's own
++ * event under one of its wire names that carries a payload reaches no hook. The guard reads no
++ * wire name: the wire table the `bindEventMap` function subscribes by decides which names reach
++ * it. The class half reads the `isInstance` function `@orkestrel/contract` publishes, and the
++ * containment covers a hostile prototype and a `detail` accessor that throws.
+  * @example
+  * ```ts
+- * isCollapseEvent(new CustomEvent('shown.vn.collapse')) // true
+- * isCollapseEvent(new CustomEvent('shown.vn.collapse', { detail: { shown: true } })) // false
++ * isBareEvent(new CustomEvent('shown.vn.collapse')) // true
++ * isBareEvent(new CustomEvent('shown.vn.collapse', { detail: { shown: true } })) // false
+  * ```
+  */
+-export function isCollapseEvent(value: unknown): value is CollapseEventMap['show'] {
++export function isBareEvent(value: unknown): value is CustomEvent<null> {
+ 	try {
+ 		return isInstance(value, CustomEvent) && value.detail === null
+ 	} catch {
+@@ -170,52 +166,32 @@ export function isCollapseEvent(value: unknown): value is CollapseEventMap['show
+ }
+ 
+ /**
+- * Checks whether a DOM event is an alert event, which carries no payload.
++ * Checks whether a DOM event carries a detail whose related target is an HTML element or nothing.
+  *
+  * @param value - The value to inspect.
+- * @returns True if the value is a CustomEvent whose detail is null; false otherwise.
++ * @returns True if the value is a CustomEvent whose detail is an object whose `relatedTarget` member is absent, undefined, or an HTMLElement; false otherwise.
+  * @remarks
+- * An alert dispatches each event with no detail, and the platform reads an absent `detail` as
+- * `null`, which is the `CustomEvent<null>` type every key of the alert event map carries, so a
+- * consumer's own event under an alert wire name that carries a payload is refused. The class half
+- * is the `isInstance` check `@orkestrel/contract` publishes, and the containment covers a hostile
+- * prototype and a `detail` accessor that throws.
+- * @example
+- * ```ts
+- * isAlertEvent(new CustomEvent('closed.vn.alert')) // true
+- * isAlertEvent(new CustomEvent('closed.vn.alert', { detail: { closed: true } })) // false
+- * ```
+- */
+-export function isAlertEvent(value: unknown): value is AlertEventMap['close'] {
+-	try {
+-		return isInstance(value, CustomEvent) && value.detail === null
+-	} catch {
+-		return false
+-	}
+-}
+-
+-/**
+- * Checks whether a DOM event is a tab event, whose detail carries an HTML element or nothing as its related target.
+- *
+- * @param value - The value to inspect.
+- * @returns True if the value is a CustomEvent whose detail is an object with an absent or undefined `relatedTarget` or one that is an HTMLElement; false otherwise.
+- * @remarks
+- * A tab dispatches each event with the other control of the swap as the detail's `relatedTarget`,
+- * or undefined when no control was active, so a consumer's own event under a tab wire name that
+- * carries no detail, or another value there, is refused. The containment covers a `relatedTarget`
+- * accessor that throws, as the button event guard does.
++ * A tab, a modal, and an offcanvas panel dispatch each event with a detail object whose
++ * `relatedTarget` member names the other element of the change, which each entity's event map
++ * names, or undefined. An engine binds its hooks through this guard, so a consumer's own event
++ * under one of its wire names that carries no object, or names something other than an element
++ * there, reaches no hook. The guard reads no wire name, and it reads the `relatedTarget` member
++ * once. The class half reads the `isInstance` function `@orkestrel/contract` publishes, which
++ * narrows the event to `CustomEvent<unknown>` and leaves the detail for the object check. The
++ * containment covers a `detail` or `relatedTarget` accessor that throws, as the button event guard
++ * does.
+  * @example
+  * ```ts
+- * isTabEvent(new CustomEvent('shown.vn.tab', { detail: { relatedTarget: undefined } })) // true
+- * isTabEvent(new CustomEvent('shown.vn.tab')) // false
++ * isRelatedEvent(new CustomEvent('shown.vn.modal', { detail: { relatedTarget: undefined } })) // true
++ * isRelatedEvent(new CustomEvent('shown.vn.modal')) // false
+  * ```
+  */
+-export function isTabEvent(value: unknown): value is TabEventMap['show'] {
++export function isRelatedEvent(value: unknown): value is CustomEvent<RelatedDetail> {
+ 	try {
+ 		if (!isInstance(value, CustomEvent)) return false
+ 		const detail: unknown = value.detail
+ 		if (typeof detail !== 'object' || detail === null) return false
+-		const related = 'relatedTarget' in detail ? detail.relatedTarget : undefined
++		const related: unknown = 'relatedTarget' in detail ? detail.relatedTarget : undefined
+ 		return related === undefined || isInstance(related, HTMLElement)
+ 	} catch {
+ 		return false
+@@ -316,140 +292,6 @@ export function isCarouselEvent(value: unknown): value is CarouselEventMap['slid
+ 	}
+ }
+ 
+-/**
+- * Checks whether a DOM event is a modal event, whose detail may name the trigger that asked for the modal.
+- *
+- * @param value - The value to inspect.
+- * @returns True if the value is a CustomEvent whose detail is an object carrying no `relatedTarget` member, or one that is undefined or an HTMLElement; false otherwise.
+- * @remarks
+- * A modal dispatches each event with a detail object whose `relatedTarget` member carries the
+- * trigger passed to `show`, or undefined, so a consumer's own event under a modal wire name that
+- * carries no object, or names something other than an element there, is refused. The class half
+- * reads `isInstance` from `@orkestrel/contract`, which narrows the event to `CustomEvent<unknown>`
+- * and leaves the detail for the object check. The containment covers a `detail` or `relatedTarget`
+- * accessor that throws, as the button event guard does.
+- * @example
+- * ```ts
+- * isModalEvent(new CustomEvent('shown.vn.modal', { detail: { relatedTarget: undefined } })) // true
+- * isModalEvent(new CustomEvent('shown.vn.modal')) // false
+- * ```
+- */
+-export function isModalEvent(value: unknown): value is ModalEventMap['show'] {
+-	try {
+-		if (!isInstance(value, CustomEvent)) return false
+-		const detail: unknown = value.detail
+-		if (typeof detail !== 'object' || detail === null) return false
+-		if (!('relatedTarget' in detail)) return true
+-		return detail.relatedTarget === undefined || isInstance(detail.relatedTarget, HTMLElement)
+-	} catch {
+-		return false
+-	}
+-}
+-
+-/**
+- * Checks whether a DOM event is a toast event, which carries no payload.
+- *
+- * @param value - The value to inspect.
+- * @returns True if the value is a CustomEvent whose detail is null; false otherwise.
+- * @remarks
+- * A toast dispatches each event with no detail, and the platform reads an absent `detail` as
+- * `null`, which is the `CustomEvent<null>` type every key of the toast event map carries, so a
+- * consumer's own event under a toast wire name that carries a payload is refused. The class half
+- * reads through the `isInstance` function `@orkestrel/contract` publishes, which contains a hostile
+- * prototype's throw, and the containment here covers a `detail` accessor that throws.
+- * @example
+- * ```ts
+- * isToastEvent(new CustomEvent('hidden.vn.toast')) // true
+- * isToastEvent(new CustomEvent('hidden.vn.toast', { detail: { shown: false } })) // false
+- * ```
+- */
+-export function isToastEvent(value: unknown): value is ToastEventMap['show'] {
+-	try {
+-		return isInstance(value, CustomEvent) && value.detail === null
+-	} catch {
+-		return false
+-	}
+-}
+-
+-/**
+- * Checks whether a DOM event is an offcanvas event, whose detail may name the trigger that asked for the panel.
+- *
+- * @param value - The value to inspect.
+- * @returns True if the value is a CustomEvent whose detail is an object carrying no `relatedTarget` member, or one that is undefined or an HTMLElement; false otherwise.
+- * @remarks
+- * An offcanvas panel dispatches each event with a detail object whose `relatedTarget` member
+- * carries the trigger passed to `show`, or undefined, so a consumer's own event under an offcanvas
+- * wire name that carries no object, or names something other than an element there, is refused.
+- * The class half reads `isInstance` from `@orkestrel/contract`, and the containment covers a
+- * `detail` or `relatedTarget` accessor that throws, as the modal event guard does.
+- * @example
+- * ```ts
+- * isOffcanvasEvent(new CustomEvent('shown.vn.offcanvas', { detail: { relatedTarget: undefined } })) // true
+- * isOffcanvasEvent(new CustomEvent('shown.vn.offcanvas')) // false
+- * ```
+- */
+-export function isOffcanvasEvent(value: unknown): value is OffcanvasEventMap['show'] {
+-	try {
+-		if (!isInstance(value, CustomEvent)) return false
+-		const detail: unknown = value.detail
+-		if (typeof detail !== 'object' || detail === null) return false
+-		if (!('relatedTarget' in detail)) return true
+-		return detail.relatedTarget === undefined || isInstance(detail.relatedTarget, HTMLElement)
+-	} catch {
+-		return false
+-	}
+-}
+-
+-/**
+- * Checks whether a DOM event is a tooltip event, which carries no payload.
+- *
+- * @param value - The value to inspect.
+- * @returns True if the value is a CustomEvent whose detail is null; false otherwise.
+- * @remarks
+- * A tooltip dispatches each event with no detail, and the platform reads an absent `detail` as
+- * `null`, which is the `CustomEvent<null>` type every key of the tooltip event map carries, so a
+- * consumer's own event under a tooltip wire name that carries a payload is refused. The class half
+- * reads through the `isInstance` function `@orkestrel/contract` publishes, which contains a hostile
+- * prototype's throw, and the containment here covers a `detail` accessor that throws.
+- * @example
+- * ```ts
+- * isTooltipEvent(new CustomEvent('shown.vn.tooltip')) // true
+- * isTooltipEvent(new CustomEvent('shown.vn.tooltip', { detail: { shown: true } })) // false
+- * ```
+- */
+-export function isTooltipEvent(value: unknown): value is TooltipEventMap['show'] {
+-	try {
+-		return isInstance(value, CustomEvent) && value.detail === null
+-	} catch {
+-		return false
+-	}
+-}
+-
+-/**
+- * Checks whether a DOM event is a popover event, which carries no payload.
+- *
+- * @param value - The value to inspect.
+- * @returns True if the value is a CustomEvent whose detail is null; false otherwise.
+- * @remarks
+- * A popover dispatches each event with no detail, and the platform reads an absent `detail` as
+- * `null`, which is the `CustomEvent<null>` type every key of the popover event map carries, so a
+- * consumer's own event under a popover wire name that carries a payload is refused. The class half
+- * reads through the `isInstance` function `@orkestrel/contract` publishes, which contains a hostile
+- * prototype's throw, and the containment here covers a `detail` accessor that throws.
+- * @example
+- * ```ts
+- * isPopoverEvent(new CustomEvent('shown.vn.popover')) // true
+- * isPopoverEvent(new CustomEvent('shown.vn.popover', { detail: { shown: true } })) // false
+- * ```
+- */
+-export function isPopoverEvent(value: unknown): value is PopoverEventMap['show'] {
+-	try {
+-		return isInstance(value, CustomEvent) && value.detail === null
+-	} catch {
+-		return false
+-	}
+-}
+-
+ /**
+  * Checks whether a value carries the platform's `setHTML` method, which parses markup through a sanitizer.
+  *
+diff --git a/tests/src/browser/Popover.test.ts b/tests/src/browser/Popover.test.ts
+index 0df9795..5749e18 100644
+--- a/tests/src/browser/Popover.test.ts
++++ b/tests/src/browser/Popover.test.ts
+@@ -1,7 +1,5 @@
+ import type { PopoverOptions } from '@src/browser'
+ import {
+-	isPopoverEvent,
+-	isTooltipEvent,
+ 	Popover,
+ 	POPOVER_ATTRIBUTES,
+ 	POPOVER_CLASSES,
+@@ -65,7 +63,6 @@ describe('Popover', () => {
+ 		expect(Popover.profile).toStrictEqual({
+ 			name: 'popover',
+ 			events: POPOVER_EVENTS,
+-			guard: isPopoverEvent,
+ 			classes: POPOVER_CLASSES,
+ 			attributes: POPOVER_ATTRIBUTES,
+ 			selectors: POPOVER_SELECTORS,
+@@ -75,7 +72,6 @@ describe('Popover', () => {
+ 		expect(Tooltip.profile).toStrictEqual({
+ 			name: 'tooltip',
+ 			events: TOOLTIP_EVENTS,
+-			guard: isTooltipEvent,
+ 			classes: TOOLTIP_CLASSES,
+ 			attributes: TOOLTIP_ATTRIBUTES,
+ 			selectors: TOOLTIP_SELECTORS,
+@@ -280,6 +276,31 @@ describe('Popover', () => {
+ 		expect(document.querySelector('.tooltip, .popover')).toBeNull()
+ 	})
+ 
++	it('reads its content option from the constructor object once and fills the body slot with it', async () => {
++		const root = scene.mount(
++			'<button type="button" id="trigger" data-bs-title="Head">Save</button>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const reads = createRecorder<readonly []>()
++		const options = {
++			animated: false,
++			get content() {
++				reads.handler()
++				return 'Body'
++			},
++		}
++		const popover = new Popover(host, options)
++		onTestFinished(() => popover.destroy())
++		expect(reads.count).toBe(1)
++		expect(await popover.show()).toBe(true)
++		const tip = requireValue(
++			document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++			'No tip',
++		)
++		expect(tip.querySelector('.popover-body')?.textContent).toBe('Body')
++		expect(reads.count).toBe(1)
++	})
++
+ 	it('claims a trigger under its own profile beside a tooltip, refuses a second popover, and reports each error under the popover name', async () => {
+ 		const root = scene.mount(
+ 			'<button type="button" id="trigger" data-bs-title="Head" data-bs-content="Body">Save</button>',
+diff --git a/tests/src/browser/Tooltip.test.ts b/tests/src/browser/Tooltip.test.ts
+index 3730634..38b4d19 100644
+--- a/tests/src/browser/Tooltip.test.ts
++++ b/tests/src/browser/Tooltip.test.ts
+@@ -368,6 +368,32 @@ describe('Tooltip', () => {
+ 		expect(Array.from(tip2.classList)).toEqual(['tooltip', 'bs-tooltip-auto', 'fade', 'show'])
+ 	})
+ 
++	it('never reads a content option, which its profile declares no slot for, from the constructor object', async () => {
++		const root = scene.mount(
++			'<button type="button" id="trigger" title="Saves the draft">Save</button>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const reads = createRecorder<readonly []>()
++		const options = {
++			animated: false,
++			get content() {
++				reads.handler()
++				return 'Body'
++			},
++		}
++		const tooltip = new Tooltip(host, options)
++		onTestFinished(() => tooltip.destroy())
++		expect(await tooltip.show()).toBe(true)
++		const tip = requireValue(
++			document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++			'No tip',
++		)
++		expect(tip.textContent).toBe('Saves the draft')
++		expect(await tooltip.hide()).toBe(true)
++		tooltip.destroy()
++		expect(reads.count).toBe(0)
++	})
++
+ 	it('writes markup through the default sanitizer when html is true', async () => {
+ 		const root = scene.mount('<button type="button" id="trigger">Save</button>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index 393fbd4..dce181d 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -588,6 +588,99 @@ describe('resolveOptions', () => {
+ 			error: { code: 'PROBE_OPTION_INVALID', context: { attribute: 'data-bs-toggle', tag: 'DIV' } },
+ 		})
+ 	})
++
++	it('never reads a constructor key the parser table does not declare', () => {
++		const host = build('div')
++		const reads = createRecorder<readonly []>()
++		const options = {
++			delay: 5,
++			get content() {
++				reads.handler()
++				throw new Error('Undeclared key read')
++			},
++		}
++		const resolved = attempt(() =>
++			resolveOptions(
++				host,
++				{ delay: 'data-bs-delay' },
++				'PROBE_OPTION_INVALID',
++				{ delay: 300 },
++				{ delay: parseNumber },
++				options,
++			),
++		)
++		expect(resolved).toStrictEqual({ success: true, value: { delay: 5 } })
++		expect(reads.count).toBe(0)
++	})
++
++	it('leaves a constructor key the parser table does not declare out of the result', () => {
++		const host = build('div')
++		const options = { delay: 5, extra: 1 }
++		expect(
++			resolveOptions(
++				host,
++				{ delay: 'data-bs-delay' },
++				'PROBE_OPTION_INVALID',
++				{ delay: 300 },
++				{ delay: parseNumber },
++				options,
++			),
++		).toStrictEqual({ delay: 5 })
++	})
++
++	it('reads a declared constructor key once', () => {
++		const host = build('div', { attributes: { 'data-bs-delay': '5' } })
++		const reads = createRecorder<readonly []>()
++		const options = {
++			get delay() {
++				reads.handler()
++				return 0
++			},
++		}
++		expect(
++			resolveOptions(
++				host,
++				{ delay: 'data-bs-delay' },
++				'PROBE_OPTION_INVALID',
++				{ delay: 300 },
++				{ delay: parseNumber },
++				options,
++			),
++		).toStrictEqual({ delay: 0 })
++		expect(reads.count).toBe(1)
++	})
++
++	it('takes an inherited declared constructor key over the attribute', () => {
++		const host = build('div', { attributes: { 'data-bs-delay': '5' } })
++		const options: { delay?: number } = Object.create({ delay: 0 })
++		expect(Object.keys(options)).toEqual([])
++		expect(
++			resolveOptions(
++				host,
++				{ delay: 'data-bs-delay' },
++				'PROBE_OPTION_INVALID',
++				{ delay: 300 },
++				{ delay: parseNumber },
++				options,
++			),
++		).toStrictEqual({ delay: 0 })
++	})
++
++	it('takes a non-enumerable declared constructor key over the attribute', () => {
++		const host = build('div', { attributes: { 'data-bs-delay': '5' } })
++		const options: { delay?: number } = {}
++		Object.defineProperty(options, 'delay', { value: 0, enumerable: false })
++		expect(
++			resolveOptions(
++				host,
++				{ delay: 'data-bs-delay' },
++				'PROBE_OPTION_INVALID',
++				{ delay: 300 },
++				{ delay: parseNumber },
++				options,
++			),
++		).toStrictEqual({ delay: 0 })
++	})
+ })
+ 
+ describe('resolveVocabulary', () => {
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index a0cad6f..40e5aa5 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -166,24 +166,18 @@ describe('src browser entry', () => {
+ 			'computeNeighbor',
+ 			'emitEvent',
+ 			'fillSlot',
+-			'isAlertEvent',
+ 			'isAttributeName',
++			'isBareEvent',
+ 			'isButtonEvent',
+ 			'isCarouselEvent',
+ 			'isClassToken',
+-			'isCollapseEvent',
+ 			'isColorModeState',
+ 			'isDropdownEvent',
+-			'isModalEvent',
+-			'isOffcanvasEvent',
+-			'isPopoverEvent',
++			'isRelatedEvent',
+ 			'isSanitizeTarget',
+ 			'isSanitizerConfig',
+ 			'isScrollSpyEvent',
+ 			'isSelector',
+-			'isTabEvent',
+-			'isToastEvent',
+-			'isTooltipEvent',
+ 			'matchesBaselineAttribute',
+ 			'matchesBaselineElement',
+ 			'matchesDisabled',
+diff --git a/tests/src/browser/validators.test.ts b/tests/src/browser/validators.test.ts
+index 3ab2dc6..4b67377 100644
+--- a/tests/src/browser/validators.test.ts
++++ b/tests/src/browser/validators.test.ts
+@@ -1,22 +1,16 @@
+ import {
+-	isAlertEvent,
+ 	isAttributeName,
++	isBareEvent,
+ 	isButtonEvent,
+ 	isCarouselEvent,
+ 	isClassToken,
+-	isCollapseEvent,
+ 	isColorModeState,
+ 	isDropdownEvent,
+-	isModalEvent,
+-	isOffcanvasEvent,
+-	isPopoverEvent,
++	isRelatedEvent,
+ 	isScrollSpyEvent,
+ 	isSelector,
+-	isTabEvent,
+ 	isSanitizerConfig,
+ 	isSanitizeTarget,
+-	isToastEvent,
+-	isTooltipEvent,
+ 	SANITIZER_ALLOWLIST,
+ } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+@@ -144,135 +138,118 @@ describe('isButtonEvent', () => {
+ 	})
+ })
+ 
+-describe('isCollapseEvent', () => {
+-	it('requires a custom event whose detail the platform reads as absent', () => {
+-		expect(isCollapseEvent(new CustomEvent('shown.vn.collapse'))).toBe(true)
+-		expect(isCollapseEvent(new CustomEvent('show.vn.collapse', { detail: undefined }))).toBe(true)
+-		expect(isCollapseEvent(new CustomEvent('hide.vn.collapse', { detail: null }))).toBe(true)
+-		expect(isCollapseEvent(new CustomEvent('shown.vn.collapse', { detail: { shown: true } }))).toBe(
++describe('isBareEvent', () => {
++	it('requires a custom event whose detail the platform reads as absent, under any wire name', () => {
++		expect(isBareEvent(new CustomEvent('shown.vn.collapse'))).toBe(true)
++		expect(isBareEvent(new CustomEvent('any'))).toBe(true)
++		expect(isBareEvent(new CustomEvent('close.vn.alert', { detail: undefined }))).toBe(true)
++		expect(isBareEvent(new CustomEvent('hide.vn.toast', { detail: null }))).toBe(true)
++		expect(isBareEvent(new CustomEvent('shown.vn.tooltip', { detail: { shown: true } }))).toBe(
+ 			false,
+ 		)
+-		expect(isCollapseEvent(new CustomEvent('shown.vn.collapse', { detail: 0 }))).toBe(false)
+-		expect(isCollapseEvent(new Event('shown.vn.collapse'))).toBe(false)
+-		expect(isCollapseEvent(undefined)).toBe(false)
+-		expect(isCollapseEvent(null)).toBe(false)
+-	})
+-
+-	it('returns false when a prototype or detail accessor throws', () => {
+ 		expect(
+-			isCollapseEvent(
+-				new Proxy(
+-					{},
+-					{
+-						getPrototypeOf() {
+-							throw new Error('Unreadable')
+-						},
+-					},
+-				),
+-			),
++			isBareEvent(new CustomEvent('shown.vn.modal', { detail: { relatedTarget: undefined } })),
+ 		).toBe(false)
+-		const event = new CustomEvent('shown.vn.collapse')
+-		Object.defineProperty(event, 'detail', {
+-			get() {
+-				throw new Error('Unreadable')
+-			},
+-		})
+-		expect(isCollapseEvent(event)).toBe(false)
+-	})
+-})
+-
+-describe('isAlertEvent', () => {
+-	it('requires a custom event whose detail the platform reads as absent', () => {
+-		expect(isAlertEvent(new CustomEvent('closed.vn.alert'))).toBe(true)
+-		expect(isAlertEvent(new CustomEvent('close.vn.alert', { detail: undefined }))).toBe(true)
+-		expect(isAlertEvent(new CustomEvent('close.vn.alert', { detail: null }))).toBe(true)
+-		expect(isAlertEvent(new CustomEvent('closed.vn.alert', { detail: { closed: true } }))).toBe(
+-			false,
+-		)
+-		expect(isAlertEvent(new CustomEvent('closed.vn.alert', { detail: '' }))).toBe(false)
+-		expect(isAlertEvent(new Event('closed.vn.alert'))).toBe(false)
+-		expect(isAlertEvent({ detail: null })).toBe(false)
+-		expect(isAlertEvent(undefined)).toBe(false)
+-		expect(isAlertEvent(null)).toBe(false)
++		expect(isBareEvent(new CustomEvent('shown.vn.popover', { detail: 0 }))).toBe(false)
++		expect(isBareEvent(new CustomEvent('closed.vn.alert', { detail: '' }))).toBe(false)
++		expect(isBareEvent(new Event('shown.vn.collapse'))).toBe(false)
++		expect(isBareEvent({ detail: null })).toBe(false)
++		expect(isBareEvent(undefined)).toBe(false)
++		expect(isBareEvent(null)).toBe(false)
+ 	})
+ 
+ 	it('returns false when a prototype or detail accessor throws', () => {
+-		expect(
+-			isAlertEvent(
+-				new Proxy(
+-					{},
+-					{
+-						getPrototypeOf() {
+-							throw new Error('Unreadable')
+-						},
+-					},
+-				),
+-			),
+-		).toBe(false)
+-		const event = new CustomEvent('closed.vn.alert')
++		const hostile = new Proxy(
++			{},
++			{
++				getPrototypeOf() {
++					throw new Error('Unreadable')
++				},
++			},
++		)
++		expect(attempt(() => isBareEvent(hostile))).toEqual({ success: true, value: false })
++		const event = new CustomEvent('shown.vn.collapse')
+ 		Object.defineProperty(event, 'detail', {
+ 			get() {
+ 				throw new Error('Unreadable')
+ 			},
+ 		})
+-		expect(isAlertEvent(event)).toBe(false)
++		expect(attempt(() => isBareEvent(event))).toEqual({ success: true, value: false })
+ 	})
+ })
+ 
+-describe('isTabEvent', () => {
+-	it('requires a custom event whose detail carries an HTML element or nothing as its related target', () => {
+-		const control = build('button')
+-		expect(isTabEvent(new CustomEvent('show.vn.tab', { detail: { relatedTarget: control } }))).toBe(
+-			true,
+-		)
++describe('isRelatedEvent', () => {
++	it('requires a custom event whose detail object carries no relatedTarget, or an undefined or HTML element one', () => {
++		const trigger = build('button')
+ 		expect(
+-			isTabEvent(new CustomEvent('shown.vn.tab', { detail: { relatedTarget: undefined } })),
++			isRelatedEvent(new CustomEvent('show.vn.tab', { detail: { relatedTarget: trigger } })),
+ 		).toBe(true)
+-		expect(isTabEvent(new CustomEvent('hidden.vn.tab', { detail: {} }))).toBe(true)
+-		expect(isTabEvent(new CustomEvent('show.vn.tab'))).toBe(false)
+-		expect(isTabEvent(new CustomEvent('show.vn.tab', { detail: { relatedTarget: null } }))).toBe(
+-			false,
+-		)
+ 		expect(
+-			isTabEvent(new CustomEvent('show.vn.tab', { detail: { relatedTarget: '#profile' } })),
+-		).toBe(false)
++			isRelatedEvent(new CustomEvent('hidden.vn.modal', { detail: { relatedTarget: undefined } })),
++		).toBe(true)
++		expect(isRelatedEvent(new CustomEvent('prevent.vn.offcanvas', { detail: {} }))).toBe(true)
+ 		expect(
+-			isTabEvent(
+-				new CustomEvent('show.vn.tab', {
+-					detail: {
+-						relatedTarget: document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
+-					},
+-				}),
++			isRelatedEvent(new CustomEvent('any', { detail: Object.create({ relatedTarget: trigger }) })),
++		).toBe(true)
++		expect(isRelatedEvent(new CustomEvent('shown.vn.modal'))).toBe(false)
++		expect(isRelatedEvent(new CustomEvent('shown.vn.tab', { detail: 'opener' }))).toBe(false)
++		expect(
++			isRelatedEvent(
++				new CustomEvent('shown.vn.offcanvas', { detail: { relatedTarget: 'opener' } }),
+ 			),
+ 		).toBe(false)
+-		expect(isTabEvent(new CustomEvent('show.vn.tab', { detail: 'profile' }))).toBe(false)
+-		expect(isTabEvent(new Event('show.vn.tab'))).toBe(false)
+-		expect(isTabEvent(undefined)).toBe(false)
+-		expect(isTabEvent(null)).toBe(false)
+-	})
+-
+-	it('returns false when a prototype or relatedTarget accessor throws', () => {
+ 		expect(
+-			isTabEvent(
+-				new Proxy(
+-					{},
+-					{
+-						getPrototypeOf() {
+-							throw new Error('Unreadable')
+-						},
+-					},
+-				),
+-			),
++			isRelatedEvent(new CustomEvent('shown.vn.modal', { detail: { relatedTarget: null } })),
+ 		).toBe(false)
+-		const event = new CustomEvent('show.vn.tab', {
+-			detail: {
+-				get relatedTarget() {
++		const vector = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
++		expect(
++			isRelatedEvent(new CustomEvent('show.vn.tab', { detail: { relatedTarget: vector } })),
++		).toBe(false)
++		expect(isRelatedEvent(new Event('shown.vn.modal'))).toBe(false)
++		expect(isRelatedEvent({ detail: { relatedTarget: trigger } })).toBe(false)
++		expect(isRelatedEvent(undefined)).toBe(false)
++		expect(isRelatedEvent(null)).toBe(false)
++	})
++
++	it('reads the relatedTarget member of the detail once', () => {
++		const trigger = build('button')
++		const reads = createRecorder<readonly []>()
++		const detail = {
++			get relatedTarget() {
++				reads.handler()
++				return trigger
++			},
++		}
++		expect(isRelatedEvent(new CustomEvent('show.vn.modal', { detail }))).toBe(true)
++		expect(reads.count).toBe(1)
++	})
++
++	it('returns false when a prototype, detail, or relatedTarget accessor throws', () => {
++		const hostile = new Proxy(
++			{},
++			{
++				getPrototypeOf() {
+ 					throw new Error('Unreadable')
+ 				},
+ 			},
++		)
++		expect(attempt(() => isRelatedEvent(hostile))).toEqual({ success: true, value: false })
++		const event = new CustomEvent('shown.vn.modal')
++		Object.defineProperty(event, 'detail', {
++			get() {
++				throw new Error('Unreadable')
++			},
++		})
++		expect(attempt(() => isRelatedEvent(event))).toEqual({ success: true, value: false })
++		const detail = {
++			get relatedTarget() {
++				throw new Error('Unreadable')
++			},
++		}
++		expect(attempt(() => isRelatedEvent(new CustomEvent('show.vn.tab', { detail })))).toEqual({
++			success: true,
++			value: false,
+ 		})
+-		expect(isTabEvent(event)).toBe(false)
+-		expect(attempt(() => isTabEvent(event))).toEqual({ success: true, value: false })
+ 	})
+ })
+ 
+@@ -439,246 +416,6 @@ describe('isCarouselEvent', () => {
+ 	})
+ })
+ 
+-describe('isModalEvent', () => {
+-	it('requires a custom event whose detail object carries no relatedTarget, or an undefined or HTML element one', () => {
+-		const trigger = build('button')
+-		expect(
+-			isModalEvent(new CustomEvent('show.vn.modal', { detail: { relatedTarget: trigger } })),
+-		).toBe(true)
+-		expect(
+-			isModalEvent(new CustomEvent('hidden.vn.modal', { detail: { relatedTarget: undefined } })),
+-		).toBe(true)
+-		expect(isModalEvent(new CustomEvent('prevent.vn.modal', { detail: {} }))).toBe(true)
+-		expect(isModalEvent(new CustomEvent('shown.vn.modal'))).toBe(false)
+-		expect(isModalEvent(new CustomEvent('shown.vn.modal', { detail: 'opener' }))).toBe(false)
+-		expect(
+-			isModalEvent(new CustomEvent('shown.vn.modal', { detail: { relatedTarget: 'opener' } })),
+-		).toBe(false)
+-		expect(
+-			isModalEvent(new CustomEvent('shown.vn.modal', { detail: { relatedTarget: null } })),
+-		).toBe(false)
+-		const vector = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+-		expect(
+-			isModalEvent(new CustomEvent('shown.vn.modal', { detail: { relatedTarget: vector } })),
+-		).toBe(false)
+-		expect(isModalEvent(new Event('shown.vn.modal'))).toBe(false)
+-		expect(isModalEvent(undefined)).toBe(false)
+-		expect(isModalEvent(null)).toBe(false)
+-	})
+-
+-	it('returns false when a prototype, detail, or relatedTarget accessor throws', () => {
+-		expect(
+-			isModalEvent(
+-				new Proxy(
+-					{},
+-					{
+-						getPrototypeOf() {
+-							throw new Error('Unreadable')
+-						},
+-					},
+-				),
+-			),
+-		).toBe(false)
+-		const event = new CustomEvent('shown.vn.modal')
+-		Object.defineProperty(event, 'detail', {
+-			get() {
+-				throw new Error('Unreadable')
+-			},
+-		})
+-		expect(isModalEvent(event)).toBe(false)
+-		const detail = {}
+-		Object.defineProperty(detail, 'relatedTarget', {
+-			get() {
+-				throw new Error('Unreadable')
+-			},
+-		})
+-		expect(attempt(() => isModalEvent(new CustomEvent('shown.vn.modal', { detail })))).toEqual({
+-			success: true,
+-			value: false,
+-		})
+-	})
+-})
+-
+-describe('isOffcanvasEvent', () => {
+-	it('requires a custom event whose detail object carries no relatedTarget, or an undefined or HTML element one', () => {
+-		const trigger = build('button')
+-		expect(
+-			isOffcanvasEvent(
+-				new CustomEvent('show.vn.offcanvas', { detail: { relatedTarget: trigger } }),
+-			),
+-		).toBe(true)
+-		expect(
+-			isOffcanvasEvent(
+-				new CustomEvent('hidden.vn.offcanvas', { detail: { relatedTarget: undefined } }),
+-			),
+-		).toBe(true)
+-		expect(isOffcanvasEvent(new CustomEvent('prevent.vn.offcanvas', { detail: {} }))).toBe(true)
+-		expect(isOffcanvasEvent(new CustomEvent('shown.vn.offcanvas'))).toBe(false)
+-		expect(isOffcanvasEvent(new CustomEvent('shown.vn.offcanvas', { detail: 'opener' }))).toBe(
+-			false,
+-		)
+-		expect(
+-			isOffcanvasEvent(
+-				new CustomEvent('shown.vn.offcanvas', { detail: { relatedTarget: 'opener' } }),
+-			),
+-		).toBe(false)
+-		expect(
+-			isOffcanvasEvent(new CustomEvent('shown.vn.offcanvas', { detail: { relatedTarget: null } })),
+-		).toBe(false)
+-		const vector = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+-		expect(
+-			isOffcanvasEvent(
+-				new CustomEvent('shown.vn.offcanvas', { detail: { relatedTarget: vector } }),
+-			),
+-		).toBe(false)
+-		expect(isOffcanvasEvent(new Event('shown.vn.offcanvas'))).toBe(false)
+-		expect(isOffcanvasEvent(undefined)).toBe(false)
+-		expect(isOffcanvasEvent(null)).toBe(false)
+-	})
+-
+-	it('returns false when a prototype, detail, or relatedTarget accessor throws', () => {
+-		expect(
+-			isOffcanvasEvent(
+-				new Proxy(
+-					{},
+-					{
+-						getPrototypeOf() {
+-							throw new Error('Unreadable')
+-						},
+-					},
+-				),
+-			),
+-		).toBe(false)
+-		const event = new CustomEvent('shown.vn.offcanvas')
+-		Object.defineProperty(event, 'detail', {
+-			get() {
+-				throw new Error('Unreadable')
+-			},
+-		})
+-		expect(isOffcanvasEvent(event)).toBe(false)
+-		const detail = {}
+-		Object.defineProperty(detail, 'relatedTarget', {
+-			get() {
+-				throw new Error('Unreadable')
+-			},
+-		})
+-		expect(
+-			attempt(() => isOffcanvasEvent(new CustomEvent('shown.vn.offcanvas', { detail }))),
+-		).toEqual({ success: true, value: false })
+-	})
+-})
+-
+-describe('isToastEvent', () => {
+-	it('requires a custom event whose detail the platform reads as absent', () => {
+-		expect(isToastEvent(new CustomEvent('shown.vn.toast'))).toBe(true)
+-		expect(isToastEvent(new CustomEvent('show.vn.toast', { detail: undefined }))).toBe(true)
+-		expect(isToastEvent(new CustomEvent('hide.vn.toast', { detail: null }))).toBe(true)
+-		expect(isToastEvent(new CustomEvent('hidden.vn.toast', { detail: { shown: false } }))).toBe(
+-			false,
+-		)
+-		expect(isToastEvent(new CustomEvent('hidden.vn.toast', { detail: 0 }))).toBe(false)
+-		expect(isToastEvent(new Event('hidden.vn.toast'))).toBe(false)
+-		expect(isToastEvent(undefined)).toBe(false)
+-		expect(isToastEvent(null)).toBe(false)
+-	})
+-
+-	it('returns false when a prototype or detail accessor throws', () => {
+-		expect(
+-			isToastEvent(
+-				new Proxy(
+-					{},
+-					{
+-						getPrototypeOf() {
+-							throw new Error('Unreadable')
+-						},
+-					},
+-				),
+-			),
+-		).toBe(false)
+-		const event = new CustomEvent('hidden.vn.toast')
+-		Object.defineProperty(event, 'detail', {
+-			get() {
+-				throw new Error('Unreadable')
+-			},
+-		})
+-		expect(isToastEvent(event)).toBe(false)
+-	})
+-})
+-
+-describe('isTooltipEvent', () => {
+-	it('requires a custom event whose detail the platform reads as absent', () => {
+-		expect(isTooltipEvent(new CustomEvent('shown.vn.tooltip'))).toBe(true)
+-		expect(isTooltipEvent(new CustomEvent('inserted.vn.tooltip', { detail: undefined }))).toBe(true)
+-		expect(isTooltipEvent(new CustomEvent('hide.vn.tooltip', { detail: null }))).toBe(true)
+-		expect(isTooltipEvent(new CustomEvent('shown.vn.tooltip', { detail: { shown: true } }))).toBe(
+-			false,
+-		)
+-		expect(isTooltipEvent(new CustomEvent('shown.vn.tooltip', { detail: '' }))).toBe(false)
+-		expect(isTooltipEvent(new Event('shown.vn.tooltip'))).toBe(false)
+-		expect(isTooltipEvent(undefined)).toBe(false)
+-		expect(isTooltipEvent(null)).toBe(false)
+-	})
+-
+-	it('returns false when a prototype or detail accessor throws', () => {
+-		expect(
+-			isTooltipEvent(
+-				new Proxy(
+-					{},
+-					{
+-						getPrototypeOf() {
+-							throw new Error('Unreadable')
+-						},
+-					},
+-				),
+-			),
+-		).toBe(false)
+-		const event = new CustomEvent('shown.vn.tooltip')
+-		Object.defineProperty(event, 'detail', {
+-			get() {
+-				throw new Error('Unreadable')
+-			},
+-		})
+-		expect(isTooltipEvent(event)).toBe(false)
+-	})
+-})
+-
+-describe('isPopoverEvent', () => {
+-	it('requires a custom event whose detail the platform reads as absent', () => {
+-		expect(isPopoverEvent(new CustomEvent('shown.vn.popover'))).toBe(true)
+-		expect(isPopoverEvent(new CustomEvent('inserted.vn.popover', { detail: undefined }))).toBe(true)
+-		expect(isPopoverEvent(new CustomEvent('hide.vn.popover', { detail: null }))).toBe(true)
+-		expect(isPopoverEvent(new CustomEvent('shown.vn.popover', { detail: { shown: true } }))).toBe(
+-			false,
+-		)
+-		expect(isPopoverEvent(new CustomEvent('shown.vn.popover', { detail: '' }))).toBe(false)
+-		expect(isPopoverEvent(new Event('shown.vn.popover'))).toBe(false)
+-		expect(isPopoverEvent(undefined)).toBe(false)
+-		expect(isPopoverEvent(null)).toBe(false)
+-	})
+-
+-	it('returns false when a prototype or detail accessor throws', () => {
+-		expect(
+-			isPopoverEvent(
+-				new Proxy(
+-					{},
+-					{
+-						getPrototypeOf() {
+-							throw new Error('Unreadable')
+-						},
+-					},
+-				),
+-			),
+-		).toBe(false)
+-		const event = new CustomEvent('shown.vn.popover')
+-		Object.defineProperty(event, 'detail', {
+-			get() {
+-				throw new Error('Unreadable')
+-			},
+-		})
+-		expect(isPopoverEvent(event)).toBe(false)
+-	})
+-})
+-
+ describe('isSanitizeTarget', () => {
+ 	it('accepts an object whose setHTML member is a function and refuses every other value', () => {
+ 		expect(isSanitizeTarget(Object.create({ setHTML() {} }))).toBe(true)
