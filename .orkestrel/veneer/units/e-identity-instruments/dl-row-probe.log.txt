@@ -1,0 +1,2 @@
+veneer {"display":"flex","gap":"8px 16px","columns":"1fr 2fr","boxes":["dt x=70 y=0 w=285","dd x=70 y=29 w=855","dt x=70 y=58 w=285","dd x=70 y=87 w=855"]}
+bootstrap {"display":"flex","gap":"normal","columns":"none","boxes":["dt x=70 y=0 w=285","dd x=355 y=0 w=855","dt x=70 y=32 w=285","dd x=355 y=32 w=855"]}
