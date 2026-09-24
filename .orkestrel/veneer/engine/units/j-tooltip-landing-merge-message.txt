@@ -1,7 +1,0 @@
-Merge Veneer main (helpers, testpin, snapshot) into unit/tooltip: the landing round's resolution, two door repairs, and the promotion bound
-
-The merge keeps both sides: the tooltip's build helpers beside the landed traversal helpers, one export list carrying every name both sides assert, main's Surface table order with the tooltip's rows inserted, and the tooltip's closest reads routed through the landed readClosest. The round-5 repairs ride with it: a rebuild's pre-show dispatch and old-tip discard read the settled tip's state, ordinary concealment removes no tip whose shown token a closing beforetoggle listener restored, the promotion bound is stated in the guide and the show remarks until J-POPOVER's Placement guard, the value-ferrying arrays give way to the construction form, the restoration sentence states the behaviour J-SNAPSHOT closed, and the wording findings are folded.
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-
-Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F
