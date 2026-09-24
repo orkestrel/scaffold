@@ -1,0 +1,6 @@
+State the class of tokens the walk's div reads differently from the standard's integration-point parse
+
+The round-2 audit found a second input where the walk's `div` and the standard's foreign-context parse differ (`<p><b>x</p></b>y`: the standard ignores `</b>` at the root and reconstructs `b` around `y`, while the `div` runs the adoption agency), so a list of differences could not close. The remarks and the guide state the class instead: while the standard's stack of open elements holds only its root, the tokenizer reads a CDATA section as text (§ 13.2.5.42) and an end tag goes through the foreign-content rules (§ 13.2.6.5), which ignore an end tag other than `</p>` or `</br>`, whereas start tags and text still reach the HTML insertion mode; the `div` reads those CDATA sections and end tags as HTML content. On Chromium 153 the walk and `setHTML` build the same tree for every input measured, the audit's included, and the bound case pins each on both targets through both routes. Only comments change in the class.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

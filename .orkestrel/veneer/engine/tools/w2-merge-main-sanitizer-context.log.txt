@@ -1,0 +1,45 @@
+# J-SANITIZER-CONTEXT landing: the merge of main into unit/sanitizer-context (2026-09-24)
+5ca4a83 State the class of tokens the walk's div reads differently from the standard's integration-point parse
+85c04ac Name the sanitizer's MathML and SVG namespaces and integration-point tables as constants, and state the walk's parse against the standard
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+   3acad4c..6882751  main       -> origin/main
+fetch exit=0
+Updating 3acad4c..6882751
+Fast-forward
+ ROADMAP.md                                     |   8 +-
+ guides/veneer.md                               | 904 +++++++++++++------------
+ src/styles/_mixins.scss                        |  21 +
+ src/styles/_tokens.scss                        |  15 +-
+ src/styles/components/_button.scss             |  12 +-
+ src/styles/components/_type.scss               |   4 +-
+ src/styles/elements/_fieldset.scss             |   7 +-
+ src/styles/elements/_heading.scss              |   2 +-
+ src/styles/utilities/_color.scss               |  15 +-
+ src/styles/utilities/_font.scss                |  23 +-
+ src/styles/utilities/_link.scss                |  42 +-
+ tests/setup.ts                                 |  10 +-
+ tests/setupStyles.test.ts                      |  79 +++
+ tests/setupStyles.ts                           | 149 +++-
+ tests/src/styles/components/button.test.ts     |  43 +-
+ tests/src/styles/components/type.test.ts       | 126 +++-
+ tests/src/styles/components/validation.test.ts |  79 ++-
+ tests/src/styles/elements/a.test.ts            |  18 +-
+ tests/src/styles/elements/fieldset.test.ts     |  84 ++-
+ tests/src/styles/elements/heading.test.ts      |  80 ++-
+ tests/src/styles/fixtures/mixins.scss          |   7 +
+ tests/src/styles/mixins.test.ts                |  48 ++
+ tests/src/styles/theme.test.ts                 |  13 +-
+ tests/src/styles/utilities/color-bg.test.ts    |   5 +-
+ tests/src/styles/utilities/color.test.ts       | 340 ++++++++--
+ tests/src/styles/utilities/font.test.ts        | 129 +++-
+ tests/src/styles/utilities/link.test.ts        |  84 ++-
+ 27 files changed, 1726 insertions(+), 621 deletions(-)
+main ff to origin exit=0
+6882751 Merge origin/main (the engine session's J-GUARDS) into the styles session's branch
+Auto-merging guides/veneer.md
+CONFLICT (content): Merge conflict in guides/veneer.md
+Auto-merging tests/src/browser/index.test.ts
+Automatic merge failed; fix conflicts and then commit the result.
+merge main into unit/sanitizer-context exit=1
+conflicts: guides/veneer.md

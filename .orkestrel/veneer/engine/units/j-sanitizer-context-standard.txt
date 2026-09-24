@@ -1,0 +1,97 @@
+HTML Standard, https://html.spec.whatwg.org/multipage/parsing.html, fetched 2026-09-24 with curl, tags stripped.
+
+== 13.2.5.42 Markup declaration open state
+  13.2.5.42 Markup declaration open state
+
+  
+  If the next few characters are:
+
+  Two U+002D HYPHEN-MINUS characters (-)Consume those two characters, create a comment token whose data is the empty string, and
+   switch to the comment start state.ASCII case-insensitive match for "DOCTYPE"Consume those characters and switch to the DOCTYPE state."[CDATA["Consume those characters. If there is an adjusted current node and it is not
+   an element in the HTML namespace, then switch to the CDATA section
+   state. Otherwise, this is a cdata-in-html-content parse
+   error. Create a comment token whose data is "[CDATA[". Switch to
+   the bogus comment state.Anything elseThis is an incorrectly-opened-comment
+   parse error. Create a comment token whose data is the empty string. Switch to the
+   bogus comment state (don't consume anything in the current state).
+  
+
+
+
+== 13.2.6 Tree construction: the dispatcher and the integration points
+  As each token is emitted from the tokenizer, the user agent must follow the appropriate steps
+  from the following list, known as the tree construction dispatcher:
+
+  If the stack of open elements is emptyIf the adjusted current node is an element in the HTML namespaceIf the adjusted current node is a MathML text integration point and the token is a start tag who
+se tag name is neither "mglyph" nor "malignmark"If the adjusted current node is a MathML text integration point and the token is a character tokenIf the adjusted current node is a MathML annotation-xm
+l element and the token is a start tag whose tag name is "svg"If the adjusted current node is an HTML integration point and the token is a start tagIf the adjusted current node is an HTML integration 
+point and the token is a character tokenIf the token is an end-of-file tokenProcess the token according to the rules given in the section corresponding to the current
+   insertion mode in HTML content.OtherwiseProcess the token according to the rules given in the section for parsing tokens in foreign content.
+  
+
+  
+  The next token is the token that is about to be processed by the tree
+  construction dispatcher (even if the token is subsequently just ignored).
+  
+
+  
+  A node is a MathML text integration point if it is one of the following
+  elements:
+
+  A MathML mi elementA MathML mo elementA MathML mn elementA MathML ms elementA MathML mtext element
+  
+
+  
+  A node is an HTML integration point if it is one of the following elements:
+
+  A MathML annotation-xml element whose start tag token had an
+   attribute with the name "encoding" whose value was an ASCII case-insensitive match
+   for "text/html"A MathML annotation-xml element whose start tag token had an
+   attribute with the name "encoding" whose value was an ASCII case-insensitive match
+   for "application/xhtml+xml"An SVG foreignObject elementAn SVG desc elementAn SVG title element
+  
+
+  If the node in question is the parser's fragment context element,
+  then the start tag token for that element is the "fake" token created by the HTML fragment
+  parsing algorithm.
+
+== 13.2.6.5 foreign content: the br/p end tag rule
+   A start tag whose tag name is one of:  "b", "big", "blockquote", "body", "br", "center", "code", "dd", "div", "dl", "dt", "em", "embed", "h1", "h2", "h3", "h4", "h5", "h6", "head", "hr", "i", "img",
+   "li", "listing",
+   "menu", "meta", "nobr", "ol", "p", "pre", "ruby", "s",  "small", "span", "strong", "strike",  "sub",
+   "sup", "table", "tt", "u", "ul", "var"A start tag whose tag name is "font", if the token has any attributes named "color", "face",
+   or "size"An end tag whose tag name is "br", "p"
+    Parse error.
+
+    While the current node is not a MathML text integration point, an
+    HTML integration point, or an element in the HTML namespace, pop
+    elements from the stack of open elements.
+
+    Reprocess the token according to the rules given in the section corresponding to the current
+    insertion mode in HTML content.
+   Any other start tag
+
+== 13.2.6.5 foreign content: any other end tag
+   Any other end tag
+    Run these steps:
+
+    Initialize node to be the current node (the bottommost
+     node of the stack).If node's tag name, converted to ASCII lowercase, is
+     not the same as the tag name of the token, then this is a parse error.Loop: If node is the topmost element in the stack of
+     open elements, then return. (fragment case)If node's tag name, converted to ASCII lowercase, is
+     the same as the tag name of the token, pop elements from the stack of open
+     elements until node has been popped from the stack, and then return.Set node to the previous entry in the stack of open
+     elements.If node is not an element in the HTML namespace, return
+     to the step labeled loop.Otherwise, process the token according to the rules given in the section corresponding
+     to the current insertion mode in HTML content.
+   
+  
+
+
+== 13.4 fragment parsing: the fake start tag token
+   stack of template insertion modes so that it is the new current template
+   insertion mode.
+    Create a start tag token whose name is the local name of context and whose attributes are the attributes of
+    context.
+
+    Let this start tag token be the start tag token of context; e.g. for the purposes of determining if it is

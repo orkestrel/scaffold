@@ -1,0 +1,19 @@
+=== round-2 walk (the div), Chromium 153
+annotation-xml <![CDATA[x]]> | copy=<!--[CDATA[x]]--> | div=<!--[CDATA[x]]--> | walk allowlist= | native allowlist= | walk {}= | native {}=
+foreignObject <![CDATA[x]]> | copy=<!--[CDATA[x]]--> | div=<!--[CDATA[x]]--> | walk allowlist= | native allowlist= | walk {}= | native {}=
+annotation-xml <b>y</b><![CDATA[x]]> | copy=<b>y</b><!--[CDATA[x]]--> | div=<b>y</b><!--[CDATA[x]]--> | walk allowlist=<b>y</b> | native allowlist=<b>y</b> | walk {}=<b>y</b> | native {}=<b>y</b>
+foreignObject <b>y</b><![CDATA[x]]> | copy=<b>y</b><!--[CDATA[x]]--> | div=<b>y</b><!--[CDATA[x]]--> | walk allowlist=<b>y</b> | native allowlist=<b>y</b> | walk {}=<b>y</b> | native {}=<b>y</b>
+annotation-xml y<![CDATA[x]]> | copy=y<!--[CDATA[x]]--> | div=y<!--[CDATA[x]]--> | walk allowlist=y | native allowlist=y | walk {}=y | native {}=y
+foreignObject y<![CDATA[x]]> | copy=y<!--[CDATA[x]]--> | div=y<!--[CDATA[x]]--> | walk allowlist=y | native allowlist=y | walk {}=y | native {}=y
+annotation-xml <b>y</b></p>x | copy=<b>y</b><p></p>x | div=<b>y</b><p></p>x | walk allowlist=<b>y</b><p></p>x | native allowlist=<b>y</b><p></p>x | walk {}=<b>y</b><p></p>x | native {}=<b>y</b><p></p>x
+foreignObject <b>y</b></p>x | copy=<b>y</b><p></p>x | div=<b>y</b><p></p>x | walk allowlist=<b>y</b><p></p>x | native allowlist=<b>y</b><p></p>x | walk {}=<b>y</b><p></p>x | native {}=<b>y</b><p></p>x
+=== round-1 walk (the copy), Chromium 153
+annotation-xml <![CDATA[x]]> | copy=<!--[CDATA[x]]--> | div=<!--[CDATA[x]]--> | walk allowlist= | native allowlist= | walk {}= | native {}=
+foreignObject <![CDATA[x]]> | copy=<!--[CDATA[x]]--> | div=<!--[CDATA[x]]--> | walk allowlist= | native allowlist= | walk {}= | native {}=
+annotation-xml <b>y</b><![CDATA[x]]> | copy=<b>y</b><!--[CDATA[x]]--> | div=<b>y</b><!--[CDATA[x]]--> | walk allowlist=<b>y</b> | native allowlist=<b>y</b> | walk {}=<b>y</b> | native {}=<b>y</b>
+foreignObject <b>y</b><![CDATA[x]]> | copy=<b>y</b><!--[CDATA[x]]--> | div=<b>y</b><!--[CDATA[x]]--> | walk allowlist=<b>y</b> | native allowlist=<b>y</b> | walk {}=<b>y</b> | native {}=<b>y</b>
+annotation-xml y<![CDATA[x]]> | copy=y<!--[CDATA[x]]--> | div=y<!--[CDATA[x]]--> | walk allowlist=y | native allowlist=y | walk {}=y | native {}=y
+foreignObject y<![CDATA[x]]> | copy=y<!--[CDATA[x]]--> | div=y<!--[CDATA[x]]--> | walk allowlist=y | native allowlist=y | walk {}=y | native {}=y
+annotation-xml <b>y</b></p>x | copy=<b>y</b><p></p>x | div=<b>y</b><p></p>x | walk allowlist=<b>y</b><p></p>x | native allowlist=<b>y</b><p></p>x | walk {}=<b>y</b><p></p>x | native {}=<b>y</b><p></p>x
+foreignObject <b>y</b></p>x | copy=<b>y</b><p></p>x | div=<b>y</b><p></p>x | walk allowlist=<b>y</b><p></p>x | native allowlist=<b>y</b><p></p>x | walk {}=<b>y</b><p></p>x | native {}=<b>y</b><p></p>x
+=== restored identical=True
