@@ -1,0 +1,15 @@
+ M guides/veneer.md
+ M src/browser/Carousel.ts
+ M src/browser/Collapse.ts
+ M src/browser/Delegate.ts
+ M src/browser/Dropdown.ts
+ M src/browser/Modal.ts
+ M src/browser/ScrollLock.ts
+ M src/browser/ScrollSpy.ts
+ M src/browser/Tab.ts
+ M src/browser/helpers.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/Dropdown.test.ts
+ M tests/src/browser/ScrollSpy.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts

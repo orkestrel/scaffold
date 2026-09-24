@@ -1,0 +1,71 @@
+Unknown 3 proposal, not applied: the placement centers an arrow it is given on the edge facing the
+reference, re-measured at each side it writes. The along-axis position is the one the probe in
+tmp/j-tooltip/probe-platform.test.ts.txt measured (probe-1.log.txt: `proposal ... centerX=239
+refCenterX=239` for top and bottom, `centerY=130 refCenterY=131` for right and left).
+
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ export interface PlacementInput {
+ 	/** Names the value of the HTML `popover` attribute the element is promoted with: `manual` for a menu or a Popover component's tip, `hint` for a tooltip tip. Default: `manual`. */
+ 	readonly popover?: 'manual' | 'hint'
++	/** Carries the element inside the positioned element that points at the reference, which the placement positions absolutely and centers on the edge facing the reference each time it writes the side. */
++	readonly arrow?: HTMLElement
+ }
+@@ export interface TooltipSelectorMap {
+ 	/** Selects the tip's slot the `title` option fills. Default: `.tooltip-inner`. */
+ 	readonly title: string
++	/** Selects the tip's arrow, which the placement centers on the edge facing the trigger. Default: `.tooltip-arrow`. */
++	readonly arrow: string
+ }
+
+--- a/src/browser/Placement.ts
++++ b/src/browser/Placement.ts
+@@ export class Placement implements PlacementInterface {
+ 	readonly #reference: HTMLElement
+ 	readonly #element: HTMLElement
++	readonly #arrow: HTMLElement | undefined
+ 	readonly #attributes: PlacementAttributeMap
+@@ constructor(input: PlacementInput, options?: PlacementOptions) {
+-		const { reference, element } = input
+-		for (const candidate of [reference, element]) {
++		const { reference, element, arrow } = input
++		for (const candidate of arrow === undefined ? [reference, element] : [reference, element, arrow]) {
+ 			if (!isInstance(candidate, HTMLElement)) {
+@@
+ 		this.#reference = reference
+ 		this.#element = element
++		this.#arrow = arrow
+@@ update(): void {
+ 		const side = this.side
+ 		if (side === undefined) return
+ 		const name = this.#attributes.side
+ 		this.#snapshot.save({ category: 'attribute', element: this.#element, name })
+ 		this.#element.setAttribute(name, side)
++		const arrow = this.#arrow
++		if (arrow === undefined || this.#controller.signal.aborted) return
++		// The side attribute write turns the arrow's box for a side placement, so its size is read after it.
++		const vertical = side === 'top' || side === 'bottom'
++		const size = arrow.getBoundingClientRect()
++		this.#write(arrow, 'position', 'absolute')
++		this.#write(arrow, vertical ? 'top' : 'left', '')
++		this.#write(arrow, vertical ? 'left' : 'top', `${((vertical ? this.#element.clientWidth - size.width : this.#element.clientHeight - size.height) / 2)}px`)
+ 	}
+
+--- a/src/browser/Tooltip.ts (owned, applied with the patch)
++++ b/src/browser/Tooltip.ts
+@@ #place(tip: HTMLElement): PlacementInterface | undefined {
++		const arrow = tip.querySelector(this.#selectors.arrow)
+ 			return new Placement(
+-				{ reference: this.#host, element: tip, popover: 'hint' },
++				{ reference: this.#host, element: tip, popover: 'hint', ...(isInstance(arrow, HTMLElement) ? { arrow } : {}) },
+
+--- a/src/browser/constants.ts (owned, applied with the patch)
++++ b/src/browser/constants.ts
+ export const TOOLTIP_SELECTORS: TooltipSelectorMap = Object.freeze({
+ 	title: '.tooltip-inner',
++	arrow: '.tooltip-arrow',
+ })
+
+The proof the patch carries: under the shipped cascade, for each side, the arrow's center on the
+axis along the facing edge equals the trigger's center within one pixel, and the arrow sits outside
+the tip's facing edge; destruction removes the inline declarations the placement wrote on the arrow.
