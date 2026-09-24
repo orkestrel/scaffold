@@ -1,0 +1,10 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "No scroll restore.",
+ "edits": [
+  {
+   "from": "\t\t\twindow.scrollTo({ left: scroll.left, top: scroll.top, behavior: 'instant' })\n",
+   "to": ""
+  }
+ ]
+}

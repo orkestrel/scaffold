@@ -1,0 +1,77 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------········x·xxx·············---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane and hands the scroll back
+AssertionError: expected 984 to be 264 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 264[39m
+[31m+ 984[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3194:25
+    3192|   const reading = await readFrame(written)
+    3193|   expect(reading.width).toBe(390)
+    3194|   expect(reading.height).toBe((declared * 3) / 10)
+       |                         ^
+    3195|   // The panel's own color on the bottom row is what separates a shot …
+    3196|   // of the document behind it or of the runner's page.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3228:2 > captureFrame > shoots a viewport-height element below the fold at the declared pane
+AssertionError: expected 900 to be 422 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 422[39m
+[31m+ 900[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3246:25
+    3244|   const reading = await readFrame(written)
+    3245|   expect(reading.width).toBe(390)
+    3246|   expect(reading.height).toBe(422)
+       |                         ^
+    3247|   expect(reading.floor).toBe('rgb(0, 0, 255)')
+    3248|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3250:2 > captureFrame > shoots a 30vh element below the fold at the declared pane under either spacer
+Error: Capture frame at ../../../tmp/capture/frame/share-900.png never settled after 4 restagings: 1295 over a 1314 pane
+ ❯ captureFrame src/browser/helpers.ts:3499:10
+    3497|    if (pane === covered) break
+    3498|    if (staging === CAPTURE_STAGINGS) {
+    3499|     throw new Error(
+       |          ^
+    3500|      `Capture frame at ${options.path} never settled after ${String(CA…
+    3501|     )
+ ❯ tests/src/browser/helpers.test.ts:3262:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3274:2 > captureFrame > shoots an element taller than the declared pane in a pane of its own height
+Error: Capture frame at ../../../tmp/capture/frame/tall-element.png never settled after 4 restagings: 1445 over a 1447 pane
+ ❯ captureFrame src/browser/helpers.ts:3499:10
+    3497|    if (pane === covered) break
+    3498|    if (staging === CAPTURE_STAGINGS) {
+    3499|     throw new Error(
+       |          ^
+    3500|      `Capture frame at ${options.path} never settled after ${String(CA…
+    3501|     )
+ ❯ tests/src/browser/helpers.test.ts:3287:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 22 passed | 334 skipped (360)
+   Start at  17:40:56
+   Duration  17.04s (transform 0ms, setup 231ms, import 273ms, tests 8.00s, environment 0ms)
+

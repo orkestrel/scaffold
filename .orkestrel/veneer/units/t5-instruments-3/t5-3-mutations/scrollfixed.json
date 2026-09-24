@@ -1,0 +1,10 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "The document scrolled for every element, fixed ones included.",
+ "edits": [
+  {
+   "from": "\t\t\tconst scrolls = anchor === null || getComputedStyle(anchor).position !== 'fixed'",
+   "to": "\t\t\tconst scrolls = anchor === null || getComputedStyle(anchor).position !== 'fixed' || true"
+  }
+ ]
+}

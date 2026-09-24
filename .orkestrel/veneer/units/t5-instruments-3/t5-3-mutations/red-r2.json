@@ -1,0 +1,5 @@
+{
+ "file": "src/browser/helpers.ts",
+ "replace": "tmp/units/t5-3-helpers-r2.ts.txt",
+ "note": "The whole round-2 helpers.ts, for the red run of the new proofs."
+}

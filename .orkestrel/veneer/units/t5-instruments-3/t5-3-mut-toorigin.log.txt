@@ -1,0 +1,87 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+Port 63315 is in use, trying another one...
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------················xx·xx·····---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3389:2 > captureFrame > keeps a flush-left element the scroll brings to the top off the parked pointer
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3410:24
+    3408|   })
+    3409|   await waitForFrame()
+    3410|   expect(entered.count).toBe(0)
+       |                        ^
+    3411|   expect((await readFrame(written)).height).toBe(100)
+    3412|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3414:2 > captureFrame > keeps a flush-left element the offset brings to the left edge off the parked pointer
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3435:24
+    3433|   })
+    3434|   await waitForFrame()
+    3435|   expect(entered.count).toBe(0)
+       |                        ^
+    3436|   const reading = await readFrame(written)
+    3437|   expect([reading.width, reading.height]).toStrictEqual([across, 100])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3463:2 > captureFrame > moves nothing under a parked pointer for an element inside the runner window
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3476:24
+    3474|   await captureFrame({ path: `${FRAMES}/resting.png`, width: 390, heig…
+    3475|   await waitForFrame()
+    3476|   expect(entered.count).toBe(0)
+       |                        ^
+    3477|  })
+    3478|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3479:2 > captureFrame > keeps the hover a held pointer paints on the element it shoots
+AssertionError: expected 'rgb(0, 0, 255)' to be 'rgb(255, 0, 0)' // Object.is equality
+
+Expected: [32m"rgb([7m255[27m, 0, [7m0[27m)"[39m
+Received: [31m"rgb([7m0[27m, 0, [7m255[27m)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3499:43
+    3497|    element: requireValue(container.lastElementChild),
+    3498|   })
+    3499|   expect((await readFrame(written)).floor).toBe('rgb(255, 0, 0)')
+       |                                           ^
+    3500|  })
+    3501|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 22 passed | 334 skipped (360)
+   Start at  17:39:17
+   Duration  12.00s (transform 0ms, setup 206ms, import 356ms, tests 8.12s, environment 0ms)
+

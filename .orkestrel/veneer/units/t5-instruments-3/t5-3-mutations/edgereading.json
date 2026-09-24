@@ -1,0 +1,10 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "The round-1 bottom-edge reading in place of the element's height.",
+ "edits": [
+  {
+   "from": "\t\t\t\t\t: Math.ceil(element.getBoundingClientRect().height),",
+   "to": "\t\t\t\t\t: Math.ceil(element.getBoundingClientRect().bottom + window.scrollY),"
+  }
+ ]
+}

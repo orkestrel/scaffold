@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+Port 63315 is in use, trying another one...
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------stdout | tests/src/browser/helpers.test.ts:4916:2 > zzprobe > zzprobe tentative scroll
+ZZ {"tentative":[60,0,1,0],"real":[60,2,1]}
+·
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 356 skipped (357)
+   Start at  17:33:29
+   Duration  13.98s (transform 0ms, setup 285ms, import 334ms, tests 342ms, environment 0ms)
+

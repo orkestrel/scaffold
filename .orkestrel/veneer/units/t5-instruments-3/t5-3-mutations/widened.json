@@ -1,0 +1,10 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "The offset written on every tester frame the staging selector matches.",
+ "edits": [
+  {
+   "from": "\t\t\t\t\tawait waitForFrame()\n\t\t\t\t\tawait waitForFrame()\n\t\t\t\t}\n\t\t\t\tshot",
+   "to": "\t\t\t\t\tfor (const each of frame.ownerDocument.querySelectorAll('iframe[data-vitest]')) {\n\t\t\t\t\t\teach.setAttribute('style', `top:${String(-rise)}px !important;will-change:transform`)\n\t\t\t\t\t}\n\t\t\t\t\tawait waitForFrame()\n\t\t\t\t\tawait waitForFrame()\n\t\t\t\t}\n\t\t\t\tshot"
+  }
+ ]
+}
