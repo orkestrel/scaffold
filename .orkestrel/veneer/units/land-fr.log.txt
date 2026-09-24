@@ -1,0 +1,25 @@
+=== unit files: app/browser/constants.ts src/styles/components/_form-range.scss tests/app/browser/integration.test.ts tests/app/browser/sections/FormControlSection.test.ts tests/app/browser/sections/FormFloatingSection.test.ts tests/app/browser/sections/InputGroupSection.test.ts tests/app/browser/sections/ValidationSection.test.ts tests/setup.test.ts tests/setup.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/form-range.test.ts
+=== unit/fr 0b102ba
+=== unit/fr with fr-shared-3.patch d3c1a5b
+=== session head 7224215
+Auto-merging app/browser/constants.ts
+Auto-merging guides/veneer.md
+CONFLICT (content): Merge conflict in guides/veneer.md
+Auto-merging tests/app/browser/integration.test.ts
+Auto-merging tests/setup.test.ts
+Auto-merging tests/setup.ts
+Auto-merging tests/setupStyles.test.ts
+Auto-merging tests/setupStyles.ts
+Squash commit -- not updating HEAD
+Automatic merge failed; fix conflicts and then commit the result.
+=== squash merge exit=1
+=== CONFLICTS: guides/veneer.md
+=== guides/veneer.md resolved: the moved ledger block taken from HEAD with fr's two range-thumb rows re-applied; the capture paragraph keeps both sides
+=== landed 31f1243
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 16850ms on 13 files using 4 threads.
+=== oxfmt check exit=0
+=== oxlint exit=0
+=== check exit=0

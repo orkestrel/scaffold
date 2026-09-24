@@ -29,7 +29,11 @@ better.
    paints no outline), reach focus by Tab, and their frames show the outline; the pixel guard in the helper holds each.
 5. **The reach key (OVERLAY-FRAMES' observation).** The next control's wrapper keys its width to the `lg` boundary
    where the limit is the runner's 800-pixel window; key it to the window the runner opens.
-6. **The mode-token limit.** The `light` and `dark` role hovers and rings stay unframed; the guide states that limit in
+6. **The carried comment (FORMS-FRAMES round 3, claim 3).** The comment above the empty-plaintext reading says focus moves the content box, never text.
+7. **The referrals of `ff-audit-2-verdict.md`.** Replace each `querySelector<HTMLElement>` narrowing in the cases you
+   route with a checked read (R-b), and give the parked pointer a watcher, or record the entry inert by a run, on the
+   validation and floating specimens it enters (R-c).
+8. **The mode-token limit.** The `light` and `dark` role hovers and rings stay unframed; the guide states that limit in
    one sentence in § Tests, replacing the two units' sentences.
 
 ## Testing
