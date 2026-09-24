@@ -71,3 +71,5 @@ An alert's close is in flight from the moment `close()` dispatches `close.vn.ale
 ## E16 — one `disabled` reading for every delegate route (2026-09-24)
 
 Every delegate route reads whether a trigger or control is disabled through one shared helper with Bootstrap's `isDisabled` semantics: the entity's `disabled` token, the platform's `:disabled` state, or a `disabled` attribute whose value is not `false`. The W2 units read it three ways (the Alert and Toast routes: the token or any `disabled` attribute; the Tab route: the token or any attribute, documented as a departure; the Modal route: Bootstrap's reading). The landing rounds adopt the helper (`validators.ts`), each unit's route calls it, and the Tab guide's departure sentence goes. A test that asserts `disabled="false"` disables is rewritten to assert it enables.
+
+E16 amended at the Tab landing round (2026-09-24): `isDisabled(element, token)` is a boolean predicate, not a `Guard<T>`, so `.claude/rules/architecture.md` § Kind purity places it in `helpers.ts` beside `isVacant`, and its cases in `helpers.test.ts`; the rule outranks the decision's first wording, which named `validators.ts`.
