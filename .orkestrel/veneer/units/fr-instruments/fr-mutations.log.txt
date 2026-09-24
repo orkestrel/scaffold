@@ -1,0 +1,227 @@
+=== MUTATION: P10 hairline restored to the body surface
+site: src/styles/components/_form-range.scss
+replaced: 0 0 0 1px var(--vn-palette-white-base),
+with: 0 0 0 1px var(--vn-surface-body-base),
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/form-range.test.ts
+build exit: 0
+test exit: 1
+summary:       Tests  3 failed | 5 passed (8)
+failing:  FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:70:2 > form range classes > clears the control outline under keyboard focus and leaves the ring to the thumb
+failing:  FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:107:2 > form range classes > paints the focused thumb hairline white in both modes, as the release compiles it
+failing:  FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:151:2 > form range classes > keeps the WebKit part rules in the cascade and reports the host style for a part pseudo
+
+rebuilt restored tree: 0
+
+=== MUTATION: Red first: the tree without this unit's driven rows (every driven row this unit adds to the DRIVEN_KEYS table removed)
+site (scratch copy tmp/probe/fr-guides): tests/setup.ts
+replaced: 	Object.freeze({ scenario: 'form-check-switch-focus', subject: 'Form check switch' }),
+	Object.freeze({ scenario: 'form-check-box-active', subject: 'Form check box' }),
+	Object.freeze({ scenario: 'range-active', subject: 'Range' }),
+	Object.freeze({ scenario: 'form-control-file-hover', subject: 'Form control file' }),
+	Object.freeze({
+		scenario: 'form-floating-empty-textarea-focus',
+		subject: 'Form floating empty textarea',
+	}),
+	Object.freeze({ scenario: 'input-group-buttons-focus', subject: 'Input group buttons' }),
+	Object.freeze({ scenario: 'valid-select-focus', subject: 'Valid select' }),
+	Object.freeze({ scenario: 'invalid-select-focus', subject: 'Invalid select' }),
+	Object.freeze({ scenario: 'valid-check-focus', subject: 'Valid check' }),
+	Object.freeze({ scenario: 'invalid-check-focus', subject: 'Invalid check' }),
+
+with: 
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts [ tests/app/browser/integration.test.ts ]
+reason: Error: Failed to import test file /home/user/veneer-fr/tmp/probe/fr-guides/tests/setupBrowser.ts
+
+note: the preceding run is void as evidence: the scratch copy linked node_modules through a symlink, and the Vite boundary check refused every import ("Resolved dependencies must remain inside their physical package root"). The scratch copy was given a hard-linked node_modules and the run was repeated.
+
+=== MUTATION: Red first: the tree without this unit's driven rows (every driven row this unit adds to the DRIVEN_KEYS table removed)
+site (scratch copy tmp/probe/fr-guides): tests/setup.ts
+replaced: 	Object.freeze({ scenario: 'form-check-switch-focus', subject: 'Form check switch' }),
+	Object.freeze({ scenario: 'form-check-box-active', subject: 'Form check box' }),
+	Object.freeze({ scenario: 'range-active', subject: 'Range' }),
+	Object.freeze({ scenario: 'form-control-file-hover', subject: 'Form control file' }),
+	Object.freeze({
+		scenario: 'form-floating-empty-textarea-focus',
+		subject: 'Form floating empty textarea',
+	}),
+	Object.freeze({ scenario: 'input-group-buttons-focus', subject: 'Input group buttons' }),
+	Object.freeze({ scenario: 'valid-select-focus', subject: 'Valid select' }),
+	Object.freeze({ scenario: 'invalid-select-focus', subject: 'Invalid select' }),
+	Object.freeze({ scenario: 'valid-check-focus', subject: 'Valid check' }),
+	Object.freeze({ scenario: 'invalid-check-focus', subject: 'Invalid check' }),
+
+with: 
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  2 failed | 5 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1854:2 > journey > holds each resting form control pressed on its lifted specimen and photographs the paint its press rule writes
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2148:2 > journey > rings each validated select and check under keyboard focus in its state color on the lifted specimen, and holds the ring inside the frame
+reason: AssertionError: expected [] to not strictly equal []
+reason: AssertionError: expected [] to not strictly equal []
+
+note: the preceding run leaves the switch, file hover, empty textarea, and grouped button cases green, because a run with the capture flag unset places a frame under any scenario; the refusal of an unregistered scenario is the capture portfolio's, so the same removal is repeated with CAPTURE=1.
+
+=== MUTATION: Red first, capture flag set: the tree without this unit's driven rows (every driven row this unit adds to the DRIVEN_KEYS table removed), CAPTURE=1
+site (scratch copy tmp/probe/fr-guides): tests/setup.ts
+replaced: 	Object.freeze({ scenario: 'form-check-switch-focus', subject: 'Form check switch' }),
+	Object.freeze({ scenario: 'form-check-box-active', subject: 'Form check box' }),
+	Object.freeze({ scenario: 'range-active', subject: 'Range' }),
+	Object.freeze({ scenario: 'form-control-file-hover', subject: 'Form control file' }),
+	Object.freeze({
+		scenario: 'form-floating-empty-textarea-focus',
+		subject: 'Form floating empty textarea',
+	}),
+	Object.freeze({ scenario: 'input-group-buttons-focus', subject: 'Input group buttons' }),
+	Object.freeze({ scenario: 'valid-select-focus', subject: 'Valid select' }),
+	Object.freeze({ scenario: 'invalid-select-focus', subject: 'Invalid select' }),
+	Object.freeze({ scenario: 'valid-check-focus', subject: 'Valid check' }),
+	Object.freeze({ scenario: 'invalid-check-focus', subject: 'Invalid check' }),
+
+with: 
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  6 failed | 1 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1779:2 > journey > rings the switch under keyboard focus with its focus knob on the lifted specimen, and holds the ring inside the frame
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1854:2 > journey > holds each resting form control pressed on its lifted specimen and photographs the paint its press rule writes
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1944:2 > journey > hovers the file control on its lifted specimen and photographs the button surface the pointer paints
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1998:2 > journey > floats the empty textarea label with its backdrop under keyboard focus on the lifted specimen, and holds the ring inside the frame
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2079:2 > journey > lifts the focused grouped button over the button beside it on the lifted specimen, and holds its ring inside the frame
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2148:2 > journey > rings each validated select and check under keyboard focus in its state color on the lifted specimen, and holds the ring inside the frame
+reason: Error: Capture state "form-check-switch-focus" is not registered
+reason: AssertionError: expected [] to not strictly equal []
+reason: Error: Capture state "form-control-file-hover" is not registered
+
+=== MUTATION: Pressed check: the .form-check-input:active rule writes no filter
+site (scratch copy tmp/probe/fr-guides): src/styles/components/_form-check.scss
+replaced: 	.form-check-input:active {
+		filter: brightness(90%);
+	}
+with: 	.form-check-input:active {
+	}
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 0
+summary:       Tests  7 passed | 45 skipped (52)
+
+note: the preceding mutation left the case green: the element shot is downsampled by the tester's painted scale, so the centre pixel of the resting box blends its border, and the focus a press brings repaints that border. The case was changed to read the centre with the control focused and then held, so the two readings differ by the press alone, and the mutation was repeated.
+
+=== MUTATION: Pressed check: the .form-check-input:active rule writes no filter
+site (scratch copy tmp/probe/fr-guides): src/styles/components/_form-check.scss
+replaced: 	.form-check-input:active {
+		filter: brightness(90%);
+	}
+with: 	.form-check-input:active {
+	}
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  1 failed | 6 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1854:2 > journey > holds each resting form control pressed on its lifted specimen and photographs the paint its press rule writes
+reason: AssertionError: expected [ [ 'form-check-box-active', …(1) ] ] to strictly equal []
+
+=== MUTATION: Pressed thumb: the held thumb keeps the resting blue (the mix takes all of the blue entry)
+site (scratch copy tmp/probe/fr-guides): src/styles/components/_form-range.scss
+replaced: var(--vn-palette-blue) 30%,
+with: var(--vn-palette-blue) 100%,
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  1 failed | 6 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1854:2 > journey > holds each resting form control pressed on its lifted specimen and photographs the paint its press rule writes
+reason: AssertionError: expected [ [ 'range-active', …(1) ] ] to strictly equal []
+
+=== MUTATION: File hover: the hover rule leaves the button surface on its resting fill
+site (scratch copy tmp/probe/fr-guides): src/styles/components/_form-control.scss
+replaced: 	.form-control:hover:not(:disabled):not([readonly])::file-selector-button {
+		background-color: var(--bs-secondary-bg);
+with: 	.form-control:hover:not(:disabled):not([readonly])::file-selector-button {
+		background-color: var(--bs-tertiary-bg);
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  1 failed | 6 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1947:2 > journey > hovers the file control on its lifted specimen and photographs the button surface the pointer paints
+reason: AssertionError: expected 'rgb(248, 249, 250)' not to be 'rgb(248, 249, 250)' // Object.is equality
+
+=== MUTATION: Switch focus: the focus rule keeps the resting knob glyph
+site (scratch copy tmp/probe/fr-guides): src/styles/components/_form-check.scss
+replaced: --bs-form-switch-bg: #{map.get(tokens.$icons, 'switch-focus')};
+with: --bs-form-switch-bg: #{map.get(tokens.$icons, 'switch-knob')};
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  1 failed | 6 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1779:2 > journey > rings the switch under keyboard focus with its focus knob on the lifted specimen, and holds the ring inside the frame
+reason: AssertionError: expected 'url("data:image/svg+xml,%3csvg xmlns=…' not to be 'url("data:image/svg+xml,%3csvg xmlns=…' // Object.is equality
+
+=== MUTATION: Empty textarea focus: the backdrop rule reaches only a filled textarea
+site (scratch copy tmp/probe/fr-guides): src/styles/components/_form-floating.scss
+replaced: 	.form-floating > textarea:focus ~ label::after,
+	.form-floating > textarea:not(:placeholder-shown) ~ label::after {
+with: 	.form-floating > textarea:not(:placeholder-shown) ~ label::after {
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  1 failed | 6 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2001:2 > journey > floats the empty textarea label with its backdrop under keyboard focus on the lifted specimen, and holds the ring inside the frame
+reason: AssertionError: expected 'rgba(0, 0, 0, 0)' not to be 'rgba(0, 0, 0, 0)' // Object.is equality
+
+=== MUTATION: Grouped button focus: a focused grouped button keeps its resting level
+site (scratch copy tmp/probe/fr-guides): src/styles/components/_input-group.scss
+replaced: 	.input-group .btn:focus {
+		z-index: 5;
+with: 	.input-group .btn:focus {
+		z-index: 2;
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  1 failed | 6 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2082:2 > journey > lifts the focused grouped button over the button beside it on the lifted specimen, and holds its ring inside the frame
+reason: AssertionError: expected '2' to be '5' // Object.is equality
+
+=== MUTATION: Validated select focus: the state rule writes no ring, so the select keeps the shared focus ring
+site (scratch copy tmp/probe/fr-guides): src/styles/components/_validation.scss
+replaced: 			border-color: var(--bs-form-#{$state}-border-color);
+			box-shadow: 0 0 0 var(--vn-focus-width) rgba(var(--bs-#{$role}-rgb), 0.25);
+		}
+
+		// The swatch width
+with: 			border-color: var(--bs-form-#{$state}-border-color);
+		}
+
+		// The swatch width
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  1 failed | 6 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2151:2 > journey > rings each validated select and check under keyboard focus in its state color on the lifted specimen, and holds the ring inside the frame
+reason: AssertionError: expected [ 2, 2 ] to strictly equal [ 1, 1 ]
+
+=== MUTATION: Frame instrument control: the switch's wrapper loses its padding, so the frame crops the ring
+site (scratch copy tmp/probe/fr-guides): tests/app/browser/integration.test.ts
+replaced: 		const lifted = build('div', { classes: 'p-2' })
+		lifted.tabIndex = -1
+		lifted.append(specimen)
+		document.body.prepend(lifted)
+		try {
+			expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
+			// The ring's transition
+with: 		const lifted = build('div')
+		lifted.tabIndex = -1
+		lifted.append(specimen)
+		document.body.prepend(lifted)
+		try {
+			expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
+			// The ring's transition
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project "journey:light-1280*" -t "lifted specimen"
+build exit: skipped (the journey compiles the source styles itself)
+test exit: 1
+summary:       Tests  1 failed | 6 passed | 45 skipped (52)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1779:2 > journey > rings the switch under keyboard focus with its focus knob on the lifted specimen, and holds the ring inside the frame
+reason: AssertionError: expected [ true, false, true, true, true ] to strictly equal [ true, true, true, true, true ]
+

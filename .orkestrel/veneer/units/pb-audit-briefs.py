@@ -1,6 +1,6 @@
 # Writes the round-1 audit lane briefs and the Astra launcher for PAGE-FRAME (`pf`) and BCF (`bcf`), derived from
 # cl-audit-briefs.py with every subject field rewritten for the units cut from dc92a09.
-# Usage: python3 pb-audit-briefs.py pf bcf
+# Usage: python3 pb-audit-briefs.py <unit keys>; the keys are pf, bcf, xo, ct, and fr
 import pathlib, sys
 
 U = pathlib.Path('/home/user/scaffold/.orkestrel/veneer/units')
@@ -49,6 +49,17 @@ UNITS = {
         analyst='claims 2, 3, 4, 5, and 6 (each resolved value against the release stylesheet, each proof against its mutation, the ledger against the gate, and the X12 measurement)',
         reviewer='claims 4 (the literals and their comments), 7 (the section, its specimens, and its frame), and 8 (the prose, the repeated walk, and the V11 ruling)',
         checker='claims 1, 7, and 8'),
+    'fr': dict(
+        name='FORMS-FRAMES', worktree='/home/user/veneer-fr', base='e4a6d7c',
+        law=("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{tests,browser,styles,names,typescript,architecture,documentation,writing,quality}.md`; "
+             "the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` and its references (the verdict shape)"),
+        family='the portfolio verdict `/home/user/scaffold/.orkestrel/veneer/b-portfolio-verify-verdict.md` (rows P10 and P15) with the lens returns `pv-forms-lenses.json`, the brief `b-forms-frames-brief.md`, the page-frame note `pf-design-verdict.md`, and `w2-w3-note-1.md` and `w2-w3-note-2.md`',
+        precedent='the base forms specimen tables in `app/browser/constants.ts`, the base registry in `tests/setup.ts`, the `nav-underline-focus` case in `tests/app/browser/integration.test.ts` (the lift pattern), and the installed `driveHold` and `traverseAccessible` functions (`node_modules/@orkestrel/test/dist/src/browser/index.d.ts`)',
+        evidence='`fr.diff`, `fr-status.txt`, `fr-shared.patch`, `b-forms-frames-report.md`, `fr-instruments/` (`fr-mutations.log.txt`, `fr-mutate.sh`, `fr-mutate-scratch.sh`, `fr-p10-readings.log.txt`, the `fr-p10-red` and `fr-p10-green` logs, the `fr-sections-red` and `fr-sections-green` logs, `fr-journey-red.log.txt`, the `fr-gate-*` logs, the `fr-capture-*-final` logs, `fr-conformance.log.txt`, and `fr-cases.ts.txt`), and the frames under `/home/user/veneer-fr/tmp/capture/states/` (`form-check-switch-focus`, `form-check-box-active`, `range-active`, `form-control-file-hover`, `form-floating-empty-textarea-focus`, `input-group-buttons-focus`, `valid-select-focus`, `invalid-select-focus`, `valid-check-focus`, `invalid-check-focus`, and the resting specimens the report names, each at `light-1280` and `dark-390`)',
+        subject='the specimens, the driven scenarios, the frames, and the guide against the portfolio verdict\'s P10 and P15 rows',
+        analyst='claims 2, 3, 4, 5, and 7 (each proof against its mutation and its red run, the pixel reading, and the derived populations)',
+        reviewer='claims 3, 5, 6, and 8 (open every frame the report names and rule whether it shows the state it closes; the specimens\' labels and fit), and the guide sentences',
+        checker='claims 1, 7, and 9'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]
