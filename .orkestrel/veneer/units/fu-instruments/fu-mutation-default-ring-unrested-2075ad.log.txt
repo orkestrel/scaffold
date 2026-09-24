@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/user/veneer-fu
+
+····x···············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > names each driven row for its subject's stem and one state, on a specimen the resting registry photographs or one it exempts by name
+AssertionError: expected [ { …(2) } ] to strictly equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "scenario": "default-focus-ring-focus",
++     "subject": "Default focus ring",
++   },
++ ]
+
+ ❯ tests/setup.test.ts:130:5
+    128|   expect(
+    129|    DRIVEN_KEYS.filter((key) => !resting.has(key.subject) && !exempt.ha…
+    130|   ).toStrictEqual([])
+       |     ^
+    131|   // An exemption holds only while its subject has driven rows and no …
+    132|   // that gains a resting row, or loses its driven rows, reddens here …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  13:47:15
+   Duration  1.20s (transform 580ms, setup 528ms, import 103ms, tests 112ms, environment 0ms)
+

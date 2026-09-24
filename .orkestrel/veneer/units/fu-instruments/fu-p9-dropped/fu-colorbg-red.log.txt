@@ -1,0 +1,284 @@
+
+ RUN  v4.1.11 /home/user/veneer-fu
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+12:58:44 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+··xx··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in light mode
+AssertionError: info light white label: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color-bg.test.ts:94:83
+     92|    expect(readings.map(({ role }) => role)).toStrictEqual(TEXT_BG_CASE…
+     93|    for (const reading of readings) {
+     94|     expect.soft(reading.matched, `${reading.role} ${mode} ${reading.la…
+       |                                                                                   ^
+     95|     expect.soft(reading.button, `${reading.role} ${mode} button label`…
+     96|     // A floor row records the bar the label clears, and a ratio row t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in light mode
+AssertionError: info light button label: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color-bg.test.ts:95:72
+     93|    for (const reading of readings) {
+     94|     expect.soft(reading.matched, `${reading.role} ${mode} ${reading.la…
+     95|     expect.soft(reading.button, `${reading.role} ${mode} button label`…
+       |                                                                        ^
+     96|     // A floor row records the bar the label clears, and a ratio row t…
+     97|     if (reading.floor)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in light mode
+AssertionError: info light contrast: expected 3.5860607743410453 to be close to 5.853633775339754, received difference is 2.2675730009987083, but expected 0.05
+ ❯ tests/src/styles/utilities/color-bg.test.ts:102:71
+    100|       .toBeGreaterThanOrEqual(reading.ratio)
+    101|     else
+    102|      expect.soft(reading.contrast, `${reading.role} ${mode} contrast`)…
+       |                                                                       ^
+    103|    }
+    104|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in light mode
+AssertionError: warning light white label: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color-bg.test.ts:94:83
+     92|    expect(readings.map(({ role }) => role)).toStrictEqual(TEXT_BG_CASE…
+     93|    for (const reading of readings) {
+     94|     expect.soft(reading.matched, `${reading.role} ${mode} ${reading.la…
+       |                                                                                   ^
+     95|     expect.soft(reading.button, `${reading.role} ${mode} button label`…
+     96|     // A floor row records the bar the label clears, and a ratio row t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in light mode
+AssertionError: warning light button label: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color-bg.test.ts:95:72
+     93|    for (const reading of readings) {
+     94|     expect.soft(reading.matched, `${reading.role} ${mode} ${reading.la…
+     95|     expect.soft(reading.button, `${reading.role} ${mode} button label`…
+       |                                                                        ^
+     96|     // A floor row records the bar the label clears, and a ratio row t…
+     97|     if (reading.floor)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in light mode
+AssertionError: warning light contrast: expected 4.174509977108481 to be close to 5.050615049918906, received difference is 0.8761050728104252, but expected 0.05
+ ❯ tests/src/styles/utilities/color-bg.test.ts:102:71
+    100|       .toBeGreaterThanOrEqual(reading.ratio)
+    101|     else
+    102|      expect.soft(reading.contrast, `${reading.role} ${mode} contrast`)…
+       |                                                                       ^
+    103|    }
+    104|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in dark mode
+AssertionError: info dark white label: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color-bg.test.ts:94:83
+     92|    expect(readings.map(({ role }) => role)).toStrictEqual(TEXT_BG_CASE…
+     93|    for (const reading of readings) {
+     94|     expect.soft(reading.matched, `${reading.role} ${mode} ${reading.la…
+       |                                                                                   ^
+     95|     expect.soft(reading.button, `${reading.role} ${mode} button label`…
+     96|     // A floor row records the bar the label clears, and a ratio row t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in dark mode
+AssertionError: info dark button label: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color-bg.test.ts:95:72
+     93|    for (const reading of readings) {
+     94|     expect.soft(reading.matched, `${reading.role} ${mode} ${reading.la…
+     95|     expect.soft(reading.button, `${reading.role} ${mode} button label`…
+       |                                                                        ^
+     96|     // A floor row records the bar the label clears, and a ratio row t…
+     97|     if (reading.floor)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in dark mode
+AssertionError: info dark contrast: expected 3.5860607743410453 to be close to 5.853633775339754, received difference is 2.2675730009987083, but expected 0.05
+ ❯ tests/src/styles/utilities/color-bg.test.ts:102:71
+    100|       .toBeGreaterThanOrEqual(reading.ratio)
+    101|     else
+    102|      expect.soft(reading.contrast, `${reading.role} ${mode} contrast`)…
+       |                                                                       ^
+    103|    }
+    104|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in dark mode
+AssertionError: warning dark white label: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color-bg.test.ts:94:83
+     92|    expect(readings.map(({ role }) => role)).toStrictEqual(TEXT_BG_CASE…
+     93|    for (const reading of readings) {
+     94|     expect.soft(reading.matched, `${reading.role} ${mode} ${reading.la…
+       |                                                                                   ^
+     95|     expect.soft(reading.button, `${reading.role} ${mode} button label`…
+     96|     // A floor row records the bar the label clears, and a ratio row t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in dark mode
+AssertionError: warning dark button label: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color-bg.test.ts:95:72
+     93|    for (const reading of readings) {
+     94|     expect.soft(reading.matched, `${reading.role} ${mode} ${reading.la…
+     95|     expect.soft(reading.button, `${reading.role} ${mode} button label`…
+       |                                                                        ^
+     96|     // A floor row records the bar the label clears, and a ratio row t…
+     97|     if (reading.floor)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:53:2 > color-and-background pairs > labels each color-and-background pair with the foreground its role's button carries on the same fill, at that button's recorded contrast, in dark mode
+AssertionError: warning dark contrast: expected 4.174509977108481 to be close to 5.050615049918906, received difference is 0.8761050728104252, but expected 0.05
+ ❯ tests/src/styles/utilities/color-bg.test.ts:102:71
+    100|       .toBeGreaterThanOrEqual(reading.ratio)
+    101|     else
+    102|      expect.soft(reading.contrast, `${reading.role} ${mode} contrast`)…
+       |                                                                       ^
+    103|    }
+    104|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  12:58:34
+   Duration  10.46s (transform 0ms, setup 1.62s, import 62ms, tests 26ms, environment 0ms)
+
