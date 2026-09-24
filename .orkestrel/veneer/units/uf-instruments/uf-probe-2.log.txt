@@ -1,0 +1,7 @@
+# UTIL-FONT round-2 probe: the weight and size readings F-a states, on the validation copy.
+# Instrument: tests/src/styles/utilities/uf-probe-weight.test.ts on tmp/probe/base, deleted after the run. It mounted a host retuning --vn-weight-body to 700 and --vn-weight-heading to 900 around .fw-normal, .fs-1, .fs-4, and .fs-5, beside inline twins at the release's 2.5rem cap, 1.5rem cap, and 1.25rem value, and read each computed value.
+# Command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/uf-probe-weight.test.ts
+# exit=0
+{"fwNormal":"400","fs1":"36px","fs4":"20px","fs5":"18px","releaseCap1":"40px","releaseCap4":"24px","release5":"20px","bodyRootWeight":"400"}
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/uf-probe-weight.test.ts:7:2 > uf probe > reads the weight and size classes against a retuned body weight and the heading and release sizes 3ms
+      Tests  1 passed (1)

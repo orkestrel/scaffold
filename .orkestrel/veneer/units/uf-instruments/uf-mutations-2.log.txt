@@ -1,0 +1,45 @@
+# UTIL-FONT round-2 mutation log, 2026-09-24T02:26:59Z, copy /home/user/veneer-uf/tmp/probe/base
+
+## control
+site: none
+edit: tests/setupStyles.ts
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t "font entry"
+exit=0
+        Tests  1 passed | 121 skipped (122)
+
+## droplh
+site: the lh tuple dropped from FONT_STEP_TABLES
+edit: tests/setupStyles.ts
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t "font entry"
+exit=1
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the font entry, weight, style, and line-height tables to the inventory in its order
+  AssertionError: expected [ 'fst', 'fw' ] to deeply equal [ 'fst', 'fw', 'lh' ]
+   ❯ tests/setupStyles.test.ts:1707:50
+        Tests  1 failed | 121 skipped (122)
+
+## dropfst
+site: the fst tuple dropped from FONT_STEP_TABLES
+edit: tests/setupStyles.ts
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t "font entry"
+exit=1
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the font entry, weight, style, and line-height tables to the inventory in its order
+  AssertionError: expected [ 'fw', 'lh' ] to deeply equal [ 'fst', 'fw', 'lh' ]
+   ❯ tests/setupStyles.test.ts:1707:50
+        Tests  1 failed | 121 skipped (122)
+
+## wrongproperty
+site: the fw tuple's property written as font-style
+edit: tests/setupStyles.ts
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t "font entry"
+exit=1
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the font entry, weight, style, and line-height tables to the inventory in its order
+  AssertionError: expected [ …(7) ] to deeply equal [ …(7) ]
+   ❯ tests/setupStyles.test.ts:1684:6
+        Tests  1 failed | 121 skipped (122)
+
+setup module restored: yes
+
+# end
