@@ -1,0 +1,1319 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index 3038781..4582468 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -16,6 +16,7 @@ import { ContentSection } from './sections/ContentSection.js'
+ import { DropdownSection } from './sections/DropdownSection.js'
+ import { DisplaySection } from './sections/DisplaySection.js'
+ import { FlexSection } from './sections/FlexSection.js'
++import { FloatSection } from './sections/FloatSection.js'
+ import { FormCheckSection } from './sections/FormCheckSection.js'
+ import { FormControlSection } from './sections/FormControlSection.js'
+ import { FormFloatingSection } from './sections/FormFloatingSection.js'
+@@ -28,6 +29,8 @@ import { LinkSection } from './sections/LinkSection.js'
+ import { ListGroupSection } from './sections/ListGroupSection.js'
+ import { MediaSection } from './sections/MediaSection.js'
+ import { NavSection } from './sections/NavSection.js'
++import { ObjectFitSection } from './sections/ObjectFitSection.js'
++import { OverflowSection } from './sections/OverflowSection.js'
+ import { NavbarSection } from './sections/NavbarSection.js'
+ import { PaginationSection } from './sections/PaginationSection.js'
+ import { PlaceholderSection } from './sections/PlaceholderSection.js'
+@@ -137,6 +140,9 @@ export class Showcase implements ShowcaseInterface {
+ 			new PositionSection(this.#main),
+ 			new SizingSection(this.#main),
+ 			new VisibilitySection(this.#main),
++			new FloatSection(this.#main),
++			new ObjectFitSection(this.#main),
++			new OverflowSection(this.#main),
+ 			new NavbarSection(this.#main),
+ 		]
+ 	}
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 2594d55..1e091d4 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -457,7 +457,7 @@ export const MEDIA_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ export const LINK_COPY = Object.freeze({
+ 	region: 'Links',
+ 	paragraph:
+-		'Explore link colors, opacity, underline spacing, independent underline colors, and the icon links that shift their icon. Hover or focus a link to compare its states.',
++		'Explore link colors, opacity, underline spacing, independent underline colors, the icon links that shift their icon, and a card whose stretched link answers a pointer anywhere on the card. Hover or focus a link to compare its states.',
+ })
+ 
+ /** Lists the link specimens in their rendering order. */
+@@ -492,6 +492,11 @@ export const LINK_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		markup:
+ 			'<p><a href="#main" class="link-underline link-underline-opacity-0">Underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10">Underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25">Underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50">Underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75">Underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100">Underline opacity 100%</a> <a href="#main" class="link-underline link-underline-opacity-0-hover">Hover underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10-hover">Hover underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25-hover">Hover underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50-hover">Hover underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75-hover">Hover underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100-hover">Hover underline opacity 100%</a></p>',
+ 	}),
++	Object.freeze({
++		name: 'Stretched link',
++		markup:
++			'<div class="card"><div class="card-body"><p class="card-text">Every point of this card opens the tour schedule.</p><a href="#main" class="stretched-link">Stretched link to the tour schedule</a></div></div>',
++	}),
+ ])
+ /** Holds the Layout section's visible copy and accessible name. */
+ export const LAYOUT_COPY = Object.freeze({
+@@ -2460,6 +2465,131 @@ export const VISIBILITY_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	}),
+ ])
+ 
++/** Holds the Float section's visible copy and accessible name. */
++export const FLOAT_COPY = Object.freeze({
++	region: 'Float',
++	paragraph:
++		'Compare a card floated to each side with text wrapping between them, a card that changes sides at the md boundary, and a box the clearfix helper stretches around its floated card. Resize the viewport to watch the responsive card move.',
++})
++
++/**
++ * Lists the float and clearfix specimens the section renders, in render order.
++ *
++ * @remarks
++ * Each floated box is a card, because a floated box has to paint to show the side it takes, and
++ * each card names the classes it carries. A float leaves its host's height, so every host holding a
++ * float carries the clearfix helper, and no card hangs into the specimen after it. The cleared box
++ * is an alert, because the helper's effect is the height of a box that paints: a card is a flex
++ * container and holds its floated children without the helper.
++ */
++export const FLOAT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Float sides',
++		markup:
++			'<div class="clearfix"><div class="card float-start"><div class="card-body">float-start</div></div><div class="card float-end"><div class="card-body">float-end</div></div><p>This text wraps between the floated cards.</p></div><div class="card float-none"><div class="card-body">float-none</div></div>',
++	}),
++	Object.freeze({
++		name: 'Responsive float',
++		markup:
++			'<div class="clearfix"><div class="card float-start float-md-end"><div class="card-body">float-start float-md-end</div></div><p>Below the md boundary the card floats to the left of this text, and from the md boundary it floats to the right.</p></div>',
++	}),
++	Object.freeze({
++		name: 'Cleared floats',
++		markup:
++			'<div class="alert alert-secondary clearfix"><div class="card float-start"><div class="card-body">float-start<br>Taller than the line beside it</div></div><p>The clearfix helper stretches this box to hold the floated card.</p></div>',
++	}),
++])
++
++/** Holds the Overflow section's visible copy and accessible name. */
++export const OVERFLOW_COPY = Object.freeze({
++	region: 'Overflow',
++	paragraph:
++		'Compare a bar wider than its card under each overflow value, then cards that clip or scroll each axis on its own. Scroll the auto and scroll cards to reach what they hold.',
++})
++
++/**
++ * Lists the overflow specimens the section renders, in render order.
++ *
++ * @remarks
++ * Every card holds a bar as wide as the viewport, so its content overflows the card at every width,
++ * and the axis cards also hold a bar as tall as the viewport. Each specimen renders inside the
++ * shell's `viewport` frame: the frame clips what a card under the `visible` value spills, so no bar
++ * raises a scrollbar on the page. Every card spans three quarters of the frame, so a clipped bar
++ * ends at the card's edge short of the frame's. The axis cards share the frame's bounded height in
++ * a vertical stack, and a card that clips or scrolls an axis may shrink below its content, so each
++ * card is shorter than the bar it holds. The bars are placeholders hidden from assistive
++ * technology, and each card names the classes it carries.
++ */
++export const OVERFLOW_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Overflow values',
++		markup: `<div class="viewport"><div class="vstack gap-2">${[
++			'auto',
++			'hidden',
++			'visible',
++			'scroll',
++		]
++			.map(
++				(value) =>
++					`<div class="card w-75 overflow-${value}"><div class="card-body">overflow-${value}<br><span class="placeholder vw-100" aria-hidden="true"></span></div></div>`,
++			)
++			.join('')}</div></div>`,
++	}),
++	Object.freeze({
++		name: 'Axis overflow',
++		markup: `<div class="viewport"><div class="vstack gap-2 h-100">${[
++			'overflow-x-auto overflow-y-hidden',
++			'overflow-x-hidden overflow-y-auto',
++			'overflow-x-scroll overflow-y-scroll',
++		]
++			.map(
++				(classes) =>
++					`<div class="card w-75 ${classes}"><div class="card-body">${classes}<br><span class="placeholder vw-100" aria-hidden="true"></span><br><span class="placeholder w-25 vh-100" aria-hidden="true"></span></div></div>`,
++			)
++			.join('')}</div></div>`,
++	}),
++])
++
++/** Holds the Object fit section's visible copy and accessible name. */
++export const OBJECT_FIT_COPY = Object.freeze({
++	region: 'Object fit',
++	paragraph:
++		'Compare one wide picture fitted into a square box by each object-fit value, then a tall picture that switches from contain to cover at the md boundary. Resize the viewport to watch the responsive picture switch.',
++})
++
++/**
++ * Lists the object-fit specimens the section renders, in render order.
++ *
++ * @remarks
++ * Each picture is an inline SVG document drawn at a ratio its box does not share, so every value
++ * places it differently: a frame traces the picture's own edges, which shows where a value crops
++ * or letterboxes it. Each box is an aspect-ratio box, which sizes its picture to the box, and the
++ * picture carries the thumbnail class, whose border traces the box. The line under each box names
++ * the classes its picture carries.
++ */
++export const OBJECT_FIT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Object fit values',
++		markup: `<div class="row row-cols-2 row-cols-md-5 g-3">${[
++			'contain',
++			'cover',
++			'fill',
++			'scale',
++			'none',
++		]
++			.map(
++				(key) =>
++					`<div><div class="ratio ratio-1x1"><img class="img-thumbnail object-fit-${key}" alt="A wide pier fitted by object-fit-${key}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='80'%3E%3Cpath d='M0 0H240V80H0ZM4 4V76H236V4Z' fill-rule='evenodd'/%3E%3Cpath d='M20 70L120 12L220 70Z'/%3E%3C/svg%3E"></div><p>object-fit-${key}</p></div>`,
++			)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Responsive object fit',
++		markup:
++			"<div class=\"ratio ratio-21x9 w-50\"><img class=\"img-thumbnail object-fit-contain object-fit-md-cover\" alt=\"A tall lighthouse fitted by object-fit-contain, then by object-fit-md-cover\" src=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='240'%3E%3Cpath d='M0 0H80V240H0ZM4 4V236H76V4Z' fill-rule='evenodd'/%3E%3Cpath d='M12 220L40 20L68 220Z'/%3E%3C/svg%3E\"></div><p>object-fit-contain object-fit-md-cover</p>",
++	}),
++])
++
+ /** Holds the Navbar section's visible copy and accessible name. */
+ export const NAVBAR_COPY = Object.freeze({
+ 	region: 'Navbar',
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 474aa0a..d19d6be 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -38,4 +38,7 @@ export * from './sections/FlexSection.js'
+ export * from './sections/PositionSection.js'
+ export * from './sections/SizingSection.js'
+ export * from './sections/VisibilitySection.js'
++export * from './sections/FloatSection.js'
++export * from './sections/ObjectFitSection.js'
++export * from './sections/OverflowSection.js'
+ export * from './sections/NavbarSection.js'
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 1395a59..4bf54ea 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -692,6 +692,8 @@ The following files carry the axis.
+ | `src/styles/components/_position.scss`       | The fixed and sticky helpers in the components layer.                                                                                                                                                                                              |
+ | `src/styles/components/_vr.scss`             | The vertical rule in the components layer.                                                                                                                                                                                                         |
+ | `src/styles/components/_stacks.scss`         | The horizontal and vertical stack helpers in the components layer.                                                                                                                                                                                 |
++| `src/styles/components/_clearfix.scss`       | The clearfix helper that holds a host's floated children, in the components layer.                                                                                                                                                                 |
++| `src/styles/components/_stretched-link.scss` | The stretched link helper, whose generated box covers the link's positioned ancestor, in the components layer.                                                                                                                                     |
+ | `src/styles/components/_card.scss`           | The card box, its caps and body, the image and overlay placements, the header navigations, and the card group in the components layer.                                                                                                             |
+ | `src/styles/components/_list-group.scss`     | The list-group box, its item joins, action states, numbering, flush edges, horizontal ramp, and contextual roles in the components layer.                                                                                                          |
+ | `src/styles/components/_form-label.scss`     | The form label, the help text, and the horizontal label at each size in the components layer, read by `tests/src/styles/components/form-label.test.ts`.                                                                                            |
+@@ -752,6 +754,9 @@ The following files carry the axis.
+ | `src/styles/utilities/_vertical-align.scss`  | The vertical-alignment utilities in the utilities layer.                                                                                                                                                                                           |
+ | `src/styles/utilities/_display.scss`         | The display utilities and their print pass in the utilities layer.                                                                                                                                                                                 |
+ | `src/styles/utilities/_flex.scss`            | The flex, alignment, and order utilities in the utilities layer.                                                                                                                                                                                   |
++| `src/styles/utilities/_float.scss`           | The float utilities at every breakpoint infix in the utilities layer.                                                                                                                                                                              |
++| `src/styles/utilities/_overflow.scss`        | The overflow utilities and their axis forms in the utilities layer.                                                                                                                                                                                |
++| `src/styles/utilities/_object-fit.scss`      | The object-fit utilities at every breakpoint infix in the utilities layer.                                                                                                                                                                         |
+ | `src/styles/index.scss`                      | The compilation barrel.                                                                                                                                                                                                                            |
+ | `src/styles/index.ts`                        | The side-effect entry, and the build's library entry.                                                                                                                                                                                              |
+ | `configs/src/vite.styles.config.ts`          | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
+@@ -928,7 +933,14 @@ steps, the `top-*` and `bottom-*` offsets, the `z-0` to `z-3` levels, and the `v
+ longhand Veneer declares with `!important`. The `start-*` and `end-*` offsets stay on the line:
+ Tailwind's rule for each declares the logical `inset-inline-start` or `inset-inline-end` longhand,
+ and Veneer's important declaration is on the physical `left` or `right` longhand, which does not
+-cover it. The proof asserts that the `gap-3` name is in the branch and reads what the rule claims:
++cover it. The `float-*` sides and every `overflow-*`, `overflow-x-*`, and `overflow-y-*` class are
++shipped names off the line. Tailwind's `float-start` and `float-end` rules declare the `float`
++longhand at the logical `inline-start` and `inline-end` values, and Veneer declares the same
++longhand with the `!important` flag at the physical `left` and `right` values, so a paired build
++floats each box to the physical side the release names. Tailwind's `overflow-*` rules declare the
++`overflow` shorthand, which Chromium expands to the `overflow-x` and `overflow-y` longhands, and
++Veneer declares the same shorthand with the `!important` flag. The proof asserts that the `gap-3`
++name is in the branch and reads what the rule claims:
+ with the exclusion line dropped and Tailwind's own rule on the page, every element carrying a name
+ in the branch resolves, for every property that rule declares, what it resolves under the cascade
+ alone. Each element is read on the longhands its own name's rule declares, because a longhand
+@@ -2671,7 +2683,8 @@ button box, and both animations in the browser, in each color mode.
+ ### Helper classes
+ 
+ The helper keys ship whole, each in its own partial: the icon link with its icon combinator and its
+-hover and focus shifts, the aspect-ratio box with its named aspects, and the vertical rule.
++hover and focus shifts, the stretched link, the aspect-ratio box with its named aspects, and the
++vertical rule.
+ 
+ The icon link lays its content out as an inline flex row, tints its underline from `--vn-link-rgb`
+ at the `--bs-link-opacity` a consumer sets, and offsets that underline by `0.25em`. Its icon
+@@ -2684,6 +2697,16 @@ that class and no rule selects it alone, so the combinator matches nothing until
+ the icon markup. This is the ruling the container's navigation combinators already carry: the
+ declarations are self-contained on the element Veneer owns.
+ 
++The stretched link writes an empty box after its link, placed on every physical edge of the link's
++nearest positioned ancestor at the `1` stacking level, so a pointer anywhere on that ancestor lands
++on the link. A card is positioned, so a stretched link inside a card makes the whole card its
++target; for an ancestor that is not positioned, add the `.position-relative` class to the box that
++has to be the target. A positioned element at a higher level stays reachable over the link, such as
++a button carrying the `.position-relative` and `.z-2` classes. The level and the edges are the
++release's literals, because no published Veneer token carries them. The helper sits in the
++`components` layer at the release's `_helpers.scss` position with normal declarations, as the
++release writes them, so a rule of your own on the same generated box overrides it.
++
+ The aspect-ratio box holds its own proportion through a pseudo-element whose top padding is a
+ percentage, which resolves against the containing block's width. Each named aspect declares
+ `--bs-aspect-ratio` as its own height over its width, so the name is the whole declaration of the
+@@ -2701,8 +2724,11 @@ gives its own opacity.
+ 
+ The `tests/src/styles/components/icon-link.test.ts`, `tests/src/styles/components/ratio.test.ts`,
+ and `tests/src/styles/components/vr.test.ts` proofs read each resolved treatment in the browser. The
+-icon link's reduced-motion collapse is read under the staged preference, and the declaration the
+-rule carries under that condition is read from the built cascade beside it.
++`tests/src/styles/components/stretched-link.test.ts` proof hit-tests every corner of a positioned
++box beside a bare link, and reads the generated box, the nearest positioned ancestor, the stacking
++level against positioned siblings, a dark island, and the helper's layer beneath a later unlayered
++rule. The icon link's reduced-motion collapse is read under the staged preference, and the
++declaration the rule carries under that condition is read from the built cascade beside it.
+ 
+ These are the keys' recorded departures.
+ 
+@@ -2928,6 +2954,90 @@ focus, the helper's place ahead of the utilities, the priority over a later unla
+ or not that rule is important, the escape inside the utilities layer, and a dark island. The
+ visibility keys carry no recorded departure.
+ 
++### Float utilities
++
++The float key ships whole in the utilities layer from the `src/styles/utilities/_float.scss`
++partial, and the clearfix helper ships beside it from the `src/styles/components/_clearfix.scss`
++partial. The `.float-start`, `.float-end`, and `.float-none` classes set the `float` property at
++every breakpoint infix, so the `.float-md-end` class floats its element to the right from the md
++boundary up. The start side writes the physical `left` value and the end side the physical `right`
++value, as the release writes them, so in a right-to-left scope the `.float-start` class still floats
++a box to the left.
++
++The partial writes the key through the `utility` mixin that § Styles describes and walks the
++breakpoints once, so a wider infix beats every narrower one whatever order the classes are written
++in: at a 768px viewport, an element carrying the `.float-md-end` and `.float-sm-start` classes
++floats to the right. Every declaration carries the `!important` flag the release writes, and none
++reads a token, so neither the density factor nor the color mode moves a value. § Styles shows the
++escape from an important utility inside the utilities layer.
++
++A float leaves its container's height, so a container holding only floats collapses and the content
++after it rises beside them. The `.clearfix` helper writes an empty block after its host's content
++that clears the left and the right side, so the host's height reaches the bottom of its floated
++children. The helper sits in the `components` layer at the release's `_helpers.scss` position, and
++its declarations are normal, as the release writes them, so a rule of your own on the same generated
++box overrides it.
++
++The `tests/src/styles/utilities/float.test.ts` proof reads every side at every infix at its boundary
++and one pixel below it, each side against the physical edge of its container in the left-to-right
++and the right-to-left direction, the order between infixes, a dark island and the density factor,
++the priority over a later unlayered rule, and the escape inside the utilities layer. The
++`tests/src/styles/components/clearfix.test.ts` proof reads the height of a host around its float
++beside a bare host that collapses, the generated box, a dark island, and the helper's layer beneath
++a later unlayered rule. The float keys carry no recorded departure.
++
++### Object fit utilities
++
++The object-fit key ships whole in the utilities layer from the
++`src/styles/utilities/_object-fit.scss` partial. The `.object-fit-contain`, `.object-fit-cover`,
++`.object-fit-fill`, `.object-fit-scale`, and `.object-fit-none` classes set the `object-fit`
++property of a replaced element, such as an image or a video, at every breakpoint infix, and the
++`.object-fit-scale` class writes the `scale-down` value. So a picture drawn at a ratio its box does
++not share is letterboxed by the `contain` value, cropped by the `cover` value, stretched by the
++`fill` value, and kept at its own size by the `none` value; the `scale-down` value keeps the
++picture's own size where the picture fits and letterboxes it where it does not.
++
++The partial writes the key through the `utility` mixin and walks the breakpoints once, so a wider
++infix beats every narrower one: at a 768px viewport, an image carrying the `.object-fit-md-cover`
++and `.object-fit-sm-contain` classes is cropped. Every declaration carries the `!important` flag the
++release writes, and none reads a token.
++
++The `tests/src/styles/utilities/object-fit.test.ts` proof photographs a picture wider than its box
++and a picture smaller than its box under every value at every infix, at its boundary and one pixel
++below it, and reads which regions of each box the picture paints. It also reads the order between
++infixes, a dark island and the density factor, the priority over a later unlayered rule, and the
++escape inside the utilities layer.
++
++This is the key's recorded departure.
++
++- **The prefixed object-fit property is absent.** The official cascade carries the `-o-object-fit`
++  property beside the `object-fit` property; Veneer emits the standard property alone, because the
++  managed Chromium and Edge receipts this cascade is proved on resolve it and leave the alias
++  redundant.
++
++### Overflow utilities
++
++The overflow key ships whole in the utilities layer from the `src/styles/utilities/_overflow.scss`
++partial. The `.overflow-*` classes set the `overflow` shorthand, and the `.overflow-x-*` and
++`.overflow-y-*` classes set the `overflow-x` and `overflow-y` properties, each to the `auto`,
++`hidden`, `visible`, and `scroll` values. The release's overflow entries are not responsive, so no
++overflow class writes a breakpoint infix.
++
++The partial writes the shorthand entry, then the `overflow-x` entry, then the `overflow-y` entry, in
++the release's map order, so an axis class beats the shorthand on its own axis whatever order the
++classes are written in: an element carrying the `.overflow-x-auto` and `.overflow-hidden` classes
++scrolls across and clips down. Each axis keeps its own value, with one rule the browser applies: an
++axis at the `visible` value beside an axis at another value computes as the `auto` value, so an
++element carrying the `.overflow-x-visible` and `.overflow-y-scroll` classes scrolls on the x and the
++y axis. Every declaration carries the `!important` flag the release writes, and none reads a token.
++
++The `tests/src/styles/utilities/overflow.test.ts` proof reads every value of the shorthand on the x
++and the y axis, the content spilling past its box under the `visible` value alone, each pair of axis
++classes as the browser computes it with a wheel scrolling each axis apart from the other, the axis
++entries over the shorthand, the absence of an infixed class, a dark island and the density factor,
++the priority over a later unlayered rule, and the escape inside the utilities layer. The overflow
++key carries no recorded departure.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -4354,6 +4464,41 @@ declaration.
+ | `mark`    | `.mark`  | `color`            | —         | `var(--bs-highlight-color)` | `var(--vn-text-mark)`    | tokenized |
+ | `mark`    | `.mark`  | `background-color` | —         | `var(--bs-highlight-bg)`    | `var(--vn-surface-mark)` | tokenized |
+ 
++#### `object-fit`
++
++| Component    | Selector                  | Property        | Condition                    | Bootstrap 5.3.8 | Veneer | Departure |
++| ------------ | ------------------------- | --------------- | ---------------------------- | --------------- | ------ | --------- |
++| `object-fit` | `.object-fit-contain`     | `-o-object-fit` | —                            | `contain`       | —      | dropped   |
++| `object-fit` | `.object-fit-cover`       | `-o-object-fit` | —                            | `cover`         | —      | dropped   |
++| `object-fit` | `.object-fit-fill`        | `-o-object-fit` | —                            | `fill`          | —      | dropped   |
++| `object-fit` | `.object-fit-scale`       | `-o-object-fit` | —                            | `scale-down`    | —      | dropped   |
++| `object-fit` | `.object-fit-none`        | `-o-object-fit` | —                            | `none`          | —      | dropped   |
++| `object-fit` | `.object-fit-sm-contain`  | `-o-object-fit` | `@media (min-width: 576px)`  | `contain`       | —      | dropped   |
++| `object-fit` | `.object-fit-sm-cover`    | `-o-object-fit` | `@media (min-width: 576px)`  | `cover`         | —      | dropped   |
++| `object-fit` | `.object-fit-sm-fill`     | `-o-object-fit` | `@media (min-width: 576px)`  | `fill`          | —      | dropped   |
++| `object-fit` | `.object-fit-sm-scale`    | `-o-object-fit` | `@media (min-width: 576px)`  | `scale-down`    | —      | dropped   |
++| `object-fit` | `.object-fit-sm-none`     | `-o-object-fit` | `@media (min-width: 576px)`  | `none`          | —      | dropped   |
++| `object-fit` | `.object-fit-md-contain`  | `-o-object-fit` | `@media (min-width: 768px)`  | `contain`       | —      | dropped   |
++| `object-fit` | `.object-fit-md-cover`    | `-o-object-fit` | `@media (min-width: 768px)`  | `cover`         | —      | dropped   |
++| `object-fit` | `.object-fit-md-fill`     | `-o-object-fit` | `@media (min-width: 768px)`  | `fill`          | —      | dropped   |
++| `object-fit` | `.object-fit-md-scale`    | `-o-object-fit` | `@media (min-width: 768px)`  | `scale-down`    | —      | dropped   |
++| `object-fit` | `.object-fit-md-none`     | `-o-object-fit` | `@media (min-width: 768px)`  | `none`          | —      | dropped   |
++| `object-fit` | `.object-fit-lg-contain`  | `-o-object-fit` | `@media (min-width: 992px)`  | `contain`       | —      | dropped   |
++| `object-fit` | `.object-fit-lg-cover`    | `-o-object-fit` | `@media (min-width: 992px)`  | `cover`         | —      | dropped   |
++| `object-fit` | `.object-fit-lg-fill`     | `-o-object-fit` | `@media (min-width: 992px)`  | `fill`          | —      | dropped   |
++| `object-fit` | `.object-fit-lg-scale`    | `-o-object-fit` | `@media (min-width: 992px)`  | `scale-down`    | —      | dropped   |
++| `object-fit` | `.object-fit-lg-none`     | `-o-object-fit` | `@media (min-width: 992px)`  | `none`          | —      | dropped   |
++| `object-fit` | `.object-fit-xl-contain`  | `-o-object-fit` | `@media (min-width: 1200px)` | `contain`       | —      | dropped   |
++| `object-fit` | `.object-fit-xl-cover`    | `-o-object-fit` | `@media (min-width: 1200px)` | `cover`         | —      | dropped   |
++| `object-fit` | `.object-fit-xl-fill`     | `-o-object-fit` | `@media (min-width: 1200px)` | `fill`          | —      | dropped   |
++| `object-fit` | `.object-fit-xl-scale`    | `-o-object-fit` | `@media (min-width: 1200px)` | `scale-down`    | —      | dropped   |
++| `object-fit` | `.object-fit-xl-none`     | `-o-object-fit` | `@media (min-width: 1200px)` | `none`          | —      | dropped   |
++| `object-fit` | `.object-fit-xxl-contain` | `-o-object-fit` | `@media (min-width: 1400px)` | `contain`       | —      | dropped   |
++| `object-fit` | `.object-fit-xxl-cover`   | `-o-object-fit` | `@media (min-width: 1400px)` | `cover`         | —      | dropped   |
++| `object-fit` | `.object-fit-xxl-fill`    | `-o-object-fit` | `@media (min-width: 1400px)` | `fill`          | —      | dropped   |
++| `object-fit` | `.object-fit-xxl-scale`   | `-o-object-fit` | `@media (min-width: 1400px)` | `scale-down`    | —      | dropped   |
++| `object-fit` | `.object-fit-xxl-none`    | `-o-object-fit` | `@media (min-width: 1400px)` | `none`          | —      | dropped   |
++
+ #### `offset`
+ 
+ | Component | Selector        | Property      | Condition                  | Bootstrap 5.3.8 | Veneer | Departure |
+@@ -5490,6 +5635,11 @@ the cascade's system-color fallbacks for the button have no browser reading.
+ | visually-hidden  | selector       | The official `.visually-hidden` helper and its focusable form ship in the utilities layer ahead of every utility partial; the hidden box and the focus reveal are proved in `tests/src/styles/utilities/visually-hidden.test.ts`.                                                                                                                                                                                                                                | —                     | shipped  |
+ | visible          | selector       | The official `.visible` selector ships in the utilities layer; the resolved visibility is proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
+ | invisible        | selector       | The official `.invisible` selector ships in the utilities layer; the hidden paint and the kept box are proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                | —                     | shipped  |
++| float            | selector       | Every official `.float-*` selector ships at every breakpoint infix in the utilities layer, on the physical left and right sides; each float at its boundary is proved in the `tests/src/styles/utilities/float.test.ts` proof.                                                                                                                                                                                                                                   | —                     | shipped  |
++| clearfix         | selector       | The official `.clearfix` helper ships with normal declarations in the components layer; the host holding its floats is proved in the `tests/src/styles/components/clearfix.test.ts` proof.                                                                                                                                                                                                                                                                       | —                     | shipped  |
++| overflow         | selector       | Every official `.overflow-*`, `.overflow-x-*`, and `.overflow-y-*` selector ships at the empty infix alone in the utilities layer; each axis clipping and scrolling apart from the other is proved in the `tests/src/styles/utilities/overflow.test.ts` proof.                                                                                                                                                                                                   | —                     | shipped  |
++| object-fit       | selector       | Every official `.object-fit-*` selector ships at every breakpoint infix in the utilities layer; the replaced content each value fits into its box is proved in the `tests/src/styles/utilities/object-fit.test.ts` proof.                                                                                                                                                                                                                                        | —                     | shipped  |
++| stretched-link   | selector       | The official `.stretched-link` helper ships with normal declarations in the components layer; a pointer reaching the link from every corner of its positioned ancestor is proved in the `tests/src/styles/components/stretched-link.test.ts` proof.                                                                                                                                                                                                              | —                     | shipped  |
+ | navbar           | selector       | Every official `.navbar` selector ships in the components layer, the brand, nav list, text, collapsible content, toggler and its icon, scrolling list, expand ramp, expanded offcanvas panel, and dark retunes included, and the container combinators the key records ship from the container partial; resolved behavior is proved in `tests/src/styles/components/navbar.test.ts`.                                                                             | —                     | shipped  |
+ | navbar           | variable       | Every official `--bs-navbar-*` custom property is declared on the `.navbar` class, the color and toggler slots are retuned by the `.navbar-dark` class and the bar's own dark attribute, and the `.navbar-nav` class retunes the `--bs-nav-link-*` slots it records; each one is read beside the property it drives in `tests/src/styles/components/navbar.test.ts`.                                                                                             | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+@@ -5553,7 +5703,9 @@ tables, form controls, and interactive tags. Each helper key sits in the region
+ belongs to rather than in a region of its own, which is how every other section is grouped: the icon
+ links sit in Links, the aspect-ratio boxes share Media with the image classes and the figure
+ classes, the vertical rule and the gap steps sit in Layout beside the gutters, the stacks sit in
+-Flex beside the flex utilities, and the list and quotation classes sit in Type. The
++Flex beside the flex utilities, the clearfix helper sits in Float beside the float utilities, the
++stretched link sits in Links beside the icon links, and the list and quotation classes sit in Type.
++The
+ showcase's own button drives the controller and announces the selected mode, and its entry
+ constructs a `Delegate` instance beside the showcase. The shell's own stylesheet reaches that button
+ through the `control` class the showcase sets on it, so no rule of the shell's reaches a specimen
+@@ -5567,9 +5719,11 @@ the containing block of every fixed and absolute element inside it, and paint co
+ clip keeps what such an element overflows inside the frame without making the frame scroll. So a
+ fixed bar holds to the frame's edge, and a backdrop sized to the viewport raises no scrollbar on the
+ frame or on the page. The frame's bounded height holds a default dialog at the 390 viewport and
+-gives a percentage height or offset a definite height to resolve against. Every Position specimen
+-and the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes` specimens render
+-inside an element carrying the shell's `viewport` class. The sticky bars scroll inside an element
++gives a percentage height or offset a definite height to resolve against. Every Position specimen,
++the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes` specimens, and every
++Overflow specimen render inside an element carrying the shell's `viewport` class; the frame clips
++what a card under the `visible` value spills and gives the axis cards a bounded height to share. The
++sticky bars scroll inside an element
+ carrying the shell's `scroller` class within the frame, because the frame clips rather than
+ scrolls; see [position specimens](../tests/app/browser/sections/PositionSection.test.ts), which
+ proves the frame at the 390 and 1280 viewports.
+@@ -5624,6 +5778,7 @@ The application proofs drive the shell through its interface; see
+ [dropdown specimens](../tests/app/browser/sections/DropdownSection.test.ts),
+ [display specimens](../tests/app/browser/sections/DisplaySection.test.ts),
+ [flex specimens](../tests/app/browser/sections/FlexSection.test.ts),
++[float specimens](../tests/app/browser/sections/FloatSection.test.ts),
+ [form check specimens](../tests/app/browser/sections/FormCheckSection.test.ts),
+ [form control specimens](../tests/app/browser/sections/FormControlSection.test.ts),
+ [form floating specimens](../tests/app/browser/sections/FormFloatingSection.test.ts),
+@@ -5635,6 +5790,8 @@ The application proofs drive the shell through its interface; see
+ [link specimens](../tests/app/browser/sections/LinkSection.test.ts),
+ [list group specimens](../tests/app/browser/sections/ListGroupSection.test.ts),
+ [navbar specimens](../tests/app/browser/sections/NavbarSection.test.ts),
++[object fit specimens](../tests/app/browser/sections/ObjectFitSection.test.ts),
++[overflow specimens](../tests/app/browser/sections/OverflowSection.test.ts),
+ [pagination specimens](../tests/app/browser/sections/PaginationSection.test.ts),
+ [placeholder specimens](../tests/app/browser/sections/PlaceholderSection.test.ts),
+ [position specimens](../tests/app/browser/sections/PositionSection.test.ts),
+@@ -5760,7 +5917,12 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the position helpers](../tests/src/styles/components/position.test.ts),
+ [the sizing utilities](../tests/src/styles/utilities/sizing.test.ts),
+ [the visibility utilities](../tests/src/styles/utilities/visibility.test.ts),
+-[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts), and
++[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts),
++[the float utilities](../tests/src/styles/utilities/float.test.ts),
++[the clearfix helper](../tests/src/styles/components/clearfix.test.ts),
++[the object-fit utilities](../tests/src/styles/utilities/object-fit.test.ts),
++[the overflow utilities](../tests/src/styles/utilities/overflow.test.ts),
++[the stretched link helper](../tests/src/styles/components/stretched-link.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index 6a8b24c..d16b8a1 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -74,13 +74,18 @@
+ @use 'components/carousel';
+ @use 'components/spinner';
+ @use 'components/placeholder';
++@use 'components/clearfix';
+ @use 'components/icon-link';
+ @use 'components/ratio';
+ @use 'components/position' as position-component;
+ @use 'components/stacks';
++@use 'components/stretched-link';
+ @use 'components/vr';
+ @use 'utilities/visually-hidden';
+ @use 'utilities/vertical-align';
++@use 'utilities/float';
++@use 'utilities/object-fit';
++@use 'utilities/overflow';
+ @use 'utilities/display';
+ @use 'utilities/position';
+ @use 'utilities/sizing';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index a08372d..f16b8dc 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -13,6 +13,7 @@ import {
+ 	DROPDOWN_SPECIMENS,
+ 	DISPLAY_SPECIMENS,
+ 	FLEX_SPECIMENS,
++	FLOAT_SPECIMENS,
+ 	FORM_CHECK_SPECIMENS,
+ 	FORM_CONTROL_SPECIMENS,
+ 	FORM_FLOATING_SPECIMENS,
+@@ -27,6 +28,8 @@ import {
+ 	MEDIA_SPECIMENS,
+ 	NAV_SPECIMENS,
+ 	NAVBAR_SPECIMENS,
++	OBJECT_FIT_SPECIMENS,
++	OVERFLOW_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
+ 	POSITION_SPECIMENS,
+@@ -134,6 +137,9 @@ describe('Showcase', () => {
+ 				'Position',
+ 				'Sizing',
+ 				'Visibility',
++				'Float',
++				'Object fit',
++				'Overflow',
+ 				'Navbar',
+ 			])
+ 			expect(
+@@ -177,6 +183,9 @@ describe('Showcase', () => {
+ 					...POSITION_SPECIMENS,
+ 					...SIZING_SPECIMENS,
+ 					...VISIBILITY_SPECIMENS,
++					...FLOAT_SPECIMENS,
++					...OBJECT_FIT_SPECIMENS,
++					...OVERFLOW_SPECIMENS,
+ 					...NAVBAR_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 4ea1d98..be33cbf 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -52,6 +52,8 @@ describe('app browser entry', () => {
+ 			'DropdownSection',
+ 			'FLEX_COPY',
+ 			'FLEX_SPECIMENS',
++			'FLOAT_COPY',
++			'FLOAT_SPECIMENS',
+ 			'FORM_CHECK_COPY',
+ 			'FORM_CHECK_SPECIMENS',
+ 			'FORM_CONTROL_COPY',
+@@ -65,6 +67,7 @@ describe('app browser entry', () => {
+ 			'FORM_SELECT_COPY',
+ 			'FORM_SELECT_SPECIMENS',
+ 			'FlexSection',
++			'FloatSection',
+ 			'FormCheckSection',
+ 			'FormControlSection',
+ 			'FormFloatingSection',
+@@ -92,6 +95,12 @@ describe('app browser entry', () => {
+ 			'NAV_SPECIMENS',
+ 			'NavSection',
+ 			'NavbarSection',
++			'OBJECT_FIT_COPY',
++			'OBJECT_FIT_SPECIMENS',
++			'OVERFLOW_COPY',
++			'OVERFLOW_SPECIMENS',
++			'ObjectFitSection',
++			'OverflowSection',
+ 			'PAGINATION_COPY',
+ 			'PAGINATION_SPECIMENS',
+ 			'PLACEHOLDER_COPY',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 86e41d8..1e49b19 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -53,6 +53,7 @@ import {
+ 	DROPDOWN_SPECIMENS,
+ 	DISPLAY_SPECIMENS,
+ 	FLEX_SPECIMENS,
++	FLOAT_SPECIMENS,
+ 	FORM_CHECK_SPECIMENS,
+ 	FORM_CONTROL_SPECIMENS,
+ 	FORM_FLOATING_SPECIMENS,
+@@ -66,6 +67,8 @@ import {
+ 	MEDIA_SPECIMENS,
+ 	NAV_SPECIMENS,
+ 	NAVBAR_SPECIMENS,
++	OBJECT_FIT_SPECIMENS,
++	OVERFLOW_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
+ 	POSITION_SPECIMENS,
+@@ -2131,6 +2134,9 @@ describe('portfolio', () => {
+ 				POSITION_SPECIMENS,
+ 				SIZING_SPECIMENS,
+ 				VISIBILITY_SPECIMENS,
++				FLOAT_SPECIMENS,
++				OVERFLOW_SPECIMENS,
++				OBJECT_FIT_SPECIMENS,
+ 			].flatMap((table) => table.map((specimen) => specimen.name)),
+ 			SHOWCASE_COPY.region,
+ 		])
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 4f3faba..9e6cfc2 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -112,6 +112,7 @@ describe('Bootstrap component oracle', () => {
+ 			'btn-toolbar',
+ 			'card',
+ 			'carousel',
++			'clearfix',
+ 			'col',
+ 			'collapse',
+ 			'collapsing',
+@@ -124,6 +125,7 @@ describe('Bootstrap component oracle', () => {
+ 			'figure',
+ 			'fixed',
+ 			'flex',
++			'float',
+ 			'form',
+ 			'form-check',
+ 			'form-control',
+@@ -163,8 +165,10 @@ describe('Bootstrap component oracle', () => {
+ 			'mw',
+ 			'nav',
+ 			'navbar',
++			'object-fit',
+ 			'offset',
+ 			'order',
++			'overflow',
+ 			'pagination',
+ 			'placeholder',
+ 			'position',
+@@ -177,6 +181,7 @@ describe('Bootstrap component oracle', () => {
+ 			'spinner',
+ 			'start',
+ 			'sticky',
++			'stretched-link',
+ 			'table',
+ 			'top',
+ 			'translate-middle',
+@@ -508,6 +513,8 @@ describe('Bootstrap source order', () => {
+ 		}
+ 		const entryPaths: Readonly<Record<string, string>> = {
+ 			align: 'utilities/vertical-align',
++			'overflow-x': 'utilities/overflow',
++			'overflow-y': 'utilities/overflow',
+ 			'flex-direction': 'utilities/flex',
+ 			'flex-grow': 'utilities/flex',
+ 			'flex-shrink': 'utilities/flex',
+@@ -545,8 +552,13 @@ describe('Bootstrap source order', () => {
+ 		].flatMap(([, path]) => (path === undefined ? [] : [path]))
+ 		expect(loadedPaths).toEqual(
+ 			expect.arrayContaining([
++				'components/clearfix',
+ 				'components/stacks',
++				'components/stretched-link',
+ 				'utilities/vertical-align',
++				'utilities/float',
++				'utilities/object-fit',
++				'utilities/overflow',
+ 				'utilities/display',
+ 				'utilities/flex',
+ 				'utilities/gap',
+diff --git a/tests/fixtures/tailwind/markup.html b/tests/fixtures/tailwind/markup.html
+index 2976ff9..a137c02 100644
+--- a/tests/fixtures/tailwind/markup.html
++++ b/tests/fixtures/tailwind/markup.html
+@@ -124,3 +124,18 @@
+ <div class="z-3">Stacking level 3</div>
+ <div class="visible">Visible</div>
+ <div class="invisible">Invisible</div>
++<div class="float-start">Float start</div>
++<div class="float-end">Float end</div>
++<div class="float-none">Float none</div>
++<div class="overflow-auto">Overflow auto</div>
++<div class="overflow-hidden">Overflow hidden</div>
++<div class="overflow-visible">Overflow visible</div>
++<div class="overflow-scroll">Overflow scroll</div>
++<div class="overflow-x-auto">Overflow x auto</div>
++<div class="overflow-x-hidden">Overflow x hidden</div>
++<div class="overflow-x-visible">Overflow x visible</div>
++<div class="overflow-x-scroll">Overflow x scroll</div>
++<div class="overflow-y-auto">Overflow y auto</div>
++<div class="overflow-y-hidden">Overflow y hidden</div>
++<div class="overflow-y-visible">Overflow y visible</div>
++<div class="overflow-y-scroll">Overflow y scroll</div>
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 74c28ed..d255765 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -277,6 +277,14 @@ export type CaptureSubject =
+ 	| 'Navbar expand lg'
+ 	| 'Navbar expand xl'
+ 	| 'Navbar expand xxl'
++	| 'Float sides'
++	| 'Responsive float'
++	| 'Cleared floats'
++	| 'Overflow values'
++	| 'Axis overflow'
++	| 'Object fit values'
++	| 'Responsive object fit'
++	| 'Stretched link'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -482,6 +490,12 @@ export const SHOWCASE_KEYS: readonly CaptureKey[] = Object.freeze([
+  * through a `:has()` selector over that element, such as `.position-relative:has(> .visually-hidden)`,
+  * and reads the host's `position` property, because a frame declared on the one-pixel box reads back
+  * nothing. The helper's cascade proof reads the hidden box itself.
++ *
++ * A key whose recorded rule styles a generated box alone names the element the box sits on: the
++ * stretched link's row names the positioned card its generated box covers and reads the card's
++ * `position` property, and the cleared host's row names the floated card inside it and reads that
++ * card's `float` property. A computed style read on an element reports no property of the box
++ * generated after it, and each helper's cascade proof reads the generated box itself.
+  */
+ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 	Object.freeze({
+@@ -1648,6 +1662,54 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 		selector: '.navbar-expand-xxl',
+ 		property: 'flex-wrap',
+ 	}),
++	Object.freeze({
++		scenario: 'float-sides',
++		subject: 'Float sides',
++		selector: '.float-end',
++		property: 'float',
++	}),
++	Object.freeze({
++		scenario: 'responsive-float',
++		subject: 'Responsive float',
++		selector: '.float-md-end',
++		property: 'float',
++	}),
++	Object.freeze({
++		scenario: 'cleared-floats',
++		subject: 'Cleared floats',
++		selector: '.clearfix > .float-start',
++		property: 'float',
++	}),
++	Object.freeze({
++		scenario: 'overflow-values',
++		subject: 'Overflow values',
++		selector: '.overflow-hidden',
++		property: 'overflow-x',
++	}),
++	Object.freeze({
++		scenario: 'axis-overflow',
++		subject: 'Axis overflow',
++		selector: '.overflow-x-auto',
++		property: 'overflow-x',
++	}),
++	Object.freeze({
++		scenario: 'object-fit-values',
++		subject: 'Object fit values',
++		selector: '.object-fit-cover',
++		property: 'object-fit',
++	}),
++	Object.freeze({
++		scenario: 'responsive-object-fit',
++		subject: 'Responsive object fit',
++		selector: '.object-fit-md-cover',
++		property: 'object-fit',
++	}),
++	Object.freeze({
++		scenario: 'stretched-link',
++		subject: 'Stretched link',
++		selector: '.card:has(.stretched-link)',
++		property: 'position',
++	}),
+ ])
+ 
+ /**
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index e6b3798..d262f76 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1397,6 +1397,7 @@ describe('server setup', () => {
+ 				'btn-toolbar',
+ 				'card',
+ 				'carousel',
++				'clearfix',
+ 				'col',
+ 				'collapse',
+ 				'collapsing',
+@@ -1410,6 +1411,7 @@ describe('server setup', () => {
+ 				'figure',
+ 				'fixed',
+ 				'flex',
++				'float',
+ 				'form',
+ 				'form-check',
+ 				'form-control',
+@@ -1449,8 +1451,10 @@ describe('server setup', () => {
+ 				'mw',
+ 				'nav',
+ 				'navbar',
++				'object-fit',
+ 				'offset',
+ 				'order',
++				'overflow',
+ 				'pagination',
+ 				'placeholder',
+ 				'position',
+@@ -1463,6 +1467,7 @@ describe('server setup', () => {
+ 				'spinner',
+ 				'start',
+ 				'sticky',
++				'stretched-link',
+ 				'table',
+ 				'top',
+ 				'translate-middle',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index b5af4ea..ff9c073 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -2178,6 +2178,213 @@ export const VISUALLY_HIDDEN_READING = Object.freeze([
+ 	'hidden',
+ ])
+ 
++/** Pins each side the release's `float` entry writes, in its order, to the physical value it sets. */
++export const FLOAT_VALUES = Object.freeze([
++	Object.freeze({ key: 'start', value: 'left' }),
++	Object.freeze({ key: 'end', value: 'right' }),
++	Object.freeze({ key: 'none', value: 'none' }),
++])
++
++/** Lists the release's overflow entries in its map order, each named for the property it sets. */
++export const OVERFLOW_ENTRIES = Object.freeze(['overflow', 'overflow-x', 'overflow-y'])
++
++/** Lists the values every overflow entry of the release writes, in its order. */
++export const OVERFLOW_VALUES = Object.freeze(['auto', 'hidden', 'visible', 'scroll'])
++
++/**
++ * Pairs an `overflow-x` class value and an `overflow-y` class value on one constrained box with
++ * the pair the browser computes and the axes a wheel scrolls.
++ *
++ * @remarks
++ * CSS computes an axis at the `visible` value beside an axis at another value as the `auto` value,
++ * so the `computed` field holds the browser's own reading rather than the class values. Each value
++ * sits on each axis in some row, and the x value and the y value of a row differ, so an entry
++ * writing the other axis's property reads a different pair. An axis at the `auto` or `scroll` value
++ * scrolls under the wheel because the box's content overflows it, and an axis at the `hidden` value
++ * does not.
++ */
++export const OVERFLOW_AXIS_CASES = Object.freeze([
++	Object.freeze({
++		x: 'auto',
++		y: 'hidden',
++		computed: Object.freeze(['auto', 'hidden']),
++		scrolled: Object.freeze([true, false]),
++	}),
++	Object.freeze({
++		x: 'hidden',
++		y: 'scroll',
++		computed: Object.freeze(['hidden', 'scroll']),
++		scrolled: Object.freeze([false, true]),
++	}),
++	Object.freeze({
++		x: 'scroll',
++		y: 'auto',
++		computed: Object.freeze(['scroll', 'auto']),
++		scrolled: Object.freeze([true, true]),
++	}),
++	Object.freeze({
++		x: 'visible',
++		y: 'scroll',
++		computed: Object.freeze(['auto', 'scroll']),
++		scrolled: Object.freeze([true, true]),
++	}),
++	Object.freeze({
++		x: 'hidden',
++		y: 'visible',
++		computed: Object.freeze(['hidden', 'auto']),
++		scrolled: Object.freeze([false, true]),
++	}),
++])
++
++/** Pins each key the release's `object-fit` entry writes, in its order, to the value it sets. */
++export const OBJECT_FIT_VALUES = Object.freeze([
++	Object.freeze({ key: 'contain', value: 'contain' }),
++	Object.freeze({ key: 'cover', value: 'cover' }),
++	Object.freeze({ key: 'fill', value: 'fill' }),
++	Object.freeze({ key: 'scale', value: 'scale-down' }),
++	Object.freeze({ key: 'none', value: 'none' }),
++])
++
++/**
++ * Holds the replaced content the object-fit proof photographs and the regions it reads.
++ *
++ * @remarks
++ * Each picture is an inline SVG document drawn at its `width` and `height` sizes in CSS pixels. It
++ * leaves the left share of its width that the `bare` field names unpainted and paints the rest in
++ * the default black fill, at a ratio the square box does not share, whose side the `box` field
++ * gives in CSS pixels. The wide picture is larger than the box on its long axis, and the narrow
++ * picture is smaller than the box on the x and the y axis, which is what separates the `scale-down`
++ * value from the `contain` value: it matches the `contain` value for the wide picture and the
++ * `none` value for the narrow one. Each region is a rectangle in the box's own CSS pixels.
++ */
++export const OBJECT_FIT_FIXTURE = Object.freeze({
++	box: 120,
++	paint: 'rgb(0, 0, 0)',
++	bare: 0.25,
++	pictures: Object.freeze({
++		wide: Object.freeze({
++			width: 240,
++			height: 80,
++			source:
++				"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='80'%3E%3Cpath d='M60 0H240V80H60Z'/%3E%3C/svg%3E",
++		}),
++		narrow: Object.freeze({
++			width: 60,
++			height: 20,
++			source:
++				"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='20'%3E%3Cpath d='M15 0H60V20H15Z'/%3E%3C/svg%3E",
++		}),
++	}),
++	regions: Object.freeze([
++		Object.freeze({ x: 2, y: 2, width: 16, height: 12 }),
++		Object.freeze({ x: 102, y: 2, width: 16, height: 12 }),
++		Object.freeze({ x: 102, y: 24, width: 16, height: 12 }),
++		Object.freeze({ x: 2, y: 52, width: 16, height: 12 }),
++		Object.freeze({ x: 102, y: 52, width: 16, height: 12 }),
++		Object.freeze({ x: 52, y: 54, width: 16, height: 12 }),
++	]),
++})
++
++/**
++ * Pins, for each object-fit value, which regions of the {@link OBJECT_FIT_FIXTURE} fixture each
++ * picture paints.
++ *
++ * @remarks
++ * The readings follow from the fitting rules alone, and the styles setup proof derives each one
++ * from the fixture's sizes. The `fill` value stretches the picture to the box, so the bare share
++ * covers the box's left quarter; the `cover` value scales the picture until it covers the box and
++ * centers it, which crops the bare share away; the `contain` value scales it until it fits and
++ * centers it, which leaves bands above and below; and the `none` value keeps the picture's own
++ * size. The region centred low in the box, at x 52 and y 54, sits where every value paints the wide
++ * and the narrow picture, so a reading that finds no picture at all reddens there.
++ */
++export const OBJECT_FIT_PAINT_CASES = Object.freeze([
++	Object.freeze({
++		value: 'contain',
++		wide: Object.freeze([false, false, false, false, true, true]),
++		narrow: Object.freeze([false, false, false, false, true, true]),
++	}),
++	Object.freeze({
++		value: 'cover',
++		wide: Object.freeze([true, true, true, true, true, true]),
++		narrow: Object.freeze([true, true, true, true, true, true]),
++	}),
++	Object.freeze({
++		value: 'fill',
++		wide: Object.freeze([false, true, true, false, true, true]),
++		narrow: Object.freeze([false, true, true, false, true, true]),
++	}),
++	Object.freeze({
++		value: 'scale-down',
++		wide: Object.freeze([false, false, false, false, true, true]),
++		narrow: Object.freeze([false, false, false, false, false, true]),
++	}),
++	Object.freeze({
++		value: 'none',
++		wide: Object.freeze([false, false, true, true, true, true]),
++		narrow: Object.freeze([false, false, false, false, false, true]),
++	}),
++])
++
++/**
++ * Names each corner of a box a hit test reads, as the edge the corner sits against across the box
++ * and the edge it sits against down it, with the inset in CSS pixels that keeps each point inside
++ * the box.
++ *
++ * @remarks
++ * A proof derives each point from the live rectangle it reads: the edge's own coordinate, moved
++ * inward by the inset. The edge names are `DOMRect` keys, so a point reads the rectangle's own
++ * member rather than a coordinate written here.
++ */
++export const HIT_CORNERS = Object.freeze({
++	inset: 2,
++	corners: Object.freeze([
++		Object.freeze({ across: 'left', down: 'top' }),
++		Object.freeze({ across: 'right', down: 'top' }),
++		Object.freeze({ across: 'left', down: 'bottom' }),
++		Object.freeze({ across: 'right', down: 'bottom' }),
++	]),
++})
++
++/**
++ * Computes the point a hit test reads at each corner of a box, in the order the {@link HIT_CORNERS}
++ * table names the corners.
++ *
++ * @param box - The box's edges in CSS pixels, such as a live `DOMRect` instance a proof reads.
++ * @returns One point per corner: the corner's edges moved inward by the table's inset.
++ *
++ * @example
++ * ```ts
++ * computeCornerPoints({ left: 0, right: 100, top: 0, bottom: 50 })[0] // { x: 2, y: 2 }
++ * ```
++ */
++export function computeCornerPoints(box: {
++	readonly left: number
++	readonly right: number
++	readonly top: number
++	readonly bottom: number
++}): ReadonlyArray<{ readonly x: number; readonly y: number }> {
++	const { inset, corners } = HIT_CORNERS
++	return corners.map(({ across, down }) => ({
++		x: box[across] + (across === 'left' ? inset : -inset),
++		y: box[down] + (down === 'top' ? inset : -inset),
++	}))
++}
++
++/**
++ * Pairs each host the stretched-link proof hit-tests with whether its link carries the helper and
++ * the element each corner of the {@link HIT_CORNERS} table reaches, in that table's order.
++ *
++ * @remarks
++ * Every host holds a paragraph above its link. A link carrying the helper covers the host, so every
++ * corner reaches the link; a bare link covers nothing, so a top corner reaches the paragraph and a
++ * bottom corner reaches the host itself.
++ */
++export const STRETCHED_LINK_HOSTS = Object.freeze([
++	Object.freeze({ stretched: true, hits: Object.freeze(['a', 'a', 'a', 'a']) }),
++	Object.freeze({ stretched: false, hits: Object.freeze(['p', 'p', 'div', 'div']) }),
++])
++
+ /**
+  * Pins each named aspect ratio against the percentage its own name derives.
+  *
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index d75c65a..1579106 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -88,6 +88,7 @@ import {
+ 	FLEX_ENTRY_CASES,
+ 	FLEX_FAMILY_CASES,
+ 	FLEX_RESTING_VALUES,
++	FLOAT_VALUES,
+ 	FORM_CHECK_ICON_CASES,
+ 	FORM_CHECK_MARKUP,
+ 	FORM_CHECK_SELECTORS,
+@@ -106,6 +107,7 @@ import {
+ 	FORM_SELECT_MARKUP,
+ 	GAP_STEP_CASES,
+ 	GRID_BREAKPOINT_CASES,
++	HIT_CORNERS,
+ 	GRID_COLUMN_STEPS,
+ 	GRID_COUNT_STEPS,
+ 	GRID_OFFSET_STEPS,
+@@ -174,10 +176,17 @@ import {
+ 	SPINNER_VARIABLE_CASES,
+ 	STACK_LEVEL_CASES,
+ 	STICKY_SCROLLER,
++	STRETCHED_LINK_HOSTS,
+ 	TABLE_GEOMETRY_CASES,
+ 	NEUTRAL_MARKUP,
+ 	OFFSET_EDGES,
+ 	OFFSET_STEP_CASES,
++	OBJECT_FIT_FIXTURE,
++	OBJECT_FIT_PAINT_CASES,
++	OBJECT_FIT_VALUES,
++	OVERFLOW_AXIS_CASES,
++	OVERFLOW_ENTRIES,
++	OVERFLOW_VALUES,
+ 	TABLE_MARKUP,
+ 	TABLE_RESPONSIVE_CASES,
+ 	TABLE_ROLES,
+@@ -224,6 +233,7 @@ import {
+ 	collectTokenNames,
+ 	collectTripletGroups,
+ 	compileBreakpointRamp,
++	computeCornerPoints,
+ 	extractBootstrapVariables,
+ 	describeIncompleteRow,
+ 	extractShadowLayers,
+@@ -315,6 +325,7 @@ describe('styles setup', () => {
+ 				'FLEX_ENTRY_CASES',
+ 				'FLEX_FAMILY_CASES',
+ 				'FLEX_RESTING_VALUES',
++				'FLOAT_VALUES',
+ 				'FORM_CHECK_ICON_CASES',
+ 				'FORM_CHECK_MARKUP',
+ 				'FORM_CHECK_SELECTORS',
+@@ -336,6 +347,7 @@ describe('styles setup', () => {
+ 				'GRID_COLUMN_STEPS',
+ 				'GRID_COUNT_STEPS',
+ 				'GRID_OFFSET_STEPS',
++				'HIT_CORNERS',
+ 				'ICON_LINK_MARKUP',
+ 				'IMAGE_PAINT_CASES',
+ 				'IMAGE_SOURCE',
+@@ -375,8 +387,14 @@ describe('styles setup', () => {
+ 				'NAV_ROW_CASES',
+ 				'NAV_SELECTORS',
+ 				'NEUTRAL_MARKUP',
++				'OBJECT_FIT_FIXTURE',
++				'OBJECT_FIT_PAINT_CASES',
++				'OBJECT_FIT_VALUES',
+ 				'OFFSET_EDGES',
+ 				'OFFSET_STEP_CASES',
++				'OVERFLOW_AXIS_CASES',
++				'OVERFLOW_ENTRIES',
++				'OVERFLOW_VALUES',
+ 				'PAGINATION_MARKUP',
+ 				'PAGINATION_PARENT_CASES',
+ 				'PAGINATION_SELECTORS',
+@@ -405,6 +423,7 @@ describe('styles setup', () => {
+ 				'SPINNER_VARIABLE_CASES',
+ 				'STACK_LEVEL_CASES',
+ 				'STICKY_SCROLLER',
++				'STRETCHED_LINK_HOSTS',
+ 				'TABLE_GEOMETRY_CASES',
+ 				'TABLE_MARKUP',
+ 				'TABLE_RESPONSIVE_CASES',
+@@ -455,6 +474,7 @@ describe('styles setup', () => {
+ 				'collectTripletGroups',
+ 				'collectTypeSelectors',
+ 				'compileBreakpointRamp',
++				'computeCornerPoints',
+ 				'describeIncompleteRow',
+ 				'extractBootstrapVariables',
+ 				'extractShadowLayers',
+@@ -1660,6 +1680,185 @@ describe('styles setup', () => {
+ 		}
+ 		expect(Object.values(FLEX_RESTING_VALUES).every((value) => Object.isFrozen(value))).toBe(true)
+ 	})
++	it('binds the float sides, the overflow entries and values, and the object-fit values to the inventory', () => {
++		const inventory = readOracleInventory()
++		// The rules each key records outside every media block, in the release's order, read as the
++		// selector and the standard declaration each one writes after any prefixed alias: the
++		// object-fit rules record a prefixed alias ahead of the standard property.
++		const unconditioned = new Map(
++			['float', 'overflow', 'object-fit'].map((key) => [
++				key,
++				(inventory.components[key]?.rules ?? [])
++					.filter(({ condition }) => condition === undefined)
++					.map(({ selector, declarations }) => {
++						const standard = requireValue(declarations.at(-1), `No declaration on ${selector}`)
++						return [selector, standard.property, standard.value]
++					}),
++			]),
++		)
++		expect(unconditioned.get('float')).toEqual(
++			FLOAT_VALUES.map(({ key, value }) => [`.float-${key}`, 'float', value]),
++		)
++		expect(unconditioned.get('overflow')).toEqual(
++			OVERFLOW_ENTRIES.flatMap((entry) =>
++				OVERFLOW_VALUES.map((value) => [`.${entry}-${value}`, entry, value]),
++			),
++		)
++		expect(unconditioned.get('object-fit')).toEqual(
++			OBJECT_FIT_VALUES.map(({ key, value }) => [`.object-fit-${key}`, 'object-fit', value]),
++		)
++		// Each responsive key records every unconditioned rule again at every infix, and the overflow
++		// key records none, so a responsive table read at one infix covers the key.
++		for (const [key, count] of [
++			['float', FLOAT_VALUES.length],
++			['object-fit', OBJECT_FIT_VALUES.length],
++			['overflow', 0],
++		] as const)
++			expect(
++				(inventory.components[key]?.rules ?? []).filter(({ condition }) => condition !== undefined),
++			).toHaveLength(count * BREAKPOINT_INFIXES.length)
++		// Each axis row pairs an x value with a different y value, and every value sits on each
++		// axis in some row, so an entry that writes the other axis reads a different pair.
++		expect(OVERFLOW_AXIS_CASES.filter(({ x, y }) => x === y)).toEqual([])
++		expect([...new Set(OVERFLOW_AXIS_CASES.map(({ x }) => x))].sort()).toEqual(
++			[...OVERFLOW_VALUES].sort(),
++		)
++		expect([...new Set(OVERFLOW_AXIS_CASES.map(({ y }) => y))].sort()).toEqual(
++			[...OVERFLOW_VALUES].sort(),
++		)
++		// The browser computes an axis at the `visible` value beside an axis at another value as the
++		// `auto` value, and the wheel scrolls an axis at the `auto` or `scroll` value.
++		for (const { x, y, computed, scrolled } of OVERFLOW_AXIS_CASES) {
++			const pair: readonly string[] = [x, y]
++			const derived = pair.map((value, index) =>
++				value === 'visible' && pair[1 - index] !== 'visible' ? 'auto' : value,
++			)
++			expect(computed).toEqual(derived)
++			expect(scrolled).toEqual(derived.map((value) => value === 'auto' || value === 'scroll'))
++		}
++		// The paint table covers every value once, and each picture's readings tell every value
++		// apart from every other one across the wide and the narrow picture.
++		expect(OBJECT_FIT_PAINT_CASES.map(({ value }) => value).sort()).toEqual(
++			OBJECT_FIT_VALUES.map(({ value }) => value).sort(),
++		)
++		const signatures = OBJECT_FIT_PAINT_CASES.map(({ wide, narrow }) =>
++			JSON.stringify([wide, narrow]),
++		)
++		expect(new Set(signatures).size).toBe(signatures.length)
++		// Each picture's source draws it at the sizes the fixture names and leaves the bare share of
++		// its width unpainted.
++		const { box, bare, pictures, regions } = OBJECT_FIT_FIXTURE
++		for (const { width, height, source } of Object.values(pictures)) {
++			expect(source).toContain(`width='${String(width)}' height='${String(height)}'`)
++			expect(source).toContain(
++				`d='M${String(width * bare)} 0H${String(width)}V${String(height)}H${String(width * bare)}Z'`,
++			)
++		}
++		// Each reading is derived from the fitting rules over the fixture's sizes: each value scales
++		// the picture on each axis and centers it in the box, and a region reads as painted where it
++		// lies wholly inside the picture's painted share. Every region lies wholly inside or wholly
++		// outside that share, so no region reads a partial paint.
++		for (const { value, wide, narrow } of OBJECT_FIT_PAINT_CASES) {
++			const derived = [pictures.wide, pictures.narrow].map(({ width, height }) => {
++				const fit = Math.min(box / width, box / height)
++				const scales: Readonly<Record<string, readonly [number, number]>> = {
++					fill: [box / width, box / height],
++					contain: [fit, fit],
++					cover: [Math.max(box / width, box / height), Math.max(box / width, box / height)],
++					none: [1, 1],
++					'scale-down': [Math.min(1, fit), Math.min(1, fit)],
++				}
++				const [across, down] = requireValue(scales[value], `No fitting rule for ${value}`)
++				const left = (box - width * across) / 2 + width * across * bare
++				const right = (box + width * across) / 2
++				const top = (box - height * down) / 2
++				const bottom = (box + height * down) / 2
++				return regions.map((region) => {
++					const inside =
++						region.x >= left &&
++						region.x + region.width <= right &&
++						region.y >= top &&
++						region.y + region.height <= bottom
++					const outside =
++						region.x + region.width <= left ||
++						region.x >= right ||
++						region.y + region.height <= top ||
++						region.y >= bottom
++					expect(inside || outside).toBe(true)
++					return inside
++				})
++			})
++			expect(derived).toEqual([wide, narrow])
++		}
++		for (const { wide, narrow } of OBJECT_FIT_PAINT_CASES)
++			expect([wide.at(-1), narrow.at(-1)]).toEqual([true, true])
++		for (const region of OBJECT_FIT_FIXTURE.regions) {
++			expect(region.x + region.width).toBeLessThanOrEqual(OBJECT_FIT_FIXTURE.box)
++			expect(region.y + region.height).toBeLessThanOrEqual(OBJECT_FIT_FIXTURE.box)
++		}
++		for (const table of [
++			FLOAT_VALUES,
++			OVERFLOW_ENTRIES,
++			OVERFLOW_VALUES,
++			OVERFLOW_AXIS_CASES,
++			OBJECT_FIT_VALUES,
++			OBJECT_FIT_FIXTURE,
++			OBJECT_FIT_FIXTURE.pictures,
++			...Object.values(OBJECT_FIT_FIXTURE.pictures),
++			OBJECT_FIT_FIXTURE.regions,
++			OBJECT_FIT_PAINT_CASES,
++			...FLOAT_VALUES,
++			...OVERFLOW_AXIS_CASES,
++			...OVERFLOW_AXIS_CASES.flatMap(({ computed, scrolled }) => [computed, scrolled]),
++			...OBJECT_FIT_VALUES,
++			...OBJECT_FIT_FIXTURE.regions,
++			...OBJECT_FIT_PAINT_CASES,
++			...OBJECT_FIT_PAINT_CASES.flatMap(({ wide, narrow }) => [wide, narrow]),
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++	})
++	it('binds the hit corners to the edges the stretched link records and the stretched-link hosts to those corners', () => {
++		const { inset, corners } = HIT_CORNERS
++		expect(inset).toBeGreaterThan(0)
++		// The edges are the offsets the release's helper sets to zero, and each corner pairs an edge
++		// across the box with an edge down it: the corners use every edge, no edge sits across and down at once, and
++		// every pairing once, so a dropped or repeated corner reddens here.
++		const edges = (readOracleInventory().components['stretched-link']?.rules ?? [])
++			.flatMap(({ declarations }) => declarations)
++			.filter(({ value }) => value === '0')
++			.map(({ property }) => property)
++		const across: readonly string[] = [...new Set(corners.map((corner) => corner.across))]
++		const down: readonly string[] = [...new Set(corners.map((corner) => corner.down))]
++		expect([...across, ...down].sort()).toEqual([...edges].sort())
++		expect(across.filter((edge) => down.some((other) => other === edge))).toEqual([])
++		expect(corners.map(({ across: side, down: end }) => `${side} ${end}`).sort()).toEqual(
++			across.flatMap((side) => down.map((end) => `${side} ${end}`)).sort(),
++		)
++		// A host whose link carries the helper reaches the link at every corner; a bare host reaches
++		// its paragraph at a top corner and itself at a bottom corner. The hosts hold one link of each
++		// kind, so a dropped host reddens here.
++		expect(STRETCHED_LINK_HOSTS.map(({ stretched }) => stretched).sort()).toEqual([false, true])
++		for (const { stretched, hits } of STRETCHED_LINK_HOSTS)
++			expect(hits).toEqual(
++				corners.map(({ down: end }) => (stretched ? 'a' : end === 'top' ? 'p' : 'div')),
++			)
++		// Each point is its corner's edges moved inward by the inset, so it lies inside the box.
++		expect(computeCornerPoints({ left: 10, right: 110, top: 20, bottom: 70 })).toEqual([
++			{ x: 12, y: 22 },
++			{ x: 108, y: 22 },
++			{ x: 12, y: 68 },
++			{ x: 108, y: 68 },
++		])
++		for (const table of [
++			HIT_CORNERS,
++			corners,
++			...corners,
++			STRETCHED_LINK_HOSTS,
++			...STRETCHED_LINK_HOSTS,
++			...STRETCHED_LINK_HOSTS.map(({ hits }) => hits),
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++	})
+ 	it('binds the placement steps, values, and fixtures to the inventory, the ramp, and the journey', async () => {
+ 		const recorded = new Map(
+ 			Object.entries(oracle.components).map(([key, { selectors }]) => [

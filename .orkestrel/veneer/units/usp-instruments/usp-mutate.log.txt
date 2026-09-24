@@ -1,0 +1,202 @@
+== wrong step map: step 3 reads --vn-space-6
+site: src/styles/utilities/_spacing.scss
+12c12
+< 		3: var(--vn-space-8),
+---
+> 		3: var(--vn-space-6),
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  13 failed | 9 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:116:2 > interaction utilities > writes the pointer values beside the padding steps under the one class
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'xs' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'sm' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'md' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'lg' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'xl' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'xxl' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:91:2 > spacing utilities > writes the end and start sides as the physical right and left sides in either direction
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:102:2 > spacing utilities > resolves a later entry over an earlier one at one infix, and a wider infix over a narrower one
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:127:2 > spacing utilities > reads each step from its space token, so the density factor and a retuned token move every side
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:195:2 > spacing utilities > resolves the same steps inside a dark island
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:207:2 > spacing utilities > keeps every side over a later unlayered consumer rule
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:223:2 > spacing utilities > yields to an important override inside the utilities layer and to no unlayered one
+== swapped side: the end margin writes the left side
+site: src/styles/utilities/_spacing.scss
+30c30
+< 		@include utility(me, margin-right, $margins, $infix, true);
+---
+> 		@include utility(me, margin-left, $margins, $infix, true);
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  8 failed | 14 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'xs' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'sm' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'md' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'lg' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'xl' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'xxl' boundary
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:91:2 > spacing utilities > writes the end and start sides as the physical right and left sides in either direction
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:127:2 > spacing utilities > reads each step from its space token, so the density factor and a retuned token move every side
+== breakpoint loop run per entry
+site: src/styles/utilities/_spacing.scss
+25,40c25,38
+< 	@include breakpoint-each using ($infix, $_boundary) {
+< 		@include utility(m, margin, $margins, $infix, true);
+< 		@include utility(mx, margin-right margin-left, $margins, $infix, true);
+< 		@include utility(my, margin-top margin-bottom, $margins, $infix, true);
+< 		@include utility(mt, margin-top, $margins, $infix, true);
+< 		@include utility(me, margin-right, $margins, $infix, true);
+< 		@include utility(mb, margin-bottom, $margins, $infix, true);
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  1 failed | 21 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:102:2 > spacing utilities > resolves a later entry over an earlier one at one infix, and a wider infix over a narrower one
+== padding-x emitted before padding
+site: src/styles/utilities/_spacing.scss
+33d32
+< 		@include utility(p, padding, $spacers, $infix, true);
+34a34
+> 		@include utility(p, padding, $spacers, $infix, true);
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  1 failed | 21 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:102:2 > spacing utilities > resolves a later entry over an earlier one at one infix, and a wider infix over a narrower one
+== a literal in place of the step token
+site: src/styles/utilities/_spacing.scss
+12c12
+< 		3: var(--vn-space-8),
+---
+> 		3: 1rem,
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  1 failed | 21 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:127:2 > spacing utilities > reads each step from its space token, so the density factor and a retuned token move every side
+== a negative margin step shipped
+site: src/styles/utilities/_spacing.scss
+20c20
+< 			auto: auto,
+---
+> 			auto: auto, n1: -0.25rem,
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  1 failed | 21 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:178:2 > spacing utilities > writes no negative margin at any infix
+== pointer-events none written as auto
+site: src/styles/utilities/_interaction.scss
+9c9
+< 		@include utility(pe, pointer-events, (none, auto), $infix);
+---
+> 		@include utility(pe, pointer-events, (none: auto, auto: auto), $infix);
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  7 failed | 15 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:29:2 > interaction utilities > resolves each selection and pointer value the release writes
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:82:2 > interaction utilities > lets the pointer reach the element beneath a box that takes no pointer events
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:106:2 > interaction utilities > keeps a link that takes no pointer events in the keyboard focus order
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:116:2 > interaction utilities > writes the pointer values beside the padding steps under the one class
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:146:2 > interaction utilities > resolves the same values inside a dark island and under a doubled density factor
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:162:2 > interaction utilities > keeps each value over a later unlayered consumer rule
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:177:2 > interaction utilities > yields to an important override inside the utilities layer and to no unlayered one
+== user-select all written as auto
+site: src/styles/utilities/_interaction.scss
+8c8
+< 		@include utility(user-select, user-select, (all, auto, none), $infix);
+---
+> 		@include utility(user-select, user-select, (all: auto, auto: auto, none: none), $infix);
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  3 failed | 19 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:29:2 > interaction utilities > resolves each selection and pointer value the release writes
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:54:2 > interaction utilities > selects the whole line, places a caret, or selects nothing under one press, by value
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:162:2 > interaction utilities > keeps each value over a later unlayered consumer rule
+== user-select none written as auto
+site: src/styles/utilities/_interaction.scss
+8c8
+< 		@include utility(user-select, user-select, (all, auto, none), $infix);
+---
+> 		@include utility(user-select, user-select, (all: all, auto: auto, none: auto), $infix);
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  4 failed | 18 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:29:2 > interaction utilities > resolves each selection and pointer value the release writes
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:54:2 > interaction utilities > selects the whole line, places a caret, or selects nothing under one press, by value
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:146:2 > interaction utilities > resolves the same values inside a dark island and under a doubled density factor
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:177:2 > interaction utilities > yields to an important override inside the utilities layer and to no unlayered one
+== the spacing partial left unlayered
+site: src/styles/utilities/_spacing.scss
+4c4
+< @layer utilities {
+---
+> @layer utilities {} @media all {
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  1 failed | 21 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:223:2 > spacing utilities > yields to an important override inside the utilities layer and to no unlayered one
+== the interaction partial left unlayered
+site: src/styles/utilities/_interaction.scss
+3c3
+< @layer utilities {
+---
+> @layer utilities {} @media all {
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  1 failed | 21 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:177:2 > interaction utilities > yields to an important override inside the utilities layer and to no unlayered one
+== user-select auto written as none
+site: src/styles/utilities/_interaction.scss
+8c8
+< 		@include utility(user-select, user-select, (all, auto, none), $infix);
+---
+> 		@include utility(user-select, user-select, (all: all, auto: none, none: none), $infix);
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  2 failed | 20 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:29:2 > interaction utilities > resolves each selection and pointer value the release writes
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:54:2 > interaction utilities > selects the whole line, places a caret, or selects nothing under one press, by value
+== the built .m-3 and .pe-none rules written normal
+site: dist/src/styles/index.css
+1c1
+< @layer theme{:root{--vn-factor-density:1;--vn-factor-radius:1;--vn-factor-elevation:1;--vn-factor-motion:1;--vn-palette-blue:#0d6efd;--vn-palette-indigo:#6610f2;--vn-palette-purple:#6f42c1;--vn-palette-pink:#d63384;--vn-palette-red:#dc3545;--vn-palette-orange:#fd7e14;--vn-palette-yellow:#ffc107;--
+---
+> @layer theme{:root{--vn-factor-density:1;--vn-factor-radius:1;--vn-factor-elevation:1;--vn-factor-motion:1;--vn-palette-blue:#0d6efd;--vn-palette-indigo:#6610f2;--vn-palette-purple:#6f42c1;--vn-palette-pink:#d63384;--vn-palette-red:#dc3545;--vn-palette-orange:#fd7e14;--vn-palette-yellow:#ffc107;--
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  4 failed | 18 passed (22)
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:162:2 > interaction utilities > keeps each value over a later unlayered consumer rule
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/interaction.test.ts:177:2 > interaction utilities > yields to an important override inside the utilities layer and to no unlayered one
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:207:2 > spacing utilities > keeps every side over a later unlayered consumer rule
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/spacing.test.ts:223:2 > spacing utilities > yields to an important override inside the utilities layer and to no unlayered one
+== setup table: step 3 names the --vn-space-6 token
+site: tests/setupStyles.ts
+2170c2170
+< 	Object.freeze({ step: 3, value: '1rem', pixels: 16, token: TOKEN_NAMES.space[8] }),
+---
+> 	Object.freeze({ step: 3, value: '1rem', pixels: 16, token: TOKEN_NAMES.space[6] }),
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+test exit 1
+      Tests  1 failed | 121 passed (122)
+   FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the spacing steps, properties, and sides and the interaction values to the inventory
+== setup table: the end suffix names the left side
+site: tests/setupStyles.ts
+2202c2202
+< 	Object.freeze({ suffix: 'e', sides: Object.freeze(['right']) }),
+---
+> 	Object.freeze({ suffix: 'e', sides: Object.freeze(['left']) }),
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+test exit 1
+      Tests  1 failed | 121 passed (122)
+   FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the spacing steps, properties, and sides and the interaction values to the inventory
+restored build exit 0
+      Tests  22 passed (22)

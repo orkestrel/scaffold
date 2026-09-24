@@ -1,0 +1,5 @@
+pe-none | not shared | instrument lacks
+pe-auto | not shared | instrument lacks
+user-select-all | not shared | instrument lacks
+user-select-auto | not shared | instrument lacks
+user-select-none | not shared | instrument lacks

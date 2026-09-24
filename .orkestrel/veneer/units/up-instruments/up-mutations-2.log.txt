@@ -1,0 +1,376 @@
+{
+ "mutation": "tertiary-emitted",
+ "site": "src/styles/utilities/_background.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:59:2 > background utilities > writes the aliased roles alone, so no class names the role Veneer adds"
+ ]
+}
+{
+ "mutation": "literal-role-fill",
+ "site": "src/styles/utilities/_background.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  2 failed | 20 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:124:2 > background utilities > paints the subtle and body tiers from the aliases each mode re-declares, inside a dark island",
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:19:2 > background utilities > fills each role from its channel alias, so a retuned alias moves its fill and no other"
+ ]
+}
+{
+ "mutation": "bg-opacity-before-fill",
+ "site": "src/styles/utilities/_background.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:76:2 > background utilities > sets the fill alpha from each opacity step, and a step alone paints nothing"
+ ]
+}
+{
+ "mutation": "local-important",
+ "site": "src/styles/_mixins.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  2 failed (2)",
+  "Tests  4 failed | 18 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:241:2 > background utilities > keeps each fill over a later unlayered consumer rule, whose opacity local still reaches it",
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:76:2 > background utilities > sets the fill alpha from each opacity step, and a step alone paints nothing",
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:134:2 > border utilities > sets the border alpha from each opacity step, and a step alone leaves the default border",
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:378:2 > border utilities > keeps each border and radius over a later unlayered consumer rule, whose opacity local still reaches it"
+ ]
+}
+{
+ "mutation": "subtle-light-literal",
+ "site": "src/styles/utilities/_background.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:124:2 > background utilities > paints the subtle and body tiers from the aliases each mode re-declares, inside a dark island"
+ ]
+}
+{
+ "mutation": "border-subtle-light-literal",
+ "site": "src/styles/utilities/_border.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:180:2 > border utilities > colors the default and subtle borders from the aliases each mode re-declares, inside a dark island"
+ ]
+}
+{
+ "mutation": "gradient-literal",
+ "site": "src/styles/utilities/_background.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:171:2 > background utilities > lays the gradient over a fill from its alias, and leaves the fill beneath it"
+ ]
+}
+{
+ "mutation": "opacity-unguarded",
+ "site": "src/styles/utilities/_background.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:205:2 > background utilities > writes every entry once at the empty infix, so no background class answers to a boundary"
+ ]
+}
+{
+ "mutation": "fill-responsive",
+ "site": "src/styles/utilities/_background.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:205:2 > background utilities > writes every entry once at the empty infix, so no background class answers to a boundary"
+ ]
+}
+{
+ "mutation": "sides-before-border",
+ "site": "src/styles/utilities/_border.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:50:2 > border utilities > draws each side entry on its own physical side, and removes each side from a whole border"
+ ]
+}
+{
+ "mutation": "border-width-literal",
+ "site": "src/styles/utilities/_border.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:23:2 > border utilities > draws the default border from the border aliases, so a retuned width token moves it"
+ ]
+}
+{
+ "mutation": "radius-literal",
+ "site": "src/styles/utilities/_border.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:232:2 > border utilities > rounds every corner at each radius step from the radius aliases, so the radius factor scales them"
+ ]
+}
+{
+ "mutation": "rounded-sides-before-rounded",
+ "site": "src/styles/utilities/_border.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:274:2 > border utilities > rounds only the corners of each side entry, and each side entry refines a whole radius"
+ ]
+}
+{
+ "mutation": "border-literal-role",
+ "site": "src/styles/utilities/_border.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:86:2 > border utilities > colors each border from its channel alias and the opacity local, and writes no added role"
+ ]
+}
+{
+ "mutation": "border-opacity-before-color",
+ "site": "src/styles/utilities/_border.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:134:2 > border utilities > sets the border alpha from each opacity step, and a step alone leaves the default border"
+ ]
+}
+{
+ "mutation": "properties-normal",
+ "site": "src/styles/_mixins.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  2 failed (2)",
+  "Tests  4 failed | 18 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:241:2 > background utilities > keeps each fill over a later unlayered consumer rule, whose opacity local still reaches it",
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:254:2 > background utilities > yields to an important override inside the utilities layer and to no unlayered one",
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:378:2 > border utilities > keeps each border and radius over a later unlayered consumer rule, whose opacity local still reaches it",
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/border.test.ts:393:2 > border utilities > yields to an important override inside the utilities layer and to no unlayered one"
+ ]
+}
+{
+ "mutation": "partial-unlayered",
+ "site": "src/styles/utilities/_background.scss",
+ "command": "npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/background.test.ts tests/src/styles/utilities/border.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 1 passed (2)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |[object Object] (chromium)| tests/src/styles/utilities/background.test.ts:254:2 > background utilities > yields to an important override inside the utilities layer and to no unlayered one"
+ ]
+}
+{
+ "mutation": "fill-table-wrong-alias",
+ "site": "tests/setupStyles.ts",
+ "command": "npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t \"binds the paint\"",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed (1)",
+  "Tests  1 failed | 121 skipped (122)"
+ ],
+ "failing": [
+  "FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the paint fills, tiers, opacity steps, border sides and widths, and radius steps to the inventory"
+ ]
+}
+{
+ "mutation": "radius-side-corners-reordered",
+ "site": "tests/setupStyles.ts",
+ "command": "npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t \"binds the paint\"",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed (1)",
+  "Tests  1 failed | 121 skipped (122)"
+ ],
+ "failing": [
+  "FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the paint fills, tiers, opacity steps, border sides and widths, and radius steps to the inventory"
+ ]
+}
+{
+ "mutation": "opacity-table-step-dropped",
+ "site": "tests/setupStyles.ts",
+ "command": "npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t \"binds the paint\"",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed (1)",
+  "Tests  1 failed | 121 skipped (122)"
+ ],
+ "failing": [
+  "FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the paint fills, tiers, opacity steps, border sides and widths, and radius steps to the inventory"
+ ]
+}
+{
+ "mutation": "caption-other-string",
+ "site": "app/browser/helpers.ts",
+ "command": "npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/helpers.test.ts tests/app/browser/sections/BackgroundSection.test.ts tests/app/browser/sections/BorderSection.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  3 failed (3)",
+  "Tests  4 failed | 7 passed (11)"
+ ],
+ "failing": [
+  "FAIL  |app:browser (chromium)| tests/app/browser/helpers.test.ts:48:2 > renderSwatches > names in each caption the classes its own box carries beside the ratio classes",
+  "FAIL  |app:browser (chromium)| tests/app/browser/helpers.test.ts:7:2 > renderSwatches > renders one captioned ratio figure per class string inside the swatch grid, in order",
+  "FAIL  |app:browser (chromium)| tests/app/browser/sections/BackgroundSection.test.ts:32:2 > BackgroundSection > renders every declared specimen as captioned swatches through the shared section contract",
+  "FAIL  |app:browser (chromium)| tests/app/browser/sections/BorderSection.test.ts:31:2 > BorderSection > renders every declared specimen as captioned swatches through the shared section contract"
+ ]
+}
+{
+ "mutation": "opacity-specimen-step-dropped",
+ "site": "app/browser/constants.ts",
+ "command": "npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/helpers.test.ts tests/app/browser/sections/BackgroundSection.test.ts tests/app/browser/sections/BorderSection.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 2 passed (3)",
+  "Tests  2 failed | 9 passed (11)"
+ ],
+ "failing": [
+  "FAIL  |app:browser (chromium)| tests/app/browser/sections/BackgroundSection.test.ts:32:2 > BackgroundSection > renders every declared specimen as captioned swatches through the shared section contract",
+  "FAIL  |app:browser (chromium)| tests/app/browser/sections/BackgroundSection.test.ts:92:2 > BackgroundSection > paints every swatch box, each opacity step at its alpha and each gradient over its fill"
+ ]
+}
+{
+ "mutation": "bg-white-unbordered",
+ "site": "app/browser/constants.ts",
+ "command": "npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/helpers.test.ts tests/app/browser/sections/BackgroundSection.test.ts tests/app/browser/sections/BorderSection.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 2 passed (3)",
+  "Tests  1 failed | 10 passed (11)"
+ ],
+ "failing": [
+  "FAIL  |app:browser (chromium)| tests/app/browser/sections/BackgroundSection.test.ts:140:2 > BackgroundSection > draws every swatch box against the canvas in either mode, with a border where its fill matches the canvas"
+ ]
+}
+{
+ "mutation": "bg-black-unbordered",
+ "site": "app/browser/constants.ts",
+ "command": "npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/helpers.test.ts tests/app/browser/sections/BackgroundSection.test.ts tests/app/browser/sections/BorderSection.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 2 passed (3)",
+  "Tests  1 failed | 10 passed (11)"
+ ],
+ "failing": [
+  "FAIL  |app:browser (chromium)| tests/app/browser/sections/BackgroundSection.test.ts:140:2 > BackgroundSection > draws every swatch box against the canvas in either mode, with a border where its fill matches the canvas"
+ ]
+}
+{
+ "mutation": "border-white-unfilled",
+ "site": "app/browser/constants.ts",
+ "command": "npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/helpers.test.ts tests/app/browser/sections/BackgroundSection.test.ts tests/app/browser/sections/BorderSection.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 2 passed (3)",
+  "Tests  1 failed | 10 passed (11)"
+ ],
+ "failing": [
+  "FAIL  |app:browser (chromium)| tests/app/browser/sections/BorderSection.test.ts:167:2 > BorderSection > draws every color swatch border against its own fill in either mode, with a fill where the border matches the canvas"
+ ]
+}
+{
+ "mutation": "border-black-unfilled",
+ "site": "app/browser/constants.ts",
+ "command": "npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/helpers.test.ts tests/app/browser/sections/BackgroundSection.test.ts tests/app/browser/sections/BorderSection.test.ts",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 2 passed (3)",
+  "Tests  1 failed | 10 passed (11)"
+ ],
+ "failing": [
+  "FAIL  |app:browser (chromium)| tests/app/browser/sections/BorderSection.test.ts:167:2 > BorderSection > draws every color swatch border against its own fill in either mode, with a fill where the border matches the canvas"
+ ]
+}
+{
+ "mutation": "rounded-circle-ledger",
+ "site": "src/styles/utilities/_border.scss",
+ "command": "npm run build:src && npm run test:conformance",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed (1)",
+  "Tests  1 failed | 21 passed (22)"
+ ],
+ "failing": [
+  "FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger"
+ ]
+}
+{
+ "mutation": "vendor-layer-ahead",
+ "site": "tests/setup.css",
+ "command": "npm run build:src:styles && npm run test:service",
+ "exit": 1,
+ "summary": [
+  "Test Files  1 failed | 2 passed (3)",
+  "Tests  1 failed | 17 passed (18)"
+ ],
+ "failing": [
+  "FAIL  |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > declares the one order line in every profile, and leaves the document order unmoved"
+ ]
+}
+{"restored": true, "rebuild_exit": 0}

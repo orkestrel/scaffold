@@ -1,0 +1,1477 @@
+diff --git a/app/browser/helpers.ts b/app/browser/helpers.ts
+new file mode 100644
+index 0000000..8ce7060
+--- /dev/null
++++ b/app/browser/helpers.ts
+@@ -0,0 +1,26 @@
++/**
++ * Renders a captioned grid of swatches, one ratio box per class string.
++ *
++ * @param swatches - The class strings, one per swatch, in render order, such as the `bg-primary border` class string.
++ * @returns The grid markup: a row of three columns that widens to five from the md boundary, each
++ *   column holding a figure whose 4:3 ratio box carries the swatch's classes and whose caption
++ *   names them. An empty list returns the row alone.
++ *
++ * @remarks
++ * The caption is the class string itself, so a swatch's label cannot drift from the classes its box
++ * carries. The markup composes the grid, figure, and ratio classes the cascade ships; it writes no
++ * inline style.
++ *
++ * @example
++ * ```ts
++ * renderSwatches(['bg-success', 'bg-success bg-opacity-50'])
++ * ```
++ */
++export function renderSwatches(swatches: readonly string[]): string {
++	return `<div class="row row-cols-3 row-cols-md-5 g-2">${swatches
++		.map(
++			(classes) =>
++				`<div class="col"><figure class="figure w-100"><div class="ratio ratio-4x3 ${classes}"></div><figcaption class="figure-caption">${classes}</figcaption></figure></div>`,
++		)
++		.join('')}</div>`
++}
+diff --git a/app/browser/sections/BackgroundSection.ts b/app/browser/sections/BackgroundSection.ts
+new file mode 100644
+index 0000000..205162d
+--- /dev/null
++++ b/app/browser/sections/BackgroundSection.ts
+@@ -0,0 +1,22 @@
++import { BACKGROUND_COPY, BACKGROUND_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared role fill, subtle tier, body surface, opacity, and gradient specimens into a
++ * named Background region.
++ *
++ * @example
++ * ```ts
++ * const section = new BackgroundSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class BackgroundSection extends SpecimenSection {
++	/**
++	 * Mounts the Background region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, BACKGROUND_COPY, BACKGROUND_SPECIMENS)
++	}
++}
+diff --git a/app/browser/sections/BorderSection.ts b/app/browser/sections/BorderSection.ts
+new file mode 100644
+index 0000000..477ec3d
+--- /dev/null
++++ b/app/browser/sections/BorderSection.ts
+@@ -0,0 +1,22 @@
++import { BORDER_COPY, BORDER_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared border side, color, width, opacity, and radius specimens into a named Border
++ * region.
++ *
++ * @example
++ * ```ts
++ * const section = new BorderSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class BorderSection extends SpecimenSection {
++	/**
++	 * Mounts the Border region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, BORDER_COPY, BORDER_SPECIMENS)
++	}
++}
+diff --git a/src/styles/utilities/_background.scss b/src/styles/utilities/_background.scss
+new file mode 100644
+index 0000000..8b07943
+--- /dev/null
++++ b/src/styles/utilities/_background.scss
+@@ -0,0 +1,64 @@
++@use 'sass:map';
++@use '../mixins' as *;
++@use '../tokens';
++
++@layer utilities {
++	// Stands in for the release's `$utilities-bg-colors` map: every aliased role reads its channel
++	// alias, then black, white, and the body surface, each under the opacity local; the
++	// `transparent` value takes no channels, and the two body tiers read the secondary and tertiary
++	// surface aliases the theme re-declares per mode. The role walk is the aliased list, so Veneer's own `tertiary` role,
++	// which carries no Bootstrap alias, writes no class.
++	$fills: ();
++	@each $role in tokens.$aliased {
++		$fills: map.set($fills, $role, rgba(var(--bs-#{$role}-rgb), var(--bs-bg-opacity)));
++	}
++	$fills: map.merge(
++		$fills,
++		(
++			'black': rgba(var(--bs-black-rgb), var(--bs-bg-opacity)),
++			'white': rgba(var(--bs-white-rgb), var(--bs-bg-opacity)),
++			'body': rgba(var(--bs-body-bg-rgb), var(--bs-bg-opacity)),
++			'transparent': transparent,
++			'body-secondary': rgba(var(--bs-secondary-bg-rgb), var(--bs-bg-opacity)),
++			'body-tertiary': rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)),
++		)
++	);
++	// Stands in for the release's `$utilities-bg-subtle` map, one subtle tier per aliased role.
++	$subtle: ();
++	@each $role in tokens.$aliased {
++		$subtle: map.set($subtle, '#{$role}-subtle', var(--bs-#{$role}-bg-subtle));
++	}
++	$opacities: (
++		10: 0.1,
++		25: 0.25,
++		50: 0.5,
++		75: 0.75,
++		100: 1,
++	);
++	// No background entry is responsive, so each writes at the empty infix alone. The opacity entry
++	// writes a custom property, which the `utility-variable` mixin writes at no infix, so the walk
++	// writes it at the empty infix as the `utility` mixin gates its own entries.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(
++			bg,
++			background-color,
++			$fills,
++			$infix,
++			$locals: (
++				bg-opacity: 1,
++			)
++		);
++		@if $infix == '' {
++			@include utility-variable(bg-opacity, bg-opacity, $opacities);
++		}
++		@include utility(bg, background-color, $subtle, $infix);
++		@include utility(
++			bg,
++			background-image,
++			(
++				gradient: var(--bs-gradient),
++			),
++			$infix
++		);
++	}
++}
+diff --git a/src/styles/utilities/_border.scss b/src/styles/utilities/_border.scss
+new file mode 100644
+index 0000000..1cafe78
+--- /dev/null
++++ b/src/styles/utilities/_border.scss
+@@ -0,0 +1,110 @@
++@use 'sass:map';
++@use '../mixins' as *;
++@use '../tokens';
++
++@layer utilities {
++	// Stands in for the release's border entries' shared map: the default border, then none.
++	$edges: (
++		null: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color),
++		0: 0,
++	);
++	// Stands in for the release's `$utilities-border-colors` map: every aliased role reads its
++	// channel alias under the opacity local, then black and white. The role walk is the aliased
++	// list, so Veneer's own `tertiary` role, which carries no Bootstrap alias, writes no class.
++	$colors: ();
++	@each $role in tokens.$aliased {
++		$colors: map.set($colors, $role, rgba(var(--bs-#{$role}-rgb), var(--bs-border-opacity)));
++	}
++	$colors: map.merge(
++		$colors,
++		(
++			'black': rgba(var(--bs-black-rgb), var(--bs-border-opacity)),
++			'white': rgba(var(--bs-white-rgb), var(--bs-border-opacity)),
++		)
++	);
++	// Stands in for the release's `$utilities-border-subtle` map, one subtle tier per aliased role.
++	$subtle: ();
++	@each $role in tokens.$aliased {
++		$subtle: map.set($subtle, '#{$role}-subtle', var(--bs-#{$role}-border-subtle));
++	}
++	// Stands in for the release's `$border-widths` map. The widths stay literal, because no
++	// published Veneer token carries them.
++	$widths: (
++		1: 1px,
++		2: 2px,
++		3: 3px,
++		4: 4px,
++		5: 5px,
++	);
++	$opacities: (
++		10: 0.1,
++		25: 0.25,
++		50: 0.5,
++		75: 0.75,
++		100: 1,
++	);
++	// Stands in for the release's radius map, which the five rounded entries share.
++	$radii: (
++		null: var(--bs-border-radius),
++		0: 0,
++		1: var(--bs-border-radius-sm),
++		2: var(--bs-border-radius),
++		3: var(--bs-border-radius-lg),
++		4: var(--bs-border-radius-xl),
++		5: var(--bs-border-radius-xxl),
++		circle: 50%,
++		pill: var(--bs-border-radius-pill),
++	);
++	// No border or radius entry is responsive, so each writes at the empty infix alone, in the
++	// release's map order: the side entries follow the `border` shorthand and so beat it at one
++	// specificity. The opacity entry writes a custom property, which the `utility-variable` mixin
++	// writes at no infix, so the walk writes it at the empty infix as the `utility` mixin gates its
++	// own entries. The release writes the rounded entries later in its map; no utility between them
++	// sets a radius, so writing them here moves no resolution.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(border, border, $edges, $infix);
++		@include utility(border-top, border-top, $edges, $infix);
++		@include utility(border-end, border-right, $edges, $infix);
++		@include utility(border-bottom, border-bottom, $edges, $infix);
++		@include utility(border-start, border-left, $edges, $infix);
++		@include utility(
++			border,
++			border-color,
++			$colors,
++			$infix,
++			$locals: (
++				border-opacity: 1,
++			)
++		);
++		@include utility(border, border-color, $subtle, $infix);
++		@include utility(border, border-width, $widths, $infix);
++		@if $infix == '' {
++			@include utility-variable(border-opacity, border-opacity, $opacities);
++		}
++		@include utility(rounded, border-radius, $radii, $infix);
++		@include utility(
++			rounded-top,
++			(border-top-left-radius, border-top-right-radius),
++			$radii,
++			$infix
++		);
++		@include utility(
++			rounded-end,
++			(border-top-right-radius, border-bottom-right-radius),
++			$radii,
++			$infix
++		);
++		@include utility(
++			rounded-bottom,
++			(border-bottom-right-radius, border-bottom-left-radius),
++			$radii,
++			$infix
++		);
++		@include utility(
++			rounded-start,
++			(border-bottom-left-radius, border-top-left-radius),
++			$radii,
++			$infix
++		);
++	}
++}
+diff --git a/tests/app/browser/helpers.test.ts b/tests/app/browser/helpers.test.ts
+new file mode 100644
+index 0000000..81bdf6f
+--- /dev/null
++++ b/tests/app/browser/helpers.test.ts
+@@ -0,0 +1,67 @@
++import { renderSwatches } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('renderSwatches', () => {
++	it('renders one captioned ratio figure per class string inside the swatch grid, in order', () => {
++		const swatches = [
++			'bg-primary border',
++			'bg-success bg-opacity-50',
++			'border border-3 border-white bg-dark',
++		]
++		const container = build('div')
++		container.innerHTML = renderSwatches(swatches)
++		const grid = requireValue(container.firstElementChild, 'No grid')
++		expect(container.children).toHaveLength(1)
++		expect([...grid.classList]).toEqual(['row', 'row-cols-3', 'row-cols-md-5', 'g-2'])
++		const columns = [...grid.children]
++		expect(columns.map((column) => column.className)).toEqual(swatches.map(() => 'col'))
++		expect(
++			columns.map((column) => {
++				const figure = requireValue(column.firstElementChild, 'No figure')
++				const [box, caption] = [...figure.children]
++				return [
++					figure.tagName,
++					figure.className,
++					box?.className,
++					box?.childElementCount,
++					caption?.tagName,
++					caption?.className,
++					caption?.textContent,
++				]
++			}),
++		).toEqual(
++			swatches.map((classes) => [
++				'FIGURE',
++				'figure w-100',
++				`ratio ratio-4x3 ${classes}`,
++				0,
++				'FIGCAPTION',
++				'figure-caption',
++				classes,
++			]),
++		)
++		expect(container.querySelector('[style]')).toBeNull()
++	})
++
++	it('names in each caption the classes its own box carries beside the ratio classes', () => {
++		const container = build('div')
++		container.innerHTML = renderSwatches(['rounded-top-4 bg-primary', 'border border-0'])
++		expect(
++			[...container.querySelectorAll('figure')].map((figure) => [
++				[...(figure.querySelector('.ratio')?.classList ?? [])]
++					.filter((name) => !name.startsWith('ratio'))
++					.join(' '),
++				figure.querySelector('figcaption')?.textContent,
++			]),
++		).toEqual([
++			['rounded-top-4 bg-primary', 'rounded-top-4 bg-primary'],
++			['border border-0', 'border border-0'],
++		])
++	})
++
++	it('renders the grid alone for an empty list', () => {
++		expect(renderSwatches([])).toBe('<div class="row row-cols-3 row-cols-md-5 g-2"></div>')
++	})
++})
+diff --git a/tests/app/browser/sections/BackgroundSection.test.ts b/tests/app/browser/sections/BackgroundSection.test.ts
+new file mode 100644
+index 0000000..18508b3
+--- /dev/null
++++ b/tests/app/browser/sections/BackgroundSection.test.ts
+@@ -0,0 +1,199 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	BACKGROUND_COPY,
++	BACKGROUND_SPECIMENS,
++	BackgroundSection,
++	SpecimenSection,
++} from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import {
++	blendColor,
++	build,
++	measureContrast,
++	mount,
++	parseColor,
++	readStyle,
++} from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import {
++	BACKGROUND_FILL_CASES,
++	PAINT_OPACITY_CASES,
++	SUBTLE_TIER_CASES,
++} from '../../../setupStyles.js'
++
++// The paint case reads the swatches as the published cascade and the shell lay them out, so both
++// stylesheets have to be in the document before a box is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('BackgroundSection', () => {
++	it('renders every declared specimen as captioned swatches through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new BackgroundSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Background region')
++			expect(region.getAttribute('aria-label')).toBe('Background')
++			expect(region.querySelector('p')?.textContent).toBe(BACKGROUND_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Background roles',
++				'Subtle backgrounds',
++				'Body backgrounds',
++				'Background opacity',
++				'Background gradient',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				BACKGROUND_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Each swatch's caption names the classes its box carries beside the ratio classes, so a
++			// caption that drifts from its swatch reddens here.
++			const swatches = [...region.querySelectorAll('figure.figure > .ratio.ratio-4x3')]
++			expect(swatches).not.toEqual([])
++			expect(
++				swatches.filter(
++					(swatch) =>
++						swatch.nextElementSibling?.textContent !==
++						[...swatch.classList].filter((name) => !name.startsWith('ratio')).join(' '),
++				),
++			).toEqual([])
++			// Every selector names a composition the specimens render, so the list of misses is empty.
++			expect(
++				[
++					...BACKGROUND_FILL_CASES.map(({ key }) =>
++						key.startsWith('body')
++							? `[data-specimen="Body backgrounds"] .ratio.bg-${key}.border`
++							: `[data-specimen="Background roles"] .ratio.bg-${key}`,
++					),
++					'[data-specimen="Body backgrounds"] .ratio.bg-transparent.border',
++					...SUBTLE_TIER_CASES.map(
++						({ role }) => `[data-specimen="Subtle backgrounds"] .ratio.bg-${role}-subtle`,
++					),
++					...PAINT_OPACITY_CASES.map(
++						({ step }) =>
++							`[data-specimen="Background opacity"] .ratio.bg-success.bg-opacity-${step}`,
++					),
++					'[data-specimen="Background gradient"] .ratio.bg-primary.bg-gradient',
++				].filter((selector) => region.querySelector(selector) === null),
++			).toEqual([])
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(Object.isFrozen(BACKGROUND_COPY)).toBe(true)
++			expect(Object.isFrozen(BACKGROUND_SPECIMENS)).toBe(true)
++			expect(BACKGROUND_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('paints every swatch box, each opacity step at its alpha and each gradient over its fill', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new BackgroundSection(host)
++		try {
++			const swatches = [...host.querySelectorAll('.ratio')]
++			expect(
++				swatches.filter((swatch) => {
++					const box = swatch.getBoundingClientRect()
++					return box.width === 0 || box.height === 0
++				}),
++			).toEqual([])
++			// Each opacity swatch is read against the step its own class names, so the reading holds
++			// whatever order the specimen renders the steps in.
++			const steps = [...host.querySelectorAll('[data-specimen="Background opacity"] .ratio')]
++			expect(
++				steps.map((swatch) => [
++					/\bbg-opacity-(\d+)\b/u.exec(swatch.className)?.[1],
++					parseColor(readStyle(swatch, 'background-color'))?.[3],
++				]),
++			).toEqual(
++				steps.map((swatch) => {
++					const step = /\bbg-opacity-(\d+)\b/u.exec(swatch.className)?.[1]
++					return [step, PAINT_OPACITY_CASES.find((entry) => entry.step === step)?.alpha]
++				}),
++			)
++			expect(steps).toHaveLength(PAINT_OPACITY_CASES.length)
++			const gradients = [...host.querySelectorAll('[data-specimen="Background gradient"] .ratio')]
++			expect(gradients).not.toEqual([])
++			expect(
++				gradients.filter(
++					(swatch) =>
++						!readStyle(swatch, 'background-image').startsWith('linear-gradient(') ||
++						parseColor(readStyle(swatch, 'background-color'))?.[3] !== 1,
++				),
++			).toEqual([])
++			// The body surfaces and the transparent fill match or show the page, so each draws the
++			// whole border that shows its box.
++			const surfaces = [...host.querySelectorAll('[data-specimen="Body backgrounds"] .ratio')]
++			expect(surfaces).not.toEqual([])
++			expect(surfaces.filter((swatch) => readStyle(swatch, 'border-top-width') !== '1px')).toEqual(
++				[],
++			)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('draws every swatch box against the canvas in either mode, with a border where its fill matches the canvas', () => {
++		// A swatch shows its box where its fill, or the border it carries, reads at least 1.2:1 against
++		// the canvas; below that the fill matches the page, and the swatch carries a whole border.
++		const unseen: string[] = []
++		for (const mode of ['light', 'dark']) {
++			const host = mount(build('div'))
++			host.setAttribute('data-bs-theme', mode)
++			const surface = build('div')
++			surface.setAttribute('style', 'background-color: rgb(var(--bs-body-bg-rgb))')
++			host.append(surface)
++			const section: SectionInterface = new BackgroundSection(host)
++			try {
++				const canvas = requireValue(
++					parseColor(readStyle(surface, 'background-color')),
++					'No canvas color',
++				)
++				for (const swatch of host.querySelectorAll('.ratio')) {
++					const fill = blendColor(
++						requireValue(parseColor(readStyle(swatch, 'background-color')), 'No fill'),
++						canvas,
++					)
++					const edge =
++						readStyle(swatch, 'border-top-width') === '0px'
++							? 0
++							: measureContrast(
++									blendColor(
++										requireValue(parseColor(readStyle(swatch, 'border-top-color')), 'No edge'),
++										canvas,
++									),
++									canvas,
++								)
++					if (Math.max(measureContrast(fill, canvas), edge) < 1.2)
++						unseen.push(`${mode} ${swatch.className}`)
++				}
++			} finally {
++				section.destroy()
++				host.remove()
++			}
++		}
++		expect(unseen).toEqual([])
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new BackgroundSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Background region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/app/browser/sections/BorderSection.test.ts b/tests/app/browser/sections/BorderSection.test.ts
+new file mode 100644
+index 0000000..362ed49
+--- /dev/null
++++ b/tests/app/browser/sections/BorderSection.test.ts
+@@ -0,0 +1,233 @@
++import type { SectionInterface } from '@app/browser'
++import { BORDER_COPY, BORDER_SPECIMENS, BorderSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import {
++	blendColor,
++	build,
++	measureContrast,
++	mount,
++	parseColor,
++	readStyle,
++} from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import {
++	BORDER_COLOR_CASES,
++	BORDER_SIDE_CASES,
++	BORDER_WIDTH_CASES,
++	PAINT_OPACITY_CASES,
++	RADIUS_SIDE_CASES,
++	RADIUS_STEP_CASES,
++	SUBTLE_TIER_CASES,
++} from '../../../setupStyles.js'
++
++// The paint case reads the swatches as the published cascade and the shell lay them out, so both
++// stylesheets have to be in the document before a box is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('BorderSection', () => {
++	it('renders every declared specimen as captioned swatches through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new BorderSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Border region')
++			expect(region.getAttribute('aria-label')).toBe('Border')
++			expect(region.querySelector('p')?.textContent).toBe(BORDER_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Additive borders',
++				'Subtractive borders',
++				'Border roles',
++				'Subtle borders',
++				'Border widths',
++				'Border opacity',
++				'Rounded corners',
++				'Rounded sizes',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				BORDER_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Each swatch's caption names the classes its box carries beside the ratio classes, so a
++			// caption that drifts from its swatch reddens here.
++			const swatches = [...region.querySelectorAll('figure.figure > .ratio.ratio-4x3')]
++			expect(swatches).not.toEqual([])
++			expect(
++				swatches.filter(
++					(swatch) =>
++						swatch.nextElementSibling?.textContent !==
++						[...swatch.classList].filter((name) => !name.startsWith('ratio')).join(' '),
++				),
++			).toEqual([])
++			// Every selector names a composition the specimens render, so the list of misses is empty.
++			expect(
++				[
++					'[data-specimen="Additive borders"] .ratio.border',
++					...BORDER_SIDE_CASES.flatMap(({ name }) => [
++						`[data-specimen="Additive borders"] .ratio.border-${name}`,
++						`[data-specimen="Subtractive borders"] .ratio.border.border-${name}-0`,
++					]),
++					'[data-specimen="Subtractive borders"] .ratio.border.border-0',
++					...BORDER_COLOR_CASES.map(
++						({ key }) => `[data-specimen="Border roles"] .ratio.border.border-${key}`,
++					),
++					...SUBTLE_TIER_CASES.map(
++						({ role }) => `[data-specimen="Subtle borders"] .ratio.border.border-${role}-subtle`,
++					),
++					...BORDER_WIDTH_CASES.map(
++						({ step }) => `[data-specimen="Border widths"] .ratio.border.border-${step}`,
++					),
++					...PAINT_OPACITY_CASES.map(
++						({ step }) =>
++							`[data-specimen="Border opacity"] .ratio.border.border-success.border-opacity-${step}`,
++					),
++					'[data-specimen="Rounded corners"] .ratio.rounded',
++					...RADIUS_SIDE_CASES.map(
++						({ name }) => `[data-specimen="Rounded corners"] .ratio.rounded-${name}-4`,
++					),
++					...RADIUS_STEP_CASES.map(
++						({ step }) => `[data-specimen="Rounded sizes"] .ratio.rounded-${step}`,
++					),
++				].filter((selector) => region.querySelector(selector) === null),
++			).toEqual([])
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(Object.isFrozen(BORDER_COPY)).toBe(true)
++			expect(Object.isFrozen(BORDER_SPECIMENS)).toBe(true)
++			expect(BORDER_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('draws every swatch box, each side, width, and opacity step as its class names it, and each rounded side on its own corners', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new BorderSection(host)
++		try {
++			const swatches = [...host.querySelectorAll('.ratio')]
++			expect(
++				swatches.filter((swatch) => {
++					const box = swatch.getBoundingClientRect()
++					return box.width === 0 || box.height === 0
++				}),
++			).toEqual([])
++			const sides = BORDER_SIDE_CASES.map(({ side }) => side)
++			// Each additive side swatch draws its own side alone.
++			expect(
++				BORDER_SIDE_CASES.map(({ name }) => {
++					const swatch = requireValue(
++						host.querySelector(`[data-specimen="Additive borders"] .border-${name}`),
++						`No .border-${name} swatch`,
++					)
++					return sides.map((side) => readStyle(swatch, `border-${side}-width`))
++				}),
++			).toEqual(
++				BORDER_SIDE_CASES.map(({ side }) => sides.map((drawn) => (drawn === side ? '1px' : '0px'))),
++			)
++			// Each width and opacity swatch is read against the step its own class names, so the
++			// reading holds whatever order the specimen renders the steps in.
++			const widths = [...host.querySelectorAll('[data-specimen="Border widths"] .ratio')]
++			expect(widths).toHaveLength(BORDER_WIDTH_CASES.length)
++			expect(widths.map((swatch) => readStyle(swatch, 'border-top-width'))).toEqual(
++				widths.map((swatch) => {
++					const step = /\bborder-(\d)\b/u.exec(swatch.className)?.[1]
++					return `${String(BORDER_WIDTH_CASES.find((entry) => entry.step === step)?.pixels)}px`
++				}),
++			)
++			const steps = [...host.querySelectorAll('[data-specimen="Border opacity"] .ratio')]
++			expect(steps).toHaveLength(PAINT_OPACITY_CASES.length)
++			expect(steps.map((swatch) => parseColor(readStyle(swatch, 'border-top-color'))?.[3])).toEqual(
++				steps.map((swatch) => {
++					const step = /\bborder-opacity-(\d+)\b/u.exec(swatch.className)?.[1]
++					return PAINT_OPACITY_CASES.find((entry) => entry.step === step)?.alpha
++				}),
++			)
++			// Each rounded side swatch rounds its own corners and leaves the other two square.
++			const corners = [...new Set(RADIUS_SIDE_CASES.flatMap((entry) => entry.corners))]
++			expect(
++				RADIUS_SIDE_CASES.map(({ name }) => {
++					const swatch = requireValue(
++						host.querySelector(`[data-specimen="Rounded corners"] .rounded-${name}-4`),
++						`No .rounded-${name}-4 swatch`,
++					)
++					return corners.map((corner) => readStyle(swatch, `border-${corner}-radius`) !== '0px')
++				}),
++			).toEqual(
++				RADIUS_SIDE_CASES.map((entry) => corners.map((corner) => entry.corners.includes(corner))),
++			)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('draws every color swatch border against its own fill in either mode, with a fill where the border matches the canvas', () => {
++		// A color swatch shows its border where the border reads at least 1.2:1 against what it rests
++		// on: the swatch's own fill over the canvas. Below that the border matches the page, and the
++		// swatch carries a fill the border stands against.
++		const colors = [
++			...BORDER_COLOR_CASES.map(({ key }) => `border-${key}`),
++			...SUBTLE_TIER_CASES.map(({ role }) => `border-${role}-subtle`),
++		]
++		const unseen: string[] = []
++		for (const mode of ['light', 'dark']) {
++			const host = mount(build('div'))
++			host.setAttribute('data-bs-theme', mode)
++			const surface = build('div')
++			surface.setAttribute('style', 'background-color: rgb(var(--bs-body-bg-rgb))')
++			host.append(surface)
++			const section: SectionInterface = new BorderSection(host)
++			try {
++				const canvas = requireValue(
++					parseColor(readStyle(surface, 'background-color')),
++					'No canvas color',
++				)
++				const swatches = [
++					...host.querySelectorAll(
++						'[data-specimen="Border roles"] .ratio, [data-specimen="Subtle borders"] .ratio',
++					),
++				]
++				expect(
++					swatches.map((swatch) => colors.filter((name) => swatch.classList.contains(name))),
++				).toEqual(colors.map((name) => [name]))
++
++				for (const swatch of swatches) {
++					const backdrop = blendColor(
++						requireValue(parseColor(readStyle(swatch, 'background-color')), 'No fill'),
++						canvas,
++					)
++					const edge = blendColor(
++						requireValue(parseColor(readStyle(swatch, 'border-top-color')), 'No edge'),
++						backdrop,
++					)
++					if (measureContrast(edge, backdrop) < 1.2) unseen.push(`${mode} ${swatch.className}`)
++				}
++			} finally {
++				section.destroy()
++				host.remove()
++			}
++		}
++		expect(unseen).toEqual([])
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new BorderSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Border region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/src/styles/utilities/background.test.ts b/tests/src/styles/utilities/background.test.ts
+new file mode 100644
+index 0000000..1fb8c5c
+--- /dev/null
++++ b/tests/src/styles/utilities/background.test.ts
+@@ -0,0 +1,263 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { matchesColor, parseColor, readRules, readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene, visitBreakpoint } from '../../../setupBrowser.js'
++import {
++	BACKGROUND_FILL_CASES,
++	BREAKPOINT_INFIXES,
++	GRID_BREAKPOINT_CASES,
++	PAINT_OPACITY_CASES,
++	SUBTLE_TIER_CASES,
++} from '../../../setupStyles.js'
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('background utilities', () => {
++	it('fills each role from its channel alias, so a retuned alias moves its fill and no other', () => {
++		// Each fill sits beside a reference that reads the same alias through an inline declaration,
++		// so the reading is the alias the class resolves rather than a color written here.
++		const host = scene.mount(
++			BACKGROUND_FILL_CASES.map(
++				({ key, alias }) =>
++					`<div class="bg-${key}"></div><div class="reference" style="background-color: rgb(var(${alias}))"></div>`,
++			).join(''),
++		)
++		const fills = BACKGROUND_FILL_CASES.map(({ key }) =>
++			readStyle(
++				requireValue(host.querySelector(`.bg-${key}`), `No .bg-${key}`),
++				'background-color',
++			),
++		)
++		const references = [...host.querySelectorAll('.reference')].map((element) =>
++			readStyle(element, 'background-color'),
++		)
++		expect(fills.filter((fill, index) => !matchesColor(fill, references[index] ?? ''))).toEqual([])
++		// Each alias takes its own channels on the host, so a class reading another role's alias, or a
++		// literal, keeps a color the retune does not name.
++		const channels = BACKGROUND_FILL_CASES.map((_, index) => [index * 10, 100 + index, 200 - index])
++		host.setAttribute(
++			'style',
++			BACKGROUND_FILL_CASES.map(
++				({ alias }, index) => `${alias}: ${(channels[index] ?? []).join(', ')}`,
++			).join('; '),
++		)
++		expect(
++			BACKGROUND_FILL_CASES.map(({ key }) =>
++				parseColor(
++					readStyle(
++						requireValue(host.querySelector(`.bg-${key}`), `No .bg-${key}`),
++						'background-color',
++					),
++				),
++			),
++		).toEqual(channels.map((triplet) => [...triplet, 1]))
++	})
++
++	it('writes the aliased roles alone, so no class names the role Veneer adds', () => {
++		const selectors = new Set(
++			readRules().flatMap((rule) =>
++				rule instanceof CSSStyleRule
++					? rule.selectorText.split(',').map((selector) => selector.trim())
++					: [],
++			),
++		)
++		expect(
++			['.bg-tertiary', '.bg-tertiary-subtle'].filter((selector) => selectors.has(selector)),
++		).toEqual([])
++		expect(
++			BACKGROUND_FILL_CASES.filter(({ key }) => !selectors.has(`.bg-${key}`)).map(({ key }) => key),
++		).toEqual([])
++		expect(selectors.has('.bg-transparent')).toBe(true)
++	})
++
++	it('sets the fill alpha from each opacity step, and a step alone paints nothing', () => {
++		const host = scene.mount(
++			PAINT_OPACITY_CASES.map(
++				({ step }) =>
++					`<div class="bg-success bg-opacity-${step}"></div><div class="lone bg-opacity-${step}"></div>`,
++			).join(''),
++		)
++		expect(
++			PAINT_OPACITY_CASES.map(
++				({ step }) =>
++					parseColor(
++						readStyle(
++							requireValue(
++								host.querySelector(`.bg-success.bg-opacity-${step}`),
++								`No .bg-opacity-${step} fill`,
++							),
++							'background-color',
++						),
++					)?.[3],
++			),
++		).toEqual(PAINT_OPACITY_CASES.map(({ alpha }) => alpha))
++		expect(
++			[...host.querySelectorAll('.lone')].map((element) => readStyle(element, 'background-color')),
++		).toEqual(PAINT_OPACITY_CASES.map(() => 'rgba(0, 0, 0, 0)'))
++	})
++
++	it('resets the opacity local on every fill, so an inherited step reaches no nested fill', () => {
++		// The release writes the local into each fill's own rule, so a fill nested inside an opacity
++		// class starts from the full alpha rather than inheriting the step.
++		const host = scene.mount(
++			'<div class="bg-opacity-25"><div class="bg-primary"></div></div><div class="bg-transparent bg-opacity-50"></div>',
++		)
++		expect(
++			parseColor(
++				readStyle(
++					requireValue(host.querySelector('.bg-primary'), 'No nested fill'),
++					'background-color',
++				),
++			)?.[3],
++		).toBe(1)
++		expect(
++			readStyle(
++				requireValue(host.querySelector('.bg-transparent'), 'No transparent fill'),
++				'background-color',
++			),
++		).toBe('rgba(0, 0, 0, 0)')
++	})
++
++	it('paints the subtle and body tiers from the aliases each mode re-declares, inside a dark island', () => {
++		const markup = [
++			...SUBTLE_TIER_CASES.map(
++				({ role, background }) =>
++					`<div class="bg-${role}-subtle"></div><div class="reference" style="background-color: var(${background})"></div>`,
++			),
++			...BACKGROUND_FILL_CASES.map(
++				({ key, alias }) =>
++					`<div class="bg-${key}"></div><div class="reference" style="background-color: rgb(var(${alias}))"></div>`,
++			),
++		].join('')
++		const host = scene.mount(
++			`<div data-bs-theme="light">${markup}</div><div data-bs-theme="dark">${markup}</div>`,
++		)
++		const [light, dark] = [...host.children].map((island) => {
++			const subjects = [...island.children].filter(
++				(element) => !element.classList.contains('reference'),
++			)
++			const references = [...island.querySelectorAll('.reference')]
++			return subjects.map((subject, index) => ({
++				name: subject.className,
++				fill: readStyle(subject, 'background-color'),
++				reference: readStyle(requireValue(references[index], 'No reference'), 'background-color'),
++			}))
++		})
++		// Each island's tier matches that island's own alias, so a tier written as one mode's value
++		// reads the other mode's alias wrongly in one of the two islands.
++		expect(
++			[...(light ?? []), ...(dark ?? [])].filter(
++				({ fill, reference }) => !matchesColor(fill, reference),
++			),
++		).toEqual([])
++		// The reading is only worth something where the modes differ: every subtle tier and every
++		// body tier retunes with the mode.
++		const moved = (light ?? []).flatMap(({ name, fill }, index) =>
++			matchesColor(fill, dark?.[index]?.fill ?? '') ? [] : [name],
++		)
++		expect(moved).toEqual(
++			expect.arrayContaining([
++				...SUBTLE_TIER_CASES.map(({ role }) => `bg-${role}-subtle`),
++				'bg-body',
++				'bg-body-secondary',
++				'bg-body-tertiary',
++			]),
++		)
++	})
++
++	it('lays the gradient over a fill from its alias, and leaves the fill beneath it', () => {
++		const host = scene.mount(
++			'<div class="bg-primary bg-gradient"></div><div class="reference bg-primary" style="background-image: var(--bs-gradient)"></div>',
++		)
++		const layered = requireValue(host.querySelector('.bg-gradient'), 'No gradient fill')
++		const reference = requireValue(host.querySelector('.reference'), 'No reference')
++		expect(readStyle(layered, 'background-image')).toBe(readStyle(reference, 'background-image'))
++		expect(readStyle(layered, 'background-image')).toMatch(/^linear-gradient\(/u)
++		expect(readStyle(layered, 'background-color')).toBe(readStyle(reference, 'background-color'))
++		host.setAttribute('style', '--bs-gradient: none')
++		expect(readStyle(layered, 'background-image')).toBe('none')
++	})
++
++	it('reads no density factor, so a doubled factor leaves every fill', () => {
++		const host = scene.mount(
++			BACKGROUND_FILL_CASES.map(({ key }) => `<div class="bg-${key} bg-gradient"></div>`).join(''),
++		)
++		const resting = [...host.children].flatMap((element) => [
++			readStyle(element, 'background-color'),
++			readStyle(element, 'background-image'),
++		])
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect(
++				[...host.children].flatMap((element) => [
++					readStyle(element, 'background-color'),
++					readStyle(element, 'background-image'),
++				]),
++			).toEqual(resting)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++
++	it('writes every entry once at the empty infix, so no background class answers to a boundary', async () => {
++		const rules = readRules().flatMap((rule) =>
++			rule instanceof CSSStyleRule &&
++			rule.selectorText.split(',').some((selector) => /^\.bg-/u.test(selector.trim()))
++				? [rule]
++				: [],
++		)
++		// Each class is written once, and outside every media block.
++		const names = rules.flatMap((rule) =>
++			rule.selectorText
++				.split(',')
++				.map((selector) => selector.trim())
++				.filter((selector) => /^\.bg-/u.test(selector)),
++		)
++		expect(names.filter((name, index) => names.indexOf(name) !== index)).toEqual([])
++		expect(rules.filter((rule) => rule.parentRule instanceof CSSMediaRule)).toEqual([])
++		expect(
++			BREAKPOINT_INFIXES.flatMap((infix) =>
++				names.filter((name) => name.startsWith(`.bg-${infix}-`)),
++			),
++		).toEqual([])
++		const host = scene.mount(
++			'<div class="bg-danger bg-opacity-50"></div><div class="bg-warning-subtle"></div>',
++		)
++		const resting = [...host.children].map((element) => readStyle(element, 'background-color'))
++		for (const { readings } of GRID_BREAKPOINT_CASES) {
++			for (const viewport of readings) {
++				expect(
++					await visitBreakpoint(viewport, () =>
++						[...host.children].map((element) => readStyle(element, 'background-color')),
++					),
++				).toEqual(resting)
++			}
++		}
++	})
++
++	it('keeps each fill over a later unlayered consumer rule, whose opacity local still reaches it', () => {
++		const host = scene.mount('<div class="probe bg-primary bg-gradient"></div>')
++		const element = requireValue(host.querySelector('.probe'), 'No probe')
++		const fill = readStyle(element, 'background-color')
++		scene.load('.probe { background-color: rgb(1, 2, 3); background-image: none }')
++		expect(readStyle(element, 'background-color')).toBe(fill)
++		expect(readStyle(element, 'background-image')).not.toBe('none')
++		// The opacity local is written normal, as the release writes a local, so an unlayered rule of
++		// the consumer's own sets it where the important property does not move.
++		scene.load('.probe { --bs-bg-opacity: 0.5 }')
++		expect(parseColor(readStyle(element, 'background-color'))?.[3]).toBe(0.5)
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<div class="bg-primary"></div>')
++		const element = requireValue(host.querySelector('.bg-primary'), 'No fill')
++		const fill = readStyle(element, 'background-color')
++		scene.load('.bg-primary { background-color: rgb(1, 2, 3) !important }')
++		expect(readStyle(element, 'background-color')).toBe(fill)
++		scene.load('@layer utilities { .bg-primary { background-color: rgb(1, 2, 3) !important } }')
++		expect(readStyle(element, 'background-color')).toBe('rgb(1, 2, 3)')
++	})
++})
+diff --git a/tests/src/styles/utilities/border.test.ts b/tests/src/styles/utilities/border.test.ts
+new file mode 100644
+index 0000000..6efb1f3
+--- /dev/null
++++ b/tests/src/styles/utilities/border.test.ts
+@@ -0,0 +1,411 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { matchesColor, parseColor, readRules, readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene, visitBreakpoint } from '../../../setupBrowser.js'
++import {
++	BORDER_COLOR_CASES,
++	BORDER_SIDE_CASES,
++	BORDER_WIDTH_CASES,
++	BREAKPOINT_INFIXES,
++	GRID_BREAKPOINT_CASES,
++	PAINT_OPACITY_CASES,
++	RADIUS_SIDE_CASES,
++	RADIUS_STEP_CASES,
++	SUBTLE_TIER_CASES,
++} from '../../../setupStyles.js'
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('border utilities', () => {
++	it('draws the default border from the border aliases, so a retuned width token moves it', () => {
++		const sides = BORDER_SIDE_CASES.map(({ side }) => side)
++		const host = scene.mount(
++			'<div class="border"></div><div class="reference" style="border: 1px solid var(--bs-border-color)"></div>',
++		)
++		const edge = requireValue(host.querySelector('.border'), 'No border')
++		const reference = requireValue(host.querySelector('.reference'), 'No reference')
++		expect(
++			sides.map((side) => [
++				readStyle(edge, `border-${side}-width`),
++				readStyle(edge, `border-${side}-style`),
++				matchesColor(
++					readStyle(edge, `border-${side}-color`),
++					readStyle(reference, `border-${side}-color`),
++				),
++			]),
++		).toEqual(sides.map(() => ['1px', 'solid', true]))
++		document.documentElement.style.setProperty(TOKEN_NAMES.border.width, '3px')
++		try {
++			expect(sides.map((side) => readStyle(edge, `border-${side}-width`))).toEqual(
++				sides.map(() => '3px'),
++			)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.border.width)
++		}
++	})
++
++	it('draws each side entry on its own physical side, and removes each side from a whole border', () => {
++		const sides = BORDER_SIDE_CASES.map(({ side }) => side)
++		const host = scene.mount(
++			[
++				...BORDER_SIDE_CASES.map(({ name }) => `<div class="border-${name}"></div>`),
++				...BORDER_SIDE_CASES.map(({ name }) => `<div class="border border-${name}-0"></div>`),
++				'<div class="border border-0"></div>',
++			].join(''),
++		)
++		expect(
++			BORDER_SIDE_CASES.map(({ name }) => {
++				const element = requireValue(host.querySelector(`.border-${name}`), `No .border-${name}`)
++				return sides.map((side) => readStyle(element, `border-${side}-width`))
++			}),
++		).toEqual(
++			BORDER_SIDE_CASES.map(({ side }) => sides.map((drawn) => (drawn === side ? '1px' : '0px'))),
++		)
++		// The side entries follow the `border` entry in the release's map, so a side removed from a
++		// whole border stays removed whatever order the classes are written in.
++		expect(
++			BORDER_SIDE_CASES.map(({ name }) => {
++				const element = requireValue(
++					host.querySelector(`.border-${name}-0`),
++					`No .border-${name}-0`,
++				)
++				return sides.map((side) => readStyle(element, `border-${side}-width`))
++			}),
++		).toEqual(
++			BORDER_SIDE_CASES.map(({ side }) => sides.map((drawn) => (drawn === side ? '0px' : '1px'))),
++		)
++		const removed = requireValue(host.querySelector('.border-0'), 'No .border-0')
++		expect(sides.map((side) => readStyle(removed, `border-${side}-width`))).toEqual(
++			sides.map(() => '0px'),
++		)
++	})
++
++	it('colors each border from its channel alias and the opacity local, and writes no added role', () => {
++		const host = scene.mount(
++			BORDER_COLOR_CASES.map(
++				({ key, alias }) =>
++					`<div class="border border-${key}"></div><div class="reference" style="border: 1px solid rgb(var(${alias}))"></div>`,
++			).join(''),
++		)
++		const colors = BORDER_COLOR_CASES.map(({ key }) =>
++			readStyle(
++				requireValue(host.querySelector(`.border-${key}`), `No .border-${key}`),
++				'border-top-color',
++			),
++		)
++		const references = [...host.querySelectorAll('.reference')].map((element) =>
++			readStyle(element, 'border-top-color'),
++		)
++		expect(colors.filter((color, index) => !matchesColor(color, references[index] ?? ''))).toEqual(
++			[],
++		)
++		const channels = BORDER_COLOR_CASES.map((_, index) => [index * 20, 100 + index, 200 - index])
++		host.setAttribute(
++			'style',
++			BORDER_COLOR_CASES.map(
++				({ alias }, index) => `${alias}: ${(channels[index] ?? []).join(', ')}`,
++			).join('; '),
++		)
++		expect(
++			BORDER_COLOR_CASES.map(({ key }) =>
++				parseColor(
++					readStyle(
++						requireValue(host.querySelector(`.border-${key}`), `No .border-${key}`),
++						'border-left-color',
++					),
++				),
++			),
++		).toEqual(channels.map((triplet) => [...triplet, 1]))
++		const selectors = new Set(
++			readRules().flatMap((rule) =>
++				rule instanceof CSSStyleRule
++					? rule.selectorText.split(',').map((selector) => selector.trim())
++					: [],
++			),
++		)
++		expect(
++			['.border-tertiary', '.border-tertiary-subtle'].filter((selector) => selectors.has(selector)),
++		).toEqual([])
++	})
++
++	it('sets the border alpha from each opacity step, and a step alone leaves the default border', () => {
++		const host = scene.mount(
++			[
++				...PAINT_OPACITY_CASES.map(
++					({ step }) => `<div class="border border-success border-opacity-${step}"></div>`,
++				),
++				...PAINT_OPACITY_CASES.map(
++					({ step }) => `<div class="lone border border-opacity-${step}"></div>`,
++				),
++				'<div class="default border"></div>',
++				'<div class="border-opacity-25"><div class="nested border border-primary"></div></div>',
++			].join(''),
++		)
++		expect(
++			PAINT_OPACITY_CASES.map(
++				({ step }) =>
++					parseColor(
++						readStyle(
++							requireValue(
++								host.querySelector(`.border-success.border-opacity-${step}`),
++								`No .border-opacity-${step} border`,
++							),
++							'border-top-color',
++						),
++					)?.[3],
++			),
++		).toEqual(PAINT_OPACITY_CASES.map(({ alpha }) => alpha))
++		const resting = readStyle(
++			requireValue(host.querySelector('.default'), 'No default border'),
++			'border-top-color',
++		)
++		expect(
++			[...host.querySelectorAll('.lone')].map((element) => readStyle(element, 'border-top-color')),
++		).toEqual(PAINT_OPACITY_CASES.map(() => resting))
++		// Each color writes the local into its own rule, so a color nested inside an opacity class
++		// starts from the full alpha.
++		expect(
++			parseColor(
++				readStyle(
++					requireValue(host.querySelector('.nested'), 'No nested border'),
++					'border-top-color',
++				),
++			)?.[3],
++		).toBe(1)
++	})
++
++	it('colors the default and subtle borders from the aliases each mode re-declares, inside a dark island', () => {
++		const markup = [
++			'<div class="border"></div><div class="reference" style="border: 1px solid var(--bs-border-color)"></div>',
++			...SUBTLE_TIER_CASES.map(
++				({ role, border }) =>
++					`<div class="border border-${role}-subtle"></div><div class="reference" style="border: 1px solid var(${border})"></div>`,
++			),
++		].join('')
++		const host = scene.mount(
++			`<div data-bs-theme="light">${markup}</div><div data-bs-theme="dark">${markup}</div>`,
++		)
++		const [light, dark] = [...host.children].map((island) => {
++			const subjects = [...island.children].filter(
++				(element) => !element.classList.contains('reference'),
++			)
++			const references = [...island.querySelectorAll('.reference')]
++			return subjects.map((subject, index) => ({
++				name: subject.className,
++				color: readStyle(subject, 'border-top-color'),
++				reference: readStyle(requireValue(references[index], 'No reference'), 'border-top-color'),
++			}))
++		})
++		expect(
++			[...(light ?? []), ...(dark ?? [])].filter(
++				({ color, reference }) => !matchesColor(color, reference),
++			),
++		).toEqual([])
++		// Every tier and the default border retune with the mode, so the reading covers a change.
++		expect(
++			(light ?? []).flatMap(({ name, color }, index) =>
++				matchesColor(color, dark?.[index]?.color ?? '') ? [name] : [],
++			),
++		).toEqual([])
++	})
++
++	it('widens the border at each width step, over a whole border whatever the class order', () => {
++		const sides = BORDER_SIDE_CASES.map(({ side }) => side)
++		const host = scene.mount(
++			BORDER_WIDTH_CASES.map(({ step }) => `<div class="border-${step} border"></div>`).join(''),
++		)
++		expect(
++			BORDER_WIDTH_CASES.map(({ step }) =>
++				sides.map((side) =>
++					readStyle(
++						requireValue(host.querySelector(`.border-${step}`), `No .border-${step}`),
++						`border-${side}-width`,
++					),
++				),
++			),
++		).toEqual(BORDER_WIDTH_CASES.map(({ pixels }) => sides.map(() => `${String(pixels)}px`)))
++	})
++
++	it('rounds every corner at each radius step from the radius aliases, so the radius factor scales them', () => {
++		const allCorners = [...new Set(RADIUS_SIDE_CASES.flatMap(({ corners }) => corners))]
++		const host = scene.mount(
++			[
++				'<div class="rounded"></div>',
++				...RADIUS_STEP_CASES.map(
++					({ step, value }) =>
++						`<div class="rounded-${step}"></div><div class="reference" style="border-radius: ${value}"></div>`,
++				),
++			].join(''),
++		)
++		expect(
++			RADIUS_STEP_CASES.map(({ step }) => {
++				const element = requireValue(host.querySelector(`.rounded-${step}`), `No .rounded-${step}`)
++				return allCorners.map((corner) => readStyle(element, `border-${corner}-radius`))
++			}),
++		).toEqual(
++			[...host.querySelectorAll('.reference')].map((element) =>
++				allCorners.map((corner) => readStyle(element, `border-${corner}-radius`)),
++			),
++		)
++		const pair = [
++			requireValue(host.querySelector('.rounded'), 'No .rounded'),
++			requireValue(host.querySelector('.rounded-2'), 'No .rounded-2'),
++		]
++		expect(
++			pair.map((element) =>
++				allCorners.map((corner) => readStyle(element, `border-${corner}-radius`)),
++			),
++		).toEqual(pair.map(() => allCorners.map(() => '6px')))
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.radius, '2')
++		try {
++			expect(
++				pair.map((element) =>
++					allCorners.map((corner) => readStyle(element, `border-${corner}-radius`)),
++				),
++			).toEqual(pair.map(() => allCorners.map(() => '12px')))
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.radius)
++		}
++	})
++
++	it('rounds only the corners of each side entry, and each side entry refines a whole radius', () => {
++		const allCorners = [...new Set(RADIUS_SIDE_CASES.flatMap(({ corners }) => corners))]
++		const host = scene.mount(
++			[
++				...RADIUS_SIDE_CASES.map(({ name }) => `<div class="rounded-${name}-3"></div>`),
++				...RADIUS_SIDE_CASES.map(({ name }) => `<div class="rounded-${name}-0 rounded-3"></div>`),
++			].join(''),
++		)
++		expect(
++			RADIUS_SIDE_CASES.map(({ name }) => {
++				const element = requireValue(
++					host.querySelector(`.rounded-${name}-3`),
++					`No .rounded-${name}-3`,
++				)
++				return allCorners.map((corner) => readStyle(element, `border-${corner}-radius`))
++			}),
++		).toEqual(
++			RADIUS_SIDE_CASES.map(({ corners }) =>
++				allCorners.map((corner) => (corners.includes(corner) ? '8px' : '0px')),
++			),
++		)
++		// The side entries follow the `rounded` entry in the release's map, so a side squared off a
++		// whole radius stays square whatever order the classes are written in.
++		expect(
++			RADIUS_SIDE_CASES.map(({ name }) => {
++				const element = requireValue(
++					host.querySelector(`.rounded-${name}-0`),
++					`No .rounded-${name}-0`,
++				)
++				return allCorners.map((corner) => readStyle(element, `border-${corner}-radius`))
++			}),
++		).toEqual(
++			RADIUS_SIDE_CASES.map(({ corners }) =>
++				allCorners.map((corner) => (corners.includes(corner) ? '0px' : '8px')),
++			),
++		)
++	})
++
++	it('reads the dark island and no density factor for any width or radius', () => {
++		const host = scene.mount(
++			'<div data-bs-theme="dark"><div class="border border-4 rounded-4"></div></div>',
++		)
++		const element = requireValue(host.querySelector('.border-4'), 'No border')
++		const resting = [
++			readStyle(element, 'border-top-width'),
++			readStyle(element, 'border-top-left-radius'),
++		]
++		expect(resting).toEqual(['4px', '16px'])
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect([
++				readStyle(element, 'border-top-width'),
++				readStyle(element, 'border-top-left-radius'),
++			]).toEqual(resting)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++
++	it('writes every entry once at the empty infix, so no border or radius class answers to a boundary', async () => {
++		const sides = BORDER_SIDE_CASES.map(({ side }) => side)
++		const allCorners = [...new Set(RADIUS_SIDE_CASES.flatMap(({ corners }) => corners))]
++		const rules = readRules().flatMap((rule) =>
++			rule instanceof CSSStyleRule &&
++			rule.selectorText
++				.split(',')
++				.some((selector) => /^\.(?:border|rounded)(?:-|$)/u.test(selector.trim()))
++				? [rule]
++				: [],
++		)
++		const names = rules.flatMap((rule) =>
++			rule.selectorText
++				.split(',')
++				.map((selector) => selector.trim())
++				.filter((selector) => /^\.(?:border|rounded)(?:-|$)/u.test(selector)),
++		)
++		expect(names).toContain('.border-opacity-25')
++		expect(names.filter((name, index) => names.indexOf(name) !== index)).toEqual([])
++		expect(rules.filter((rule) => rule.parentRule instanceof CSSMediaRule)).toEqual([])
++		expect(
++			BREAKPOINT_INFIXES.flatMap((infix) =>
++				names.filter(
++					(name) => name.startsWith(`.border-${infix}`) || name.startsWith(`.rounded-${infix}`),
++				),
++			),
++		).toEqual([])
++		const host = scene.mount('<div class="border border-top-0 border-3 rounded-top-5"></div>')
++		const element = requireValue(host.firstElementChild, 'No border')
++		const resting = [
++			...sides.map((side) => readStyle(element, `border-${side}-width`)),
++			...allCorners.map((corner) => readStyle(element, `border-${corner}-radius`)),
++		]
++		for (const { readings } of GRID_BREAKPOINT_CASES) {
++			for (const viewport of readings) {
++				expect(
++					await visitBreakpoint(viewport, () => [
++						...sides.map((side) => readStyle(element, `border-${side}-width`)),
++						...allCorners.map((corner) => readStyle(element, `border-${corner}-radius`)),
++					]),
++				).toEqual(resting)
++			}
++		}
++	})
++
++	it('keeps each border and radius over a later unlayered consumer rule, whose opacity local still reaches it', () => {
++		const host = scene.mount('<div class="probe border border-success rounded-3"></div>')
++		const element = requireValue(host.querySelector('.probe'), 'No probe')
++		const color = readStyle(element, 'border-top-color')
++		scene.load('.probe { border: 7px dotted rgb(1, 2, 3); border-radius: 0 }')
++		expect([
++			readStyle(element, 'border-top-width'),
++			readStyle(element, 'border-top-style'),
++			readStyle(element, 'border-top-color'),
++			readStyle(element, 'border-top-left-radius'),
++		]).toEqual(['1px', 'solid', color, '8px'])
++		scene.load('.probe { --bs-border-opacity: 0.5 }')
++		expect(parseColor(readStyle(element, 'border-top-color'))?.[3]).toBe(0.5)
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<div class="border rounded-3"></div>')
++		const element = requireValue(host.querySelector('.border'), 'No border')
++		scene.load(
++			'.border { border-width: 7px !important } .rounded-3 { border-radius: 0 !important }',
++		)
++		expect([
++			readStyle(element, 'border-top-width'),
++			readStyle(element, 'border-top-left-radius'),
++		]).toEqual(['1px', '8px'])
++		scene.load(
++			'@layer utilities { .border { border-width: 7px !important } .rounded-3 { border-radius: 0 !important } }',
++		)
++		expect([
++			readStyle(element, 'border-top-width'),
++			readStyle(element, 'border-top-left-radius'),
++		]).toEqual(['7px', '0px'])
++	})
++})

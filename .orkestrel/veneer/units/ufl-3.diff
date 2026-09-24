@@ -1,0 +1,1298 @@
+diff --git a/tests/app/browser/sections/LinkSection.test.ts b/tests/app/browser/sections/LinkSection.test.ts
+index 4269edd..e63f578 100644
+--- a/tests/app/browser/sections/LinkSection.test.ts
++++ b/tests/app/browser/sections/LinkSection.test.ts
+@@ -1,7 +1,15 @@
+ import { LINK_COPY, LINK_SPECIMENS, LinkSection } from '@app/browser'
+ import { requireValue } from '@orkestrel/test'
+ import { build, mount } from '@orkestrel/test/browser'
+-import { describe, expect, it } from 'vitest'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { computeCornerPoints, HIT_CORNERS } from '../../../setupStyles.js'
++
++// The stretched link case reads the specimen as the published cascade lays it out, so the cascade
++// has to be in the document before a point is hit-tested.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
+ 
+ describe('LinkSection', () => {
+ 	it('renders the declared specimens and the complete link class families', () => {
+@@ -20,6 +28,7 @@ describe('LinkSection', () => {
+ 				'Underline colors',
+ 				'Icon links',
+ 				'Underline opacity',
++				'Stretched link',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				LINK_SPECIMENS.map((specimen) => specimen.markup),
+@@ -58,6 +67,7 @@ describe('LinkSection', () => {
+ 					].flatMap((role) => [`link-${role}`, `link-underline-${role}`]),
+ 					'link-body-emphasis',
+ 					'link-underline',
++					'stretched-link',
+ 					...[10, 25, 50, 75, 100].flatMap((step) => [
+ 						`link-opacity-${String(step)}`,
+ 						`link-opacity-${String(step)}-hover`,
+@@ -81,6 +91,26 @@ describe('LinkSection', () => {
+ 		}
+ 	})
+ 
++	it('answers a pointer at every corner of the stretched link card with the link', () => {
++		const host = mount(build('div'))
++		const section = new LinkSection(host)
++		try {
++			const link = requireValue(
++				host.querySelector('[data-specimen="Stretched link"] .card .stretched-link'),
++				'No stretched link inside a card',
++			)
++			const card = requireValue(link.closest('.card'), 'No card').getBoundingClientRect()
++			// The card is the link's positioned ancestor, so the link's generated box covers the card
++			// and a point on any corner, far from the link's own text, reaches the link.
++			expect(
++				computeCornerPoints(card).map(({ x, y }) => document.elementFromPoint(x, y) === link),
++			).toEqual(HIT_CORNERS.corners.map(() => true))
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
+ 	it('releases its region and leaves neighboring content through repeated destruction', () => {
+ 		const host = mount(build('div'))
+ 		const neighbor = build('p', { text: 'Existing content' })
+diff --git a/app/browser/sections/FloatSection.ts b/app/browser/sections/FloatSection.ts
+new file mode 100644
+index 0000000..d3516a9
+--- /dev/null
++++ b/app/browser/sections/FloatSection.ts
+@@ -0,0 +1,21 @@
++import { FLOAT_COPY, FLOAT_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared float and clearfix specimens into a named Float region.
++ *
++ * @example
++ * ```ts
++ * const section = new FloatSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class FloatSection extends SpecimenSection {
++	/**
++	 * Mounts the Float region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, FLOAT_COPY, FLOAT_SPECIMENS)
++	}
++}
+diff --git a/app/browser/sections/ObjectFitSection.ts b/app/browser/sections/ObjectFitSection.ts
+new file mode 100644
+index 0000000..5788355
+--- /dev/null
++++ b/app/browser/sections/ObjectFitSection.ts
+@@ -0,0 +1,21 @@
++import { OBJECT_FIT_COPY, OBJECT_FIT_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared object-fit specimens into a named Object fit region.
++ *
++ * @example
++ * ```ts
++ * const section = new ObjectFitSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class ObjectFitSection extends SpecimenSection {
++	/**
++	 * Mounts the Object fit region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, OBJECT_FIT_COPY, OBJECT_FIT_SPECIMENS)
++	}
++}
+diff --git a/app/browser/sections/OverflowSection.ts b/app/browser/sections/OverflowSection.ts
+new file mode 100644
+index 0000000..031cf73
+--- /dev/null
++++ b/app/browser/sections/OverflowSection.ts
+@@ -0,0 +1,21 @@
++import { OVERFLOW_COPY, OVERFLOW_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared overflow specimens into a named Overflow region.
++ *
++ * @example
++ * ```ts
++ * const section = new OverflowSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class OverflowSection extends SpecimenSection {
++	/**
++	 * Mounts the Overflow region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, OVERFLOW_COPY, OVERFLOW_SPECIMENS)
++	}
++}
+diff --git a/src/styles/components/_clearfix.scss b/src/styles/components/_clearfix.scss
+new file mode 100644
+index 0000000..1f6169c
+--- /dev/null
++++ b/src/styles/components/_clearfix.scss
+@@ -0,0 +1,10 @@
++@layer components {
++	// The release writes the helper with normal declarations, so it sits in the components layer at
++	// its `_helpers.scss` position. The generated box after the content clears every float before it,
++	// so the host's height reaches the bottom of its floated children.
++	.clearfix::after {
++		display: block;
++		clear: both;
++		content: '';
++	}
++}
+diff --git a/src/styles/components/_stretched-link.scss b/src/styles/components/_stretched-link.scss
+new file mode 100644
+index 0000000..e56d021
+--- /dev/null
++++ b/src/styles/components/_stretched-link.scss
+@@ -0,0 +1,15 @@
++@layer components {
++	// The release writes the helper with normal declarations and the physical edges, and it reads no
++	// published Veneer token: the stacking level is the literal the release carries. The generated box
++	// covers the link's nearest positioned ancestor, so a pointer anywhere on that ancestor lands on
++	// the link.
++	.stretched-link::after {
++		position: absolute;
++		top: 0;
++		right: 0;
++		bottom: 0;
++		left: 0;
++		z-index: 1;
++		content: '';
++	}
++}
+diff --git a/src/styles/utilities/_float.scss b/src/styles/utilities/_float.scss
+new file mode 100644
+index 0000000..7d287a4
+--- /dev/null
++++ b/src/styles/utilities/_float.scss
+@@ -0,0 +1,19 @@
++@use '../mixins' as *;
++
++@layer utilities {
++	// The release's `float` entry is responsive and writes the physical sides, so the `start` key
++	// floats a box left and the `end` key floats it right whatever the writing direction.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(
++			float,
++			float,
++			(
++				start: left,
++				end: right,
++				none: none,
++			),
++			$infix,
++			true
++		);
++	}
++}
+diff --git a/src/styles/utilities/_object-fit.scss b/src/styles/utilities/_object-fit.scss
+new file mode 100644
+index 0000000..e234c3e
+--- /dev/null
++++ b/src/styles/utilities/_object-fit.scss
+@@ -0,0 +1,21 @@
++@use '../mixins' as *;
++
++@layer utilities {
++	// The release names the `scale-down` value by its `scale` key, so the key and the value differ
++	// only there.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(
++			object-fit,
++			object-fit,
++			(
++				contain: contain,
++				cover: cover,
++				fill: fill,
++				scale: scale-down,
++				none: none,
++			),
++			$infix,
++			true
++		);
++	}
++}
+diff --git a/src/styles/utilities/_overflow.scss b/src/styles/utilities/_overflow.scss
+new file mode 100644
+index 0000000..d5d3429
+--- /dev/null
++++ b/src/styles/utilities/_overflow.scss
+@@ -0,0 +1,13 @@
++@use '../mixins' as *;
++
++@layer utilities {
++	// The shorthand entry, then the axis entries, in the release's map order, so an axis class beats
++	// the shorthand on its own axis. The `overflow`, `overflow-x`, and `overflow-y` entries are not
++	// responsive, so the walk writes each at the empty infix alone.
++	$values: auto, hidden, visible, scroll;
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(overflow, overflow, $values, $infix);
++		@include utility(overflow-x, overflow-x, $values, $infix);
++		@include utility(overflow-y, overflow-y, $values, $infix);
++	}
++}
+diff --git a/tests/app/browser/sections/FloatSection.test.ts b/tests/app/browser/sections/FloatSection.test.ts
+new file mode 100644
+index 0000000..31d575f
+--- /dev/null
++++ b/tests/app/browser/sections/FloatSection.test.ts
+@@ -0,0 +1,131 @@
++import type { SectionInterface } from '@app/browser'
++import { FLOAT_COPY, FLOAT_SPECIMENS, FloatSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { visitBreakpoint } from '../../../setupBrowser.js'
++import { FLOAT_VALUES, GRID_BREAKPOINT_CASES, VIEWPORT_WIDTHS } from '../../../setupStyles.js'
++
++// Every float class the release writes, each side at each infix, and the classes among them that
++// float a box, derived from the side table and the breakpoint ramp rather than listed by hand.
++const FLOAT_CLASSES = FLOAT_VALUES.flatMap(({ key, value }) =>
++	GRID_BREAKPOINT_CASES.map(({ name, boundary }) => ({
++		name: `float${boundary === 0 ? '' : `-${name}`}-${key}`,
++		floats: value !== 'none',
++	})),
++)
++const FLOATING = FLOAT_CLASSES.flatMap(({ name, floats }) => (floats ? [`.${name}`] : [])).join(
++	', ',
++)
++
++// The layout cases read the specimens as the published cascade lays them out, so the cascade has to
++// be in the document before a box is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('FloatSection', () => {
++	it('renders every declared specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new FloatSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Float region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Float')
++			expect(region.querySelector('p')?.textContent).toBe(FLOAT_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Float sides',
++				'Responsive float',
++				'Cleared floats',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				FLOAT_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Each side is a card naming the class it carries, and every host holding a float carries
++			// the clearfix helper, so no float hangs into the specimen after it.
++			for (const { key } of FLOAT_VALUES) {
++				const card = requireValue(
++					region.querySelector(`[data-specimen="Float sides"] .card.float-${key}`),
++					`No float-${key} card`,
++				)
++				expect(card.textContent).toBe(`float-${key}`)
++			}
++			// Every float class a specimen carries is one the release writes.
++			const written = FLOAT_CLASSES.map(({ name }) => name)
++			expect(
++				[...region.querySelectorAll('[class*="float-"]')]
++					.flatMap((element) => [...element.classList])
++					.filter((name) => name.startsWith('float-') && !written.includes(name)),
++			).toEqual([])
++			expect(
++				[...region.querySelectorAll(FLOATING)].filter(
++					(element) => element.parentElement?.classList.contains('clearfix') !== true,
++				),
++			).toEqual([])
++			expect(
++				region.querySelector(
++					'[data-specimen="Cleared floats"] > .alert.clearfix > .card.float-start + p',
++				)?.textContent,
++			).toContain('clearfix')
++			expect(Object.isFrozen(FLOAT_COPY)).toBe(true)
++			expect(Object.isFrozen(FLOAT_SPECIMENS)).toBe(true)
++			expect(FLOAT_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('moves the responsive card to the right at the md boundary and holds every float in its specimen', async () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new FloatSection(host)
++		try {
++			const card = requireValue(host.querySelector('.float-md-end'), 'No responsive card')
++			const holder = requireValue(card.parentElement, 'No holder')
++			const md = requireValue(
++				GRID_BREAKPOINT_CASES.find(({ name }) => name === 'md'),
++				'No md breakpoint case',
++			)
++			for (const viewport of VIEWPORT_WIDTHS)
++				expect(
++					await visitBreakpoint(viewport, () => [
++						readStyle(card, 'float'),
++						card.getBoundingClientRect().left === holder.getBoundingClientRect().left,
++						card.getBoundingClientRect().right === holder.getBoundingClientRect().right,
++					]),
++				).toEqual(viewport >= md.boundary ? ['right', false, true] : ['left', true, false])
++			// A specimen holding a float is as tall as the float's bottom edge, so the next specimen
++			// starts below it rather than beside it.
++			for (const specimen of host.querySelectorAll('[data-specimen]')) {
++				const bottom = specimen.getBoundingClientRect().bottom
++				for (const floated of specimen.querySelectorAll(FLOATING))
++					expect(floated.getBoundingClientRect().bottom).toBeLessThanOrEqual(bottom)
++			}
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new FloatSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Float region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/app/browser/sections/ObjectFitSection.test.ts b/tests/app/browser/sections/ObjectFitSection.test.ts
+new file mode 100644
+index 0000000..60f199c
+--- /dev/null
++++ b/tests/app/browser/sections/ObjectFitSection.test.ts
+@@ -0,0 +1,120 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	OBJECT_FIT_COPY,
++	OBJECT_FIT_SPECIMENS,
++	ObjectFitSection,
++	SpecimenSection,
++} from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { visitBreakpoint } from '../../../setupBrowser.js'
++import { GRID_BREAKPOINT_CASES, OBJECT_FIT_VALUES, VIEWPORT_WIDTHS } from '../../../setupStyles.js'
++
++// The layout case reads the specimens as the published cascade lays them out, so the cascade has to
++// be in the document before a box is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('ObjectFitSection', () => {
++	it('renders every declared specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ObjectFitSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Object fit region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Object fit')
++			expect(region.querySelector('p')?.textContent).toBe(OBJECT_FIT_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Object fit values',
++				'Responsive object fit',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				OBJECT_FIT_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Each picture sits in an aspect-ratio box, carries a description naming its classes, and
++			// the line after its box names the same classes.
++			const pictures = [...region.querySelectorAll('img')]
++			expect(pictures.map((picture) => picture.parentElement?.classList.contains('ratio'))).toEqual(
++				pictures.map(() => true),
++			)
++			for (const picture of pictures) {
++				const classes = [...picture.classList].filter((name) => name.startsWith('object-fit-'))
++				expect(classes).not.toEqual([])
++				expect(picture.parentElement?.nextElementSibling?.textContent).toBe(classes.join(' '))
++				for (const name of classes) expect(picture.alt).toContain(name)
++			}
++			expect(
++				[...region.querySelectorAll('[data-specimen="Object fit values"] img')].map((picture) =>
++					[...picture.classList].find((name) => name.startsWith('object-fit-')),
++				),
++			).toEqual(OBJECT_FIT_VALUES.map(({ key }) => `object-fit-${key}`))
++			expect(Object.isFrozen(OBJECT_FIT_COPY)).toBe(true)
++			expect(Object.isFrozen(OBJECT_FIT_SPECIMENS)).toBe(true)
++			expect(OBJECT_FIT_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('fits every picture in a box whose ratio differs from its own, switching the responsive picture at the md boundary', async () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ObjectFitSection(host)
++		try {
++			const pictures = [...host.querySelectorAll('img')]
++			await Promise.all(pictures.map((picture) => picture.decode()))
++			const responsive = requireValue(
++				host.querySelector('.object-fit-md-cover'),
++				'No responsive picture',
++			)
++			const md = requireValue(
++				GRID_BREAKPOINT_CASES.find(({ name }) => name === 'md'),
++				'No md breakpoint case',
++			)
++			for (const viewport of VIEWPORT_WIDTHS) {
++				const reading = await visitBreakpoint(viewport, () => ({
++					// A picture whose box shares its ratio would fit every value alike, so each box's
++					// ratio is read against the picture's own.
++					unlike: pictures.map((picture) => {
++						const box = picture.getBoundingClientRect()
++						return (
++							Math.abs(box.width / box.height - picture.naturalWidth / picture.naturalHeight) > 0.5
++						)
++					}),
++					responsive: readStyle(responsive, 'object-fit'),
++				}))
++				expect(reading).toEqual({
++					unlike: pictures.map(() => true),
++					responsive: viewport >= md.boundary ? 'cover' : 'contain',
++				})
++			}
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new ObjectFitSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Object fit region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/app/browser/sections/OverflowSection.test.ts b/tests/app/browser/sections/OverflowSection.test.ts
+new file mode 100644
+index 0000000..21e914a
+--- /dev/null
++++ b/tests/app/browser/sections/OverflowSection.test.ts
+@@ -0,0 +1,123 @@
++import type { SectionInterface } from '@app/browser'
++import { OVERFLOW_COPY, OVERFLOW_SPECIMENS, OverflowSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { visitBreakpoint } from '../../../setupBrowser.js'
++import { OVERFLOW_VALUES, VIEWPORT_WIDTHS } from '../../../setupStyles.js'
++
++// The layout case reads the specimens as the published cascade lays them out, so the cascade has to
++// be in the document before a box is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('OverflowSection', () => {
++	it('renders every declared specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new OverflowSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Overflow region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Overflow')
++			expect(region.querySelector('p')?.textContent).toBe(OVERFLOW_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Overflow values',
++				'Axis overflow',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				OVERFLOW_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Every specimen renders inside the shell's frame, each card names the classes it carries,
++			// and every bar is hidden from assistive technology.
++			expect(rendered.map((element) => element.firstElementChild?.className)).toEqual([
++				'viewport',
++				'viewport',
++			])
++			expect(
++				[...region.querySelectorAll('[data-specimen="Overflow values"] .card')].map(
++					(card) => card.textContent,
++				),
++			).toEqual(OVERFLOW_VALUES.map((value) => `overflow-${value}`))
++			const axes = [...region.querySelectorAll('[data-specimen="Axis overflow"] .card')]
++			expect(axes).not.toEqual([])
++			for (const card of axes)
++				expect(card.textContent).toBe(
++					[...card.classList].filter((name) => name.startsWith('overflow-')).join(' '),
++				)
++			const bars = [...region.querySelectorAll('.placeholder')]
++			expect(bars).toHaveLength(OVERFLOW_VALUES.length + axes.length * 2)
++			expect(bars.every((bar) => bar.getAttribute('aria-hidden') === 'true')).toBe(true)
++			expect(Object.isFrozen(OVERFLOW_COPY)).toBe(true)
++			expect(Object.isFrozen(OVERFLOW_SPECIMENS)).toBe(true)
++			expect(OVERFLOW_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('overflows every card at every variant width and resolves each axis its classes name', async () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new OverflowSection(host)
++		try {
++			const values = [...host.querySelectorAll('[data-specimen="Overflow values"] .card')]
++			const axes = [...host.querySelectorAll('[data-specimen="Axis overflow"] .card')]
++			for (const viewport of VIEWPORT_WIDTHS) {
++				const reading = await visitBreakpoint(viewport, () => ({
++					// A card's content is wider than the card at every width, so each value has
++					// something to scroll, clip, or spill.
++					wide: values.map((card) => {
++						const body = requireValue(card.firstElementChild, 'No card body')
++						return body.scrollWidth > card.getBoundingClientRect().width
++					}),
++					tall: axes.map((card) => {
++						const body = requireValue(card.firstElementChild, 'No card body')
++						return body.scrollHeight > card.getBoundingClientRect().height
++					}),
++					values: values.map((card) => readStyle(card, 'overflow-x')),
++					axes: axes.map((card) => [readStyle(card, 'overflow-x'), readStyle(card, 'overflow-y')]),
++				}))
++				// Each axis card resolves the value its own class names on each axis; no card pairs a
++				// visible axis with another value, which the browser would compute as auto.
++				expect(reading).toEqual({
++					wide: OVERFLOW_VALUES.map(() => true),
++					tall: axes.map(() => true),
++					values: [...OVERFLOW_VALUES],
++					axes: axes.map((card) =>
++						['x', 'y'].map((axis) =>
++							[...card.classList]
++								.find((name) => name.startsWith(`overflow-${axis}-`))
++								?.slice(`overflow-${axis}-`.length),
++						),
++					),
++				})
++			}
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new OverflowSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Overflow region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/src/styles/components/clearfix.test.ts b/tests/src/styles/components/clearfix.test.ts
+new file mode 100644
+index 0000000..039eaea
+--- /dev/null
++++ b/tests/src/styles/components/clearfix.test.ts
+@@ -0,0 +1,68 @@
++import { requireValue } from '@orkestrel/test'
++import { readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { collectLayerRules, scene } from '../../../setupBrowser.js'
++
++// Each host holds one floated child taller than anything else in it, and a bare twin beside it
++// holds the same child without the helper.
++const FLOATED = '<div style="float: left; width: 40px; height: 60px"></div>'
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('clearfix helper', () => {
++	it('stretches its host around its floated children, where a bare host collapses', () => {
++		const host = scene.mount(
++			`<div class="clearfix">${FLOATED}</div><p class="after">After the cleared host</p><div class="bare">${FLOATED}</div>`,
++		)
++		const cleared = requireValue(host.querySelector('.clearfix'), 'No cleared host')
++		const bare = requireValue(host.querySelector('.bare'), 'No bare host')
++		const after = requireValue(host.querySelector('.after'), 'No following block')
++		expect(cleared.getBoundingClientRect().height).toBe(60)
++		expect(bare.getBoundingClientRect().height).toBe(0)
++		// The block after the cleared host starts below the float rather than beside it.
++		expect(after.getBoundingClientRect().top).toBeGreaterThanOrEqual(
++			cleared.getBoundingClientRect().bottom,
++		)
++	})
++
++	it('writes its generated box as an empty block that clears the left and the right side', () => {
++		const host = scene.mount(`<div class="clearfix">${FLOATED}</div>`)
++		const cleared = requireValue(host.querySelector('.clearfix'), 'No cleared host')
++		expect(
++			['display', 'clear', 'content'].map((property) => readStyle(cleared, property, '::after')),
++		).toEqual(['block', 'both', '""'])
++		// A float on the right side is cleared as well as one on the left.
++		const right = scene.mount(
++			'<div class="clearfix"><div style="float: right; width: 40px; height: 30px"></div></div>',
++		)
++		expect(
++			requireValue(right.querySelector('.clearfix'), 'No cleared host').getBoundingClientRect()
++				.height,
++		).toBe(30)
++	})
++
++	it('holds its floats inside a dark island, reading no token or mode', () => {
++		const host = scene.mount(
++			`<div data-bs-theme="dark"><div class="clearfix">${FLOATED}</div></div>`,
++		)
++		const cleared = requireValue(host.querySelector('.clearfix'), 'No cleared host')
++		expect(cleared.getBoundingClientRect().height).toBe(60)
++	})
++
++	it('sits in the components layer with normal declarations beneath a later unlayered consumer rule', () => {
++		const components = collectLayerRules('components').flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		const utilities = collectLayerRules('utilities').flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		expect(components).toContain('.clearfix::after')
++		expect(utilities.filter((selector) => selector.includes('clearfix'))).toEqual([])
++		const host = scene.mount(`<div class="clearfix">${FLOATED}</div>`)
++		const cleared = requireValue(host.querySelector('.clearfix'), 'No cleared host')
++		scene.load('.clearfix::after { clear: none }')
++		expect(cleared.getBoundingClientRect().height).toBe(0)
++	})
++})
+diff --git a/tests/src/styles/components/stretched-link.test.ts b/tests/src/styles/components/stretched-link.test.ts
+new file mode 100644
+index 0000000..c6ecbd8
+--- /dev/null
++++ b/tests/src/styles/components/stretched-link.test.ts
+@@ -0,0 +1,104 @@
++import { requireValue } from '@orkestrel/test'
++import { readHit, readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { collectLayerRules, scene } from '../../../setupBrowser.js'
++import { computeCornerPoints, HIT_CORNERS, STRETCHED_LINK_HOSTS } from '../../../setupStyles.js'
++
++// The host is positioned and larger than the link on the x and the y axis, so a corner of the host
++// lies outside the link's own box, and only a generated box covering the host reaches it.
++const HOST = 'position: relative; width: 300px; height: 160px'
++const LINK =
++	'<p>Every point of this box opens the tour schedule.</p><a href="#main">Tour schedule</a>'
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('stretched link helper', () => {
++	it('answers a pointer at every corner of its positioned ancestor with the link, where a bare link leaves the corner', () => {
++		const host = scene.mount(
++			STRETCHED_LINK_HOSTS.map(
++				({ stretched }) =>
++					`<div class="host" style="${HOST}">${stretched ? LINK.replace('<a ', '<a class="stretched-link" ') : LINK}</div>`,
++			).join(''),
++		)
++		const hits = [...host.querySelectorAll('.host')].map((element) => {
++			const box = element.getBoundingClientRect()
++			return computeCornerPoints(box).map(({ x, y }) => document.elementFromPoint(x, y)?.localName)
++		})
++		expect(hits).toEqual(STRETCHED_LINK_HOSTS.map((entry) => entry.hits))
++	})
++
++	it('writes its generated box absolute on every physical edge with empty content', () => {
++		const host = scene.mount(
++			`<div style="${HOST}">${LINK.replace('<a ', '<a class="stretched-link" ')}</div>`,
++		)
++		const link = requireValue(host.querySelector('a'), 'No link')
++		expect(
++			['position', 'top', 'right', 'bottom', 'left', 'z-index', 'content'].map((property) =>
++				readStyle(link, property, '::after'),
++			),
++		).toEqual(['absolute', '0px', '0px', '0px', '0px', '1', '""'])
++	})
++
++	it('covers the nearest positioned ancestor rather than the parent the link sits in', () => {
++		const host = scene.mount(
++			`<div class="outer" style="${HOST}"><div class="plain" style="width: 120px"><a href="#main" class="stretched-link">Outer link</a></div></div><div class="outer" style="${HOST}"><div class="position-relative" style="width: 120px"><a href="#main" class="stretched-link">Inner link</a></div></div>`,
++		)
++		const { corners } = HIT_CORNERS
++		const hits = [...host.querySelectorAll('.outer')].map((outer) => {
++			const box = outer.getBoundingClientRect()
++			return computeCornerPoints(box).map(({ x, y }) => document.elementFromPoint(x, y)?.localName)
++		})
++		// A plain parent is not a containing block, so the box covers the positioned host at every
++		// corner; a parent carrying the position utility is, so the box stops at that parent, which
++		// sits in the host's top-left corner, and every other corner reaches the host.
++		expect(hits).toEqual([
++			corners.map(() => 'a'),
++			corners.map(({ across, down }) => (across === 'left' && down === 'top' ? 'a' : 'div')),
++		])
++	})
++
++	it('stacks its generated box at level 1, over a positioned sibling at level 0 and under one at level 2', () => {
++		const host = scene.mount(
++			`<div style="${HOST}"><button type="button" class="position-relative z-0">Level 0</button><button type="button" class="position-relative z-2">Level 2</button><a href="#main" class="stretched-link">Covering link</a></div>`,
++		)
++		const [low, high] = [...host.querySelectorAll('button')]
++		expect([
++			readHit(requireValue(low, 'No level 0 button'))?.localName,
++			readHit(requireValue(high, 'No level 2 button'))?.localName,
++		]).toEqual(['a', 'button'])
++	})
++
++	it('reaches the link from a corner inside a dark island, reading no token or mode', () => {
++		const host = scene.mount(
++			`<div data-bs-theme="dark"><div class="box" style="${HOST}">${LINK.replace('<a ', '<a class="stretched-link" ')}</div></div>`,
++		)
++		const { corners } = HIT_CORNERS
++		const box = requireValue(host.querySelector('.box'), 'No host').getBoundingClientRect()
++		expect(
++			computeCornerPoints(box).map(({ x, y }) => document.elementFromPoint(x, y)?.localName),
++		).toEqual(corners.map(() => 'a'))
++	})
++
++	it('sits in the components layer with normal declarations beneath a later unlayered consumer rule', () => {
++		const components = collectLayerRules('components').flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		const utilities = collectLayerRules('utilities').flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		expect(components).toContain('.stretched-link::after')
++		expect(utilities.filter((selector) => selector.includes('stretched-link'))).toEqual([])
++		const host = scene.mount(
++			`<div class="box" style="${HOST}">${LINK.replace('<a ', '<a class="stretched-link" ')}</div>`,
++		)
++		const box = requireValue(host.querySelector('.box'), 'No host').getBoundingClientRect()
++		scene.load('.stretched-link::after { position: static }')
++		// A generated box the consumer rule returns to the flow covers nothing, so every corner reads
++		// what a bare host's corner reads.
++		expect(
++			computeCornerPoints(box).map(({ x, y }) => document.elementFromPoint(x, y)?.localName),
++		).toEqual(STRETCHED_LINK_HOSTS.find(({ stretched }) => !stretched)?.hits)
++	})
++})
+diff --git a/tests/src/styles/utilities/float.test.ts b/tests/src/styles/utilities/float.test.ts
+new file mode 100644
+index 0000000..3d414bf
+--- /dev/null
++++ b/tests/src/styles/utilities/float.test.ts
+@@ -0,0 +1,139 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene, visitBreakpoint } from '../../../setupBrowser.js'
++import { FLOAT_VALUES, GRID_BREAKPOINT_CASES } from '../../../setupStyles.js'
++
++// Every element rests on an inline logical float, a value the utility never writes, so a physical
++// reading can only come from the class.
++const RESTING_FLOAT = 'inline-start'
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('float utilities', () => {
++	it.each(GRID_BREAKPOINT_CASES)(
++		'resolves every side around the $name boundary',
++		async ({ name, boundary, readings }) => {
++			const infix = boundary === 0 ? '' : `-${name}`
++			const host = scene.mount(
++				FLOAT_VALUES.map(
++					({ key }) => `<div class="float${infix}-${key}" style="float: ${RESTING_FLOAT}"></div>`,
++				).join(''),
++			)
++			for (const viewport of readings) {
++				await visitBreakpoint(viewport, () => {
++					expect(window.innerWidth).toBe(viewport)
++					for (const { key, value } of FLOAT_VALUES) {
++						const element = requireValue(
++							host.querySelector(`.float${infix}-${key}`),
++							`No float${infix}-${key} element`,
++						)
++						expect(readStyle(element, 'float')).toBe(viewport >= boundary ? value : RESTING_FLOAT)
++					}
++				})
++			}
++		},
++	)
++
++	it('places each side against the physical edge of its container in the left-to-right and the right-to-left direction', () => {
++		const sides = FLOAT_VALUES.map(
++			({ key }) =>
++				`<div class="box"><div class="float-${key}" style="width: 60px; height: 20px"></div><span>Beside</span></div>`,
++		).join('')
++		const host = scene.mount(
++			`<div dir="ltr" style="width: 400px">${sides}</div><div dir="rtl" style="width: 400px">${sides}</div>`,
++		)
++		const readings = [...host.querySelectorAll<HTMLElement>('.box')].map((box) => {
++			const container = requireValue(box.parentElement, 'No container').getBoundingClientRect()
++			const floated = requireValue(box.firstElementChild, 'No floated box').getBoundingClientRect()
++			const text = requireValue(box.querySelector('span'), 'No text').getBoundingClientRect()
++			return [
++				floated.left - container.left,
++				container.right - floated.right,
++				// A floated box shares its line with the text beside it; a box that does not float
++				// sits above the text in the flow.
++				text.top >= floated.bottom,
++			]
++		})
++		// The start side is the left edge and the end side the right edge in the left-to-right and the
++		// right-to-left direction, as the release writes them; the `none` value leaves the box in the
++		// flow at the direction's own start.
++		expect(readings).toEqual([
++			[0, 340, false],
++			[340, 0, false],
++			[0, 340, true],
++			[0, 340, false],
++			[340, 0, false],
++			[340, 0, true],
++		])
++	})
++
++	it('resolves a wider infix over a narrower one whatever order the classes are written in', async () => {
++		const host = scene.mount(
++			'<div class="float-md-end float-sm-start"></div><div class="float-lg-none float-end"></div>',
++		)
++		const sided = requireValue(host.querySelector('.float-md-end'), 'No sided element')
++		const cleared = requireValue(host.querySelector('.float-lg-none'), 'No cleared element')
++		// The md case's boundary and the reading below it, then the lg case's boundary.
++		const md = requireValue(
++			GRID_BREAKPOINT_CASES.find(({ name }) => name === 'md'),
++			'No md breakpoint case',
++		)
++		const lg = requireValue(
++			GRID_BREAKPOINT_CASES.find(({ name }) => name === 'lg'),
++			'No lg breakpoint case',
++		)
++		const readings: Array<readonly string[]> = []
++		for (const viewport of [md.boundary - 1, md.boundary, lg.boundary])
++			readings.push(
++				await visitBreakpoint(viewport, () => [
++					readStyle(sided, 'float'),
++					readStyle(cleared, 'float'),
++				]),
++			)
++		expect(readings).toEqual([
++			['left', 'right'],
++			['right', 'right'],
++			['right', 'none'],
++		])
++	})
++
++	it('reads no token or mode, so a dark island and a doubled density factor leave every side', () => {
++		const host = scene.mount(
++			'<div data-bs-theme="dark"><div class="float-start"></div><div class="float-end"></div></div>',
++		)
++		const start = requireValue(host.querySelector('.float-start'), 'No start element')
++		const end = requireValue(host.querySelector('.float-end'), 'No end element')
++		expect([readStyle(start, 'float'), readStyle(end, 'float')]).toEqual(['left', 'right'])
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect([readStyle(start, 'float'), readStyle(end, 'float')]).toEqual(['left', 'right'])
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++
++	it('keeps its priority over a later unlayered consumer rule', () => {
++		const host = scene.mount('<div class="probe float-start"></div><div class="probe"></div>')
++		scene.load('.probe { float: right }')
++		const utility = requireValue(host.querySelector('.float-start'), 'No utility element')
++		const consumer = requireValue(host.lastElementChild, 'No consumer element')
++		expect(readStyle(consumer, 'float')).toBe('right')
++		expect(readStyle(utility, 'float')).toBe('left')
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<div class="float-start"></div>')
++		const element = requireValue(host.querySelector('.float-start'), 'No utility element')
++		// An unlayered `!important` declaration sorts after every layered one, so the shipped
++		// utility keeps its value; the same declaration re-opened inside the utilities layer
++		// arrives after the shipped rule in that layer and wins.
++		scene.load('.float-start { float: right !important }')
++		expect(readStyle(element, 'float')).toBe('left')
++		scene.load('@layer utilities { .float-start { float: none !important } }')
++		expect(readStyle(element, 'float')).toBe('none')
++	})
++})
+diff --git a/tests/src/styles/utilities/object-fit.test.ts b/tests/src/styles/utilities/object-fit.test.ts
+new file mode 100644
+index 0000000..89eba1d
+--- /dev/null
++++ b/tests/src/styles/utilities/object-fit.test.ts
+@@ -0,0 +1,158 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { readStyle, releasePane, stagePane } from '@orkestrel/test/browser'
++import { page } from 'vitest/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { measureVariation, readRegion, scene, visitBreakpoint } from '../../../setupBrowser.js'
++import {
++	GRID_BREAKPOINT_CASES,
++	OBJECT_FIT_FIXTURE,
++	OBJECT_FIT_PAINT_CASES,
++	OBJECT_FIT_VALUES,
++} from '../../../setupStyles.js'
++
++// A replaced element rests on the `fill` value, which is the browser's own default for the property.
++const RESTING_FIT = 'fill'
++
++afterEach(async () => {
++	await releasePane()
++	scene.clear()
++})
++
++describe('object-fit utilities', () => {
++	it.each(GRID_BREAKPOINT_CASES)(
++		'fits a picture unlike its box by every value around the $name boundary',
++		async ({ name, boundary, readings }) => {
++			const infix = boundary === 0 ? '' : `-${name}`
++			const { box, paint, pictures: drawn, regions } = OBJECT_FIT_FIXTURE
++			const host = scene.mount(
++				`<div class="pictures" style="display: flex; flex-wrap: wrap; gap: 8px">${OBJECT_FIT_VALUES.flatMap(
++					({ key }) =>
++						[drawn.wide, drawn.narrow].map(
++							({ source }) =>
++								`<div style="width: ${String(box)}px; height: ${String(box)}px"><img class="object-fit${infix}-${key}" style="display: block; width: 100%; height: 100%" alt="" src="${source}"></div>`,
++						),
++				).join('')}</div>`,
++			)
++			const frame = requireValue(host.querySelector<HTMLElement>('.pictures'), 'No picture row')
++			const pictures = [...frame.querySelectorAll('img')]
++			await Promise.all(pictures.map((picture) => picture.decode()))
++			const resting = requireValue(
++				OBJECT_FIT_PAINT_CASES.find(({ value }) => value === RESTING_FIT),
++				'No resting paint case',
++			)
++			for (const viewport of readings) {
++				const reading = await visitBreakpoint(viewport, async () => {
++					// The runner scales the pane it paints the tester in, so the frame is shot with the
++					// pane staged at the tester's own size and handed straight back.
++					await stagePane(window.innerWidth, window.innerHeight)
++					const encoded = await page.screenshot({ element: frame, save: false })
++					const ratio = window.devicePixelRatio
++					const painted: boolean[][] = []
++					for (const picture of pictures) {
++						const origin = readRegion(picture, frame)
++						const row: boolean[] = []
++						for (const region of regions)
++							row.push(
++								(await measureVariation(
++									encoded,
++									{
++										x: origin.x + region.x * ratio,
++										y: origin.y + region.y * ratio,
++										width: region.width * ratio,
++										height: region.height * ratio,
++									},
++									paint,
++								)) === 0,
++							)
++						painted.push(row)
++					}
++					await releasePane()
++					return {
++						fits: pictures.map((picture) => readStyle(picture, 'object-fit')),
++						painted,
++					}
++				})
++				const expected = OBJECT_FIT_VALUES.map(({ value }) =>
++					requireValue(
++						OBJECT_FIT_PAINT_CASES.find((entry) => entry.value === value),
++						`No paint case for ${value}`,
++					),
++				).map((entry) => (viewport >= boundary ? entry : resting))
++				expect(reading).toEqual({
++					fits: OBJECT_FIT_VALUES.flatMap(({ value }) =>
++						viewport >= boundary ? [value, value] : [RESTING_FIT, RESTING_FIT],
++					),
++					painted: expected.flatMap((entry) => [entry.wide, entry.narrow]),
++				})
++			}
++		},
++	)
++
++	it('resolves a wider infix over a narrower one whatever order the classes are written in', async () => {
++		const host = scene.mount(
++			'<img class="object-fit-md-cover object-fit-sm-contain" alt=""><img class="object-fit-lg-none object-fit-scale" alt="">',
++		)
++		const covered = requireValue(host.querySelector('.object-fit-md-cover'), 'No covered picture')
++		const scaled = requireValue(host.querySelector('.object-fit-scale'), 'No scaled picture')
++		// The md case's boundary and the reading below it, then the lg case's boundary.
++		const md = requireValue(
++			GRID_BREAKPOINT_CASES.find(({ name }) => name === 'md'),
++			'No md breakpoint case',
++		)
++		const lg = requireValue(
++			GRID_BREAKPOINT_CASES.find(({ name }) => name === 'lg'),
++			'No lg breakpoint case',
++		)
++		const readings: Array<readonly string[]> = []
++		for (const viewport of [md.boundary - 1, md.boundary, lg.boundary])
++			readings.push(
++				await visitBreakpoint(viewport, () => [
++					readStyle(covered, 'object-fit'),
++					readStyle(scaled, 'object-fit'),
++				]),
++			)
++		expect(readings).toEqual([
++			['contain', 'scale-down'],
++			['cover', 'scale-down'],
++			['cover', 'none'],
++		])
++	})
++
++	it('reads no token or mode, so a dark island and a doubled density factor leave every value', () => {
++		const host = scene.mount(
++			`<div data-bs-theme="dark">${OBJECT_FIT_VALUES.map(({ key }) => `<img class="object-fit-${key}" alt="">`).join('')}</div>`,
++		)
++		const pictures = [...host.querySelectorAll('img')]
++		const values = OBJECT_FIT_VALUES.map(({ value }) => value)
++		expect(pictures.map((picture) => readStyle(picture, 'object-fit'))).toEqual(values)
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect(pictures.map((picture) => readStyle(picture, 'object-fit'))).toEqual(values)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++
++	it('keeps its priority over a later unlayered consumer rule', () => {
++		const host = scene.mount(
++			'<img class="probe object-fit-cover" alt=""><img class="probe" alt="">',
++		)
++		scene.load('.probe { object-fit: none }')
++		const [utility, consumer] = [...host.querySelectorAll('img')]
++		expect(readStyle(requireValue(consumer, 'No consumer picture'), 'object-fit')).toBe('none')
++		expect(readStyle(requireValue(utility, 'No utility picture'), 'object-fit')).toBe('cover')
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<img class="object-fit-cover" alt="">')
++		const element = requireValue(host.querySelector('img'), 'No utility picture')
++		// An unlayered `!important` declaration sorts after every layered one, so the shipped
++		// utility keeps its value; the same declaration re-opened inside the utilities layer
++		// arrives after the shipped rule in that layer and wins.
++		scene.load('.object-fit-cover { object-fit: fill !important }')
++		expect(readStyle(element, 'object-fit')).toBe('cover')
++		scene.load('@layer utilities { .object-fit-cover { object-fit: contain !important } }')
++		expect(readStyle(element, 'object-fit')).toBe('contain')
++	})
++})
+diff --git a/tests/src/styles/utilities/overflow.test.ts b/tests/src/styles/utilities/overflow.test.ts
+new file mode 100644
+index 0000000..94e4ec0
+--- /dev/null
++++ b/tests/src/styles/utilities/overflow.test.ts
+@@ -0,0 +1,154 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { findRule, readStyle, waitForFrame } from '@orkestrel/test/browser'
++import { userEvent } from 'vitest/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene } from '../../../setupBrowser.js'
++import {
++	BREAKPOINT_INFIXES,
++	OVERFLOW_AXIS_CASES,
++	OVERFLOW_ENTRIES,
++	OVERFLOW_VALUES,
++} from '../../../setupStyles.js'
++
++// Each box is smaller than its content on the x and the y axis, so every axis the box scrolls has somewhere to
++// go and every axis it clips has something to hide.
++const CONSTRAINED = 'width: 100px; height: 100px'
++const CONTENT = '<div style="width: 300px; height: 300px"></div>'
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('overflow utilities', () => {
++	it('resolves every shorthand value on the x and the y axis', () => {
++		const host = scene.mount(
++			OVERFLOW_VALUES.map((value) => `<div class="overflow-${value}"></div>`).join(''),
++		)
++		expect(
++			[...host.children].map((element) => [
++				readStyle(element, 'overflow-x'),
++				readStyle(element, 'overflow-y'),
++			]),
++		).toEqual(OVERFLOW_VALUES.map((value) => [value, value]))
++	})
++
++	it('spills the content past the box only under the visible value', () => {
++		const host = scene.mount(
++			OVERFLOW_VALUES.map(
++				(value) =>
++					`<div class="overflow-${value}" style="width: 100px; height: 40px"><div class="spill" style="width: 300px; height: 20px"></div></div><div style="height: 40px"></div>`,
++			).join(''),
++		)
++		// The point sits inside the content's box and outside its container's, so it reaches the
++		// content only where the container does not clip it.
++		expect(
++			OVERFLOW_VALUES.map((value) => {
++				const box = requireValue(
++					host.querySelector(`.overflow-${value}`),
++					`No overflow-${value} box`,
++				).getBoundingClientRect()
++				return document.elementFromPoint(box.left + 200, box.top + 10)?.classList.contains('spill')
++			}),
++		).toEqual(OVERFLOW_VALUES.map((value) => value === 'visible'))
++	})
++
++	it.each(OVERFLOW_AXIS_CASES)(
++		'computes the $x x value beside the $y y value and scrolls each axis apart',
++		async ({ x, y, computed, scrolled }) => {
++			const host = scene.mount(
++				`<div class="overflow-x-${x} overflow-y-${y}" style="${CONSTRAINED}">${CONTENT}</div>`,
++			)
++			const box = requireValue(host.firstElementChild, 'No constrained box')
++			expect([readStyle(box, 'overflow-x'), readStyle(box, 'overflow-y')]).toEqual(computed)
++			// A wheel scrolls an axis a person can scroll and leaves an axis the value clips, whatever
++			// the other axis does.
++			await userEvent.wheel(box, { delta: { x: 40, y: 40 } })
++			await waitForFrame()
++			expect([box.scrollLeft > 0, box.scrollTop > 0]).toEqual(scrolled)
++		},
++	)
++
++	it('resolves an axis class over the shorthand on its own axis whatever order the classes are written in', () => {
++		const host = scene.mount(
++			'<div class="overflow-x-auto overflow-hidden"></div><div class="overflow-scroll overflow-y-hidden"></div>',
++		)
++		expect(
++			[...host.children].map((element) => [
++				readStyle(element, 'overflow-x'),
++				readStyle(element, 'overflow-y'),
++			]),
++		).toEqual([
++			['auto', 'hidden'],
++			['scroll', 'hidden'],
++		])
++	})
++
++	it('writes every entry at no breakpoint infix, as the release does', () => {
++		expect(
++			OVERFLOW_ENTRIES.flatMap((entry) =>
++				OVERFLOW_VALUES.map((value) => `.${entry}-${value}`),
++			).filter((selector) => findRule(selector) === undefined),
++		).toEqual([])
++		expect(
++			BREAKPOINT_INFIXES.flatMap((infix) =>
++				OVERFLOW_ENTRIES.flatMap((entry) =>
++					OVERFLOW_VALUES.map((value) => `.${entry}-${infix}-${value}`),
++				),
++			).filter((selector) => findRule(selector) !== undefined),
++		).toEqual([])
++	})
++
++	it('reads no token or mode, so a dark island and a doubled density factor leave every value', () => {
++		const host = scene.mount(
++			'<div data-bs-theme="dark"><div class="overflow-hidden"></div><div class="overflow-x-scroll overflow-y-auto"></div></div>',
++		)
++		const clipped = requireValue(host.querySelector('.overflow-hidden'), 'No clipped box')
++		const scrolled = requireValue(host.querySelector('.overflow-x-scroll'), 'No scrolled box')
++		const read = [clipped, scrolled].flatMap((element) => [
++			readStyle(element, 'overflow-x'),
++			readStyle(element, 'overflow-y'),
++		])
++		expect(read).toEqual(['hidden', 'hidden', 'scroll', 'auto'])
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect(
++				[clipped, scrolled].flatMap((element) => [
++					readStyle(element, 'overflow-x'),
++					readStyle(element, 'overflow-y'),
++				]),
++			).toEqual(read)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++
++	it('keeps its priority over a later unlayered consumer rule', () => {
++		const host = scene.mount(
++			'<div class="probe overflow-hidden"></div><div class="probe overflow-x-auto"></div><div class="probe"></div>',
++		)
++		scene.load('.probe { overflow: scroll }')
++		expect(
++			[...host.children].map((element) => [
++				readStyle(element, 'overflow-x'),
++				readStyle(element, 'overflow-y'),
++			]),
++		).toEqual([
++			['hidden', 'hidden'],
++			['auto', 'scroll'],
++			['scroll', 'scroll'],
++		])
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<div class="overflow-y-hidden"></div>')
++		const element = requireValue(host.firstElementChild, 'No utility element')
++		// An unlayered `!important` declaration sorts after every layered one, so the shipped
++		// utility keeps its value; the same declaration re-opened inside the utilities layer
++		// arrives after the shipped rule in that layer and wins.
++		scene.load('.overflow-y-hidden { overflow-y: scroll !important }')
++		expect(readStyle(element, 'overflow-y')).toBe('hidden')
++		scene.load('@layer utilities { .overflow-y-hidden { overflow-y: auto !important } }')
++		expect(readStyle(element, 'overflow-y')).toBe('auto')
++	})
++})

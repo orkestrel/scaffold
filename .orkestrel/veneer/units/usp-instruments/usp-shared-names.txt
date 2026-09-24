@@ -1,0 +1,91 @@
+m-0 | margin-top, margin-right, margin-bottom, margin-left | covered | off the line
+m-1 | margin-top, margin-right, margin-bottom, margin-left | covered | off the line
+m-2 | margin-top, margin-right, margin-bottom, margin-left | covered | off the line
+m-3 | margin-top, margin-right, margin-bottom, margin-left | covered | off the line
+m-4 | margin-top, margin-right, margin-bottom, margin-left | covered | off the line
+m-5 | margin-top, margin-right, margin-bottom, margin-left | covered | off the line
+m-auto | margin-top, margin-right, margin-bottom, margin-left | covered | off the line
+mx-0 | margin-inline-start, margin-inline-end | not covered | on the line
+mx-1 | margin-inline-start, margin-inline-end | not covered | on the line
+mx-2 | margin-inline-start, margin-inline-end | not covered | on the line
+mx-3 | margin-inline-start, margin-inline-end | not covered | on the line
+mx-4 | margin-inline-start, margin-inline-end | not covered | on the line
+mx-5 | margin-inline-start, margin-inline-end | not covered | on the line
+mx-auto | margin-inline-start, margin-inline-end | not covered | on the line
+my-0 | margin-block-start, margin-block-end | not covered | on the line
+my-1 | margin-block-start, margin-block-end | not covered | on the line
+my-2 | margin-block-start, margin-block-end | not covered | on the line
+my-3 | margin-block-start, margin-block-end | not covered | on the line
+my-4 | margin-block-start, margin-block-end | not covered | on the line
+my-5 | margin-block-start, margin-block-end | not covered | on the line
+my-auto | margin-block-start, margin-block-end | not covered | on the line
+ms-0 | margin-inline-start | not covered | on the line
+ms-1 | margin-inline-start | not covered | on the line
+ms-2 | margin-inline-start | not covered | on the line
+ms-3 | margin-inline-start | not covered | on the line
+ms-4 | margin-inline-start | not covered | on the line
+ms-5 | margin-inline-start | not covered | on the line
+ms-auto | margin-inline-start | not covered | on the line
+me-0 | margin-inline-end | not covered | on the line
+me-1 | margin-inline-end | not covered | on the line
+me-2 | margin-inline-end | not covered | on the line
+me-3 | margin-inline-end | not covered | on the line
+me-4 | margin-inline-end | not covered | on the line
+me-5 | margin-inline-end | not covered | on the line
+me-auto | margin-inline-end | not covered | on the line
+mt-0 | margin-top | covered | off the line
+mt-1 | margin-top | covered | off the line
+mt-2 | margin-top | covered | off the line
+mt-3 | margin-top | covered | off the line
+mt-4 | margin-top | covered | off the line
+mt-5 | margin-top | covered | off the line
+mt-auto | margin-top | covered | off the line
+mb-0 | margin-bottom | covered | off the line
+mb-1 | margin-bottom | covered | off the line
+mb-2 | margin-bottom | covered | off the line
+mb-3 | margin-bottom | covered | off the line
+mb-4 | margin-bottom | covered | off the line
+mb-5 | margin-bottom | covered | off the line
+mb-auto | margin-bottom | covered | off the line
+p-0 | padding-top, padding-right, padding-bottom, padding-left | covered | off the line
+p-1 | padding-top, padding-right, padding-bottom, padding-left | covered | off the line
+p-2 | padding-top, padding-right, padding-bottom, padding-left | covered | off the line
+p-3 | padding-top, padding-right, padding-bottom, padding-left | covered | off the line
+p-4 | padding-top, padding-right, padding-bottom, padding-left | covered | off the line
+p-5 | padding-top, padding-right, padding-bottom, padding-left | covered | off the line
+px-0 | padding-inline-start, padding-inline-end | not covered | on the line
+px-1 | padding-inline-start, padding-inline-end | not covered | on the line
+px-2 | padding-inline-start, padding-inline-end | not covered | on the line
+px-3 | padding-inline-start, padding-inline-end | not covered | on the line
+px-4 | padding-inline-start, padding-inline-end | not covered | on the line
+px-5 | padding-inline-start, padding-inline-end | not covered | on the line
+py-0 | padding-block-start, padding-block-end | not covered | on the line
+py-1 | padding-block-start, padding-block-end | not covered | on the line
+py-2 | padding-block-start, padding-block-end | not covered | on the line
+py-3 | padding-block-start, padding-block-end | not covered | on the line
+py-4 | padding-block-start, padding-block-end | not covered | on the line
+py-5 | padding-block-start, padding-block-end | not covered | on the line
+ps-0 | padding-inline-start | not covered | on the line
+ps-1 | padding-inline-start | not covered | on the line
+ps-2 | padding-inline-start | not covered | on the line
+ps-3 | padding-inline-start | not covered | on the line
+ps-4 | padding-inline-start | not covered | on the line
+ps-5 | padding-inline-start | not covered | on the line
+pe-0 | padding-inline-end | not covered | on the line
+pe-1 | padding-inline-end | not covered | on the line
+pe-2 | padding-inline-end | not covered | on the line
+pe-3 | padding-inline-end | not covered | on the line
+pe-4 | padding-inline-end | not covered | on the line
+pe-5 | padding-inline-end | not covered | on the line
+pt-0 | padding-top | covered | off the line
+pt-1 | padding-top | covered | off the line
+pt-2 | padding-top | covered | off the line
+pt-3 | padding-top | covered | off the line
+pt-4 | padding-top | covered | off the line
+pt-5 | padding-top | covered | off the line
+pb-0 | padding-bottom | covered | off the line
+pb-1 | padding-bottom | covered | off the line
+pb-2 | padding-bottom | covered | off the line
+pb-3 | padding-bottom | covered | off the line
+pb-4 | padding-bottom | covered | off the line
+pb-5 | padding-bottom | covered | off the line

@@ -1,0 +1,14 @@
+
+> @orkestrel/veneer@0.0.1 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/veneer-usp/tmp/probe/base
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  02:21:56
+   Duration  2.23s (transform 222ms, setup 91ms, import 371ms, tests 1.59s, environment 0ms)
+

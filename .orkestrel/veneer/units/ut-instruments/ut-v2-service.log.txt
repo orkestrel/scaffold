@@ -1,0 +1,92 @@
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer-ut/tmp/probe/base
+
+··x··x···x········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > derives the shared class names, and mounts an element for every one of them
+AssertionError: expected [ 'caption-bottom', …(23) ] to deeply equal [ 'caption-bottom', …(25) ]
+
+- Expected
++ Received
+
+@@ -21,8 +21,6 @@
+    "end-50",
+    "start-0",
+    "start-100",
+    "start-50",
+    "table",
+-   "text-nowrap",
+-   "text-wrap",
+  ]
+
+ ❯ tests/service/tailwind/consumer.test.ts:130:32
+    128|    'The consumer profile declares no exclusion line',
+    129|   ).names
+    130|   expect([...excluded].sort()).toEqual(shared.filter((name) => !import…
+       |                                ^
+    131|   // The fixture is held to the derived set rather than maintained bes…
+    132|   // set gains is a name the markup has to carry before this proof can…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > keeps a shared name on the line while its importance covers only some of the longhands Tailwind declares
+AssertionError: expected [ 'caption-bottom', …(23) ] to deeply equal [ 'caption-bottom', …(25) ]
+
+- Expected
++ Received
+
+@@ -21,8 +21,6 @@
+    "end-50",
+    "start-0",
+    "start-100",
+    "start-50",
+    "table",
+-   "text-nowrap",
+-   "text-wrap",
+  ]
+
+ ❯ tests/service/tailwind/consumer.test.ts:240:32
+    238|   ).names
+    239|   expect(excluded).toContain('col-1')
+    240|   expect([...excluded].sort()).toEqual(shared.filter((name) => !import…
+       |                                ^
+    241|  })
+    242|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > fills Tailwind reset only under the preflight profile
+AssertionError: expected [ '--color-black', …(2) ] to deeply equal [ '--spacing' ]
+
+- Expected
++ Received
+
+  [
++   "--color-black",
++   "--color-white",
+    "--spacing",
+  ]
+
+ ❯ tests/service/tailwind/profiles.test.ts:70:30
+     68|   // profile keeps that one variable, and a token the reset or a stati…
+     69|   // breaks the equality.
+     70|   expect(tailwind.variables).toEqual(['--spacing'])
+       |                              ^
+     71|   const preflight = new SheetReader(preflightProfile)
+     72|   expect(preflight.layers.map((layer) => layer.name)).toEqual(['theme'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  3 failed | 15 passed (18)
+   Start at  01:59:11
+   Duration  13.64s (transform 506ms, setup 3.80s, import 2.33s, tests 6.96s, environment 0ms)
+
+exit 1

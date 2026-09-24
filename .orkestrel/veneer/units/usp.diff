@@ -1,0 +1,932 @@
+diff --git a/app/browser/sections/InteractionSection.ts b/app/browser/sections/InteractionSection.ts
+new file mode 100644
+index 0000000..027a050
+--- /dev/null
++++ b/app/browser/sections/InteractionSection.ts
+@@ -0,0 +1,21 @@
++import { INTERACTION_COPY, INTERACTION_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared text selection and pointer events specimens into a named Interaction region.
++ *
++ * @example
++ * ```ts
++ * const section = new InteractionSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class InteractionSection extends SpecimenSection {
++	/**
++	 * Mounts the Interaction region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, INTERACTION_COPY, INTERACTION_SPECIMENS)
++	}
++}
+diff --git a/app/browser/sections/SpacingSection.ts b/app/browser/sections/SpacingSection.ts
+new file mode 100644
+index 0000000..cbb638f
+--- /dev/null
++++ b/app/browser/sections/SpacingSection.ts
+@@ -0,0 +1,22 @@
++import { SPACING_COPY, SPACING_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared margin, padding, auto margin, and responsive spacing specimens into a named
++ * Spacing region.
++ *
++ * @example
++ * ```ts
++ * const section = new SpacingSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class SpacingSection extends SpecimenSection {
++	/**
++	 * Mounts the Spacing region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, SPACING_COPY, SPACING_SPECIMENS)
++	}
++}
+diff --git a/src/styles/utilities/_interaction.scss b/src/styles/utilities/_interaction.scss
+new file mode 100644
+index 0000000..789a3e1
+--- /dev/null
++++ b/src/styles/utilities/_interaction.scss
+@@ -0,0 +1,11 @@
++@use '../mixins' as *;
++
++@layer utilities {
++	// Neither of the release's interaction entries is responsive, so the walk writes each at the
++	// empty infix alone, ahead of every media block. The pointer-events entry shares the `pe` class
++	// with the padding-end entry, and its `none` and `auto` keys are what keep the two apart.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(user-select, user-select, (all, auto, none), $infix);
++		@include utility(pe, pointer-events, (none, auto), $infix);
++	}
++}
+diff --git a/src/styles/utilities/_spacing.scss b/src/styles/utilities/_spacing.scss
+new file mode 100644
+index 0000000..ba19dc5
+--- /dev/null
++++ b/src/styles/utilities/_spacing.scss
+@@ -0,0 +1,41 @@
++@use 'sass:map';
++@use '../mixins' as *;
++
++@layer utilities {
++	// Stands in for the release's `$spacers` map. The zero step stays a literal, and each other step
++	// reads the density-scaled `--vn-space-*` token that resolves to the release's length, the scale
++	// the components' own internal space reads.
++	$spacers: (
++		0: 0,
++		1: var(--vn-space-2),
++		2: var(--vn-space-4),
++		3: var(--vn-space-8),
++		4: var(--vn-space-12),
++		5: var(--vn-space-24),
++	);
++	// The release merges an `auto` step into the margin entries alone.
++	$margins: map.merge(
++		$spacers,
++		(
++			auto: auto,
++		)
++	);
++	// The release's end and start entries write the physical right and left sides, so the partial
++	// writes those properties rather than the logical ones.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(m, margin, $margins, $infix, true);
++		@include utility(mx, margin-right margin-left, $margins, $infix, true);
++		@include utility(my, margin-top margin-bottom, $margins, $infix, true);
++		@include utility(mt, margin-top, $margins, $infix, true);
++		@include utility(me, margin-right, $margins, $infix, true);
++		@include utility(mb, margin-bottom, $margins, $infix, true);
++		@include utility(ms, margin-left, $margins, $infix, true);
++		@include utility(p, padding, $spacers, $infix, true);
++		@include utility(px, padding-right padding-left, $spacers, $infix, true);
++		@include utility(py, padding-top padding-bottom, $spacers, $infix, true);
++		@include utility(pt, padding-top, $spacers, $infix, true);
++		@include utility(pe, padding-right, $spacers, $infix, true);
++		@include utility(pb, padding-bottom, $spacers, $infix, true);
++		@include utility(ps, padding-left, $spacers, $infix, true);
++	}
++}
+diff --git a/tests/app/browser/sections/InteractionSection.test.ts b/tests/app/browser/sections/InteractionSection.test.ts
+new file mode 100644
+index 0000000..9cf7829
+--- /dev/null
++++ b/tests/app/browser/sections/InteractionSection.test.ts
+@@ -0,0 +1,112 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	INTERACTION_COPY,
++	INTERACTION_SPECIMENS,
++	InteractionSection,
++	SpecimenSection,
++} from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readHit, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { POINTER_EVENTS_VALUES, USER_SELECT_VALUES } from '../../../setupStyles.js'
++
++// The pointer case hit-tests the specimens as the published cascade lays them out, so the cascade
++// has to be in the document before a point is read.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('InteractionSection', () => {
++	it('renders every declared specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new InteractionSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Interaction region')
++			expect(region.getAttribute('aria-label')).toBe('Interaction')
++			expect(region.querySelector('p')?.textContent).toBe(INTERACTION_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Text selection',
++				'Pointer events',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				INTERACTION_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Every value the release writes is demonstrated, and every element carrying one of the
++			// classes opens its text with that class's full name.
++			const names = [
++				...USER_SELECT_VALUES.map((value) => `user-select-${value}`),
++				...POINTER_EVENTS_VALUES.map((value) => `pe-${value}`),
++			]
++			expect(names.filter((name) => region.querySelector(`.${name}`) === null)).toEqual([])
++			expect(
++				names.flatMap((name) =>
++					[...region.querySelectorAll(`.${name}`)].flatMap((element) =>
++						(element.textContent ?? '').startsWith(name) ? [] : [name],
++					),
++				),
++			).toEqual([])
++			// The link the pointer passes through is kept out of the focus order and announced as
++			// unavailable, as the release's own example marks it.
++			const passed = requireValue(
++				region.querySelector('[data-specimen="Pointer events"] a.pe-none'),
++				'No pointer-free link',
++			)
++			expect([passed.getAttribute('tabindex'), passed.getAttribute('aria-disabled')]).toEqual([
++				'-1',
++				'true',
++			])
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(Object.isFrozen(INTERACTION_COPY)).toBe(true)
++			expect(Object.isFrozen(INTERACTION_SPECIMENS)).toBe(true)
++			expect(INTERACTION_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('passes the pointer through the pointer-free link and stops it on each link that takes it back', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new InteractionSection(host)
++		try {
++			const specimen = requireValue(
++				host.querySelector('[data-specimen="Pointer events"]'),
++				'No pointer events specimen',
++			)
++			const passed = requireValue(specimen.querySelector('a.pe-none'), 'No pointer-free link')
++			// The hit test at the link's centre reaches the line that holds the link.
++			expect(readHit(passed)).toBe(passed.parentElement)
++			const taken = [...specimen.querySelectorAll('a.pe-auto')]
++			expect(taken).toHaveLength(2)
++			expect(taken.map((link) => readHit(link))).toEqual(taken)
++			expect(requireValue(taken.at(-1), 'No re-enabled link').closest('.pe-none')).not.toBeNull()
++			const lines = [...host.querySelectorAll('[data-specimen="Text selection"] p')]
++			expect(lines.map((line) => readStyle(line, 'user-select'))).toEqual(USER_SELECT_VALUES)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new InteractionSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Interaction region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/app/browser/sections/SpacingSection.test.ts b/tests/app/browser/sections/SpacingSection.test.ts
+new file mode 100644
+index 0000000..aa78f38
+--- /dev/null
++++ b/tests/app/browser/sections/SpacingSection.test.ts
+@@ -0,0 +1,242 @@
++import type { SectionInterface } from '@app/browser'
++import { SPACING_COPY, SPACING_SPECIMENS, SpacingSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readPixels } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { visitBreakpoint } from '../../../setupBrowser.js'
++import {
++	BREAKPOINT_INFIXES,
++	SPACING_SIDE_CASES,
++	SPACING_STEP_CASES,
++	VIEWPORT_WIDTHS,
++} from '../../../setupStyles.js'
++
++// The geometry case reads the specimens as the published cascade and the shell lay them out, so
++// both stylesheets have to be in the document before a box is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('SpacingSection', () => {
++	it('renders every declared specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new SpacingSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Spacing region')
++			expect(region.getAttribute('aria-label')).toBe('Spacing')
++			expect(region.querySelector('p')?.textContent).toBe(SPACING_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Margin steps',
++				'Padding steps',
++				'Side margins',
++				'Side padding',
++				'Auto margins',
++				'Responsive spacing',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				SPACING_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			// Every step and every side the release writes is demonstrated, and every auto margin, so
++			// the list of misses is empty.
++			const sides = SPACING_SIDE_CASES.filter(({ suffix }) => suffix !== '')
++			expect(
++				[
++					...SPACING_STEP_CASES.flatMap(({ step }) => [
++						`[data-specimen="Margin steps"] .card > .card.m-${String(step)} > .card-body`,
++						`[data-specimen="Padding steps"] .vstack > .card.p-${String(step)}`,
++					]),
++					...sides.flatMap(({ suffix }) => [
++						`[data-specimen="Side margins"] .card > .card.m${suffix}-4 > .card-body`,
++						`[data-specimen="Side padding"] .vstack > .card.p${suffix}-4`,
++					]),
++					...SPACING_SIDE_CASES.map(
++						({ suffix }) => `[data-specimen="Auto margins"] .card.m${suffix}-auto > .card-body`,
++					),
++					...BREAKPOINT_INFIXES.map(
++						(infix) => `[data-specimen="Responsive spacing"] .card[class*="-${infix}-"]`,
++					),
++				].filter((selector) => region.querySelector(selector) === null),
++			).toEqual([])
++			// Every element carrying a spacing class names each such class in its own text, the card
++			// body inside it included, so a reader sees which class sets the room it shows.
++			const pattern = /^[mp][xytebs]?(?:-[a-z]+)?-(?:\d|auto)$/u
++			const carriers = [...region.querySelectorAll('[class]')].filter((element) =>
++				[...element.classList].some((name) => pattern.test(name)),
++			)
++			expect(carriers).not.toEqual([])
++			expect(
++				carriers.flatMap((element) =>
++					[...element.classList].filter(
++						(name) =>
++							pattern.test(name) && !(element.textContent ?? '').split(/\s+/u).includes(name),
++					),
++				),
++			).toEqual([])
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(Object.isFrozen(SPACING_COPY)).toBe(true)
++			expect(Object.isFrozen(SPACING_SPECIMENS)).toBe(true)
++			expect(SPACING_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it.each(VIEWPORT_WIDTHS)(
++		'opens the room each step and side sets between the card edges at the %i variant',
++		async (width) => {
++			const host = mount(build('div'))
++			const section: SectionInterface = new SpacingSection(host)
++			try {
++				// A margin card sits inside an outer card, so the room on each side is the distance
++				// from the outer card's inner border edge to the margin card's edge, in the order a
++				// margin shorthand names the sides. Every step is read on its own card, and every side
++				// on the step-4 card of its entry.
++				const margins = [
++					...SPACING_STEP_CASES.map(({ step, pixels }) => ({
++						selector: `[data-specimen="Margin steps"] .card.m-${String(step)}`,
++						expected: [pixels, pixels, pixels, pixels],
++					})),
++					...SPACING_SIDE_CASES.filter(({ suffix }) => suffix !== '').map(({ suffix, sides }) => ({
++						selector: `[data-specimen="Side margins"] .card.m${suffix}-4`,
++						expected: ['top', 'right', 'bottom', 'left'].map((side) =>
++							sides.includes(side) ? 24 : 0,
++						),
++					})),
++				]
++				const reading = await visitBreakpoint(width, () => ({
++					page: document.documentElement.scrollWidth,
++					margins: margins.map(({ selector }) => {
++						const inner = requireValue(host.querySelector(selector), `No ${selector}`)
++						const outer = requireValue(inner.parentElement, `No outer card for ${selector}`)
++						const box = inner.getBoundingClientRect()
++						const frame = outer.getBoundingClientRect()
++						return [
++							box.top - frame.top - readPixels(outer, 'border-top-width'),
++							frame.right - readPixels(outer, 'border-right-width') - box.right,
++							frame.bottom - readPixels(outer, 'border-bottom-width') - box.bottom,
++							box.left - frame.left - readPixels(outer, 'border-left-width'),
++						].map((room) => Math.round(room))
++					}),
++					// A padded card's label starts where its padding ends, so the room before the label's
++					// text is the padding on that side. The room above it also carries the line's
++					// half-leading, so the start side is the one read.
++					padding: SPACING_STEP_CASES.map(({ step }) => {
++						const card = requireValue(
++							host.querySelector(`[data-specimen="Padding steps"] .card.p-${String(step)}`),
++							`No padding step ${String(step)}`,
++						)
++						const range = document.createRange()
++						range.selectNodeContents(card)
++						return Math.round(
++							range.getBoundingClientRect().left -
++								card.getBoundingClientRect().left -
++								readPixels(card, 'border-left-width'),
++						)
++					}),
++					responsive: [
++						readPixels(
++							requireValue(
++								host.querySelector('[data-specimen="Responsive spacing"] .card.m-1'),
++								'No responsive margin',
++							),
++							'margin-top',
++						),
++						readPixels(
++							requireValue(
++								host.querySelector('[data-specimen="Responsive spacing"] .card.p-1'),
++								'No responsive padding',
++							),
++							'padding-top',
++						),
++					],
++				}))
++				expect(reading.margins).toEqual(margins.map(({ expected }) => expected))
++				expect(reading.padding).toEqual(SPACING_STEP_CASES.map(({ pixels }) => pixels))
++				// The narrow variant sits below the sm boundary and the wide one between the xl and xxl
++				// boundaries, so each responsive card takes its first step at one, and at the other the
++				// margin card takes its xl step while the padding card has not reached its xxl step.
++				expect(reading.responsive).toEqual(width < 576 ? [4, 4] : [48, 24])
++				expect(reading.page).toBe(width)
++			} finally {
++				section.destroy()
++				host.remove()
++			}
++		},
++	)
++
++	it('pushes each auto-margin card to the end, the start, or the middle of its line', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new SpacingSection(host)
++		try {
++			const specimen = requireValue(
++				host.querySelector('[data-specimen="Auto margins"]'),
++				'No auto margin specimen',
++			)
++			const edges = [
++				'ms-auto',
++				'me-auto',
++				'mx-auto',
++				'mt-auto',
++				'mb-auto',
++				'my-auto',
++				'm-auto',
++			].map((name) => {
++				const card = requireValue(specimen.querySelector(`.${name}`), `No .${name}`)
++				const box = card.getBoundingClientRect()
++				const line = requireValue(
++					card.parentElement,
++					`No line for .${name}`,
++				).getBoundingClientRect()
++				return [
++					name,
++					Math.round(box.top - line.top),
++					Math.round(line.right - box.right),
++					Math.round(line.bottom - box.bottom),
++					Math.round(box.left - line.left),
++				]
++			})
++			const [ms, me, mx, mt, mb, my, m] = edges.map(([, ...room]) => room)
++			// An auto margin takes the room left on its side: the end margin's card holds the start,
++			// the start margin's card holds the end, and a pair of them shares the room evenly.
++			expect(ms?.[1]).toBe(0)
++			expect(ms?.[3]).toBeGreaterThan(0)
++			expect(me?.[3]).toBe(0)
++			expect(mx?.[1]).toBe(mx?.[3])
++			expect(mx?.[1]).toBeGreaterThan(0)
++			expect(mt?.[2]).toBe(0)
++			expect(mt?.[0]).toBeGreaterThan(0)
++			expect(mb?.[0]).toBe(0)
++			expect(mb?.[2]).toBeGreaterThan(0)
++			expect(my?.[0]).toBe(my?.[2])
++			expect(m?.[0]).toBe(m?.[2])
++			expect(m?.[1]).toBe(m?.[3])
++			expect(m?.[1]).toBeGreaterThan(0)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new SpacingSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Spacing region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/src/styles/utilities/interaction.test.ts b/tests/src/styles/utilities/interaction.test.ts
+new file mode 100644
+index 0000000..87b3a50
+--- /dev/null
++++ b/tests/src/styles/utilities/interaction.test.ts
+@@ -0,0 +1,198 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import {
++	driveHold,
++	findRule,
++	readHit,
++	readPixels,
++	readStyle,
++	releasePointer,
++	traverseAccessible,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { mountTraversalStart, scene } from '../../../setupBrowser.js'
++import {
++	BREAKPOINT_INFIXES,
++	PLACEMENT_BOX,
++	PLACEMENT_CONTAINER,
++	POINTER_EVENTS_VALUES,
++	USER_SELECT_VALUES,
++} from '../../../setupStyles.js'
++
++afterEach(async () => {
++	document.getSelection()?.removeAllRanges()
++	await releasePointer()
++	scene.clear()
++})
++
++describe('interaction utilities', () => {
++	it('resolves each selection and pointer value the release writes', () => {
++		const host = scene.mount(
++			[
++				...USER_SELECT_VALUES.map((value) => `<p class="user-select-${value}">Selection</p>`),
++				...POINTER_EVENTS_VALUES.map((value) => `<p class="pe-${value}">Pointer</p>`),
++			].join(''),
++		)
++		expect(
++			USER_SELECT_VALUES.map((value) =>
++				readStyle(
++					requireValue(host.querySelector(`.user-select-${value}`), `No .user-select-${value}`),
++					'user-select',
++				),
++			),
++		).toEqual(USER_SELECT_VALUES)
++		expect(
++			POINTER_EVENTS_VALUES.map((value) =>
++				readStyle(
++					requireValue(host.querySelector(`.pe-${value}`), `No .pe-${value}`),
++					'pointer-events',
++				),
++			),
++		).toEqual(POINTER_EVENTS_VALUES)
++	})
++
++	it('selects the whole line, places a caret, or selects nothing under one press, by value', async () => {
++		// A press on an all-selecting line selects the whole line, a press on an ordinary line places
++		// a caret and selects no text, and a press on an unselectable line leaves no selection at all,
++		// so each value reads apart from the other two.
++		const host = scene.mount(
++			USER_SELECT_VALUES.map(
++				(value) => `<p class="user-select-${value}" style="font-size: 2rem">Line ${value}</p>`,
++			).join(''),
++		)
++		const selection = requireValue(document.getSelection(), 'No selection')
++		const readings: Array<readonly [string, string, string]> = []
++		for (const value of USER_SELECT_VALUES) {
++			selection.removeAllRanges()
++			const line = requireValue(
++				host.querySelector<HTMLElement>(`.user-select-${value}`),
++				`No .user-select-${value}`,
++			)
++			await driveHold(() => line, `Line ${value}`)
++			await releasePointer()
++			readings.push([value, selection.type, selection.toString()])
++		}
++		expect(readings).toEqual([
++			['all', 'Range', 'Line all'],
++			['auto', 'Caret', ''],
++			['none', 'None', ''],
++		])
++	})
++
++	it('lets the pointer reach the element beneath a box that takes no pointer events', () => {
++		// Each cover spans the button beneath it. The `.pe-none` cover lets the hit test through to
++		// the button; the `.pe-auto` cover takes the hit itself, and so does a `.pe-auto` child inside
++		// a `.pe-none` cover, which is how the release re-enables one element inside a disabled one.
++		const host = scene.mount(
++			['pe-none', 'pe-auto']
++				.map(
++					(name) =>
++						`<div style="${PLACEMENT_CONTAINER}"><button type="button" style="${PLACEMENT_CONTAINER}">Beneath</button><div class="${name}" style="position: absolute; inset: 0"></div></div>`,
++				)
++				.join('') +
++				`<div style="${PLACEMENT_CONTAINER}"><button type="button" style="${PLACEMENT_CONTAINER}">Beneath</button><div class="pe-none" style="position: absolute; inset: 0"><div class="pe-auto" style="${PLACEMENT_CONTAINER}"></div></div></div>`,
++		)
++		const [none, auto, parent] = [...host.children].map((frame) =>
++			requireValue(frame.querySelector(':scope > .pe-none, :scope > .pe-auto'), 'No cover'),
++		)
++		const beneath = requireValue(none?.previousElementSibling, 'No button beneath')
++		expect(readHit(requireValue(none, 'No none cover'))).toBe(beneath)
++		const covering = requireValue(auto, 'No auto cover')
++		expect(readHit(covering)).toBe(covering)
++		const child = requireValue(parent?.querySelector('.pe-auto'), 'No re-enabled child')
++		expect(readHit(child)).toBe(child)
++	})
++
++	it('keeps a link that takes no pointer events in the keyboard focus order', async () => {
++		// The class stops the pointer alone, so the next Tab from the start control reaches the link
++		// the pointer passes through.
++		mountTraversalStart()
++		const host = scene.mount('<a class="pe-none" href="#main">Pointer-free link</a>')
++		const link = requireValue(host.querySelector('a'), 'No pointer-free link')
++		expect(readStyle(link, 'pointer-events')).toBe('none')
++		expect(await traverseAccessible('Pointer-free link')).toBe(link)
++	})
++
++	it('writes the pointer values beside the padding steps under the one class', () => {
++		// The `pe` class writes the padding-end steps and the pointer-events values alike, and the
++		// keys keep the two apart, so an element can carry one of each and resolve both.
++		const host = scene.mount('<div class="pe-3 pe-none"></div>')
++		const box = requireValue(host.querySelector('.pe-3'), 'No box')
++		expect([readPixels(box, 'padding-right'), readStyle(box, 'pointer-events')]).toEqual([
++			16,
++			'none',
++		])
++	})
++
++	it('writes no breakpoint infix, so no interaction class answers to a boundary', () => {
++		// The control is a recorded class the same lookup finds, so an empty result is the absence of
++		// the infixed classes rather than a lookup that finds nothing.
++		expect(findRule('.user-select-none')).not.toBeUndefined()
++		expect(findRule('.pe-none')).not.toBeUndefined()
++		expect(
++			BREAKPOINT_INFIXES.flatMap((infix) => [
++				...USER_SELECT_VALUES.flatMap((value) =>
++					findRule(`.user-select-${infix}-${value}`) === undefined
++						? []
++						: [`user-select-${infix}-${value}`],
++				),
++				...POINTER_EVENTS_VALUES.flatMap((value) =>
++					findRule(`.pe-${infix}-${value}`) === undefined ? [] : [`pe-${infix}-${value}`],
++				),
++			]),
++		).toEqual([])
++	})
++
++	it('resolves the same values inside a dark island and under a doubled density factor', () => {
++		const host = scene.mount(
++			'<div data-bs-theme="dark"><p class="user-select-none pe-none">Unselectable and unreachable</p></div>',
++		)
++		const line = requireValue(host.querySelector('.user-select-none'), 'No line')
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect([readStyle(line, 'user-select'), readStyle(line, 'pointer-events')]).toEqual([
++				'none',
++				'none',
++			])
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++
++	it('keeps each value over a later unlayered consumer rule', () => {
++		const host = scene.mount(
++			'<p class="probe user-select-all pe-none">Utility</p><p class="probe">Consumer</p>',
++		)
++		scene.load('.probe { user-select: text; pointer-events: stroke }')
++		const [utility, consumer] = [...host.querySelectorAll('.probe')].map((element) => [
++			readStyle(element, 'user-select'),
++			readStyle(element, 'pointer-events'),
++		])
++		expect([utility, consumer]).toEqual([
++			['all', 'none'],
++			['text', 'stroke'],
++		])
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount(
++			`<div style="${PLACEMENT_BOX}" class="user-select-none pe-none"></div>`,
++		)
++		const box = requireValue(host.querySelector('.pe-none'), 'No box')
++		// An unlayered `!important` sorts after every layered one, so the shipped utility keeps its
++		// value; the same declaration re-opened inside the utilities layer arrives after the shipped
++		// rule in that layer and wins.
++		scene.load('.pe-none { pointer-events: auto !important; user-select: text !important }')
++		expect([readStyle(box, 'pointer-events'), readStyle(box, 'user-select')]).toEqual([
++			'none',
++			'none',
++		])
++		scene.load(
++			'@layer utilities { .pe-none { pointer-events: auto !important; user-select: text !important } }',
++		)
++		expect([readStyle(box, 'pointer-events'), readStyle(box, 'user-select')]).toEqual([
++			'auto',
++			'text',
++		])
++	})
++})
+diff --git a/tests/src/styles/utilities/spacing.test.ts b/tests/src/styles/utilities/spacing.test.ts
+new file mode 100644
+index 0000000..e3a0ce4
+--- /dev/null
++++ b/tests/src/styles/utilities/spacing.test.ts
+@@ -0,0 +1,237 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { findRule, readPixels } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene, visitBreakpoint } from '../../../setupBrowser.js'
++import {
++	BREAKPOINT_INFIXES,
++	GRID_BREAKPOINT_CASES,
++	PLACEMENT_BOX,
++	PLACEMENT_CONTAINER,
++	SPACING_PROPERTY_CASES,
++	SPACING_SIDE_CASES,
++	SPACING_STEP_CASES,
++} from '../../../setupStyles.js'
++
++// The sides the shorthand entry sets, which are every side a computed style reports for a spacing
++// property, in the shorthand's own order.
++const SIDES = requireValue(
++	SPACING_SIDE_CASES.find(({ suffix }) => suffix === ''),
++	'No shorthand entry',
++).sides
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('spacing utilities', () => {
++	it.each(GRID_BREAKPOINT_CASES)(
++		'resolves every side and step around the $name boundary',
++		async ({ name, boundary, readings }) => {
++			const infix = boundary === 0 ? '' : `-${name}`
++			// Each box sits alone in a flex container of definite size, so an `auto` margin absorbs the
++			// container's free space on its axis rather than resolving to zero, and every other step
++			// reads as the length it sets.
++			const classes = SPACING_PROPERTY_CASES.flatMap(({ initial, auto }) =>
++				SPACING_SIDE_CASES.flatMap(({ suffix }) =>
++					[...SPACING_STEP_CASES.map(({ step }) => String(step)), ...(auto ? ['auto'] : [])].map(
++						(step) => `${initial}${suffix}${infix}-${step}`,
++					),
++				),
++			)
++			const host = scene.mount(
++				classes
++					.map(
++						(listed) =>
++							`<div style="${PLACEMENT_CONTAINER}; display: flex"><div class="${listed}" style="${PLACEMENT_BOX}"></div></div>`,
++					)
++					.join(''),
++			)
++			for (const viewport of readings) {
++				const reading = await visitBreakpoint(viewport, () => ({
++					width: window.innerWidth,
++					sides: SPACING_PROPERTY_CASES.flatMap(({ property, initial, auto }) =>
++						SPACING_SIDE_CASES.flatMap(({ suffix, sides }) =>
++							[
++								...SPACING_STEP_CASES.map(({ step, pixels }) => [String(step), pixels] as const),
++								...(auto ? [['auto', undefined] as const] : []),
++							].map(([step, pixels]) => {
++								const box = requireValue(
++									host.querySelector(`.${initial}${suffix}${infix}-${step}`),
++									`No .${initial}${suffix}${infix}-${step}`,
++								)
++								return {
++									name: `${initial}${suffix}${infix}-${step}`,
++									read: SIDES.map((side) => readPixels(box, `${property}-${side}`)),
++									// An `auto` margin shares its axis's free space with the other `auto`
++									// margin on that axis: the 380px left beside the 20px box, and the 190px
++									// left above and below the 10px box.
++									expected: SIDES.map((side) => {
++										if (viewport < boundary || !sides.includes(side)) return 0
++										if (pixels !== undefined) return pixels
++										const axis =
++											side === 'top' || side === 'bottom' ? ['top', 'bottom'] : ['right', 'left']
++										const free = axis[0] === 'top' ? 190 : 380
++										return free / axis.filter((edge) => sides.includes(edge)).length
++									}),
++								}
++							}),
++						),
++					),
++				}))
++				expect(reading.width).toBe(viewport)
++				expect(
++					reading.sides.filter(({ read, expected }) => read.join() !== expected.join()),
++				).toEqual([])
++				expect(reading.sides).toHaveLength(classes.length)
++			}
++		},
++	)
++
++	it('writes the end and start sides as the physical right and left sides in either direction', () => {
++		const host = scene.mount(
++			'<div dir="rtl"><div class="me-3 ps-2"></div></div><div dir="ltr"><div class="me-3 ps-2"></div></div>',
++		)
++		for (const box of host.querySelectorAll('.me-3')) {
++			expect([readPixels(box, 'margin-right'), readPixels(box, 'margin-left')]).toEqual([16, 0])
++			expect([readPixels(box, 'padding-left'), readPixels(box, 'padding-right')]).toEqual([8, 0])
++		}
++		expect(host.querySelectorAll('.me-3')).toHaveLength(2)
++	})
++
++	it('resolves a later entry over an earlier one at one infix, and a wider infix over a narrower one', async () => {
++		// The release writes every entry inside each boundary's block, in its map order, so at one
++		// infix a side entry follows the shorthand entry, and a wider infix's block follows every
++		// narrower one whichever entry each class belongs to.
++		const host = scene.mount(
++			'<div class="p-3 px-1"></div><div class="m-3 ms-1"></div><div class="m-md-3 mx-sm-1"></div>',
++		)
++		const padded = requireValue(host.querySelector('.px-1'), 'No padding pair')
++		const margined = requireValue(host.querySelector('.ms-1'), 'No margin pair')
++		const widths = requireValue(host.querySelector('.m-md-3'), 'No responsive pair')
++		expect(SIDES.map((side) => readPixels(padded, `padding-${side}`))).toEqual([16, 4, 16, 4])
++		expect(SIDES.map((side) => readPixels(margined, `margin-${side}`))).toEqual([16, 16, 16, 4])
++		// Each visit resizes the one page viewport, so the readings run one after the other.
++		const below = await visitBreakpoint(767, () =>
++			SIDES.map((side) => readPixels(widths, `margin-${side}`)),
++		)
++		const at = await visitBreakpoint(768, () =>
++			SIDES.map((side) => readPixels(widths, `margin-${side}`)),
++		)
++		expect([below, at]).toEqual([
++			[0, 4, 0, 4],
++			[16, 16, 16, 16],
++		])
++	})
++
++	it('reads each step from its space token, so the density factor and a retuned token move every side', () => {
++		const host = scene.mount(
++			SPACING_PROPERTY_CASES.flatMap(({ initial }) =>
++				SPACING_SIDE_CASES.flatMap(({ suffix }) =>
++					SPACING_STEP_CASES.map(
++						({ step }) => `<div class="${initial}${suffix}-${String(step)}"></div>`,
++					),
++				),
++			).join(''),
++		)
++		const scaled = SPACING_STEP_CASES.filter(({ token }) => token !== undefined)
++		expect(scaled).toHaveLength(SPACING_STEP_CASES.length - 1)
++		try {
++			// Each phase reads every side of every step: at rest, with the density factor doubled,
++			// and with the factor back and each token retuned one pixel past its resting length. The
++			// zero step reads no token, so it stays zero in every phase.
++			for (const phase of ['rest', 'density', 'retune'] as const) {
++				if (phase === 'density')
++					document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++				if (phase === 'retune') {
++					document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++					for (const { token, pixels } of scaled)
++						host.style.setProperty(requireValue(token, 'No step token'), `${String(pixels + 1)}px`)
++				}
++				const misses = SPACING_PROPERTY_CASES.flatMap(({ property, initial }) =>
++					SPACING_SIDE_CASES.flatMap(({ suffix, sides }) =>
++						SPACING_STEP_CASES.flatMap(({ step, pixels, token }) => {
++							const name = `${initial}${suffix}-${String(step)}`
++							const box = requireValue(host.querySelector(`.${name}`), `No .${name}`)
++							const expected =
++								token === undefined
++									? 0
++									: phase === 'retune'
++										? pixels + 1
++										: phase === 'density'
++											? pixels * 2
++											: pixels
++							return sides.flatMap((side) => {
++								const read = readPixels(box, `${property}-${side}`)
++								return read === expected ? [] : [`${name} ${side}: ${String(read)}`]
++							})
++						}),
++					),
++				)
++				expect({ phase, misses }).toEqual({ phase, misses: [] })
++			}
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++
++	it('writes no negative margin at any infix', () => {
++		// The control is a recorded step the same lookup finds, so an empty result is the absence of
++		// the negative steps rather than a lookup that finds nothing.
++		const keys = SPACING_SIDE_CASES.map(({ suffix }) => `m${suffix}`)
++		expect(keys.filter((key) => findRule(`.${key}-1`) === undefined)).toEqual([])
++		expect(
++			keys.flatMap((key) =>
++				['', ...BREAKPOINT_INFIXES.map((infix) => `-${infix}`)].flatMap((infix) =>
++					findRule(`.${key}${infix}-n`) === undefined ? [] : [`${key}${infix}-n`],
++				),
++			),
++		).toEqual([])
++		const host = scene.mount('<div class="m-n1 mt-n3"></div>')
++		const box = requireValue(host.querySelector('.m-n1'), 'No negative box')
++		expect(SIDES.map((side) => readPixels(box, `margin-${side}`))).toEqual([0, 0, 0, 0])
++	})
++
++	it('resolves the same steps inside a dark island', () => {
++		const host = scene.mount(
++			'<div data-bs-theme="dark"><div class="m-3 p-2"></div><div class="mx-5 py-4"></div></div>',
++		)
++		const both = requireValue(host.querySelector('.m-3'), 'No shorthand box')
++		const sides = requireValue(host.querySelector('.mx-5'), 'No side box')
++		expect(SIDES.map((side) => readPixels(both, `margin-${side}`))).toEqual([16, 16, 16, 16])
++		expect(SIDES.map((side) => readPixels(both, `padding-${side}`))).toEqual([8, 8, 8, 8])
++		expect(SIDES.map((side) => readPixels(sides, `margin-${side}`))).toEqual([0, 48, 0, 48])
++		expect(SIDES.map((side) => readPixels(sides, `padding-${side}`))).toEqual([24, 0, 24, 0])
++	})
++
++	it('keeps every side over a later unlayered consumer rule', () => {
++		const host = scene.mount(
++			'<div class="probe m-3 p-2"></div><div class="probe mt-4 pe-1"></div><div class="probe"></div>',
++		)
++		scene.load('.probe { margin: 7px; padding: 7px }')
++		const baseline = requireValue(host.querySelector('.probe:not([class*="-"])'), 'No consumer box')
++		const both = requireValue(host.querySelector('.m-3'), 'No shorthand box')
++		const sides = requireValue(host.querySelector('.mt-4'), 'No side box')
++		expect(SIDES.map((side) => readPixels(baseline, `margin-${side}`))).toEqual([7, 7, 7, 7])
++		expect(SIDES.map((side) => readPixels(both, `margin-${side}`))).toEqual([16, 16, 16, 16])
++		expect(SIDES.map((side) => readPixels(both, `padding-${side}`))).toEqual([8, 8, 8, 8])
++		// A side utility wins its own side alone, and the consumer rule keeps every other side.
++		expect(SIDES.map((side) => readPixels(sides, `margin-${side}`))).toEqual([24, 7, 7, 7])
++		expect(SIDES.map((side) => readPixels(sides, `padding-${side}`))).toEqual([7, 4, 7, 7])
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<div class="m-3 px-2"></div>')
++		const box = requireValue(host.querySelector('.m-3'), 'No box')
++		// An unlayered `!important` sorts after every layered one, so the shipped utility keeps its
++		// step; the same declaration re-opened inside the utilities layer arrives after the shipped
++		// rule in that layer and wins.
++		scene.load('.m-3 { margin-top: 9px !important } .px-2 { padding-left: 9px !important }')
++		expect([readPixels(box, 'margin-top'), readPixels(box, 'padding-left')]).toEqual([16, 8])
++		scene.load(
++			'@layer utilities { .m-3 { margin-top: 9px !important } .px-2 { padding-left: 9px !important } }',
++		)
++		expect([readPixels(box, 'margin-top'), readPixels(box, 'padding-left')]).toEqual([9, 9])
++		expect([readPixels(box, 'margin-left'), readPixels(box, 'padding-right')]).toEqual([16, 8])
++	})
++})

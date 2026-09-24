@@ -1,0 +1,72 @@
+# Writes the round-2 objective-lane brief, checker brief, and Astra launcher for the named units from one
+# table, derived from the uf-audit-2 set with every subject field rewritten.
+# Usage: python3 w23-audit-2-briefs.py <unit> [<unit> ...]
+import pathlib, sys
+U = pathlib.Path('/home/user/scaffold/.orkestrel/veneer/units')
+LAW = ("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{styles,tests,browser,writing,documentation,typescript,names,quality}.md`; "
+       "the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` "
+       "and its references (the verdict shape)")
+UNITS = {
+    'up': dict(name='UTIL-PAINT', worktree='/home/user/veneer-up',
+        evidence='`up-2.diff`, `up-2-status.txt`, `up-shared-2.patch`, `up-unscoped-profiles-2.patch`, `b-utilities-up-report-2.md`, `b-utilities-up-brief-2.md`, `up-instruments/` (the round-2 mutation, count, contrast, and gate logs and instruments), round 1\'s `up.diff`, `up-shared.patch`, `up-unscoped-profiles.patch`, and `b-utilities-up-report.md`, and the round-1 verdict `up-audit-verdict.md` and its lane verdicts; `b-utilities-family.md`, `b-utilities-w3-terrain-report.md`, `w2-w3-note-1.md` to `w2-w3-note-5.md`, and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-utilities-design-verdict.md`; the UTIL-TEXT and UTIL-SPACING shared patches `ut-shared.patch` and `usp-shared.patch` beside them, for the union claim 2 names',
+        focus='claims 1, 2, 4, 5, and 6 (the patch delta against round 1, the whole-order profiles assertions and their hold over the wave\'s union of shared names, the swatch helper and its red run, the contrast rule and its runs, and the re-run mutations and the count control)',
+        checker='claims 1, 3, and 8'),
+    'oc': dict(name='OFFCANVAS', worktree='/home/user/veneer-oc',
+        evidence='`oc-2.diff`, `oc-2-status.txt`, `oc-shared-2.patch`, `b-modal-oc-report-2.md`, `b-modal-oc-brief-2.md`, `oc-instruments/` (the round-2 mutation, gate, cascade-probe, and utility-reading logs and instruments, and `oc-2-guide-changes-ignoring-whitespace.txt`), round 1\'s `oc.diff`, `oc-shared.patch`, and `b-modal-oc-report.md`, and the round-1 verdict `oc-audit-verdict.md` and its lane verdicts; `w2-w3-note-1.md`, `w2-w3-note-2.md`, and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-modal-design-verdict.md`',
+        focus='claims 1, 3, 4, 5, and 6 (the patch delta against round 1, the failing-first and transition-state runs and the probe control, every clause of the plugin row against the release source, the navbar and stacking sentences against the cascade, and the utility reading and its proof)',
+        checker='claims 1, 2, 5, and 8'),
+}
+for key in sys.argv[1:]:
+    u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"
+    (U / f'{key}-audit-2-analyst-brief.md').write_text(f"""# {title}: objective lane on GPT-6 Astra
+
+`analyst` route on GPT-6 Astra (`gpt-6-astra`), `codex exec --sandbox read-only` rooted at `{u['worktree']}`. You are the engine behind the CLI: perform the audit directly and spawn nothing. You hold the **objective** lane over the numbered claims in `/home/user/scaffold/.orkestrel/veneer/units/{claims}`: correctness, constraints, and what the code, the logs, and the contracts permit. The unit was written by `opus` on Opus 5.5, so you are an auditor engine that did not write it; the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, as the round-1 verdict records. Bound: rule within 25 minutes.
+
+Law: {LAW}. Evidence, all read-only, under `/home/user/scaffold/.orkestrel/veneer/units/`: the claims file `{claims}`; {u['evidence']}; the worktree `{u['worktree']}` (the owned files over `2a3f223`; read them, never edit them; `git -C {u['worktree']} show 2a3f223:<path>` reads any base file; the inventory is `tests/fixtures/oracle/inventory.json`; `node_modules/bootstrap/` there is Bootstrap 5.3.8, its source under `scss/` and `js/src/`, and `node_modules/tailwindcss/` the installed Tailwind).
+
+Standing conditions: the sandbox runs no Vitest project and no browser, and denies the network, a loopback listener, and a nested install; `git show`, `git diff`, `git apply --check` against a scratch extract under the system temporary directory, `grep`, `sha256sum`, and `node -e` that writes nothing are allowed; rule every proof claim from the code's assertions and the retained logs, naming for each mutation whether the assertions distinguish it from the passing case, and say which log you read. Never edit the worktree. Never read `.env*`, `.npmrc`, `auth.json`, or any credential file.
+
+Focus: {u['focus']}; rule every other claim too, and rule the Orchestrator's given rulings wrong where the evidence says so.
+
+Output: the `orkestrel-falsify` verdict shape and nothing else — numbered verdicts (CONFIRMED, BROKEN, UNRESOLVED, or NOT-EVIDENCED) with `file:line` (for a CONFIRMED verdict, the attack that failed; for a claim about a proof, the mutation and whether the assertions distinguish it), findings outside the claims to the `BROKEN` standard, the counts the report states listed under the last claim, and one terminal line `VERDICT: PASS` or `VERDICT: FAIL <numbers>; outside the claims: <names or none>`.
+""")
+    (U / f'{key}-audit-2-checker-brief.md').write_text(f"""# {title}: checker
+
+## Role and engine
+
+`checker` on Sonnet: mechanical conformance evidence, beside the objective lane on GPT-6 Astra.
+
+## Objective
+
+Verdicts on {u['checker']} of the claims file by reading alone: the status and diff file lists, the patches' file sets against the brief's Shared list, the registry and order agreement across files, the table placement, freezing, and derivation, and every added sentence and comment against the count law, the banned-term rows, the token-noun rule, and the temporal and cross-reference rows. Where a clause needs a command you cannot run (an apply check), rule the sub-clause UNRESOLVED and name the command; the Orchestrator takes that reading. Rule a clause only on the sites you read, and name them; a sample of compliant sites does not confirm a claim about every site.
+
+## Context
+
+Law: {LAW}. Evidence, all read-only, under `/home/user/scaffold/.orkestrel/veneer/units/`: the claims file `{claims}`; {u['evidence']}; the worktree `{u['worktree']}` (the owned files over `2a3f223`; read them, never edit them). Execution: a native subagent, clean context; perform the assignment directly and spawn nothing; edit nothing; run nothing; use absolute paths.
+
+## Scope
+
+Read-only. No file is owned.
+
+## Execution
+
+A native subagent: perform the assignment directly and spawn nothing.
+
+## Output
+
+The `orkestrel-falsify` verdict shape and nothing else, for {u['checker']} only — per-claim verdicts with `file:line`; findings outside the claims to the BROKEN standard; the counts the report states, listed; one terminal line `VERDICT: PASS` or `VERDICT: FAIL <numbers>; outside the claims: <names or none>`.
+
+## Acceptance criteria
+
+Each named claim carries a verdict with evidence; the counts the report states are listed; the terminal line is present.
+""")
+    sh = f"""#!/bin/bash
+# {title}, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at {u['worktree']}.
+# Written by w23-audit-2-briefs.py. Launched through codex-queue-2.sh; the bench round-tripped at 02:50 (md-audit-2 and tp-audit-2 returned exit 0); the cap is 1800 s (comparable objective lanes ran 7 to 12 min over retained logs, plus slack for the loaded container).
+# Brief: .orkestrel/veneer/units/{key}-audit-2-analyst-brief.md  Claims: .orkestrel/veneer/units/{claims}  Journal: tmp/codex/{key}-audit-2-analyst.jsonl  Last message: tmp/codex/{key}-audit-2-analyst-last.md
+cd /home/user/scaffold || exit 1
+timeout 1800 codex exec --json -C {u['worktree']} --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\\"high\\"" --output-last-message /home/user/scaffold/tmp/codex/{key}-audit-2-analyst-last.md "Your working directory is {u['worktree']}. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/{key}-audit-2-analyst-brief.md exactly. Rule on every numbered claim in /home/user/scaffold/.orkestrel/veneer/units/{claims} holding the objective lane. Make your final message the report the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/{key}-audit-2-analyst.jsonl 2> /home/user/scaffold/tmp/codex/{key}-audit-2-analyst.err
+echo "exit=$?" >> /home/user/scaffold/tmp/codex/{key}-audit-2-analyst.err
+"""
+    (U / f'{key}-audit-2-analyst.sh').write_text(sh); (pathlib.Path('/home/user/scaffold/tmp/codex') / f'{key}-audit-2-analyst.sh').write_text(sh)
+    print(key, 'written')

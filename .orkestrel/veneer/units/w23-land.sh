@@ -7,7 +7,7 @@
 # and runs the fast checks. The caller reads the log before the next unit lands. The refresh loop, the
 # portfolio regeneration, and the authoritative chain run once per batch, after its last unit.
 set -u
-U=$1; MSG=$2; shift 2
+U=$1; MSG=$(realpath "$2"); shift 2
 S=/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad
 R=/home/user/scaffold/.orkestrel/veneer/units
 WT=/home/user/veneer-$U; MAIN=/home/user/veneer
@@ -15,9 +15,11 @@ LOG=$R/land-$U.log.txt; : > "$LOG"
 export PATH="$S/npm11/node_modules/.bin:$PATH"
 {
   echo "=== $U landing at $(date -u +%H:%M:%S) over $(git -C $MAIN rev-parse --short HEAD)"
+  BEFORE=$(git -C $MAIN rev-parse HEAD)
   for p in "$@"; do git -C "$WT" apply --check "$p" && git -C "$WT" apply "$p" && echo "=== applied $p" || { echo "=== APPLY FAILED $p"; exit 2; }; done
   bash "$R/land-unit.sh" "$U" "$MSG" 2a3f223; rc=$?; echo "=== land-unit exit=$rc"
   [ $rc -eq 0 ] || exit $rc
+  [ "$(git -C $MAIN rev-parse HEAD)" != "$BEFORE" ] || { echo "=== NOTHING LANDED: HEAD unchanged"; exit 5; }
   cd "$MAIN" || exit 1
   files=$(git diff --name-only HEAD~1 HEAD | grep -E '\.(ts|scss|md|css|html|json)$' | grep -v '^ROADMAP.md$')
   npx oxfmt $files > /dev/null 2>&1; echo "=== oxfmt exit=$?"

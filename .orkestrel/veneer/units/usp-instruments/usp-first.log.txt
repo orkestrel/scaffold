@@ -1,0 +1,32 @@
+== before: the 2a3f223 barrel
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 1
+      Tests  22 failed (22)
+ FAIL  tests/src/styles/utilities/interaction.test.ts:29:2 > interaction utilities > resolves each selection and pointer value the release writes
+ FAIL  tests/src/styles/utilities/interaction.test.ts:54:2 > interaction utilities > selects the whole line, places a caret, or selects nothing under one press, by value
+ FAIL  tests/src/styles/utilities/interaction.test.ts:82:2 > interaction utilities > lets the pointer reach the element beneath a box that takes no pointer events
+ FAIL  tests/src/styles/utilities/interaction.test.ts:106:2 > interaction utilities > keeps a link that takes no pointer events in the keyboard focus order
+ FAIL  tests/src/styles/utilities/interaction.test.ts:116:2 > interaction utilities > writes the pointer values beside the padding steps under the one class
+ FAIL  tests/src/styles/utilities/interaction.test.ts:127:2 > interaction utilities > writes no breakpoint infix, so no interaction class answers to a boundary
+ FAIL  tests/src/styles/utilities/interaction.test.ts:146:2 > interaction utilities > resolves the same values inside a dark island and under a doubled density factor
+ FAIL  tests/src/styles/utilities/interaction.test.ts:162:2 > interaction utilities > keeps each value over a later unlayered consumer rule
+ FAIL  tests/src/styles/utilities/interaction.test.ts:177:2 > interaction utilities > yields to an important override inside the utilities layer and to no unlayered one
+ FAIL  tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'xs' boundary
+ FAIL  tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'sm' boundary
+ FAIL  tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'md' boundary
+ FAIL  tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'lg' boundary
+ FAIL  tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'xl' boundary
+ FAIL  tests/src/styles/utilities/spacing.test.ts:29:2 > spacing utilities > resolves every side and step around the 'xxl' boundary
+ FAIL  tests/src/styles/utilities/spacing.test.ts:91:2 > spacing utilities > writes the end and start sides as the physical right and left sides in either direction
+ FAIL  tests/src/styles/utilities/spacing.test.ts:102:2 > spacing utilities > resolves a later entry over an earlier one at one infix, and a wider infix over a narrower one
+ FAIL  tests/src/styles/utilities/spacing.test.ts:127:2 > spacing utilities > reads each step from its space token, so the density factor and a retuned token move every side
+ FAIL  tests/src/styles/utilities/spacing.test.ts:178:2 > spacing utilities > writes no negative margin at any infix
+ FAIL  tests/src/styles/utilities/spacing.test.ts:195:2 > spacing utilities > resolves the same steps inside a dark island
+ FAIL  tests/src/styles/utilities/spacing.test.ts:207:2 > spacing utilities > keeps every side over a later unlayered consumer rule
+ FAIL  tests/src/styles/utilities/spacing.test.ts:223:2 > spacing utilities > yields to an important override inside the utilities layer and to no unlayered one
+== after: the barrel with the unit's lines
+build exit 0
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/spacing.test.ts tests/src/styles/utilities/interaction.test.ts
+test exit 0
+      Tests  22 passed (22)

@@ -27,6 +27,17 @@ UNITS = {
         evidence='`ue.diff`, `ue-status.txt`, `ue-shared.patch`, `b-utilities-ue-report.md`, `b-utilities-ue-brief.md`, `ue-instruments/` (`ue-mutations.sh`, `ue-mutations.log.txt`, `ue-controls.sh`, and every control, gate, cascade-key, Tailwind longhand, and journey log)',
         analyst='claims 2, 3, and 5 (the cascade against the inventory and the helper\'s priority, each proof against its retained mutation log, and the shared-name table against the installed compiler)',
         reviewer='claims 4 (the specimen rename against the region rename, and the role classes in the components layer), 6 (region and specimen names, the section copy, the journey case), and 7 (every added guide sentence against what ships, note 1, and the writing rule)'),
+    'usp': dict(
+        name='UTIL-SPACING', worktree='/home/user/veneer-usp',
+        evidence='`usp.diff`, `usp-status.txt`, `usp-shared.patch`, `b-utilities-usp-report.md`, `b-utilities-usp-brief.md`, `usp-instruments/` (`usp-mutate.sh` and its log, `usp-negative.sh` and its log, `usp-first.sh` and its logs, `usp-gates.sh` and its log, the cascade census, the ledger and guide writers, the shared-name readings, and every copy log)',
+        analyst='claims 2, 3, 4, and 5 (the cascade against the inventory and the release\'s utility map, each proof against its retained mutation log, the interaction proofs\' real hit test and press, and the shared-name table against the installed compiler)',
+        reviewer='claims 2 (the one breakpoint walk and the physical sides), 4 (the interaction specimens and the `pe` key shared by two entries), 6 (specimen names and markup, the region copy), and 7 (every added guide sentence against what ships, note 1, and the writing rule)'),
+    'ut': dict(
+        name='UTIL-TEXT', worktree='/home/user/veneer-ut',
+        evidence='`ut.diff`, `ut-status.txt`, `ut-shared.patch`, `b-utilities-ut-report.md`, `b-utilities-ut-brief.md`, `ut-instruments/` (`ut-mutate.py`, `ut-mutate-2.py`, `ut-mutations.log.txt`, `ut-copy-gates.sh` and the copy logs, `ut-cascade-count.mjs` and its log, the shared-name probe and its log, the `ut-final-service-*.log.txt` readings, and the guide writers)',
+        analyst='claims 2, 3, 4, 5, and 6 (the cascade against the inventory and the release\'s utility map, the link placement against the release\'s resolution, the tokenized colours against the release\'s bytes, each proof against its retained mutation log, and the shared-name table against the installed compiler)',
+        reviewer='claims 3 (whether the link entries belong in the colour partial), 4 (the palette tokens for the release\'s literal colours, and no shared foreground function), 7 (specimen names and markup, the region copy, the Badge edits), and 8 (every added guide sentence against what ships, note 1, and the writing rule)',
+        checker='claims 1, 7, and 9'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]
@@ -82,7 +93,7 @@ Every claim carries a verdict with evidence; every confirmed proof claim names i
 
 ## Objective
 
-Verdicts on claims 1, 6, and 8 of the claims file by reading alone: the status and diff file lists, the patch's file set against the brief's Shared list, the registry and order agreement across files, the table placement, freezing, and derivation, and every added sentence and comment against the count law, the banned-term rows, the token-noun rule, and the temporal and cross-reference rows. Where a clause needs a command you cannot run (an apply check), rule the sub-clause UNRESOLVED and name the command; the Orchestrator takes that reading. Rule a clause only on the sites you read, and name them; a sample of compliant sites does not confirm a claim about every site.
+Verdicts on {u.get('checker', 'claims 1, 6, and 8')} of the claims file by reading alone: the status and diff file lists, the patch's file set against the brief's Shared list, the registry and order agreement across files, the table placement, freezing, and derivation, and every added sentence and comment against the count law, the banned-term rows, the token-noun rule, and the temporal and cross-reference rows. Where a clause needs a command you cannot run (an apply check), rule the sub-clause UNRESOLVED and name the command; the Orchestrator takes that reading. Rule a clause only on the sites you read, and name them; a sample of compliant sites does not confirm a claim about every site.
 
 ## Context
 
@@ -98,7 +109,7 @@ A native subagent: perform the assignment directly and spawn nothing.
 
 ## Output
 
-The `orkestrel-falsify` verdict shape and nothing else, for claims 1, 6, and 8 only — per-claim verdicts with `file:line`; findings outside the claims to the BROKEN standard; the counts the report states, listed; one terminal line `VERDICT: PASS` or `VERDICT: FAIL <numbers>; outside the claims: <names or none>`.
+The `orkestrel-falsify` verdict shape and nothing else, for {u.get('checker', 'claims 1, 6, and 8')} only — per-claim verdicts with `file:line`; findings outside the claims to the BROKEN standard; the counts the report states, listed; one terminal line `VERDICT: PASS` or `VERDICT: FAIL <numbers>; outside the claims: <names or none>`.
 
 ## Acceptance criteria
 

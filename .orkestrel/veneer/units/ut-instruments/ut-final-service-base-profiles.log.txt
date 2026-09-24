@@ -1,0 +1,39 @@
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer-ut/tmp/probe/base
+
+·········x········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > fills Tailwind reset only under the preflight profile
+AssertionError: expected [ '--color-black', …(2) ] to deeply equal [ '--spacing' ]
+
+- Expected
++ Received
+
+  [
++   "--color-black",
++   "--color-white",
+    "--spacing",
+  ]
+
+ ❯ tests/service/tailwind/profiles.test.ts:70:30
+     68|   // profile keeps that one variable, and a token the reset or a stati…
+     69|   // breaks the equality.
+     70|   expect(tailwind.variables).toEqual(['--spacing'])
+       |                              ^
+     71|   const preflight = new SheetReader(preflightProfile)
+     72|   expect(preflight.layers.map((layer) => layer.name)).toEqual(['theme'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 17 passed (18)
+   Start at  02:29:52
+   Duration  14.35s (transform 662ms, setup 4.34s, import 1.36s, tests 8.17s, environment 0ms)
+

@@ -1,0 +1,20 @@
+Ship the toast key with its section, proofs, and guide rows
+
+The toast key ships whole in its own partial: the toast box and its custom properties, the shown,
+showing, and hidden states, the container and its gap, the header with its close-control combinator,
+and the body, every length and colour read from the tokens and the body aliases. The toast and the
+container each declare the stacking slot over the toast rung, and the container applies the level, so a
+retune moves every container and the toasts inside it. The Toast region renders the release's toasts
+inside viewport frames placed with shipped utilities, with the flex-grow class standing in for the
+margin utility that does not ship and no coloured toast, and records the declined showing frame. The
+style proof reads every recorded selector, slot, state, geometry, and paint against the official
+inventory, and retunes each slot's token alone to prove the slot reads that token even where another
+token declares the same length. The close combinator moves from the deferred table to the shipped one,
+the case tables live in the setup file, frozen and bound by derivation, and the guide carries the toast
+section, ledger, compatibility, and plugin rows.
+
+B-MODAL wave 2, unit TOAST: three rounds on `opus`, the first audited by `analyst` on Astra, `reviewer`
+on Opus 5.5, and `checker`, and the fix rounds by `analyst` on Astra and `checker`.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

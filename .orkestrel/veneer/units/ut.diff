@@ -1,0 +1,1547 @@
+diff --git a/src/styles/components/_link.scss b/src/styles/components/_link.scss
+deleted file mode 100644
+index 42f1b11..0000000
+--- a/src/styles/components/_link.scss
++++ /dev/null
+@@ -1,67 +0,0 @@
+-@use '../tokens' as *;
+-
+-@layer components {
+-	@each $role in $aliased {
+-		.link-#{$role},
+-		.link-#{$role}:hover,
+-		.link-#{$role}:focus {
+-			color: rgba(var(--vn-color-#{$role}-rgb), var(--bs-link-opacity, 1)) !important;
+-			text-decoration-color: rgba(
+-				var(--vn-color-#{$role}-rgb),
+-				var(--bs-link-underline-opacity, 1)
+-			) !important;
+-		}
+-	}
+-
+-	.link-body-emphasis {
+-		color: rgba(var(--vn-text-emphasis-rgb), var(--bs-link-opacity, 1)) !important;
+-		text-decoration-color: rgba(
+-			var(--vn-text-emphasis-rgb),
+-			var(--bs-link-underline-opacity, 1)
+-		) !important;
+-		&:hover,
+-		&:focus {
+-			color: rgba(var(--vn-text-emphasis-rgb), var(--bs-link-opacity, 0.75)) !important;
+-			text-decoration-color: rgba(
+-				var(--vn-text-emphasis-rgb),
+-				var(--bs-link-underline-opacity, 0.75)
+-			) !important;
+-		}
+-	}
+-
+-	@each $opacity in 10, 25, 50, 75, 100 {
+-		.link-opacity-#{$opacity},
+-		.link-opacity-#{$opacity}-hover:hover {
+-			--bs-link-opacity: #{$opacity * 0.01};
+-		}
+-	}
+-
+-	@each $offset in 1, 2, 3 {
+-		.link-offset-#{$offset},
+-		.link-offset-#{$offset}-hover:hover {
+-			text-underline-offset: #{$offset * 0.125em} !important;
+-		}
+-	}
+-
+-	@each $role in $aliased {
+-		.link-underline-#{$role} {
+-			--bs-link-underline-opacity: 1;
+-			text-decoration-color: rgba(
+-				var(--vn-color-#{$role}-rgb),
+-				var(--bs-link-underline-opacity)
+-			) !important;
+-		}
+-	}
+-
+-	.link-underline {
+-		--bs-link-underline-opacity: 1;
+-		text-decoration-color: rgba(var(--vn-link-rgb), var(--bs-link-underline-opacity, 1)) !important;
+-	}
+-
+-	@each $opacity in 0, 10, 25, 50, 75, 100 {
+-		.link-underline-opacity-#{$opacity},
+-		.link-underline-opacity-#{$opacity}-hover:hover {
+-			--bs-link-underline-opacity: #{$opacity * 0.01};
+-		}
+-	}
+-}
+diff --git a/tests/src/styles/components/link.test.ts b/tests/src/styles/components/link.test.ts
+deleted file mode 100644
+index 6a55694..0000000
+--- a/tests/src/styles/components/link.test.ts
++++ /dev/null
+@@ -1,151 +0,0 @@
+-import { requireValue } from '@orkestrel/test'
+-import { matchesColor, parseCSSColor, readStyle, readToken } from '@orkestrel/test/browser'
+-import { page } from 'vitest/browser'
+-import { afterEach, describe, expect, it } from 'vitest'
+-import { scene } from '../../../setupBrowser.js'
+-import {
+-	LINK_OFFSET_CASES,
+-	LINK_OPACITY_CASES,
+-	LINK_ROLES,
+-	LINK_UNDERLINE_OPACITY_CASES,
+-	TEXT_MODES,
+-} from '../../../setupStyles.js'
+-
+-afterEach(() => {
+-	scene.clear()
+-})
+-
+-describe.each(TEXT_MODES)('link classes in %s mode', (mode) => {
+-	it.each(LINK_ROLES)('reads the %s role channels at rest, hover, and focus', async (role) => {
+-		const host = scene.mount(
+-			`<div data-bs-theme="${mode}"><a href="#content" class="link-${role}">Role link</a></div>`,
+-		)
+-		const anchor = requireValue(host.querySelector('a'), 'No role link')
+-		const color = `rgb(${readToken(anchor, `--vn-color-${role}-rgb`)})`
+-		expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
+-		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), color)).toBe(true)
+-		await page.elementLocator(anchor).hover()
+-		expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
+-		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), color)).toBe(true)
+-		await page.elementLocator(host).hover({ position: { x: 500, y: 0 } })
+-		anchor.focus()
+-		expect(anchor.matches(':hover')).toBe(false)
+-		expect(anchor.matches(':focus')).toBe(true)
+-		expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
+-		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), color)).toBe(true)
+-		anchor.style.setProperty(`--vn-color-${role}-rgb`, '20, 80, 140')
+-		anchor.style.setProperty('--bs-link-opacity', '0.5')
+-		anchor.style.setProperty('--bs-link-underline-opacity', '0.25')
+-		expect(readStyle(anchor, 'color')).toBe('rgba(20, 80, 140, 0.5)')
+-		expect(readStyle(anchor, 'text-decoration-color')).toBe('rgba(20, 80, 140, 0.25)')
+-	})
+-
+-	it('retains the emphasis fallback and lets explicit opacities override it', async () => {
+-		const host = scene.mount(
+-			`<div data-bs-theme="${mode}"><a href="#content" class="link-body-emphasis">Emphasis</a></div>`,
+-		)
+-		const anchor = requireValue(host.querySelector('a'), 'No emphasis link')
+-		const channels = readToken(anchor, '--vn-text-emphasis-rgb')
+-		expect(matchesColor(readStyle(anchor, 'color'), `rgb(${channels})`)).toBe(true)
+-		await page.elementLocator(anchor).hover()
+-		expect(matchesColor(readStyle(anchor, 'color'), `rgba(${channels}, 0.75)`)).toBe(true)
+-		expect(
+-			matchesColor(readStyle(anchor, 'text-decoration-color'), `rgba(${channels}, 0.75)`),
+-		).toBe(true)
+-		await page.elementLocator(host).hover({ position: { x: 500, y: 0 } })
+-		anchor.focus()
+-		expect(matchesColor(readStyle(anchor, 'color'), `rgba(${channels}, 0.75)`)).toBe(true)
+-		anchor.classList.add('link-opacity-100', 'link-underline-opacity-50')
+-		expect(matchesColor(readStyle(anchor, 'color'), `rgb(${channels})`)).toBe(true)
+-		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), `rgba(${channels}, 0.5)`)).toBe(
+-			true,
+-		)
+-	})
+-
+-	it.each(LINK_OPACITY_CASES)(
+-		'resolves opacity $step and activates its hover twin',
+-		async ({ step, value }) => {
+-			const host = scene.mount(
+-				`<div data-bs-theme="${mode}"><a href="#content" class="link-opacity-${step}">Opacity</a></div>`,
+-			)
+-			const anchor = requireValue(host.querySelector('a'), 'No opacity link')
+-			expect(Number(readToken(anchor, '--bs-link-opacity'))).toBe(value)
+-			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(value)
+-			anchor.className = `link-opacity-${step}-hover`
+-			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(1)
+-			await page.elementLocator(anchor).hover()
+-			expect(Number(readToken(anchor, '--bs-link-opacity'))).toBe(value)
+-			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(value)
+-		},
+-	)
+-
+-	it.each(LINK_OFFSET_CASES)(
+-		'resolves offset $step and activates its hover twin',
+-		async ({ step, value }) => {
+-			const host = scene.mount(
+-				`<div data-bs-theme="${mode}"><a href="#content" class="link-offset-${step}" style="font-size:16px">Offset</a></div>`,
+-			)
+-			const anchor = requireValue(host.querySelector('a'), 'No offset link')
+-			expect(readStyle(anchor, 'text-underline-offset')).toBe(value)
+-			anchor.className = `link-offset-${step}-hover`
+-			expect(readStyle(anchor, 'text-underline-offset')).toBe('auto')
+-			await page.elementLocator(anchor).hover()
+-			expect(readStyle(anchor, 'text-underline-offset')).toBe(value)
+-		},
+-	)
+-
+-	it.each(LINK_ROLES)(
+-		'paints the %s underline independently of text and reads its opacity',
+-		(role) => {
+-			const host = scene.mount(
+-				`<div data-bs-theme="${mode}"><a href="#content" class="link-underline-${role}">Underline</a></div>`,
+-			)
+-			const anchor = requireValue(host.querySelector('a'), 'No underline link')
+-			expect(readToken(anchor, '--bs-link-underline-opacity')).toBe('1')
+-			expect(
+-				matchesColor(
+-					readStyle(anchor, 'text-decoration-color'),
+-					`rgb(${readToken(anchor, `--vn-color-${role}-rgb`)})`,
+-				),
+-			).toBe(true)
+-			const color = readStyle(anchor, 'color')
+-			anchor.style.setProperty(`--vn-color-${role}-rgb`, '20, 80, 140')
+-			anchor.classList.add('link-underline-opacity-25')
+-			expect(readStyle(anchor, 'text-decoration-color')).toBe('rgba(20, 80, 140, 0.25)')
+-			expect(readStyle(anchor, 'color')).toBe(color)
+-		},
+-	)
+-
+-	it.each(LINK_UNDERLINE_OPACITY_CASES)(
+-		'resolves underline opacity $step and activates its hover twin',
+-		async ({ step, value }) => {
+-			const host = scene.mount(
+-				`<div data-bs-theme="${mode}"><a href="#content" class="link-underline link-underline-opacity-${step}">Underline opacity</a></div>`,
+-			)
+-			const anchor = requireValue(host.querySelector('a'), 'No underline opacity link')
+-			expect(Number(readToken(anchor, '--bs-link-underline-opacity'))).toBe(value)
+-			expect(
+-				matchesColor(
+-					readStyle(anchor, 'text-decoration-color'),
+-					`rgba(${readToken(anchor, '--vn-link-rgb')}, ${String(value)})`,
+-				),
+-			).toBe(true)
+-			anchor.className = `link-underline link-underline-opacity-${step}-hover`
+-			expect(readToken(anchor, '--bs-link-underline-opacity')).toBe('1')
+-			expect(
+-				requireValue(
+-					parseCSSColor(readStyle(anchor, 'text-decoration-color')),
+-					'No underline color',
+-				)[3],
+-			).toBe(1)
+-			await page.elementLocator(anchor).hover()
+-			expect(Number(readToken(anchor, '--bs-link-underline-opacity'))).toBe(value)
+-			expect(
+-				requireValue(
+-					parseCSSColor(readStyle(anchor, 'text-decoration-color')),
+-					'No underline color',
+-				)[3],
+-			).toBeCloseTo(value, 2)
+-		},
+-	)
+-})
+diff --git a/app/browser/sections/ColorSection.ts b/app/browser/sections/ColorSection.ts
+new file mode 100644
+index 0000000..cbcf7c3
+--- /dev/null
++++ b/app/browser/sections/ColorSection.ts
+@@ -0,0 +1,22 @@
++import { COLOR_COPY, COLOR_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared text color, emphasis, body tier, opacity, reset, and color-and-background
++ * specimens into a named Color region.
++ *
++ * @example
++ * ```ts
++ * const section = new ColorSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class ColorSection extends SpecimenSection {
++	/**
++	 * Mounts the Color region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, COLOR_COPY, COLOR_SPECIMENS)
++	}
++}
+diff --git a/app/browser/sections/TextSection.ts b/app/browser/sections/TextSection.ts
+new file mode 100644
+index 0000000..47944d3
+--- /dev/null
++++ b/app/browser/sections/TextSection.ts
+@@ -0,0 +1,22 @@
++import { TEXT_COPY, TEXT_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared text alignment, wrapping, break, transform, decoration, and truncation
++ * specimens into a named Text region.
++ *
++ * @example
++ * ```ts
++ * const section = new TextSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class TextSection extends SpecimenSection {
++	/**
++	 * Mounts the Text region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, TEXT_COPY, TEXT_SPECIMENS)
++	}
++}
+diff --git a/src/styles/components/_text-truncation.scss b/src/styles/components/_text-truncation.scss
+new file mode 100644
+index 0000000..acbc391
+--- /dev/null
++++ b/src/styles/components/_text-truncation.scss
+@@ -0,0 +1,10 @@
++@layer components {
++	// The release writes the truncation helper as normal declarations, so an important white-space
++	// utility on the same element overrides the helper's `nowrap` value, and so does a rule of your
++	// own.
++	.text-truncate {
++		overflow: hidden;
++		text-overflow: ellipsis;
++		white-space: nowrap;
++	}
++}
+diff --git a/src/styles/utilities/_color.scss b/src/styles/utilities/_color.scss
+new file mode 100644
+index 0000000..2bca1a0
+--- /dev/null
++++ b/src/styles/utilities/_color.scss
+@@ -0,0 +1,143 @@
++@use 'sass:list';
++@use 'sass:map';
++@use '../tokens' as *;
++@use '../mixins' as *;
++
++@layer utilities {
++	// The release writes the color-and-background pairs with the `!important` flag on both
++	// declarations, and its helpers load ahead of its utilities, so the pairs head this partial: a
++	// text color or a background utility on the same element still wins, as it does in the release.
++	// No entry the release's map writes ahead of the `color` entry sets a color or a background, so
++	// the pairs resolve here exactly as they would ahead of every utility partial. Each foreground is
++	// the one the release records for its role, read from the palette, because the release's
++	// `color-contrast` function chose it against the release's own fills.
++	$dark-labels: info, warning, light;
++	@each $role in $aliased {
++		$foreground: 'white';
++		@if list.index($dark-labels, $role) {
++			$foreground: 'black';
++		}
++		.text-bg-#{$role} {
++			color: var(--vn-palette-#{$foreground}-base) !important;
++			background-color: RGBA(var(--bs-#{$role}-rgb), var(--bs-bg-opacity, 1)) !important;
++		}
++	}
++
++	// Stand in for the release's text color maps. A role, black, white, and the body read the
++	// release's `--bs-*` channel aliases at the `--bs-text-opacity` variable the entry sets; the
++	// release's half-strength black and white literals read the palette's channels instead.
++	$colors: ();
++	@each $name in list.join($aliased, ('black', 'white')) {
++		$colors: map.set($colors, $name, rgba(var(--bs-#{$name}-rgb), var(--bs-text-opacity)));
++	}
++	$colors: map.merge(
++		$colors,
++		(
++			body: rgba(var(--bs-body-color-rgb), var(--bs-text-opacity)),
++			muted: var(--bs-secondary-color),
++			black-50: rgba(var(--vn-palette-black-rgb), 0.5),
++			white-50: rgba(var(--vn-palette-white-rgb), 0.5),
++			body-secondary: var(--bs-secondary-color),
++			body-tertiary: var(--bs-tertiary-color),
++			body-emphasis: var(--bs-emphasis-color),
++			reset: inherit,
++		)
++	);
++	$emphases: ();
++	@each $role in $aliased {
++		$emphases: map.set($emphases, '#{$role}-emphasis', var(--bs-#{$role}-text-emphasis));
++	}
++	$underlines: ();
++	@each $role in $aliased {
++		$underlines: map.set(
++			$underlines,
++			$role,
++			rgba(var(--vn-color-#{$role}-rgb), var(--bs-link-underline-opacity))
++		);
++	}
++	$underlines: map.set(
++		$underlines,
++		null,
++		rgba(var(--vn-link-rgb), var(--bs-link-underline-opacity, 1))
++	);
++
++	// The color and link entries of the release's utility map, in its order. None is responsive, so
++	// the walk writes every one at the empty infix alone. An opacity entry writes a custom property,
++	// which the `utility-variable` mixin writes at no infix, so the walk writes it at the empty infix
++	// as the `utility` mixin gates its own entries. The link entries follow the text colors here
++	// because the release's map writes them there: a text-decoration utility sets the underline
++	// color through its shorthand, and an underline class written later still wins over it.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(
++			text,
++			color,
++			$colors,
++			$infix,
++			$locals: (
++				text-opacity: 1,
++			)
++		);
++		@if $infix == '' {
++			@include utility-variable(
++				text-opacity,
++				text-opacity,
++				(
++					25: 0.25,
++					50: 0.5,
++					75: 0.75,
++					100: 1,
++				)
++			);
++		}
++		@include utility(text, color, $emphases, $infix);
++		@if $infix == '' {
++			@include utility-variable(
++				link-opacity,
++				link-opacity,
++				(
++					10: 0.1,
++					25: 0.25,
++					50: 0.5,
++					75: 0.75,
++					100: 1,
++				),
++				$state: (hover)
++			);
++		}
++		@include utility(
++			link-offset,
++			text-underline-offset,
++			(
++				1: 0.125em,
++				2: 0.25em,
++				3: 0.375em,
++			),
++			$infix,
++			$state: (hover)
++		);
++		@include utility(
++			link-underline,
++			text-decoration-color,
++			$underlines,
++			$infix,
++			$locals: (
++				link-underline-opacity: 1,
++			)
++		);
++		@if $infix == '' {
++			@include utility-variable(
++				link-underline-opacity,
++				link-underline-opacity,
++				(
++					0: 0,
++					10: 0.1,
++					25: 0.25,
++					50: 0.5,
++					75: 0.75,
++					100: 1,
++				),
++				$state: (hover)
++			);
++		}
++	}
++}
+diff --git a/src/styles/utilities/_link.scss b/src/styles/utilities/_link.scss
+new file mode 100644
+index 0000000..682338e
+--- /dev/null
++++ b/src/styles/utilities/_link.scss
+@@ -0,0 +1,38 @@
++@use '../tokens' as *;
++
++@layer utilities {
++	// The release writes the colored-link helper with the `!important` flag on every declaration, so
++	// it heads the utilities layer: an important declaration in an earlier layer beats one in a later
++	// layer, and in the components layer this rule would beat the text colors the release lets win
++	// over it, such as the `.text-danger` class. It is a helper rather than a utility entry, and each
++	// declaration carries its own value, so it is written here rather than through the `utility`
++	// mixin. The link key's utility entries are map entries, so the `_color.scss` partial writes them
++	// where the release's map does, after the text colors.
++	@each $role in $aliased {
++		.link-#{$role},
++		.link-#{$role}:hover,
++		.link-#{$role}:focus {
++			color: rgba(var(--vn-color-#{$role}-rgb), var(--bs-link-opacity, 1)) !important;
++			text-decoration-color: rgba(
++				var(--vn-color-#{$role}-rgb),
++				var(--bs-link-underline-opacity, 1)
++			) !important;
++		}
++	}
++
++	.link-body-emphasis {
++		color: rgba(var(--vn-text-emphasis-rgb), var(--bs-link-opacity, 1)) !important;
++		text-decoration-color: rgba(
++			var(--vn-text-emphasis-rgb),
++			var(--bs-link-underline-opacity, 1)
++		) !important;
++		&:hover,
++		&:focus {
++			color: rgba(var(--vn-text-emphasis-rgb), var(--bs-link-opacity, 0.75)) !important;
++			text-decoration-color: rgba(
++				var(--vn-text-emphasis-rgb),
++				var(--bs-link-underline-opacity, 0.75)
++			) !important;
++		}
++	}
++}
+diff --git a/src/styles/utilities/_text.scss b/src/styles/utilities/_text.scss
+new file mode 100644
+index 0000000..a07319b
+--- /dev/null
++++ b/src/styles/utilities/_text.scss
+@@ -0,0 +1,41 @@
++@use '../mixins' as *;
++
++@layer utilities {
++	// The text entries of the release's utility map, in its order. Only the alignment entry is
++	// responsive, so the walk writes the other entries at the empty infix alone, ahead of every media
++	// block. The release writes each alignment as the physical side it names in a left-to-right
++	// document, and the break entry sets the legacy `word-wrap` property beside the `word-break`
++	// property, as the release does.
++	@include breakpoint-each using ($infix, $_boundary) {
++		@include utility(
++			text,
++			text-align,
++			(
++				start: left,
++				end: right,
++				center: center,
++			),
++			$infix,
++			true
++		);
++		@include utility(text-decoration, text-decoration, (none, underline, line-through), $infix);
++		@include utility(text, text-transform, (lowercase, uppercase, capitalize), $infix);
++		@include utility(
++			text,
++			white-space,
++			(
++				wrap: normal,
++				nowrap: nowrap,
++			),
++			$infix
++		);
++		@include utility(
++			text,
++			(word-wrap, word-break),
++			(
++				break: break-word,
++			),
++			$infix
++		);
++	}
++}
+diff --git a/tests/app/browser/sections/ColorSection.test.ts b/tests/app/browser/sections/ColorSection.test.ts
+new file mode 100644
+index 0000000..dcbf813
+--- /dev/null
++++ b/tests/app/browser/sections/ColorSection.test.ts
+@@ -0,0 +1,126 @@
++import type { SectionInterface } from '@app/browser'
++import { COLOR_COPY, COLOR_SPECIMENS, ColorSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, parseCSSColor, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { LINK_ROLES, TEXT_OPACITY_CASES } from '../../../setupStyles.js'
++
++// The paint cases read the specimens as the published cascade paints them, so the cascade has to be
++// in the document before a color is read.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('ColorSection', () => {
++	it('renders every declared specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ColorSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Color region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Color')
++			expect(region.querySelector('p')?.textContent).toBe(COLOR_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Text roles',
++				'Text emphasis',
++				'Body text tiers',
++				'Text opacity',
++				'Text reset',
++				'Color and background pairs',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				COLOR_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			for (const role of LINK_ROLES) {
++				expect(region.querySelector(`[data-specimen="Text roles"] .text-${role}`)).not.toBeNull()
++				expect(
++					region.querySelector(`[data-specimen="Text emphasis"] .text-${role}-emphasis`),
++				).not.toBeNull()
++				expect(
++					region.querySelector(
++						`[data-specimen="Color and background pairs"] .badge.text-bg-${role}`,
++					),
++				).not.toBeNull()
++			}
++			for (const { step } of TEXT_OPACITY_CASES)
++				expect(
++					region.querySelector(
++						`[data-specimen="Text opacity"] .text-primary.text-opacity-${String(step)}`,
++					),
++				).not.toBeNull()
++			// A color meant for a dark or a light surface sits on the pair that paints one.
++			expect(
++				region.querySelector('[data-specimen="Text roles"] .text-bg-dark > .text-light'),
++			).not.toBeNull()
++			expect(
++				region.querySelector(
++					'[data-specimen="Body text tiers"] .text-bg-dark > .text-white + .text-white-50',
++				),
++			).not.toBeNull()
++			expect(
++				region.querySelector(
++					'[data-specimen="Body text tiers"] .text-bg-light > .text-black + .text-black-50',
++				),
++			).not.toBeNull()
++			expect(
++				region.querySelector(
++					'[data-specimen="Text reset"] .text-danger > a:not([class]) + a.text-reset',
++				),
++			).not.toBeNull()
++			expect(Object.isFrozen(COLOR_COPY)).toBe(true)
++			expect(Object.isFrozen(COLOR_SPECIMENS)).toBe(true)
++			expect(COLOR_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('paints each pair badge on an opaque fill, and the reset link in its line color', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new ColorSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Color region')
++			for (const role of LINK_ROLES) {
++				const badge = requireValue(
++					region.querySelector(`.badge.text-bg-${role}`),
++					`No ${role} badge`,
++				)
++				expect(
++					requireValue(parseCSSColor(readStyle(badge, 'background-color')), 'No fill')[3],
++				).toBe(1)
++				expect(readStyle(badge, 'color')).not.toBe(readStyle(badge, 'background-color'))
++			}
++			const line = requireValue(region.querySelector('[data-specimen="Text reset"] p'), 'No line')
++			const plain = requireValue(line.querySelector('a:not([class])'), 'No plain link')
++			const reset = requireValue(line.querySelector('.text-reset'), 'No reset link')
++			expect(readStyle(reset, 'color')).toBe(readStyle(line, 'color'))
++			expect(readStyle(plain, 'color')).not.toBe(readStyle(line, 'color'))
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new ColorSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Color region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/app/browser/sections/TextSection.test.ts b/tests/app/browser/sections/TextSection.test.ts
+new file mode 100644
+index 0000000..68a61fd
+--- /dev/null
++++ b/tests/app/browser/sections/TextSection.test.ts
+@@ -0,0 +1,154 @@
++import type { SectionInterface } from '@app/browser'
++import { SpecimenSection, TEXT_COPY, TEXT_SPECIMENS, TextSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { visitBreakpoint } from '../../../setupBrowser.js'
++import { TEXT_ALIGN_CASES, TEXT_ENTRY_CASES } from '../../../setupStyles.js'
++
++// The layout cases read the specimens as the published cascade lays them out, so the cascade has to
++// be in the document before a box is measured.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('TextSection', () => {
++	it('renders every declared specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new TextSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Text region')
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(region.getAttribute('aria-label')).toBe('Text')
++			expect(region.querySelector('p')?.textContent).toBe(TEXT_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Text alignment',
++				'Responsive text alignment',
++				'Wrapping',
++				'Word break',
++				'Text transform',
++				'Text decoration',
++				'Truncated text',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				TEXT_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			for (const { key } of TEXT_ALIGN_CASES)
++				expect(region.querySelector(`[data-specimen="Text alignment"] .text-${key}`)).not.toBeNull()
++			for (const { prefix, values } of TEXT_ENTRY_CASES)
++				for (const { key } of values)
++					expect(region.querySelector(`.${prefix}-${key}`)).not.toBeNull()
++			expect(
++				region.querySelector('[data-specimen="Truncated text"] .row > .col-4.text-truncate'),
++			).not.toBeNull()
++			expect(
++				region.querySelector('[data-specimen="Wrapping"] .row > .col-2.text-nowrap > .text-wrap'),
++			).not.toBeNull()
++			expect(
++				region.querySelector('[data-specimen="Word break"] .row > .col-2 > .text-break'),
++			).not.toBeNull()
++			expect(
++				region.querySelector('[data-specimen="Text decoration"] a.text-decoration-none[href]'),
++			).not.toBeNull()
++			expect(Object.isFrozen(TEXT_COPY)).toBe(true)
++			expect(Object.isFrozen(TEXT_SPECIMENS)).toBe(true)
++			expect(TEXT_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('moves the responsive alignment at its boundaries between the journey widths', async () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new TextSection(host)
++		try {
++			const specimen = requireValue(
++				host.querySelector('[data-specimen="Responsive text alignment"]'),
++				'No responsive specimen',
++			)
++			const medium = requireValue(specimen.querySelector('.text-md-start'), 'No medium line')
++			const large = requireValue(specimen.querySelector('.text-lg-end'), 'No large line')
++			const narrow = await visitBreakpoint(390, () => [
++				readStyle(medium, 'text-align'),
++				readStyle(large, 'text-align'),
++			])
++			const wide = await visitBreakpoint(1280, () => [
++				readStyle(medium, 'text-align'),
++				readStyle(large, 'text-align'),
++			])
++			expect([narrow, wide]).toEqual([
++				['center', 'left'],
++				['left', 'right'],
++			])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('runs each constrained line against its column edge at both journey widths, inside the page', async () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new TextSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Text region')
++			const unwrapped = requireValue(
++				region.querySelector<HTMLElement>('[data-specimen="Wrapping"] p.text-nowrap'),
++				'No unwrapped line',
++			)
++			const wrapped = requireValue(
++				region.querySelector<HTMLElement>('[data-specimen="Wrapping"] .text-wrap'),
++				'No wrapped line',
++			)
++			const broken = requireValue(
++				region.querySelector<HTMLElement>('[data-specimen="Word break"] .text-break'),
++				'No broken word',
++			)
++			const truncated = requireValue(
++				region.querySelector<HTMLElement>('[data-specimen="Truncated text"] .text-truncate'),
++				'No truncated line',
++			)
++			for (const width of [390, 1280]) {
++				const reading = await visitBreakpoint(width, () => ({
++					unwrapped: unwrapped.scrollWidth > unwrapped.clientWidth,
++					wrapped: wrapped.scrollWidth <= wrapped.clientWidth,
++					broken: broken.scrollWidth <= broken.clientWidth,
++					truncated: truncated.scrollWidth > truncated.clientWidth,
++					inside: unwrapped.getBoundingClientRect().left + unwrapped.scrollWidth <= width,
++				}))
++				expect(reading).toEqual({
++					unwrapped: true,
++					wrapped: true,
++					broken: true,
++					truncated: true,
++					inside: true,
++				})
++			}
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new TextSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Text region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/src/styles/components/text-truncation.test.ts b/tests/src/styles/components/text-truncation.test.ts
+new file mode 100644
+index 0000000..ae48a74
+--- /dev/null
++++ b/tests/src/styles/components/text-truncation.test.ts
+@@ -0,0 +1,84 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene } from '../../../setupBrowser.js'
++
++// A sentence long enough to overflow the constrained box the cases draw.
++const SENTENCE =
++	'The parcel leaves the Harbor Street depot at eight and reaches most addresses before noon.'
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('text truncation helper', () => {
++	it('clips a sentence to one line with an ellipsis inside a constrained box', () => {
++		const host = scene.mount(
++			`<div style="width: 120px"><div class="text-truncate">${SENTENCE}</div><div class="wrapped">${SENTENCE}</div></div>`,
++		)
++		const truncated = requireValue(
++			host.querySelector<HTMLElement>('.text-truncate'),
++			'No truncated box',
++		)
++		const wrapped = requireValue(host.querySelector<HTMLElement>('.wrapped'), 'No wrapped box')
++		expect([
++			readStyle(truncated, 'overflow-x'),
++			readStyle(truncated, 'overflow-y'),
++			readStyle(truncated, 'text-overflow'),
++			readStyle(truncated, 'white-space'),
++		]).toEqual(['hidden', 'hidden', 'ellipsis', 'nowrap'])
++		// The sentence runs past the box on one line, where its untruncated twin wraps inside the same
++		// width over several lines.
++		expect(truncated.scrollWidth).toBeGreaterThan(truncated.clientWidth)
++		expect(wrapped.scrollWidth).toBeLessThanOrEqual(wrapped.clientWidth)
++		expect(truncated.getBoundingClientRect().height).toBeLessThan(
++			wrapped.getBoundingClientRect().height,
++		)
++	})
++
++	it('yields its normal declarations to an important white-space utility and to a later rule of your own', () => {
++		const host = scene.mount(
++			'<div class="text-truncate text-wrap">Wrapped</div><div class="text-truncate">Clipped</div>',
++		)
++		const wrapped = requireValue(host.querySelector('.text-wrap'), 'No wrapped element')
++		const clipped = requireValue(host.lastElementChild, 'No clipped element')
++		expect(readStyle(wrapped, 'white-space')).toBe('normal')
++		expect(readStyle(clipped, 'text-overflow')).toBe('ellipsis')
++		scene.load('.text-truncate { text-overflow: clip }')
++		expect(readStyle(clipped, 'text-overflow')).toBe('clip')
++	})
++
++	it('sits in the components layer, where a later rule inside that layer overrides it', () => {
++		const host = scene.mount('<div class="text-truncate">Clipped</div>')
++		const element = requireValue(host.querySelector('.text-truncate'), 'No clipped element')
++		scene.load('@layer components { .text-truncate { white-space: pre } }')
++		expect(readStyle(element, 'white-space')).toBe('pre')
++		// A rule inside the utilities layer outranks the components layer whatever its priority.
++		scene.load('@layer utilities { .text-truncate { white-space: pre-line } }')
++		expect(readStyle(element, 'white-space')).toBe('pre-line')
++	})
++
++	it('reads no token or mode, so a dark island and a doubled density factor leave the helper', () => {
++		const host = scene.mount(
++			'<div data-bs-theme="dark"><div class="text-truncate">Island</div></div>',
++		)
++		const element = requireValue(host.querySelector('.text-truncate'), 'No island element')
++		const properties = ['overflow-x', 'text-overflow', 'white-space']
++		expect(properties.map((property) => readStyle(element, property))).toEqual([
++			'hidden',
++			'ellipsis',
++			'nowrap',
++		])
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect(properties.map((property) => readStyle(element, property))).toEqual([
++				'hidden',
++				'ellipsis',
++				'nowrap',
++			])
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++})
+diff --git a/tests/src/styles/utilities/color.test.ts b/tests/src/styles/utilities/color.test.ts
+new file mode 100644
+index 0000000..c0d5e74
+--- /dev/null
++++ b/tests/src/styles/utilities/color.test.ts
+@@ -0,0 +1,207 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { parseCSSColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene } from '../../../setupBrowser.js'
++import {
++	TEXT_BG_CASES,
++	TEXT_COLOR_CASES,
++	TEXT_EMPHASIS_CASES,
++	TEXT_MODES,
++	TEXT_OPACITY_CASES,
++} from '../../../setupStyles.js'
++
++// A color no class writes. A scope sets it for its children to inherit, and an override writes it,
++// so a class that resolves to it has painted no color of its own.
++const INHERITED = 'rgb(1, 2, 3)'
++
++afterEach(() => {
++	document.documentElement.style.removeProperty('--vn-color-primary-rgb')
++	document.documentElement.style.removeProperty('--vn-color-primary-base')
++	scene.clear()
++})
++
++describe('color utilities', () => {
++	it.each(TEXT_MODES)(
++		'paints each color-and-background pair as the release records it in %s mode, at the opacity the scope sets',
++		(mode) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}">${TEXT_BG_CASES.map(
++					({ role, color, background }) =>
++						`<span class="text-bg-${role}">Pair</span><span data-recorded="${role}" style="color: ${color}; background-color: ${background}">Recorded</span>`,
++				).join('')}</div>`,
++			)
++			const scope = requireValue(host.querySelector<HTMLElement>('[data-bs-theme]'), 'No scope')
++			for (const opacity of [undefined, '0.5']) {
++				if (opacity !== undefined) scope.style.setProperty('--bs-bg-opacity', opacity)
++				for (const { role } of TEXT_BG_CASES) {
++					const pair = requireValue(host.querySelector(`.text-bg-${role}`), `No ${role} pair`)
++					const recorded = requireValue(
++						host.querySelector(`[data-recorded="${role}"]`),
++						`No recorded ${role} pair`,
++					)
++					expect([readStyle(pair, 'color'), readStyle(pair, 'background-color')]).toEqual([
++						readStyle(recorded, 'color'),
++						readStyle(recorded, 'background-color'),
++					])
++					expect(
++						requireValue(parseCSSColor(readStyle(pair, 'background-color')), 'No fill')[3],
++					).toBe(opacity === undefined ? 1 : 0.5)
++				}
++			}
++		},
++	)
++
++	it.each(TEXT_MODES)(
++		'resolves each text color to the value the release records in %s mode',
++		(mode) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}" style="color: ${INHERITED}">${TEXT_COLOR_CASES.map(
++					({ key, value }) =>
++						`<span class="text-${key}">Class</span><span data-recorded="${key}" style="--bs-text-opacity: 1; color: ${value}">Recorded</span>`,
++				).join('')}</div>`,
++			)
++			for (const { key } of TEXT_COLOR_CASES) {
++				const element = requireValue(host.querySelector(`.text-${key}`), `No text-${key} element`)
++				const recorded = requireValue(
++					host.querySelector(`[data-recorded="${key}"]`),
++					`No recorded ${key} element`,
++				)
++				expect(readToken(element, '--bs-text-opacity')).toBe('1')
++				expect(readStyle(element, 'color')).toBe(readStyle(recorded, 'color'))
++				// Only the reset key inherits; every other key paints a color of its own.
++				expect(readStyle(element, 'color') === INHERITED).toBe(key === 'reset')
++			}
++		},
++	)
++
++	it('resolves each emphasis tier through the alias its own mode declares', () => {
++		const host = scene.mount(
++			TEXT_MODES.map(
++				(mode) =>
++					`<div data-bs-theme="${mode}">${TEXT_EMPHASIS_CASES.map(
++						({ key, value }) =>
++							`<span class="text-${key}">Class</span><span data-recorded="${key}" style="color: ${value}">Recorded</span>`,
++					).join('')}</div>`,
++			).join(''),
++		)
++		const readings = TEXT_MODES.map((mode) =>
++			TEXT_EMPHASIS_CASES.map(({ key }) => {
++				const scope = requireValue(
++					host.querySelector(`[data-bs-theme="${mode}"]`),
++					`No ${mode} scope`,
++				)
++				const element = requireValue(scope.querySelector(`.text-${key}`), `No ${key} element`)
++				const recorded = requireValue(
++					scope.querySelector(`[data-recorded="${key}"]`),
++					`No recorded ${key} element`,
++				)
++				expect(readStyle(element, 'color')).toBe(readStyle(recorded, 'color'))
++				return readStyle(element, 'color')
++			}),
++		)
++		const [light, dark] = readings
++		// The dark island resolves its own tier for every role, never the light tier it would carry
++		// if the class wrote the value rather than reading the mode's alias.
++		expect(
++			requireValue(dark, 'No dark readings').filter(
++				(color, index) => color === requireValue(light, 'No light readings')[index],
++			),
++		).toEqual([])
++	})
++
++	it('sets the alpha each opacity step names over a text color written ahead of it', () => {
++		const host = scene.mount(
++			TEXT_OPACITY_CASES.map(
++				({ step }) => `<span class="text-primary text-opacity-${String(step)}">Faded</span>`,
++			).join(''),
++		)
++		for (const { step, value } of TEXT_OPACITY_CASES) {
++			const element = requireValue(
++				host.querySelector(`.text-opacity-${String(step)}`),
++				`No text-opacity-${String(step)} element`,
++			)
++			// The color entry sets the variable to the `1` value on the same element, and the opacity entry
++			// follows it in the map, so the step is what the color reads.
++			expect(Number(readToken(element, '--bs-text-opacity'))).toBe(value)
++			expect(requireValue(parseCSSColor(readStyle(element, 'color')), 'No color')[3]).toBe(value)
++		}
++	})
++
++	it('retunes a role color and its emphasis tier from the tokens their aliases read, and ignores the density factor', () => {
++		const host = scene.mount(
++			'<span class="text-primary">Role</span><span class="text-primary-emphasis">Emphasis</span>',
++		)
++		const role = requireValue(host.querySelector('.text-primary'), 'No role element')
++		const emphasis = requireValue(host.querySelector('.text-primary-emphasis'), 'No emphasis')
++		const resting = [readStyle(role, 'color'), readStyle(emphasis, 'color')]
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect([readStyle(role, 'color'), readStyle(emphasis, 'color')]).toEqual(resting)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++		document.documentElement.style.setProperty('--vn-color-primary-rgb', '20, 80, 140')
++		expect(readStyle(role, 'color')).toBe('rgb(20, 80, 140)')
++		document.documentElement.style.setProperty('--vn-color-primary-base', 'rgb(200, 0, 0)')
++		expect(readStyle(emphasis, 'color')).not.toBe(resting[1])
++	})
++
++	it('lets a text color and a later background utility on the same element win over a pair, as the release does', () => {
++		// A background utility the release's map writes after the color entries, planted in the
++		// utilities layer after the shipped cascade, with the declaration the release records for it.
++		scene.load(
++			'@layer utilities { .bg-danger { background-color: RGBA(var(--bs-danger-rgb), var(--bs-bg-opacity, 1)) !important } }',
++		)
++		const host = scene.mount(
++			'<span class="text-bg-primary text-danger">Pair and color</span><span class="text-danger">Color</span><span class="text-bg-primary bg-danger">Pair and background</span><span class="text-bg-danger">Danger pair</span>',
++		)
++		const colored = requireValue(host.querySelector('.text-bg-primary.text-danger'), 'No color')
++		const color = requireValue(
++			host.querySelector('.text-danger:not(.text-bg-primary)'),
++			'No text color',
++		)
++		const filled = requireValue(host.querySelector('.text-bg-primary.bg-danger'), 'No fill')
++		const danger = requireValue(host.querySelector('.text-bg-danger'), 'No danger pair')
++		expect(readStyle(colored, 'color')).toBe(readStyle(color, 'color'))
++		expect(readStyle(filled, 'background-color')).toBe(readStyle(danger, 'background-color'))
++		// The pair still paints the property no later utility on the element sets.
++		expect(readStyle(filled, 'color')).not.toBe(readStyle(color, 'color'))
++	})
++
++	it('keeps its priority over a later unlayered consumer rule', () => {
++		const host = scene.mount(
++			'<span class="probe text-success">Utility</span><span class="probe text-bg-success">Pair</span><span class="probe">Consumer</span>',
++		)
++		scene.load(`.probe { color: ${INHERITED}; background-color: ${INHERITED} }`)
++		const utility = requireValue(host.querySelector('.text-success'), 'No utility element')
++		const pair = requireValue(host.querySelector('.text-bg-success'), 'No pair element')
++		const consumer = requireValue(host.lastElementChild, 'No consumer element')
++		expect(readStyle(consumer, 'color')).toBe(INHERITED)
++		expect(readStyle(utility, 'color')).not.toBe(INHERITED)
++		expect(readStyle(pair, 'background-color')).not.toBe(INHERITED)
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount(
++			'<span class="text-primary">Utility</span><span class="text-bg-dark">Pair</span>',
++		)
++		const element = requireValue(host.querySelector('.text-primary'), 'No utility element')
++		const pair = requireValue(host.querySelector('.text-bg-dark'), 'No pair element')
++		const resting = [readStyle(element, 'color'), readStyle(pair, 'background-color')]
++		// An unlayered `!important` declaration sorts after every layered one, so the shipped rules
++		// keep their values; the same declarations re-opened inside the utilities layer arrive after
++		// the shipped rules in that layer and win.
++		scene.load(
++			`.text-primary { color: ${INHERITED} !important } .text-bg-dark { background-color: ${INHERITED} !important }`,
++		)
++		expect([readStyle(element, 'color'), readStyle(pair, 'background-color')]).toEqual(resting)
++		scene.load(
++			`@layer utilities { .text-primary { color: ${INHERITED} !important } .text-bg-dark { background-color: ${INHERITED} !important } }`,
++		)
++		expect([readStyle(element, 'color'), readStyle(pair, 'background-color')]).toEqual([
++			INHERITED,
++			INHERITED,
++		])
++	})
++})
+diff --git a/tests/src/styles/utilities/link.test.ts b/tests/src/styles/utilities/link.test.ts
+new file mode 100644
+index 0000000..4231ba9
+--- /dev/null
++++ b/tests/src/styles/utilities/link.test.ts
+@@ -0,0 +1,209 @@
++import { requireValue } from '@orkestrel/test'
++import { matchesColor, parseCSSColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { page } from 'vitest/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene } from '../../../setupBrowser.js'
++import {
++	LINK_OFFSET_CASES,
++	LINK_OPACITY_CASES,
++	LINK_ROLES,
++	LINK_UNDERLINE_OPACITY_CASES,
++	TEXT_MODES,
++} from '../../../setupStyles.js'
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe.each(TEXT_MODES)('link classes in %s mode', (mode) => {
++	it.each(LINK_ROLES)('reads the %s role channels at rest, hover, and focus', async (role) => {
++		const host = scene.mount(
++			`<div data-bs-theme="${mode}"><a href="#content" class="link-${role}">Role link</a></div>`,
++		)
++		const anchor = requireValue(host.querySelector('a'), 'No role link')
++		const color = `rgb(${readToken(anchor, `--vn-color-${role}-rgb`)})`
++		expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), color)).toBe(true)
++		await page.elementLocator(anchor).hover()
++		expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), color)).toBe(true)
++		await page.elementLocator(host).hover({ position: { x: 500, y: 0 } })
++		anchor.focus()
++		expect(anchor.matches(':hover')).toBe(false)
++		expect(anchor.matches(':focus')).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), color)).toBe(true)
++		anchor.style.setProperty(`--vn-color-${role}-rgb`, '20, 80, 140')
++		anchor.style.setProperty('--bs-link-opacity', '0.5')
++		anchor.style.setProperty('--bs-link-underline-opacity', '0.25')
++		expect(readStyle(anchor, 'color')).toBe('rgba(20, 80, 140, 0.5)')
++		expect(readStyle(anchor, 'text-decoration-color')).toBe('rgba(20, 80, 140, 0.25)')
++	})
++
++	it('retains the emphasis fallback and lets explicit opacities override it', async () => {
++		const host = scene.mount(
++			`<div data-bs-theme="${mode}"><a href="#content" class="link-body-emphasis">Emphasis</a></div>`,
++		)
++		const anchor = requireValue(host.querySelector('a'), 'No emphasis link')
++		const channels = readToken(anchor, '--vn-text-emphasis-rgb')
++		expect(matchesColor(readStyle(anchor, 'color'), `rgb(${channels})`)).toBe(true)
++		await page.elementLocator(anchor).hover()
++		expect(matchesColor(readStyle(anchor, 'color'), `rgba(${channels}, 0.75)`)).toBe(true)
++		expect(
++			matchesColor(readStyle(anchor, 'text-decoration-color'), `rgba(${channels}, 0.75)`),
++		).toBe(true)
++		await page.elementLocator(host).hover({ position: { x: 500, y: 0 } })
++		anchor.focus()
++		expect(matchesColor(readStyle(anchor, 'color'), `rgba(${channels}, 0.75)`)).toBe(true)
++		anchor.classList.add('link-opacity-100', 'link-underline-opacity-50')
++		expect(matchesColor(readStyle(anchor, 'color'), `rgb(${channels})`)).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), `rgba(${channels}, 0.5)`)).toBe(
++			true,
++		)
++	})
++
++	it.each(LINK_OPACITY_CASES)(
++		'resolves opacity $step and activates its hover twin',
++		async ({ step, value }) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}"><a href="#content" class="link-opacity-${step}">Opacity</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No opacity link')
++			expect(Number(readToken(anchor, '--bs-link-opacity'))).toBe(value)
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(value)
++			anchor.className = `link-opacity-${step}-hover`
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(1)
++			await page.elementLocator(anchor).hover()
++			expect(Number(readToken(anchor, '--bs-link-opacity'))).toBe(value)
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(value)
++		},
++	)
++
++	it.each(LINK_OFFSET_CASES)(
++		'resolves offset $step and activates its hover twin',
++		async ({ step, value }) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}"><a href="#content" class="link-offset-${step}" style="font-size:16px">Offset</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No offset link')
++			expect(readStyle(anchor, 'text-underline-offset')).toBe(value)
++			anchor.className = `link-offset-${step}-hover`
++			expect(readStyle(anchor, 'text-underline-offset')).toBe('auto')
++			await page.elementLocator(anchor).hover()
++			expect(readStyle(anchor, 'text-underline-offset')).toBe(value)
++		},
++	)
++
++	it.each(LINK_ROLES)(
++		'paints the %s underline independently of text and reads its opacity',
++		(role) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}"><a href="#content" class="link-underline-${role}">Underline</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No underline link')
++			expect(readToken(anchor, '--bs-link-underline-opacity')).toBe('1')
++			expect(
++				matchesColor(
++					readStyle(anchor, 'text-decoration-color'),
++					`rgb(${readToken(anchor, `--vn-color-${role}-rgb`)})`,
++				),
++			).toBe(true)
++			const color = readStyle(anchor, 'color')
++			anchor.style.setProperty(`--vn-color-${role}-rgb`, '20, 80, 140')
++			anchor.classList.add('link-underline-opacity-25')
++			expect(readStyle(anchor, 'text-decoration-color')).toBe('rgba(20, 80, 140, 0.25)')
++			expect(readStyle(anchor, 'color')).toBe(color)
++		},
++	)
++
++	it.each(LINK_UNDERLINE_OPACITY_CASES)(
++		'resolves underline opacity $step and activates its hover twin',
++		async ({ step, value }) => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}"><a href="#content" class="link-underline link-underline-opacity-${step}">Underline opacity</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No underline opacity link')
++			expect(Number(readToken(anchor, '--bs-link-underline-opacity'))).toBe(value)
++			expect(
++				matchesColor(
++					readStyle(anchor, 'text-decoration-color'),
++					`rgba(${readToken(anchor, '--vn-link-rgb')}, ${String(value)})`,
++				),
++			).toBe(true)
++			anchor.className = `link-underline link-underline-opacity-${step}-hover`
++			expect(readToken(anchor, '--bs-link-underline-opacity')).toBe('1')
++			expect(
++				requireValue(
++					parseCSSColor(readStyle(anchor, 'text-decoration-color')),
++					'No underline color',
++				)[3],
++			).toBe(1)
++			await page.elementLocator(anchor).hover()
++			expect(Number(readToken(anchor, '--bs-link-underline-opacity'))).toBe(value)
++			expect(
++				requireValue(
++					parseCSSColor(readStyle(anchor, 'text-decoration-color')),
++					'No underline color',
++				)[3],
++			).toBeCloseTo(value, 2)
++		},
++	)
++})
++
++describe('link classes in the utilities layer', () => {
++	it('yields a colored link to a text color on the same element, as the release does', () => {
++		const host = scene.mount(
++			'<a href="#content" class="link-primary text-danger">Colored and danger</a><span class="text-danger">Danger</span>',
++		)
++		const link = requireValue(host.querySelector('.link-primary'), 'No colored link')
++		const text = requireValue(host.querySelector('span.text-danger'), 'No text color')
++		// The helper heads the utilities layer, so the text color written later in that layer wins
++		// the one property both set.
++		expect(readStyle(link, 'color')).toBe(readStyle(text, 'color'))
++		expect(
++			matchesColor(
++				readStyle(link, 'text-decoration-color'),
++				`rgb(${readToken(link, '--vn-color-primary-rgb')})`,
++			),
++		).toBe(true)
++	})
++
++	it('keeps an underline color class over a text decoration utility on the same element, as the release does', () => {
++		const host = scene.mount(
++			'<span class="text-decoration-underline link-underline-danger">Underlined</span>',
++		)
++		const element = requireValue(host.querySelector('span'), 'No underlined element')
++		// The decoration utility's shorthand resets the underline color to the text color, and the
++		// underline entry follows it in the release's map, so the underline class wins the color.
++		expect(readStyle(element, 'text-decoration-line')).toBe('underline')
++		expect(
++			matchesColor(
++				readStyle(element, 'text-decoration-color'),
++				`rgb(${readToken(element, '--vn-color-danger-rgb')})`,
++			),
++		).toBe(true)
++		expect(readStyle(element, 'text-decoration-color')).not.toBe(readStyle(element, 'color'))
++	})
++
++	it('keeps its priority over a later unlayered consumer rule', () => {
++		const host = scene.mount(
++			'<a href="#content" class="probe link-success link-offset-2" style="font-size: 16px">Link</a><a href="#content" class="probe">Consumer</a>',
++		)
++		scene.load('.probe { color: rgb(1, 2, 3); text-underline-offset: 9px }')
++		const link = requireValue(host.querySelector('.link-success'), 'No link')
++		const consumer = requireValue(host.lastElementChild, 'No consumer link')
++		expect(readStyle(consumer, 'color')).toBe('rgb(1, 2, 3)')
++		expect(readStyle(link, 'color')).not.toBe('rgb(1, 2, 3)')
++		expect(readStyle(link, 'text-underline-offset')).toBe('4px')
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<a href="#content" class="link-success">Link</a>')
++		const link = requireValue(host.querySelector('.link-success'), 'No link')
++		const resting = readStyle(link, 'color')
++		scene.load('.link-success { color: rgb(1, 2, 3) !important }')
++		expect(readStyle(link, 'color')).toBe(resting)
++		scene.load('@layer utilities { .link-success { color: rgb(1, 2, 3) !important } }')
++		expect(readStyle(link, 'color')).toBe('rgb(1, 2, 3)')
++	})
++})
+diff --git a/tests/src/styles/utilities/text.test.ts b/tests/src/styles/utilities/text.test.ts
+new file mode 100644
+index 0000000..bc1015a
+--- /dev/null
++++ b/tests/src/styles/utilities/text.test.ts
+@@ -0,0 +1,189 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { scene, visitBreakpoint } from '../../../setupBrowser.js'
++import { GRID_BREAKPOINT_CASES, TEXT_ALIGN_CASES, TEXT_ENTRY_CASES } from '../../../setupStyles.js'
++
++// Every aligned element rests on an inline `justify` alignment, a value no class writes, so a
++// reading of any recorded value can only come from the class.
++const RESTING_ALIGN = 'justify'
++
++// A sentence long enough to overflow the constrained boxes the layout cases draw, and a word with no
++// break opportunity inside it.
++const SENTENCE =
++	'The parcel leaves the Harbor Street depot at eight and reaches most addresses before noon.'
++const WORD = 'Pneumonoultramicroscopicsilicovolcanoconiosis'
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('text utilities', () => {
++	it.each(GRID_BREAKPOINT_CASES)(
++		'aligns with every value around the $name boundary',
++		async ({ name, boundary, readings }) => {
++			const infix = boundary === 0 ? '' : `-${name}`
++			const host = scene.mount(
++				TEXT_ALIGN_CASES.map(
++					({ key }) =>
++						`<p class="text${infix}-${key}" style="text-align: ${RESTING_ALIGN}">Aligned</p>`,
++				).join(''),
++			)
++			for (const viewport of readings) {
++				await visitBreakpoint(viewport, () => {
++					expect(window.innerWidth).toBe(viewport)
++					for (const { key, value } of TEXT_ALIGN_CASES) {
++						const element = requireValue(
++							host.querySelector(`.text${infix}-${key}`),
++							`No text${infix}-${key} element`,
++						)
++						expect(readStyle(element, 'text-align')).toBe(
++							viewport >= boundary ? value : RESTING_ALIGN,
++						)
++					}
++				})
++			}
++		},
++	)
++
++	it('resolves a wider alignment infix over a narrower one whatever order the classes are written in', async () => {
++		const host = scene.mount(
++			'<p class="text-md-start text-sm-center">Medium start</p><p class="text-lg-end text-center">Large end</p>',
++		)
++		const medium = requireValue(host.querySelector('.text-md-start'), 'No medium element')
++		const large = requireValue(host.querySelector('.text-lg-end'), 'No large element')
++		const readings: Array<readonly string[]> = []
++		for (const viewport of [767, 768, 991, 992])
++			readings.push(
++				await visitBreakpoint(viewport, () => [
++					readStyle(medium, 'text-align'),
++					readStyle(large, 'text-align'),
++				]),
++			)
++		expect(readings).toEqual([
++			['center', 'center'],
++			['left', 'center'],
++			['left', 'center'],
++			['left', 'right'],
++		])
++	})
++
++	it('aligns to the physical side it names in a right-to-left scope', () => {
++		const host = scene.mount(
++			'<div dir="rtl"><p class="text-start">Start</p><p class="text-end">End</p></div>',
++		)
++		const start = requireValue(host.querySelector('.text-start'), 'No start element')
++		const end = requireValue(host.querySelector('.text-end'), 'No end element')
++		expect([readStyle(start, 'text-align'), readStyle(end, 'text-align')]).toEqual([
++			'left',
++			'right',
++		])
++	})
++
++	it('resolves every decoration, transform, wrapping, and break value over a resting value no class writes', () => {
++		for (const { prefix, readings, resting, values } of TEXT_ENTRY_CASES) {
++			const host = scene.mount(
++				values
++					.map(({ key }) => `<p class="${prefix}-${key}" style="${resting}">Recorded</p>`)
++					.join(''),
++			)
++			for (const { key, value } of values) {
++				const element = requireValue(
++					host.querySelector(`.${prefix}-${key}`),
++					`No ${prefix}-${key} element`,
++				)
++				expect(readings.map((property) => readStyle(element, property))).toEqual(
++					readings.map(() => value),
++				)
++			}
++		}
++	})
++
++	it('keeps a sentence on one line, wraps it again, and breaks a long word inside a constrained box', () => {
++		const host = scene.mount(
++			[
++				`<div style="width: 120px"><p class="nowrap text-nowrap">${SENTENCE}</p></div>`,
++				`<div class="text-nowrap" style="width: 120px"><p class="wrap text-wrap">${SENTENCE}</p><p class="inherited">${SENTENCE}</p></div>`,
++				`<div style="width: 80px"><p class="broken text-break">${WORD}</p><p class="whole">${WORD}</p></div>`,
++			].join(''),
++		)
++		const nowrap = requireValue(host.querySelector<HTMLElement>('.nowrap'), 'No nowrap box')
++		const wrap = requireValue(host.querySelector<HTMLElement>('.wrap'), 'No wrap box')
++		const inherited = requireValue(
++			host.querySelector<HTMLElement>('.inherited'),
++			'No inherited box',
++		)
++		const broken = requireValue(host.querySelector<HTMLElement>('.broken'), 'No broken box')
++		const whole = requireValue(host.querySelector<HTMLElement>('.whole'), 'No whole box')
++		// The unwrapped sentence overflows its box on one line; the wrapped one fits the same width
++		// across several lines, while its unclassed sibling inherits the box's `nowrap` value and
++		// overflows.
++		expect(nowrap.scrollWidth).toBeGreaterThan(nowrap.clientWidth)
++		expect(wrap.scrollWidth).toBeLessThanOrEqual(wrap.clientWidth)
++		expect(wrap.getBoundingClientRect().height).toBeGreaterThan(
++			nowrap.getBoundingClientRect().height,
++		)
++		expect(inherited.scrollWidth).toBeGreaterThan(inherited.clientWidth)
++		expect(broken.scrollWidth).toBeLessThanOrEqual(broken.clientWidth)
++		expect(whole.scrollWidth).toBeGreaterThan(whole.clientWidth)
++	})
++
++	it('writes the later value of one entry over an earlier one on the same element', () => {
++		const host = scene.mount(
++			'<p class="text-nowrap text-wrap">Space</p><p class="text-capitalize text-lowercase">Transform</p><p class="text-decoration-line-through text-decoration-none">Decoration</p>',
++		)
++		const [space, transform, decoration] = [...host.children]
++		expect([
++			readStyle(requireValue(space, 'No space element'), 'white-space'),
++			readStyle(requireValue(transform, 'No transform element'), 'text-transform'),
++			readStyle(requireValue(decoration, 'No decoration element'), 'text-decoration-line'),
++		]).toEqual(['nowrap', 'capitalize', 'line-through'])
++	})
++
++	it('reads no token or mode, so a dark island and a doubled density factor leave every value', () => {
++		const host = scene.mount(
++			'<div data-bs-theme="dark"><p class="text-center text-uppercase text-nowrap">Island</p></div>',
++		)
++		const element = requireValue(host.querySelector('p'), 'No island element')
++		const properties = ['text-align', 'text-transform', 'white-space']
++		expect(properties.map((property) => readStyle(element, property))).toEqual([
++			'center',
++			'uppercase',
++			'nowrap',
++		])
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		try {
++			expect(properties.map((property) => readStyle(element, property))).toEqual([
++				'center',
++				'uppercase',
++				'nowrap',
++			])
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++
++	it('keeps its priority over a later unlayered consumer rule', () => {
++		const host = scene.mount(
++			'<p class="probe text-center">Utility</p><p class="probe">Consumer</p>',
++		)
++		scene.load('.probe { text-align: right }')
++		const utility = requireValue(host.querySelector('.text-center'), 'No utility element')
++		const consumer = requireValue(host.lastElementChild, 'No consumer element')
++		expect(readStyle(consumer, 'text-align')).toBe('right')
++		expect(readStyle(utility, 'text-align')).toBe('center')
++	})
++
++	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
++		const host = scene.mount('<p class="text-center">Utility</p>')
++		const element = requireValue(host.querySelector('.text-center'), 'No utility element')
++		// An unlayered `!important` declaration sorts after every layered one, so the shipped utility
++		// keeps its value; the same declaration re-opened inside the utilities layer arrives after the
++		// shipped rule in that layer and wins.
++		scene.load('.text-center { text-align: right !important }')
++		expect(readStyle(element, 'text-align')).toBe('center')
++		scene.load('@layer utilities { .text-center { text-align: justify !important } }')
++		expect(readStyle(element, 'text-align')).toBe('justify')
++	})
++})

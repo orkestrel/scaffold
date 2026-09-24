@@ -1,0 +1,1638 @@
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -85,5 +85,7 @@
+ @use 'utilities/position';
+ @use 'utilities/sizing';
+ @use 'utilities/flex';
++@use 'utilities/spacing';
+ @use 'utilities/gap';
++@use 'utilities/interaction';
+ @use 'utilities/visibility';
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -157,18 +157,32 @@
+ 			'list-group',
+ 			'list-inline',
+ 			'list-unstyled',
++			'm',
+ 			'mark',
++			'mb',
++			'me',
+ 			'mh',
+ 			'min',
++			'ms',
++			'mt',
+ 			'mw',
++			'mx',
++			'my',
+ 			'nav',
+ 			'navbar',
+ 			'offset',
+ 			'order',
++			'p',
+ 			'pagination',
++			'pb',
++			'pe',
+ 			'placeholder',
+ 			'position',
+ 			'progress',
++			'ps',
++			'pt',
++			'px',
++			'py',
+ 			'ratio',
+ 			'reboot',
+ 			'row',
+@@ -180,6 +194,7 @@
+ 			'table',
+ 			'top',
+ 			'translate-middle',
++			'user-select',
+ 			'valid-feedback',
+ 			'valid-tooltip',
+ 			'vh',
+@@ -530,6 +545,22 @@
+ 			'max-height': 'utilities/sizing',
+ 			'viewport-height': 'utilities/sizing',
+ 			'min-viewport-height': 'utilities/sizing',
++			margin: 'utilities/spacing',
++			'margin-x': 'utilities/spacing',
++			'margin-y': 'utilities/spacing',
++			'margin-top': 'utilities/spacing',
++			'margin-end': 'utilities/spacing',
++			'margin-bottom': 'utilities/spacing',
++			'margin-start': 'utilities/spacing',
++			padding: 'utilities/spacing',
++			'padding-x': 'utilities/spacing',
++			'padding-y': 'utilities/spacing',
++			'padding-top': 'utilities/spacing',
++			'padding-end': 'utilities/spacing',
++			'padding-bottom': 'utilities/spacing',
++			'padding-start': 'utilities/spacing',
++			'user-select': 'utilities/interaction',
++			'pointer-events': 'utilities/interaction',
+ 			'row-gap': 'utilities/gap',
+ 			'column-gap': 'utilities/gap',
+ 			'z-index': 'utilities/position',
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1443,18 +1443,32 @@
+ 				'list-group',
+ 				'list-inline',
+ 				'list-unstyled',
++				'm',
+ 				'mark',
++				'mb',
++				'me',
+ 				'mh',
+ 				'min',
++				'ms',
++				'mt',
+ 				'mw',
++				'mx',
++				'my',
+ 				'nav',
+ 				'navbar',
+ 				'offset',
+ 				'order',
++				'p',
+ 				'pagination',
++				'pb',
++				'pe',
+ 				'placeholder',
+ 				'position',
+ 				'progress',
++				'ps',
++				'pt',
++				'px',
++				'py',
+ 				'ratio',
+ 				'reboot',
+ 				'row',
+@@ -1466,6 +1480,7 @@
+ 				'table',
+ 				'top',
+ 				'translate-middle',
++				'user-select',
+ 				'valid-feedback',
+ 				'valid-tooltip',
+ 				'vh',
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -2154,6 +2154,65 @@
+ 	Object.freeze({ prefix: 'z', name: 'z-0' }),
+ ])
+ 
++/**
++ * Pins the margin and padding steps against the official inventory, each with the token it reads.
++ *
++ * @remarks
++ * The `value` field is the length the release records, and the `pixels` field is that length at the
++ * default root font size. The `token` field names the density-scaled space token the step reads, and
++ * the zero step stays a literal that reads none. The margin entries also take the `auto` step, which
++ * the {@link SPACING_PROPERTY_CASES} table marks.
++ */
++export const SPACING_STEP_CASES = Object.freeze([
++	Object.freeze({ step: 0, value: '0', pixels: 0, token: undefined }),
++	Object.freeze({ step: 1, value: '0.25rem', pixels: 4, token: TOKEN_NAMES.space[2] }),
++	Object.freeze({ step: 2, value: '0.5rem', pixels: 8, token: TOKEN_NAMES.space[4] }),
++	Object.freeze({ step: 3, value: '1rem', pixels: 16, token: TOKEN_NAMES.space[8] }),
++	Object.freeze({ step: 4, value: '1.5rem', pixels: 24, token: TOKEN_NAMES.space[12] }),
++	Object.freeze({ step: 5, value: '3rem', pixels: 48, token: TOKEN_NAMES.space[24] }),
++])
++
++/**
++ * Lists the spacing properties in the release's map order, each with the initial its classes open
++ * with.
++ *
++ * @remarks
++ * If `auto` is `true`, the property's entries also write the `auto` step; if `false`, they write the
++ * numbered steps alone.
++ */
++export const SPACING_PROPERTY_CASES = Object.freeze([
++	Object.freeze({ property: 'margin', initial: 'm', auto: true }),
++	Object.freeze({ property: 'padding', initial: 'p', auto: false }),
++])
++
++/**
++ * Lists one spacing property's entries in the release's map order, each with the sides it sets.
++ *
++ * @remarks
++ * A class opens with the property's initial and the entry's suffix, so the `x` suffix writes the
++ * `.mx-*` and `.px-*` classes. The `e` and `s` suffixes set the physical right and left sides, as the
++ * release's own stylesheet does, whatever the document's writing direction. The empty suffix writes
++ * the shorthand, which sets every side.
++ */
++export const SPACING_SIDE_CASES = Object.freeze([
++	Object.freeze({ suffix: '', sides: Object.freeze(['top', 'right', 'bottom', 'left']) }),
++	Object.freeze({ suffix: 'x', sides: Object.freeze(['right', 'left']) }),
++	Object.freeze({ suffix: 'y', sides: Object.freeze(['top', 'bottom']) }),
++	Object.freeze({ suffix: 't', sides: Object.freeze(['top']) }),
++	Object.freeze({ suffix: 'e', sides: Object.freeze(['right']) }),
++	Object.freeze({ suffix: 'b', sides: Object.freeze(['bottom']) }),
++	Object.freeze({ suffix: 's', sides: Object.freeze(['left']) }),
++])
++
++/** Lists the values the release's `user-select` utility writes, in the release's order. */
++export const USER_SELECT_VALUES = Object.freeze(['all', 'auto', 'none'])
++
++/**
++ * Lists the values the release's `pointer-events` utility writes under the `pe` class, in the
++ * release's order.
++ */
++export const POINTER_EVENTS_VALUES = Object.freeze(['none', 'auto'])
++
+ /** Lists the properties a visually hidden box is read on through its computed style. */
+ export const VISUALLY_HIDDEN_PROPERTIES = Object.freeze([
+ 	'position',
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -155,6 +155,7 @@
+ 	PLACEHOLDER_SELECTORS,
+ 	PLACEHOLDER_SIZE_CASES,
+ 	PLACEMENT_CONTAINER,
++	POINTER_EVENTS_VALUES,
+ 	TRANSLATION_BOX,
+ 	POSITION_ENTRY_CASES,
+ 	POSITION_VALUES,
+@@ -169,6 +170,9 @@
+ 	RETAINED_LENGTH_ALIASES,
+ 	SIZING_STEP_CASES,
+ 	SIZING_ENTRY_CASES,
++	SPACING_PROPERTY_CASES,
++	SPACING_SIDE_CASES,
++	SPACING_STEP_CASES,
+ 	SPINNER_SELECTORS,
+ 	SPINNER_SIZE_CASES,
+ 	SPINNER_VARIABLE_CASES,
+@@ -181,6 +185,7 @@
+ 	TABLE_MARKUP,
+ 	TABLE_RESPONSIVE_CASES,
+ 	TABLE_ROLES,
++	USER_SELECT_VALUES,
+ 	VIEWPORT_SIZE_CASES,
+ 	VIEWPORT_WIDTHS,
+ 	VISUALLY_HIDDEN_PROPERTIES,
+@@ -387,6 +392,7 @@
+ 				'PLACEHOLDER_SIZE_CASES',
+ 				'PLACEMENT_BOX',
+ 				'PLACEMENT_CONTAINER',
++				'POINTER_EVENTS_VALUES',
+ 				'POSITION_ENTRY_CASES',
+ 				'POSITION_VALUES',
+ 				'PROGRESS_MARKUP',
+@@ -400,6 +406,9 @@
+ 				'RETAINED_LENGTH_ALIASES',
+ 				'SIZING_ENTRY_CASES',
+ 				'SIZING_STEP_CASES',
++				'SPACING_PROPERTY_CASES',
++				'SPACING_SIDE_CASES',
++				'SPACING_STEP_CASES',
+ 				'SPINNER_SELECTORS',
+ 				'SPINNER_SIZE_CASES',
+ 				'SPINNER_VARIABLE_CASES',
+@@ -442,6 +451,7 @@
+ 				'TYPE_MARK_TOKEN_CASES',
+ 				'TYPE_TEXT_CASES',
+ 				'UNMAPPED_TOKENS',
++				'USER_SELECT_VALUES',
+ 				'VENEER_GUIDE_PATH',
+ 				'VIEWPORT_SIZE_CASES',
+ 				'VIEWPORT_WIDTHS',
+@@ -1815,6 +1825,118 @@
+ 		])
+ 			expect(Object.isFrozen(entry)).toBe(true)
+ 	})
++	it('binds the spacing steps, properties, and sides and the interaction values to the inventory', () => {
++		const inventory = readOracleInventory()
++		// The spacing keys are read off the inventory by their grammar, a property's initial and an
++		// optional side suffix, rather than off the tables, so a table missing an entry or naming one
++		// the release lacks reddens here.
++		const keys = Object.keys(inventory.components)
++			.filter((key) => /^[mp][xytebs]?$/u.test(key))
++			.sort()
++		expect(
++			SPACING_PROPERTY_CASES.flatMap(({ initial }) =>
++				SPACING_SIDE_CASES.map(({ suffix }) => `${initial}${suffix}`),
++			).sort(),
++		).toEqual(keys)
++		for (const { property, initial, auto } of SPACING_PROPERTY_CASES) {
++			for (const { suffix, sides } of SPACING_SIDE_CASES) {
++				const key = `${initial}${suffix}`
++				const rules = requireValue(inventory.components[key], `No ${key} key`).rules.filter(
++					({ declarations }) =>
++						declarations.every((declaration) => declaration.property.startsWith(property)),
++				)
++				const steps = [
++					...SPACING_STEP_CASES.map(({ step, value }) => [String(step), value]),
++					...(auto ? [['auto', 'auto']] : []),
++				]
++				// The shorthand entry writes the property itself, and every other entry writes one
++				// longhand per side it names.
++				const written = suffix === '' ? [property] : sides.map((side) => `${property}-${side}`)
++				expect(
++					rules.map(({ selector, condition, declarations }) => [
++						selector,
++						condition === undefined ? 0 : parseMediaWidth(condition),
++						declarations.map((declaration) => [declaration.property, declaration.value]),
++					]),
++				).toEqual(
++					GRID_BREAKPOINT_CASES.flatMap(({ name, boundary }) =>
++						steps.map(([step, value]) => [
++							`.${key}${boundary === 0 ? '' : `-${name}`}-${step}`,
++							boundary,
++							written.map((longhand) => [longhand, value]),
++						]),
++					),
++				)
++			}
++		}
++		// The release writes no negative margin at its default, so no recorded selector carries a
++		// negative step.
++		expect(
++			keys.flatMap((key) =>
++				requireValue(inventory.components[key], `No ${key} key`)
++					.rules.map(({ selector }) => selector)
++					.filter((selector) => /-n\d$/u.test(selector)),
++			),
++		).toEqual([])
++		// Each step's pixels are its recorded length at the default root size, and each token is the
++		// space token whose number of eighth-rem units is that length, so a step reading the wrong
++		// token reddens even where the recorded value agrees.
++		expect(SPACING_STEP_CASES.map(({ pixels }) => pixels)).toEqual(
++			SPACING_STEP_CASES.map(({ value }) => Number.parseFloat(value) * 16),
++		)
++		expect(
++			SPACING_STEP_CASES.filter(({ token }) => token === undefined).map(({ step, value }) => [
++				step,
++				value,
++			]),
++		).toEqual([[0, '0']])
++		expect(
++			SPACING_STEP_CASES.flatMap(({ token }) =>
++				token === undefined
++					? []
++					: [
++							[
++								Object.values(TOKEN_NAMES.space).includes(token),
++								Number(token.slice(token.lastIndexOf('-') + 1)) / 8,
++							],
++						],
++			),
++		).toEqual(
++			SPACING_STEP_CASES.flatMap(({ token, value }) =>
++				token === undefined ? [] : [[true, Number.parseFloat(value)]],
++			),
++		)
++		const selection = requireValue(inventory.components['user-select'], 'No user-select key').rules
++		expect(selection.map(({ selector, condition }) => [selector, condition])).toEqual(
++			USER_SELECT_VALUES.map((value) => [`.user-select-${value}`, undefined]),
++		)
++		expect(selection.map(({ declarations }) => declarations.at(-1))).toEqual(
++			USER_SELECT_VALUES.map((value) => ({ property: 'user-select', value })),
++		)
++		const pointer = requireValue(inventory.components.pe, 'No pe key').rules.filter(
++			({ declarations }) => declarations.some(({ property }) => property === 'pointer-events'),
++		)
++		expect(
++			pointer.map(({ selector, condition, declarations }) => [selector, condition, declarations]),
++		).toEqual(
++			POINTER_EVENTS_VALUES.map((value) => [
++				`.pe-${value}`,
++				undefined,
++				[{ property: 'pointer-events', value }],
++			]),
++		)
++		for (const table of [
++			SPACING_STEP_CASES,
++			SPACING_PROPERTY_CASES,
++			SPACING_SIDE_CASES,
++			USER_SELECT_VALUES,
++			POINTER_EVENTS_VALUES,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of [...SPACING_STEP_CASES, ...SPACING_PROPERTY_CASES, ...SPACING_SIDE_CASES])
++			expect(Object.isFrozen(entry)).toBe(true)
++		for (const { sides } of SPACING_SIDE_CASES) expect(Object.isFrozen(sides)).toBe(true)
++	})
+ 	it('pins the frozen container variants and payload widths against the retained scale', () => {
+ 		expect(CONTAINER_CLASS_CASES.map(({ name, boundary }) => [name, boundary])).toEqual([
+ 			['container', 0],
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -277,6 +277,14 @@
+ 	| 'Navbar expand lg'
+ 	| 'Navbar expand xl'
+ 	| 'Navbar expand xxl'
++	| 'Margin steps'
++	| 'Padding steps'
++	| 'Side margins'
++	| 'Side padding'
++	| 'Auto margins'
++	| 'Responsive spacing'
++	| 'Text selection'
++	| 'Pointer events'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -1648,6 +1656,54 @@
+ 		selector: '.navbar-expand-xxl',
+ 		property: 'flex-wrap',
+ 	}),
++	Object.freeze({
++		scenario: 'margin-steps',
++		subject: 'Margin steps',
++		selector: '.m-5',
++		property: 'margin-top',
++	}),
++	Object.freeze({
++		scenario: 'padding-steps',
++		subject: 'Padding steps',
++		selector: '.p-5',
++		property: 'padding-top',
++	}),
++	Object.freeze({
++		scenario: 'side-margins',
++		subject: 'Side margins',
++		selector: '.ms-4',
++		property: 'margin-left',
++	}),
++	Object.freeze({
++		scenario: 'side-padding',
++		subject: 'Side padding',
++		selector: '.ps-4',
++		property: 'padding-left',
++	}),
++	Object.freeze({
++		scenario: 'auto-margins',
++		subject: 'Auto margins',
++		selector: '.mx-auto',
++		property: 'margin-left',
++	}),
++	Object.freeze({
++		scenario: 'responsive-spacing',
++		subject: 'Responsive spacing',
++		selector: '.m-xl-5',
++		property: 'margin-top',
++	}),
++	Object.freeze({
++		scenario: 'text-selection',
++		subject: 'Text selection',
++		selector: '.user-select-none',
++		property: 'user-select',
++	}),
++	Object.freeze({
++		scenario: 'pointer-events',
++		subject: 'Pointer events',
++		selector: 'a.pe-none',
++		property: 'pointer-events',
++	}),
+ ])
+ 
+ /**
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -2460,6 +2460,108 @@
+ 	}),
+ ])
+ 
++/** Holds the Spacing section's visible copy and accessible name. */
++export const SPACING_COPY = Object.freeze({
++	region: 'Spacing',
++	paragraph:
++		'Compare the margin steps that set the room around a box, the padding steps that set the room inside it, each side on its own, the auto margins that push a box along its line, and the steps that grow at each breakpoint. Resize the viewport to watch the responsive steps change.',
++})
++
++/**
++ * Lists the margin and padding specimens the section renders, in render order.
++ *
++ * @remarks
++ * Room is only visible against an edge, so every box is a card, whose border paints the edge. A
++ * margin specimen nests a card inside another card, and the room between the two borders is the
++ * margin; a padding specimen writes its label straight inside a card, and the room between the
++ * border and the label is the padding. Every element carrying a demonstrated class is labeled with
++ * that class's full name, on the element itself or on the card body inside it. The vertical auto
++ * margins sit inside aspect-ratio boxes, because a margin absorbs vertical room only inside a flex
++ * container taller than its item, and the row of those boxes sits in a fluid container, whose
++ * padding holds the row's negative gutter margins inside the page.
++ */
++export const SPACING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Margin steps',
++		markup: `<div class="vstack gap-2">${['0', '1', '2', '3', '4', '5']
++			.map(
++				(step) =>
++					`<div class="card"><div class="card m-${step}"><div class="card-body">m-${step}</div></div></div>`,
++			)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Padding steps',
++		markup: `<div class="vstack gap-2">${['0', '1', '2', '3', '4', '5']
++			.map((step) => `<div class="card p-${step}">p-${step}</div>`)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Side margins',
++		markup: `<div class="vstack gap-2">${['mx', 'my', 'mt', 'me', 'mb', 'ms']
++			.map(
++				(side) =>
++					`<div class="card"><div class="card ${side}-4"><div class="card-body">${side}-4</div></div></div>`,
++			)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Side padding',
++		markup: `<div class="vstack gap-2">${['px', 'py', 'pt', 'pe', 'pb', 'ps']
++			.map((side) => `<div class="card ${side}-4">${side}-4</div>`)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Auto margins',
++		markup: `<div class="vstack gap-2"><div class="card"><div class="d-flex"><div class="card ms-auto"><div class="card-body">ms-auto</div></div></div></div><div class="card"><div class="d-flex"><div class="card me-auto"><div class="card-body">me-auto</div></div><div class="card"><div class="card-body">Item</div></div></div></div><div class="card"><div class="card w-50 mx-auto"><div class="card-body">mx-auto</div></div></div><div class="container-fluid"><div class="row row-cols-2 row-cols-md-4 g-2">${[
++			'mt-auto',
++			'mb-auto',
++			'my-auto',
++			'm-auto',
++		]
++			.map(
++				(name) =>
++					`<div><div class="card"><div class="ratio ratio-4x3"><div class="d-flex"><div class="card ${name}"><div class="card-body">${name}</div></div></div></div></div></div>`,
++			)
++			.join('')}</div></div></div>`,
++	}),
++	Object.freeze({
++		name: 'Responsive spacing',
++		markup:
++			'<div class="vstack gap-2"><div class="card"><div class="card m-1 m-sm-2 m-md-3 m-lg-4 m-xl-5"><div class="card-body">m-1 m-sm-2 m-md-3 m-lg-4 m-xl-5</div></div></div><div class="card p-1 p-sm-2 p-md-3 p-lg-4 p-xxl-5">p-1 p-sm-2 p-md-3 p-lg-4 p-xxl-5</div></div>',
++	}),
++])
++
++/** Holds the Interaction section's visible copy and accessible name. */
++export const INTERACTION_COPY = Object.freeze({
++	region: 'Interaction',
++	paragraph:
++		'Click each line to compare how much text one press selects, then point at each link: a click passes through the link that takes no pointer events and reaches the links that take them.',
++})
++
++/**
++ * Lists the text selection and pointer events specimens the section renders, in render order.
++ *
++ * @remarks
++ * Every element carrying a demonstrated class opens its text with that class's full name. The link
++ * that takes no pointer events also leaves the focus order and is announced as unavailable, as the
++ * release's own example marks it, because the class stops the pointer and leaves the keyboard alone.
++ * The last line takes no pointer events and holds a link that takes them back, which is how the
++ * `pe-auto` class re-enables one element inside a disabled one.
++ */
++export const INTERACTION_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Text selection',
++		markup:
++			'<p class="user-select-all">user-select-all: one press selects this whole line.</p><p class="user-select-auto">user-select-auto: this line selects the way text ordinarily does.</p><p class="user-select-none">user-select-none: no press selects any of this line.</p>',
++	}),
++	Object.freeze({
++		name: 'Pointer events',
++		markup:
++			'<p><a class="pe-none" href="#main" tabindex="-1" aria-disabled="true">pe-none</a>: a click passes through this link.</p><p><a class="pe-auto" href="#main">pe-auto</a>: this link takes the click.</p><p class="pe-none">pe-none on this line, <a class="pe-auto" href="#main">pe-auto</a> on the link inside it, which takes the click again.</p>',
++	}),
++])
++
+ /** Holds the Navbar section's visible copy and accessible name. */
+ export const NAVBAR_COPY = Object.freeze({
+ 	region: 'Navbar',
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -22,6 +22,7 @@
+ import { FormLabelSection } from './sections/FormLabelSection.js'
+ import { FormRangeSection } from './sections/FormRangeSection.js'
+ import { InputGroupSection } from './sections/InputGroupSection.js'
++import { InteractionSection } from './sections/InteractionSection.js'
+ import { FormSelectSection } from './sections/FormSelectSection.js'
+ import { LayoutSection } from './sections/LayoutSection.js'
+ import { LinkSection } from './sections/LinkSection.js'
+@@ -34,6 +35,7 @@
+ import { PositionSection } from './sections/PositionSection.js'
+ import { ProgressSection } from './sections/ProgressSection.js'
+ import { SizingSection } from './sections/SizingSection.js'
++import { SpacingSection } from './sections/SpacingSection.js'
+ import { SpinnerSection } from './sections/SpinnerSection.js'
+ import { TableSection } from './sections/TableSection.js'
+ import { TypeSection } from './sections/TypeSection.js'
+@@ -137,6 +139,8 @@
+ 			new PositionSection(this.#main),
+ 			new SizingSection(this.#main),
+ 			new VisibilitySection(this.#main),
++			new SpacingSection(this.#main),
++			new InteractionSection(this.#main),
+ 			new NavbarSection(this.#main),
+ 		]
+ 	}
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -38,4 +38,6 @@
+ export * from './sections/PositionSection.js'
+ export * from './sections/SizingSection.js'
+ export * from './sections/VisibilitySection.js'
++export * from './sections/SpacingSection.js'
++export * from './sections/InteractionSection.js'
+ export * from './sections/NavbarSection.js'
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -19,6 +19,7 @@
+ 	FORM_LABEL_SPECIMENS,
+ 	FORM_RANGE_SPECIMENS,
+ 	INPUT_GROUP_SPECIMENS,
++	INTERACTION_SPECIMENS,
+ 	FORM_SELECT_SPECIMENS,
+ 	CARD_SPECIMENS,
+ 	LINK_SPECIMENS,
+@@ -33,6 +34,7 @@
+ 	PROGRESS_SPECIMENS,
+ 	SHOWCASE_COPY,
+ 	SIZING_SPECIMENS,
++	SPACING_SPECIMENS,
+ 	SPINNER_SPECIMENS,
+ 	Showcase,
+ 	TYPE_SPECIMENS,
+@@ -134,6 +136,8 @@
+ 				'Position',
+ 				'Sizing',
+ 				'Visibility',
++				'Spacing',
++				'Interaction',
+ 				'Navbar',
+ 			])
+ 			expect(
+@@ -177,6 +181,8 @@
+ 					...POSITION_SPECIMENS,
+ 					...SIZING_SPECIMENS,
+ 					...VISIBILITY_SPECIMENS,
++					...SPACING_SPECIMENS,
++					...INTERACTION_SPECIMENS,
+ 					...NAVBAR_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -73,7 +73,10 @@
+ 			'FormSelectSection',
+ 			'INPUT_GROUP_COPY',
+ 			'INPUT_GROUP_SPECIMENS',
++			'INTERACTION_COPY',
++			'INTERACTION_SPECIMENS',
+ 			'InputGroupSection',
++			'InteractionSection',
+ 			'LAYOUT_COPY',
+ 			'LAYOUT_SPECIMENS',
+ 			'LINK_COPY',
+@@ -108,10 +111,13 @@
+ 			'SHOWCASE_COPY',
+ 			'SIZING_COPY',
+ 			'SIZING_SPECIMENS',
++			'SPACING_COPY',
++			'SPACING_SPECIMENS',
+ 			'SPINNER_COPY',
+ 			'SPINNER_SPECIMENS',
+ 			'Showcase',
+ 			'SizingSection',
++			'SpacingSection',
+ 			'SpecimenSection',
+ 			'SpinnerSection',
+ 			'TABLE_COPY',
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -59,6 +59,7 @@
+ 	FORM_LABEL_SPECIMENS,
+ 	FORM_RANGE_SPECIMENS,
+ 	INPUT_GROUP_SPECIMENS,
++	INTERACTION_SPECIMENS,
+ 	FORM_SELECT_SPECIMENS,
+ 	LAYOUT_SPECIMENS,
+ 	LINK_SPECIMENS,
+@@ -72,6 +73,7 @@
+ 	PROGRESS_SPECIMENS,
+ 	SHOWCASE_COPY,
+ 	SIZING_SPECIMENS,
++	SPACING_SPECIMENS,
+ 	SPINNER_SPECIMENS,
+ 	TABLE_SPECIMENS,
+ 	TYPE_SPECIMENS,
+@@ -2131,6 +2133,8 @@
+ 				POSITION_SPECIMENS,
+ 				SIZING_SPECIMENS,
+ 				VISIBILITY_SPECIMENS,
++				SPACING_SPECIMENS,
++				INTERACTION_SPECIMENS,
+ 			].flatMap((table) => table.map((specimen) => specimen.name)),
+ 			SHOWCASE_COPY.region,
+ 		])
+--- a/tests/setup.css
++++ b/tests/setup.css
+@@ -11,4 +11,4 @@
+ @import 'tailwindcss/theme.css' layer(theme);
+ @import 'tailwindcss/utilities.css' layer(utilities) source(none);
+ @source '../tmp/tailwind/candidates.txt';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");
+--- a/tests/fixtures/tailwind/consumer.css
++++ b/tests/fixtures/tailwind/consumer.css
+@@ -4,4 +4,4 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './markup.html';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");
+--- a/tests/fixtures/tailwind/preflight.css
++++ b/tests/fixtures/tailwind/preflight.css
+@@ -3,4 +3,4 @@
+ @layer theme, reset, base, elements, components, utilities;
+ @import 'tailwindcss' source(none);
+ @source '../../../tmp/tailwind/candidates.txt';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");
+--- a/tests/fixtures/tailwind/markup.html
++++ b/tests/fixtures/tailwind/markup.html
+@@ -124,3 +124,94 @@
+ <div class="z-3">Stacking level 3</div>
+ <div class="visible">Visible</div>
+ <div class="invisible">Invisible</div>
++<div class="m-0">Margin step 0</div>
++<div class="m-1">Margin step 1</div>
++<div class="m-2">Margin step 2</div>
++<div class="m-3">Margin step 3</div>
++<div class="m-4">Margin step 4</div>
++<div class="m-5">Margin step 5</div>
++<div class="m-auto">Margin step auto</div>
++<div class="mx-0">Horizontal margin step 0</div>
++<div class="mx-1">Horizontal margin step 1</div>
++<div class="mx-2">Horizontal margin step 2</div>
++<div class="mx-3">Horizontal margin step 3</div>
++<div class="mx-4">Horizontal margin step 4</div>
++<div class="mx-5">Horizontal margin step 5</div>
++<div class="mx-auto">Horizontal margin step auto</div>
++<div class="my-0">Vertical margin step 0</div>
++<div class="my-1">Vertical margin step 1</div>
++<div class="my-2">Vertical margin step 2</div>
++<div class="my-3">Vertical margin step 3</div>
++<div class="my-4">Vertical margin step 4</div>
++<div class="my-5">Vertical margin step 5</div>
++<div class="my-auto">Vertical margin step auto</div>
++<div class="mt-0">Top margin step 0</div>
++<div class="mt-1">Top margin step 1</div>
++<div class="mt-2">Top margin step 2</div>
++<div class="mt-3">Top margin step 3</div>
++<div class="mt-4">Top margin step 4</div>
++<div class="mt-5">Top margin step 5</div>
++<div class="mt-auto">Top margin step auto</div>
++<div class="me-0">End margin step 0</div>
++<div class="me-1">End margin step 1</div>
++<div class="me-2">End margin step 2</div>
++<div class="me-3">End margin step 3</div>
++<div class="me-4">End margin step 4</div>
++<div class="me-5">End margin step 5</div>
++<div class="me-auto">End margin step auto</div>
++<div class="mb-0">Bottom margin step 0</div>
++<div class="mb-1">Bottom margin step 1</div>
++<div class="mb-2">Bottom margin step 2</div>
++<div class="mb-3">Bottom margin step 3</div>
++<div class="mb-4">Bottom margin step 4</div>
++<div class="mb-5">Bottom margin step 5</div>
++<div class="mb-auto">Bottom margin step auto</div>
++<div class="ms-0">Start margin step 0</div>
++<div class="ms-1">Start margin step 1</div>
++<div class="ms-2">Start margin step 2</div>
++<div class="ms-3">Start margin step 3</div>
++<div class="ms-4">Start margin step 4</div>
++<div class="ms-5">Start margin step 5</div>
++<div class="ms-auto">Start margin step auto</div>
++<div class="p-0">Padding step 0</div>
++<div class="p-1">Padding step 1</div>
++<div class="p-2">Padding step 2</div>
++<div class="p-3">Padding step 3</div>
++<div class="p-4">Padding step 4</div>
++<div class="p-5">Padding step 5</div>
++<div class="px-0">Horizontal padding step 0</div>
++<div class="px-1">Horizontal padding step 1</div>
++<div class="px-2">Horizontal padding step 2</div>
++<div class="px-3">Horizontal padding step 3</div>
++<div class="px-4">Horizontal padding step 4</div>
++<div class="px-5">Horizontal padding step 5</div>
++<div class="py-0">Vertical padding step 0</div>
++<div class="py-1">Vertical padding step 1</div>
++<div class="py-2">Vertical padding step 2</div>
++<div class="py-3">Vertical padding step 3</div>
++<div class="py-4">Vertical padding step 4</div>
++<div class="py-5">Vertical padding step 5</div>
++<div class="pt-0">Top padding step 0</div>
++<div class="pt-1">Top padding step 1</div>
++<div class="pt-2">Top padding step 2</div>
++<div class="pt-3">Top padding step 3</div>
++<div class="pt-4">Top padding step 4</div>
++<div class="pt-5">Top padding step 5</div>
++<div class="pe-0">End padding step 0</div>
++<div class="pe-1">End padding step 1</div>
++<div class="pe-2">End padding step 2</div>
++<div class="pe-3">End padding step 3</div>
++<div class="pe-4">End padding step 4</div>
++<div class="pe-5">End padding step 5</div>
++<div class="pb-0">Bottom padding step 0</div>
++<div class="pb-1">Bottom padding step 1</div>
++<div class="pb-2">Bottom padding step 2</div>
++<div class="pb-3">Bottom padding step 3</div>
++<div class="pb-4">Bottom padding step 4</div>
++<div class="pb-5">Bottom padding step 5</div>
++<div class="ps-0">Start padding step 0</div>
++<div class="ps-1">Start padding step 1</div>
++<div class="ps-2">Start padding step 2</div>
++<div class="ps-3">Start padding step 3</div>
++<div class="ps-4">Start padding step 4</div>
++<div class="ps-5">Start padding step 5</div>
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -752,6 +752,8 @@
+ | `src/styles/utilities/_vertical-align.scss`  | The vertical-alignment utilities in the utilities layer.                                                                                                                                                                                           |
+ | `src/styles/utilities/_display.scss`         | The display utilities and their print pass in the utilities layer.                                                                                                                                                                                 |
+ | `src/styles/utilities/_flex.scss`            | The flex, alignment, and order utilities in the utilities layer.                                                                                                                                                                                   |
++| `src/styles/utilities/_spacing.scss`         | The margin and padding utilities in the utilities layer.                                                                                                                                                                                           |
++| `src/styles/utilities/_interaction.scss`     | The user-select and pointer-events utilities in the utilities layer.                                                                                                                                                                               |
+ | `src/styles/index.scss`                      | The compilation barrel.                                                                                                                                                                                                                            |
+ | `src/styles/index.ts`                        | The side-effect entry, and the build's library entry.                                                                                                                                                                                              |
+ | `configs/src/vite.styles.config.ts`          | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
+@@ -853,7 +855,7 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");
+ ```
+ 
+ The following recipe is the `preflight` profile, which takes the bare import so Tailwind's own reset
+@@ -866,7 +868,7 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");
+ ```
+ 
+ The workspace compiles the `tailwind` recipe as written. The `tests/fixtures/tailwind/consumer.css`
+@@ -938,6 +940,15 @@
+ `grid-column-start` longhand alone, leaving the `grid-column-end` longhand that Tailwind's `col-1`
+ rule also declares normal, and the equality still holds with the `col-1` class on the line.
+ 
++The margin and padding steps split the same way the offsets do. The `m-*`, `mt-*`, `mb-*`, `p-*`,
++`pt-*`, and `pb-*` names are shipped names off the line: Tailwind's rule for each declares the
++physical margin or padding longhands, and Veneer declares each of those with `!important`. The
++`mx-*`, `my-*`, `me-*`, `ms-*`, `px-*`, `py-*`, `pe-*`, and `ps-*` names stay on the line:
++Tailwind's rule for each declares logical longhands, such as the `margin-inline-start` or the
++`padding-block-end` longhand, and Veneer's important declarations sit on the physical sides, which
++do not cover them. The `pe-none`, `pe-auto`, and `user-select-*` names are not shared, because
++Tailwind names those utilities `pointer-events-none`, `pointer-events-auto`, and `select-*`.
++
+ The workspace executes the profiles from `tests/setup.css` for the `tailwind` profile and
+ `tests/fixtures/tailwind/preflight.css` for the `preflight` profile. Those profiles scan a
+ candidate list derived from the built cascade rather than your markup, so every utility an executed
+@@ -2928,6 +2939,100 @@
+ or not that rule is important, the escape inside the utilities layer, and a dark island. The
+ visibility keys carry no recorded departure.
+ 
++### Spacing utilities
++
++The margin and padding keys ship whole in the utilities layer from the
++`src/styles/utilities/_spacing.scss` partial. The `.m-*` classes set the margin on every side, and
++the `.mx-*`, `.my-*`, `.mt-*`, `.me-*`, `.mb-*`, and `.ms-*` classes set it on the horizontal sides,
++on the vertical sides, or on one side, each at every step from the `0` step to the `5` step, at the
++`auto` step, and at every breakpoint infix. The `.p-*` classes and the `.px-*`, `.py-*`, `.pt-*`,
++`.pe-*`, `.pb-*`, and `.ps-*` classes set the padding the same way at the numbered steps; the
++release gives the padding no `auto` step. No negative margin ships, because the release's own
++default writes none.
++
++Each step from the `1` step to the `5` step reads a space token: the `--vn-space-2`,
++`--vn-space-4`, `--vn-space-8`, `--vn-space-12`, and `--vn-space-24` tokens, which resolve to the
++release's `0.25rem`, `0.5rem`, `1rem`, `1.5rem`, and `3rem` lengths. Those tokens carry the density
++factor, as the components' own internal space does, so the `--vn-factor-density` token moves every
++margin and padding step with the components, and a retuned `--vn-space-8` token moves the `.m-3`
++and `.p-3` classes on every side. The zero step stays the literal `0` value and the `auto` step the
++literal `auto` value, which neither the factor nor a retune moves. The gap steps read the separate
++`--vn-gap-*` scale, which carries no density factor, so the density factor moves a margin and leaves
++a gap.
++
++The end and start entries write the physical sides, as the release's own stylesheet does: the
++`.me-*` and `.pe-*` classes set the right side, and the `.ms-*` and `.ps-*` classes set the left
++side, so in a right-to-left scope the `.ms-3` class still sets the left margin. An `auto` margin
++takes the room left over on its side: in a flex line the `.ms-auto` class pushes a box to the end of
++the line, and the `.mx-auto` class centers a box of definite width.
++
++The partial writes every entry through the `utility` mixin that § Styles describes, so each
++declaration carries the `!important` flag the release writes. It walks the breakpoints once and
++writes every entry inside each infix in the release's map order: the margin entries, then the
++padding entries, the shorthand entry of each ahead of its side entries. So at one infix a side
++entry beats the shorthand entry on its own sides: an element carrying the `.p-3` and `.px-1`
++classes resolves a 4px horizontal padding and a 16px vertical one. A wider infix beats every
++narrower one whichever entry each class belongs to: at a 768px viewport, an element carrying the
++`.m-md-3` and `.mx-sm-1` classes resolves a 16px left margin. § Styles shows the escape from an
++important utility inside the utilities layer.
++
++The `tests/src/styles/utilities/spacing.test.ts` proof reads every side of every step at every
++infix at its boundary and one pixel below it, the physical end and start sides in each direction,
++the order between entries and between infixes, the density factor and a retuned token on every
++side, the absence of a negative margin, a dark island, the priority over a later unlayered rule,
++and the escape inside the utilities layer.
++
++These are the keys' recorded departures.
++
++- **The steps read Veneer's space scale.** The release writes each step from the `1` step to the
++  `5` step as a literal length; Veneer writes the `var(--vn-space-2)` to `var(--vn-space-24)`
++  values, which resolve to the same lengths at the default density and move with the density
++  factor.
++
++### Interaction utilities
++
++The user-select key and the release's pointer-events entry ship whole in the utilities layer from
++the `src/styles/utilities/_interaction.scss` partial. The `.user-select-all`, `.user-select-auto`,
++and `.user-select-none` classes set what a press selects on an element: one press selects the whole
++element, a press selects text the ordinary way, or no press selects any of it. The `.pe-none` class
++takes an element out of the pointer's reach, so a click passes through it to whatever lies beneath,
++and the `.pe-auto` class brings an element back into reach, including inside an element carrying
++the `.pe-none` class. The release writes neither the user-select entry nor the pointer-events entry
++at a breakpoint, so no interaction class writes a breakpoint infix.
++
++The `pe` key carries the padding-end steps and the pointer-events values together, because the
++release names its pointer-events classes with the class its padding-end entry uses, and the `none`
++and `auto` keys are what tell the two apart. The `_spacing.scss` partial writes the padding steps
++under the key and this partial writes the pointer values, so an element carrying the `.pe-3` and
++`.pe-none` classes resolves both.
++
++The `.pe-none` class stops the pointer and leaves the keyboard alone, so a link carrying it stays
++in the keyboard's focus order. The release's own example gives such a link the `tabindex="-1"`
++attribute and the `aria-disabled="true"` attribute as well, and the showcase's Interaction region
++does the same.
++
++The partial writes each entry through the `utility` mixin, so every declaration carries the
++`!important` flag the release writes, and none reads a token, so neither the density factor nor the
++color mode moves a value. § Styles shows the escape from an important utility inside the utilities
++layer.
++
++The `tests/src/styles/utilities/interaction.test.ts` proof reads each value, what one press
++selects under each selection class, the pointer passing through a `.pe-none` cover to the element
++beneath it and stopping on a `.pe-auto` cover, the keyboard reaching a `.pe-none` link, the
++pointer and padding values under the one class, the absence of an infixed class, a dark island
++and the density factor, the priority over a later unlayered rule, and the escape inside the
++utilities layer.
++
++These are the key's recorded departures.
++
++- **The prefixed selection properties are absent from the source.** The official cascade writes
++  the `-webkit-user-select` and `-moz-user-select` declarations ahead of the `user-select`
++  declaration on each class. The partial writes the standard property alone, because the managed
++  Chromium and Edge receipts this cascade is proved on resolve it and leave the aliases redundant.
++  The build emits the `-webkit-user-select` declaration beside the standard one without the source
++  declaring it, and the ledger compares the compile before the build, so it records both aliases as
++  dropped.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -4346,6 +4451,41 @@
+ | ------------- | ------------------------------------ | -------------- | --------- | --------------- | ------------------- | --------- |
+ | `list-inline` | `.list-inline-item:not(:last-child)` | `margin-right` | —         | `0.5rem`        | `var(--vn-space-4)` | tokenized |
+ 
++#### `m`
++
++| Component | Selector   | Property | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ---------- | -------- | -------------------------- | --------------- | -------------------- | --------- |
++| `m`       | `.m-1`     | `margin` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `m`       | `.m-2`     | `margin` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `m`       | `.m-3`     | `margin` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `m`       | `.m-4`     | `margin` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `m`       | `.m-5`     | `margin` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `m`       | `.m-sm-1`  | `margin` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `m`       | `.m-sm-2`  | `margin` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `m`       | `.m-sm-3`  | `margin` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `m`       | `.m-sm-4`  | `margin` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `m`       | `.m-sm-5`  | `margin` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `m`       | `.m-md-1`  | `margin` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `m`       | `.m-md-2`  | `margin` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `m`       | `.m-md-3`  | `margin` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `m`       | `.m-md-4`  | `margin` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `m`       | `.m-md-5`  | `margin` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `m`       | `.m-lg-1`  | `margin` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `m`       | `.m-lg-2`  | `margin` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `m`       | `.m-lg-3`  | `margin` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `m`       | `.m-lg-4`  | `margin` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `m`       | `.m-lg-5`  | `margin` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `m`       | `.m-xl-1`  | `margin` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `m`       | `.m-xl-2`  | `margin` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `m`       | `.m-xl-3`  | `margin` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `m`       | `.m-xl-4`  | `margin` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `m`       | `.m-xl-5`  | `margin` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `m`       | `.m-xxl-1` | `margin` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `m`       | `.m-xxl-2` | `margin` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `m`       | `.m-xxl-3` | `margin` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `m`       | `.m-xxl-4` | `margin` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `m`       | `.m-xxl-5` | `margin` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
+ #### `mark`
+ 
+ | Component | Selector | Property           | Condition | Bootstrap 5.3.8             | Veneer                   | Departure |
+@@ -4354,6 +4494,276 @@
+ | `mark`    | `.mark`  | `color`            | —         | `var(--bs-highlight-color)` | `var(--vn-text-mark)`    | tokenized |
+ | `mark`    | `.mark`  | `background-color` | —         | `var(--bs-highlight-bg)`    | `var(--vn-surface-mark)` | tokenized |
+ 
++#### `mb`
++
++| Component | Selector    | Property        | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | --------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `mb`      | `.mb-1`     | `margin-bottom` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mb`      | `.mb-2`     | `margin-bottom` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mb`      | `.mb-3`     | `margin-bottom` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mb`      | `.mb-4`     | `margin-bottom` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mb`      | `.mb-5`     | `margin-bottom` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mb`      | `.mb-sm-1`  | `margin-bottom` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mb`      | `.mb-sm-2`  | `margin-bottom` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mb`      | `.mb-sm-3`  | `margin-bottom` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mb`      | `.mb-sm-4`  | `margin-bottom` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mb`      | `.mb-sm-5`  | `margin-bottom` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mb`      | `.mb-md-1`  | `margin-bottom` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mb`      | `.mb-md-2`  | `margin-bottom` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mb`      | `.mb-md-3`  | `margin-bottom` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mb`      | `.mb-md-4`  | `margin-bottom` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mb`      | `.mb-md-5`  | `margin-bottom` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mb`      | `.mb-lg-1`  | `margin-bottom` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mb`      | `.mb-lg-2`  | `margin-bottom` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mb`      | `.mb-lg-3`  | `margin-bottom` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mb`      | `.mb-lg-4`  | `margin-bottom` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mb`      | `.mb-lg-5`  | `margin-bottom` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mb`      | `.mb-xl-1`  | `margin-bottom` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mb`      | `.mb-xl-2`  | `margin-bottom` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mb`      | `.mb-xl-3`  | `margin-bottom` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mb`      | `.mb-xl-4`  | `margin-bottom` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mb`      | `.mb-xl-5`  | `margin-bottom` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mb`      | `.mb-xxl-1` | `margin-bottom` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mb`      | `.mb-xxl-2` | `margin-bottom` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mb`      | `.mb-xxl-3` | `margin-bottom` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mb`      | `.mb-xxl-4` | `margin-bottom` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mb`      | `.mb-xxl-5` | `margin-bottom` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `me`
++
++| Component | Selector    | Property       | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | -------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `me`      | `.me-1`     | `margin-right` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `me`      | `.me-2`     | `margin-right` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `me`      | `.me-3`     | `margin-right` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `me`      | `.me-4`     | `margin-right` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `me`      | `.me-5`     | `margin-right` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `me`      | `.me-sm-1`  | `margin-right` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `me`      | `.me-sm-2`  | `margin-right` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `me`      | `.me-sm-3`  | `margin-right` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `me`      | `.me-sm-4`  | `margin-right` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `me`      | `.me-sm-5`  | `margin-right` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `me`      | `.me-md-1`  | `margin-right` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `me`      | `.me-md-2`  | `margin-right` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `me`      | `.me-md-3`  | `margin-right` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `me`      | `.me-md-4`  | `margin-right` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `me`      | `.me-md-5`  | `margin-right` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `me`      | `.me-lg-1`  | `margin-right` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `me`      | `.me-lg-2`  | `margin-right` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `me`      | `.me-lg-3`  | `margin-right` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `me`      | `.me-lg-4`  | `margin-right` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `me`      | `.me-lg-5`  | `margin-right` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `me`      | `.me-xl-1`  | `margin-right` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `me`      | `.me-xl-2`  | `margin-right` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `me`      | `.me-xl-3`  | `margin-right` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `me`      | `.me-xl-4`  | `margin-right` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `me`      | `.me-xl-5`  | `margin-right` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `me`      | `.me-xxl-1` | `margin-right` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `me`      | `.me-xxl-2` | `margin-right` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `me`      | `.me-xxl-3` | `margin-right` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `me`      | `.me-xxl-4` | `margin-right` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `me`      | `.me-xxl-5` | `margin-right` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `ms`
++
++| Component | Selector    | Property      | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | ------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `ms`      | `.ms-1`     | `margin-left` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ms`      | `.ms-2`     | `margin-left` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ms`      | `.ms-3`     | `margin-left` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ms`      | `.ms-4`     | `margin-left` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ms`      | `.ms-5`     | `margin-left` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ms`      | `.ms-sm-1`  | `margin-left` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ms`      | `.ms-sm-2`  | `margin-left` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ms`      | `.ms-sm-3`  | `margin-left` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ms`      | `.ms-sm-4`  | `margin-left` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ms`      | `.ms-sm-5`  | `margin-left` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ms`      | `.ms-md-1`  | `margin-left` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ms`      | `.ms-md-2`  | `margin-left` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ms`      | `.ms-md-3`  | `margin-left` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ms`      | `.ms-md-4`  | `margin-left` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ms`      | `.ms-md-5`  | `margin-left` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ms`      | `.ms-lg-1`  | `margin-left` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ms`      | `.ms-lg-2`  | `margin-left` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ms`      | `.ms-lg-3`  | `margin-left` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ms`      | `.ms-lg-4`  | `margin-left` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ms`      | `.ms-lg-5`  | `margin-left` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ms`      | `.ms-xl-1`  | `margin-left` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ms`      | `.ms-xl-2`  | `margin-left` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ms`      | `.ms-xl-3`  | `margin-left` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ms`      | `.ms-xl-4`  | `margin-left` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ms`      | `.ms-xl-5`  | `margin-left` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ms`      | `.ms-xxl-1` | `margin-left` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ms`      | `.ms-xxl-2` | `margin-left` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ms`      | `.ms-xxl-3` | `margin-left` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ms`      | `.ms-xxl-4` | `margin-left` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ms`      | `.ms-xxl-5` | `margin-left` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `mt`
++
++| Component | Selector    | Property     | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | ------------ | -------------------------- | --------------- | -------------------- | --------- |
++| `mt`      | `.mt-1`     | `margin-top` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mt`      | `.mt-2`     | `margin-top` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mt`      | `.mt-3`     | `margin-top` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mt`      | `.mt-4`     | `margin-top` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mt`      | `.mt-5`     | `margin-top` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mt`      | `.mt-sm-1`  | `margin-top` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mt`      | `.mt-sm-2`  | `margin-top` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mt`      | `.mt-sm-3`  | `margin-top` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mt`      | `.mt-sm-4`  | `margin-top` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mt`      | `.mt-sm-5`  | `margin-top` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mt`      | `.mt-md-1`  | `margin-top` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mt`      | `.mt-md-2`  | `margin-top` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mt`      | `.mt-md-3`  | `margin-top` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mt`      | `.mt-md-4`  | `margin-top` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mt`      | `.mt-md-5`  | `margin-top` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mt`      | `.mt-lg-1`  | `margin-top` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mt`      | `.mt-lg-2`  | `margin-top` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mt`      | `.mt-lg-3`  | `margin-top` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mt`      | `.mt-lg-4`  | `margin-top` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mt`      | `.mt-lg-5`  | `margin-top` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mt`      | `.mt-xl-1`  | `margin-top` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mt`      | `.mt-xl-2`  | `margin-top` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mt`      | `.mt-xl-3`  | `margin-top` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mt`      | `.mt-xl-4`  | `margin-top` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mt`      | `.mt-xl-5`  | `margin-top` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mt`      | `.mt-xxl-1` | `margin-top` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mt`      | `.mt-xxl-2` | `margin-top` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mt`      | `.mt-xxl-3` | `margin-top` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mt`      | `.mt-xxl-4` | `margin-top` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mt`      | `.mt-xxl-5` | `margin-top` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `mx`
++
++| Component | Selector    | Property       | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | -------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `mx`      | `.mx-1`     | `margin-right` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-1`     | `margin-left`  | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-2`     | `margin-right` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-2`     | `margin-left`  | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-3`     | `margin-right` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-3`     | `margin-left`  | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-4`     | `margin-right` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-4`     | `margin-left`  | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-5`     | `margin-right` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-5`     | `margin-left`  | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-sm-1`  | `margin-right` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-sm-1`  | `margin-left`  | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-sm-2`  | `margin-right` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-sm-2`  | `margin-left`  | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-sm-3`  | `margin-right` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-sm-3`  | `margin-left`  | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-sm-4`  | `margin-right` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-sm-4`  | `margin-left`  | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-sm-5`  | `margin-right` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-sm-5`  | `margin-left`  | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-md-1`  | `margin-right` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-md-1`  | `margin-left`  | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-md-2`  | `margin-right` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-md-2`  | `margin-left`  | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-md-3`  | `margin-right` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-md-3`  | `margin-left`  | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-md-4`  | `margin-right` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-md-4`  | `margin-left`  | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-md-5`  | `margin-right` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-md-5`  | `margin-left`  | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-lg-1`  | `margin-right` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-lg-1`  | `margin-left`  | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-lg-2`  | `margin-right` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-lg-2`  | `margin-left`  | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-lg-3`  | `margin-right` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-lg-3`  | `margin-left`  | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-lg-4`  | `margin-right` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-lg-4`  | `margin-left`  | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-lg-5`  | `margin-right` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-lg-5`  | `margin-left`  | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-xl-1`  | `margin-right` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-xl-1`  | `margin-left`  | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-xl-2`  | `margin-right` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-xl-2`  | `margin-left`  | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-xl-3`  | `margin-right` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-xl-3`  | `margin-left`  | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-xl-4`  | `margin-right` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-xl-4`  | `margin-left`  | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-xl-5`  | `margin-right` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-xl-5`  | `margin-left`  | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-xxl-1` | `margin-right` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-xxl-1` | `margin-left`  | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `mx`      | `.mx-xxl-2` | `margin-right` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-xxl-2` | `margin-left`  | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `mx`      | `.mx-xxl-3` | `margin-right` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-xxl-3` | `margin-left`  | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `mx`      | `.mx-xxl-4` | `margin-right` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-xxl-4` | `margin-left`  | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `mx`      | `.mx-xxl-5` | `margin-right` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `mx`      | `.mx-xxl-5` | `margin-left`  | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `my`
++
++| Component | Selector    | Property        | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | --------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `my`      | `.my-1`     | `margin-top`    | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-1`     | `margin-bottom` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-2`     | `margin-top`    | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-2`     | `margin-bottom` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-3`     | `margin-top`    | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-3`     | `margin-bottom` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-4`     | `margin-top`    | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-4`     | `margin-bottom` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-5`     | `margin-top`    | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-5`     | `margin-bottom` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-sm-1`  | `margin-top`    | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-sm-1`  | `margin-bottom` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-sm-2`  | `margin-top`    | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-sm-2`  | `margin-bottom` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-sm-3`  | `margin-top`    | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-sm-3`  | `margin-bottom` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-sm-4`  | `margin-top`    | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-sm-4`  | `margin-bottom` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-sm-5`  | `margin-top`    | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-sm-5`  | `margin-bottom` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-md-1`  | `margin-top`    | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-md-1`  | `margin-bottom` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-md-2`  | `margin-top`    | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-md-2`  | `margin-bottom` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-md-3`  | `margin-top`    | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-md-3`  | `margin-bottom` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-md-4`  | `margin-top`    | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-md-4`  | `margin-bottom` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-md-5`  | `margin-top`    | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-md-5`  | `margin-bottom` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-lg-1`  | `margin-top`    | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-lg-1`  | `margin-bottom` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-lg-2`  | `margin-top`    | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-lg-2`  | `margin-bottom` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-lg-3`  | `margin-top`    | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-lg-3`  | `margin-bottom` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-lg-4`  | `margin-top`    | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-lg-4`  | `margin-bottom` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-lg-5`  | `margin-top`    | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-lg-5`  | `margin-bottom` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-xl-1`  | `margin-top`    | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-xl-1`  | `margin-bottom` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-xl-2`  | `margin-top`    | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-xl-2`  | `margin-bottom` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-xl-3`  | `margin-top`    | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-xl-3`  | `margin-bottom` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-xl-4`  | `margin-top`    | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-xl-4`  | `margin-bottom` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-xl-5`  | `margin-top`    | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-xl-5`  | `margin-bottom` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-xxl-1` | `margin-top`    | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-xxl-1` | `margin-bottom` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `my`      | `.my-xxl-2` | `margin-top`    | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-xxl-2` | `margin-bottom` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `my`      | `.my-xxl-3` | `margin-top`    | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-xxl-3` | `margin-bottom` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `my`      | `.my-xxl-4` | `margin-top`    | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-xxl-4` | `margin-bottom` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `my`      | `.my-xxl-5` | `margin-top`    | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `my`      | `.my-xxl-5` | `margin-bottom` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
+ #### `offset`
+ 
+ | Component | Selector        | Property      | Condition                  | Bootstrap 5.3.8 | Veneer | Departure |
+@@ -4364,12 +4774,317 @@
+ | `offset`  | `.offset-xl-0`  | `margin-left` | `@media (width >= 1200px)` | `0`             | `0%`   | declared  |
+ | `offset`  | `.offset-xxl-0` | `margin-left` | `@media (width >= 1400px)` | `0`             | `0%`   | declared  |
+ 
++#### `p`
++
++| Component | Selector   | Property  | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ---------- | --------- | -------------------------- | --------------- | -------------------- | --------- |
++| `p`       | `.p-1`     | `padding` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `p`       | `.p-2`     | `padding` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `p`       | `.p-3`     | `padding` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `p`       | `.p-4`     | `padding` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `p`       | `.p-5`     | `padding` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `p`       | `.p-sm-1`  | `padding` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `p`       | `.p-sm-2`  | `padding` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `p`       | `.p-sm-3`  | `padding` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `p`       | `.p-sm-4`  | `padding` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `p`       | `.p-sm-5`  | `padding` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `p`       | `.p-md-1`  | `padding` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `p`       | `.p-md-2`  | `padding` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `p`       | `.p-md-3`  | `padding` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `p`       | `.p-md-4`  | `padding` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `p`       | `.p-md-5`  | `padding` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `p`       | `.p-lg-1`  | `padding` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `p`       | `.p-lg-2`  | `padding` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `p`       | `.p-lg-3`  | `padding` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `p`       | `.p-lg-4`  | `padding` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `p`       | `.p-lg-5`  | `padding` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `p`       | `.p-xl-1`  | `padding` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `p`       | `.p-xl-2`  | `padding` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `p`       | `.p-xl-3`  | `padding` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `p`       | `.p-xl-4`  | `padding` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `p`       | `.p-xl-5`  | `padding` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `p`       | `.p-xxl-1` | `padding` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `p`       | `.p-xxl-2` | `padding` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `p`       | `.p-xxl-3` | `padding` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `p`       | `.p-xxl-4` | `padding` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `p`       | `.p-xxl-5` | `padding` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `pb`
++
++| Component | Selector    | Property         | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | ---------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `pb`      | `.pb-1`     | `padding-bottom` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pb`      | `.pb-2`     | `padding-bottom` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pb`      | `.pb-3`     | `padding-bottom` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pb`      | `.pb-4`     | `padding-bottom` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pb`      | `.pb-5`     | `padding-bottom` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pb`      | `.pb-sm-1`  | `padding-bottom` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pb`      | `.pb-sm-2`  | `padding-bottom` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pb`      | `.pb-sm-3`  | `padding-bottom` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pb`      | `.pb-sm-4`  | `padding-bottom` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pb`      | `.pb-sm-5`  | `padding-bottom` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pb`      | `.pb-md-1`  | `padding-bottom` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pb`      | `.pb-md-2`  | `padding-bottom` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pb`      | `.pb-md-3`  | `padding-bottom` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pb`      | `.pb-md-4`  | `padding-bottom` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pb`      | `.pb-md-5`  | `padding-bottom` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pb`      | `.pb-lg-1`  | `padding-bottom` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pb`      | `.pb-lg-2`  | `padding-bottom` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pb`      | `.pb-lg-3`  | `padding-bottom` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pb`      | `.pb-lg-4`  | `padding-bottom` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pb`      | `.pb-lg-5`  | `padding-bottom` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pb`      | `.pb-xl-1`  | `padding-bottom` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pb`      | `.pb-xl-2`  | `padding-bottom` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pb`      | `.pb-xl-3`  | `padding-bottom` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pb`      | `.pb-xl-4`  | `padding-bottom` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pb`      | `.pb-xl-5`  | `padding-bottom` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pb`      | `.pb-xxl-1` | `padding-bottom` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pb`      | `.pb-xxl-2` | `padding-bottom` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pb`      | `.pb-xxl-3` | `padding-bottom` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pb`      | `.pb-xxl-4` | `padding-bottom` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pb`      | `.pb-xxl-5` | `padding-bottom` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `pe`
++
++| Component | Selector    | Property        | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | --------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `pe`      | `.pe-1`     | `padding-right` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pe`      | `.pe-2`     | `padding-right` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pe`      | `.pe-3`     | `padding-right` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pe`      | `.pe-4`     | `padding-right` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pe`      | `.pe-5`     | `padding-right` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pe`      | `.pe-sm-1`  | `padding-right` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pe`      | `.pe-sm-2`  | `padding-right` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pe`      | `.pe-sm-3`  | `padding-right` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pe`      | `.pe-sm-4`  | `padding-right` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pe`      | `.pe-sm-5`  | `padding-right` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pe`      | `.pe-md-1`  | `padding-right` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pe`      | `.pe-md-2`  | `padding-right` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pe`      | `.pe-md-3`  | `padding-right` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pe`      | `.pe-md-4`  | `padding-right` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pe`      | `.pe-md-5`  | `padding-right` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pe`      | `.pe-lg-1`  | `padding-right` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pe`      | `.pe-lg-2`  | `padding-right` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pe`      | `.pe-lg-3`  | `padding-right` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pe`      | `.pe-lg-4`  | `padding-right` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pe`      | `.pe-lg-5`  | `padding-right` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pe`      | `.pe-xl-1`  | `padding-right` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pe`      | `.pe-xl-2`  | `padding-right` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pe`      | `.pe-xl-3`  | `padding-right` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pe`      | `.pe-xl-4`  | `padding-right` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pe`      | `.pe-xl-5`  | `padding-right` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pe`      | `.pe-xxl-1` | `padding-right` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pe`      | `.pe-xxl-2` | `padding-right` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pe`      | `.pe-xxl-3` | `padding-right` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pe`      | `.pe-xxl-4` | `padding-right` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pe`      | `.pe-xxl-5` | `padding-right` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
+ #### `position`
+ 
+ | Component  | Selector           | Property   | Condition | Bootstrap 5.3.8  | Veneer   | Departure |
+ | ---------- | ------------------ | ---------- | --------- | ---------------- | -------- | --------- |
+ | `position` | `.position-sticky` | `position` | —         | `-webkit-sticky` | `sticky` | declared  |
+ 
++#### `ps`
++
++| Component | Selector    | Property       | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | -------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `ps`      | `.ps-1`     | `padding-left` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ps`      | `.ps-2`     | `padding-left` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ps`      | `.ps-3`     | `padding-left` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ps`      | `.ps-4`     | `padding-left` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ps`      | `.ps-5`     | `padding-left` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ps`      | `.ps-sm-1`  | `padding-left` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ps`      | `.ps-sm-2`  | `padding-left` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ps`      | `.ps-sm-3`  | `padding-left` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ps`      | `.ps-sm-4`  | `padding-left` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ps`      | `.ps-sm-5`  | `padding-left` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ps`      | `.ps-md-1`  | `padding-left` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ps`      | `.ps-md-2`  | `padding-left` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ps`      | `.ps-md-3`  | `padding-left` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ps`      | `.ps-md-4`  | `padding-left` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ps`      | `.ps-md-5`  | `padding-left` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ps`      | `.ps-lg-1`  | `padding-left` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ps`      | `.ps-lg-2`  | `padding-left` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ps`      | `.ps-lg-3`  | `padding-left` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ps`      | `.ps-lg-4`  | `padding-left` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ps`      | `.ps-lg-5`  | `padding-left` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ps`      | `.ps-xl-1`  | `padding-left` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ps`      | `.ps-xl-2`  | `padding-left` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ps`      | `.ps-xl-3`  | `padding-left` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ps`      | `.ps-xl-4`  | `padding-left` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ps`      | `.ps-xl-5`  | `padding-left` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `ps`      | `.ps-xxl-1` | `padding-left` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `ps`      | `.ps-xxl-2` | `padding-left` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `ps`      | `.ps-xxl-3` | `padding-left` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `ps`      | `.ps-xxl-4` | `padding-left` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `ps`      | `.ps-xxl-5` | `padding-left` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `pt`
++
++| Component | Selector    | Property      | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | ------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `pt`      | `.pt-1`     | `padding-top` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pt`      | `.pt-2`     | `padding-top` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pt`      | `.pt-3`     | `padding-top` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pt`      | `.pt-4`     | `padding-top` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pt`      | `.pt-5`     | `padding-top` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pt`      | `.pt-sm-1`  | `padding-top` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pt`      | `.pt-sm-2`  | `padding-top` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pt`      | `.pt-sm-3`  | `padding-top` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pt`      | `.pt-sm-4`  | `padding-top` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pt`      | `.pt-sm-5`  | `padding-top` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pt`      | `.pt-md-1`  | `padding-top` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pt`      | `.pt-md-2`  | `padding-top` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pt`      | `.pt-md-3`  | `padding-top` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pt`      | `.pt-md-4`  | `padding-top` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pt`      | `.pt-md-5`  | `padding-top` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pt`      | `.pt-lg-1`  | `padding-top` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pt`      | `.pt-lg-2`  | `padding-top` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pt`      | `.pt-lg-3`  | `padding-top` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pt`      | `.pt-lg-4`  | `padding-top` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pt`      | `.pt-lg-5`  | `padding-top` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pt`      | `.pt-xl-1`  | `padding-top` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pt`      | `.pt-xl-2`  | `padding-top` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pt`      | `.pt-xl-3`  | `padding-top` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pt`      | `.pt-xl-4`  | `padding-top` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pt`      | `.pt-xl-5`  | `padding-top` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `pt`      | `.pt-xxl-1` | `padding-top` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `pt`      | `.pt-xxl-2` | `padding-top` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `pt`      | `.pt-xxl-3` | `padding-top` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `pt`      | `.pt-xxl-4` | `padding-top` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `pt`      | `.pt-xxl-5` | `padding-top` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `px`
++
++| Component | Selector    | Property        | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | --------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `px`      | `.px-1`     | `padding-right` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-1`     | `padding-left`  | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-2`     | `padding-right` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-2`     | `padding-left`  | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-3`     | `padding-right` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-3`     | `padding-left`  | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-4`     | `padding-right` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-4`     | `padding-left`  | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-5`     | `padding-right` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-5`     | `padding-left`  | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-sm-1`  | `padding-right` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-sm-1`  | `padding-left`  | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-sm-2`  | `padding-right` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-sm-2`  | `padding-left`  | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-sm-3`  | `padding-right` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-sm-3`  | `padding-left`  | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-sm-4`  | `padding-right` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-sm-4`  | `padding-left`  | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-sm-5`  | `padding-right` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-sm-5`  | `padding-left`  | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-md-1`  | `padding-right` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-md-1`  | `padding-left`  | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-md-2`  | `padding-right` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-md-2`  | `padding-left`  | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-md-3`  | `padding-right` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-md-3`  | `padding-left`  | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-md-4`  | `padding-right` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-md-4`  | `padding-left`  | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-md-5`  | `padding-right` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-md-5`  | `padding-left`  | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-lg-1`  | `padding-right` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-lg-1`  | `padding-left`  | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-lg-2`  | `padding-right` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-lg-2`  | `padding-left`  | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-lg-3`  | `padding-right` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-lg-3`  | `padding-left`  | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-lg-4`  | `padding-right` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-lg-4`  | `padding-left`  | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-lg-5`  | `padding-right` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-lg-5`  | `padding-left`  | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-xl-1`  | `padding-right` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-xl-1`  | `padding-left`  | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-xl-2`  | `padding-right` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-xl-2`  | `padding-left`  | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-xl-3`  | `padding-right` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-xl-3`  | `padding-left`  | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-xl-4`  | `padding-right` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-xl-4`  | `padding-left`  | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-xl-5`  | `padding-right` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-xl-5`  | `padding-left`  | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-xxl-1` | `padding-right` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-xxl-1` | `padding-left`  | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `px`      | `.px-xxl-2` | `padding-right` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-xxl-2` | `padding-left`  | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `px`      | `.px-xxl-3` | `padding-right` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-xxl-3` | `padding-left`  | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `px`      | `.px-xxl-4` | `padding-right` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-xxl-4` | `padding-left`  | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `px`      | `.px-xxl-5` | `padding-right` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `px`      | `.px-xxl-5` | `padding-left`  | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
++#### `py`
++
++| Component | Selector    | Property         | Condition                  | Bootstrap 5.3.8 | Veneer               | Departure |
++| --------- | ----------- | ---------------- | -------------------------- | --------------- | -------------------- | --------- |
++| `py`      | `.py-1`     | `padding-top`    | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-1`     | `padding-bottom` | —                          | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-2`     | `padding-top`    | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-2`     | `padding-bottom` | —                          | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-3`     | `padding-top`    | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-3`     | `padding-bottom` | —                          | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-4`     | `padding-top`    | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-4`     | `padding-bottom` | —                          | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-5`     | `padding-top`    | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-5`     | `padding-bottom` | —                          | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-sm-1`  | `padding-top`    | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-sm-1`  | `padding-bottom` | `@media (width >= 576px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-sm-2`  | `padding-top`    | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-sm-2`  | `padding-bottom` | `@media (width >= 576px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-sm-3`  | `padding-top`    | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-sm-3`  | `padding-bottom` | `@media (width >= 576px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-sm-4`  | `padding-top`    | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-sm-4`  | `padding-bottom` | `@media (width >= 576px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-sm-5`  | `padding-top`    | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-sm-5`  | `padding-bottom` | `@media (width >= 576px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-md-1`  | `padding-top`    | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-md-1`  | `padding-bottom` | `@media (width >= 768px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-md-2`  | `padding-top`    | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-md-2`  | `padding-bottom` | `@media (width >= 768px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-md-3`  | `padding-top`    | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-md-3`  | `padding-bottom` | `@media (width >= 768px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-md-4`  | `padding-top`    | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-md-4`  | `padding-bottom` | `@media (width >= 768px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-md-5`  | `padding-top`    | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-md-5`  | `padding-bottom` | `@media (width >= 768px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-lg-1`  | `padding-top`    | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-lg-1`  | `padding-bottom` | `@media (width >= 992px)`  | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-lg-2`  | `padding-top`    | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-lg-2`  | `padding-bottom` | `@media (width >= 992px)`  | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-lg-3`  | `padding-top`    | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-lg-3`  | `padding-bottom` | `@media (width >= 992px)`  | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-lg-4`  | `padding-top`    | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-lg-4`  | `padding-bottom` | `@media (width >= 992px)`  | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-lg-5`  | `padding-top`    | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-lg-5`  | `padding-bottom` | `@media (width >= 992px)`  | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-xl-1`  | `padding-top`    | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-xl-1`  | `padding-bottom` | `@media (width >= 1200px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-xl-2`  | `padding-top`    | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-xl-2`  | `padding-bottom` | `@media (width >= 1200px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-xl-3`  | `padding-top`    | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-xl-3`  | `padding-bottom` | `@media (width >= 1200px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-xl-4`  | `padding-top`    | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-xl-4`  | `padding-bottom` | `@media (width >= 1200px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-xl-5`  | `padding-top`    | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-xl-5`  | `padding-bottom` | `@media (width >= 1200px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-xxl-1` | `padding-top`    | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-xxl-1` | `padding-bottom` | `@media (width >= 1400px)` | `0.25rem`       | `var(--vn-space-2)`  | tokenized |
++| `py`      | `.py-xxl-2` | `padding-top`    | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-xxl-2` | `padding-bottom` | `@media (width >= 1400px)` | `0.5rem`        | `var(--vn-space-4)`  | tokenized |
++| `py`      | `.py-xxl-3` | `padding-top`    | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-xxl-3` | `padding-bottom` | `@media (width >= 1400px)` | `1rem`          | `var(--vn-space-8)`  | tokenized |
++| `py`      | `.py-xxl-4` | `padding-top`    | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-xxl-4` | `padding-bottom` | `@media (width >= 1400px)` | `1.5rem`        | `var(--vn-space-12)` | tokenized |
++| `py`      | `.py-xxl-5` | `padding-top`    | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++| `py`      | `.py-xxl-5` | `padding-bottom` | `@media (width >= 1400px)` | `3rem`          | `var(--vn-space-24)` | tokenized |
++
+ #### `reboot`
+ 
+ | Component | Selector      | Property                           | Condition                    | Bootstrap 5.3.8                                             | Veneer                                                          | Departure |
+@@ -4627,6 +5342,17 @@
+ | `table`   | `.table-dark`      | `--bs-table-hover-bg`      | —         | `#323539`                                  | `color-mix(in srgb, var(--bs-table-color) 7.5%, var(--bs-table-bg))`                     | aliased   |
+ | `table`   | `.table-dark`      | `--bs-table-hover-color`   | —         | `#fff`                                     | `var(--bs-table-color)`                                                                  | aliased   |
+ 
++#### `user-select`
++
++| Component     | Selector            | Property              | Condition | Bootstrap 5.3.8 | Veneer | Departure |
++| ------------- | ------------------- | --------------------- | --------- | --------------- | ------ | --------- |
++| `user-select` | `.user-select-all`  | `-webkit-user-select` | —         | `all`           | —      | dropped   |
++| `user-select` | `.user-select-all`  | `-moz-user-select`    | —         | `all`           | —      | dropped   |
++| `user-select` | `.user-select-auto` | `-webkit-user-select` | —         | `auto`          | —      | dropped   |
++| `user-select` | `.user-select-auto` | `-moz-user-select`    | —         | `auto`          | —      | dropped   |
++| `user-select` | `.user-select-none` | `-webkit-user-select` | —         | `none`          | —      | dropped   |
++| `user-select` | `.user-select-none` | `-moz-user-select`    | —         | `none`          | —      | dropped   |
++
+ #### `is-invalid`
+ 
+ | Component    | Selector                             | Property     | Condition | Bootstrap 5.3.8                                  | Veneer                                                         | Departure |
+@@ -5490,6 +6216,21 @@
+ | visually-hidden  | selector       | The official `.visually-hidden` helper and its focusable form ship in the utilities layer ahead of every utility partial; the hidden box and the focus reveal are proved in `tests/src/styles/utilities/visually-hidden.test.ts`.                                                                                                                                                                                                                                | —                     | shipped  |
+ | visible          | selector       | The official `.visible` selector ships in the utilities layer; the resolved visibility is proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
+ | invisible        | selector       | The official `.invisible` selector ships in the utilities layer; the hidden paint and the kept box are proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                | —                     | shipped  |
++| m                | selector       | Every official `.m-*` step and breakpoint selector ships in the utilities layer, the `auto` step included; the resolved margin at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                             | —                     | shipped  |
++| mx               | selector       | Every official `.mx-*` step and breakpoint selector ships in the utilities layer, the `auto` step included; the resolved horizontal margin at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                 | —                     | shipped  |
++| my               | selector       | Every official `.my-*` step and breakpoint selector ships in the utilities layer, the `auto` step included; the resolved vertical margin at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                   | —                     | shipped  |
++| mt               | selector       | Every official `.mt-*` step and breakpoint selector ships in the utilities layer, the `auto` step included; the resolved top margin at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                        | —                     | shipped  |
++| me               | selector       | Every official `.me-*` step and breakpoint selector ships in the utilities layer, the `auto` step included; the resolved end margin, written on the right side, at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                            | —                     | shipped  |
++| mb               | selector       | Every official `.mb-*` step and breakpoint selector ships in the utilities layer, the `auto` step included; the resolved bottom margin at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                     | —                     | shipped  |
++| ms               | selector       | Every official `.ms-*` step and breakpoint selector ships in the utilities layer, the `auto` step included; the resolved start margin, written on the left side, at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                           | —                     | shipped  |
++| p                | selector       | Every official `.p-*` step and breakpoint selector ships in the utilities layer; the resolved padding at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                                                      | —                     | shipped  |
++| px               | selector       | Every official `.px-*` step and breakpoint selector ships in the utilities layer; the resolved horizontal padding at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                                          | —                     | shipped  |
++| py               | selector       | Every official `.py-*` step and breakpoint selector ships in the utilities layer; the resolved vertical padding at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                                            | —                     | shipped  |
++| pt               | selector       | Every official `.pt-*` step and breakpoint selector ships in the utilities layer; the resolved top padding at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                                                 | —                     | shipped  |
++| pe               | selector       | Every official `.pe-*` padding step and breakpoint selector ships in the utilities layer, the end padding written on the right side, and the `.pe-none` and `.pe-auto` pointer-events selectors ship at the empty infix alone; the resolved padding is proved in the `tests/src/styles/utilities/spacing.test.ts` proof, and the pointer reaching through an element in the `tests/src/styles/utilities/interaction.test.ts` proof.                              | —                     | shipped  |
++| pb               | selector       | Every official `.pb-*` step and breakpoint selector ships in the utilities layer; the resolved bottom padding at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                                              | —                     | shipped  |
++| ps               | selector       | Every official `.ps-*` step and breakpoint selector ships in the utilities layer; the resolved start padding, written on the left side, at each boundary is proved in the `tests/src/styles/utilities/spacing.test.ts` proof.                                                                                                                                                                                                                                    | —                     | shipped  |
++| user-select      | selector       | Every official `.user-select-*` selector ships in the utilities layer at the empty infix alone; each resolved value and the text a selection keeps are proved in the `tests/src/styles/utilities/interaction.test.ts` proof.                                                                                                                                                                                                                                     | —                     | shipped  |
+ | navbar           | selector       | Every official `.navbar` selector ships in the components layer, the brand, nav list, text, collapsible content, toggler and its icon, scrolling list, expand ramp, expanded offcanvas panel, and dark retunes included, and the container combinators the key records ship from the container partial; resolved behavior is proved in `tests/src/styles/components/navbar.test.ts`.                                                                             | —                     | shipped  |
+ | navbar           | variable       | Every official `--bs-navbar-*` custom property is declared on the `.navbar` class, the color and toggler slots are retuned by the `.navbar-dark` class and the bar's own dark attribute, and the `.navbar-nav` class retunes the `--bs-nav-link-*` slots it records; each one is read beside the property it drives in `tests/src/styles/components/navbar.test.ts`.                                                                                             | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+@@ -5631,6 +6372,7 @@
+ [form range specimens](../tests/app/browser/sections/FormRangeSection.test.ts),
+ [form select specimens](../tests/app/browser/sections/FormSelectSection.test.ts),
+ [input group specimens](../tests/app/browser/sections/InputGroupSection.test.ts),
++[interaction specimens](../tests/app/browser/sections/InteractionSection.test.ts),
+ [layout specimens](../tests/app/browser/sections/LayoutSection.test.ts),
+ [link specimens](../tests/app/browser/sections/LinkSection.test.ts),
+ [list group specimens](../tests/app/browser/sections/ListGroupSection.test.ts),
+@@ -5640,6 +6382,7 @@
+ [position specimens](../tests/app/browser/sections/PositionSection.test.ts),
+ [progress specimens](../tests/app/browser/sections/ProgressSection.test.ts),
+ [sizing specimens](../tests/app/browser/sections/SizingSection.test.ts),
++[spacing specimens](../tests/app/browser/sections/SpacingSection.test.ts),
+ [specimen table rendering](../tests/app/browser/sections/SpecimenSection.test.ts),
+ [spinner specimens](../tests/app/browser/sections/SpinnerSection.test.ts),
+ [table specimens](../tests/app/browser/sections/TableSection.test.ts),
+@@ -5760,6 +6503,8 @@
+ [the position helpers](../tests/src/styles/components/position.test.ts),
+ [the sizing utilities](../tests/src/styles/utilities/sizing.test.ts),
+ [the visibility utilities](../tests/src/styles/utilities/visibility.test.ts),
++[the spacing utilities](../tests/src/styles/utilities/spacing.test.ts),
++[the interaction utilities](../tests/src/styles/utilities/interaction.test.ts),
+ [the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and

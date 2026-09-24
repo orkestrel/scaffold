@@ -1,0 +1,66 @@
+-The expanded bar also turns an offcanvas panel into part of its row: the panel stops being
+-positioned, grows into the row, and drops its header, and the release's `!important` flags on its
+-size, visibility, fill, border, and transform win over the fixed, hidden, and sliding state the
+-panel's own classes write, although the offcanvas partial loads after this one. The offcanvas key
+-records these rules as well, and they ship from this partial; § Offcanvas classes gives the panel.
++The expanded bar also turns an offcanvas panel into part of its row. The bar's rule for the panel is
++more specific than the panel's own `.offcanvas` rule, so it unfixes the panel and shows it, grows it
++into the row, and drops its header. The offcanvas partial writes its placement rules later at the
++same specificity as the bar's rule, and the release's `!important` flags on the panel's width,
++height, border, and transform win over them. The offcanvas key records these rules as well, and they
++ship from this partial; § Offcanvas classes gives the panel.
+-scrolling list, the dark attribute and the dark class each on a card carrying the dark mode, a
+-bar for each expand class, and a bar whose links sit in a shown offcanvas panel. The card's dark
+-scope alone paints a plain bar's brand white, so the
+-class bar carries the `data-bs-theme="light"` attribute, a light island inside the card, and the
+-white it shows is the class's paint. The journey renders at 390 and 1280 pixels wide, so the
+-`.navbar-expand-xxl` bar has no expanded frame: its boundary is wider than either width, and the
+-proof reads its expanded state at the boundary instead. The offcanvas bar renders inside an element
+-carrying the shell's `viewport` class, the containing block of its fixed panel, and it expands at
+-the large step, so its frame at 390 is the panel fixed over the bar and its frame at 1280 is the
+-panel laid into the bar's row.
++scrolling list, the dark attribute and the dark class each on a card carrying the dark mode, a bar
++for each expand class, and a bar whose links sit in a shown offcanvas panel. The card's dark scope
++alone paints a plain bar's brand white, so the class bar carries the `data-bs-theme="light"`
++attribute, a light island inside the card, and the white it shows is the class's paint. The journey
++renders at 390 and 1280 pixels wide, so the `.navbar-expand-xxl` bar has no expanded frame: its
++boundary is wider than either width, and the proof reads its expanded state at the boundary instead.
++The offcanvas bar renders inside an element carrying the shell's `viewport` class, the containing
++block of its fixed panel, and it expands at the `lg` breakpoint, so its frame at 390 is the panel
++fixed over the bar and its frame at 1280 is the panel laid into the bar's row.
+-rung moves the fixed panel's level or the backdrop's with it, and the panel stays over its backdrop.
++rung moves the fixed panel's level or the backdrop's with it, and the panel stays over its backdrop
++while the retuned `--vn-stack-drawer-base` token stays above the `--vn-stack-drawer-backdrop` token.
+-edge, hides its header, and lays its body out as a row with no inset. The release marks the panel's
+-clear fill and the body's clear fill important, so a background utility on either does not paint the
+-inline panel. The class also sets the `--bs-offcanvas-height` variable to `auto` and the
+-`--bs-offcanvas-border-width` variable to `0` there, as the release does; no rule reads either
+-variable at that width, because the placement rules apply below the breakpoint alone. The
+-`breakpoint-down` and `breakpoint-up` mixins write each pair at one breakpoint, so the fixed state
+-ends at the width where the inline state begins.
++edge, hides its header, and lays its body out as a row with no inset. The panel's clear fill and the
++body's clear fill carry the release's `!important` flag. The class also sets the
++`--bs-offcanvas-height` variable to `auto` and the `--bs-offcanvas-border-width` variable to `0`
++there, as the release does; no rule reads either variable at that width, because the placement rules
++apply below the breakpoint alone. The `breakpoint-down` and `breakpoint-up` mixins write each pair
++at one breakpoint, so the fixed state ends at the width where the inline state begins.
++- **An important background utility does not paint the inline panel.** At and above the breakpoint,
++  the panel's clear fill is an important declaration in the components layer. For important
++  declarations an earlier layer wins and a layered declaration wins over an unlayered one, so a
++  background utility carrying the `!important` flag leaves the inline panel clear, in the utilities
++  layer or outside every layer. The release writes its utility as a later rule at the same
++  specificity, so the utility paints the release's inline panel. Below the breakpoint the utility
++  paints the fixed panel in Veneer and in the release alike. The body's clear fill holds in each,
++  because its rule is more specific than a utility's. The ledger records no row for this difference:
++  the declarations are equal, and the cascade layer decides.
+-it, the bare panel at every width, the header's close control beside a control outside the header,
+-the title and the body, the density factor, the light and dark modes, the transition under the
+-staged reduced-motion preference, and a shown and a resting panel inside each expanded navbar step.
++it, the bare panel at every width, an important background utility over the inline and the fixed
++`.offcanvas-lg` panel, the header's close control beside a control outside the header, the title and
++the body, the density factor, the light and dark modes, the transition under the staged
++reduced-motion preference, and a shown and a resting panel inside each expanded navbar step.
+-| ---------------- | -------------- | -----------------------------------------------------------------------------------------------------------------------------------------------------------------
++| ---------------- | -------------- | -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+-| engine           | plugin         | Offcanvas: a `[data-bs-toggle="offcanvas"]` trigger toggles its panel; the `backdrop`, `keyboard`, and `scroll` options; the `toggle`, `show`, `hide`, and `dispo
++| engine           | plugin         | Offcanvas: a `[data-bs-toggle="offcanvas"]` trigger toggles the panel its `data-bs-target` or `href` attribute names unless the trigger is disabled, hides anothe

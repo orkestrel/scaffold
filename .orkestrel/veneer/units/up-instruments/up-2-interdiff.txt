@@ -1,0 +1,443 @@
+diff -ru -x .git r1/app/browser/constants.ts up-apply/app/browser/constants.ts
+--- r1/app/browser/constants.ts	2026-09-24 02:44:07.853760705 +0000
++++ up-apply/app/browser/constants.ts	2026-09-24 02:44:23.566212553 +0000
+@@ -1,5 +1,6 @@
+ import type { ButtonSpecimen, MarkupSpecimen } from './types.js'
+ import { TOKEN_NAMES } from '@src/core'
++import { renderSwatches } from './helpers.js'
+ 
+ /** Holds the showcase's visible copy and accessible names. */
+ export const SHOWCASE_COPY = Object.freeze({
+@@ -2472,67 +2473,63 @@
+  * order.
+  *
+  * @remarks
+- * Every swatch is a ratio box inside a figure whose caption names the class the swatch shows, so a
+- * fill of any value keeps its label on the page's own surface and a dark fill needs no text color of
+- * its own. The body surfaces and the transparent fill match or show the page, so each of those
+- * swatches carries a whole border to draw its box.
+- */
+-export const BACKGROUND_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+-	[
+-		{
+-			name: 'Background roles',
+-			swatches: [
+-				'primary',
+-				'secondary',
+-				'success',
+-				'info',
+-				'warning',
+-				'danger',
+-				'light',
+-				'dark',
+-				'black',
+-				'white',
+-			].map((key) => `bg-${key}`),
+-		},
+-		{
+-			name: 'Subtle backgrounds',
+-			swatches: [
+-				'primary',
+-				'secondary',
+-				'success',
+-				'info',
+-				'warning',
+-				'danger',
+-				'light',
+-				'dark',
+-			].map((role) => `bg-${role}-subtle`),
+-		},
+-		{
+-			name: 'Body backgrounds',
+-			swatches: ['body', 'body-secondary', 'body-tertiary', 'transparent'].map(
+-				(key) => `bg-${key} border`,
++ * Every swatch is a ratio box inside a figure whose caption names the classes the swatch carries, so
++ * a fill of any value keeps its label on the page's own surface and a dark fill needs no text color
++ * of its own. A swatch whose fill matches or shows the page in either mode carries a whole border to
++ * draw its box: the light and white roles on the light canvas, the dark and black roles and the dark
++ * gradient on the dark canvas, every subtle tier, the faintest opacity step, the body surfaces, and
++ * the transparent fill.
++ */
++export const BACKGROUND_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Background roles',
++		markup: renderSwatches([
++			'bg-primary',
++			'bg-secondary',
++			'bg-success',
++			'bg-info',
++			'bg-warning',
++			'bg-danger',
++			'bg-light border',
++			'bg-dark border',
++			'bg-black border',
++			'bg-white border',
++		]),
++	}),
++	Object.freeze({
++		name: 'Subtle backgrounds',
++		markup: renderSwatches(
++			['primary', 'secondary', 'success', 'info', 'warning', 'danger', 'light', 'dark'].map(
++				(role) => `bg-${role}-subtle border`,
+ 			),
+-		},
+-		{
+-			name: 'Background opacity',
+-			swatches: ['100', '75', '50', '25', '10'].map((step) => `bg-success bg-opacity-${step}`),
+-		},
+-		{
+-			name: 'Background gradient',
+-			swatches: ['primary', 'success', 'danger', 'dark'].map((role) => `bg-${role} bg-gradient`),
+-		},
+-	].map(({ name, swatches }) =>
+-		Object.freeze({
+-			name,
+-			markup: `<div class="row row-cols-3 row-cols-md-5 g-2">${swatches
+-				.map(
+-					(classes) =>
+-						`<div class="col"><figure class="figure w-100"><div class="ratio ratio-4x3 ${classes}"></div><figcaption class="figure-caption">${classes}</figcaption></figure></div>`,
+-				)
+-				.join('')}</div>`,
+-		}),
+-	),
+-)
++		),
++	}),
++	Object.freeze({
++		name: 'Body backgrounds',
++		markup: renderSwatches(
++			['body', 'body-secondary', 'body-tertiary', 'transparent'].map((key) => `bg-${key} border`),
++		),
++	}),
++	Object.freeze({
++		name: 'Background opacity',
++		markup: renderSwatches([
++			'bg-success bg-opacity-100',
++			'bg-success bg-opacity-75',
++			'bg-success bg-opacity-50',
++			'bg-success bg-opacity-25',
++			'bg-success bg-opacity-10 border',
++		]),
++	}),
++	Object.freeze({
++		name: 'Background gradient',
++		markup: renderSwatches([
++			'bg-primary bg-gradient',
++			'bg-success bg-gradient',
++			'bg-danger bg-gradient',
++			'bg-dark bg-gradient border',
++		]),
++	}),
++])
+ 
+ /** Holds the Border section's visible copy and accessible name. */
+ export const BORDER_COPY = Object.freeze({
+@@ -2546,96 +2543,86 @@
+  * render order.
+  *
+  * @remarks
+- * Every swatch is a ratio box inside a figure whose caption names the classes the swatch shows. The
+- * side and removal swatches rest on the tertiary body surface, so the box shows around the sides a
+- * class leaves undrawn. The color swatches widen the border to the `3` step, so a role reads as a
+- * band rather than a hairline, and the radius swatches fill with the primary role, so a rounded
+- * corner shows against the page.
+- */
+-export const BORDER_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze(
+-	[
+-		{
+-			name: 'Additive borders',
+-			swatches: ['border', 'border-top', 'border-end', 'border-bottom', 'border-start'].map(
++ * Every swatch is a ratio box inside a figure whose caption names the classes the swatch carries.
++ * The side and removal swatches rest on the tertiary body surface, so the box shows around the sides
++ * a class leaves undrawn. The color swatches widen the border to the `3` step, so a role reads as a
++ * band rather than a hairline. A color swatch whose border matches the page in either mode rests on
++ * a fill it stands against in both modes: the dark role fills the light, white, and light subtle
++ * swatches, and the light role fills the dark, black, and dark subtle swatches. The radius swatches
++ * fill with the primary role, so a rounded corner shows against the page.
++ */
++export const BORDER_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Additive borders',
++		markup: renderSwatches(
++			['border', 'border-top', 'border-end', 'border-bottom', 'border-start'].map(
+ 				(classes) => `${classes} bg-body-tertiary`,
+ 			),
+-		},
+-		{
+-			name: 'Subtractive borders',
+-			swatches: [
+-				'border-0',
+-				'border-top-0',
+-				'border-end-0',
+-				'border-bottom-0',
+-				'border-start-0',
+-			].map((classes) => `border ${classes} bg-body-tertiary`),
+-		},
+-		{
+-			name: 'Border roles',
+-			swatches: [
+-				'primary',
+-				'secondary',
+-				'success',
+-				'info',
+-				'warning',
+-				'danger',
+-				'light',
+-				'dark',
+-				'black',
+-				'white',
+-			].map((key) => `border border-3 border-${key}`),
+-		},
+-		{
+-			name: 'Subtle borders',
+-			swatches: [
+-				'primary',
+-				'secondary',
+-				'success',
+-				'info',
+-				'warning',
+-				'danger',
+-				'light',
+-				'dark',
+-			].map((role) => `border border-3 border-${role}-subtle`),
+-		},
+-		{
+-			name: 'Border widths',
+-			swatches: ['1', '2', '3', '4', '5'].map((step) => `border border-${step}`),
+-		},
+-		{
+-			name: 'Border opacity',
+-			swatches: ['100', '75', '50', '25', '10'].map(
++		),
++	}),
++	Object.freeze({
++		name: 'Subtractive borders',
++		markup: renderSwatches(
++			['border-0', 'border-top-0', 'border-end-0', 'border-bottom-0', 'border-start-0'].map(
++				(classes) => `border ${classes} bg-body-tertiary`,
++			),
++		),
++	}),
++	Object.freeze({
++		name: 'Border roles',
++		markup: renderSwatches([
++			'border border-3 border-primary',
++			'border border-3 border-secondary',
++			'border border-3 border-success',
++			'border border-3 border-info',
++			'border border-3 border-warning',
++			'border border-3 border-danger',
++			'border border-3 border-light bg-dark',
++			'border border-3 border-dark bg-light',
++			'border border-3 border-black bg-light',
++			'border border-3 border-white bg-dark',
++		]),
++	}),
++	Object.freeze({
++		name: 'Subtle borders',
++		markup: renderSwatches([
++			'border border-3 border-primary-subtle',
++			'border border-3 border-secondary-subtle',
++			'border border-3 border-success-subtle',
++			'border border-3 border-info-subtle',
++			'border border-3 border-warning-subtle',
++			'border border-3 border-danger-subtle',
++			'border border-3 border-light-subtle bg-dark',
++			'border border-3 border-dark-subtle bg-light',
++		]),
++	}),
++	Object.freeze({
++		name: 'Border widths',
++		markup: renderSwatches(['1', '2', '3', '4', '5'].map((step) => `border border-${step}`)),
++	}),
++	Object.freeze({
++		name: 'Border opacity',
++		markup: renderSwatches(
++			['100', '75', '50', '25', '10'].map(
+ 				(step) => `border border-3 border-success border-opacity-${step}`,
+ 			),
+-		},
+-		{
+-			name: 'Rounded corners',
+-			swatches: [
+-				'rounded',
+-				'rounded-top-4',
+-				'rounded-end-4',
+-				'rounded-bottom-4',
+-				'rounded-start-4',
+-			].map((classes) => `bg-primary ${classes}`),
+-		},
+-		{
+-			name: 'Rounded sizes',
+-			swatches: ['0', '1', '2', '3', '4', '5', 'circle', 'pill'].map(
+-				(step) => `bg-primary rounded-${step}`,
++		),
++	}),
++	Object.freeze({
++		name: 'Rounded corners',
++		markup: renderSwatches(
++			['rounded', 'rounded-top-4', 'rounded-end-4', 'rounded-bottom-4', 'rounded-start-4'].map(
++				(classes) => `bg-primary ${classes}`,
+ 			),
+-		},
+-	].map(({ name, swatches }) =>
+-		Object.freeze({
+-			name,
+-			markup: `<div class="row row-cols-3 row-cols-md-5 g-2">${swatches
+-				.map(
+-					(classes) =>
+-						`<div class="col"><figure class="figure w-100"><div class="ratio ratio-4x3 ${classes}"></div><figcaption class="figure-caption">${classes}</figcaption></figure></div>`,
+-				)
+-				.join('')}</div>`,
+-		}),
+-	),
+-)
++		),
++	}),
++	Object.freeze({
++		name: 'Rounded sizes',
++		markup: renderSwatches(
++			['0', '1', '2', '3', '4', '5', 'circle', 'pill'].map((step) => `bg-primary rounded-${step}`),
++		),
++	}),
++])
+ 
+ /** Holds the Navbar section's visible copy and accessible name. */
+ export const NAVBAR_COPY = Object.freeze({
+diff -ru -x .git r1/app/browser/index.ts up-apply/app/browser/index.ts
+--- r1/app/browser/index.ts	2026-09-24 02:44:07.853845441 +0000
++++ up-apply/app/browser/index.ts	2026-09-24 02:44:23.566314348 +0000
+@@ -1,5 +1,6 @@
+ export * from './types.js'
+ export * from './constants.js'
++export * from './helpers.js'
+ export * from './Showcase.js'
+ export * from './sections/ButtonSection.js'
+ export * from './sections/CardSection.js'
+diff -ru -x .git r1/guides/veneer.md up-apply/guides/veneer.md
+--- r1/guides/veneer.md	2026-09-24 02:44:07.853845441 +0000
++++ up-apply/guides/veneer.md	2026-09-24 02:44:23.566314348 +0000
+@@ -2945,12 +2945,12 @@
+ class.
+ 
+ Each role fill reads its role's channel alias, such as the `--bs-primary-rgb` property for the
+-`.bg-primary` class, at the alpha the `--bs-bg-opacity` local holds, and the fill's own rule sets
+-that local to `1`. So a retuned channel alias moves its fill, and an opacity step on the same
+-element sets the fill's alpha: an element carrying the `.bg-success` and `.bg-opacity-25` classes
+-paints the success role at a quarter of its opacity. A step alone paints nothing, and a step on an
+-ancestor reaches no nested fill, because each fill sets the local in its own rule. The fills walk
+-the roles Bootstrap names, so Veneer's own `tertiary` role writes no `.bg-tertiary` class. The
++`.bg-primary` class, at the alpha the `--bs-bg-opacity` local holds, and the fill's own rule writes
++the `1` value into that local. So a retuned channel alias moves its fill, and an opacity step on the
++same element sets the fill's alpha: an element carrying the `.bg-success` and `.bg-opacity-25`
++classes paints the success role at a quarter of its opacity. A step alone paints nothing, and a step
++on an ancestor reaches no nested fill, because each fill sets the local in its own rule. The fills
++walk the roles Bootstrap names, so Veneer's own `tertiary` role writes no `.bg-tertiary` class. The
+ `.bg-body`, `.bg-body-secondary`, and `.bg-body-tertiary` classes read the body surface channel
+ aliases, and each `.bg-*-subtle` tier reads its role's `--bs-*-bg-subtle` alias. The theme
+ re-declares those aliases in each mode, so the same class paints the dark surface inside a
+@@ -2969,9 +2969,10 @@
+ The `tests/src/styles/utilities/background.test.ts` proof reads each fill against its channel alias
+ and a retune of every alias, the absence of a `tertiary` class, each opacity step and a step alone,
+ the local on a nested fill, the subtle and body tiers in a light and a dark island, the gradient and
+-its retune, the density factor, each class written once at no infix and read at every boundary and
+-one pixel below it, the priority over a later unlayered rule, and the escape inside the utilities
+-layer. The background keys carry no recorded departure.
++its retune, the density factor, each class written once at no infix, the `.bg-danger` and
++`.bg-opacity-50` composition and the `.bg-warning-subtle` class read at every boundary and one pixel
++below it, the priority over a later unlayered rule, and the escape inside the utilities layer. The
++background keys carry no recorded departure.
+ 
+ ### Border utilities
+ 
+@@ -2994,13 +2995,13 @@
+ alpha. The widths stay literal, because no published Veneer token carries them.
+ 
+ The rounded steps read the `--bs-border-radius-*` aliases, which read the `--vn-radius-*` tokens, so
+-the `--vn-factor-radius` token scales the `.rounded` class and the `1` to `5` steps: a factor of `2`
++the `--vn-factor-radius` token scales the `.rounded` class and the `1` to `5` steps: the `2` factor
+ doubles the `.rounded-2` class from 6px to 12px. The `.rounded` class writes the `2` step's radius.
+ Each side class rounds two corners, and the side entries follow the `rounded` entry in the map, so
+ an element carrying the `.rounded-3` and `.rounded-top-0` classes squares its top corners and keeps
+-its bottom ones. The release writes the rounded entries later in its map than the border entries;
+-no utility between them sets a radius, so the partial writes them beside the border entries, and
+-the placement moves no resolution.
++its bottom ones. The release writes the rounded entries later in its map than the border entries; no
++utility between them sets a radius, so the partial writes them beside the border entries, and the
++placement moves no resolution.
+ 
+ The partial writes every border, color, width, and radius through the `utility` mixin, so each
+ declaration carries the `!important` flag the release writes, and it writes the opacity steps
+@@ -3012,10 +3013,11 @@
+ and a retuned width token, each side and each removal, each color against its channel alias and a
+ retune of every alias, the absence of a `tertiary` class, each opacity step and a step alone, the
+ default and subtle colors in a light and a dark island, each width over a whole border, each radius
+-step against the value the release writes and under the radius factor, each side's corners and
+-their order, the density factor, each class written once at no infix and read at every boundary and
+-one pixel below it, the priority over a later unlayered rule, and the escape inside the utilities
+-layer. The border and rounded keys carry no recorded departure.
++step against the value the release writes, the `.rounded` and `.rounded-2` classes under the radius
++factor, each side's corners and their order, the density factor, each class written once at no
++infix, the composition of the `.border`, `.border-top-0`, `.border-3`, and `.rounded-top-5` classes
++read at every boundary and one pixel below it, the priority over a later unlayered rule, and the
++escape inside the utilities layer. The border and rounded keys carry no recorded departure.
+ 
+ ### Deferred selectors
+ 
+diff -ru -x .git r1/tests/app/browser/index.test.ts up-apply/tests/app/browser/index.test.ts
+--- r1/tests/app/browser/index.test.ts	2026-09-24 02:44:07.854320058 +0000
++++ up-apply/tests/app/browser/index.test.ts	2026-09-24 02:44:23.566745720 +0000
+@@ -132,6 +132,7 @@
+ 			'VISIBILITY_SPECIMENS',
+ 			'ValidationSection',
+ 			'VisibilitySection',
++			'renderSwatches',
+ 		])
+ 	})
+ })
+diff -ru -x .git r1/tests/service/tailwind/profiles.test.ts up-apply/tests/service/tailwind/profiles.test.ts
+--- r1/tests/service/tailwind/profiles.test.ts	2026-09-24 02:44:07.858084332 +0000
++++ up-apply/tests/service/tailwind/profiles.test.ts	2026-09-24 02:44:23.574063481 +0000
+@@ -43,13 +43,14 @@
+ 		expect(new SheetReader(cascade).order).toEqual(ORDER)
+ 		// A generated utility that registers a custom property — the instrument's control, and the
+ 		// `border` and `border-0` names every executed profile emits off the exclusion line — makes
+-		// Tailwind prepend a generated layer statement of its own, and the order line follows it. The
+-		// following case reads that placement; the reading here is that the order line is declared
+-		// unchanged behind it, and that the page resolves the cascade's own order first.
++		// Tailwind prepend a generated layer statement of its own. The reading here is each whole
++		// order: the profile places that generated layer first and Veneer's named layers after it in
++		// their declared order, and the page resolves the cascade's own order first with the
++		// generated layer last, so a layer any profile adds beyond those reddens here.
+ 		for (const compiled of [tailwindProfile, preflightProfile, instrumentProfile]) {
+ 			expect(new SheetReader(compiled).statement).toEqual(['properties'])
+-			expect(new SheetReader(compiled).order.slice(-ORDER.length)).toEqual(ORDER)
+-			expect(new SheetReader(`${cascade}\n${compiled}`).order.slice(0, ORDER.length)).toEqual(ORDER)
++			expect(new SheetReader(compiled).order).toEqual(['properties', ...ORDER])
++			expect(new SheetReader(`${cascade}\n${compiled}`).order).toEqual([...ORDER, 'properties'])
+ 		}
+ 	})
+ 
+diff -ru -x .git r1/tests/setupStyles.test.ts up-apply/tests/setupStyles.test.ts
+--- r1/tests/setupStyles.test.ts	2026-09-24 02:44:07.854978635 +0000
++++ up-apply/tests/setupStyles.test.ts	2026-09-24 02:44:23.567158354 +0000
+@@ -1850,8 +1850,8 @@
+ 		const bg = requireValue(recorded.get('bg'), 'No bg key')
+ 		const border = requireValue(recorded.get('border'), 'No border key')
+ 		const rounded = requireValue(recorded.get('rounded'), 'No rounded key')
+-		// A channelled color is the release's `rgba()` over one channel alias and the entry's opacity
+-		// local, and its key is the rest of the class name after the entry's class.
++		// A channelled color is the release's `rgba()` function over one channel alias and the entry's
++		// opacity local, and its key is the rest of the class name after the entry's class.
+ 		for (const [cases, key, rules, property] of [
+ 			[BACKGROUND_FILL_CASES, 'bg', bg, 'background-color'],
+ 			[BORDER_COLOR_CASES, 'border', border, 'border-color'],
+@@ -1868,7 +1868,7 @@
+ 				}),
+ 			)
+ 		}
+-		// A subtle tier is a bare `var()` over the role's subtle alias of that tier.
++		// A subtle tier is a bare `var()` function over the role's subtle alias of that tier.
+ 		for (const [key, rules, property, tier] of [
+ 			['bg', bg, 'background-color', 'background'],
+ 			['border', border, 'border-color', 'border'],
