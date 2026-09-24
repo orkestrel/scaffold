@@ -1,0 +1,117 @@
+{
+ "button": {
+  "stems": [
+   "check-group-checked",
+   "check-group-focus",
+   "horizontal-group",
+   "large-group",
+   "nested-groups",
+   "primary-active",
+   "primary-focus",
+   "primary-hover",
+   "small-group",
+   "split-button",
+   "split-button-large",
+   "split-button-small",
+   "split-dropstart",
+   "toggle-pressed",
+   "vertical-group",
+   "wrapping-toolbar"
+  ],
+  "sources": [
+   "node_modules/bootstrap/scss/_buttons.scss",
+   "node_modules/bootstrap/scss/_button-group.scss",
+   "node_modules/bootstrap/scss/mixins/_buttons.scss"
+  ]
+ },
+ "close-badge-breadcrumb": {
+  "stems": [
+   "badge-at-heading-scale",
+   "badge-collapsed",
+   "badge-counter",
+   "badge-on-a-button",
+   "badge-word",
+   "breadcrumb-single-step",
+   "breadcrumb-trail",
+   "close-control",
+   "close-control-focus",
+   "close-control-hover",
+   "close-inverted",
+   "close-refused-by-attribute",
+   "close-refused-by-class"
+  ],
+  "sources": [
+   "node_modules/bootstrap/scss/_close.scss",
+   "node_modules/bootstrap/scss/_badge.scss",
+   "node_modules/bootstrap/scss/_breadcrumb.scss"
+  ]
+ },
+ "card-spinner-placeholder": {
+  "stems": [
+   "border-spinner",
+   "button-placeholder",
+   "card-base",
+   "card-group",
+   "card-images",
+   "card-list",
+   "card-list-corners",
+   "card-overlay",
+   "card-pills",
+   "card-rule",
+   "card-tabs",
+   "glowing-placeholder",
+   "placeholder-ramp",
+   "small-border-spinner",
+   "waving-placeholder"
+  ],
+  "sources": [
+   "node_modules/bootstrap/scss/_card.scss",
+   "node_modules/bootstrap/scss/_spinners.scss",
+   "node_modules/bootstrap/scss/_placeholders.scss"
+  ]
+ },
+ "list-group": {
+  "stems": [
+   "list-group-actions",
+   "list-group-actions-active",
+   "list-group-actions-focus",
+   "list-group-actions-hover",
+   "list-group-active",
+   "list-group-base",
+   "list-group-disabled",
+   "list-group-flush",
+   "list-group-horizontal",
+   "list-group-horizontal-lg",
+   "list-group-horizontal-md",
+   "list-group-horizontal-sm",
+   "list-group-horizontal-xl",
+   "list-group-horizontal-xxl",
+   "list-group-numbered",
+   "list-group-roles"
+  ],
+  "sources": [
+   "node_modules/bootstrap/scss/_list-group.scss",
+   "node_modules/bootstrap/scss/mixins/_list-group.scss"
+  ]
+ },
+ "pagination-progress": {
+  "stems": [
+   "active-page",
+   "animated-progress",
+   "disabled-page",
+   "large-pagination",
+   "page-strip",
+   "page-strip-focus",
+   "page-strip-hover",
+   "progress-base",
+   "small-pagination",
+   "stacked-progress",
+   "striped-progress"
+  ],
+  "sources": [
+   "node_modules/bootstrap/scss/_pagination.scss",
+   "node_modules/bootstrap/scss/mixins/_pagination.scss",
+   "node_modules/bootstrap/scss/_progress.scss"
+  ]
+ }
+}

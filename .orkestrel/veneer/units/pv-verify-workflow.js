@@ -7,7 +7,8 @@ export const meta = {
   ],
 }
 
-// args: { family, dir, ours, slices: { <slice>: { files: [...], sources: [...] } } }. Written for the
+// args: { family, dir, lenses, slices: { <slice>: { stems: [...], sources: [...] } } }; each slice's frames are its
+// stems at every variant. Written for the
 // B-PASSIVE, B-FORMS, B-MODAL, and B-UTILITIES portfolio rounds and the FOCUS-FRAME scoping read, derived
 // from bc-verify-workflow.js with the frame description rewritten for the bounded frames PAGE-FRAME landed.
 const ROOT = '/home/user/veneer'
@@ -55,8 +56,10 @@ function lensPrompt(slice, lens, spec) {
   ].join('\n\n')
 }
 
+const VARIANTS = ['light-1280', 'dark-1280', 'light-390', 'dark-390']
+const SLICES = Object.fromEntries(Object.entries(args.slices).map(([k, v]) => [k, { ...v, files: v.stems.flatMap((s) => VARIANTS.map((x) => `${s}--${x}.png`)) }]))
 const units = []
-for (const [slice, spec] of Object.entries(args.slices)) {
+for (const [slice, spec] of Object.entries(SLICES)) {
   for (const lens of args.lenses) units.push({ slice, lens, spec })
 }
 
@@ -82,7 +85,7 @@ const critic = await agent([
   `You are \`reviewer\` on Opus 5.5, the completeness critic of a capture-portfolio verdict round over Veneer's ${args.family} family. Perform the review directly and spawn nothing. Edit nothing.`,
   `The lens runs returned this summary: ${JSON.stringify(summary)}.`,
   FRAMES,
-  `The frames are in ${args.dir}; the slices and their frames are ${JSON.stringify(Object.fromEntries(Object.entries(args.slices).map(([k, v]) => [k, v.files])))}. Name (a) any frame a lens should have opened and did not, (b) any state or variant the family's partials under ${ROOT}/src/styles write (hover, focus, active, disabled, checked, shown, a size step, a role) that has no frame at all, comparing the partials' state selectors with the scenario names, and (c) any finding that contradicts another lens's clean verdict on the same frame. Open the frames you need to settle (c), and say which side each frame supports.`,
+  `The frames are in ${args.dir}; the slices and their frames are ${JSON.stringify(Object.fromEntries(Object.entries(SLICES).map(([k, v]) => [k, v.files])))}. Name (a) any frame a lens should have opened and did not, (b) any state or variant the family's partials under ${ROOT}/src/styles write (hover, focus, active, disabled, checked, shown, a size step, a role) that has no frame at all, comparing the partials' state selectors with the scenario names, and (c) any finding that contradicts another lens's clean verdict on the same frame. Open the frames you need to settle (c), and say which side each frame supports.`,
 ].join('\n\n'), {
   label: 'critic', phase: 'Critic', model: 'opus', agentType: 'reviewer',
   schema: {

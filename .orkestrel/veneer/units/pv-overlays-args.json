@@ -1,0 +1,79 @@
+{
+ "modal": {
+  "stems": [
+   "centered-modal",
+   "extra-large-modal",
+   "fullscreen-modal",
+   "fullscreen-modal-lg-down",
+   "fullscreen-modal-md-down",
+   "fullscreen-modal-sm-down",
+   "fullscreen-modal-xl-down",
+   "fullscreen-modal-xxl-down",
+   "large-modal",
+   "scrollable-modal",
+   "shown-modal",
+   "small-modal",
+   "static-modal"
+  ],
+  "sources": [
+   "node_modules/bootstrap/scss/_modal.scss"
+  ]
+ },
+ "offcanvas": {
+  "stems": [
+   "bottom-offcanvas",
+   "end-offcanvas",
+   "responsive-offcanvas-lg",
+   "responsive-offcanvas-md",
+   "responsive-offcanvas-sm",
+   "responsive-offcanvas-xl",
+   "responsive-offcanvas-xxl",
+   "start-offcanvas",
+   "top-offcanvas"
+  ],
+  "sources": [
+   "node_modules/bootstrap/scss/_offcanvas.scss"
+  ]
+ },
+ "tooltip-popover": {
+  "stems": [
+   "bottom-popover",
+   "bottom-tooltip",
+   "left-popover",
+   "left-tooltip",
+   "right-popover",
+   "right-tooltip",
+   "top-popover",
+   "top-tooltip",
+   "untitled-popover"
+  ],
+  "sources": [
+   "node_modules/bootstrap/scss/_tooltip.scss",
+   "node_modules/bootstrap/scss/_popover.scss"
+  ]
+ },
+ "alert-toast-carousel-fade": {
+  "stems": [
+   "advancing-carousel",
+   "captioned-carousel",
+   "captioned-carousel-focus",
+   "captioned-carousel-hover",
+   "centered-toast",
+   "dismissible-alert",
+   "fade-hidden",
+   "fade-shown",
+   "fading-carousel",
+   "inverted-carousel",
+   "linked-alert",
+   "role-alerts",
+   "shown-toast",
+   "stacked-toasts"
+  ],
+  "sources": [
+   "node_modules/bootstrap/scss/_alert.scss",
+   "node_modules/bootstrap/scss/_toasts.scss",
+   "node_modules/bootstrap/scss/_carousel.scss",
+   "node_modules/bootstrap/scss/_transitions.scss"
+  ]
+ }
+}
