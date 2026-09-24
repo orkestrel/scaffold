@@ -1,0 +1,10 @@
+=== ue landing at 03:07:28 over 86b3d46
+=== applied /home/user/scaffold/.orkestrel/veneer/units/ue-shared-2.patch
+## guides/veneer.md
+table: ours=213 base=210 theirs=214 -> 217
+=== continued: ee41c5b
+=== land-unit exit=0
+=== oxfmt exit=0
+ M guides/veneer.md
+=== oxlint exit=0
+=== check exit=0

@@ -1,0 +1,1081 @@
+diff --git a/src/styles/components/_navbar.scss b/src/styles/components/_navbar.scss
+index 9f25ec0..99cdfff 100644
+--- a/src/styles/components/_navbar.scss
++++ b/src/styles/components/_navbar.scss
+@@ -146,9 +146,12 @@
+ 	// Each expand class lays the bar out in one row from its boundary up: the links run in a row with
+ 	// the navbar's inline padding, a menu hangs over the content again, the collapsible content shows
+ 	// while its collapse class would hide it, and the toggler leaves. The class with no infix expands
+-	// at every width. The offcanvas rules turn a panel into part of the row, and ship ahead of the
+-	// panel's own partial. The `!important` flags are the release's own, so the expanded content and
+-	// panel win over the hidden state their own classes write.
++	// at every width. The offcanvas rules turn a panel into part of the row; the offcanvas partial
++	// writes the panel itself. The bar's more specific rule unfixes the panel and shows it, and the
++	// release's `!important` flags on the panel's width, height, border, and transform, and its
++	// important visibility declaration, win over the placement and hidden rules the offcanvas partial
++	// writes. The collapsible content's important display declaration wins over the hidden state its
++	// collapse class writes.
+ 	@include breakpoint-each using ($infix, $_boundary) {
+ 		.navbar-expand#{$infix} {
+ 			flex-wrap: nowrap;
+diff --git a/tests/app/browser/sections/NavbarSection.test.ts b/tests/app/browser/sections/NavbarSection.test.ts
+index d836b34..8b7ca46 100644
+--- a/tests/app/browser/sections/NavbarSection.test.ts
++++ b/tests/app/browser/sections/NavbarSection.test.ts
+@@ -3,6 +3,8 @@ import { NAVBAR_COPY, NAVBAR_SPECIMENS, NavbarSection, SpecimenSection } from '@
+ import { requireValue } from '@orkestrel/test'
+ import { build, mount, readName } from '@orkestrel/test/browser'
+ import { describe, expect, it } from 'vitest'
++import { readSpecimen } from '../../../setupBrowser.js'
++import { NAVBAR_SELECTORS } from '../../../setupStyles.js'
+ 
+ describe('NavbarSection', () => {
+ 	it('renders every navbar form and every state set in markup through the shared section contract', () => {
+@@ -28,6 +30,7 @@ describe('NavbarSection', () => {
+ 				'Navbar expand lg',
+ 				'Navbar expand xl',
+ 				'Navbar expand xxl',
++				'Navbar with offcanvas',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				NAVBAR_SPECIMENS.map(({ markup }) => markup),
+@@ -35,7 +38,9 @@ describe('NavbarSection', () => {
+ 			// Every rule the key ships without the pointer or the keyboard has a subject in the region,
+ 			// each expand step and each dark spelling included, because no script sets a state class
+ 			// here: a region rendering one spelling alone leaves the other rule photographed by nothing.
+-			// The expanded offcanvas panel is the exception, because its own partial has not shipped.
++			// The expanded offcanvas panel renders at the `lg` breakpoint, in the bar whose links sit in a
++			// shown panel; its other expand steps are the same rules at other widths, which the
++			// `tests/src/styles/components/offcanvas.test.ts` file reads at every step.
+ 			for (const selector of [
+ 				'.navbar',
+ 				'.navbar > .container-fluid',
+@@ -68,12 +73,21 @@ describe('NavbarSection', () => {
+ 					`.navbar-expand${infix} .navbar-collapse`,
+ 					`.navbar-expand${infix} .navbar-toggler`,
+ 				]),
++				...NAVBAR_SELECTORS.filter((name) => name.startsWith('.navbar-expand-lg .offcanvas')),
+ 			])
+ 				expect({ selector, rendered: region.querySelector(selector) !== null }).toEqual({
+ 					selector,
+ 					rendered: true,
+ 				})
+-			expect(region.querySelector('.offcanvas')).toBeNull()
++			// The offcanvas bar sits inside the shell's frame, which is the containing block of the
++			// panel fixed over it below the `lg` breakpoint, and its panel carries the `show` class the
++			// offcanvas script leaves on a shown panel. It is the region's only panel.
++			const drawer = readSpecimen(region, 'Navbar with offcanvas')
++			expect(region.querySelectorAll('.offcanvas')).toHaveLength(1)
++			expect(
++				drawer.querySelector(':scope > .viewport > .navbar-expand-lg .offcanvas.show'),
++			).not.toBeNull()
++			expect(region.querySelectorAll('.viewport')).toHaveLength(1)
+ 			expect(region.querySelector('.navbar-light')).toBeNull()
+ 			// The journey reaches a link and a toggler by its accessible name, so a repeated label would
+ 			// resolve to whichever specimen came first and photograph the wrong one.
+@@ -85,9 +99,22 @@ describe('NavbarSection', () => {
+ 					(element) => element.getAttribute('href') !== '#main',
+ 				),
+ 			).toEqual([])
+-			// Each toggler names the content it controls and announces whether that content is open, and
+-			// the collapsed class and the content's show class tell the same story in every bar.
+-			for (const toggler of region.querySelectorAll('.navbar-toggler')) {
++			// A toggler opening an offcanvas panel names the panel it controls and announces no expanded
++			// state, because the offcanvas script writes none: the panel's `show` class is its state,
++			// and the toggler carries no collapsed class while the panel is shown.
++			const opener = requireValue(drawer.querySelector('.navbar-toggler'), 'No offcanvas toggler')
++			expect(
++				region
++					.querySelector(`#${opener.getAttribute('aria-controls') ?? ''}`)
++					?.matches('.offcanvas.show'),
++			).toBe(true)
++			expect(opener.hasAttribute('aria-expanded')).toBe(false)
++			expect(opener.classList.contains('collapsed')).toBe(false)
++			expect([...region.querySelectorAll('.navbar-toggler:not([aria-expanded])')]).toEqual([opener])
++			// Each other toggler names the content it controls and announces whether that content is
++			// open, and the collapsed class and the content's show class tell the same story in every
++			// bar.
++			for (const toggler of region.querySelectorAll('.navbar-toggler[aria-expanded]')) {
+ 				const target = requireValue(
+ 					region.querySelector(`#${toggler.getAttribute('aria-controls') ?? ''}`),
+ 					'No controlled content',
+diff --git a/tests/src/styles/components/navbar.test.ts b/tests/src/styles/components/navbar.test.ts
+index c3c7fad..c1183a5 100644
+--- a/tests/src/styles/components/navbar.test.ts
++++ b/tests/src/styles/components/navbar.test.ts
+@@ -334,7 +334,8 @@ describe('navbar classes', () => {
+ 			inset: 5,
+ 		}
+ 		// The body's inset is normal in the release, so the inline inset wins over it; every panel
+-		// declaration the release marks important wins over the inline hidden state instead.
++		// declaration the release marks important wins over the inline hidden state instead. Below
++		// the boundary the panel's own partial fixes the panel and lays its header out as a row.
+ 		for (const viewport of [991, 992]) {
+ 			const reading = await visitBreakpoint(viewport, () =>
+ 				['ramp', 'always'].map((bar) => {
+@@ -360,14 +361,14 @@ describe('navbar classes', () => {
+ 				viewport >= 992
+ 					? expanded
+ 					: {
+-							position: 'static',
++							position: 'fixed',
+ 							grow: '0',
+ 							visibility: 'hidden',
+ 							transform: 'matrix(1, 0, 0, 1, -200, 0)',
+ 							width: 'inline',
+ 							fill: 'rgb(1, 2, 3)',
+ 							edge: 3,
+-							header: 'block',
++							header: 'flex',
+ 							body: 'block',
+ 							inset: 5,
+ 						},
+diff --git a/src/styles/components/_offcanvas.scss b/src/styles/components/_offcanvas.scss
+new file mode 100644
+index 0000000..1edc80b
+--- /dev/null
++++ b/src/styles/components/_offcanvas.scss
+@@ -0,0 +1,187 @@
++@use 'sass:list';
++@use '../mixins' as *;
++
++// Holds the declarations a fixed panel paints, and the nested rules it carries keyed by the
++// selector each one extends the panel with. A placement class pins the panel to its edge, spans the
++// axis along that edge, draws the inner border, and slides the panel out past that edge. The state
++// classes clear the slide and show the panel. The bare panel and each responsive panel below its
++// boundary emit these same maps, so neither can drift from the other.
++$panel: (
++	position: fixed,
++	bottom: 0,
++	z-index: var(--bs-offcanvas-zindex),
++	display: flex,
++	flex-direction: column,
++	max-width: 100%,
++	color: var(--bs-offcanvas-color),
++	visibility: hidden,
++	background-color: var(--bs-offcanvas-bg),
++	background-clip: padding-box,
++	outline: 0,
++);
++$nested: (
++	'&.offcanvas-start': (
++		top: 0,
++		left: 0,
++		width: var(--bs-offcanvas-width),
++		border-right: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color),
++		transform: translateX(-100%),
++	),
++	'&.offcanvas-end': (
++		top: 0,
++		right: 0,
++		width: var(--bs-offcanvas-width),
++		border-left: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color),
++		transform: translateX(100%),
++	),
++	'&.offcanvas-top': (
++		top: 0,
++		right: 0,
++		left: 0,
++		height: var(--bs-offcanvas-height),
++		max-height: 100%,
++		border-bottom: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color),
++		transform: translateY(-100%),
++	),
++	'&.offcanvas-bottom': (
++		right: 0,
++		left: 0,
++		height: var(--bs-offcanvas-height),
++		max-height: 100%,
++		border-top: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color),
++		transform: translateY(100%),
++	),
++	'&.showing, &.show:not(.hiding)': (
++		transform: none,
++	),
++	'&.showing, &.hiding, &.show': (
++		visibility: visible,
++	),
++);
++
++@layer components {
++	// Every value here is Bootstrap 5.3.8's own. Each panel class declares its stacking variable over
++	// the drawer rung of the stacking ladder, which the fixed panel's `z-index` property reads, and
++	// the backdrop's `z-index` property reads the rung beneath it, so a retuned rung moves each one.
++	// The inset variables read the density scale token that already resolves to the release's `1rem`
++	// inset, and the title's line-height variable reads the body line token. The width, the height,
++	// the backdrop's opacity, and the transition keep the release's literals, because no Veneer token
++	// resolves to them.
++	$panels: '.offcanvas';
++	@each $name, $boundary in breakpoints() {
++		@if $boundary != 0 {
++			$panels: list.append($panels, '.offcanvas-#{$name}', comma);
++		}
++	}
++
++	#{$panels} {
++		--bs-offcanvas-zindex: var(--vn-stack-drawer-base);
++		--bs-offcanvas-width: 400px;
++		--bs-offcanvas-height: 30vh;
++		--bs-offcanvas-padding-x: var(--vn-space-8);
++		--bs-offcanvas-padding-y: var(--vn-space-8);
++		--bs-offcanvas-color: var(--bs-body-color);
++		--bs-offcanvas-bg: var(--bs-body-bg);
++		--bs-offcanvas-border-width: var(--bs-border-width);
++		--bs-offcanvas-border-color: var(--bs-border-color-translucent);
++		--bs-offcanvas-box-shadow: var(--bs-box-shadow-sm);
++		--bs-offcanvas-transition: transform 0.3s ease-in-out;
++		--bs-offcanvas-title-line-height: var(--vn-line-body);
++	}
++
++	// Each responsive panel is fixed below its own boundary and sits in the flow at and above it,
++	// where it drops its fill and its edge, hides its header, and lays its body out as a row. The
++	// panel's and the body's transparent fills carry the release's `!important` flag, and in this
++	// layer that flag also holds the inline panel clear under an important background utility, where
++	// the release's later utility paints it. The height and border-width variables the class
++	// redeclares there are the release's; no rule reads them at that width, because the placement
++	// rules apply below the boundary alone.
++	@each $name, $boundary in breakpoints() {
++		@if $boundary != 0 {
++			.offcanvas-#{$name} {
++				@include breakpoint-down($name) {
++					@each $property, $value in $panel {
++						#{$property}: $value;
++					}
++					@include transition(var(--bs-offcanvas-transition));
++					@each $selector, $declarations in $nested {
++						#{$selector} {
++							@each $property, $value in $declarations {
++								#{$property}: $value;
++							}
++						}
++					}
++				}
++
++				@include breakpoint-up($name) {
++					--bs-offcanvas-height: auto;
++					--bs-offcanvas-border-width: 0;
++					background-color: transparent !important;
++
++					.offcanvas-header {
++						display: none;
++					}
++
++					.offcanvas-body {
++						display: flex;
++						flex-grow: 0;
++						padding: 0;
++						overflow-y: visible;
++						background-color: transparent !important;
++					}
++				}
++			}
++		}
++	}
++
++	// The bare panel is fixed at every width. The `breakpoint-down` mixin emits nothing at the zero
++	// boundary, so the walk cannot write these unconditioned rules, and they are written here from
++	// the same maps.
++	.offcanvas {
++		@each $property, $value in $panel {
++			#{$property}: $value;
++		}
++		@include transition(var(--bs-offcanvas-transition));
++		@each $selector, $declarations in $nested {
++			#{$selector} {
++				@each $property, $value in $declarations {
++					#{$property}: $value;
++				}
++			}
++		}
++	}
++
++	.offcanvas-backdrop {
++		@include overlay-backdrop(var(--vn-stack-drawer-backdrop), var(--vn-palette-black-base), 0.5);
++	}
++
++	.offcanvas-header {
++		display: flex;
++		align-items: center;
++		padding: var(--bs-offcanvas-padding-y) var(--bs-offcanvas-padding-x);
++	}
++
++	// The header fits the close control into its own inset: the control's padding is half the
++	// header's, and a negative margin of that half on the top, the right, and the bottom pulls the
++	// control into the header's padding, while the automatic left margin pushes it to the end of the
++	// row. The combinator selects the control through the header, so a close control elsewhere in
++	// the panel stays as the close partial draws it.
++	.offcanvas-header .btn-close {
++		padding: calc(var(--bs-offcanvas-padding-y) * 0.5) calc(var(--bs-offcanvas-padding-x) * 0.5);
++		margin-top: calc(-0.5 * var(--bs-offcanvas-padding-y));
++		margin-right: calc(-0.5 * var(--bs-offcanvas-padding-x));
++		margin-bottom: calc(-0.5 * var(--bs-offcanvas-padding-y));
++		margin-left: auto;
++	}
++
++	.offcanvas-title {
++		margin-bottom: 0;
++		line-height: var(--bs-offcanvas-title-line-height);
++	}
++
++	.offcanvas-body {
++		flex-grow: 1;
++		padding: var(--bs-offcanvas-padding-y) var(--bs-offcanvas-padding-x);
++		overflow-y: auto;
++	}
++}
+diff --git a/app/browser/sections/OffcanvasSection.ts b/app/browser/sections/OffcanvasSection.ts
+new file mode 100644
+index 0000000..55c78cb
+--- /dev/null
++++ b/app/browser/sections/OffcanvasSection.ts
+@@ -0,0 +1,20 @@
++import { OFFCANVAS_COPY, OFFCANVAS_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared offcanvas specimens into a named region.
++ * @example
++ * ```ts
++ * const section = new OffcanvasSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class OffcanvasSection extends SpecimenSection {
++	/**
++	 * Mounts the Offcanvas region and its specimens.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, OFFCANVAS_COPY, OFFCANVAS_SPECIMENS)
++	}
++}
+diff --git a/tests/src/styles/components/offcanvas.test.ts b/tests/src/styles/components/offcanvas.test.ts
+new file mode 100644
+index 0000000..e28e8e5
+--- /dev/null
++++ b/tests/src/styles/components/offcanvas.test.ts
+@@ -0,0 +1,540 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import {
++	matchesColor,
++	readHit,
++	readPixels,
++	readRootToken,
++	readStyle,
++	readToken,
++	releaseMedia,
++	stageMedia,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import {
++	collectLayer,
++	collectMediaConditions,
++	scene,
++	visitBreakpoint,
++} from '../../../setupBrowser.js'
++import {
++	GRID_BREAKPOINT_CASES,
++	NAVBAR_SELECTORS,
++	normalizeComplexSelector,
++	OFFCANVAS_FRAME,
++	OFFCANVAS_GEOMETRY,
++	OFFCANVAS_MARKUP,
++	OFFCANVAS_PLACEMENTS,
++	OFFCANVAS_SELECTORS,
++	OFFCANVAS_STATE_CASES,
++	REDUCED_MOTION,
++	splitTopLevelList,
++	TEXT_MODES,
++	trimCSSWhitespace,
++} from '../../../setupStyles.js'
++
++afterEach(async () => {
++	await releaseMedia()
++	document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++	scene.clear()
++})
++
++describe('offcanvas classes', () => {
++	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
++	// release: the reading is every components-layer selector naming one of the key's own classes,
++	// the expanded navbar combinators the navbar partial writes included, so a missing rule and an
++	// extra rule on the same classes each report here.
++	it('writes the recorded offcanvas selectors and no other rule on their classes', () => {
++		const written = new Set(
++			collectLayer('components').flatMap((rule) =>
++				rule instanceof CSSStyleRule
++					? splitTopLevelList(rule.selectorText)
++							.map((part) => normalizeComplexSelector(trimCSSWhitespace(part)))
++							.filter((selector) => /\.offcanvas(?:-[\w-]+)?(?![\w-])/u.test(selector))
++					: [],
++			),
++		)
++		const combinators = NAVBAR_SELECTORS.filter((selector) => selector.includes('.offcanvas'))
++		expect(combinators).not.toStrictEqual([])
++		expect([...written].sort()).toEqual(
++			[...OFFCANVAS_SELECTORS, ...combinators]
++				.map((selector) => normalizeComplexSelector(selector))
++				.sort(),
++		)
++	})
++
++	// The mutations this catches are a stacking level written as the release's literal, and the two
++	// rungs swapped: the literal ignores a retuned rung, and a panel under its backdrop hands the hit
++	// at its center to the backdrop.
++	it('stacks the panel on the drawer rung over its backdrop on the rung beneath, and follows a retuned rung', () => {
++		const host = scene.mount(
++			`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-start show">${OFFCANVAS_MARKUP}</div><div class="offcanvas-backdrop fade show"></div></div>`,
++		)
++		const frame = requireValue(host.querySelector<HTMLElement>('[data-frame]'), 'No frame')
++		const panel = requireValue(host.querySelector('.offcanvas'), 'No panel')
++		const backdrop = requireValue(host.querySelector('.offcanvas-backdrop'), 'No backdrop')
++		expect(readRootToken(TOKEN_NAMES.stack.drawer.base)).toBe(OFFCANVAS_GEOMETRY.panel)
++		expect(readRootToken(TOKEN_NAMES.stack.drawer.backdrop)).toBe(OFFCANVAS_GEOMETRY.backdrop)
++		expect(readStyle(panel, 'z-index')).toBe(OFFCANVAS_GEOMETRY.panel)
++		expect(readStyle(backdrop, 'z-index')).toBe(OFFCANVAS_GEOMETRY.backdrop)
++		expect(panel.contains(readHit(panel) ?? null)).toBe(true)
++		frame.style.setProperty(TOKEN_NAMES.stack.drawer.base, '7')
++		frame.style.setProperty(TOKEN_NAMES.stack.drawer.backdrop, '6')
++		expect(readStyle(panel, 'z-index')).toBe('7')
++		expect(readStyle(backdrop, 'z-index')).toBe('6')
++		// The panel reads its level through its own variable, so a consumer rule retuning that
++		// variable on the panel moves the level and leaves the backdrop on its rung.
++		scene.load('[data-frame] .offcanvas { --bs-offcanvas-zindex: 9; }')
++		expect(readStyle(panel, 'z-index')).toBe('9')
++		expect(readStyle(backdrop, 'z-index')).toBe('6')
++	})
++
++	// The mutation this catches is a backdrop written without the `overlay-backdrop` mixin and
++	// without its state rules: a backdrop missing the fade rule paints at full strength before the
++	// engine shows it, and one missing the show rule never reaches the release's opacity. The
++	// `repeats no partial's written declaration block` case in the `tests/setupStyles.test.ts` file
++	// catches a copy of the mixin's block written into the partial instead of the include.
++	it('covers the viewport from the frame corner, transparent with the fade class alone and at the release opacity with the show class', () => {
++		const host = scene.mount(
++			`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-backdrop fade" data-backdrop="fading"></div></div><div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-backdrop fade show" data-backdrop="shown"></div></div>`,
++		)
++		const fading = requireValue(
++			host.querySelector('[data-backdrop="fading"]'),
++			'No fading backdrop',
++		)
++		const shown = requireValue(host.querySelector('[data-backdrop="shown"]'), 'No shown backdrop')
++		expect(readStyle(fading, 'opacity')).toBe('0')
++		expect(readStyle(shown, 'opacity')).toBe(OFFCANVAS_GEOMETRY.opacity)
++		const frame = requireValue(shown.parentElement, 'No frame').getBoundingClientRect()
++		const box = shown.getBoundingClientRect()
++		expect(readStyle(shown, 'position')).toBe('fixed')
++		expect([box.left, box.top]).toEqual([frame.left, frame.top])
++		expect(readPixels(shown, 'width')).toBe(window.innerWidth)
++		expect(readPixels(shown, 'height')).toBe(window.innerHeight)
++		// The fill reads the black palette token, so a scope retuning that token moves it where the
++		// release's literal would stay.
++		expect(
++			matchesColor(
++				readStyle(shown, 'background-color'),
++				readRootToken(TOKEN_NAMES.palette.black.base),
++			),
++		).toBe(true)
++		requireValue(shown.parentElement, 'No frame').style.setProperty(
++			TOKEN_NAMES.palette.black.base,
++			'rgb(9, 8, 7)',
++		)
++		expect(readStyle(shown, 'background-color')).toBe('rgb(9, 8, 7)')
++	})
++})
++
++describe('offcanvas placements', () => {
++	// The mutations this catches are two placements' transforms swapped, an edge offset dropped, and
++	// a border drawn on the wrong side: every placement is read against its own row, and the slide is
++	// read as the translation it resolves to beside the panel's own size.
++	it.each(OFFCANVAS_PLACEMENTS)(
++		'pins the $placement panel to its edge, spans its axis, draws its inner border, and slides out along its axis until shown',
++		({ placement, edges, side, axis, sign }) => {
++			const host = scene.mount(
++				`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-${placement} show">${OFFCANVAS_MARKUP}</div></div><div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-${placement}" data-panel="hidden">${OFFCANVAS_MARKUP}</div></div>`,
++			)
++			const shown = requireValue(
++				host.querySelector<HTMLElement>('.offcanvas.show'),
++				'No shown panel',
++			)
++			const hidden = requireValue(
++				host.querySelector<HTMLElement>('[data-panel="hidden"]'),
++				'No hidden panel',
++			)
++			const frame = requireValue(shown.parentElement, 'No frame').getBoundingClientRect()
++			const box = shown.getBoundingClientRect()
++			expect(readStyle(shown, 'position')).toBe('fixed')
++			for (const edge of edges) expect({ edge, at: box[edge] }).toEqual({ edge, at: frame[edge] })
++			// A side panel takes the recorded width and the frame's whole height, and an edge panel the
++			// frame's whole width and the recorded share of the viewport's height.
++			const [width, height] =
++				axis === 'X'
++					? [OFFCANVAS_GEOMETRY.width, frame.height]
++					: [
++							frame.width,
++							Math.min((window.innerHeight * OFFCANVAS_GEOMETRY.height) / 100, frame.height),
++						]
++			expect(box.width).toBeCloseTo(width, 1)
++			expect(box.height).toBeCloseTo(height, 1)
++			for (const edge of ['top', 'right', 'bottom', 'left'])
++				expect({ edge, width: readPixels(shown, `border-${edge}-width`) }).toEqual({
++					edge,
++					width: edge === side ? 1 : 0,
++				})
++			expect(readStyle(shown, `border-${side}-style`)).toBe('solid')
++			expect(
++				matchesColor(
++					readStyle(shown, `border-${side}-color`),
++					readToken(shown, '--bs-border-color-translucent'),
++				),
++			).toBe(true)
++			expect(readStyle(shown, 'transform')).toBe('none')
++			expect(readStyle(shown, 'visibility')).toBe('visible')
++			// Without the `show` class the panel rests one whole width or height past its edge, hidden.
++			const slide = new DOMMatrix(readStyle(hidden, 'transform'))
++			const length = readPixels(hidden, axis === 'X' ? 'width' : 'height')
++			expect(slide.m41).toBeCloseTo(axis === 'X' ? sign * length : 0, 2)
++			expect(slide.m42).toBeCloseTo(axis === 'Y' ? sign * length : 0, 2)
++			expect(readStyle(hidden, 'visibility')).toBe('hidden')
++		},
++	)
++
++	// The mutation this catches is the `show` rule dropped or its exclusion of the `hiding` class
++	// lost: each state is read on its own panel, as whether it paints and whether it keeps the slide
++	// its placement writes, a whole recorded width toward its edge.
++	it.each(OFFCANVAS_STATE_CASES)(
++		'paints a panel carrying "$classes" when the state shows it and keeps the slide while the state leaves it',
++		({ classes, visible, slid }) => {
++			const host = scene.mount(
++				`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-start ${classes}">${OFFCANVAS_MARKUP}</div></div>`,
++			)
++			const panel = requireValue(host.querySelector('.offcanvas'), 'No panel')
++			expect({
++				visibility: readStyle(panel, 'visibility'),
++				shift: new DOMMatrix(readStyle(panel, 'transform')).m41,
++			}).toEqual({
++				visibility: visible ? 'visible' : 'hidden',
++				shift: slid ? -OFFCANVAS_GEOMETRY.width : 0,
++			})
++		},
++	)
++})
++
++describe('offcanvas ramp', () => {
++	// The mutations this catches are one responsive class's `breakpoint-down` and `breakpoint-up`
++	// names shifted apart, and a boundary written at the wrong width: either leaves a viewport on one
++	// side of the boundary reading the other side's state, or reading neither.
++	it.each(GRID_BREAKPOINT_CASES.filter(({ boundary }) => boundary !== 0))(
++		'fixes the $name panel below its boundary and lays it inline at and above it',
++		async ({ name, boundary, readings }) => {
++			const host = scene.mount(
++				`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-${name} offcanvas-end show" data-panel="shown">${OFFCANVAS_MARKUP}</div></div><div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-${name} offcanvas-start" data-panel="resting">${OFFCANVAS_MARKUP}</div></div>`,
++			)
++			const shown = requireValue(host.querySelector('[data-panel="shown"]'), 'No shown panel')
++			const resting = requireValue(host.querySelector('[data-panel="resting"]'), 'No resting panel')
++			const header = requireValue(shown.querySelector('.offcanvas-header'), 'No header')
++			const body = requireValue(shown.querySelector('.offcanvas-body'), 'No body')
++			for (const viewport of readings) {
++				const reading = await visitBreakpoint(viewport, () => ({
++					viewport: window.innerWidth,
++					position: readStyle(shown, 'position'),
++					// The fill is read as whether it is the body surface and whether it is clear, so
++					// the reading holds whatever notation the browser resolves the surface to.
++					fill: [
++						matchesColor(readStyle(shown, 'background-color'), readToken(shown, '--bs-body-bg')),
++						readStyle(shown, 'background-color') === 'rgba(0, 0, 0, 0)',
++					],
++					edge: readPixels(shown, 'border-left-width'),
++					header: readStyle(header, 'display'),
++					body: [
++						readStyle(body, 'display'),
++						readStyle(body, 'flex-grow'),
++						readPixels(body, 'padding-top'),
++					],
++					resting: [readStyle(resting, 'visibility'), readStyle(resting, 'position')],
++				}))
++				expect(reading).toEqual(
++					viewport >= boundary
++						? {
++								viewport,
++								position: 'static',
++								fill: [false, true],
++								edge: 0,
++								header: 'none',
++								body: ['flex', '0', 0],
++								resting: ['visible', 'static'],
++							}
++						: {
++								viewport,
++								position: 'fixed',
++								fill: [true, false],
++								edge: 1,
++								header: 'flex',
++								body: ['block', '1', OFFCANVAS_GEOMETRY.inset],
++								resting: ['hidden', 'fixed'],
++							},
++				)
++			}
++			const rules = collectLayer('components')
++			expect(collectMediaConditions(rules, `.offcanvas-${name}`)).toEqual([
++				`(width < ${String(boundary)}px)`,
++				`(width < ${String(boundary)}px) and ${REDUCED_MOTION}`,
++				`(width >= ${String(boundary)}px)`,
++			])
++		},
++	)
++
++	// The mutation this catches is the inline panel's clear fill written without the release's
++	// `!important` flag. The flag is an important declaration in the components layer, and for
++	// important declarations an earlier layer wins and a layered declaration wins over an unlayered
++	// one, so a background utility carrying the flag, in the utilities layer or outside every layer,
++	// leaves the inline panel clear and paints the fixed panel below the boundary.
++	it('keeps the inline lg panel clear under an important background utility and lets it paint the fixed panel', async () => {
++		scene.load(
++			'@layer utilities { [data-utility="layered"] { background-color: rgb(1, 2, 3) !important; } } [data-utility="plain"] { background-color: rgb(4, 5, 6) !important; }',
++		)
++		const host = scene.mount(
++			['layered', 'plain']
++				.map(
++					(utility) =>
++						`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-lg offcanvas-end show" data-utility="${utility}">${OFFCANVAS_MARKUP}</div></div>`,
++				)
++				.join(''),
++		)
++		const panels = [...host.querySelectorAll('[data-utility]')]
++		expect(panels).not.toStrictEqual([])
++		for (const viewport of [991, 992])
++			expect(
++				await visitBreakpoint(viewport, () =>
++					panels.map((panel) => [
++						readStyle(panel, 'position'),
++						readStyle(panel, 'background-color'),
++					]),
++				),
++			).toEqual(
++				viewport >= 992
++					? [
++							['static', 'rgba(0, 0, 0, 0)'],
++							['static', 'rgba(0, 0, 0, 0)'],
++						]
++					: [
++							['fixed', 'rgb(1, 2, 3)'],
++							['fixed', 'rgb(4, 5, 6)'],
++						],
++			)
++	})
++
++	// The mutation this catches is the bare panel written under a width condition: it is fixed at
++	// every width, and its only condition is the reduced-motion twin of its transition.
++	it('keeps the bare panel fixed at every width', async () => {
++		const host = scene.mount(
++			`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-end show">${OFFCANVAS_MARKUP}</div></div>`,
++		)
++		const panel = requireValue(host.querySelector('.offcanvas'), 'No panel')
++		// The zero boundary's readings are the narrowest and the widest the ramp reads.
++		const { readings } = requireValue(
++			GRID_BREAKPOINT_CASES.find(({ boundary }) => boundary === 0),
++			'No zero boundary',
++		)
++		for (const viewport of readings)
++			expect(await visitBreakpoint(viewport, () => readStyle(panel, 'position'))).toBe('fixed')
++		expect(collectMediaConditions(collectLayer('components'), '.offcanvas')).toEqual([
++			REDUCED_MOTION,
++		])
++	})
++})
++
++describe('offcanvas content', () => {
++	// The mutation this catches is the combinator written as the `.offcanvas .btn-close` selector: the control in
++	// the body would take the header's margins as well.
++	it('fits the header close control into the header inset while a control outside the header takes none', () => {
++		const host = scene.mount(
++			`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-end show">${OFFCANVAS_MARKUP}</div></div>`,
++		)
++		const header = requireValue(host.querySelector('.offcanvas-header'), 'No header')
++		const control = requireValue(host.querySelector('[data-control="header"]'), 'No header control')
++		const outside = requireValue(host.querySelector('[data-control="body"]'), 'No body control')
++		const half = OFFCANVAS_GEOMETRY.inset / 2
++		expect(readStyle(header, 'display')).toBe('flex')
++		expect(readStyle(header, 'align-items')).toBe('center')
++		for (const side of ['top', 'right', 'bottom', 'left']) {
++			expect(readPixels(header, `padding-${side}`)).toBe(OFFCANVAS_GEOMETRY.inset)
++			expect(readPixels(control, `padding-${side}`)).toBe(half)
++		}
++		expect(readPixels(control, 'margin-top')).toBe(-half)
++		expect(readPixels(control, 'margin-right')).toBe(-half)
++		expect(readPixels(control, 'margin-bottom')).toBe(-half)
++		// The automatic start margin pushes the control to the end of the row, where its negative end
++		// margin pulls it half an inset into the header's padding.
++		expect(readPixels(control, 'margin-left')).toBeGreaterThan(0)
++		expect(control.getBoundingClientRect().right).toBeCloseTo(
++			header.getBoundingClientRect().right - half,
++			3,
++		)
++		for (const side of ['top', 'right', 'bottom', 'left'])
++			expect({ side, margin: readPixels(outside, `margin-${side}`) }).toEqual({ side, margin: 0 })
++		expect(readPixels(outside, 'padding-top')).toBeCloseTo(
++			readPixels(outside, 'font-size') * 0.25,
++			3,
++		)
++	})
++
++	// The mutations this catches are an inset written as the release's literal, which ignores the
++	// density factor the space token rescales with, and the title's margin reset dropped. No Veneer
++	// layer gives a heading a margin, so the case gives every probed heading one in the elements
++	// layer, beneath the components layer the title's reset sits in.
++	it('sets the title line and the body inset, and rescales both insets with the density factor', () => {
++		scene.load('@layer elements { h5[data-probe] { margin-bottom: 7px; } }')
++		const host = scene.mount(
++			`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-end show"><div class="offcanvas-header"><h5 class="offcanvas-title" data-probe>Harbor routes</h5><button type="button" class="btn-close" aria-label="Close" data-control="header"></button></div><div class="offcanvas-body"><p>North pier and south pier.</p></div></div></div><h5 data-heading data-probe>Bare heading</h5>`,
++		)
++		const panel = requireValue(host.querySelector<HTMLElement>('.offcanvas'), 'No panel')
++		const title = requireValue(host.querySelector('.offcanvas-title'), 'No title')
++		const bare = requireValue(host.querySelector('[data-heading]'), 'No bare heading')
++		const header = requireValue(host.querySelector('.offcanvas-header'), 'No header')
++		const body = requireValue(host.querySelector('.offcanvas-body'), 'No body')
++		const control = requireValue(host.querySelector('[data-control="header"]'), 'No header control')
++		// The bare heading is the control: it keeps the margin the probe gives it.
++		expect(readPixels(bare, 'margin-bottom')).toBeGreaterThan(0)
++		expect(readPixels(title, 'margin-bottom')).toBe(0)
++		expect(readPixels(title, 'line-height')).toBeCloseTo(readPixels(title, 'font-size') * 1.5, 3)
++		panel.style.setProperty('--bs-offcanvas-title-line-height', '2')
++		expect(readPixels(title, 'line-height')).toBeCloseTo(readPixels(title, 'font-size') * 2, 3)
++		expect(readStyle(body, 'flex-grow')).toBe('1')
++		expect(readStyle(body, 'overflow-y')).toBe('auto')
++		expect(readPixels(body, 'padding-left')).toBe(OFFCANVAS_GEOMETRY.inset)
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '2')
++		expect(readPixels(header, 'padding-top')).toBe(OFFCANVAS_GEOMETRY.inset * 2)
++		expect(readPixels(body, 'padding-left')).toBe(OFFCANVAS_GEOMETRY.inset * 2)
++		expect(readPixels(control, 'padding-top')).toBe(OFFCANVAS_GEOMETRY.inset)
++	})
++
++	// The mutation this catches is a literal colour: the panel paints its text, fill, and edge from
++	// the body aliases the mode scope declares, so a retune of those aliases on the island moves them.
++	describe.each(TEXT_MODES)('in %s', (mode) => {
++		it('paints the panel from the body aliases and follows their retune', () => {
++			const host = scene.mount(
++				`<div data-bs-theme="${mode}" data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-start show">${OFFCANVAS_MARKUP}</div></div>`,
++			)
++			const island = requireValue(host.querySelector<HTMLElement>('[data-bs-theme]'), 'No island')
++			const panel = requireValue(host.querySelector('.offcanvas'), 'No panel')
++			expect(matchesColor(readStyle(panel, 'color'), readToken(island, '--bs-body-color'))).toBe(
++				true,
++			)
++			expect(
++				matchesColor(readStyle(panel, 'background-color'), readToken(island, '--bs-body-bg')),
++			).toBe(true)
++			expect(
++				matchesColor(
++					readStyle(panel, 'border-right-color'),
++					readToken(island, '--bs-border-color-translucent'),
++				),
++			).toBe(true)
++			// Each mode paints its own surface, so a panel that read one mode's value in both would
++			// redden one of these.
++			const other = scene.mount(`<div data-bs-theme="${mode === 'dark' ? 'light' : 'dark'}"></div>`)
++			const opposite = requireValue(other.querySelector('[data-bs-theme]'), 'No opposite island')
++			expect(
++				matchesColor(readToken(island, '--bs-body-bg'), readToken(opposite, '--bs-body-bg')),
++			).toBe(false)
++			island.style.setProperty('--bs-body-color', 'rgb(11, 22, 33)')
++			island.style.setProperty('--bs-body-bg', 'rgb(44, 55, 66)')
++			island.style.setProperty('--bs-border-color-translucent', 'rgb(77, 88, 99)')
++			expect(readStyle(panel, 'color')).toBe('rgb(11, 22, 33)')
++			expect(readStyle(panel, 'background-color')).toBe('rgb(44, 55, 66)')
++			expect(readStyle(panel, 'border-right-color')).toBe('rgb(77, 88, 99)')
++		})
++	})
++})
++
++describe('offcanvas motion', () => {
++	// The mutation this catches is the panel's transition written without the `transition` mixin:
++	// the bare declaration keeps its duration under the reduced-motion preference, and the mixin
++	// collapses it, on the bare panel and on a responsive panel below its boundary alike.
++	it('slides with the recorded transform transition and collapses it under the reduced-motion preference', async () => {
++		const host = scene.mount(
++			`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-start">${OFFCANVAS_MARKUP}</div></div><div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-xxl offcanvas-start">${OFFCANVAS_MARKUP}</div></div>`,
++		)
++		const panels = [
++			requireValue(host.querySelector('.offcanvas'), 'No bare panel'),
++			requireValue(host.querySelector('.offcanvas-xxl'), 'No responsive panel'),
++		]
++		const readings: Array<ReadonlyArray<readonly string[]>> = []
++		for (const motion of [true, false]) {
++			await stageMedia({ motion })
++			readings.push(
++				await visitBreakpoint(1399, () =>
++					panels.map((panel) => [
++						readStyle(panel, 'transition-property'),
++						readStyle(panel, 'transition-duration'),
++						readStyle(panel, 'transition-timing-function'),
++					]),
++				),
++			)
++		}
++		expect(readings).toEqual([
++			[
++				['transform', '0.3s', 'ease-in-out'],
++				['transform', '0.3s', 'ease-in-out'],
++			],
++			[
++				['none', '0s', 'ease'],
++				['none', '0s', 'ease'],
++			],
++		])
++	})
++})
++
++describe('offcanvas in an expanded navbar', () => {
++	// The mutation this catches is one of the navbar partial's width, border, or transform flags
++	// dropped: the panel's own placement and state rules load after the navbar's at the same
++	// specificity, so a flag the expanded bar writes without the release's `!important` marker loses
++	// to them. Each panel sits in a block slot wider than the recorded width, so a panel that keeps that
++	// width is told apart from one the bar sizes automatically, and the resting panel carries the
++	// slide the bar clears. The visibility and fill flags outrank no shipped rule here, so the
++	// navbar proof reads them over an inline hidden state, and the priority case in the
++	// `tests/conformance.test.ts` file compares the flags each sheet writes.
++	it.each(GRID_BREAKPOINT_CASES)(
++		'lays a shown and a resting panel into the $name expanded bar and leaves them fixed below the boundary',
++		async ({ name, boundary, readings }) => {
++			const expand = boundary === 0 ? 'navbar-expand' : `navbar-expand-${name}`
++			const slot = OFFCANVAS_GEOMETRY.width + 200
++			const host = scene.mount(
++				`<div data-frame style="${OFFCANVAS_FRAME}"><nav class="navbar ${expand}"><div style="width: ${String(slot)}px"><div class="offcanvas offcanvas-end show" data-panel="shown">${OFFCANVAS_MARKUP}</div><div class="offcanvas offcanvas-start" data-panel="resting">${OFFCANVAS_MARKUP}</div></div></nav></div>`,
++			)
++			const shown = requireValue(host.querySelector('[data-panel="shown"]'), 'No shown panel')
++			const resting = requireValue(host.querySelector('[data-panel="resting"]'), 'No resting panel')
++			const header = requireValue(shown.querySelector('.offcanvas-header'), 'No header')
++			const body = requireValue(shown.querySelector('.offcanvas-body'), 'No body')
++			for (const viewport of readings) {
++				const reading = await visitBreakpoint(viewport, () => ({
++					viewport: window.innerWidth,
++					position: readStyle(shown, 'position'),
++					grow: readStyle(shown, 'flex-grow'),
++					width: readPixels(shown, 'width'),
++					fill: readStyle(shown, 'background-color') === 'rgba(0, 0, 0, 0)',
++					edge: readPixels(shown, 'border-left-width'),
++					transition: readStyle(shown, 'transition-property'),
++					header: readStyle(header, 'display'),
++					body: [readStyle(body, 'display'), readPixels(body, 'padding-top')],
++					resting: [
++						readStyle(resting, 'visibility'),
++						new DOMMatrix(readStyle(resting, 'transform')).m41,
++						readPixels(resting, 'border-right-width'),
++					],
++				}))
++				expect(reading).toEqual(
++					viewport >= boundary
++						? {
++								viewport,
++								position: 'static',
++								grow: '1',
++								width: slot,
++								fill: true,
++								edge: 0,
++								transition: 'none',
++								header: 'none',
++								body: ['flex', 0],
++								resting: ['visible', 0, 0],
++							}
++						: {
++								viewport,
++								position: 'fixed',
++								grow: '0',
++								width: OFFCANVAS_GEOMETRY.width,
++								fill: false,
++								edge: 1,
++								transition: 'transform',
++								header: 'flex',
++								body: ['block', OFFCANVAS_GEOMETRY.inset],
++								resting: ['hidden', -OFFCANVAS_GEOMETRY.width, 1],
++							},
++				)
++			}
++		},
++	)
++})
+diff --git a/tests/app/browser/sections/OffcanvasSection.test.ts b/tests/app/browser/sections/OffcanvasSection.test.ts
+new file mode 100644
+index 0000000..71d33ac
+--- /dev/null
++++ b/tests/app/browser/sections/OffcanvasSection.test.ts
+@@ -0,0 +1,178 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	OFFCANVAS_COPY,
++	OFFCANVAS_SPECIMENS,
++	OffcanvasSection,
++	SpecimenSection,
++} from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount, readHit, readName, readRole, readStyle } from '@orkestrel/test/browser'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { readSpecimen } from '../../../setupBrowser.js'
++
++// Each specimen claims a state the published cascade renders from a class, and each frame is the
++// shell's own, so both cascades have to be in the document before a reading of either means anything.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++describe('OffcanvasSection', () => {
++	it('renders a shown panel at each edge and a shown responsive panel at each breakpoint through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new OffcanvasSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Offcanvas region')
++			expect(region.getAttribute('aria-label')).toBe('Offcanvas')
++			expect(region.querySelector('p')?.textContent).toBe(OFFCANVAS_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Start offcanvas',
++				'End offcanvas',
++				'Top offcanvas',
++				'Bottom offcanvas',
++				'Responsive offcanvas sm',
++				'Responsive offcanvas md',
++				'Responsive offcanvas lg',
++				'Responsive offcanvas xl',
++				'Responsive offcanvas xxl',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				OFFCANVAS_SPECIMENS.map(({ markup }) => markup),
++			)
++			expect(region.querySelector('[style]')).toBeNull()
++			expect(Object.isFrozen(OFFCANVAS_COPY)).toBe(true)
++			expect(Object.isFrozen(OFFCANVAS_SPECIMENS)).toBe(true)
++			expect(OFFCANVAS_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	// The mutations this catches are a panel rendered outside the shell's frame, a panel missing the
++	// `show` class, and a panel carrying a placement or a breakpoint class other than its name's: a
++	// fixed panel outside the frame is placed against the page, and a panel without the `show` class
++	// rests hidden past its edge.
++	it('renders each panel shown inside its own frame, with the placement or breakpoint its name states', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new OffcanvasSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Offcanvas region')
++			// An empty specimen table would pass every reading this walk takes, so the walk first
++			// requires a specimen to read.
++			expect(OFFCANVAS_SPECIMENS).not.toStrictEqual([])
++			for (const { name } of OFFCANVAS_SPECIMENS) {
++				const specimen = readSpecimen(region, name)
++				const frame = requireValue(
++					specimen.querySelector(':scope > .viewport'),
++					`No frame in ${name}`,
++				)
++				const panels = [...frame.querySelectorAll('[role="dialog"]')]
++				expect({ name, panels: panels.length }).toEqual({ name, panels: 1 })
++				const panel = requireValue(panels[0], `No panel in ${name}`)
++				expect(panel.parentElement).toBe(frame)
++				expect(panel.classList.contains('show')).toBe(true)
++				const [modifier, , step] = name.toLowerCase().split(' ')
++				expect(
++					panel.matches(
++						step === undefined
++							? `.offcanvas.offcanvas-${modifier ?? ''}`
++							: `.offcanvas-${step}.offcanvas-end`,
++					),
++				).toBe(true)
++				// The frame is the containing block of the fixed panel, so a shown panel lies inside the
++				// frame's box wherever the frame renders, and it paints rather than resting hidden.
++				const box = panel.getBoundingClientRect()
++				const bounds = frame.getBoundingClientRect()
++				expect(box.left).toBeGreaterThanOrEqual(bounds.left - 0.5)
++				expect(box.right).toBeLessThanOrEqual(bounds.right + 0.5)
++				expect(box.top).toBeGreaterThanOrEqual(bounds.top - 0.5)
++				expect(box.bottom).toBeLessThanOrEqual(bounds.bottom + 0.5)
++				expect(readStyle(panel, 'visibility')).toBe('visible')
++				expect(readStyle(panel, 'transform')).toBe('none')
++			}
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	// The mutations this catches are a backdrop moved outside the start panel's frame, a backdrop
++	// added to another specimen, and a backdrop stacked over its panel: the hit at the panel's center
++	// reaches the panel only while the panel sits above the backdrop.
++	it('renders one backdrop, beside the start panel inside its frame and beneath it', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new OffcanvasSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Offcanvas region')
++			const backdrops = [...region.querySelectorAll('.offcanvas-backdrop')]
++			expect(backdrops).toHaveLength(1)
++			const backdrop = requireValue(backdrops[0], 'No backdrop')
++			const specimen = readSpecimen(region, 'Start offcanvas')
++			const panel = requireValue(specimen.querySelector('.offcanvas'), 'No start panel')
++			expect(backdrop.parentElement).toBe(panel.parentElement)
++			expect(backdrop.previousElementSibling).toBe(panel)
++			expect(backdrop.classList.contains('fade')).toBe(true)
++			expect(backdrop.classList.contains('show')).toBe(true)
++			expect(panel.contains(readHit(panel) ?? null)).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	// The mutations this catches are a panel announced as modal, a panel without a name, and a close
++	// control without a label: a static specimen holds no focus and locks no scrolling, so it claims
++	// no modal state, and its close control carries a mark rather than a label.
++	it('announces each panel as a dialog named by its title with no modal state, and names each close control', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new OffcanvasSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Offcanvas region')
++			const panels = [...region.querySelectorAll('.viewport > [role="dialog"]')]
++			expect(panels).not.toStrictEqual([])
++			expect(panels).toHaveLength(OFFCANVAS_SPECIMENS.length)
++			expect(region.querySelector('[aria-modal]')).toBeNull()
++			const names = panels.map((panel) => readName(panel))
++			expect(new Set(names).size).toBe(names.length)
++			for (const panel of panels) {
++				const title = requireValue(panel.querySelector('.offcanvas-title'), 'No title')
++				expect(readRole(panel)).toBe('dialog')
++				expect(panel.getAttribute('tabindex')).toBe('-1')
++				expect(panel.getAttribute('aria-labelledby')).toBe(title.id)
++				expect(readName(panel)).toBe(title.textContent)
++				const control = requireValue(
++					panel.querySelector('.offcanvas-header > .btn-close'),
++					'No close control',
++				)
++				expect(control.getAttribute('type')).toBe('button')
++				expect(control.getAttribute('aria-label')).toBe('Close')
++				expect(readName(control)).toBe('Close')
++			}
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases the region and preserves adjacent content on repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new OffcanvasSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Offcanvas region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
