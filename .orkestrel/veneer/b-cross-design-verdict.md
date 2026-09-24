@@ -37,3 +37,16 @@ Shared, report-only for every unit: `src/styles/index.scss`; `tests/setup.ts`, `
 ## Exit criterion
 
 The family ends when each holds on evidence: `theme` and `transition` are in `listed` with shipped selector rows, the presence, ledger, deferral, priority, and duplication gates green, and no `Deferred` row names either; `#### theme` and `#### transition` record every measured departure, the theme additions and the reboot Reason read true, and the before-and-after plant shows the dark component rules entered the ledger; the presence gate reads keyframes, an unattributed keyframe is refused, each with its red plant; every condition form in the inventory's `media` list normalizes to the form the mixins write (CONDITIONS's proof) and `d` ships with its print pass; the `.fade` proof reddens on each named mutation and the motion factor moves it; the breakpoint group closes per X8; the RTL digest is gone with its pin; the media and keyframes tables and their parity cases are green; `### Color modes` and `### Fade classes` exist and every rewritten sentence reads true; the Color modes and Fade frames are written and ruled in one capture verdict round; the `verifier` chain and `test:service` are green.
+
+## Re-baseline (2026-09-24)
+
+- Added: BARE-BUTTON (`cb`), `opus` on Opus 5.5, wave 1: the elements layer's bare `button` rules
+  (`font-size`, `opacity` on `:disabled`, and the other bare-control additions) reach every
+  component's button form, so a disabled `button.nav-link` and a `button.dropdown-item` paint paler
+  and smaller than their anchor forms (`b-collapse-verify-verdict.md` V9). The design lanes rule the
+  scope; the recommendation is to scope the additions to a button no component class claims, since
+  the elements file names its subject the bare button.
+- THEME (`ct`) takes V10 (the dark secondary role's legibility), V11 (the dark pressed primary), and
+  V12 (the link hover direction in dark and its invisible step in light) from the same verdict as
+  inputs beside its own scope.
+
