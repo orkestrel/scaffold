@@ -1,0 +1,238 @@
+=== start 00:44:51 npm 11.19.1 node v22.22.2
+
+added 121 packages, and audited 122 packages in 7s
+
+29 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+=== npm ci exit=0 00:44:58
+
+> @orkestrel/contract@0.0.18 prepublishOnly
+> npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+
+
+> @orkestrel/contract@0.0.18 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 3895ms on 70 files using 4 threads.
+
+> @orkestrel/contract@0.0.18 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+
+> @orkestrel/contract@0.0.18 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/contract@0.0.18 check:src
+> npm run check:src:core
+
+
+> @orkestrel/contract@0.0.18 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/contract@0.0.18 build
+> npm run clean && npm run build:src
+
+
+> @orkestrel/contract@0.0.18 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/contract@0.0.18 build:src
+> npm run build:src:core
+
+
+> @orkestrel/contract@0.0.18 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 22 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  398.42 kB │ gzip: 91.39 kB │ map: 759.00 kB
+
+transforming...
+✓ 22 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  403.90 kB │ gzip: 92.14 kB │ map: 759.00 kB
+
+✓ built in 1.33s
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/contract@0.0.18 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+> @orkestrel/contract@0.0.18 test
+> npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+
+
+> @orkestrel/contract@0.0.18 test:src
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+
+ RUN  v4.1.11 /home/user/contract
+
+··················································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································
+
+ Test Files  19 passed (19)
+      Tests  1362 passed (1362)
+   Start at  00:45:23
+   Duration  10.68s (transform 3.99s, setup 4.33s, import 2.71s, tests 18.84s, environment 2ms)
+
+
+> @orkestrel/contract@0.0.18 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/contract
+
+····························································································-·········
+
+ Test Files  1 passed (1)
+      Tests  101 passed | 1 skipped (102)
+   Start at  00:45:34
+   Duration  2.22s (transform 516ms, setup 524ms, import 278ms, tests 1.25s, environment 0ms)
+
+
+> @orkestrel/contract@0.0.18 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/contract
+
+·········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+··-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  00:45:37
+   Duration  4.76s (transform 675ms, setup 528ms, import 507ms, tests 3.57s, environment 0ms)
+
+
+> @orkestrel/contract@0.0.18 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/contract
+
+······························································
+
+ Test Files  2 passed (2)
+      Tests  62 passed (62)
+   Start at  00:45:43
+   Duration  2.12s (transform 1.83s, setup 2.33s, import 85ms, tests 889ms, environment 0ms)
+
+
+> @orkestrel/contract@0.0.18 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/contract[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m48 passed[39m[22m[90m (48)[39m
+[2m   Start at [22m 00:45:46
+[2m   Duration [22m 2.29s[2m (transform 843ms, setup 911ms, import 1.16s, tests 30ms, environment 0ms)[22m
+
+
+> @orkestrel/contract@0.0.18 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+
+ RUN  v4.1.11 /home/user/contract
+
+·········
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  00:45:49
+   Duration  19.17s (transform 936ms, setup 1.04s, import 1.73s, tests 16.25s, environment 0ms)
+
+=== prepublishOnly exit=0 00:46:08
+
+> @orkestrel/contract@0.0.18 prepack
+> npm run build
+
+
+> @orkestrel/contract@0.0.18 build
+> npm run clean && npm run build:src
+
+
+> @orkestrel/contract@0.0.18 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/contract@0.0.18 build:src
+> npm run build:src:core
+
+
+> @orkestrel/contract@0.0.18 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 22 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  398.42 kB │ gzip: 91.39 kB │ map: 759.00 kB
+
+transforming...
+✓ 22 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  403.90 kB │ gzip: 92.14 kB │ map: 759.00 kB
+
+✓ built in 1.19s
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/contract@0.0.18 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+npm notice
+npm notice package: @orkestrel/contract@0.0.18
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.3kB README.md
+npm notice 403.9kB dist/src/core/index.cjs
+npm notice 759.0kB dist/src/core/index.cjs.map
+npm notice 287.3kB dist/src/core/index.d.cts
+npm notice 287.3kB dist/src/core/index.d.ts
+npm notice 398.4kB dist/src/core/index.js
+npm notice 759.0kB dist/src/core/index.js.map
+npm notice 3.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/contract
+npm notice version: 0.0.18
+npm notice filename: orkestrel-contract-0.0.18.tgz
+npm notice package size: 676.4 kB
+npm notice unpacked size: 2.9 MB
+npm notice shasum: a1ece65b606e4d3d055c3f7d9b676629c1a3ab8c
+npm notice integrity: sha512-MdJR+lhcJB5uo[...]UPRvFWId104HA==
+npm notice total files: 9
+npm notice
+orkestrel-contract-0.0.18.tgz
+=== pack exit=0 00:46:20
+a1ece65b606e4d3d055c3f7d9b676629c1a3ab8c  /home/user/scaffold/tmp/contract/orkestrel-contract-0.0.18.tgz
+=== status read; done 00:46:20
