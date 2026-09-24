@@ -30,7 +30,7 @@ Owned files in the worktree:
   move, and its comment.
 
 Shared files, returned as the patch at the end of this report and in
-`/home/user/veneer-oc/.orkestrel/veneer/units/oc-shared.patch`:
+`/home/user/scaffold/.orkestrel/veneer/units/oc-shared.patch`:
 
 - `src/styles/index.scss`: `@use 'components/offcanvas'` after `components/spinner`.
 - `src/styles/_mixins.scss`: the `overlay-backdrop` block appended verbatim after the
@@ -91,8 +91,8 @@ Shared patch (`git apply --stat` on the fresh extract):
  tests/setupStyles.ts                  | 141 +++++++-
 ```
 
-`git status --porcelain` at hand-back is in `/home/user/veneer-oc/.orkestrel/veneer/units/oc-status.txt`, and the
-review diff with the new files rendered is in `/home/user/veneer-oc/.orkestrel/veneer/units/oc.diff`.
+`git status --porcelain` at hand-back is in `/home/user/scaffold/.orkestrel/veneer/units/oc-status.txt`, and the
+review diff with the new files rendered is in `/home/user/scaffold/.orkestrel/veneer/units/oc.diff`.
 
 ## Ledger rows the gate measured
 
@@ -132,7 +132,7 @@ the `showing`, `hiding`, and fade-alone frames and of the `.offcanvas-xxl` inlin
 ## R19 proof matrix
 
 Cases are in `tests/src/styles/components/offcanvas.test.ts` unless named. Each named mutation is a
-logged run in `/home/user/veneer-oc/.orkestrel/veneer/units/oc-instruments/oc-mutations.log.txt`. `{infix}` spans `sm`, `md`,
+logged run in `/home/user/scaffold/.orkestrel/veneer/units/oc-instruments/oc-mutations.log.txt`. `{infix}` spans `sm`, `md`,
 `lg`, `xl`, and `xxl`, and `{X}` is that infix's boundary.
 
 | Recorded selector | Condition | Case | Distinguishing mutation | Specimen | Scenario |
@@ -162,13 +162,13 @@ reading over the shipped cascade separates a dropped flag there: the navbar proo
 inline hidden state, and the priority gate holds each flag against the release.
 
 Every recorded site is present in the built cascade and no rule naming an offcanvas class sits
-outside the record: `/home/user/veneer-oc/.orkestrel/veneer/units/oc-instruments/oc-cascade.log.txt` lists every built
+outside the record: `/home/user/scaffold/.orkestrel/veneer/units/oc-instruments/oc-cascade.log.txt` lists every built
 selector and condition naming those classes with its declarations, and reports no missing and no
 extra site (instrument `oc-cascade-probe.cjs.txt`). The ledger gate compares their declarations.
 
 ## Failing-first and mutation record
 
-Every run is in `/home/user/veneer-oc/.orkestrel/veneer/units/oc-instruments/oc-mutations.log.txt` with its mutated site,
+Every run is in `/home/user/scaffold/.orkestrel/veneer/units/oc-instruments/oc-mutations.log.txt` with its mutated site,
 command, build exit, test exit, summary, and failing case names. The instrument is
 `oc-mutate.py.txt`. Each run mutates the validation copy, runs `npm run build:src:styles`, runs the
 command, and restores the copy.
@@ -211,7 +211,7 @@ command, and restores the copy.
 
 The validation copy is `tmp/probe/base`: `git archive 2a3f223`, `node_modules` hard-linked, the
 owned files copied over it, and the shared patch applied. Every line is in
-`/home/user/veneer-oc/.orkestrel/veneer/units/oc-instruments/oc-gates.log.txt`.
+`/home/user/scaffold/.orkestrel/veneer/units/oc-instruments/oc-gates.log.txt`.
 
 | Command | Result | Exit |
 | --- | --- | --- |

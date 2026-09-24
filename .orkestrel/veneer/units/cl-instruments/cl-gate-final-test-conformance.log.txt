@@ -1,0 +1,14 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-cl/tmp/probe/cl-scratch
+
+························
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  05:09:52
+   Duration  20.40s (transform 516ms, setup 116ms, import 11.03s, tests 9.07s, environment 0ms)
+

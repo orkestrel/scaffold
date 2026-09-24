@@ -1,0 +1,27 @@
+# Verdict
+
+## Claim 1 — Scope
+
+**CONFIRMED.** `cf-status.txt` lists exactly the four owned paths and nothing else (`/home/user/scaffold/.orkestrel/veneer/units/cf-status.txt:1-4`, matching the brief's owned set at `b-cross-cf-brief.md:70-71`). `cf-shared.patch` touches only `Showcase.ts`, `constants.ts`, `index.ts`, `guides/veneer.md`, `src/styles/index.scss`, `tests/app/browser/Showcase.test.ts`, `tests/app/browser/index.test.ts`, `tests/app/browser/integration.test.ts`, `tests/conformance.test.ts`, `tests/setup.ts`, `tests/setupStyles.test.ts`, `tests/setupStyles.ts` (`cf-shared.patch:1-556`), each a member of the brief's Shared list (`b-cross-cf-brief.md:73-80`); none is off-limits. `cf-instruments/cf-offlimits.patch` adds one line, `'transition',`, inside `tests/setupServer.test.ts`'s dash-filter set (`cf-offlimits.patch:1-10`), matching the report's description of the "skips engine and CSS obligations whose Proof cell is a dash" case (`b-cross-cf-report.md:12-13`). Mutation that would break this: any file outside the owned/shared sets appearing in either patch, or a second changed line in `cf-offlimits.patch` — neither is present.
+
+## Claim 6 — Guide
+
+**CONFIRMED.** Re-running the report's own search (`grep -n -i "fade" guides/veneer.md`) against the pre-edit guide at `/home/user/veneer-cf/guides/veneer.md` (worktree files are unedited for shared/report-only content) surfaces exactly the five "no rule reads fade" sites the report rewrote — Alert (line 2605-2606), Toast (2751), Tooltip (2951), Popover (3019), Elements decision (6396-6397) — and every other `fade` hit (2860-2861, 2873, 2903, 2907, 3045, 3075-3132, 3190-3257, 6394, 6756, 6772, etc.) is a specimen or compound statement the report correctly leaves untouched (`b-cross-cf-report.md:276-286`). The rewritten sentences check out against the shipped rule (`cf.diff:24-30`, `.fade:not(.show){opacity:0}`) and against `FADE_COMPONENT_CASES` (`cf-shared.patch:543-556`): the toast rewrite's opacity-from-elsewhere claim is corroborated by the toast partial's own `.toast.showing` rule (`/home/user/veneer-cf/src/styles/components/_toast.scss:40`), not by `.fade` alone. § Files (`cf-shared.patch:79`), § Compatibility (`cf-shared.patch:232`), `#### transition` (`cf-shared.patch:205-209`), § Showcase (`cf-shared.patch:240-244`), and § Tests (`cf-shared.patch:253,261`) rows are present and consistent with the emitted cascade (`b-cross-cf-report.md:34-39`). Mutation that would break this: a sixth "no rule reads" sentence left unrewritten, or a rewritten sentence asserting a value the cascade does not produce — neither found in the guide diff or the emitted CSS.
+
+## Claim 7 — Law and report
+
+**CONFIRMED.** `cf.diff` and `cf-shared.patch` carry no `any`, no `as` assertion (the one `as` hit is SCSS's `@use '../mixins' as *`, not a TypeScript assertion), no non-null `!`, no `@ts-*`/`eslint-disable` suppression, and no `function` keyword introducing a nested declaration (both `function` hits are the string `"transition-timing-function"`) (searches over `cf.diff` and `cf-shared.patch`). `FADE_SELECTORS` and `FADE_COMPONENT_CASES` are documented with TSDoc, frozen at declaration (`Object.freeze`, `cf-shared.patch:531,543-556`), and bound by frozen-assertions inside their own `fade case tables` describe block (`cf-shared.patch:505-509`), following this file's per-feature freeze-test convention (e.g. `freezes every passive case table…`, `/home/user/veneer-cf/tests/setupStyles.test.ts:3397`). The report's quoted result lines match their logs verbatim: `Tests 1 failed | 286 passed (287)` (`cf-gate-9.log.txt:64`) and `Tests 287 passed (287)` (`cf-setup-offlimits.log.txt:32`) both match `b-cross-cf-report.md:16,188`. The report itself contains no banned substitution term and no unexplained temporal word (swept). Every sampled backticked token is followed by its noun (`.fade` rule, `_fade.scss` partial, `Fade` region, `### Fade classes` section, `#### transition` ledger table). Mutation that would break this: a quoted result line altered from its log, or a suppression/assertion syntax present anywhere in the diffs — none found.
+
+**Counts the report states, listed:** 374 insertions; 251 insertions and 28 deletions; +106 with 19 deletions; +52; +36; +31; +21 with 9 deletions; +21; +1 to +3; 8 failed (8); 8 passed (8); 22 passed (22); 19 passed (19); 1 failed | 286 passed (287); 109 passed | 1 skipped (110); 1288 passed (1288); 2 failed | 1 passed (3); 1 failed | 2 passed (3); 3 failed | 139 passed (142); 3 failed | 19 passed (22); 1 failed | 21 passed (22); 5 failed | 3 passed (8); 2 failed | 6 passed (8); 1 failed | 7 passed (8); 1 failed | 3 passed (4).
+
+## Findings outside the claims
+
+None substantiated.
+
+## Attacked and held
+
+- Claim 1: attacked by checking every file named in both patches against the brief's owned/shared/off-limits lists; held.
+- Claim 6: attacked by independently re-running the report's search over the unedited guide and checking every hit's disposition (rewritten vs. correctly unchanged); held.
+- Claim 7: attacked by pattern-searching both diffs for every forbidden syntax form and every banned-term row, and by comparing quoted gate lines against their retained logs; held.
+
+VERDICT: PASS

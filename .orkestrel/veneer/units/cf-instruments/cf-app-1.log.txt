@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/user/veneer-cf/tmp/probe/cf-copy
+
+4:47:12 AM [vite] (client) Re-optimizing dependencies because vite config has changed
+4:47:13 AM [vite] (client) [optimizer] bundling dependencies...
+········
+
+ Test Files  3 passed (3)
+      Tests  8 passed (8)
+   Start at  04:47:12
+   Duration  13.57s (transform 0ms, setup 378ms, import 533ms, tests 2.77s, environment 0ms)
+

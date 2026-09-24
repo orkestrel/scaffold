@@ -1,0 +1,226 @@
+=== M1 presence scan reads no keyframes
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): '\t\t\tif (!keyframes.includes(name))\n\t\t\t\treturn `Shipped component ${row.component} is missing keyframes ${name}`'
+site (after): "\t\t\tif (!keyframes.includes(name) && name === '')\n\t\t\t\treturn `Shipped component ${row.component} is missing keyframes ${name}`"
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  1 failed | 294 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > refuses a shipped component whose recorded animation the cascade does not define, which the ledger does not read
+
+=== M2 collectAdditions passes over an unattributed keyframe
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): '\t\tif (component === undefined)\n\t\t\tthrow new Error(`Keyframes ${name} answers to no shipped component`)'
+site (after): '\t\tif (component === undefined) continue'
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  1 failed | 294 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > refuses an animation the inventory records under no key and no shipped key name opens
+
+=== M3 digests written into an ordinary object
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): '\tObject.setPrototypeOf(digests, null)\n'
+site (after): ''
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  1 failed | 294 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > keeps a digest and a component the inventory records under the __proto__ key
+
+=== M4 priorities keyed without the condition
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): '\t\t\tconst key = condition === undefined ? name : `${name} ${condition}`'
+site (after): '\t\t\tconst key = name'
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  1 failed | 294 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > keys each declaration's priority by its selector, property, and condition, so a priority swapped between conditions differs
+
+=== M5 SheetReader reads no condition
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): '\t\t\t\tcondition: this.#condition(declaration),'
+site (after): "\t\t\t\tcondition: this.#condition(declaration) === '' ? '' : undefined,"
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  3 failed | 292 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > SheetReader > reads a declaration a conditional block wraps inside a rule under that rule selector
+failing: FAIL  |setup| tests/setupServer.test.ts > SheetReader > reads each declaration with the conditional at-rules around it and no layer among them
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > keys each declaration's priority by its selector, property, and condition, so a priority swapped between conditions differs
+
+=== M6 feature spacing left as the sheet writes it
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): "\treturn range === null ? plain : `(${range[1] ?? ''} ${range[2] ?? ''} ${range[3] ?? ''})`"
+site (after): '\treturn plain'
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  3 failed | 292 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > collects each feature a list of conditions writes, once, in the range notation
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > keys each declaration's priority by its selector, property, and condition, so a priority swapped between conditions differs
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > reads a minified condition and a condition under several at-rules in the range notation
+
+=== M7 template subtraction ignored
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): '`${String(Math.round((width - Number(offset ?? 0)) * 10_000) / 10_000)}px`'
+site (after): '`${String(Math.round((width - Number(offset ?? 0) * 0) * 10_000) / 10_000)}px`'
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  1 failed | 294 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > expands each templated condition over the nonzero boundaries of a ramp
+
+=== M8 inventory reader returns no media
+root: /home/user/veneer-cl
+file: tests/setupServer.ts
+site (before): '\treturn { version: inventory.version, digests, components, media }'
+site (after): '\treturn { version: inventory.version, digests, components, media: [] }'
+command: npm run test:setup
+exit: 1
+summary: Test Files  1 failed | 3 passed (4)
+summary: Tests  1 failed | 294 passed (295)
+failing: FAIL  |setup| tests/setupServer.test.ts > server setup > pins the copied inventory release and digests and reads its component vocabulary
+
+=== C1 .offcanvas-sm fill priority swapped between its conditions in the built cascade
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: dist/src/styles/index.css
+site (before): '@media (width<576px){.offcanvas-sm{z-index:var(--bs-offcanvas-zindex);max-width:100%;color:var(--bs-offcanvas-color);visibility:hidden;background-color:var(--bs-offcanvas-bg);'
+site (after): '@media (width<576px){.offcanvas-sm{z-index:var(--bs-offcanvas-zindex);max-width:100%;color:var(--bs-offcanvas-color);visibility:hidden;background-color:var(--bs-offcanvas-bg)!important;'
+site (before): '.offcanvas-sm{--bs-offcanvas-height:auto;--bs-offcanvas-border-width:0;background-color:#0000!important}'
+site (after): '.offcanvas-sm{--bs-offcanvas-height:auto;--bs-offcanvas-border-width:0;background-color:#0000}'
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 23 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > declaration priority > compares each declaration's priority on both sheets at its selector, property, and condition
+error: AssertionError: expected [ …(2) ] to deeply equal []
+
+=== C2 print row removed from the Media conditions table
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: guides/veneer.md
+site (before): '| `print`                                   | `print`                                   | The print pass in the `src/styles/utilities/_display.scss` partial    |\n'
+site (after): ''
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 23 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+error: AssertionError: expected [ '(forced-colors: active)', …(13) ] to deeply equal [ '(forced-colors: active)', …(12) ]
+
+=== C2g print row removed, guides gate
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: guides/veneer.md
+site (before): '| `print`                                   | `print`                                   | The print pass in the `src/styles/utilities/_display.scss` partial    |\n'
+site (after): ''
+command: npm run test:guides
+exit: 0
+summary: Test Files  1 passed (1)
+summary: Tests  19 passed (19)
+
+=== C3 placeholder-wave row removed from the Keyframes table
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: guides/veneer.md
+site (before): '| `placeholder-wave`     | `placeholder` | Unchanged: the release writes no reduced-motion rule for a placeholder, so the wave runs.                                                                                 |\n'
+site (after): ''
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 23 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+error: AssertionError: expected [ 'placeholder-glow', …(3) ] to deeply equal [ 'placeholder-glow', …(4) ]
+
+=== C4 placeholder-glow Key cell set to spinner
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: guides/veneer.md
+site (before): '| `placeholder-glow`     | `placeholder` | Unchanged: the release writes no reduced-motion rule for a placeholder, so the glow runs.                                                                                 |'
+site (after): '| `placeholder-glow`     | `spinner`     | Unchanged: the release writes no reduced-motion rule for a placeholder, so the glow runs.                                                                                 |'
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 23 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+error: AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+
+=== C5 @keyframes placeholder-wave deleted from the built cascade
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: dist/src/styles/index.css
+site (before): '@keyframes placeholder-wave{to{-webkit-mask-position:-200% 0;mask-position:-200% 0}}'
+site (after): ''
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  2 failed | 22 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector and custom property in the built cascade
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+error: AssertionError: expected 'Shipped component placeholder is miss…' to be undefined
+error: AssertionError: expected [ 'placeholder-glow', …(4) ] to deeply equal [ 'placeholder-glow', …(3) ]
+
+=== C6 an unrecorded (min-width: 600px) condition planted in the built cascade
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: dist/src/styles/index.css
+site (before): '@property --vn-factor-motion{syntax:"<number>";inherits:true;initial-value:1}'
+site (after): '@property --vn-factor-motion{syntax:"<number>";inherits:true;initial-value:1}@media (min-width:600px){.x{color:red}}'
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 23 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+error: AssertionError: expected [ '(forced-colors: active)', …(14) ] to deeply equal [ '(forced-colors: active)', …(13) ]
+
+=== C7 feature spacing left as the sheet writes it (scratch setupServer)
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: tests/setupServer.ts
+site (before): "\treturn range === null ? plain : `(${range[1] ?? ''} ${range[2] ?? ''} ${range[3] ?? ''})`"
+site (after): '\treturn plain'
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  2 failed | 22 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > declaration priority > compares each declaration's priority on both sheets at its selector, property, and condition
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+error: AssertionError: expected [ ':root { --bs-blue }', …(3961) ] to deeply equal ArrayContaining{…}
+error: AssertionError: expected [ '(forced-colors: active)', …(13) ] to deeply equal [ '(forced-colors: active)', …(13) ]
+
+=== C8 failing-first: the guide carries no Media conditions or Keyframes subsection
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: guides/veneer.md
+site (before): "### Media conditions\n\nEach row names one media condition this cascade writes, the form the release writes for the same\ncondition, and the mixin or partial that writes it. The `readConditions` function in the\n`tests/setupServer.ts` module reads this table.\n\nA `{breakpoint}` cell is a template. It stands for each boundary from `sm` to `xxl`, at the width\nthe release declares for that boundary in its `--bs-breakpoint-*` custom properties, so the\n`(width >= {breakpoint})` row stands for the `(width >= 576px)` condition through the\n`(width >= 1400px)` condition. The `xs` boundary sits at zero: every viewport meets it and none falls\nbelow it, so it writes no condition. The\nrelease writes an exclusive upper bound 0.02px below its boundary, which the\n`{breakpoint} - 0.02px` template states, so its `(max-width: 575.98px)` condition is this cascade's\n`(width < 576px)` condition. A `—` cell records a condition the release does not write, and\n§ Additions records each rule this cascade writes under it. A color mode is the `data-bs-theme`\nattribute rather than a `prefers-color-scheme` query, so no row names a color scheme.\n\n| Condition                                 | Bootstrap 5.3.8                           | Written by                                                            |\n| ----------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------- |\n| `(width >= {breakpoint})`                 | `(min-width: {breakpoint})`               | The `breakpoint-up` mixin, and the `breakpoint-each` mixin through it |\n| `(width < {breakpoint})`                  | `(max-width: {breakpoint} - 0.02px)`      | The `breakpoint-down` mixin                                           |\n| `(prefers-reduced-motion: reduce)`        | `(prefers-reduced-motion: reduce)`        | The `reduced-motion` mixin, and the `transition` mixin through it     |\n| `(prefers-reduced-motion: no-preference)` | `(prefers-reduced-motion: no-preference)` | The smooth-scrolling rule in the `src/styles/_reset.scss` partial     |\n| `print`                                   | `print`                                   | The print pass in the `src/styles/utilities/_display.scss` partial    |\n| `(forced-colors: active)`                 | —                                         | The `forced-colors` mixin, and the `forced-ring` mixin through it     |\n\nA rule under two conditions at once, such as the reduced-motion twin of a responsive offcanvas panel\nbelow its boundary, sits under both joined by the `and` keyword, and each part is a row here. The\nconformance proof holds the table against each source it describes: the conditions the built cascade\nwrites, split at each `and` keyword, equal the `Condition` cells expanded over the release's boundaries; each\nexpanded `Bootstrap 5.3.8` cell, read in the range notation, equals its row's `Condition` cell, and\nthose cells together equal the conditions the pinned inventory's `media` list carries, split the\nsame way; and each condition the release does not write is a `Condition` cell of § Additions.\n\n### Keyframes\n\nEach row names one animation the release defines, the shipped key whose vocabulary records it, and\nthe treatment the release writes for it under the `prefers-reduced-motion: reduce` preference, read\nfrom the release's compiled `bootstrap.css` stylesheet. Veneer defines each animation under the\nrelease's name and writes the same treatment. The `readKeyframes` function in the\n`tests/setupServer.ts` module reads this table.\n\n| Name                   | Key           | Reduced motion                                                                                                                                                            |\n| ---------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| `progress-bar-stripes` | `progress`    | Stopped: the `.progress-bar-animated` rule sets its `animation` property to none, so the stripes stand still.                                                             |\n| `spinner-border`       | `spinner`     | Slowed: the `.spinner-border` rule sets the `--bs-spinner-animation-speed` property to a `1.5s` duration, twice its resting `0.75s` duration, and the ring keeps turning. |\n| `spinner-grow`         | `spinner`     | Slowed: the `.spinner-grow` rule sets the `--bs-spinner-animation-speed` property to a `1.5s` duration, twice its resting `0.75s` duration, and the dot keeps pulsing.    |\n| `placeholder-glow`     | `placeholder` | Unchanged: the release writes no reduced-motion rule for a placeholder, so the glow runs.                                                                                 |\n| `placeholder-wave`     | `placeholder` | Unchanged: the release writes no reduced-motion rule for a placeholder, so the wave runs.                                                                                 |\n\nEach treatment is a rule of its own key, so each key's ledger compares the value its twin rule\nwrites, and no proof reads the treatments as one group. The conformance proof holds the `Name`\ncells equal to the `@keyframes` rules the built cascade writes, and each `Key` cell equal to the\nshipped key the pinned inventory records the name under. The `scanCompatibilityPresence` function\nrefuses a shipped key whose recorded animation the cascade does not define, because a rule naming an\nundefined animation runs nothing and no ledger reading reports it. The `collectAdditions` function\nrefuses an animation the pinned inventory records under no key and no shipped key's name opens, so\nan animation reaches either this table or § Additions.\n\n"
+site (after): ''
+command: npm run test:conformance
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  2 failed | 22 passed (24)
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+failing: FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+error: Error: Condition row <header>: missing Styles / Media conditions subsection
+error: Error: Keyframes row <header>: missing Styles / Keyframes subsection
+
+=== C1b control: the 42fd88e set comparison (release read through readBootstrapCascade) over the unmodified cascade
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: tests/conformance.test.ts
+site (before): '\tit("compares each declaration\'s priority on both sheets at its selector, property, and condition", () => {\n\t\tconst release = collectDeclarationPriorities(\n\t\t\tnew SheetReader(readBootstrapCascade()).declarations,\n\t\t)\n\t\tconst cascade = collectDeclarationPriorities(new SheetReader(readBuiltCascade()).declarations)\n\t\tconst compared = [...release.keys()].filter((key) => cascade.has(key))\n\t\texpect(compared).toEqual(\n\t\t\texpect.arrayContaining([\n\t\t\t\t\'.offcanvas-sm { background-color } (width < 576px)\',\n\t\t\t\t\'.offcanvas-sm { background-color } (width >= 576px)\',\n\t\t\t]),\n\t\t)\n\t\texpect(\n\t\t\tcompared.flatMap((key) => {\n\t\t\t\tconst written = release.get(key) ?? []\n\t\t\t\tconst carried = cascade.get(key) ?? []\n\t\t\t\treturn written.join() === carried.join()\n\t\t\t\t\t? []\n\t\t\t\t\t: [\n\t\t\t\t\t\t\t`${key}: release ${written.map((entry) => (entry ? \'important\' : \'normal\')).join(\' and \')}, cascade ${carried.map((entry) => (entry ? \'important\' : \'normal\')).join(\' and \')}`,\n\t\t\t\t\t\t]\n\t\t\t}),\n\t\t).toEqual([])\n\t})\n'
+site (after): '\tit("compares each sheet\'s set of priorities for every selector and property both sheets declare", () => {\n\t\tconst release = new SheetReader(\n\t\t\treadBootstrapCascade(),\n\t\t)\n\t\tconst cascade = new SheetReader(readBuiltCascade())\n\t\tconst written = new Map<string, ReadonlySet<boolean>>()\n\t\tfor (const declaration of release.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\twritten.set(pair, new Set([...(written.get(pair) ?? []), declaration.important]))\n\t\t}\n\t\tconst shipped = new Map<string, ReadonlySet<boolean>>()\n\t\tfor (const declaration of cascade.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\tshipped.set(pair, new Set([...(shipped.get(pair) ?? []), declaration.important]))\n\t\t}\n\t\tconst mismatches: string[] = []\n\t\tlet compared = 0\n\t\tfor (const [pair, priorities] of written) {\n\t\t\tconst carried = shipped.get(pair)\n\t\t\tif (carried === undefined) continue\n\t\t\tcompared += 1\n\t\t\tif (priorities.size !== carried.size || [...priorities].some((entry) => !carried.has(entry)))\n\t\t\t\tmismatches.push(\n\t\t\t\t\t`${pair}: release ${[...priorities].map((entry) => (entry ? \'important\' : \'normal\')).join(\' and \')}, cascade ${[...carried].map((entry) => (entry ? \'important\' : \'normal\')).join(\' and \')}`,\n\t\t\t\t)\n\t\t}\n\t\texpect(compared).toBeGreaterThan(0)\n\t\texpect(mismatches).toEqual([])\n\t})\n'
+command: npm run test:conformance
+exit: 0
+summary: Test Files  1 passed (1)
+summary: Tests  24 passed (24)
+
+=== C1b control: the 42fd88e set comparison (release read through readBootstrapCascade) with the C1 swap held in the built cascade
+root: /home/user/veneer-cl/tmp/probe/cl-scratch
+file: tests/conformance.test.ts
+site (before): '\tit("compares each declaration\'s priority on both sheets at its selector, property, and condition", () => {\n\t\tconst release = collectDeclarationPriorities(\n\t\t\tnew SheetReader(readBootstrapCascade()).declarations,\n\t\t)\n\t\tconst cascade = collectDeclarationPriorities(new SheetReader(readBuiltCascade()).declarations)\n\t\tconst compared = [...release.keys()].filter((key) => cascade.has(key))\n\t\texpect(compared).toEqual(\n\t\t\texpect.arrayContaining([\n\t\t\t\t\'.offcanvas-sm { background-color } (width < 576px)\',\n\t\t\t\t\'.offcanvas-sm { background-color } (width >= 576px)\',\n\t\t\t]),\n\t\t)\n\t\texpect(\n\t\t\tcompared.flatMap((key) => {\n\t\t\t\tconst written = release.get(key) ?? []\n\t\t\t\tconst carried = cascade.get(key) ?? []\n\t\t\t\treturn written.join() === carried.join()\n\t\t\t\t\t? []\n\t\t\t\t\t: [\n\t\t\t\t\t\t\t`${key}: release ${written.map((entry) => (entry ? \'important\' : \'normal\')).join(\' and \')}, cascade ${carried.map((entry) => (entry ? \'important\' : \'normal\')).join(\' and \')}`,\n\t\t\t\t\t\t]\n\t\t\t}),\n\t\t).toEqual([])\n\t})\n'
+site (after): '\tit("compares each sheet\'s set of priorities for every selector and property both sheets declare", () => {\n\t\tconst release = new SheetReader(\n\t\t\treadBootstrapCascade(),\n\t\t)\n\t\tconst cascade = new SheetReader(readBuiltCascade())\n\t\tconst written = new Map<string, ReadonlySet<boolean>>()\n\t\tfor (const declaration of release.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\twritten.set(pair, new Set([...(written.get(pair) ?? []), declaration.important]))\n\t\t}\n\t\tconst shipped = new Map<string, ReadonlySet<boolean>>()\n\t\tfor (const declaration of cascade.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\tshipped.set(pair, new Set([...(shipped.get(pair) ?? []), declaration.important]))\n\t\t}\n\t\tconst mismatches: string[] = []\n\t\tlet compared = 0\n\t\tfor (const [pair, priorities] of written) {\n\t\t\tconst carried = shipped.get(pair)\n\t\t\tif (carried === undefined) continue\n\t\t\tcompared += 1\n\t\t\tif (priorities.size !== carried.size || [...priorities].some((entry) => !carried.has(entry)))\n\t\t\t\tmismatches.push(\n\t\t\t\t\t`${pair}: release ${[...priorities].map((entry) => (entry ? \'important\' : \'normal\')).join(\' and \')}, cascade ${[...carried].map((entry) => (entry ? \'important\' : \'normal\')).join(\' and \')}`,\n\t\t\t\t)\n\t\t}\n\t\texpect(compared).toBeGreaterThan(0)\n\t\texpect(mismatches).toEqual([])\n\t})\n'
+command: npm run test:conformance
+exit: 0
+summary: Test Files  1 passed (1)
+summary: Tests  24 passed (24)
+

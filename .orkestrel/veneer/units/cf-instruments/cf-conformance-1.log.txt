@@ -1,0 +1,38 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-cf/tmp/probe/cf-copy
+
+······x···············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "transition | .fade | transition | — | opacity 0.15s linear | opacity var(--vn-motion-feedback) linear | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:269:33
+    267|
+    268|  it('records every measured value difference in the guide ledger', () …
+    269|   expect(departures.unrecorded).toEqual([])
+       |                                 ^
+    270|  })
+    271|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 passed (22)
+   Start at  04:43:32
+   Duration  18.14s (transform 567ms, setup 117ms, import 10.24s, tests 7.64s, environment 0ms)
+

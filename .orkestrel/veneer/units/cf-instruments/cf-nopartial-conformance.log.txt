@@ -1,0 +1,82 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-cf/tmp/probe/cf-copy
+
+····x··x········x·····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector and custom property in the built cascade
+AssertionError: expected 'Shipped component transition is missi…' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"Shipped component transition is missing selector .fade"
+
+ ❯ tests/conformance.test.ts:219:5
+    217|   expect(
+    218|    scanCompatibilityPresence(rows, readOracleInventory(), readDeferral…
+    219|   ).toBeUndefined()
+       |     ^
+    220|   expect(shipped, 'Guide shipped components and conformance component …
+    221|    listed,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "transition | .fade | transition | — | opacity 0.15s linear | opacity var(--vn-motion-feedback) linear | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:273:28
+    271|
+    272|  it('names no departure the compiled cascade no longer carries', () =>…
+    273|   expect(departures.stale).toEqual([])
+       |                            ^
+    274|  })
+    275|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap source order > loads the passive block and the helpers in the release order, after every forms partial, each important helper ahead of the utilities
+AssertionError: expected [ 'collapse', 'dropdown', …(23) ] to deeply equal [ 'fade', 'collapse', …(24) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,6 @@
+  [
+-   "fade",
+    "collapse",
+    "dropdown",
+    "button-group",
+    "nav",
+    "navbar",
+
+ ❯ tests/conformance.test.ts:516:74
+    514|   const afterForms = loadedNames.slice(validationAt + 1)
+    515|   const expectedAfterForms = [...passive, ...passiveHelpers]
+    516|   expect(afterForms.filter((name) => expectedAfterForms.includes(name)…
+       |                                                                          ^
+    517|    expectedAfterForms,
+    518|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 19 passed (22)
+   Start at  04:48:20
+   Duration  21.90s (transform 1.09s, setup 205ms, import 13.64s, tests 7.85s, environment 0ms)
+

@@ -1,0 +1,67 @@
+
+ RUN  v4.1.11 /home/user/veneer-cf/tmp/probe/cf-red
+
+x································································································xx···········································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > styles setup > exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists
+AssertionError: expected [ 'ACCORDION_COLOR_CASES', …(272) ] to deeply equal [ 'ACCORDION_COLOR_CASES', …(274) ]
+
+- Expected
++ Received
+
+@@ -63,12 +63,10 @@
+    "DROPDOWN_DIRECTION_CASES",
+    "DROPDOWN_MARKUP",
+    "DROPDOWN_SELECTORS",
+    "DROPDOWN_SPACE_CASES",
+    "ELEMENT_TAGS",
+-   "FADE_COMPONENT_CASES",
+-   "FADE_SELECTORS",
+    "FILL_ONLY_RECIPE",
+    "FLEX_ENTRY_CASES",
+    "FLEX_FAMILY_CASES",
+    "FLEX_RESTING_VALUES",
+    "FLOAT_VALUES",
+
+ ❯ tests/setupStyles.test.ts:298:37
+    296| describe('styles setup', () => {
+    297|  it('exports the cascade and guide readers, the selector grammar the n…
+    298|   expect(Object.keys(setup).sort()).toEqual(
+       |                                     ^
+    299|    [
+    300|     'ACCORDION_COLOR_CASES',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > fade case tables > binds the fade selector table to the selectors the official inventory records under the transition key alone
+TypeError: Cannot read properties of undefined (reading 'length')
+ ❯ tests/setupStyles.test.ts:3427:60
+    3425|   )
+    3426|   const recorded = oracle.components.transition.selectors.map(({ selec…
+    3427|   expect(new Set(FADE_SELECTORS).size).toBe(FADE_SELECTORS.length)
+       |                                                            ^
+    3428|   expect(new Set(FADE_SELECTORS)).toEqual(
+    3429|    new Set(recorded.filter((selector) => !others.has(selector))),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > fade case tables > names in each fade component case the classes its own key and the transition key record
+TypeError: FADE_COMPONENT_CASES is not iterable
+ ❯ tests/setupStyles.test.ts:3446:46
+    3444|   const transition = requireValue(vocabularies.get('transition'), 'No …
+    3445|   expect(FADE_COMPONENT_CASES).not.toStrictEqual([])
+    3446|   for (const { component, hidden, shown } of FADE_COMPONENT_CASES) {
+       |                                              ^
+    3447|    const own = requireValue(vocabularies.get(component), `No ${compone…
+    3448|    for (const classes of [hidden, shown]) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 139 passed (142)
+   Start at  04:49:22
+   Duration  9.43s (transform 1.30s, setup 109ms, import 2.39s, tests 6.77s, environment 0ms)
+

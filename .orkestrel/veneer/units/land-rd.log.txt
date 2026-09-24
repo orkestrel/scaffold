@@ -1,0 +1,7 @@
+=== rd landing at 05:18:30 over dc92a09
+=== applied /home/user/scaffold/.orkestrel/veneer/units/rd-shared.patch
+=== clean: 015fc90
+=== land-unit exit=0
+=== oxfmt exit=0
+=== oxlint exit=0
+=== check exit=0

@@ -1,0 +1,72 @@
+[
+ {
+  "label": "C1 .offcanvas-sm fill priority swapped between its conditions in the built cascade",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "dist/src/styles/index.css",
+  "script": "test:conformance",
+  "old": [
+   "@media (width<576px){.offcanvas-sm{z-index:var(--bs-offcanvas-zindex);max-width:100%;color:var(--bs-offcanvas-color);visibility:hidden;background-color:var(--bs-offcanvas-bg);",
+   ".offcanvas-sm{--bs-offcanvas-height:auto;--bs-offcanvas-border-width:0;background-color:#0000!important}"
+  ],
+  "new": [
+   "@media (width<576px){.offcanvas-sm{z-index:var(--bs-offcanvas-zindex);max-width:100%;color:var(--bs-offcanvas-color);visibility:hidden;background-color:var(--bs-offcanvas-bg)!important;",
+   ".offcanvas-sm{--bs-offcanvas-height:auto;--bs-offcanvas-border-width:0;background-color:#0000}"
+  ]
+ },
+ {
+  "label": "C2 print row removed from the Media conditions table",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "guides/veneer.md",
+  "script": "test:conformance",
+  "old": "| `print`                                   | `print`                                   | The print pass in the `src/styles/utilities/_display.scss` partial    |\n",
+  "new": ""
+ },
+ {
+  "label": "C2g print row removed, guides gate",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "guides/veneer.md",
+  "script": "test:guides",
+  "old": "| `print`                                   | `print`                                   | The print pass in the `src/styles/utilities/_display.scss` partial    |\n",
+  "new": ""
+ },
+ {
+  "label": "C3 placeholder-wave row removed from the Keyframes table",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "guides/veneer.md",
+  "script": "test:conformance",
+  "old": "| `placeholder-wave`     | `placeholder` | Unchanged: the release writes no reduced-motion rule for a placeholder, so the wave runs.                                                                                 |\n",
+  "new": ""
+ },
+ {
+  "label": "C4 placeholder-glow Key cell set to spinner",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "guides/veneer.md",
+  "script": "test:conformance",
+  "old": "| `placeholder-glow`     | `placeholder` | Unchanged: the release writes no reduced-motion rule for a placeholder, so the glow runs.                                                                                 |",
+  "new": "| `placeholder-glow`     | `spinner`     | Unchanged: the release writes no reduced-motion rule for a placeholder, so the glow runs.                                                                                 |"
+ },
+ {
+  "label": "C5 @keyframes placeholder-wave deleted from the built cascade",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "dist/src/styles/index.css",
+  "script": "test:conformance",
+  "old": "@keyframes placeholder-wave{to{-webkit-mask-position:-200% 0;mask-position:-200% 0}}",
+  "new": ""
+ },
+ {
+  "label": "C6 an unrecorded (min-width: 600px) condition planted in the built cascade",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "dist/src/styles/index.css",
+  "script": "test:conformance",
+  "old": "@property --vn-factor-motion{syntax:\"<number>\";inherits:true;initial-value:1}",
+  "new": "@property --vn-factor-motion{syntax:\"<number>\";inherits:true;initial-value:1}@media (min-width:600px){.x{color:red}}"
+ },
+ {
+  "label": "C7 feature spacing left as the sheet writes it (scratch setupServer)",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "tests/setupServer.ts",
+  "script": "test:conformance",
+  "old": "\treturn range === null ? plain : `(${range[1] ?? ''} ${range[2] ?? ''} ${range[3] ?? ''})`",
+  "new": "\treturn plain"
+ }
+]
