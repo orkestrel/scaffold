@@ -126,6 +126,13 @@ or the guide's `## Engine` sections.
 `9cbe3248` (your W2 retention), merged into this session's branch. Your `engine/plan.md` note reads
 Veneer `88cb691` and names the W2 wave in worktrees cut from `e24e2c3`.
 
+**Bench record (2026-09-24).** The Opus 5.5 bench went dark at about 05:49 UTC on the account's
+weekly usage limit, which stopped PAGE-FRAME, BCF, and FADE round 3 mid-work; the container then
+restarted. At 10:39 UTC a bounded round trip came back from each bench (a native `opus` subagent and a
+`codex exec` on `gpt-6-astra`, thread `01a0d300-5e17-70c1-898a-928052bbb16c`), and the three units
+resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
+`015fc90` on this session's branch.
+
 **In flight (this session).** PAGE-FRAME (`units/b-cross-pf-brief.md`, `opus` on Opus 5.5 from
 `dc92a09`), per its design verdict `units/pf-design-verdict.md`: every placement takes the showcase's
 other `main` children out of the layout for the shot, reads its region at the shot's geometry, and
