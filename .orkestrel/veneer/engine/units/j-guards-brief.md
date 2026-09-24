@@ -2,7 +2,7 @@
 
 ## Role and engine
 
-`opus` on Opus 5.5, a native Claude subagent (Read, Grep, Glob, Edit, Write, Bash); the sole writer in the worktree `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/guards` (branch `unit/guards`, cut from Veneer `main` at GUARDS_BASE, the J-INTEGRATION landing, which the Orchestrator fills at dispatch; `npm ci` already run). The options half is objective work routed native because its proofs are browser tests an Astra sandbox cannot host (E23).
+`opus` on Opus 5.5, a native Claude subagent (Read, Grep, Glob, Edit, Write, Bash); the sole writer in the worktree `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/guards` (branch `unit/guards`, cut from Veneer `main` at `b1d314d`; `npm ci` already run). The options half is objective work routed native because its proofs are browser tests an Astra sandbox cannot host (E23).
 
 ## Objective
 
@@ -10,11 +10,11 @@ Implement E23 (`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/engin
 
 ## Context
 
-**Read first, in order.** `C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md`; `names.md`, `typescript.md`, `architecture.md`, `patterns.md`, `tests.md`, and `documentation.md` in `C:/Users/mikes/WebstormProjects/scaffold/.claude/rules/`; § E23; the two lane proposals it reconciles, `units/j-guards-design-planner-proposal.md` (the adopted shape, the consumer list, proofs P1 to P6 and O1 to O6) and `units/j-guards-design-analyst-proposal.md` (its proof table and the resolver comparison), both in `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/engine/`. Their line numbers were read at `b1d314d`, before J-INTEGRATION landed; find each site by its symbol. Skill: none.
+**Read first, in order.** `C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md`; `names.md`, `typescript.md`, `architecture.md`, `patterns.md`, `tests.md`, and `documentation.md` in `C:/Users/mikes/WebstormProjects/scaffold/.claude/rules/`; § E23; the two lane proposals it reconciles, `units/j-guards-design-planner-proposal.md` (the adopted shape, the consumer list, proofs P1 to P6 and O1 to O6) and `units/j-guards-design-analyst-proposal.md` (its proof table and the resolver comparison), both in `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/engine/`. Their line numbers were read at `b1d314d`, your base; find each site by its symbol. Skill: none.
 
 **Host.** Windows 11; Git Bash (`npm` and `npx` resolve to the `.cmd` shims); Chromium 153.0.8010.12. The `prove` MCP server is not reachable to a subagent. For P3's type receipts, write a scratch `tsc` probe under `tmp/j-guards/` with its own tsconfig that extends `configs/src/tsconfig.browser.json` and sets `"exclude": []`; without that, the root exclude drops the probe silently. Confirm the probe is compiled with `--listFilesOnly`, and record both the refused and the admitted run. On this host write each multi-step program to a file and run the file.
 
-**Standing conditions.** E6: no alias, re-export, `@deprecated`, or shim of a removed name. The element guard is `isInstance(x, HTMLElement)`. No dependency. Tests use real engines and events, and no mock, spy, or fake clock.
+**Standing conditions.** J-INTEGRATION writes `Modal.ts`, `Offcanvas.ts`, and `Backdrop.ts` in another worktree and lands after you, merging your work: in `Modal.ts` and `Offcanvas.ts` change only the guard import, the `bindEventMap` call, and the `resolveOptions` call, and nothing else in those files. E6: no alias, re-export, `@deprecated`, or shim of a removed name. The element guard is `isInstance(x, HTMLElement)`. No dependency. Tests use real engines and events, and no mock, spy, or fake clock.
 
 **Test in widening rings.** First the one file pinning the open obligation. Then the files the edit reaches: `validators`, `helpers`, `index`, each engine whose import changed, and `Popover`. Then the whole browser suite once, and `test:setup:browser` once. `tests/setupBrowser.test.ts` enumerates the setup module's exports; if you add a setup export, that list is yours.
 

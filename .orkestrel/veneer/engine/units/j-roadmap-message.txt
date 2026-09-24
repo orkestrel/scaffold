@@ -1,0 +1,6 @@
+State in the roadmap that the engine session works on main, one worktree per unit
+
+The engine session has worked on `main` in both repositories since E4, each unit in `tmp/worktrees/<unit>` on a `unit/<unit>` branch cut from `main` (E14), and its unit branches stay local. `### The engine session` still said it worked on a harness-designated branch and recorded that name in its plan; the first bullet and the landing bullet now say what it does. The J-ENGINE row's Role cell names the reviewer lane where a unit changes a public shape, and names J-GUARDS and J-SAMEWAY as the units carrying the findings the landing audits left open. No other row or section moves; the styles session owns the § Rulings sentence that still says "on its own branch" and is asked to align it.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

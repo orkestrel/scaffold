@@ -1,0 +1,6 @@
+Stop a returning step when a reaction inside it starts another change
+
+A modal or offcanvas change the host takes over returns its writes through one step, and a reaction to one of those writes can start a show or a hide of its own. Each engine now gives every change an identity the step captures, and every returning write checks it with the engine's lifetime, so the stale step writes nothing over the change that replaced it, whether that change completes at once or waits on its transition. The superfluous `hide()` before a stopped show's backdrop removal and the offcanvas listener reset are gone, each returning write has a mutation that reddens a case, the stopped-change cases read the isolation beside the lock, and the case of a destruction inside the modal backdrop's removal is back. The landing audit's objective lane found the re-entry by tracing the source; each trace is now a case that read red first.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K
