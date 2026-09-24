@@ -1,0 +1,261 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Carousel.test.ts tests/src/browser/Delegate.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/carousel
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+························xxxx··x·············xxxxx··x················································xx
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:834:2 > Carousel > keeps a pause a slid listener made under an interaction ride
+AssertionError: expected 2 to be 1 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 2[39m
+
+ ❯ tests/src/browser/Carousel.test.ts:853:21
+    851|   expect(await carousel.next()).toBe(true)
+    852|   await waitForDelay(100)
+    853|   expect(slid.count).toBe(1)
+       |                     ^
+    854|  })
+    855|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:856:2 > Carousel > arms no timer after an animated slide during which the pointer entered the host
+AssertionError: expected 2 to be 1 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 2[39m
+
+ ❯ tests/src/browser/Carousel.test.ts:883:21
+    881|   // that none was armed.
+    882|   await waitForDelay(900)
+    883|   expect(slid.count).toBe(count)
+       |                     ^
+    884|   await hoverAccessible('Outside')
+    885|   await waitForCondition('the carousel cycles after the pointer leaves…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:888:2 > Carousel > leaves the restart to the touch deferral when a touch lifts during an animated slide
+AssertionError: expected 215.90000000596046 to be greater than or equal to 520
+ ❯ tests/src/browser/Carousel.test.ts:915:37
+    913|    { budget: 3000 },
+    914|   )
+    915|   expect(performance.now() - lifted).toBeGreaterThanOrEqual(CAROUSEL_T…
+       |                                     ^
+    916|  })
+    917|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:918:2 > Carousel > arms no timer for an interaction ride a key starts while the pointer is inside the host, and arms it when the pointer leaves
+AssertionError: expected 7 to be 1 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 7[39m
+
+ ❯ tests/src/browser/Carousel.test.ts:935:21
+    933|   expect(slid.count).toBe(1)
+    934|   await waitForDelay(120)
+    935|   expect(slid.count).toBe(1)
+       |                     ^
+    936|   await hoverAccessible('Outside')
+    937|   await waitForCondition('the ride cycles after the pointer leaves', (…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:999:2 > Carousel > restores the items before the swipe token, so a replacement a reaction to the token constructs leaves the original markup after both destructions
+AssertionError: expected [ 'carousel-item', 'active' ] to deeply equal [ 'carousel-item' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "carousel-item",[22m
+[31m+   "active",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Carousel.test.ts:1034:43
+    1032|   expect(Array.from(host.classList)).toEqual(['carousel'])
+    1033|   expect(Array.from(one?.classList ?? [])).toEqual(['carousel-item', '…
+    1034|   expect(Array.from(two?.classList ?? [])).toEqual(['carousel-item'])
+       |                                           ^
+    1035|   expect(Array.from(three?.classList ?? [])).toEqual(['carousel-item'])
+    1036|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1563:2 > Carousel > destroys the swipe it constructed when a reaction to the swipe token destroys the carousel during its construction
+AssertionError: expected [ 'carousel', 'pointer-event' ] to deeply equal [ 'carousel' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "carousel",[22m
+[31m+   "pointer-event",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Carousel.test.ts:1583:37
+    1581|   onTestFinished(() => carousel.destroy())
+    1582|   expect(Carousel.find(host)).toBeUndefined()
+    1583|   expect(Array.from(host.classList)).toEqual(['carousel'])
+       |                                     ^
+    1584|   const item = requireValue(host.querySelector<HTMLElement>('.carousel…
+    1585|   item.dispatchEvent(createPointerEvent('pointerdown', { pointerType: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1591:2 > Carousel > refuses the slide whose event a listener answered with newer slides that returned its outgoing item to active
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Carousel.test.ts:1616:32
+    1614|   })
+    1615|   onTestFinished(() => carousel.destroy())
+    1616|   expect(await carousel.next()).toBe(false)
+       |                                ^
+    1617|   expect(await Promise.all(inner.calls.map(([call]) => call))).toEqual…
+    1618|   expect(events.calls).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1630:2 > Carousel > stops a slide whose indicator attribute write a reaction answers by rewriting that attribute, writing nothing more
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Carousel.test.ts:1668:32
+    1666|    observer.observe(root, { attributes: true, subtree: true })
+    1667|   })
+    1668|   expect(await carousel.next()).toBe(false)
+       |                                ^
+    1669|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    1670|   expect(slid.count).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1676:2 > Carousel > stops a slide whose write a reaction answers by giving the outgoing item the order token, writing nothing more
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Carousel.test.ts:1709:32
+    1707|    observer.observe(root, { attributes: true, subtree: true })
+    1708|   })
+    1709|   expect(await carousel.next()).toBe(false)
+       |                                ^
+    1710|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    1711|   expect(slid.count).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1721:2 > Carousel > stops a slide whose write a reaction answers by taking the incoming item out of the host, writing nothing more
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Carousel.test.ts:1754:32
+    1752|    observer.observe(root, { attributes: true, subtree: true })
+    1753|   })
+    1754|   expect(await carousel.next()).toBe(false)
+       |                                ^
+    1755|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    1756|   expect(slid.count).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1827:2 > Carousel > writes, tests, reads, and matches only the replacing values when every group is replaced
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Carousel.test.ts:1900:50
+    1898|   host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight',…
+    1899|   expect(carousel.index).toBe(0)
+    1900|   expect(host.classList.contains('is-swipeable')).toBe(true)
+       |                                                  ^
+    1901|   expect(host.classList.contains('pointer-event')).toBe(false)
+    1902|   const cycled = createRecorder<readonly [string]>()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Delegate.test.ts:1352:2 > Delegate > leaves a carousel unmarked when a listener to an earlier route destroys the delegate, for a live outer delegate to drive
+AssertionError: expected Carousel{} to be undefined
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+Carousel {}
+
+ ❯ tests/src/browser/Delegate.test.ts:1376:33
+    1374|   expect(Carousel.find(gallery)?.index).toBe(1)
+    1375|   outer.destroy()
+    1376|   expect(Carousel.find(gallery)).toBeUndefined()
+       |                                 ^
+    1377|   expect(gallery.querySelector('.carousel-item')?.classList.contains('…
+    1378|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Delegate.test.ts:1380:2 > Delegate > destroys a carousel it constructed while a reaction to the construction destroyed the delegate, and drives it nowhere
+AssertionError: expected Carousel{} to be undefined
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+Carousel {}
+
+ ❯ tests/src/browser/Delegate.test.ts:1413:30
+    1411|   })
+    1412|   control.click()
+    1413|   expect(Carousel.find(host)).toBeUndefined()
+       |                              ^
+    1414|   expect(events.count).toBe(0)
+    1415|   expect(Array.from(host.classList)).toEqual(['carousel'])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  13 failed | 89 passed (102)
+   Start at  01:49:44
+   Duration  12.51s (transform 0ms, setup 302ms, import 324ms, tests 10.79s, environment 0ms)
+

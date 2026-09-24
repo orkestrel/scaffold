@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal
+
+Port 63315 is in use, trying another one...
+···························································································
+
+ Test Files  3 passed (3)
+      Tests  91 passed (91)
+   Start at  02:29:14
+   Duration  11.42s (transform 0ms, setup 318ms, import 50ms, tests 9.96s, environment 0ms)
+
+EXIT 0

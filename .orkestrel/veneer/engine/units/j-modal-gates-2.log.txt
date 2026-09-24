@@ -1,0 +1,609 @@
+# J-MODAL round 2 — the Orchestrator's own gate run (2026-09-24)
+e24e2c3 Select the rows whose Proof cell is a dash in the setup proof, now that a plugin row names its proof file
+ M guides/veneer.md
+ A src/browser/Backdrop.ts
+ M src/browser/Delegate.ts
+ A src/browser/Isolation.ts
+ A src/browser/Modal.ts
+ A src/browser/ScrollLock.ts
+ M src/browser/constants.ts
+ M src/browser/index.ts
+ M src/browser/parsers.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ A tests/src/browser/Backdrop.test.ts
+ M tests/src/browser/Delegate.test.ts
+ A tests/src/browser/Isolation.test.ts
+ A tests/src/browser/Modal.test.ts
+ A tests/src/browser/ScrollLock.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/parsers.test.ts
+ M tests/src/browser/validators.test.ts
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+check:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings src/browser tests/src/browser
+oxlint exit=0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxfmt --config .oxfmtrc.json --check src/browser tests/src/browser guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 5968ms on 32 files using 16 threads.
+oxfmt exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal
+
+Port 63315 is in use, trying another one...
+·······················································································································2:30:57 AM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+ > src/browser/HostSnapshot.ts:163:30
+    161 |  				const key = HostSnapshot.#key(target.category, target.name)
+    162 |  				HostSnapshot.#writeBack(target.element, key, this, () =>
+    163 |  					target.element.classList.toggle(target.name, value !== undefined),
+        |                                ^
+    164 |  				)
+    165 |  			}
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:343:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:316:27
+ > src/browser/HostSnapshot.ts:163:30
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:345:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:302:11
+
+2:30:57 AM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63316/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at http://localhost:63316/src/browser/HostSnapshot.ts:125:87
+    at #writeBack (http://localhost:63316/src/browser/HostSnapshot.ts:194:3)
+    at HostSnapshot.restore (http://localhost:63316/src/browser/HostSnapshot.ts:125:28)
+    at http://localhost:63316/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790231457541:476:11
+    at http://localhost:63316/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:302:11
+    at http://localhost:63316/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:1903:26
+    at http://localhost:63316/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63316/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:308:2 > HostSnapshot > withdraws an overlapping earliest recording when its restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+······························································································································································
+
+ Test Files  14 passed (14)
+      Tests  277 passed (277)
+   Start at  02:30:41
+   Duration  18.18s (transform 0ms, setup 665ms, import 420ms, tests 15.17s, environment 0ms)
+
+test:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal
+
+···················
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  02:31:00
+   Duration  1.27s (transform 249ms, setup 76ms, import 978ms, tests 55ms, environment 0ms)
+
+test:guides exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  02:31:03
+   Duration  2.36s (transform 114ms, setup 69ms, import 294ms, tests 1.85s, environment 0ms)
+
+test:policy exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  9.78 kB │ gzip: 2.63 kB │ map: 15.17 kB
+
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  9.94 kB │ gzip: 2.70 kB │ map: 15.19 kB
+
+✓ built in 77ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/veneer@0.0.1 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+build:src:core exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:styles
+npm notice run vite build --config configs/src/vite.styles.config.ts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  199.63 kB │ gzip: 25.38 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 774ms
+build:src:styles exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:browser
+npm notice run vite build --config configs/src/vite.browser.config.ts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 17 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  87.89 kB │ gzip: 20.81 kB │ map: 159.10 kB
+
+✓ built in 144ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+build:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal
+
+······················
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  02:31:14
+   Duration  11.04s (transform 214ms, setup 70ms, import 6.29s, tests 4.53s, environment 0ms)
+
+test:conformance exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal
+
+···································stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in 'C:\Users\mikes\AppData\Local\Temp\orkestrel-test-jZq5QD'
+    at finishWithoutResolve (C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\enhanced-resolve\lib\Resolver.js:957:18)
+    at C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\enhanced-resolve\lib\Resolver.js:1053:13
+    at C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\enhanced-resolve\lib\Resolver.js:1137:5
+    at eval (eval at create (C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\enhanced-resolve\lib\Resolver.js:1137:5
+    at eval (eval at create (C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\enhanced-resolve\lib\Resolver.js:1137:5
+    at eval (eval at create (C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\enhanced-resolve\lib\Resolver.js:1137:5
+    at eval (eval at create (C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\modal\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in 'C:\\Users\\mikes\\AppData\\Local\\Temp\\orkestrel-test-jZq5QD'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in C:\\Users\\mikes\\AppData\\Local\\Temp\\orkestrel-test-jZq5QD or above\n' +
+    '  resolve as module\n' +
+    "    C:\\Users\\mikes\\AppData\\Local\\Temp\\orkestrel-test-jZq5QD\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\mikes\\AppData\\Local\\Temp\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\mikes\\AppData\\Local\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\mikes\\AppData\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\mikes\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\node_modules doesn't exist or is not a directory"
+}
+
+········································································································································································································································
+
+ Test Files  4 passed (4)
+      Tests  267 passed (267)
+   Start at  02:31:26
+   Duration  9.51s (transform 1.20s, setup 260ms, import 4.33s, tests 13.09s, environment 0ms)
+
+test:setup exit=0
+--- the unit's greps
+bs-wire-grep listed (a .bs. wire name outside constants.ts is a finding)
+6038:| engine           | plugin         | Collapse: a `[data-bs-toggle="collapse"]` trigger names its panel by `data-bs-target` or `href` attribute; `parent: null` and `toggle: true` defaults; `toggl
+6039:| engine           | plugin         | Dropdown: the `[data-bs-toggle="dropdown"]` data API; the `autoClose`, `boundary`, `display`, `offset`, `popperConfig`, and `reference` options; the `toggle`
+6040:| engine           | plugin         | Tab: `[data-bs-toggle="tab\|pill\|list"]` shows the pane its trigger names with `show()`; fires `hide.bs.tab`, `hidden.bs.tab`, `show.bs.tab`, and `shown.bs.
+6041:| engine           | plugin         | ScrollSpy: `[data-bs-spy="scroll"]` observes the sections its `target` links name through `IntersectionObserver` (`rootMargin`, `threshold`, `offset`, `smoot
+6042:| engine           | plugin         | Alert: a `[data-bs-dismiss="alert"]` trigger closes the alert it names, or the `.alert` ancestor it sits in; no defaults; the `close` method; the cancelable 
+6043:| engine           | plugin         | Carousel: `[data-bs-slide]` and `[data-bs-slide-to]` triggers and `[data-bs-ride="carousel"]` on load; `interval: 5000`, `keyboard: true`, `pause: 'hover'`, 
+6044:| engine           | plugin         | Toast: a `[data-bs-dismiss="toast"]` trigger hides the toast it names or sits in; the `animation: true`, `autohide: true`, and `delay: 5000` defaults; the `s
+6045:| engine           | plugin         | Modal: a `[data-bs-dismiss="modal"]` trigger hides the dialog it names, or the `.modal` ancestor it sits in; a `[data-bs-toggle="modal"]` trigger calls the `
+plugin-rows listed
+src/browser/Backdrop.ts:7: 111
+src/browser/Backdrop.ts:15: 102
+src/browser/Backdrop.ts:40: 125
+src/browser/Button.ts:38: 184
+src/browser/Collapse.ts:32: 101
+src/browser/Collapse.ts:82: 104
+src/browser/Collapse.ts:83: 261
+src/browser/Delegate.ts:104: 106
+src/browser/Delegate.ts:105: 164
+src/browser/HostSnapshot.ts:13: 104
+src/browser/Isolation.ts:8: 102
+src/browser/Isolation.ts:12: 101
+src/browser/Isolation.ts:21: 101
+src/browser/Isolation.ts:23: 102
+src/browser/Isolation.ts:59: 116
+src/browser/Modal.ts:38: 131
+src/browser/Modal.ts:44: 102
+src/browser/Modal.ts:52: 102
+src/browser/Modal.ts:53: 102
+src/browser/Modal.ts:54: 102
+src/browser/Modal.ts:55: 101
+src/browser/Modal.ts:62: 101
+src/browser/Modal.ts:63: 102
+src/browser/Modal.ts:65: 101
+src/browser/Modal.ts:106: 114
+src/browser/Modal.ts:107: 249
+src/browser/Modal.ts:365: 101
+src/browser/Modal.ts:366: 102
+src/browser/Modal.ts:458: 101
+src/browser/ScrollLock.ts:9: 127
+src/browser/ScrollLock.ts:18: 102
+src/browser/ScrollLock.ts:40: 127
+src/browser/constants.ts:21: 110
+src/browser/constants.ts:34: 108
+src/browser/constants.ts:39: 157
+src/browser/constants.ts:44: 107
+src/browser/constants.ts:55: 122
+src/browser/constants.ts:70: 147
+src/browser/constants.ts:75: 125
+src/browser/constants.ts:82: 101
+src/browser/constants.ts:97: 109
+src/browser/constants.ts:116: 119
+src/browser/constants.ts:126: 127
+src/browser/helpers.ts:12: 123
+src/browser/helpers.ts:13: 114
+src/browser/helpers.ts:69: 103
+src/browser/helpers.ts:111: 107
+src/browser/helpers.ts:129: 105
+src/browser/helpers.ts:132: 119
+src/browser/helpers.ts:133: 107
+src/browser/helpers.ts:168: 110
+src/browser/helpers.ts:171: 119
+src/browser/helpers.ts:172: 109
+src/browser/helpers.ts:190: 103
+src/browser/helpers.ts:193: 107
+src/browser/helpers.ts:194: 102
+src/browser/helpers.ts:199: 171
+src/browser/helpers.ts:209: 125
+src/browser/helpers.ts:250: 104
+src/browser/helpers.ts:257: 109
+src/browser/helpers.ts:280: 167
+src/browser/parsers.ts:37: 131
+src/browser/parsers.ts:38: 204
+src/browser/types.ts:6: 101
+src/browser/types.ts:18: 124
+src/browser/types.ts:30: 114
+src/browser/types.ts:43: 102
+src/browser/types.ts:50: 104
+src/browser/types.ts:56: 153
+src/browser/types.ts:64: 127
+src/browser/types.ts:66: 186
+src/browser/types.ts:82: 133
+src/browser/types.ts:115: 140
+src/browser/types.ts:117: 144
+src/browser/types.ts:119: 144
+src/browser/types.ts:121: 134
+src/browser/types.ts:123: 146
+src/browser/types.ts:125: 138
+src/browser/types.ts:127: 146
+src/browser/types.ts:129: 138
+src/browser/types.ts:131: 138
+src/browser/types.ts:133: 144
+src/browser/types.ts:145: 127
+src/browser/types.ts:162: 101
+src/browser/types.ts:221: 101
+src/browser/types.ts:253: 108
+src/browser/types.ts:269: 196
+src/browser/types.ts:281: 102
+src/browser/types.ts:292: 113
+src/browser/types.ts:316: 119
+src/browser/types.ts:318: 176
+src/browser/types.ts:327: 138
+src/browser/types.ts:339: 148
+src/browser/types.ts:341: 132
+src/browser/types.ts:343: 115
+src/browser/types.ts:345: 130
+src/browser/types.ts:349: 133
+src/browser/types.ts:351: 120
+src/browser/types.ts:355: 133
+src/browser/types.ts:366: 148
+src/browser/types.ts:376: 155
+src/browser/types.ts:396: 200
+src/browser/types.ts:398: 143
+src/browser/types.ts:406: 119
+src/browser/types.ts:410: 101
+src/browser/types.ts:428: 102
+src/browser/types.ts:444: 135
+src/browser/types.ts:447: 106
+src/browser/types.ts:449: 123
+src/browser/types.ts:451: 108
+src/browser/types.ts:455: 146
+src/browser/types.ts:457: 124
+src/browser/types.ts:461: 129
+src/browser/types.ts:463: 156
+src/browser/types.ts:465: 205
+src/browser/types.ts:469: 107
+src/browser/types.ts:475: 168
+src/browser/types.ts:520: 118
+src/browser/types.ts:522: 116
+src/browser/types.ts:544: 141
+src/browser/types.ts:560: 108
+src/browser/types.ts:562: 195
+src/browser/types.ts:567: 124
+src/browser/types.ts:570: 104
+src/browser/types.ts:572: 102
+src/browser/types.ts:578: 145
+src/browser/types.ts:583: 110
+src/browser/types.ts:586: 101
+src/browser/types.ts:590: 226
+src/browser/types.ts:592: 234
+src/browser/types.ts:594: 559
+src/browser/types.ts:604: 104
+src/browser/types.ts:608: 173
+src/browser/types.ts:616: 102
+src/browser/types.ts:621: 112
+src/browser/types.ts:633: 117
+src/browser/types.ts:640: 115
+src/browser/types.ts:644: 116
+src/browser/types.ts:651: 118
+src/browser/types.ts:659: 103
+src/browser/types.ts:667: 107
+src/browser/types.ts:681: 120
+src/browser/types.ts:683: 140
+src/browser/types.ts:685: 122
+src/browser/types.ts:687: 122
+src/browser/types.ts:704: 265
+src/browser/types.ts:714: 222
+src/browser/types.ts:743: 116
+src/browser/types.ts:757: 101
+src/browser/types.ts:764: 108
+src/browser/types.ts:787: 123
+src/browser/types.ts:789: 103
+src/browser/types.ts:791: 127
+src/browser/types.ts:797: 110
+src/browser/types.ts:803: 185
+src/browser/types.ts:809: 204
+src/browser/types.ts:813: 103
+src/browser/types.ts:822: 145
+src/browser/types.ts:824: 127
+src/browser/types.ts:826: 207
+src/browser/types.ts:829: 115
+src/browser/types.ts:831: 180
+src/browser/types.ts:833: 133
+src/browser/types.ts:835: 123
+src/browser/types.ts:854: 164
+src/browser/types.ts:864: 167
+src/browser/types.ts:903: 122
+src/browser/types.ts:911: 114
+src/browser/types.ts:915: 115
+src/browser/types.ts:922: 103
+src/browser/types.ts:924: 118
+src/browser/types.ts:926: 107
+src/browser/types.ts:930: 105
+src/browser/types.ts:932: 121
+src/browser/types.ts:938: 105
+src/browser/types.ts:944: 134
+src/browser/types.ts:946: 111
+src/browser/types.ts:948: 143
+src/browser/types.ts:950: 169
+src/browser/types.ts:952: 198
+src/browser/types.ts:962: 125
+src/browser/types.ts:964: 116
+src/browser/types.ts:966: 118
+src/browser/types.ts:974: 106
+src/browser/types.ts:985: 164
+src/browser/types.ts:1011: 110
+src/browser/types.ts:1018: 109
+src/browser/types.ts:1022: 114
+src/browser/types.ts:1032: 135
+src/browser/types.ts:1034: 110
+src/browser/types.ts:1036: 126
+src/browser/types.ts:1042: 113
+src/browser/types.ts:1044: 121
+src/browser/types.ts:1046: 251
+src/browser/types.ts:1050: 102
+src/browser/types.ts:1054: 107
+src/browser/types.ts:1056: 128
+src/browser/types.ts:1058: 149
+src/browser/types.ts:1062: 109
+src/browser/types.ts:1064: 124
+src/browser/types.ts:1067: 131
+src/browser/types.ts:1069: 123
+src/browser/types.ts:1071: 124
+src/browser/types.ts:1109: 257
+src/browser/types.ts:1111: 137
+src/browser/types.ts:1117: 123
+src/browser/types.ts:1125: 113
+src/browser/types.ts:1129: 129
+src/browser/types.ts:1131: 136
+src/browser/types.ts:1138: 105
+src/browser/types.ts:1140: 103
+src/browser/types.ts:1142: 114
+src/browser/types.ts:1144: 129
+src/browser/types.ts:1148: 131
+src/browser/types.ts:1150: 120
+src/browser/types.ts:1158: 115
+src/browser/types.ts:1160: 147
+src/browser/types.ts:1162: 126
+src/browser/types.ts:1176: 109
+src/browser/types.ts:1178: 173
+src/browser/types.ts:1180: 164
+src/browser/types.ts:1186: 114
+src/browser/types.ts:1190: 129
+src/browser/types.ts:1192: 127
+src/browser/types.ts:1194: 119
+src/browser/types.ts:1196: 120
+src/browser/types.ts:1214: 234
+src/browser/types.ts:1224: 236
+src/browser/types.ts:1252: 112
+src/browser/types.ts:1264: 123
+src/browser/types.ts:1272: 116
+src/browser/types.ts:1276: 117
+src/browser/types.ts:1278: 140
+src/browser/types.ts:1285: 116
+src/browser/types.ts:1287: 107
+src/browser/types.ts:1289: 114
+src/browser/types.ts:1295: 124
+src/browser/types.ts:1297: 118
+src/browser/types.ts:1299: 114
+src/browser/types.ts:1305: 115
+src/browser/types.ts:1307: 147
+src/browser/types.ts:1309: 126
+src/browser/types.ts:1323: 110
+src/browser/types.ts:1325: 114
+src/browser/types.ts:1329: 120
+src/browser/types.ts:1331: 127
+src/browser/types.ts:1333: 119
+src/browser/types.ts:1335: 120
+src/browser/types.ts:1344: 104
+src/browser/types.ts:1347: 102
+src/browser/types.ts:1348: 104
+src/browser/types.ts:1360: 167
+src/browser/types.ts:1370: 169
+src/browser/types.ts:1389: 136
+src/browser/types.ts:1403: 112
+src/browser/types.ts:1407: 103
+src/browser/types.ts:1409: 115
+src/browser/types.ts:1416: 107
+src/browser/types.ts:1422: 153
+src/browser/types.ts:1430: 124
+src/browser/types.ts:1440: 102
+src/browser/types.ts:1442: 130
+src/browser/types.ts:1446: 134
+src/browser/types.ts:1448: 104
+src/browser/types.ts:1450: 154
+src/browser/types.ts:1452: 125
+src/browser/types.ts:1454: 108
+src/browser/types.ts:1464: 123
+src/browser/types.ts:1466: 143
+src/browser/types.ts:1475: 143
+src/browser/types.ts:1484: 114
+src/browser/types.ts:1490: 127
+src/browser/types.ts:1495: 159
+src/browser/types.ts:1499: 124
+src/browser/types.ts:1501: 152
+src/browser/types.ts:1503: 176
+src/browser/types.ts:1506: 165
+src/browser/types.ts:1508: 121
+src/browser/types.ts:1510: 129
+src/browser/types.ts:1512: 132
+src/browser/types.ts:1514: 121
+src/browser/types.ts:1533: 237
+src/browser/types.ts:1535: 101
+src/browser/types.ts:1546: 141
+src/browser/types.ts:1556: 108
+src/browser/types.ts:1582: 101
+src/browser/types.ts:1585: 349
+src/browser/types.ts:1616: 112
+src/browser/types.ts:1620: 103
+src/browser/types.ts:1622: 115
+src/browser/types.ts:1629: 123
+src/browser/types.ts:1631: 153
+src/browser/types.ts:1635: 120
+src/browser/types.ts:1641: 122
+src/browser/types.ts:1650: 117
+src/browser/types.ts:1655: 101
+src/browser/types.ts:1659: 135
+src/browser/types.ts:1661: 129
+src/browser/types.ts:1663: 132
+src/browser/types.ts:1665: 122
+src/browser/types.ts:1671: 117
+src/browser/types.ts:1682: 237
+src/browser/types.ts:1684: 101
+src/browser/types.ts:1695: 141
+src/browser/types.ts:1705: 108
+src/browser/types.ts:1731: 101
+src/browser/types.ts:1734: 349
+src/browser/types.ts:1737: 103
+src/browser/types.ts:1765: 125
+src/browser/types.ts:1772: 106
+src/browser/types.ts:1774: 103
+src/browser/types.ts:1786: 124
+src/browser/types.ts:1798: 127
+src/browser/types.ts:1800: 118
+src/browser/types.ts:1802: 119
+src/browser/types.ts:1817: 148
+src/browser/types.ts:1839: 112
+src/browser/types.ts:1843: 113
+src/browser/types.ts:1850: 105
+src/browser/types.ts:1852: 102
+src/browser/types.ts:1858: 107
+src/browser/types.ts:1866: 122
+src/browser/types.ts:1872: 123
+src/browser/types.ts:1884: 145
+src/browser/types.ts:1886: 134
+src/browser/types.ts:1890: 127
+src/browser/types.ts:1892: 119
+src/browser/types.ts:1894: 119
+src/browser/types.ts:1911: 146
+src/browser/types.ts:1921: 169
+src/browser/types.ts:1955: 120
+src/browser/types.ts:1962: 104
+src/browser/types.ts:1965: 108
+src/browser/types.ts:1973: 116
+src/browser/types.ts:1975: 112
+src/browser/types.ts:1977: 101
+src/browser/types.ts:1979: 101
+src/browser/types.ts:1985: 115
+src/browser/types.ts:1987: 125
+src/browser/types.ts:1989: 153
+src/browser/types.ts:1993: 147
+src/browser/types.ts:2007: 102
+src/browser/types.ts:2009: 148
+src/browser/types.ts:2015: 115
+src/browser/types.ts:2019: 106
+src/browser/types.ts:2021: 130
+src/browser/types.ts:2023: 168
+src/browser/types.ts:2027: 104
+src/browser/types.ts:2029: 130
+src/browser/types.ts:2031: 122
+src/browser/types.ts:2033: 123
+src/browser/types.ts:2050: 243
+src/browser/types.ts:2060: 244
+src/browser/types.ts:2071: 169
+src/browser/validators.ts:27: 101
+src/browser/validators.ts:145: 107
+src/browser/validators.ts:148: 169
+long-lines listed
+--- review evidence
+diff lines: 4479
+ M guides/veneer.md
+ A src/browser/Backdrop.ts
+ M src/browser/Delegate.ts
+ A src/browser/Isolation.ts
+ A src/browser/Modal.ts
+ A src/browser/ScrollLock.ts
+ M src/browser/constants.ts
+ M src/browser/index.ts
+ M src/browser/parsers.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ A tests/src/browser/Backdrop.test.ts
+ M tests/src/browser/Delegate.test.ts
+ A tests/src/browser/Isolation.test.ts
+ A tests/src/browser/Modal.test.ts
+ A tests/src/browser/ScrollLock.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/parsers.test.ts
+ M tests/src/browser/validators.test.ts
+--- tree-wide typecheck (observation)
+npm notice run @orkestrel/veneer@0.0.1 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+npm notice run @orkestrel/veneer@0.0.1 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+npm notice run @orkestrel/veneer@0.0.1 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:styles
+npm notice run tsc --noEmit -p configs/src/tsconfig.styles.json
+npm notice run @orkestrel/veneer@0.0.1 check:app
+npm notice run npm run check:app:browser
+npm notice run @orkestrel/veneer@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+check exit=0
