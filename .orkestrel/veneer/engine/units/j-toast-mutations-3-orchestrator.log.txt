@@ -1,0 +1,144 @@
+# The Orchestrator's re-run of the J-TOAST round-3 mutations (2026-09-24, Chromium 153.0.8010.12, the unit's whole-file instrument j-toast-mutations-3.py as retained; worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/toast)
+worktree: fb00017 Land J-TOAST: the Toast engine and the delegate's toast dismiss route; selection: the delegate has no toast route the dismiss route prevents no anchor click the dismiss route prevents after the disabled check a disabled trigger hides the dismiss route reads no closest host the host token is the default the delegate drives a toast outside its root the toast mark is dropped the toast owner is not looked up the toast conflict is not refused a disabled trigger still contests the dismiss resolution reads no lifetime before it marks a toast constructed while the delegate was destroyed is kept (equivalent) a prevented nested show hands the identity back
+--- results (the instrument's stdout)
+JOINED exit=1 | the delegate has no toast route | tests/src/browser/Delegate.test.ts | 6 failed of 118 | named: ['hides the toast a dismiss trigger names by its target attribute or its href, or the toast it sits in, preventing an anchor click alone'] | joined: ['routes toast dismiss clicks by a replaced selector alone, reads the replaced host token, target attribute, and disabled token, and constructs each engine with the toast group', 'skips a dismiss trigger carrying the disabled token or attribute, preventing an anchor click all the same', 'leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots', 'leaves a toast to the live outer delegate when a listener to the button route destroys the inner delegate during the click', 'refuses a click whose button host is the toast its dismiss trigger resolves when neither engine exists, and drives both routes once when a consumer constructed the button']
+JOINED exit=1 | the dismiss route prevents no anchor click | tests/src/browser/Delegate.test.ts | 5 failed of 118 | named: ['hides the toast a dismiss trigger names by its target attribute or its href, or the toast it sits in, preventing an anchor click alone'] | joined: ['closes the alert a dismiss trigger names by its target attribute or its href fragment, and the alert it sits in, preventing the default action of an anchor trigger alone', 'skips a dismiss trigger carrying the disabled token or the disabled attribute, preventing an anchor trigger default all the same', 'hides the modal a dismiss trigger names or sits in, prevents an anchor default, and hides nothing from a disabled trigger', 'skips a dismiss trigger carrying the disabled token or attribute, preventing an anchor click all the same']
+EXACT exit=1 | the dismiss route prevents after the disabled check | tests/src/browser/Delegate.test.ts | 2 failed of 118 | named: ['skips a dismiss trigger carrying the disabled token or the disabled attribute, preventing an anchor trigger default all the same', 'skips a dismiss trigger carrying the disabled token or attribute, preventing an anchor click all the same'] | joined: []
+JOINED exit=1 | a disabled trigger hides | tests/src/browser/Delegate.test.ts | 6 failed of 118 | named: ['skips a dismiss trigger carrying the disabled token or the disabled attribute, preventing an anchor trigger default all the same', 'skips a dismiss trigger carrying the disabled token or attribute, preventing an anchor click all the same'] | joined: ['routes dismiss clicks by a replaced selector alone and constructs each engine with the alert group', 'hides the modal a dismiss trigger names or sits in, prevents an anchor default, and hides nothing from a disabled trigger', 'routes toast dismiss clicks by a replaced selector alone, reads the replaced host token, target attribute, and disabled token, and constructs each engine with the toast group', 'drives the button route alone when the dismiss trigger inside the toast that is its button host is disabled']
+JOINED exit=1 | the dismiss route reads no closest host | tests/src/browser/Delegate.test.ts | 17 failed of 118 | named: ['hides the toast a dismiss trigger names by its target attribute or its href, or the toast it sits in, preventing an anchor click alone'] | joined: ['closes the alert a dismiss trigger names by its target attribute or its href fragment, and the alert it sits in, preventing the default action of an anchor trigger alone', 'closes an alert through a trusted click on its close control, moving focus nowhere', 'drives the alert a consumer constructed, which keeps its own groups and hooks', 'routes dismiss clicks by a replaced selector alone and constructs each engine with the alert group', 'refuses a click whose button host is the alert its dismiss trigger closes when neither engine exists, driving neither route', 'drives the button route and the alert route once each when the alert is the button host and carries a button a consumer constructed', 'drives the button route and the alert route once each when the alert is the button host and carries an alert a consumer constructed', 'toggles a dismiss trigger that is itself a button host and closes the alert it sits in on one click', 'closes an alert under nested roots once per click', 'restores an alert whose fade is in flight when the delegate that acquired it is destroyed, dispatching no closed event', 'releases an alert engine it acquired at the observer delivery after the alert leaves its root', 'hides the modal a dismiss trigger names or sits in, prevents an anchor default, and hides nothing from a disabled trigger', 'routes modal clicks by replaced selectors alone and constructs each engine with the modal group', 'routes toast dismiss clicks by a replaced selector alone, reads the replaced host token, target attribute, and disabled token, and constructs each engine with the toast group', 'leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots', 'refuses a click whose button host is the toast its dismiss trigger resolves when neither engine exists, and drives both routes once when a consumer constructed the button']
+EXACT exit=1 | the host token is the default | tests/src/browser/Delegate.test.ts | 1 failed of 118 | named: ['routes toast dismiss clicks by a replaced selector alone, reads the replaced host token, target attribute, and disabled token, and constructs each engine with the toast group'] | joined: []
+JOINED exit=1 | the delegate drives a toast outside its root | tests/src/browser/Delegate.test.ts | 2 failed of 118 | named: ['leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots'] | joined: ['leaves an alert outside its root alone, whether the trigger names it or sits in it']
+JOINED exit=1 | the toast mark is dropped | tests/src/browser/Delegate.test.ts | 3 failed of 118 | named: ['leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots'] | joined: ['closes an alert under nested roots once per click', 'drives the modal a click names once under nested roots, hiding the shown modal once and dismissing once']
+EXACT exit=1 | the toast owner is not looked up | tests/src/browser/Delegate.test.ts | 1 failed of 118 | named: ['leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots'] | joined: []
+JOINED exit=1 | the toast conflict is not refused | tests/src/browser/Delegate.test.ts | 2 failed of 118 | named: ['refuses a click whose button host is the toast its dismiss trigger resolves when neither engine exists, and drives both routes once when a consumer constructed the button'] | joined: ['refuses a click whose collapse trigger names the toast its dismiss trigger resolves when neither engine exists, driving neither route']
+EXACT exit=1 | a disabled trigger still contests | tests/src/browser/Delegate.test.ts | 1 failed of 118 | named: ['drives the button route alone when the dismiss trigger inside the toast that is its button host is disabled'] | joined: []
+EXACT exit=1 | a prevented nested show hands the identity back | tests/src/browser/Toast.test.ts | 1 failed of 38 | named: ['resolves both calls false and writes nothing when a listener to its show event shows it again and prevents that nested show'] | joined: []
+JOINED exit=1 | the dismiss resolution reads no lifetime before it marks | tests/src/browser/Delegate.test.ts | 2 failed of 118 | named: ['leaves a toast to the live outer delegate when a listener to the button route destroys the inner delegate during the click'] | joined: ['acquires and hides nothing through the dismiss route after a listener to the button route destroys the delegate']
+MISSED exit=0 | a toast constructed while the delegate was destroyed is kept (equivalent) | tests/src/browser/Delegate.test.ts | 0 failed of 118 | named: [] | joined: []
+receipt: restored byte for byte
+--- the instrument's log rows for this run (tmp/j-toast/mutations-3.log.txt)
+digest before: {"src/browser/Toast.ts": "01733b3b36f5a51241249df0e691d608f9ed8dd4949bfe7fef2fd28dfbb9f79a", "src/browser/Delegate.ts": "ddb1beb8b90f451f00bb863f256341142bbd44be8052bccfb9d64c33dd33e42c", "src/browser/validators.ts": "418eb0bba7fe02d4209487b4fb15e550b26d5368a1535ee32b6f359bb0ddcbe2", "src/browser/constants.ts": "dad5df204dc5a706205de93ff9ca34cf12e1c9332728cee3feef49347c202525", "src/browser/index.ts": "75fe9faea5fc1026d431eb397626199ecb6d670646cc8e78a6f7020acdff7b53"}
+JOINED exit=1 | the delegate has no toast route | tests/src/browser/Delegate.test.ts | 6 failed of 118 | named: ['hides the toast a dismiss trigger names by its target attribute or its href, or the toast it sits in, preventing an anchor click alone'] | joined: ['routes toast dismiss clicks by a replaced selector alone, reads the replaced host token, target attribute, and disabled token, and constructs each engine with the toast group', 'skips a dismiss trigger carrying the disabled token or attribute, preventing an anchor click all the same', 'leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots', 'leaves a toast to the live outer delegate when a listener to the button route destroys the inner delegate during the click', 'refuses a click whose button host is the toast its dismiss trigger resolves when neither engine exists, and drives both routes once when a consumer constructed the button']
+JOINED exit=1 | the dismiss route prevents no anchor click | tests/src/browser/Delegate.test.ts | 5 failed of 118 | named: ['hides the toast a dismiss trigger names by its target attribute or its href, or the toast it sits in, preventing an anchor click alone'] | joined: ['closes the alert a dismiss trigger names by its target attribute or its href fragment, and the alert it sits in, preventing the default action of an anchor trigger alone', 'skips a dismiss trigger carrying the disabled token or the disabled attribute, preventing an anchor trigger default all the same', 'hides the modal a dismiss trigger names or sits in, prevents an anchor default, and hides nothing from a disabled trigger', 'skips a dismiss trigger carrying the disabled token or attribute, preventing an anchor click all the same']
+EXACT exit=1 | the dismiss route prevents after the disabled check | tests/src/browser/Delegate.test.ts | 2 failed of 118 | named: ['skips a dismiss trigger carrying the disabled token or the disabled attribute, preventing an anchor trigger default all the same', 'skips a dismiss trigger carrying the disabled token or attribute, preventing an anchor click all the same'] | joined: []
+JOINED exit=1 | a disabled trigger hides | tests/src/browser/Delegate.test.ts | 6 failed of 118 | named: ['skips a dismiss trigger carrying the disabled token or the disabled attribute, preventing an anchor trigger default all the same', 'skips a dismiss trigger carrying the disabled token or attribute, preventing an anchor click all the same'] | joined: ['routes dismiss clicks by a replaced selector alone and constructs each engine with the alert group', 'hides the modal a dismiss trigger names or sits in, prevents an anchor default, and hides nothing from a disabled trigger', 'routes toast dismiss clicks by a replaced selector alone, reads the replaced host token, target attribute, and disabled token, and constructs each engine with the toast group', 'drives the button route alone when the dismiss trigger inside the toast that is its button host is disabled']
+JOINED exit=1 | the dismiss route reads no closest host | tests/src/browser/Delegate.test.ts | 17 failed of 118 | named: ['hides the toast a dismiss trigger names by its target attribute or its href, or the toast it sits in, preventing an anchor click alone'] | joined: ['closes the alert a dismiss trigger names by its target attribute or its href fragment, and the alert it sits in, preventing the default action of an anchor trigger alone', 'closes an alert through a trusted click on its close control, moving focus nowhere', 'drives the alert a consumer constructed, which keeps its own groups and hooks', 'routes dismiss clicks by a replaced selector alone and constructs each engine with the alert group', 'refuses a click whose button host is the alert its dismiss trigger closes when neither engine exists, driving neither route', 'drives the button route and the alert route once each when the alert is the button host and carries a button a consumer constructed', 'drives the button route and the alert route once each when the alert is the button host and carries an alert a consumer constructed', 'toggles a dismiss trigger that is itself a button host and closes the alert it sits in on one click', 'closes an alert under nested roots once per click', 'restores an alert whose fade is in flight when the delegate that acquired it is destroyed, dispatching no closed event', 'releases an alert engine it acquired at the observer delivery after the alert leaves its root', 'hides the modal a dismiss trigger names or sits in, prevents an anchor default, and hides nothing from a disabled trigger', 'routes modal clicks by replaced selectors alone and constructs each engine with the modal group', 'routes toast dismiss clicks by a replaced selector alone, reads the replaced host token, target attribute, and disabled token, and constructs each engine with the toast group', 'leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots', 'refuses a click whose button host is the toast its dismiss trigger resolves when neither engine exists, and drives both routes once when a consumer constructed the button']
+EXACT exit=1 | the host token is the default | tests/src/browser/Delegate.test.ts | 1 failed of 118 | named: ['routes toast dismiss clicks by a replaced selector alone, reads the replaced host token, target attribute, and disabled token, and constructs each engine with the toast group'] | joined: []
+JOINED exit=1 | the delegate drives a toast outside its root | tests/src/browser/Delegate.test.ts | 2 failed of 118 | named: ['leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots'] | joined: ['leaves an alert outside its root alone, whether the trigger names it or sits in it']
+JOINED exit=1 | the toast mark is dropped | tests/src/browser/Delegate.test.ts | 3 failed of 118 | named: ['leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots'] | joined: ['closes an alert under nested roots once per click', 'drives the modal a click names once under nested roots, hiding the shown modal once and dismissing once']
+EXACT exit=1 | the toast owner is not looked up | tests/src/browser/Delegate.test.ts | 1 failed of 118 | named: ['leaves a toast outside its root alone, drives the toast a consumer constructed, and hides a toast once per click under nested roots'] | joined: []
+JOINED exit=1 | the toast conflict is not refused | tests/src/browser/Delegate.test.ts | 2 failed of 118 | named: ['refuses a click whose button host is the toast its dismiss trigger resolves when neither engine exists, and drives both routes once when a consumer constructed the button'] | joined: ['refuses a click whose collapse trigger names the toast its dismiss trigger resolves when neither engine exists, driving neither route']
+EXACT exit=1 | a disabled trigger still contests | tests/src/browser/Delegate.test.ts | 1 failed of 118 | named: ['drives the button route alone when the dismiss trigger inside the toast that is its button host is disabled'] | joined: []
+EXACT exit=1 | a prevented nested show hands the identity back | tests/src/browser/Toast.test.ts | 1 failed of 38 | named: ['resolves both calls false and writes nothing when a listener to its show event shows it again and prevents that nested show'] | joined: []
+JOINED exit=1 | the dismiss resolution reads no lifetime before it marks | tests/src/browser/Delegate.test.ts | 2 failed of 118 | named: ['leaves a toast to the live outer delegate when a listener to the button route destroys the inner delegate during the click'] | joined: ['acquires and hides nothing through the dismiss route after a listener to the button route destroys the delegate']
+MISSED exit=0 | a toast constructed while the delegate was destroyed is kept (equivalent) | tests/src/browser/Delegate.test.ts | 0 failed of 118 | named: [] | joined: []
+digest after: {"src/browser/Toast.ts": "01733b3b36f5a51241249df0e691d608f9ed8dd4949bfe7fef2fd28dfbb9f79a", "src/browser/Delegate.ts": "ddb1beb8b90f451f00bb863f256341142bbd44be8052bccfb9d64c33dd33e42c", "src/browser/validators.ts": "418eb0bba7fe02d4209487b4fb15e550b26d5368a1535ee32b6f359bb0ddcbe2", "src/browser/constants.ts": "dad5df204dc5a706205de93ff9ca34cf12e1c9332728cee3feef49347c202525", "src/browser/index.ts": "75fe9faea5fc1026d431eb397626199ecb6d670646cc8e78a6f7020acdff7b53"}
+receipt: restored byte for byte
+--- the Orchestrator's restore check
+every source restored byte for byte (the Orchestrator's digest)
+--- status after
+M  ROADMAP.md
+M  app/browser/Showcase.ts
+M  app/browser/constants.ts
+M  app/browser/index.ts
+A  app/browser/sections/FloatSection.ts
+A  app/browser/sections/FocusRingSection.ts
+A  app/browser/sections/ModalSection.ts
+A  app/browser/sections/ObjectFitSection.ts
+A  app/browser/sections/OpacitySection.ts
+A  app/browser/sections/OverflowSection.ts
+A  app/browser/sections/PopoverSection.ts
+A  app/browser/sections/ShadowSection.ts
+A  app/browser/sections/TooltipSection.ts
+M  app/browser/sections/TypeSection.ts
+M  guides/veneer.md
+A  src/browser/Alert.ts
+A  src/browser/Backdrop.ts
+M  src/browser/Button.ts
+A  src/browser/Carousel.ts
+M  src/browser/Collapse.ts
+M  src/browser/Delegate.ts
+A  src/browser/Dropdown.ts
+A  src/browser/Isolation.ts
+A  src/browser/Modal.ts
+A  src/browser/Placement.ts
+A  src/browser/ScrollLock.ts
+A  src/browser/ScrollSpy.ts
+A  src/browser/Swipe.ts
+A  src/browser/Tab.ts
+M  src/browser/constants.ts
+M  src/browser/helpers.ts
+M  src/browser/index.ts
+M  src/browser/parsers.ts
+M  src/browser/types.ts
+M  src/browser/validators.ts
+M  src/styles/_mixins.scss
+M  src/styles/components/_card.scss
+A  src/styles/components/_clearfix.scss
+A  src/styles/components/_focus-ring.scss
+A  src/styles/components/_modal.scss
+A  src/styles/components/_popover.scss
+A  src/styles/components/_stretched-link.scss
+A  src/styles/components/_tooltip.scss
+M  src/styles/index.scss
+A  src/styles/utilities/_float.scss
+A  src/styles/utilities/_font.scss
+A  src/styles/utilities/_object-fit.scss
+A  src/styles/utilities/_opacity.scss
+A  src/styles/utilities/_overflow.scss
+A  src/styles/utilities/_shadow.scss
+M  tests/app/browser/Showcase.test.ts
+M  tests/app/browser/index.test.ts
+M  tests/app/browser/integration.test.ts
+A  tests/app/browser/sections/FloatSection.test.ts
+A  tests/app/browser/sections/FocusRingSection.test.ts
+M  tests/app/browser/sections/LinkSection.test.ts
+A  tests/app/browser/sections/ModalSection.test.ts
+A  tests/app/browser/sections/ObjectFitSection.test.ts
+A  tests/app/browser/sections/OpacitySection.test.ts
+A  tests/app/browser/sections/OverflowSection.test.ts
+A  tests/app/browser/sections/PopoverSection.test.ts
+A  tests/app/browser/sections/ShadowSection.test.ts
+A  tests/app/browser/sections/TooltipSection.test.ts
+M  tests/app/browser/sections/TypeSection.test.ts
+M  tests/conformance.test.ts
+M  tests/fixtures/tailwind/consumer.css
+M  tests/fixtures/tailwind/markup.html
+M  tests/fixtures/tailwind/preflight.css
+M  tests/setup.css
+M  tests/setup.test.ts
+M  tests/setup.ts
+M  tests/setupServer.test.ts
+M  tests/setupStyles.test.ts
+M  tests/setupStyles.ts
+A  tests/src/browser/Alert.test.ts
+A  tests/src/browser/Backdrop.test.ts
+A  tests/src/browser/Carousel.test.ts
+M  tests/src/browser/Delegate.test.ts
+A  tests/src/browser/Dropdown.test.ts
+A  tests/src/browser/Isolation.test.ts
+A  tests/src/browser/Modal.test.ts
+A  tests/src/browser/Placement.test.ts
+A  tests/src/browser/ScrollLock.test.ts
+A  tests/src/browser/ScrollSpy.test.ts
+A  tests/src/browser/Swipe.test.ts
+A  tests/src/browser/Tab.test.ts
+M  tests/src/browser/Toast.test.ts
+M  tests/src/browser/helpers.test.ts
+M  tests/src/browser/index.test.ts
+M  tests/src/browser/parsers.test.ts
+M  tests/src/browser/validators.test.ts
+A  tests/src/styles/components/clearfix.test.ts
+A  tests/src/styles/components/focus-ring.test.ts
+A  tests/src/styles/components/modal.test.ts
+A  tests/src/styles/components/popover.test.ts
+A  tests/src/styles/components/stretched-link.test.ts
+A  tests/src/styles/components/tooltip.test.ts
+M  tests/src/styles/fixtures/mixins.scss
+M  tests/src/styles/mixins.test.ts
+A  tests/src/styles/utilities/float.test.ts
+A  tests/src/styles/utilities/font.test.ts
+A  tests/src/styles/utilities/object-fit.test.ts
+A  tests/src/styles/utilities/opacity.test.ts
+A  tests/src/styles/utilities/overflow.test.ts
+A  tests/src/styles/utilities/shadow.test.ts

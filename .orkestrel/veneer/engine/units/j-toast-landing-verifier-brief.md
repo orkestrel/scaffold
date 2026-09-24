@@ -6,7 +6,7 @@
 
 ## Objective
 
-Exit-code truth for the gate chain on Veneer `main` at `TOAST_HEAD` (the J-TOAST landing: `fb00017` and its merge commit), in the checkout `C:/Users/mikes/WebstormProjects/veneer`.
+Exit-code truth for the gate chain on Veneer `main` at `e8251cf` (the J-TOAST landing: `fb00017` and its merge commit), in the checkout `C:/Users/mikes/WebstormProjects/veneer`.
 
 ## Context
 
