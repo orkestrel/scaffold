@@ -1,0 +1,19 @@
+Ship the offcanvas key with its section, proofs, and guide rows
+
+The offcanvas key ships whole in the components layer: the fixed panel with its four placements and
+its showing, hiding, and shown states, the responsive panels that sit in the flow from their boundary
+up, the header's close-control combinator, the title and body, and the backdrop, which the
+overlay-backdrop mixin writes. The bare panel and every responsive panel below its boundary emit the
+same declaration maps, so neither can drift from the other. The panel and backdrop levels bind to the
+drawer rungs of the stacking ladder, the insets and title line read their tokens, and motion runs
+through the transition mixin. The navbar comment states the cascade that holds an offcanvas in an
+expanded bar in the flow. The Offcanvas region renders each placement shown inside its own frame, the
+Navbar region gains the navbar-with-offcanvas specimen, and the guide carries the offcanvas section, the ledger and compatibility rows, the ramp paragraph, and
+the Offcanvas plugin row owned by J-ENGINE.
+
+B-MODAL wave 2, unit OFFCANVAS: three rounds on `opus`, the first audited by `analyst` on Astra,
+`reviewer` on Opus 5.5, and `checker`, the second by `analyst` on Astra and `checker`, and the
+third, a prose round, by `checker`.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
