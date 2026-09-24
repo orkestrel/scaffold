@@ -3,7 +3,7 @@
 # temporary worktree on a `unit/<unit>` branch cut from the committed `main` tip, and its landing
 # cherry-picks the unit's commits onto `main` and removes the worktree and the branch. The session
 # itself works on `main` in the user's checkout. Usage:
-#   unit-worktree.sh new <unit>                      create ../veneer-<unit> on unit/<unit> from main, install
+#   unit-worktree.sh new <unit>                      create tmp/worktrees/<unit> (inside the veneer checkout, an ignored path; E14) on unit/<unit> from main, install
 #   unit-worktree.sh commit <unit> <message-file> <pathspec>...   commit the named paths in the worktree
 #   unit-worktree.sh land <unit>                     fast-forward main to origin, cherry-pick unit/<unit>, remove
 #   unit-worktree.sh drop <unit>                     remove the worktree and branch without landing
@@ -15,11 +15,16 @@ if [ -z "$ACTION" ] || [ -z "$UNIT" ]; then
 	echo "usage: unit-worktree.sh new|commit|land|drop <unit> [args]" >&2
 	exit 64
 fi
-TREE="/c/Users/mikes/WebstormProjects/veneer-$UNIT"
+# E14 (the user, 2026-09-24): a unit worktree lives under the veneer checkout's ignored tmp/ folder, never
+# beside the checkout. The one worktree created before the ruling (veneer-collapse) keeps its path until
+# it lands, so an existing sibling path is honoured for land and drop.
+TREE="$VENEER/tmp/worktrees/$UNIT"
+if [ -d "/c/Users/mikes/WebstormProjects/veneer-$UNIT" ]; then TREE="/c/Users/mikes/WebstormProjects/veneer-$UNIT"; fi
 BRANCH="unit/$UNIT"
 case "$ACTION" in
 	new)
 		git -C "$VENEER" fetch origin main || exit 1
+		mkdir -p "$VENEER/tmp/worktrees" || exit 1
 		git -C "$VENEER" worktree add -b "$BRANCH" "$TREE" main || exit 1
 		cd "$TREE" || exit 1
 		npm ci --ignore-scripts || exit 1
