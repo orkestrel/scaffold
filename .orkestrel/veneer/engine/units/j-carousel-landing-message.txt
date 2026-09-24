@@ -16,10 +16,11 @@ swipes from pointer events. The delegate routes slide controls by their step and
 while the delegate is still live, constructs a carousel through the shared construct path, and scans
 its root at construction for load rides. The parsers, the guards, the frozen tables with
 CarouselVocabulary and the pointer class, the barrel exports, and the guide's Carousel subsection with
-its plugin row shipped. Two rounds: the round-1 audit by the analyst on Astra, the reviewer on Opus,
-and the checker (units/j-carousel-audit-verdict.md); round 2 by the analyst on Astra and the checker
-(units/j-carousel-audit-2-verdict.md); the landing round merges main and folds the shared delegate
-members. J-ENGINE campaign (D43).
+its plugin row shipped. Three rounds: the round-1 audit by the analyst on Astra, the reviewer on
+Opus, and the checker (units/j-carousel-audit-verdict.md); rounds 2 and 3 by the analyst on Astra and
+the checker (units/j-carousel-audit-2-verdict.md, units/j-carousel-audit-3-verdict.md); the landing
+round merges main, folds the shared delegate members, and carries the mouse-release invalidation of
+the tap exemption under an objective lane. J-ENGINE campaign (D43).
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F
