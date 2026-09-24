@@ -4,7 +4,10 @@
 
 `opus` on Opus 5.5, the same native subagent that wrote round 1, in the worktree `/home/user/veneer-bcf`
 (branch `unit/bcf`). Before this dispatch the Orchestrator committed round 1 on `unit/bcf` and merged the
-session branch into it, so the worktree holds round 1's edits over the session head that carries PAGE-FRAME.
+session branch into it, so the worktree's head `f4e5693` holds round 1's edits over the session head `ec98064`,
+which carries PAGE-FRAME. The merge kept PAGE-FRAME's wording and BCF's padded lift in the resting-frame comment of
+`tests/app/browser/integration.test.ts`, and PAGE-FRAME's measurement wording with BCF's pointer-release sentence in
+the `CASCADE_KEYS` remarks of `tests/setup.ts`.
 The executor that opens this brief is that subagent.
 
 ## What changed and why
