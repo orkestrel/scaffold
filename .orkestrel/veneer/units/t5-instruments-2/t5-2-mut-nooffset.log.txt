@@ -1,0 +1,73 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------········xxx···x·······---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane and hands the scroll back
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 0, 255)' // Object.is equality
+
+Expected: [32m"rgb([7m0, 0[27m, 255)"[39m
+Received: [31m"rgb([7m255, 255[27m, 255)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3197:24
+    3195|   // The panel's own color on the bottom row is what separates a shot …
+    3196|   // of the document behind it or of the runner's page.
+    3197|   expect(reading.floor).toBe('rgb(0, 0, 255)')
+       |                        ^
+    3198|   expect(window.scrollY).toBe(400)
+    3199|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3201:2 > captureFrame > shoots an element that ends below the declared pane whole, on the document floor
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 128, 0)' // Object.is equality
+
+Expected: [32m"rgb([7m0, 128, 0[27m)"[39m
+Received: [31m"rgb([7m255, 255, 255[27m)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3222:24
+    3220|   expect(reading.width).toBe(390)
+    3221|   expect(reading.height).toBe(100)
+    3222|   expect(reading.floor).toBe('rgb(0, 128, 0)')
+       |                        ^
+    3223|   expect(window.scrollY).toBe(200)
+    3224|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3226:2 > captureFrame > shoots a viewport-height element below the fold at the declared pane
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 0, 255)' // Object.is equality
+
+Expected: [32m"rgb([7m0, 0[27m, 255)"[39m
+Received: [31m"rgb([7m255, 255[27m, 255)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3241:24
+    3239|   expect(reading.width).toBe(390)
+    3240|   expect(reading.height).toBe(422)
+    3241|   expect(reading.floor).toBe('rgb(0, 0, 255)')
+       |                        ^
+    3242|  })
+    3243|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3316:2 > captureFrame > offsets only the calling tester frame, and hands its style back
+AssertionError: expected 0 to be less than 0
+ ❯ tests/src/browser/helpers.test.ts:3350:60
+    3348|   }
+    3349|   // The calling frame moving is the control that a reading was taken …
+    3350|   expect(Math.min(...readings.map(([calling]) => calling))).toBeLessTh…
+       |                                                            ^
+    3351|   expect(readings.map(([, reading]) => reading).filter((reading) => re…
+    3352|   expect(frame.getAttribute('style')).toBe(style)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 18 passed | 334 skipped (356)
+   Start at  17:11:48
+   Duration  16.91s (transform 0ms, setup 264ms, import 320ms, tests 6.76s, environment 0ms)
+

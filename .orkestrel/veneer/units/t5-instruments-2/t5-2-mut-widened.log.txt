@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------··············x·······---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3316:2 > captureFrame > offsets only the calling tester frame, and hands its style back
+AssertionError: expected [ -331, -331, -331, -331, -331 ] to strictly equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   -331,[39m
+[31m+   -331,[39m
+[31m+   -331,[39m
+[31m+   -331,[39m
+[31m+   -331,[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/helpers.test.ts:3351:82
+    3349|   // The calling frame moving is the control that a reading was taken …
+    3350|   expect(Math.min(...readings.map(([calling]) => calling))).toBeLessTh…
+    3351|   expect(readings.map(([, reading]) => reading).filter((reading) => re…
+       |                                                                                  ^
+    3352|   expect(frame.getAttribute('style')).toBe(style)
+    3353|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 passed | 334 skipped (356)
+   Start at  17:11:07
+   Duration  20.54s (transform 0ms, setup 275ms, import 369ms, tests 7.04s, environment 0ms)
+
