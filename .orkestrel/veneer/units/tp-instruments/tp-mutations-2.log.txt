@@ -1,0 +1,80 @@
+# TIP round-2 mutation runs on the validation copy tmp/probe/base (2a3f223 + the tp-shared-2 edits + the owned files).
+2026-09-24T02:16:30Z
+## 0 P1 T-box inset written as the release literal
+   site: src/styles/components/_tooltip.scss
+   replaced: '--bs-tooltip-padding-x: var(--vn-space-4);'
+   with: '--bs-tooltip-padding-x: 0.5rem;'
+   command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/tooltip.test.ts
+   build exit 0; vitest exit 1; ['Tests  1 failed | 8 passed (9)']
+   failing: tests/src/styles/components/tooltip.test.ts:122:2 > tooltip box > caps, pads, rounds, and sizes the inner box from its own slots and the density and type scales
+## 1 P1 T-box text size written as the release literal
+   site: src/styles/components/_tooltip.scss
+   replaced: '--bs-tooltip-font-size: var(--vn-size-2);'
+   with: '--bs-tooltip-font-size: 0.875rem;'
+   command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/tooltip.test.ts
+   build exit 0; vitest exit 1; ['Tests  1 failed | 8 passed (9)']
+   failing: tests/src/styles/components/tooltip.test.ts:122:2 > tooltip box > caps, pads, rounds, and sizes the inner box from its own slots and the density and type scales
+## 2 P1 P-box inset written as the release literal
+   site: src/styles/components/_popover.scss
+   replaced: '--bs-popover-body-padding-y: var(--vn-space-8);'
+   with: '--bs-popover-body-padding-y: 1rem;'
+   command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/popover.test.ts
+   build exit 0; vitest exit 1; ['Tests  1 failed | 10 passed (11)']
+   failing: tests/src/styles/components/popover.test.ts:120:2 > popover box > caps, borders, rounds, pads, and sizes the box from its own slots and the density and type scales
+## 3 P1 P-box text size written as the release literal
+   site: src/styles/components/_popover.scss
+   replaced: '--bs-popover-header-font-size: var(--vn-size-3);'
+   with: '--bs-popover-header-font-size: 1rem;'
+   command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/popover.test.ts
+   build exit 0; vitest exit 1; ['Tests  1 failed | 10 passed (11)']
+   failing: tests/src/styles/components/popover.test.ts:120:2 > popover box > caps, borders, rounds, pads, and sizes the box from its own slots and the density and type scales
+## 4 P5 the border-left-color reading dropped from TIP_ARROW_PROPERTIES
+   site: tests/setupStyles.ts
+   replaced: "\t'border-bottom-color',\n\t'border-left-color',\n])"
+   with: "\t'border-bottom-color',\n])"
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+   build exit skipped (no stylesheet changed); vitest exit 1; ['Tests  1 failed | 125 passed (126)']
+   failing: tests/setupStyles.test.ts > tip case tables > reads every box, offset, border width, and border color the release records on either arrow
+restored; restoring build exit 0
+## 5 P6 the 390 width assertion inverted
+   site: tests/app/browser/sections/PopoverSection.test.ts
+   replaced: 'narrow.filter((width) => width >= 276)'
+   with: 'narrow.filter((width) => width < 276)'
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/PopoverSection.test.ts
+   build exit skipped (no stylesheet changed); vitest exit 1; ['Tests  1 failed | 4 passed (5)']
+   failing: tests/app/browser/sections/PopoverSection.test.ts:160:2 > PopoverSection > wraps each popover narrower than its cap at the 390 variant and holds it at the cap at 1280
+## 6 Retitled tooltip arrow case: the top entry given the bottom side and the top edge
+   site: src/styles/components/_tooltip.scss
+   replaced: '\ttop: (\n\t\tside: top,\n\t\tedge: bottom,'
+   with: '\ttop: (\n\t\tside: bottom,\n\t\tedge: top,'
+   command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/tooltip.test.ts
+   build exit 0; vitest exit 1; ['Tests  5 failed | 4 passed (9)']
+   failing: tests/src/styles/components/tooltip.test.ts:154:2 > tooltip arrow > hangs the arrow from the edge facing the host and paints the tip's fill on its border facing the tip, so it points at the host
+   failing: tests/src/styles/components/tooltip.test.ts:195:2 > tooltip arrow > resolves each automatic placement to the geometry of the explicit side its attribute names
+   failing: tests/src/styles/components/tooltip.test.ts:225:3 > tooltip colors > in dark > paints the emphasis alias as its fill and the body surface alias as its text
+   failing: tests/src/styles/components/tooltip.test.ts:225:3 > tooltip colors > in light > paints the emphasis alias as its fill and the body surface alias as its text
+   failing: tests/src/styles/components/tooltip.test.ts:36:2 > tooltip rules > writes the recorded tooltip selectors and no other rule on their classes
+## 7 Retitled popover arrow case: the end entry given the left side and the right edge
+   site: src/styles/components/_popover.scss
+   replaced: '\tend: (\n\t\tside: right,\n\t\tedge: left,'
+   with: '\tend: (\n\t\tside: left,\n\t\tedge: right,'
+   command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/popover.test.ts
+   build exit 0; vitest exit 1; ['Tests  3 failed | 8 passed (11)']
+   failing: tests/src/styles/components/popover.test.ts:180:2 > popover arrow > hangs the arrow past the edge facing the host and paints the edge color under the fill on its borders facing the popover, so it points at the host
+   failing: tests/src/styles/components/popover.test.ts:217:2 > popover arrow > resolves each automatic placement to the geometry of the explicit side its attribute names
+   failing: tests/src/styles/components/popover.test.ts:36:2 > popover rules > writes the recorded popover selectors and no other rule on their classes
+## 8 Edited section contract: the untitled popover header written as an h2 element
+   site: app/browser/constants.ts
+   replaced: '<h3 class="popover-header"></h3>'
+   with: '<h2 class="popover-header"></h2>'
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/PopoverSection.test.ts
+   build exit skipped (no stylesheet changed); vitest exit 1; ['Tests  1 failed | 4 passed (5)']
+   failing: tests/app/browser/sections/PopoverSection.test.ts:17:2 > PopoverSection > renders one popover per explicit placement and an untitled popover alone in a frame through the shared section contract
+## 9 Edited section contract: the untitled popover header given a title
+   site: app/browser/constants.ts
+   replaced: '<h3 class="popover-header"></h3>'
+   with: '<h3 class="popover-header">Untitled</h3>'
+   command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/PopoverSection.test.ts
+   build exit skipped (no stylesheet changed); vitest exit 1; ['Tests  1 failed | 4 passed (5)']
+   failing: tests/app/browser/sections/PopoverSection.test.ts:17:2 > PopoverSection > renders one popover per explicit placement and an untitled popover alone in a frame through the shared section contract
+restored; restoring build exit 0
