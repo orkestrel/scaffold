@@ -1,0 +1,1815 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 35cd52b..a3e9af5 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2038,12 +2038,15 @@ The modal composes the following mechanisms, which the browser entry exports as
+   first lock reads it after the body's overflow write and after each padding and margin write, so
+   one released there writes nothing more. The modal passes its own lifetime as that signal.
+ - The `Backdrop` class shows and hides one `div` element carrying the `host` token, and the `fade`
+-  token when `animated` is `true`, in its parent, the body by default. Showing appends the element,
+-  forces a layout read when animated, and adds the `shown` token; hiding removes the token, waits
+-  for the fade to settle, and writes nothing after it, so the element stays in its parent until
+-  destruction removes it. The owner removes the element as a step of its own hide, after its own
+-  door reads, so a hide its owner stopped leaves the element in place. The modal passes its own
+-  `backdrop`, `shown`, and `fade` tokens, and the `BACKDROP_CLASSES` constant holds the defaults.
++  token when `animated` is `true`, in its parent, the body by default. Showing appends the element
++  unless its parent holds it, forces a layout read when animated, and adds the `shown` token; hiding
++  removes the token, waits for the fade to settle, and writes nothing after it, so the element
++  stays in its parent until destruction removes it. The owner removes the element as a step of its
++  own hide, after its own door reads, so a hide its owner stopped leaves the element in place, and
++  showing it again moves nothing. An element the backdrop holds reacts inside its insertion, so a
++  show reads whether the backdrop is destroyed or a later call started after the insertion, and
++  writes no `shown` token when either holds. The modal passes its own `backdrop`, `shown`, and
++  `fade` tokens, and the `BACKDROP_CLASSES` constant holds the defaults.
+ - The `Isolation` class claims every HTML element of the host's ancestor chain up to the body, the
+   host included, as not inert, and every HTML element beside that chain at each level as inert, and
+   it observes each of those levels for insertions, so an isolation constructed inside another one
+@@ -2124,18 +2127,30 @@ function checks that shape.
+ 
+ A call reads the host at each of its doors for the phase it is in: until a show adds the `shown`
+ token, and from the moment a hide removes it, the host must lack the token, and in between it must
+-carry it. A call that finds the host otherwise or the modal destroyed reads the change as taken
+-over: it stops, writing and dispatching nothing more, and resolves `false`. The doors end when the
+-call dispatches its completed event: a listener to that event that shows or hides the modal starts
+-a new change, and the call whose event it heard still resolves `true`. Every other `show` or
+-`hide` call is refused while a change is in flight, so a listener that shows the modal again inside
+-`show.vn.modal` runs the one show and dispatches the one `shown.vn.modal` event: its own call
+-resolves `true`, and the call whose event it heard resolves `false`. A call that only the host took
+-over also ends the change in flight. What that call acquired, such as the scroll lock or the
+-backdrop, stays held until one of the following exits releases it: a later `show` call, which
+-takes the held resources over, and the `hide` call after it; a `hide` call made after the host
+-carries the `shown` token again; or destruction. A `hide` call while the host lacks the token resolves `false`
+-and releases nothing. The scroll lock and the isolation each read the modal's lifetime as their
++carry it. A call that finds the modal destroyed reads the change as taken over: it stops, writing
++and dispatching nothing more, and resolves `false`. A call that finds the host otherwise while the
++modal lives reads the change as taken over by the host: it resolves `false`, dispatches nothing,
++and takes one further step that returns what the change wrote to the state the host chose. The step
++reads no door; it reads only the modal's lifetime before each of its writes, so a destruction a
++reaction runs inside one writes nothing more and the snapshot's restoration stands. A hide the host
++took over after it removed the `shown` token writes the host's `display`, `aria-hidden`,
++`aria-modal`, and `role` back to the values the show wrote, as far as the hide had written them,
++and shows the backdrop it faded or removed again, inserting it again when the hide had already
++removed it, with or without the `fade` token. A show the host took over after it wrote the `shown`
++token writes the host's `display: none` and `aria-hidden="true"`, removes its `aria-modal` and
++`role`, and hides and removes the backdrop. The doors end when the call dispatches its completed
++event: a listener to that event that shows or hides the modal starts a new change, and the call
++whose event it heard still resolves `true`. Every other `show` or `hide` call is refused while a
++change is in flight, so a listener that shows the modal again inside `show.vn.modal` runs the one
++show and dispatches the one `shown.vn.modal` event: its own call resolves `true`, and the call whose
++event it heard resolves `false`. A call that only the host took over also ends the change in
++flight. The scroll lock, the `open` token, and the isolation that call left acquired stay held
++until one of the following exits releases them: a later `show` call, which takes the held resources
++over, and the `hide` call after it; a `hide` call made after the host carries the `shown` token
++again; or destruction. A `hide` call while the host lacks the token resolves `false` and releases
++nothing. The hide removes the backdrop as a step with a door after it, because an element the
++backdrop holds reacts inside the removal. The scroll lock and the isolation each read the modal's
++lifetime as their
+ signal while they are built, so a destruction a reaction runs inside either construction stops it
+ and releases what it took, and a lock or an isolation whose construction another write took the
+ show over from is released rather than kept. Destruction aborts the wait, releases the isolation,
+@@ -2488,21 +2503,33 @@ whose `relatedTarget` member names the trigger, as the following table states; t
+ 
+ A call reads the host at each of its doors for the phase it is in: until a show adds the `shown`
+ token, and from the moment a hide removes it, the host must lack the token, and in between it must
+-carry it. A call that finds the host otherwise or the panel destroyed reads the change as taken
+-over: it stops, writing and dispatching nothing more, and resolves `false`. The doors end when the
+-call dispatches its completed event: a listener to that event that shows or hides the panel starts
+-a new change, and the call whose event it heard still resolves `true`. Every other `show` or `hide`
+-call is refused while a change is in flight, so a listener that shows the panel again inside
+-`show.vn.offcanvas` runs the one show and dispatches the one `shown.vn.offcanvas` event: its own
+-call resolves `true`, and the call whose event it heard resolves `false`. A call that only the host
+-took over also ends the change in flight. What that call acquired, such as the scroll lock or the
+-backdrop, stays held until one of the following exits releases it: a later `show` call, which takes
+-the held resources over, and the `hide` call after it; a `hide` call made after the host carries
+-the `shown` token again; or destruction. A `hide` call while the host lacks the token resolves
+-`false` and releases nothing. A hide the host took over removes no backdrop: the backdrop's fade
+-writes nothing past its settle, and the hide removes the element only as a step after its own door
+-reads. The backdrop is a plain `div` the panel creates, so no reaction runs inside its append or
+-its token writes, and no door follows them. The scroll lock and the isolation each read the panel's
++carry it. A call that finds the panel destroyed reads the change as taken over: it stops, writing
++and dispatching nothing more, and resolves `false`. A call that finds the host otherwise while the
++panel lives reads the change as taken over by the host: it resolves `false`, dispatches nothing,
++and takes one further step that returns what the change wrote to the state the host chose. The step
++reads no door; it reads only the panel's lifetime before each of its writes, so a destruction a
++reaction runs inside one writes nothing more and the snapshot's restoration stands. A hide the host
++took over after it removed the `shown` token removes the `hiding` token while the hide still holds
++it, writes `aria-modal` and `role` back to the values the show wrote as far as the hide had removed
++them, and shows the backdrop it faded or removed again, inserting it again when the hide had
++already removed it, so the panel sits on screen with its backdrop beside it. A show the host took
++over after it wrote the `shown` token removes the `showing` token while the show still holds it,
++removes `aria-modal` and `role`, and hides and removes the backdrop with its press listener. The
++doors end when the call dispatches its completed event: a listener to that event that shows or
++hides the panel starts a new change, and the call whose event it heard still resolves `true`. Every
++other `show` or `hide` call is refused while a change is in flight, so a listener that shows the
++panel again inside `show.vn.offcanvas` runs the one show and dispatches the one
++`shown.vn.offcanvas` event: its own call resolves `true`, and the call whose event it heard
++resolves `false`. A call that only the host took over also ends the change in flight. The scroll
++lock and the isolation that call left acquired stay held until one of the following exits releases
++them: a later `show` call, which takes the held resources over, and the `hide` call after it; a
++`hide` call made after the host carries the `shown` token again; or destruction. A `hide` call
++while the host lacks the token resolves `false` and releases nothing. The backdrop's fade writes
++nothing past its settle, and the hide removes the element only as a step after its own door reads.
++An element the backdrop holds reacts inside the backdrop's insertion and inside its removal, so a
++door follows each. Nothing runs inside the backdrop's token writes, because the backdrop is a plain
++`div` element, and an observer of those writes runs inside the call's wait, whose door follows it.
++The scroll lock and the isolation each read the panel's
+ lifetime as their signal while they are built, so a destruction a reaction runs inside either
+ construction stops it and releases what it took, and a lock or an isolation whose construction
+ another write took the show over from is released rather than kept. Destruction aborts the wait,
+diff --git a/src/browser/Backdrop.ts b/src/browser/Backdrop.ts
+index 98d4bc5..f055ec4 100644
+--- a/src/browser/Backdrop.ts
++++ b/src/browser/Backdrop.ts
+@@ -9,14 +9,16 @@ import { isClassToken } from './validators.js'
+  * @remarks
+  * Construction validates and copies the `classes` group and creates a `div` element carrying the
+  * `host` token, and the `fade` token when `animated` is `true`, in the parent's document. Showing
+- * appends the element to the parent, forces a layout read when animated, adds the `shown` token,
+- * and waits for the fade to settle when animated; hiding removes the `shown` token and waits for the
+- * fade to settle when animated, and writes nothing after it, so the element stays in the parent until
+- * destruction removes it. The owner removes the element as a step of its own sequence, after its own
+- * reads, so a change its owner stopped leaves the element in place. The element takes no `popover`
+- * attribute and no top-layer promotion, so the cascade's `z-index` rungs order it against the page. A
+- * call that finds the backdrop destroyed or a later call started when it resumes stops and resolves
+- * `false`.
++ * appends the element to the parent unless the parent holds it, forces a layout read when animated,
++ * adds the `shown` token, and waits for the fade to settle when animated; hiding removes the `shown`
++ * token and waits for the fade to settle when animated, and writes nothing after it, so the element
++ * stays in the parent until destruction removes it. The owner removes the element as a step of its
++ * own sequence, after its own reads, so a change its owner stopped leaves the element in place, and
++ * showing that element again moves nothing. The element takes no `popover` attribute and no
++ * top-layer promotion, so the cascade's `z-index` rungs order it against the page. A call reads
++ * whether the backdrop is destroyed or a later call started after the insertion, inside which an
++ * element the backdrop holds can react, and again when it resumes; a call that finds either stops
++ * and resolves `false`.
+  *
+  * @example
+  * ```ts
+@@ -66,11 +68,17 @@ export class Backdrop implements BackdropInterface {
+ 		if (this.#controller.signal.aborted || element.classList.contains(shown)) return false
+ 		const change = {}
+ 		this.#change = change
+-		this.#parent.append(element)
++		// A backdrop its owner holds after a stopped hide is still in the parent, so showing it again
++		// moves nothing. An element the backdrop holds reacts inside the insertion, and the reaction can
++		// destroy the backdrop or start another call, so the call reads both after it.
++		if (element.parentNode !== this.#parent) {
++			this.#parent.append(element)
++			if (!this.#holds(change)) return false
++		}
+ 		if (this.#animated) reflow(element)
+ 		element.classList.add(shown)
+ 		if (this.#animated) await settleAnimations(element, this.#controller.signal)
+-		return !this.#controller.signal.aborted && this.#change === change
++		return this.#holds(change)
+ 	}
+ 
+ 	async hide(): Promise<boolean> {
+@@ -81,7 +89,7 @@ export class Backdrop implements BackdropInterface {
+ 		this.#change = change
+ 		element.classList.remove(shown)
+ 		if (this.#animated) await settleAnimations(element, this.#controller.signal)
+-		return !this.#controller.signal.aborted && this.#change === change
++		return this.#holds(change)
+ 	}
+ 
+ 	destroy(): void {
+@@ -89,4 +97,10 @@ export class Backdrop implements BackdropInterface {
+ 		this.#controller.abort()
+ 		this.#element.remove()
+ 	}
++
++	// Reports whether the call that started a change still holds it: the backdrop is live and no later
++	// call has started.
++	#holds(change: object): boolean {
++		return !this.#controller.signal.aborted && this.#change === change
++	}
+ }
+diff --git a/src/browser/Modal.ts b/src/browser/Modal.ts
+index 3d49cd4..a809820 100644
+--- a/src/browser/Modal.ts
++++ b/src/browser/Modal.ts
+@@ -59,10 +59,17 @@ import { isAttributeName, isClassToken, isModalEvent, isSelector } from './valid
+  *
+  * After each write, dispatch, and await, a call reads its lifetime and the host again: until a show
+  * adds the `shown` token and from the moment a hide removes it the host must lack the token, and in
+- * between it must carry it. A call that finds the modal destroyed or the host otherwise stops,
+- * writing and dispatching nothing more, and resolves `false`; a call the host alone stopped ends the
+- * change in flight, and what it acquired stays held until a later show and its hide, a hide after the
+- * host carries the `shown` token again, or destruction releases it. The isolation takes the modal's
++ * between it must carry it. A call that finds the modal destroyed stops, writing and dispatching
++ * nothing more, and resolves `false`. A call the host alone stopped ends the change in flight,
++ * resolves `false`, and takes one further step that returns what the change wrote to the state the
++ * host chose: a stopped hide writes the host's `display` and ARIA state back to the values the show
++ * wrote and shows the backdrop again, inserting it again when the hide had removed it, and a stopped
++ * show writes the host's hidden `display` and ARIA state and removes the backdrop. The step
++ * dispatches nothing and reads only the modal's lifetime before each write. The scroll lock, the
++ * `open` token, and the isolation the call left acquired stay held until a later show and its hide,
++ * a hide after the host carries the `shown` token again, or destruction releases them. The
++ * backdrop's removal is a step with a door after it, because an element the backdrop holds reacts
++ * inside it. The isolation takes the modal's
+  * lifetime as its signal, so a destruction inside the isolation's construction stops it and releases
+  * every claim it took. An aborted `signal` destroys the modal.
+  *
+@@ -270,10 +277,10 @@ export class Modal implements ModalInterface {
+ 		const body = this.#dialog?.querySelector(this.#selectors.body)
+ 		if (body !== null && body !== undefined) body.scrollTop = 0
+ 		reflow(host)
+-		if (!this.#apply(true, () => host.classList.add(shown))) return false
++		if (!this.#apply(true, () => host.classList.add(shown))) return this.#rehide()
+ 		if (host.classList.contains(fade)) {
+ 			await settleAnimations(this.#dialog ?? host, this.#controller.signal)
+-			if (!this.#holds(true)) return false
++			if (!this.#holds(true)) return this.#rehide()
+ 		}
+ 		if (this.#options.focus) {
+ 			if (this.#isolation === undefined) {
+@@ -285,11 +292,11 @@ export class Modal implements ModalInterface {
+ 				// so the isolation it leaves behind is destroyed here rather than kept.
+ 				if (!this.#holds(true)) {
+ 					isolation.destroy()
+-					return false
++					return this.#rehide()
+ 				}
+ 				this.#isolation = isolation
+ 			}
+-			if (!this.#apply(true, () => host.focus())) return false
++			if (!this.#apply(true, () => host.focus())) return this.#rehide()
+ 		}
+ 		this.#changing = false
+ 		emitEvent(host, MODAL_EVENTS.shown, { relatedTarget: trigger }, false)
+@@ -309,31 +316,51 @@ export class Modal implements ModalInterface {
+ 		this.#isolation = undefined
+ 		if (!this.#apply(true, () => isolation?.destroy())) return false
+ 		if (!this.#apply(false, () => host.classList.remove(this.#classes.shown))) {
+-			return false
++			return this.#reshow([], undefined)
+ 		}
+ 		if (host.classList.contains(this.#classes.fade)) {
+ 			await settleAnimations(host, this.#controller.signal)
+-			if (!this.#holds(false)) return false
++			if (!this.#holds(false)) return this.#reshow([], undefined)
++		}
++		if (!this.#apply(false, () => host.style.setProperty('display', 'none'))) {
++			return this.#reshow(['display'], undefined)
++		}
++		if (!this.#apply(false, () => host.setAttribute('aria-hidden', 'true'))) {
++			return this.#reshow(['display', 'aria-hidden'], undefined)
+ 		}
+-		if (!this.#apply(false, () => host.style.setProperty('display', 'none'))) return false
+-		if (!this.#apply(false, () => host.setAttribute('aria-hidden', 'true'))) return false
+-		if (!this.#apply(false, () => host.removeAttribute('aria-modal'))) return false
+-		if (!this.#apply(false, () => host.removeAttribute('role'))) return false
++		if (!this.#apply(false, () => host.removeAttribute('aria-modal'))) {
++			return this.#reshow(['display', 'aria-hidden', 'aria-modal'], undefined)
++		}
++		const written = ['display', 'aria-hidden', 'aria-modal', 'role'] as const
++		if (!this.#apply(false, () => host.removeAttribute('role'))) {
++			return this.#reshow(written, undefined)
++		}
++		// The backdrop stays this modal's until the hide completes, so a hide the host takes over after
++		// the backdrop left inserts it again, and a destruction on the way removes it.
+ 		const backdrop = this.#backdrop
+ 		if (backdrop !== undefined) {
+ 			await backdrop.hide()
+-			if (!this.#holds(false)) return false
+-			backdrop.destroy()
+-			this.#backdrop = undefined
++			if (!this.#holds(false)) return this.#reshow(written, backdrop)
++			// An element the backdrop holds reacts inside its removal, so the door follows it.
++			if (!this.#apply(false, () => backdrop.element.remove())) {
++				return this.#reshow(written, backdrop)
++			}
+ 		}
+ 		const lock = this.#lock
+ 		if (lock !== undefined && !this.#apply(false, () => this.#releaseOpen(lock.document))) {
+-			return false
++			return this.#reshow(written, backdrop)
++		}
++		if (!this.#apply(false, () => host.style.removeProperty('padding-left'))) {
++			return this.#reshow(written, backdrop)
++		}
++		if (!this.#apply(false, () => host.style.removeProperty('padding-right'))) {
++			return this.#reshow(written, backdrop)
+ 		}
+-		if (!this.#apply(false, () => host.style.removeProperty('padding-left'))) return false
+-		if (!this.#apply(false, () => host.style.removeProperty('padding-right'))) return false
+ 		this.#lock = undefined
+-		if (!this.#apply(false, () => lock?.destroy())) return false
++		if (!this.#apply(false, () => lock?.destroy())) return this.#reshow(written, backdrop)
++		// The element already left the page, so its destruction writes nothing.
++		this.#backdrop = undefined
++		backdrop?.destroy()
+ 		this.#changing = false
+ 		emitEvent(host, MODAL_EVENTS.hidden, { relatedTarget: undefined }, false)
+ 		return !this.#controller.signal.aborted
+@@ -388,6 +415,53 @@ export class Modal implements ModalInterface {
+ 		return this.#holds(shown)
+ 	}
+ 
++	// Ends a hide the host took over by carrying the `shown` token again: returns each host write the
++	// hide made, named in its order, to the value the show wrote, and shows the backdrop the hide faded
++	// or removed again, in place or inserted again. The step dispatches nothing and reads no door; it
++	// reads only the modal's lifetime before each write, so a destruction inside one writes nothing
++	// more and the snapshot's restoration stands.
++	#reshow(
++		written: ReadonlyArray<'display' | 'aria-hidden' | 'aria-modal' | 'role'>,
++		backdrop: BackdropInterface | undefined,
++	): false {
++		const host = this.#host
++		for (const name of written) {
++			this.#revert(() => {
++				if (name === 'display') host.style.setProperty('display', 'block')
++				if (name === 'aria-hidden') host.removeAttribute('aria-hidden')
++				if (name === 'aria-modal') host.setAttribute('aria-modal', 'true')
++				if (name === 'role') host.setAttribute('role', 'dialog')
++			})
++		}
++		if (backdrop !== undefined) this.#revert(() => void backdrop.show())
++		return false
++	}
++
++	// Ends a show the host took over by dropping the `shown` token: returns the host writes the show
++	// made to the hidden state a hide writes, then hides and removes the backdrop it showed. The step
++	// dispatches nothing and reads no door; it reads only the modal's lifetime before each write. The
++	// scroll lock, the `open` token, and the isolation stay held until a later change releases them.
++	#rehide(): false {
++		const host = this.#host
++		this.#revert(() => host.style.setProperty('display', 'none'))
++		this.#revert(() => host.setAttribute('aria-hidden', 'true'))
++		this.#revert(() => host.removeAttribute('aria-modal'))
++		this.#revert(() => host.removeAttribute('role'))
++		const backdrop = this.#backdrop
++		this.#revert(() => {
++			this.#backdrop = undefined
++			void backdrop?.hide()
++			backdrop?.destroy()
++		})
++		return false
++	}
++
++	// Runs one write of a returning step while the modal is live; a destroyed modal restores nothing
++	// here, because its snapshot restores.
++	#revert(write: () => void): void {
++		if (!this.#controller.signal.aborted) write()
++	}
++
+ 	// Reports whether a bounce may write: the modal is live and shown, and no change is in flight.
+ 	#idle(): boolean {
+ 		return !this.#controller.signal.aborted && this.shown && !this.#changing
+diff --git a/src/browser/Offcanvas.ts b/src/browser/Offcanvas.ts
+index 645c89a..6fb7d32 100644
+--- a/src/browser/Offcanvas.ts
++++ b/src/browser/Offcanvas.ts
+@@ -64,10 +64,17 @@ import { isAttributeName, isClassToken, isOffcanvasEvent, isSelector } from './v
+  *
+  * After each write, dispatch, and await, a call reads its lifetime and the host again: until a show
+  * adds the `shown` token and from the moment a hide removes it the host must lack the token, and in
+- * between it must carry it. A call that finds the panel destroyed or the host otherwise stops,
+- * writing and dispatching nothing more, and resolves `false`; a call the host alone stopped ends the
+- * change in flight, and what it acquired stays held until a later show and its hide, a hide after
+- * the host carries the `shown` token again, or destruction releases it. The scroll lock and the
++ * between it must carry it. A call that finds the panel destroyed stops, writing and dispatching
++ * nothing more, and resolves `false`. A call the host alone stopped ends the change in flight,
++ * resolves `false`, and takes one further step that returns what the change wrote to the state the
++ * host chose: a stopped hide removes its `hiding` token, writes `aria-modal` and `role` back to the
++ * values the show wrote, and shows the backdrop again, inserting it again when the hide had removed
++ * it, and a stopped show removes its `showing` token, `aria-modal`, and `role` and removes the
++ * backdrop. The step dispatches nothing and reads only the panel's lifetime before each write. The
++ * scroll lock and the isolation the call left acquired stay held until a later show and its hide, a
++ * hide after the host carries the `shown` token again, or destruction releases them. The show reads
++ * its door after the backdrop's insertion, because an element the backdrop holds reacts inside it.
++ * The scroll lock and the
+  * isolation take the panel's lifetime as their signal, so a destruction inside either construction
+  * stops it and releases every claim it took. An aborted `signal` destroys the panel.
+  *
+@@ -250,19 +257,21 @@ export class Offcanvas implements OffcanvasInterface {
+ 				this.#backdrop = backdrop
+ 				this.#listening = listening
+ 			}
+-			// The backdrop fades in beside the slide, as Bootstrap's does, and the show waits for both. No
+-			// reaction runs inside its append or its token writes, because the backdrop is a plain `div`
+-			// the panel created, so no door follows them.
++			// The backdrop fades in beside the slide, as Bootstrap's does, and the show waits for both. An
++			// element the backdrop holds reacts inside its insertion, so the door follows the call. Nothing
++			// runs inside its token write, because the backdrop is a plain `div` element, and an observer
++			// of that write runs inside the wait, whose door follows it.
+ 			appearing = this.#backdrop.show()
++			if (!this.#holds(false)) return false
+ 		}
+ 		if (!this.#apply(false, () => host.setAttribute('aria-modal', 'true'))) return false
+ 		if (!this.#apply(false, () => host.setAttribute('role', 'dialog'))) return false
+ 		reflow(host)
+ 		if (!this.#apply(false, () => host.classList.add(showing))) return false
+-		if (!this.#apply(true, () => host.classList.add(shown))) return false
++		if (!this.#apply(true, () => host.classList.add(shown))) return this.#rehide(true)
+ 		await Promise.all([settleAnimations(host, signal), appearing])
+-		if (!this.#holds(true)) return false
+-		if (!this.#apply(true, () => host.classList.remove(showing))) return false
++		if (!this.#holds(true)) return this.#rehide(true)
++		if (!this.#apply(true, () => host.classList.remove(showing))) return this.#rehide(false)
+ 		if (this.#options.backdrop || !this.#options.scroll) {
+ 			if (this.#isolation === undefined) {
+ 				const isolation = new Isolation(host, {
+@@ -274,11 +283,11 @@ export class Offcanvas implements OffcanvasInterface {
+ 				// so the isolation it leaves behind is destroyed here rather than kept.
+ 				if (!this.#holds(true)) {
+ 					isolation.destroy()
+-					return false
++					return this.#rehide(false)
+ 				}
+ 				this.#isolation = isolation
+ 			}
+-			if (!this.#apply(true, () => host.focus())) return false
++			if (!this.#apply(true, () => host.focus())) return this.#rehide(false)
+ 		}
+ 		this.#changing = false
+ 		emitEvent(host, OFFCANVAS_EVENTS.shown, { relatedTarget: trigger }, false)
+@@ -303,33 +312,42 @@ export class Offcanvas implements OffcanvasInterface {
+ 		this.#isolation = undefined
+ 		if (!this.#apply(true, () => isolation?.destroy())) return false
+ 		if (!this.#apply(true, () => host.classList.add(hiding))) return false
+-		// The backdrop fades out beside the slide, as Bootstrap's does, and the hide waits for both. No
+-		// reaction runs inside the backdrop's token write, so no door follows it.
++		// The backdrop fades out beside the slide, as Bootstrap's does, and the hide waits for both.
++		// Nothing runs inside the backdrop's token write, because the backdrop is a plain `div` element,
++		// and an observer of that write runs inside the wait, whose door follows it.
+ 		const backdrop = this.#backdrop
+ 		const vanishing = backdrop?.hide()
+-		if (!this.#apply(false, () => host.classList.remove(shown))) return false
++		if (!this.#apply(false, () => host.classList.remove(shown))) {
++			return this.#reshow(['hiding'], backdrop)
++		}
+ 		await Promise.all([settleAnimations(host, this.#controller.signal), vanishing])
+-		if (!this.#holds(false)) return false
++		if (!this.#holds(false)) return this.#reshow(['hiding'], backdrop)
+ 		// A show the host took over can leave its `showing` token behind, so the hide clears it too.
+-		if (!this.#apply(false, () => host.classList.remove(hiding, showing))) return false
+-		if (!this.#apply(false, () => host.removeAttribute('aria-modal'))) return false
+-		if (!this.#apply(false, () => host.removeAttribute('role'))) return false
++		if (!this.#apply(false, () => host.classList.remove(hiding, showing))) {
++			return this.#reshow([], backdrop)
++		}
++		if (!this.#apply(false, () => host.removeAttribute('aria-modal'))) {
++			return this.#reshow(['aria-modal'], backdrop)
++		}
++		const written = ['aria-modal', 'role'] as const
++		if (!this.#apply(false, () => host.removeAttribute('role'))) {
++			return this.#reshow(written, backdrop)
++		}
+ 		// The backdrop's fade wrote nothing past its settle, so its removal is a step of this hide, taken
+-		// only while the hide still holds its change.
+-		const listening = this.#listening
+-		this.#backdrop = undefined
+-		this.#listening = undefined
+-		if (
+-			!this.#apply(false, () => {
+-				listening?.abort()
+-				backdrop?.destroy()
+-			})
+-		) {
+-			return false
++		// only while the hide still holds its change. The backdrop and its press listener stay this
++		// panel's until the hide completes, so a hide the host takes over after the removal inserts the
++		// backdrop again, and a destruction on the way removes it.
++		if (!this.#apply(false, () => backdrop?.element.remove())) {
++			return this.#reshow(written, backdrop)
+ 		}
+ 		const lock = this.#lock
+ 		this.#lock = undefined
+-		if (!this.#apply(false, () => lock?.destroy())) return false
++		if (!this.#apply(false, () => lock?.destroy())) return this.#reshow(written, backdrop)
++		// The element already left the page, so its destruction writes nothing.
++		this.#listening?.abort()
++		this.#listening = undefined
++		this.#backdrop = undefined
++		backdrop?.destroy()
+ 		this.#changing = false
+ 		emitEvent(host, OFFCANVAS_EVENTS.hidden, { relatedTarget: undefined }, false)
+ 		return !this.#controller.signal.aborted
+@@ -380,6 +398,56 @@ export class Offcanvas implements OffcanvasInterface {
+ 		return this.#holds(shown)
+ 	}
+ 
++	// Ends a hide the host took over by carrying the `shown` token again: returns each host write the
++	// hide made, named in its order, to the shown state (the `hiding` token leaves, `aria-modal` and
++	// `role` return to the values the show wrote), and shows the backdrop the hide faded or removed
++	// again, in place or inserted again. The step dispatches nothing and reads no door; it reads only
++	// the panel's lifetime before each write, so a destruction inside one writes nothing more and the
++	// snapshot's restoration stands.
++	#reshow(
++		written: ReadonlyArray<'hiding' | 'aria-modal' | 'role'>,
++		backdrop: BackdropInterface | undefined,
++	): false {
++		const host = this.#host
++		for (const name of written) {
++			this.#revert(() => {
++				if (name === 'hiding') host.classList.remove(this.#classes.hiding)
++				if (name === 'aria-modal') host.setAttribute('aria-modal', 'true')
++				if (name === 'role') host.setAttribute('role', 'dialog')
++			})
++		}
++		if (backdrop !== undefined) this.#revert(() => void backdrop.show())
++		return false
++	}
++
++	// Ends a show the host took over by dropping the `shown` token: clears the `showing` token when
++	// the show still holds it, removes the `aria-modal` and `role` attributes the show wrote, then
++	// hides and removes the backdrop and ends its press listener. The step dispatches nothing and reads
++	// no door; it reads only the panel's lifetime before each write. The scroll lock and the isolation
++	// stay held until a later change releases them.
++	#rehide(showing: boolean): false {
++		const host = this.#host
++		if (showing) this.#revert(() => host.classList.remove(this.#classes.showing))
++		this.#revert(() => host.removeAttribute('aria-modal'))
++		this.#revert(() => host.removeAttribute('role'))
++		const backdrop = this.#backdrop
++		const listening = this.#listening
++		this.#revert(() => {
++			this.#backdrop = undefined
++			this.#listening = undefined
++			listening?.abort()
++			void backdrop?.hide()
++			backdrop?.destroy()
++		})
++		return false
++	}
++
++	// Runs one write of a returning step while the panel is live; a destroyed panel restores nothing
++	// here, because its snapshot restores.
++	#revert(write: () => void): void {
++		if (!this.#controller.signal.aborted) write()
++	}
++
+ 	// Records the host's tokens and attributes before the first write, so destruction restores them.
+ 	#save(): void {
+ 		const host = this.#host
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index b627cab..1f63a9d 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -444,6 +444,11 @@ export interface BackdropInterface {
+ 	 * Appends the backdrop element and adds its `shown` token.
+ 	 *
+ 	 * @returns Resolves true after the fade settles; false when the backdrop was shown, is destroyed, or a later call started before the fade settled.
++	 * @remarks
++	 * A parent that already holds the element keeps it where it is, so a backdrop its owner kept after a
++	 * stopped hide takes its `shown` token back without moving. An element the backdrop holds reacts
++	 * inside the insertion, and a call that finds the backdrop destroyed or a later call started there
++	 * writes no `shown` token.
+ 	 * @example
+ 	 * ```ts
+ 	 * const appeared = await backdrop.show()
+diff --git a/tests/src/browser/Backdrop.test.ts b/tests/src/browser/Backdrop.test.ts
+index fb093c9..de71a90 100644
+--- a/tests/src/browser/Backdrop.test.ts
++++ b/tests/src/browser/Backdrop.test.ts
+@@ -1,6 +1,6 @@
+ import { Backdrop, BACKDROP_CLASSES } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+-import { createRecorder } from '@orkestrel/test'
++import { createRecorder, requireValue } from '@orkestrel/test'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import { scene } from '../../setupBrowser.js'
+ 
+@@ -120,6 +120,87 @@ describe('Backdrop', () => {
+ 		expect(await showing).toBe(false)
+ 	})
+ 
++	it('shows a backdrop its parent already holds in place, moving nothing', async () => {
++		const parent = scene.mount('<section><p></p></section>')
++		const section = requireValue(parent.querySelector('section'), 'No section')
++		const backdrop = new Backdrop({ parent: section })
++		onTestFinished(() => backdrop.destroy())
++		expect(await backdrop.show()).toBe(true)
++		expect(await backdrop.hide()).toBe(true)
++		section.append(document.createElement('span'))
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		observer.observe(section, { childList: true })
++		expect(await backdrop.show()).toBe(true)
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(Array.from(section.children).map((child) => child.nodeName)).toEqual([
++			'P',
++			'DIV',
++			'SPAN',
++		])
++	})
++
++	// A custom element's connected reaction runs inside the insertion of the backdrop that holds it,
++	// so the reaction destroys the backdrop while `show` is still on the stack.
++	it('writes no shown token after a reaction inside its insertion destroys it, resolving false', async () => {
++		const name = 'vn-backdrop-insertion-destroyer'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				connectedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const parent = scene.mount('<section></section>')
++		const section = requireValue(parent.querySelector('section'), 'No section')
++		const backdrop = new Backdrop({ parent: section })
++		onTestFinished(() => backdrop.destroy())
++		const reactor = document.createElement(name)
++		backdrop.element.append(reactor)
++		reactions.set(reactor, () => {
++			reactions.delete(reactor)
++			backdrop.destroy()
++		})
++		expect(await backdrop.show()).toBe(false)
++		expect(backdrop.element.isConnected).toBe(false)
++		expect(Array.from(backdrop.element.classList)).toEqual(['modal-backdrop'])
++	})
++
++	// The connected reaction runs a show and then a hide on the same backdrop, each completing at once
++	// because the backdrop does not fade, while the first show is still on the stack, so the hide is the
++	// latest call and the first show must leave the token the hide removed alone.
++	it('writes no shown token after a reaction inside its insertion starts later calls, resolving false', async () => {
++		const name = 'vn-backdrop-insertion-caller'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				connectedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const parent = scene.mount('<section></section>')
++		const section = requireValue(parent.querySelector('section'), 'No section')
++		const backdrop = new Backdrop({ parent: section })
++		onTestFinished(() => backdrop.destroy())
++		const reactor = document.createElement(name)
++		backdrop.element.append(reactor)
++		const later = createRecorder<readonly [Promise<boolean>]>()
++		reactions.set(reactor, () => {
++			reactions.delete(reactor)
++			later.handler(backdrop.show())
++			later.handler(backdrop.hide())
++		})
++		expect(await backdrop.show()).toBe(false)
++		expect(await Promise.all(later.calls.map(([call]) => call))).toEqual([true, true])
++		expect(backdrop.element.parentElement).toBe(section)
++		expect(Array.from(backdrop.element.classList)).toEqual(['modal-backdrop'])
++	})
++
+ 	it('refuses a class value that is not a class token at construction', () => {
+ 		expect(attempt(() => new Backdrop({ classes: { shown: 'is on' } }))).toMatchObject({
+ 			success: false,
+diff --git a/tests/src/browser/Delegate.test.ts b/tests/src/browser/Delegate.test.ts
+index 200bf9e..5db82d0 100644
+--- a/tests/src/browser/Delegate.test.ts
++++ b/tests/src/browser/Delegate.test.ts
+@@ -4337,6 +4337,46 @@ describe('Delegate', () => {
+ 		])
+ 	})
+ 
++	// The per-click mark keys each host by route, so a host the modal route drove for a click stays
++	// open to the offcanvas route for the same click, and the outer delegate finds both routes marked.
++	// The modal route runs first and shows the consumer's modal, which carries no backdrop and writes
++	// its `shown` token at once, so the offcanvas route's toggle finds the host shown and hides it.
++	it('drives the modal route and the offcanvas route once each for one trusted click over one host both triggers name under nested roots', async () => {
++		const root = scene.mount(`
++			<div id="nested">
++				<button type="button" data-bs-toggle="modal" data-bs-target="#both"><span id="opener" data-bs-toggle="offcanvas" data-bs-target="#both">Both</span></button>
++				<div id="both" class="modal offcanvas" data-bs-backdrop="false" data-bs-scroll="true"><div class="modal-dialog"></div></div>
++			</div>`)
++		onTestFinished(() => scene.clear())
++		const nested = requireValue(root.querySelector<HTMLElement>('#nested'), 'No nested root')
++		const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
++		const host = requireValue(root.querySelector<HTMLElement>('#both'), 'No host')
++		const events = createRecorder<readonly [string]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of [
++			'show.vn.modal',
++			'hide.vn.modal',
++			'show.vn.offcanvas',
++			'hide.vn.offcanvas',
++		]) {
++			root.addEventListener(name, (event) => events.handler(event.type), {
++				signal: controller.signal,
++			})
++		}
++		const modal = new Modal(host, { focus: false })
++		onTestFinished(() => modal.destroy())
++		const outer = new Delegate({ root })
++		const inner = new Delegate({ root: nested })
++		onTestFinished(() => outer.destroy())
++		onTestFinished(() => inner.destroy())
++		await userEvent.click(opener)
++		await waitForCondition('the offcanvas hides', () => !host.classList.contains('show'))
++		expect(events.calls).toEqual([['show.vn.modal'], ['hide.vn.offcanvas']])
++		expect(Modal.find(host)).toBe(modal)
++		expect(Offcanvas.find(host)).not.toBeUndefined()
++	})
++
+ 	it('refuses an offcanvas group value that is not a class token, an attribute name, or a selector at construction', () => {
+ 		const root = build('div')
+ 		expect(
+diff --git a/tests/src/browser/Modal.test.ts b/tests/src/browser/Modal.test.ts
+index 610de7a..8a8e44e 100644
+--- a/tests/src/browser/Modal.test.ts
++++ b/tests/src/browser/Modal.test.ts
+@@ -14,27 +14,18 @@ import { createRecorder, requireValue, waitForCondition } from '@orkestrel/test'
+ import { isReachable, pressKeys, releaseMedia, stageMedia } from '@orkestrel/test/browser'
+ import { userEvent } from 'vitest/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
++import tokensCascade from '../../../src/styles/_tokens.scss?inline'
++import fadeCascade from '../../../src/styles/components/_fade.scss?inline'
++import modalCascade from '../../../src/styles/components/_modal.scss?inline'
+ import { recordListeners, scene, visitBreakpoint } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+ describe('Modal', () => {
+-	// No modal key ships under src/styles/components at this commit, so the motion proofs read
+-	// Bootstrap's own modal declarations from this test-local sheet: its transitions, its `z-index`
+-	// rungs, and the dialog's `pointer-events` pair, which is what lets a press land on the host
+-	// beside the dialog.
+-	const cascade = `
+-		.modal { position: fixed; inset: 0; z-index: 1055; display: none; overflow: hidden auto }
+-		.modal-dialog { position: relative; max-width: 500px; margin: 28px auto; pointer-events: none }
+-		.modal-content { pointer-events: auto; background: white }
+-		.modal.fade .modal-dialog { transition: transform 0.3s ease-out; transform: translateY(-50px) }
+-		.modal.show .modal-dialog { transform: none }
+-		.modal.modal-static .modal-dialog { transform: scale(1.02) }
+-		.modal-backdrop { position: fixed; inset: 0; z-index: 1050 }
+-		.modal-backdrop.fade { opacity: 0 }
+-		.modal-backdrop.show { opacity: 0.5 }
+-		.fade { transition: opacity 0.15s linear }
+-		.fade:not(.show) { opacity: 0 }`
++	// The motion and stacking proofs run under the shipped modal key. Its `z-index` rungs read the
++	// stack tokens, and the host's and the backdrop's fades are the fade partial's `.fade` rule, whose
++	// duration reads a motion token, so the tokens and that partial load beside the key.
++	const cascade = `${tokensCascade}\n${fadeCascade}\n${modalCascade}`
+ 	const markup = `
+ 		<button type="button" id="opener">Open</button>
+ 		<div id="dialog" class="modal fade" tabindex="-1" aria-hidden="true">
+@@ -91,16 +82,39 @@ describe('Modal', () => {
+ 		}
+ 	})
+ 
+-	it('reads the test-local modal declarations the motion proofs run under', () => {
++	it('reads the shipped modal declarations the motion and stacking proofs run under', () => {
+ 		scene.load(cascade)
+-		const root = scene.mount(markup)
++		const root = scene.mount(`${markup}<div class="modal-backdrop fade"></div>`)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#dialog'), 'No modal')
+-		const dialog = requireValue(host.querySelector('.modal-dialog'), 'No dialog')
++		const dialog = requireValue(host.querySelector<HTMLElement>('.modal-dialog'), 'No dialog')
++		const content = requireValue(host.querySelector('.modal-content'), 'No content')
++		const backdrop = requireValue(root.querySelector<HTMLElement>('.modal-backdrop'), 'No backdrop')
+ 		expect(getComputedStyle(host).display).toBe('none')
++		expect(getComputedStyle(host).position).toBe('fixed')
++		expect(getComputedStyle(host).transitionProperty).toBe('opacity')
+ 		expect(getComputedStyle(host).transitionDuration).toBe('0.15s')
+ 		expect(getComputedStyle(dialog).transitionProperty).toBe('transform')
+ 		expect(getComputedStyle(dialog).transitionDuration).toBe('0.3s')
+ 		expect(getComputedStyle(dialog).pointerEvents).toBe('none')
++		expect(getComputedStyle(content).pointerEvents).toBe('auto')
++		expect(getComputedStyle(backdrop).position).toBe('fixed')
++		expect(getComputedStyle(backdrop).opacity).toBe('0')
++		expect(getComputedStyle(backdrop).transitionDuration).toBe('0.15s')
++		expect(Number(getComputedStyle(host).zIndex)).toBeGreaterThan(
++			Number(getComputedStyle(backdrop).zIndex),
++		)
++		// Each token write starts a fade, so the end values are read with the transitions held off.
++		host.style.setProperty('display', 'block')
++		for (const element of [host, dialog, backdrop]) element.style.setProperty('transition', 'none')
++		expect(getComputedStyle(dialog).transform).not.toBe('none')
++		host.classList.add('show')
++		backdrop.classList.add('show')
++		expect(getComputedStyle(dialog).transform).toBe('none')
++		expect(getComputedStyle(backdrop).opacity).toBe('0.5')
++		const corner = host.getBoundingClientRect()
++		expect(document.elementFromPoint(corner.left + 2, corner.top + 2)).toBe(host)
++		host.classList.add('modal-static')
++		expect(getComputedStyle(dialog).transform).not.toBe('none')
+ 	})
+ 
+ 	it('shows over the backdrop and hides, locking the body, isolating the page, and moving focus in step', async () => {
+@@ -218,9 +232,6 @@ describe('Modal', () => {
+ 		onTestFinished(() => releaseMedia())
+ 		const root = scene.mount(markup)
+ 		const host = requireValue(root.querySelector<HTMLElement>('#dialog'), 'No modal')
+-		scene.load(
+-			'@media (prefers-reduced-motion: reduce) { .fade, .modal.fade .modal-dialog { transition: none } }',
+-		)
+ 		const modal = new Modal(host)
+ 		onTestFinished(() => modal.destroy())
+ 		expect(await modal.show()).toBe(true)
+@@ -965,7 +976,7 @@ describe('Modal', () => {
+ 		expect(Array.from(host.classList)).toEqual(['modal', 'fade', 'show'])
+ 	})
+ 
+-	it('stops a show whose shown-token write a reaction answers by removing the token, dispatching no shown event, and releases what it held at a hide after the token returns', async () => {
++	it('stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns', async () => {
+ 		const name = 'vn-modal-show-token-removed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -999,10 +1010,13 @@ describe('Modal', () => {
+ 			observer.observe(host, { attributes: true })
+ 		})
+ 		expect(await modal.show()).toBe(false)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.attributeName),
++		).toEqual(['style', 'aria-hidden', 'aria-modal', 'role'])
+ 		expect(events.count).toBe(0)
+ 		expect(modal.shown).toBe(false)
+ 		expect(document.body.classList.contains('modal-open')).toBe(true)
++		expect(document.querySelector('.modal-backdrop')).toBeNull()
+ 		expect(await modal.hide()).toBe(false)
+ 		host.classList.add('show')
+ 		expect(await modal.hide()).toBe(true)
+@@ -1047,6 +1061,334 @@ describe('Modal', () => {
+ 		expect(modal.shown).toBe(true)
+ 	})
+ 
++	// Each row names a door of a hide after the shown token leaves the host, and the host takes the
++	// hide over there by carrying the token again. A custom element host's attribute reaction runs
++	// inside the write before its door; an observer of the host's or the backdrop's `class` attribute
++	// runs at the next microtask checkpoint, inside the wait before its door; and a custom element the
++	// backdrop holds reacts inside the backdrop's removal. The hide then returns everything it wrote to
++	// the shown state the host chose, so the modal reads, paints, and receives the pointer as shown,
++	// while the scroll lock and the `open` token it had not yet released stay held.
++	it('returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves', async () => {
++		const name = 'vn-modal-hide-retaken'
++		const reactions = new WeakMap<
++			HTMLElement,
++			(attribute: string, previous: string | null, value: string | null) => void
++		>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['aria-hidden', 'role']
++				attributeChangedCallback(attribute: string, previous: string | null, value: string | null) {
++					reactions.get(this)?.(attribute, previous, value)
++				}
++			},
++		)
++		const reactor = 'vn-modal-backdrop-retaker'
++		const removals = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			reactor,
++			class extends HTMLElement {
++				disconnectedCallback() {
++					removals.get(this)?.()
++				}
++			},
++		)
++		scene.load(cascade)
++		const rows = [
++			['modal fade', 'fade'],
++			['modal fade', 'aria-hidden'],
++			['modal fade', 'role'],
++			['modal fade', 'backdrop'],
++			['modal', 'backdrop'],
++			['modal fade', 'removal'],
++		] as const
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: readonly string[]
++					readonly resolved: boolean
++					readonly display: string
++					readonly hidden: string | null
++					readonly modal: string | null
++					readonly role: string | null
++					readonly transform: string
++					readonly target: boolean
++					readonly tokens: readonly string[] | undefined
++					readonly opacity: string | undefined
++					readonly open: boolean
++					readonly events: readonly string[]
++				},
++			]
++		>()
++		for (const [classes, door] of rows) {
++			const root = scene.mount('<div></div>')
++			const host = document.createElement(name)
++			host.className = classes
++			host.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>'
++			root.append(host)
++			const dialog = requireValue(host.querySelector<HTMLElement>('.modal-dialog'), 'No dialog')
++			const events = createRecorder<readonly [string]>()
++			const modal = new Modal(host, {
++				focus: false,
++				on: { hidden: (event) => events.handler(event.type) },
++			})
++			onTestFinished(() => modal.destroy())
++			expect(await modal.show()).toBe(true)
++			const backdrop = requireValue(
++				document.querySelector<HTMLElement>('body > .modal-backdrop'),
++				'No backdrop',
++			)
++			const watched = door === 'fade' ? host : backdrop
++			const watcher = new MutationObserver(() => {
++				if (watched.classList.contains('show')) return
++				watcher.disconnect()
++				host.classList.add('show')
++			})
++			onTestFinished(() => watcher.disconnect())
++			if (door === 'fade' || door === 'backdrop') {
++				watcher.observe(watched, { attributeFilter: ['class'] })
++			}
++			if (door === 'aria-hidden' || door === 'role') {
++				reactions.set(host, (attribute, _previous, value) => {
++					if (attribute !== door || (door === 'role') !== (value === null)) return
++					reactions.delete(host)
++					host.classList.add('show')
++				})
++			}
++			if (door === 'removal') {
++				const child = document.createElement(reactor)
++				backdrop.append(child)
++				removals.set(child, () => {
++					removals.delete(child)
++					host.classList.add('show')
++				})
++			}
++			const resolved = await modal.hide()
++			await waitForCondition(
++				'the host and the backdrop settle',
++				() =>
++					host.getAnimations({ subtree: true }).length === 0 &&
++					backdrop.getAnimations().length === 0,
++			)
++			const corner = host.getBoundingClientRect()
++			const shade = document.querySelector<HTMLElement>('body > .modal-backdrop')
++			readings.handler({
++				row: [classes, door],
++				resolved,
++				display: getComputedStyle(host).display,
++				hidden: host.getAttribute('aria-hidden'),
++				modal: host.getAttribute('aria-modal'),
++				role: host.getAttribute('role'),
++				transform: getComputedStyle(dialog).transform,
++				target: document.elementFromPoint(corner.left + 2, corner.top + 2) === host,
++				tokens: shade === null ? undefined : Array.from(shade.classList),
++				opacity: shade === null ? undefined : getComputedStyle(shade).opacity,
++				open: document.body.classList.contains('modal-open'),
++				events: events.calls.flat(),
++			})
++			// The hide the stop left undone completes from the shown state it left.
++			expect(await modal.hide()).toBe(true)
++			expect(document.querySelector('body > .modal-backdrop')).toBeNull()
++			modal.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map(([classes, door]) => [
++				{
++					row: [classes, door],
++					resolved: false,
++					display: 'block',
++					hidden: null,
++					modal: 'true',
++					role: 'dialog',
++					transform: 'none',
++					target: true,
++					tokens:
++						classes === 'modal' ? ['modal-backdrop', 'show'] : ['modal-backdrop', 'fade', 'show'],
++					opacity: '0.5',
++					open: true,
++					events: [],
++				},
++			]),
++		)
++	})
++
++	// Each row names a door of a show after the shown token reaches the host, and the host drops the
++	// token there: a custom element host's attribute reaction runs inside the token write, an observer
++	// of the host's `class` attribute runs inside the dialog's transition, a custom element beside the
++	// modal reacts inside the isolation's construction, and a focus listener runs inside the focus
++	// move. The show then returns everything it wrote to the hidden state the host chose, so the modal
++	// neither paints nor receives the pointer and its backdrop leaves, while the scroll lock and the
++	// `open` token it took stay held.
++	it('returns the host to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it', async () => {
++		const name = 'vn-modal-show-dropped'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback(
++					_attribute: string,
++					_previous: string | null,
++					value: string | null,
++				) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const sibling = 'vn-modal-inert-dropper'
++		const inerts = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			sibling,
++			class extends HTMLElement {
++				static observedAttributes = ['inert']
++				attributeChangedCallback() {
++					inerts.get(this)?.()
++				}
++			},
++		)
++		scene.load(cascade)
++		const rows = ['token', 'transition', 'isolation', 'focus'] as const
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly door: string
++					readonly resolved: boolean
++					readonly display: string
++					readonly hidden: string | null
++					readonly modal: string | null
++					readonly role: string | null
++					readonly target: boolean
++					readonly backdrops: number
++					readonly open: boolean
++					readonly events: readonly string[]
++				},
++			]
++		>()
++		for (const door of rows) {
++			const root = scene.mount('<div></div>')
++			const beside = document.createElement(sibling)
++			const host = document.createElement(name)
++			host.className = 'modal fade'
++			host.tabIndex = -1
++			host.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>'
++			root.append(beside, host)
++			const events = createRecorder<readonly [string]>()
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			const modal = new Modal(host, { on: { shown: (event) => events.handler(event.type) } })
++			onTestFinished(() => modal.destroy())
++			const watcher = new MutationObserver(() => {
++				if (!host.classList.contains('show')) return
++				watcher.disconnect()
++				host.classList.remove('show')
++			})
++			onTestFinished(() => watcher.disconnect())
++			if (door === 'token') {
++				reactions.set(host, (value) => {
++					if (!(value ?? '').split(' ').includes('show')) return
++					reactions.delete(host)
++					host.classList.remove('show')
++				})
++			}
++			if (door === 'transition') watcher.observe(host, { attributeFilter: ['class'] })
++			if (door === 'isolation') {
++				inerts.set(beside, () => {
++					inerts.delete(beside)
++					host.classList.remove('show')
++				})
++			}
++			if (door === 'focus') {
++				host.addEventListener('focus', () => host.classList.remove('show'), {
++					once: true,
++					signal: controller.signal,
++				})
++			}
++			const resolved = await modal.show()
++			await waitForCondition(
++				'the host settles',
++				() => host.getAnimations({ subtree: true }).length === 0,
++			)
++			readings.handler({
++				door,
++				resolved,
++				display: getComputedStyle(host).display,
++				hidden: host.getAttribute('aria-hidden'),
++				modal: host.getAttribute('aria-modal'),
++				role: host.getAttribute('role'),
++				target: document.elementFromPoint(2, 2) === host,
++				backdrops: document.querySelectorAll('.modal-backdrop').length,
++				open: document.body.classList.contains('modal-open'),
++				events: events.calls.flat(),
++			})
++			modal.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map((door) => [
++				{
++					door,
++					resolved: false,
++					display: 'none',
++					hidden: 'true',
++					modal: null,
++					role: null,
++					target: false,
++					backdrops: 0,
++					open: true,
++					events: [],
++				},
++			]),
++		)
++	})
++
++	// A custom element host whose `role` reaction takes the hide over after its last host write also
++	// reacts to the returning step's first write, the `display` value, by destroying the modal, so the
++	// step writes nothing more and the snapshot's restoration stands.
++	it('writes nothing more of the returning step after a reaction inside it destroys the modal', async () => {
++		const name = 'vn-modal-return-destroyer'
++		const reactions = new WeakMap<
++			HTMLElement,
++			(attribute: string, previous: string | null, value: string | null) => void
++		>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['role', 'style']
++				attributeChangedCallback(attribute: string, previous: string | null, value: string | null) {
++					reactions.get(this)?.(attribute, previous, value)
++				}
++			},
++		)
++		const root = scene.mount('<div></div>')
++		const host = document.createElement(name)
++		host.className = 'modal'
++		root.append(host)
++		const modal = new Modal(host, { focus: false })
++		onTestFinished(() => modal.destroy())
++		expect(await modal.show()).toBe(true)
++		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++		const observer = new MutationObserver((records) => writes.handler(records))
++		onTestFinished(() => observer.disconnect())
++		reactions.set(host, (attribute, _previous, value) => {
++			if (attribute === 'role' && value === null) host.classList.add('show')
++			if (attribute !== 'style' || host.style.display !== 'block') return
++			reactions.delete(host)
++			modal.destroy()
++			observer.observe(document.documentElement, {
++				attributes: true,
++				childList: true,
++				subtree: true,
++			})
++		})
++		expect(await modal.hide()).toBe(false)
++		expect(Modal.find(host)).toBeUndefined()
++		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(host.hasAttribute('aria-modal')).toBe(false)
++		expect(host.hasAttribute('role')).toBe(false)
++		expect(document.querySelector('.modal-backdrop')).toBeNull()
++	})
++
+ 	// Each of the following cases drives a custom element beside the modal whose `inert` reaction runs
+ 	// inside the isolation's construction, before the modal has stored the isolation.
+ 	it('stops the isolation whose inert write a reaction answers by destroying the modal, releasing its claims and writing nothing more', async () => {
+@@ -1208,7 +1550,7 @@ describe('Modal', () => {
+ 		expect(banner.style.paddingRight).toBe('')
+ 	})
+ 
+-	it('releases what a show the host took over held at a later show and its hide', async () => {
++	it('releases the scroll lock and the open token a show the host took over held at a later show and its hide, the backdrop already gone', async () => {
+ 		const name = 'vn-modal-show-token-retaken'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1234,7 +1576,8 @@ describe('Modal', () => {
+ 		expect(await modal.show()).toBe(false)
+ 		expect(await modal.hide()).toBe(false)
+ 		expect(document.body.style.overflow).toBe('hidden')
+-		expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(1)
++		expect(document.body.classList.contains('modal-open')).toBe(true)
++		expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(0)
+ 		expect(await modal.show()).toBe(true)
+ 		expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(1)
+ 		expect(await modal.hide()).toBe(true)
+diff --git a/tests/src/browser/Offcanvas.test.ts b/tests/src/browser/Offcanvas.test.ts
+index 3a62967..bcaf005 100644
+--- a/tests/src/browser/Offcanvas.test.ts
++++ b/tests/src/browser/Offcanvas.test.ts
+@@ -1184,10 +1184,12 @@ describe('Offcanvas', () => {
+ 	})
+ 
+ 	// Each row names one write of a show or a hide, and a reaction inside that write sets the `shown`
+-	// token against the phase the call is in, which takes the change over; the call then writes and
+-	// dispatches nothing more and resolves false. The panel holds a backdrop, a scroll lock, and an
+-	// isolation, so each write a missing door lets through lands on the page.
+-	it('stops each write sequence at the door after a write whose reaction takes the change over, writing and dispatching nothing more', async () => {
++	// token against the phase the call is in, which takes the change over; the call then dispatches
++	// nothing, resolves false, and writes only the step that returns its own writes to the state the
++	// host chose, which the last column names (the backdrop's own tokens aside). The panel holds a
++	// backdrop, a scroll lock, and an isolation, so each write a missing door lets through lands on
++	// the page.
++	it('stops each write sequence at the door after a write whose reaction takes the change over, writing only the return to the state the host chose', async () => {
+ 		const name = 'vn-offcanvas-door-takeover'
+ 		const reactions = new WeakMap<
+ 			HTMLElement,
+@@ -1203,15 +1205,15 @@ describe('Offcanvas', () => {
+ 			},
+ 		)
+ 		const root = scene.mount('<div></div>')
+-		for (const [phase, attribute, token, present, shown] of [
+-			['show', 'aria-modal', undefined, true, true],
+-			['show', 'role', undefined, true, true],
+-			['show', 'class', 'showing', true, true],
+-			['show', 'class', 'showing', false, false],
+-			['hide', 'class', 'hiding', true, false],
+-			['hide', 'class', 'hiding', false, true],
+-			['hide', 'aria-modal', undefined, false, true],
+-			['hide', 'role', undefined, false, true],
++		for (const [phase, attribute, token, present, shown, returned] of [
++			['show', 'aria-modal', undefined, true, true, []],
++			['show', 'role', undefined, true, true, []],
++			['show', 'class', 'showing', true, true, []],
++			['show', 'class', 'showing', false, false, ['aria-modal', 'role', 'children']],
++			['hide', 'class', 'hiding', true, false, []],
++			['hide', 'class', 'hiding', false, true, []],
++			['hide', 'aria-modal', undefined, false, true, ['aria-modal']],
++			['hide', 'role', undefined, false, true, ['aria-modal', 'role']],
+ 		] as const) {
+ 			const host = document.createElement(name)
+ 			host.className = 'offcanvas'
+@@ -1249,7 +1251,20 @@ describe('Offcanvas', () => {
+ 				row: [phase, attribute, token, present],
+ 				resolved: false,
+ 			})
+-			expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++			// The returning step's backdrop tokens are the held-backdrop cases' reading, so a write to the
++			// backdrop's own `class` attribute is left out here.
++			expect({
++				row: [phase, attribute, token, present],
++				writes: [...writes.calls.flat(2), ...observer.takeRecords()]
++					.filter(
++						(record) =>
++							!(record.target instanceof Element) ||
++							!record.target.classList.contains('offcanvas-backdrop'),
++					)
++					.map((record) =>
++						record.type === 'attributes' ? String(record.attributeName) : 'children',
++					),
++			}).toEqual({ row: [phase, attribute, token, present], writes: returned })
+ 			expect(events.calls).toEqual([])
+ 			expect(offcanvas.shown).toBe(shown)
+ 			observer.disconnect()
+@@ -1258,6 +1273,147 @@ describe('Offcanvas', () => {
+ 		}
+ 	})
+ 
++	// Each row names one backdrop write and a reaction to it. A custom element the backdrop holds reacts
++	// inside the insertion and inside the removal; the backdrop is a plain `div` element, so nothing
++	// runs inside its token writes, and an observer of its `class` attribute reacts at the next
++	// microtask checkpoint, inside the change's wait. The reaction destroys the panel, sets the `shown`
++	// token against the phase the call is in, or calls the opposite method, which the change in flight
++	// refuses. For the show rows, a consumer takes both `shown` tokens off a shown panel and its
++	// backdrop and takes the backdrop out of the page, so the show the row calls shows the held
++	// backdrop again and inserts it. A stopped change writes only the step that returns its own writes
++	// to the state the host chose, which the returned column names (the backdrop's own tokens aside).
++	it('writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method', async () => {
++		const name = 'vn-offcanvas-backdrop-reactor'
++		const reactions = new WeakMap<HTMLElement, (callback: string) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				connectedCallback() {
++					reactions.get(this)?.('connected')
++				}
++				disconnectedCallback() {
++					reactions.get(this)?.('disconnected')
++				}
++			},
++		)
++		// The fourth column is the `aria-modal` value the host carries after the call, and the last
++		// names the writes the returning step makes after the reaction: a show the host took over at the
++		// insertion finds the host shown, so it has nothing to return.
++		const rows = [
++			['show', 'insertion', 'destroy', null, []],
++			['show', 'insertion', 'token', 'true', []],
++			['show', 'insertion', 'call', 'true', []],
++			['show', 'token', 'destroy', null, []],
++			['show', 'token', 'token', null, ['DIV class', 'DIV aria-modal', 'DIV role', 'DIV children']],
++			['hide', 'token', 'destroy', null, []],
++			['hide', 'token', 'token', 'true', ['DIV class']],
++			['hide', 'removal', 'destroy', null, []],
++			['hide', 'removal', 'token', 'true', ['DIV aria-modal', 'DIV role', 'DIV children']],
++			['hide', 'removal', 'call', null, []],
++		] as const
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: readonly string[]
++					readonly resolved: boolean
++					readonly opposite: boolean | undefined
++					readonly stale: readonly string[]
++					readonly events: readonly string[]
++					readonly modal: string | null
++				},
++			]
++		>()
++		for (const [phase, write, reaction] of rows) {
++			const row = [phase, write, reaction]
++			const root = scene.mount(markup)
++			const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
++			const events = createRecorder<readonly [string]>()
++			const offcanvas = new Offcanvas(host, {
++				on: {
++					shown: (event) => events.handler(event.type),
++					hidden: (event) => events.handler(event.type),
++				},
++			})
++			onTestFinished(() => offcanvas.destroy())
++			expect(await offcanvas.show()).toBe(true)
++			events.clear()
++			const backdrop = requireValue(
++				root.querySelector<HTMLElement>('.offcanvas-backdrop'),
++				'No backdrop',
++			)
++			if (phase === 'show') {
++				host.classList.remove('show')
++				backdrop.classList.remove('show')
++				backdrop.remove()
++			}
++			const writes = createRecorder<readonly [readonly MutationRecord[]]>()
++			const observer = new MutationObserver((records) => writes.handler(records))
++			onTestFinished(() => observer.disconnect())
++			const opposite = createRecorder<readonly [Promise<boolean>]>()
++			const react = (): void => {
++				if (reaction === 'destroy') offcanvas.destroy()
++				if (reaction === 'token') host.classList.toggle('show', !host.classList.contains('show'))
++				if (reaction === 'call') {
++					opposite.handler(phase === 'show' ? offcanvas.hide() : offcanvas.show())
++					return
++				}
++				observer.observe(document.body, { attributes: true, childList: true, subtree: true })
++			}
++			const reactor = document.createElement(name)
++			backdrop.append(reactor)
++			const watcher = new MutationObserver(() => {
++				if (backdrop.classList.contains('show') !== (phase === 'show')) return
++				watcher.disconnect()
++				react()
++			})
++			onTestFinished(() => watcher.disconnect())
++			if (write === 'token') watcher.observe(backdrop, { attributeFilter: ['class'] })
++			else {
++				reactions.set(reactor, (callback) => {
++					if (callback !== (write === 'insertion' ? 'connected' : 'disconnected')) return
++					reactions.delete(reactor)
++					react()
++				})
++			}
++			const resolved = await (phase === 'show' ? offcanvas.show() : offcanvas.hide())
++			// A write to the backdrop itself is the held backdrop's own state, which the held-backdrop
++			// cases read, so only what the change writes elsewhere counts as stale here.
++			const stale = [...writes.calls.flat(2), ...observer.takeRecords()]
++				.filter((record) => record.target !== backdrop && !backdrop.contains(record.target))
++				.map((record) =>
++					record.type === 'attributes'
++						? `${record.target.nodeName} ${String(record.attributeName)}`
++						: `${record.target.nodeName} children`,
++				)
++			readings.handler({
++				row,
++				resolved,
++				opposite: await opposite.calls[0]?.[0],
++				stale,
++				events: events.calls.flat(),
++				modal: host.getAttribute('aria-modal'),
++			})
++			observer.disconnect()
++			offcanvas.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map(([phase, write, reaction, modal, returned]) => [
++				{
++					row: [phase, write, reaction],
++					resolved: reaction === 'call',
++					opposite: reaction === 'call' ? false : undefined,
++					stale: returned,
++					events:
++						reaction !== 'call'
++							? []
++							: [phase === 'show' ? 'shown.vn.offcanvas' : 'hidden.vn.offcanvas'],
++					modal,
++				},
++			]),
++		)
++	})
++
+ 	it('writes nothing after a destruction during the slide-out, resolving the hide false', async () => {
+ 		scene.load(offcanvasCascade)
+ 		const root = scene.mount(markup)
+@@ -1499,7 +1655,7 @@ describe('Offcanvas', () => {
+ 		expect(Array.from(host.classList)).toEqual(['offcanvas', 'offcanvas-start'])
+ 	})
+ 
+-	it('stops a show whose shown-token write a reaction answers by removing the token, dispatching no shown event, and releases what it held at a hide after the token returns', async () => {
++	it('stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns', async () => {
+ 		const name = 'vn-offcanvas-show-token-removed'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1534,13 +1690,14 @@ describe('Offcanvas', () => {
+ 			observer.observe(host, { attributes: true })
+ 		})
+ 		expect(await offcanvas.show()).toBe(false)
+-		// The call stopped at the write, so the slide the write started is still running.
+-		expect(host.getAnimations()).toHaveLength(1)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.attributeName),
++		).toEqual(['class', 'aria-modal', 'role'])
++		expect(Array.from(host.classList)).toEqual(['offcanvas', 'offcanvas-start'])
+ 		expect(events.count).toBe(0)
+ 		expect(offcanvas.shown).toBe(false)
+ 		expect(document.body.style.overflow).toBe('hidden')
+-		expect(root.querySelectorAll('.offcanvas-backdrop')).toHaveLength(1)
++		expect(root.querySelectorAll('.offcanvas-backdrop')).toHaveLength(0)
+ 		expect(await offcanvas.hide()).toBe(false)
+ 		host.classList.add('show')
+ 		expect(await offcanvas.hide()).toBe(true)
+@@ -1550,58 +1707,348 @@ describe('Offcanvas', () => {
+ 		expect(Array.from(host.classList)).toEqual(['offcanvas', 'offcanvas-start'])
+ 	})
+ 
+-	it('removes no backdrop when a reaction to the shown removal takes the hide over, writing nothing through the fade', async () => {
+-		const name = 'vn-offcanvas-backdrop-kept'
+-		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++	// Each row names a door of a hide after the shown token leaves the panel, and the host takes the
++	// hide over there by carrying the token again. A custom element host's attribute reaction runs
++	// inside the write before its door, an observer of the backdrop's `class` attribute runs inside the
++	// wait, and a custom element the backdrop holds reacts inside the backdrop's removal. The hide then
++	// returns everything it wrote to the shown state the host chose: the panel sits on screen and takes
++	// the pointer, its backdrop shows beside it and takes a press there, and the scroll lock stays held.
++	it('returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves', async () => {
++		const name = 'vn-offcanvas-hide-retaken'
++		const reactions = new WeakMap<
++			HTMLElement,
++			(attribute: string, previous: string | null, value: string | null) => void
++		>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class', 'aria-modal', 'role']
++				attributeChangedCallback(attribute: string, previous: string | null, value: string | null) {
++					reactions.get(this)?.(attribute, previous, value)
++				}
++			},
++		)
++		const reactor = 'vn-offcanvas-backdrop-retaker'
++		const removals = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			reactor,
++			class extends HTMLElement {
++				disconnectedCallback() {
++					removals.get(this)?.()
++				}
++			},
++		)
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(offcanvasCascade)
++		const rows = [
++			['class', 'show'],
++			['wait', undefined],
++			['class', 'hiding'],
++			['aria-modal', undefined],
++			['role', undefined],
++			['removal', undefined],
++		] as const
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly row: ReadonlyArray<string | undefined>
++					readonly resolved: boolean
++					readonly tokens: readonly string[]
++					readonly modal: string | null
++					readonly role: string | null
++					readonly visibility: string
++					readonly transform: string
++					readonly target: boolean
++					readonly backdrop: readonly string[] | undefined
++					readonly opacity: string | undefined
++					readonly beside: boolean
++					readonly locked: boolean
++					readonly events: readonly string[]
++				},
++			]
++		>()
++		for (const [attribute, token] of rows) {
++			const root = scene.mount('<div></div>')
++			const host = document.createElement(name)
++			host.className = 'offcanvas offcanvas-start'
++			host.tabIndex = -1
++			root.append(host)
++			const events = createRecorder<readonly [string]>()
++			const offcanvas = new Offcanvas(host, {
++				on: { hidden: (event) => events.handler(event.type) },
++			})
++			onTestFinished(() => offcanvas.destroy())
++			expect(await offcanvas.show()).toBe(true)
++			const backdrop = requireValue(
++				root.querySelector<HTMLElement>('.offcanvas-backdrop'),
++				'No backdrop',
++			)
++			const watcher = new MutationObserver(() => {
++				if (backdrop.classList.contains('show')) return
++				watcher.disconnect()
++				host.classList.add('show')
++			})
++			onTestFinished(() => watcher.disconnect())
++			if (attribute === 'wait') watcher.observe(backdrop, { attributeFilter: ['class'] })
++			else if (attribute === 'removal') {
++				const child = document.createElement(reactor)
++				backdrop.append(child)
++				removals.set(child, () => {
++					removals.delete(child)
++					host.classList.add('show')
++				})
++			} else {
++				reactions.set(host, (changed, previous, value) => {
++					if (changed !== attribute) return
++					const before =
++						token === undefined ? previous !== null : (previous ?? '').split(' ').includes(token)
++					const after =
++						token === undefined ? value !== null : (value ?? '').split(' ').includes(token)
++					if (!before || after) return
++					reactions.delete(host)
++					host.classList.add('show')
++				})
++			}
++			const resolved = await offcanvas.hide()
++			await waitForCondition(
++				'the panel and the backdrop settle',
++				() => host.getAnimations().length === 0 && backdrop.getAnimations().length === 0,
++			)
++			const box = host.getBoundingClientRect()
++			const center = document.elementFromPoint(box.left + box.width / 2, box.top + 10)
++			const shade = root.querySelector<HTMLElement>('.offcanvas-backdrop')
++			readings.handler({
++				row: [attribute, token],
++				resolved,
++				tokens: Array.from(host.classList),
++				modal: host.getAttribute('aria-modal'),
++				role: host.getAttribute('role'),
++				visibility: getComputedStyle(host).visibility,
++				transform: getComputedStyle(host).transform,
++				target: center !== null && host.contains(center),
++				backdrop: shade === null ? undefined : Array.from(shade.classList),
++				opacity: shade === null ? undefined : getComputedStyle(shade).opacity,
++				beside: shade !== null && document.elementFromPoint(beside.x, box.top + 10) === shade,
++				locked: document.body.style.overflow === 'hidden',
++				events: events.calls.flat(),
++			})
++			// The hide the stop left undone completes from the shown state it left.
++			expect(await offcanvas.hide()).toBe(true)
++			expect(root.querySelector('.offcanvas-backdrop')).toBeNull()
++			offcanvas.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map((row) => [
++				{
++					row: [...row],
++					resolved: false,
++					tokens: ['offcanvas', 'offcanvas-start', 'show'],
++					modal: 'true',
++					role: 'dialog',
++					visibility: 'visible',
++					transform: 'none',
++					target: true,
++					backdrop: ['offcanvas-backdrop', 'fade', 'show'],
++					opacity: '0.5',
++					beside: true,
++					locked: true,
++					events: [],
++				},
++			]),
++		)
++	})
++
++	// Each row names a door of a show after the shown token reaches the panel, and the host drops the
++	// token there: a custom element host's attribute reaction runs inside the token write and inside
++	// the `showing` token's removal, an observer of the host's `class` attribute runs inside the wait,
++	// a custom element beside the panel reacts inside the isolation's construction, and a focus
++	// listener runs inside the focus move. The show then returns everything it wrote to the hidden state
++	// the host chose: the panel leaves the screen and the pointer, its backdrop leaves the page, and
++	// the scroll lock and the isolation stay held until a later change releases them.
++	it('returns the panel to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it', async () => {
++		const name = 'vn-offcanvas-show-dropped'
++		const reactions = new WeakMap<
++			HTMLElement,
++			(previous: string | null, value: string | null) => void
++		>()
+ 		customElements.define(
+ 			name,
+ 			class extends HTMLElement {
+ 				static observedAttributes = ['class']
+-				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
+-					reactions.get(this)?.(value)
++				attributeChangedCallback(
++					_attribute: string,
++					previous: string | null,
++					value: string | null,
++				) {
++					reactions.get(this)?.(previous, value)
++				}
++			},
++		)
++		const sibling = 'vn-offcanvas-inert-dropper'
++		const inerts = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			sibling,
++			class extends HTMLElement {
++				static observedAttributes = ['inert']
++				attributeChangedCallback() {
++					inerts.get(this)?.()
+ 				}
+ 			},
+ 		)
+ 		scene.load(tokensCascade)
+ 		scene.load(fadeCascade)
+ 		scene.load(offcanvasCascade)
++		const rows = ['token', 'wait', 'showing', 'isolation', 'focus'] as const
++		const readings = createRecorder<
++			readonly [
++				{
++					readonly door: string
++					readonly resolved: boolean
++					readonly tokens: readonly string[]
++					readonly modal: string | null
++					readonly role: string | null
++					readonly visibility: string
++					readonly target: boolean
++					readonly backdrops: number
++					readonly locked: boolean
++					readonly events: readonly string[]
++				},
++			]
++		>()
++		for (const door of rows) {
++			const root = scene.mount('<div></div>')
++			const neighbour = document.createElement(sibling)
++			const host = document.createElement(name)
++			host.className = 'offcanvas offcanvas-start'
++			host.tabIndex = -1
++			root.append(neighbour, host)
++			const events = createRecorder<readonly [string]>()
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			const offcanvas = new Offcanvas(host, {
++				on: { shown: (event) => events.handler(event.type) },
++			})
++			onTestFinished(() => offcanvas.destroy())
++			const watcher = new MutationObserver(() => {
++				if (!host.classList.contains('show')) return
++				watcher.disconnect()
++				host.classList.remove('show')
++			})
++			onTestFinished(() => watcher.disconnect())
++			if (door === 'token' || door === 'showing') {
++				reactions.set(host, (previous, value) => {
++					const before = (previous ?? '').split(' ')
++					const after = (value ?? '').split(' ')
++					const shown = door === 'token' && !before.includes('show') && after.includes('show')
++					const settled =
++						door === 'showing' && before.includes('showing') && !after.includes('showing')
++					if (!shown && !settled) return
++					reactions.delete(host)
++					host.classList.remove('show')
++				})
++			}
++			if (door === 'wait') watcher.observe(host, { attributeFilter: ['class'] })
++			if (door === 'isolation') {
++				inerts.set(neighbour, () => {
++					inerts.delete(neighbour)
++					host.classList.remove('show')
++				})
++			}
++			if (door === 'focus') {
++				host.addEventListener('focus', () => host.classList.remove('show'), {
++					once: true,
++					signal: controller.signal,
++				})
++			}
++			const resolved = await offcanvas.show()
++			await waitForCondition('the panel settles', () => host.getAnimations().length === 0)
++			const box = host.getBoundingClientRect()
++			const center = document.elementFromPoint(box.left + box.width / 2, box.top + 10)
++			readings.handler({
++				door,
++				resolved,
++				tokens: Array.from(host.classList),
++				modal: host.getAttribute('aria-modal'),
++				role: host.getAttribute('role'),
++				visibility: getComputedStyle(host).visibility,
++				target: center !== null && host.contains(center),
++				backdrops: document.querySelectorAll('.offcanvas-backdrop').length,
++				locked: document.body.style.overflow === 'hidden',
++				events: events.calls.flat(),
++			})
++			offcanvas.destroy()
++			root.remove()
++		}
++		expect(readings.calls).toEqual(
++			rows.map((door) => [
++				{
++					door,
++					resolved: false,
++					tokens: ['offcanvas', 'offcanvas-start'],
++					modal: null,
++					role: null,
++					visibility: 'hidden',
++					target: false,
++					backdrops: 0,
++					locked: true,
++					events: [],
++				},
++			]),
++		)
++	})
++
++	// A custom element host whose `role` reaction takes the hide over also reacts to the returning
++	// step's own `aria-modal` write by destroying the panel, so the step writes nothing more and the
++	// snapshot's restoration stands.
++	it('writes nothing more of the returning step after a reaction inside it destroys the panel', async () => {
++		const name = 'vn-offcanvas-return-destroyer'
++		const reactions = new WeakMap<HTMLElement, (attribute: string, value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['aria-modal', 'role']
++				attributeChangedCallback(
++					attribute: string,
++					_previous: string | null,
++					value: string | null,
++				) {
++					reactions.get(this)?.(attribute, value)
++				}
++			},
++		)
+ 		const root = scene.mount('<div></div>')
+ 		const host = document.createElement(name)
+ 		host.className = 'offcanvas offcanvas-start'
+ 		host.tabIndex = -1
+ 		root.append(host)
+-		const events = createRecorder<readonly [string]>()
+-		const controller = new AbortController()
+-		onTestFinished(() => controller.abort())
+-		host.addEventListener(OFFCANVAS_EVENTS.hidden, (event) => events.handler(event.type), {
+-			signal: controller.signal,
+-		})
+ 		const offcanvas = new Offcanvas(host)
+ 		onTestFinished(() => offcanvas.destroy())
+ 		expect(await offcanvas.show()).toBe(true)
+-		const backdrop = requireValue(
+-			root.querySelector<HTMLElement>('.offcanvas-backdrop'),
+-			'No backdrop',
+-		)
+ 		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
+ 		const observer = new MutationObserver((records) => writes.handler(records))
+ 		onTestFinished(() => observer.disconnect())
+-		reactions.set(host, (value) => {
+-			if ((value ?? '').split(' ').includes('show')) return
++		reactions.set(host, (attribute, value) => {
++			if (attribute === 'role' && value === null) host.classList.add('show')
++			if (attribute !== 'aria-modal' || value !== 'true') return
+ 			reactions.delete(host)
+-			host.classList.add('show')
+-			observer.observe(document.body, { attributes: true, childList: true, subtree: true })
++			offcanvas.destroy()
++			observer.observe(document.documentElement, {
++				attributes: true,
++				childList: true,
++				subtree: true,
++			})
+ 		})
+ 		expect(await offcanvas.hide()).toBe(false)
+-		await waitForCondition('the backdrop fade settles', () => backdrop.getAnimations().length === 0)
++		expect(Offcanvas.find(host)).toBeUndefined()
+ 		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
+-		expect(backdrop.isConnected).toBe(true)
+-		expect(events.count).toBe(0)
+-		offcanvas.destroy()
+-		expect(backdrop.isConnected).toBe(false)
++		expect(host.hasAttribute('aria-modal')).toBe(false)
++		expect(host.hasAttribute('role')).toBe(false)
++		expect(document.querySelector('.offcanvas-backdrop')).toBeNull()
+ 	})
+ 
+-	it('stops a hide whose token removal a reaction answers by adding the shown token back, dispatching no hidden event', async () => {
++	it("stops a hide whose token removal a reaction answers by adding the shown token back, writing only the hiding token's removal and dispatching no hidden event", async () => {
+ 		const name = 'vn-offcanvas-hide-token-restored'
+ 		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
+ 		customElements.define(
+@@ -1632,9 +2079,10 @@ describe('Offcanvas', () => {
+ 			observer.observe(host, { attributes: true })
+ 		})
+ 		expect(await offcanvas.hide()).toBe(false)
+-		// The call stopped at the write, so the slide out the `hiding` write started is still running.
+-		expect(host.getAnimations()).toHaveLength(1)
+-		expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual([])
++		expect(
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.attributeName),
++		).toEqual(['class'])
++		expect(Array.from(host.classList)).toEqual(['offcanvas', 'offcanvas-start', 'show'])
+ 		expect(events.count).toBe(0)
+ 		expect(host.getAttribute('aria-modal')).toBe('true')
+ 		expect(offcanvas.shown).toBe(true)
