@@ -1,0 +1,12 @@
+Read the accordion chevron's and the navbar toggler icon's background size by its value
+
+The accordion button's chevron and the navbar toggler icon each compared a one-value background-size
+by string, which Chromium 141 serializes as the one value and Chromium 153 as the value followed by
+auto. Each proof reads the leading term against the expected length and holds the second term, where
+a build writes one, to auto, the reading D45 rules and the close proof already uses. These were the
+engine session's standing Chromium 153 rows.
+
+B-CROSS support unit BACKGROUND-SIZE: `builder` on Sonnet, verified by `checker`.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
