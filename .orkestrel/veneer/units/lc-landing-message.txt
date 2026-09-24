@@ -1,0 +1,19 @@
+Pick each fill's label by the release's contrast rule and move its states the way the label names (LABEL)
+
+The luminance, ratio, and contrast functions in _mixins.scss compute the release's color-contrast rule over each role's
+channel triplet, per mode, and every filled button, text-bg pair, validation tooltip, and colored link reads the pick:
+the dark primary takes a black label and tints on hover and press, as the release's info and warning roles do, while
+every white-labelled role shades toward the light state mixer and the light and dark roles move toward their own
+label. A pick that differs by mode is written as light-dark(); the root declares color-scheme: light, because the
+build's Lightning CSS lowers light-dark() into variables it declares only beside a color-scheme declaration. The bare
+button veil keeps its mixer. The rule fixture holds the release's and Veneer's fills to the release function's own
+picks; the floor, direction, island, root-attribute, consumer-scheme, and link-amount proofs each ran red against
+their mutation, and the built triplets are byte-identical to the base. THEME's theme-tokens mixin carries the retuned
+walk and the secondary aliases, and the composed-contrast list drops the dark primary rows the black label lifts.
+
+Audited over four rounds by analyst on GPT-6 Astra, reviewer on Opus 5.5, and checker on Sonnet
+(scaffold .orkestrel/veneer/units/lc-audit-verdict.md to lc-audit-3-verdict.md), on the design verdict
+label-contrast-design-verdict.md.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
