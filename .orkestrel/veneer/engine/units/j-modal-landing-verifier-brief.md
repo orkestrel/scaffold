@@ -6,7 +6,7 @@
 
 ## Objective
 
-Exit-code truth for the gate chain on Veneer `main` at `MODAL_HEAD` (the J-MODAL landing: `9c56ad8` and its merge commit), in the checkout `C:/Users/mikes/WebstormProjects/veneer`.
+Exit-code truth for the gate chain on Veneer `main` at `7e96cf8` (the J-MODAL landing: `9c56ad8` and its merge commit), in the checkout `C:/Users/mikes/WebstormProjects/veneer`.
 
 ## Context
 
