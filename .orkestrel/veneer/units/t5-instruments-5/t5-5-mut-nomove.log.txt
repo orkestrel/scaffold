@@ -1,0 +1,184 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+·················································x·····························································································································································································x·xx·xxxxx·····························································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:859:2 > hoverAccessible > hovers the named control while its twin keeps the base paint, then clears hover
+AssertionError: expected 32 to be 16 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 16[39m
+[31m+ 32[39m
+
+ ❯ tests/src/browser/helpers.test.ts:876:44
+    874|   expect(readPixels(twin, 'padding-top')).toBe(16)
+    875|   await releasePointer()
+    876|   expect(readPixels(target, 'padding-top')).toBe(16)
+       |                                            ^
+    877|   expect(clicks.count).toBe(0)
+    878|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3395:2 > captureFrame > takes no mouseover from the parked pointer for a flush-left element the scroll brings to the top
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3416:24
+    3414|   })
+    3415|   await waitForFrame()
+    3416|   expect(entered.count).toBe(0)
+       |                        ^
+    3417|   expect((await readFrame(written)).height).toBe(100)
+    3418|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3446:2 > captureFrame > takes no mouseover from the parked pointer for a flush-left element too large for the runner window
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3469:24
+    3467|   })
+    3468|   await waitForFrame()
+    3469|   expect(entered.count).toBe(0)
+       |                        ^
+    3470|   expect((await readFrame(written)).height).toBe(tall)
+    3471|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3473:2 > captureFrame > takes no mouseover or scroll event for an element inside the runner window
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3492:24
+    3490|    window.removeEventListener('scroll', scrolled.handler)
+    3491|   }
+    3492|   expect(entered.count).toBe(0)
+       |                        ^
+    3493|   expect(scrolled.count).toBe(0)
+    3494|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3536:2 > captureFrame > takes no mouseover from the parked pointer for an element touching the origin
+AssertionError: expected 3 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 3[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3552:24
+    3550|    document.removeEventListener('mouseover', entered.handler)
+    3551|   }
+    3552|   expect(entered.count).toBe(0)
+       |                        ^
+    3553|  })
+    3554|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3555:2 > captureFrame > takes no mouseover from the parked pointer for an element that fills the runner window
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3578:24
+    3576|    document.removeEventListener('mouseover', entered.handler)
+    3577|   }
+    3578|   expect(entered.count).toBe(0)
+       |                        ^
+    3579|  })
+    3580|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3581:2 > captureFrame > takes no mouseover from the parked pointer across a scroll the staging clamps
+AssertionError: expected 3 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 3[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3604:24
+    3602|    document.removeEventListener('mouseover', entered.handler)
+    3603|   }
+    3604|   expect(entered.count).toBe(0)
+       |                        ^
+    3605|   expect(window.scrollY).toBe(600)
+    3606|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3608:2 > captureFrame > takes no mouseover from the parked pointer for an svg in the shadow tree of a fixed host
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3632:24
+    3630|    document.removeEventListener('mouseover', entered.handler)
+    3631|   }
+    3632|   expect(entered.count).toBe(0)
+       |                        ^
+    3633|  })
+    3634|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3635:2 > captureFrame > takes no mouseover from the parked pointer for a fixed svg under a containing-block ancestor
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3659:24
+    3657|    document.removeEventListener('mouseover', entered.handler)
+    3658|   }
+    3659|   expect(entered.count).toBe(0)
+       |                        ^
+    3660|  })
+    3661|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 363 passed | 2 expected fail (374)
+   Start at  18:48:53
+   Duration  39.56s (transform 0ms, setup 219ms, import 329ms, tests 26.18s, environment 0ms)
+

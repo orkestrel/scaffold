@@ -1,0 +1,10 @@
+{
+ "note": "The bottom edge no longer rounded up to a whole row.",
+ "edits": [
+  {
+   "from": "\t\ttop: fits ? Math.min(0, height - Math.ceil(box.bottom)) : 0,",
+   "to": "\t\ttop: fits ? Math.min(0, height - box.bottom) : 0,"
+  }
+ ],
+ "file": "src/browser/helpers.ts"
+}

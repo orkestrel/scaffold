@@ -1,0 +1,13 @@
+grep -c 'offsetParent\|SVGSVGElement\|ownerSVGElement' src/browser/helpers.ts:
+0
+park-point mentions in src/browser and guides/test.md:
+src/browser/helpers.ts:84: * rather than a bare `checkVisibility` call: a drawer parked at `visibility: hidden` is still laid
+src/browser/helpers.ts:711: * Releases a held pointer and parks it outside the page, clearing hover.
+src/browser/helpers.ts:720: * to its park point in cleanup, and a rejection there joins the aggregate described under `@throws`.
+src/browser/helpers.ts:723: * The park point is (-1, -1) in the runner page's coordinates, one pixel above and to the left of
+src/browser/helpers.ts:725: * parked there, so no element takes a `mouseover` event or hover paint from it until the next
+guides/test.md:313:| `releasePointer`           | function | `() => Promise<void>`                                                                                                   | Releases a held pointer and parks it outside the page, clearing hover.                                                                                                                                                                                                          |
+guides/test.md:1471:    so a drawer parked at `visibility: hidden` excludes nothing, and containment follows the flat
+guides/test.md:1706:  or layout change puts content under the parked pointer, so no element takes a `mouseover` event
+guides/test.md:1890:const parked = waitForAbort(instrument.signal)
+guides/test.md:1902:await parked

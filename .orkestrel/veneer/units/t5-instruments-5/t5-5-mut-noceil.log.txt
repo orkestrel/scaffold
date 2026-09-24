@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+·······························································································································································································································································x······················································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3739:2 > computeOffset > rounds a fractional bottom edge up to the next whole row
+AssertionError: expected { top: -331.5, left: +0 } to strictly equal { top: -332, left: +0 }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "left": 0,[22m
+[32m-   "top": -332,[39m
+[31m+   "top": -331.5,[39m
+[2m  }[22m
+
+ ❯ tests/src/browser/helpers.test.ts:3742:75
+    3740|   // The bottom edge sits at 844.5, so the frame moves 332 rows rather…
+    3741|   // element's last part row lands inside the window rather than half …
+    3742|   expect(computeOffset(new DOMRectReadOnly(0, 744.5, 390, 100), 800, 5…
+       |                                                                           ^
+    3743|    top: -332,
+    3744|    left: 0,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 371 passed | 2 expected fail (374)
+   Start at  18:50:18
+   Duration  42.34s (transform 0ms, setup 223ms, import 303ms, tests 32.34s, environment 0ms)
+

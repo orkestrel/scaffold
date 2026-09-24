@@ -1,0 +1,10 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "The document always scrolled to the element's top, whether or not the box lies outside the pane.",
+ "edits": [
+  {
+   "from": "\t\t\tconst down = box.top < 0 ? box.top : Math.max(0, box.bottom - window.innerHeight)",
+   "to": "\t\t\tconst down = box.top"
+  }
+ ]
+}
