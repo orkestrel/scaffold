@@ -37,3 +37,16 @@ land after APPEARANCE, serially, with the shared patches applied three-way. Each
 - **E-ID-LAYOUT** (`opus` on Opus 5.5): `dl`, `blockquote`, and `figure`.
 - **E-ID-CODE** (`opus` on Opus 5.5): `code`, `pre`, `kbd`, and `samp`.
 - **E-ID-RECORD** (`builder` on Sonnet): the border-width reads, `.btn-check`, and the stripe row.
+
+## Addendum after round 1 (2026-09-24)
+
+- **The positional law.** `guides/veneer.md` § the styles axis says an `elements` rule treats a tag by its name, never
+  by where the markup puts it, and `tests/src/styles/index.test.ts` enforces it with `MANDATED_TAG_PAIRS`. Bootstrap
+  5.3.8's reboot writes `pre code`, `a > code`, and `kbd kbd`, so the house rule wins: the law admits the pairs the
+  release's reboot writes, held in a `RELEASE_TAG_PAIRS` table beside `MANDATED_TAG_PAIRS`, and the guide paragraph
+  names that second exception. E-ID-CODE round 2 carries it.
+- **Specimens.** The Content and Type sections' tests pin every specimen, so a unit adding a specimen owns the section
+  test that pins it: E-ID-CODE owns `tests/app/browser/sections/ContentSection.test.ts`, and E-ID-LAYOUT owns
+  `tests/app/browser/sections/TypeSection.test.ts`.
+- **Command.** The styles project lives in `configs/src/vite.styles.config.ts`, not in the root `vite.config.ts`
+  that `e-id-common.md` named; both units found it and used it.

@@ -1,0 +1,34 @@
+## unscoped-grid (src/styles/elements/_dl.scss)
+  summary: ['Tests  3 failed | 13 passed (16)']
+   × resolves the dl values in 'light' mode 19ms
+   × resolves the dl values in 'dark' mode 2ms
+   × lays a horizontal description list out beside its terms from the sm breakpoint 54ms
+  restore byte-identical: True
+## zero-dd-margin (src/styles/elements/_dl.scss)
+  summary: ['Tests  3 failed | 13 passed (16)']
+   × resolves the dl values in 'light' mode 11ms
+   × resolves the dl values in 'dark' mode 2ms
+   × lays a horizontal description list out beside its terms from the sm breakpoint 53ms
+  restore byte-identical: True
+## no-dt-column (src/styles/elements/_dl.scss)
+  summary: ['Tests  1 failed | 15 passed (16)']
+   × keeps every term in the term column and every description in the description column 7ms
+  restore byte-identical: True
+## no-dd-column (src/styles/elements/_dl.scss)
+  summary: ['Tests  1 failed | 15 passed (16)']
+   × keeps every term in the term column and every description in the description column 6ms
+  restore byte-identical: True
+## unscoped-blockquote (src/styles/elements/_blockquote.scss)
+  summary: ['Tests  1 failed | 15 passed (16)']
+   × leaves the bare quotation bar, inset, and italics off the quotation class 5ms
+  restore byte-identical: True
+## unscoped-figure (src/styles/elements/_figure.scss)
+  summary: ['Tests  3 failed | 13 passed (16)']
+   × starts the footer at the quotation edge inside 'a bare figure' 3ms
+   × starts the footer at the quotation edge inside 'a centered figure' 1ms
+   × starts the footer at the quotation edge inside 'an end-aligned figure' 1ms
+  restore byte-identical: True
+## classless-figure (src/styles/elements/_figure.scss)
+  summary: ['Tests  1 failed | 15 passed (16)']
+   × starts the footer at the quotation edge inside 'a bare figure' 3ms
+  restore byte-identical: True
