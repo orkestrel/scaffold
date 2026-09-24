@@ -1,0 +1,909 @@
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -74,6 +74,7 @@
+ @use 'components/carousel';
+ @use 'components/spinner';
+ @use 'components/placeholder';
++@use 'components/focus-ring';
+ @use 'components/icon-link';
+ @use 'components/ratio';
+ @use 'components/position' as position-component;
+@@ -81,7 +82,9 @@
+ @use 'components/vr';
+ @use 'utilities/visually-hidden';
+ @use 'utilities/vertical-align';
++@use 'utilities/opacity';
+ @use 'utilities/display';
++@use 'utilities/shadow';
+ @use 'utilities/position';
+ @use 'utilities/sizing';
+ @use 'utilities/flex';
+diff --git a/tests/setup.ts b/tests/setup.ts
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -277,6 +277,10 @@
+ 	| 'Navbar expand lg'
+ 	| 'Navbar expand xl'
+ 	| 'Navbar expand xxl'
++	| 'Shadows'
++	| 'Opacity steps'
++	| 'Default focus ring'
++	| 'Focus ring roles'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -1648,6 +1652,30 @@
+ 		selector: '.navbar-expand-xxl',
+ 		property: 'flex-wrap',
+ 	}),
++	Object.freeze({
++		scenario: 'shadows',
++		subject: 'Shadows',
++		selector: '.shadow',
++		property: 'box-shadow',
++	}),
++	Object.freeze({
++		scenario: 'opacity-steps',
++		subject: 'Opacity steps',
++		selector: '.opacity-50',
++		property: 'opacity',
++	}),
++	Object.freeze({
++		scenario: 'default-focus-ring',
++		subject: 'Default focus ring',
++		selector: '.focus-ring',
++		property: 'box-shadow',
++	}),
++	Object.freeze({
++		scenario: 'focus-ring-roles',
++		subject: 'Focus ring roles',
++		selector: '.focus-ring-danger',
++		property: '--bs-focus-ring-color',
++	}),
+ ])
+ 
+ /**
+@@ -1703,6 +1731,8 @@
+ 	Object.freeze({ scenario: 'skip-link-focus', subject: 'Skip link' }),
+ 	Object.freeze({ scenario: 'navbar-collapsed-focus', subject: 'Navbar collapsed' }),
+ 	Object.freeze({ scenario: 'navbar-expanded-hover', subject: 'Navbar expanded' }),
++	Object.freeze({ scenario: 'default-focus-ring-focus', subject: 'Default focus ring' }),
++	Object.freeze({ scenario: 'focus-ring-roles-focus', subject: 'Focus ring roles' }),
+ ])
+ 
+ /**
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -2179,6 +2179,61 @@
+ ])
+ 
+ /**
++ * Pins each value of the release's `shadow` utility, in the release's map order, to the class that
++ * writes it, the value that class declares, and the elevation token the value resolves through.
++ *
++ * @remarks
++ * The `token` field is the `--vn-shadow-*` step the tokens bind the release's `--bs-box-shadow*`
++ * alias to, so a proof retunes that step and reads the class move. The `shadow-none` class reads no
++ * alias, so its `token` field is undefined.
++ */
++export const SHADOW_CASES = Object.freeze([
++	Object.freeze({ name: 'shadow', value: 'var(--bs-box-shadow)', token: TOKEN_NAMES.shadow[2] }),
++	Object.freeze({
++		name: 'shadow-sm',
++		value: 'var(--bs-box-shadow-sm)',
++		token: TOKEN_NAMES.shadow[1],
++	}),
++	Object.freeze({
++		name: 'shadow-lg',
++		value: 'var(--bs-box-shadow-lg)',
++		token: TOKEN_NAMES.shadow[3],
++	}),
++	Object.freeze({ name: 'shadow-none', value: 'none', token: undefined }),
++])
++
++/**
++ * Pins each step of the release's `opacity` utility, in the release's map order, to the value its
++ * class writes.
++ *
++ * @remarks
++ * A computed style reports each value as written, so the `value` field is both the declaration the
++ * class carries and the reading a proof expects from it.
++ */
++export const OPACITY_STEPS = Object.freeze([
++	Object.freeze({ step: '0', value: '0' }),
++	Object.freeze({ step: '25', value: '0.25' }),
++	Object.freeze({ step: '50', value: '0.5' }),
++	Object.freeze({ step: '75', value: '0.75' }),
++	Object.freeze({ step: '100', value: '1' }),
++])
++
++/**
++ * Lists the roles the release's `focus-ring` utility writes a class for, in the release's map order,
++ * independently of the partial's own loop.
++ */
++export const FOCUS_RING_ROLES = Object.freeze([
++	'primary',
++	'secondary',
++	'success',
++	'info',
++	'warning',
++	'danger',
++	'light',
++	'dark',
++])
++
++/**
+  * Pins each named aspect ratio against the percentage its own name derives.
+  *
+  * @remarks
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -88,6 +88,7 @@
+ 	FLEX_ENTRY_CASES,
+ 	FLEX_FAMILY_CASES,
+ 	FLEX_RESTING_VALUES,
++	FOCUS_RING_ROLES,
+ 	FORM_CHECK_ICON_CASES,
+ 	FORM_CHECK_MARKUP,
+ 	FORM_CHECK_SELECTORS,
+@@ -167,6 +168,7 @@
+ 	REFERENCE_MARKUP,
+ 	RETAINED_COLOR_ALIASES,
+ 	RETAINED_LENGTH_ALIASES,
++	SHADOW_CASES,
+ 	SIZING_STEP_CASES,
+ 	SIZING_ENTRY_CASES,
+ 	SPINNER_SELECTORS,
+@@ -178,6 +180,7 @@
+ 	NEUTRAL_MARKUP,
+ 	OFFSET_EDGES,
+ 	OFFSET_STEP_CASES,
++	OPACITY_STEPS,
+ 	TABLE_MARKUP,
+ 	TABLE_RESPONSIVE_CASES,
+ 	TABLE_ROLES,
+@@ -315,6 +318,7 @@
+ 				'FLEX_ENTRY_CASES',
+ 				'FLEX_FAMILY_CASES',
+ 				'FLEX_RESTING_VALUES',
++				'FOCUS_RING_ROLES',
+ 				'FORM_CHECK_ICON_CASES',
+ 				'FORM_CHECK_MARKUP',
+ 				'FORM_CHECK_SELECTORS',
+@@ -377,6 +381,7 @@
+ 				'NEUTRAL_MARKUP',
+ 				'OFFSET_EDGES',
+ 				'OFFSET_STEP_CASES',
++				'OPACITY_STEPS',
+ 				'PAGINATION_MARKUP',
+ 				'PAGINATION_PARENT_CASES',
+ 				'PAGINATION_SELECTORS',
+@@ -398,6 +403,7 @@
+ 				'REFERENCE_MARKUP',
+ 				'RETAINED_COLOR_ALIASES',
+ 				'RETAINED_LENGTH_ALIASES',
++				'SHADOW_CASES',
+ 				'SIZING_ENTRY_CASES',
+ 				'SIZING_STEP_CASES',
+ 				'SPINNER_SELECTORS',
+@@ -1815,6 +1821,55 @@
+ 		])
+ 			expect(Object.isFrozen(entry)).toBe(true)
+ 	})
++	it('binds the shadow values, the opacity steps, and the focus-ring roles to the inventory', () => {
++		const recorded = new Map(
++			Object.entries(oracle.components).map(([key, { selectors }]) => [
++				key,
++				selectors.map(({ selector, declarations }) => [
++					selector,
++					declarations.map(({ property, value }) => `${property}: ${value}`),
++				]),
++			]),
++		)
++		expect(recorded.get('shadow')).toEqual(
++			SHADOW_CASES.map(({ name, value }) => [`.${name}`, [`box-shadow: ${value}`]]),
++		)
++		expect(recorded.get('opacity')).toEqual(
++			OPACITY_STEPS.map(({ step, value }) => [`.opacity-${step}`, [`opacity: ${value}`]]),
++		)
++		// Each role class the release records sets the ring color from that role's own channel
++		// alias, so a table naming a role the release writes no class for, or missing one, reddens.
++		expect(
++			requireValue(recorded.get('focus-ring'), 'No focus-ring key').filter(
++				([selector]) => selector !== '.focus-ring:focus',
++			),
++		).toEqual(
++			FOCUS_RING_ROLES.map((role) => [
++				`.focus-ring-${role}`,
++				[`--bs-focus-ring-color: rgba(var(--bs-${role}-rgb), var(--bs-focus-ring-opacity))`],
++			]),
++		)
++		// Each token is the elevation step the tokens partial binds the value's alias to, read from
++		// the partial's own declarations, and a value reading no alias names no token.
++		const bound = new Map(
++			[
++				...readFileSync('src/styles/_tokens.scss', 'utf8').matchAll(
++					/(--bs-box-shadow[\w-]*): var\((--vn-shadow-[\w-]+)\);/gu,
++				),
++			].map(([, alias, token]) => [alias, token]),
++		)
++		expect(bound.size).toBeGreaterThan(0)
++		expect(SHADOW_CASES.map(({ token }) => token)).toEqual(
++			SHADOW_CASES.map(({ value }) => {
++				const alias = /^var\((--[\w-]+)\)$/u.exec(value)?.[1]
++				return alias === undefined ? undefined : bound.get(alias)
++			}),
++		)
++		for (const table of [SHADOW_CASES, OPACITY_STEPS, FOCUS_RING_ROLES])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of [...SHADOW_CASES, ...OPACITY_STEPS])
++			expect(Object.isFrozen(entry)).toBe(true)
++	})
+ 	it('pins the frozen container variants and payload widths against the retained scale', () => {
+ 		expect(CONTAINER_CLASS_CASES.map(({ name, boundary }) => [name, boundary])).toEqual([
+ 			['container', 0],
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -124,6 +124,7 @@
+ 			'figure',
+ 			'fixed',
+ 			'flex',
++			'focus-ring',
+ 			'form',
+ 			'form-check',
+ 			'form-control',
+@@ -164,6 +165,7 @@
+ 			'nav',
+ 			'navbar',
+ 			'offset',
++			'opacity',
+ 			'order',
+ 			'pagination',
+ 			'placeholder',
+@@ -173,6 +175,7 @@
+ 			'reboot',
+ 			'row',
+ 			'row-gap',
++			'shadow',
+ 			'small',
+ 			'spinner',
+ 			'start',
+@@ -545,9 +548,12 @@
+ 		].flatMap(([, path]) => (path === undefined ? [] : [path]))
+ 		expect(loadedPaths).toEqual(
+ 			expect.arrayContaining([
++				'components/focus-ring',
+ 				'components/stacks',
+ 				'utilities/vertical-align',
++				'utilities/opacity',
+ 				'utilities/display',
++				'utilities/shadow',
+ 				'utilities/flex',
+ 				'utilities/gap',
+ 			]),
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1410,6 +1410,7 @@
+ 				'figure',
+ 				'fixed',
+ 				'flex',
++				'focus-ring',
+ 				'form',
+ 				'form-check',
+ 				'form-control',
+@@ -1450,6 +1451,7 @@
+ 				'nav',
+ 				'navbar',
+ 				'offset',
++				'opacity',
+ 				'order',
+ 				'pagination',
+ 				'placeholder',
+@@ -1459,6 +1461,7 @@
+ 				'reboot',
+ 				'row',
+ 				'row-gap',
++				'shadow',
+ 				'small',
+ 				'spinner',
+ 				'start',
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -2460,6 +2460,103 @@
+ 	}),
+ ])
+ 
++/** Holds the Shadow section's visible copy and accessible name. */
++export const SHADOW_COPY = Object.freeze({
++	region: 'Shadow',
++	paragraph:
++		'Compare the shadow steps from none to large, each a box shadow on a card that the elevation factor scales.',
++})
++
++/**
++ * Holds the shadow specimen, a ramp of cards from no shadow to the large shadow.
++ *
++ * @remarks
++ * A shadow paints outside the box that casts it, so each card sits in its own column of a grid whose
++ * gutter leaves room for the shadow between cards. Each card is labeled with the full name of the
++ * class it carries.
++ */
++export const SHADOW_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Shadows',
++		markup: `<div class="row row-cols-2 row-cols-md-4 g-4">${[
++			'shadow-none',
++			'shadow-sm',
++			'shadow',
++			'shadow-lg',
++		]
++			.map(
++				(name) =>
++					`<div class="col"><div class="card ${name}"><div class="card-body">${name}</div></div></div>`,
++			)
++			.join('')}</div>`,
++	}),
++])
++
++/** Holds the Opacity section's visible copy and accessible name. */
++export const OPACITY_COPY = Object.freeze({
++	region: 'Opacity',
++	paragraph:
++		'Compare the opacity steps, each fading the bar beside its class name, from a bar that paints nothing to a bar at full strength.',
++})
++
++/**
++ * Holds the opacity specimen, a ramp of placeholder bars from no paint to full strength.
++ *
++ * @remarks
++ * A placeholder paints a solid bar in its text color, and each opacity step overrides the opacity
++ * the placeholder rests at, so each bar is a placeholder hidden from assistive technology, with its
++ * class name beside it as visible text. The zero step paints nothing, so that label is what shows
++ * where its bar is.
++ */
++export const OPACITY_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Opacity steps',
++		markup: ['0', '25', '50', '75', '100']
++			.map(
++				(step) =>
++					`<div class="row align-items-center g-2"><div class="col-3">opacity-${step}</div><div class="col-9"><span class="placeholder w-100 opacity-${step}" aria-hidden="true"></span></div></div>`,
++			)
++			.join(''),
++	}),
++])
++
++/** Holds the Focus ring section's visible copy and accessible name. */
++export const FOCUS_RING_COPY = Object.freeze({
++	region: 'Focus ring',
++	paragraph:
++		'Press Tab to reach each link and compare the default focus ring with the ring each role class paints.',
++})
++
++/**
++ * Holds the focus ring specimens, each rendering links that wear a ring only while they hold focus.
++ *
++ * @remarks
++ * A ring paints only under focus, so each link is labeled with the full name of the class it carries,
++ * and the links point at the `#main` fragment the link specimens point at. The role links sit in a
++ * wrapping row whose gap leaves room for each ring.
++ */
++export const FOCUS_RING_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Default focus ring',
++		markup: '<p><a class="focus-ring" href="#main">focus-ring</a></p>',
++	}),
++	Object.freeze({
++		name: 'Focus ring roles',
++		markup: `<p class="d-flex flex-wrap gap-3">${[
++			'primary',
++			'secondary',
++			'success',
++			'info',
++			'warning',
++			'danger',
++			'light',
++			'dark',
++		]
++			.map((role) => `<a class="focus-ring focus-ring-${role}" href="#main">focus-ring-${role}</a>`)
++			.join('')}</p>`,
++	}),
++])
++
+ /** Holds the Navbar section's visible copy and accessible name. */
+ export const NAVBAR_COPY = Object.freeze({
+ 	region: 'Navbar',
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -16,6 +16,7 @@
+ import { DropdownSection } from './sections/DropdownSection.js'
+ import { DisplaySection } from './sections/DisplaySection.js'
+ import { FlexSection } from './sections/FlexSection.js'
++import { FocusRingSection } from './sections/FocusRingSection.js'
+ import { FormCheckSection } from './sections/FormCheckSection.js'
+ import { FormControlSection } from './sections/FormControlSection.js'
+ import { FormFloatingSection } from './sections/FormFloatingSection.js'
+@@ -29,10 +30,12 @@
+ import { MediaSection } from './sections/MediaSection.js'
+ import { NavSection } from './sections/NavSection.js'
+ import { NavbarSection } from './sections/NavbarSection.js'
++import { OpacitySection } from './sections/OpacitySection.js'
+ import { PaginationSection } from './sections/PaginationSection.js'
+ import { PlaceholderSection } from './sections/PlaceholderSection.js'
+ import { PositionSection } from './sections/PositionSection.js'
+ import { ProgressSection } from './sections/ProgressSection.js'
++import { ShadowSection } from './sections/ShadowSection.js'
+ import { SizingSection } from './sections/SizingSection.js'
+ import { SpinnerSection } from './sections/SpinnerSection.js'
+ import { TableSection } from './sections/TableSection.js'
+@@ -137,6 +140,9 @@
+ 			new PositionSection(this.#main),
+ 			new SizingSection(this.#main),
+ 			new VisibilitySection(this.#main),
++			new ShadowSection(this.#main),
++			new OpacitySection(this.#main),
++			new FocusRingSection(this.#main),
+ 			new NavbarSection(this.#main),
+ 		]
+ 	}
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -38,4 +38,7 @@
+ export * from './sections/PositionSection.js'
+ export * from './sections/SizingSection.js'
+ export * from './sections/VisibilitySection.js'
++export * from './sections/ShadowSection.js'
++export * from './sections/OpacitySection.js'
++export * from './sections/FocusRingSection.js'
+ export * from './sections/NavbarSection.js'
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -13,6 +13,7 @@
+ 	DROPDOWN_SPECIMENS,
+ 	DISPLAY_SPECIMENS,
+ 	FLEX_SPECIMENS,
++	FOCUS_RING_SPECIMENS,
+ 	FORM_CHECK_SPECIMENS,
+ 	FORM_CONTROL_SPECIMENS,
+ 	FORM_FLOATING_SPECIMENS,
+@@ -27,10 +28,12 @@
+ 	MEDIA_SPECIMENS,
+ 	NAV_SPECIMENS,
+ 	NAVBAR_SPECIMENS,
++	OPACITY_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
+ 	POSITION_SPECIMENS,
+ 	PROGRESS_SPECIMENS,
++	SHADOW_SPECIMENS,
+ 	SHOWCASE_COPY,
+ 	SIZING_SPECIMENS,
+ 	SPINNER_SPECIMENS,
+@@ -134,6 +137,9 @@
+ 				'Position',
+ 				'Sizing',
+ 				'Visibility',
++				'Shadow',
++				'Opacity',
++				'Focus ring',
+ 				'Navbar',
+ 			])
+ 			expect(
+@@ -177,6 +183,9 @@
+ 					...POSITION_SPECIMENS,
+ 					...SIZING_SPECIMENS,
+ 					...VISIBILITY_SPECIMENS,
++					...SHADOW_SPECIMENS,
++					...OPACITY_SPECIMENS,
++					...FOCUS_RING_SPECIMENS,
+ 					...NAVBAR_SPECIMENS,
+ 				].map((specimen) => specimen.name),
+ 			)
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -52,6 +52,8 @@
+ 			'DropdownSection',
+ 			'FLEX_COPY',
+ 			'FLEX_SPECIMENS',
++			'FOCUS_RING_COPY',
++			'FOCUS_RING_SPECIMENS',
+ 			'FORM_CHECK_COPY',
+ 			'FORM_CHECK_SPECIMENS',
+ 			'FORM_CONTROL_COPY',
+@@ -65,6 +67,7 @@
+ 			'FORM_SELECT_COPY',
+ 			'FORM_SELECT_SPECIMENS',
+ 			'FlexSection',
++			'FocusRingSection',
+ 			'FormCheckSection',
+ 			'FormControlSection',
+ 			'FormFloatingSection',
+@@ -92,6 +95,9 @@
+ 			'NAV_SPECIMENS',
+ 			'NavSection',
+ 			'NavbarSection',
++			'OPACITY_COPY',
++			'OPACITY_SPECIMENS',
++			'OpacitySection',
+ 			'PAGINATION_COPY',
+ 			'PAGINATION_SPECIMENS',
+ 			'PLACEHOLDER_COPY',
+@@ -104,12 +110,15 @@
+ 			'PlaceholderSection',
+ 			'PositionSection',
+ 			'ProgressSection',
++			'SHADOW_COPY',
++			'SHADOW_SPECIMENS',
+ 			'SHOWCASE_CONTROL',
+ 			'SHOWCASE_COPY',
+ 			'SIZING_COPY',
+ 			'SIZING_SPECIMENS',
+ 			'SPINNER_COPY',
+ 			'SPINNER_SPECIMENS',
++			'ShadowSection',
+ 			'Showcase',
+ 			'SizingSection',
+ 			'SpecimenSection',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -53,6 +53,7 @@
+ 	DROPDOWN_SPECIMENS,
+ 	DISPLAY_SPECIMENS,
+ 	FLEX_SPECIMENS,
++	FOCUS_RING_SPECIMENS,
+ 	FORM_CHECK_SPECIMENS,
+ 	FORM_CONTROL_SPECIMENS,
+ 	FORM_FLOATING_SPECIMENS,
+@@ -66,10 +67,12 @@
+ 	MEDIA_SPECIMENS,
+ 	NAV_SPECIMENS,
+ 	NAVBAR_SPECIMENS,
++	OPACITY_SPECIMENS,
+ 	PAGINATION_SPECIMENS,
+ 	PLACEHOLDER_SPECIMENS,
+ 	POSITION_SPECIMENS,
+ 	PROGRESS_SPECIMENS,
++	SHADOW_SPECIMENS,
+ 	SHOWCASE_COPY,
+ 	SIZING_SPECIMENS,
+ 	SPINNER_SPECIMENS,
+@@ -1987,6 +1990,60 @@
+ 		ARTIFACT.push(JSON.stringify({ reading: 'navbar states', rest, hovered, ring }))
+ 		JOURNAL.record('hover', readName(link), hovered)
+ 	})
++	it('paints the default focus ring and a role ring under keyboard focus and photographs each', async () => {
++		await applyTheme(VARIANT)
++		// The rows are the driven rows whose subject the focus ring table declares. Each frame is shot
++		// on the specimen's danger link where the specimen renders one, and on its first ring link
++		// otherwise, because the danger ring's color sits apart from the default ring's primary color.
++		const declared = new Set(FOCUS_RING_SPECIMENS.map((specimen) => specimen.name))
++		const keys = DRIVEN_KEYS.filter((key) => declared.has(key.subject))
++		expect(keys).not.toStrictEqual([])
++		const rings = new Map<string, string>()
++		const ratios = new Map<string, number | undefined>()
++		const held: boolean[] = []
++		const names: string[] = []
++		for (const key of keys) {
++			const specimen = readSpecimen(mounted.host, key.subject)
++			const link = requireValue(
++				specimen.querySelector<HTMLAnchorElement>('.focus-ring-danger') ??
++					specimen.querySelector<HTMLAnchorElement>('a.focus-ring'),
++				`The "${key.subject}" specimen renders no .focus-ring link`,
++			)
++			expect(readStyle(link, 'box-shadow')).toBe('none')
++			// The helper answers to focus itself, and a key press after the focus is what makes the
++			// browser match the link as keyboard focus, which the installed ring reader requires.
++			link.focus()
++			await pressKeys('{ArrowRight}')
++			expect(link.matches(':focus-visible')).toBe(true)
++			const ring = readStyle(link, 'box-shadow')
++			rings.set(key.scenario, ring)
++			ratios.set(key.scenario, readRing(link))
++			names.push(readName(link))
++			// A page frame, for the reason the Button focus scenario is one: the ring paints outside
++			// the link's border box and an element frame crops it away. The declared region is the
++			// link, so a reader of the whole document is pointed at the ring the scenario claims.
++			await FRAMES.page(key.scenario, link)
++			held.push(link.matches(':focus') && readStyle(link, 'box-shadow') === ring)
++			link.blur()
++			expect(readStyle(link, 'box-shadow')).toBe('none')
++		}
++		// Each frame was taken while its ring still painted, each ring painted, and the rings differ:
++		// a frame taken after focus fell away, or a role class that stopped repainting the ring,
++		// reports here rather than being written under a name claiming otherwise.
++		expect(held).toStrictEqual(keys.map(() => true))
++		expect([...rings.values()].filter((ring) => ring === 'none')).toStrictEqual([])
++		expect(new Set(rings.values()).size).toBe(keys.length)
++		expect([...ratios.values()].filter((ratio) => (ratio ?? 0) <= 1)).toStrictEqual([])
++		ARTIFACT.push(
++			JSON.stringify({
++				reading: 'focus rings',
++				mode: VARIANT,
++				rings: [...rings],
++				ratios: [...ratios],
++			}),
++		)
++		JOURNAL.record('focus', String(names.at(-1)), String([...ratios.values()].at(-1)))
++	})
+ })
+ 
+ describe('refusal', () => {
+@@ -2131,6 +2188,9 @@
+ 				POSITION_SPECIMENS,
+ 				SIZING_SPECIMENS,
+ 				VISIBILITY_SPECIMENS,
++				SHADOW_SPECIMENS,
++				OPACITY_SPECIMENS,
++				FOCUS_RING_SPECIMENS,
+ 			].flatMap((table) => table.map((specimen) => specimen.name)),
+ 			SHOWCASE_COPY.region,
+ 		])
+diff --git a/tests/setup.css b/tests/setup.css
+--- a/tests/setup.css
++++ b/tests/setup.css
+@@ -11,4 +11,4 @@
+ @import 'tailwindcss/theme.css' layer(theme);
+ @import 'tailwindcss/utilities.css' layer(utilities) source(none);
+ @source '../tmp/tailwind/candidates.txt';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none");
+diff --git a/tests/fixtures/tailwind/consumer.css b/tests/fixtures/tailwind/consumer.css
+--- a/tests/fixtures/tailwind/consumer.css
++++ b/tests/fixtures/tailwind/consumer.css
+@@ -4,4 +4,4 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './markup.html';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none");
+diff --git a/tests/fixtures/tailwind/preflight.css b/tests/fixtures/tailwind/preflight.css
+--- a/tests/fixtures/tailwind/preflight.css
++++ b/tests/fixtures/tailwind/preflight.css
+@@ -3,4 +3,4 @@
+ @layer theme, reset, base, elements, components, utilities;
+ @import 'tailwindcss' source(none);
+ @source '../../../tmp/tailwind/candidates.txt';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none");
+diff --git a/tests/fixtures/tailwind/markup.html b/tests/fixtures/tailwind/markup.html
+--- a/tests/fixtures/tailwind/markup.html
++++ b/tests/fixtures/tailwind/markup.html
+@@ -124,3 +124,12 @@
+ <div class="z-3">Stacking level 3</div>
+ <div class="visible">Visible</div>
+ <div class="invisible">Invisible</div>
++<div class="opacity-0">Opacity step 0</div>
++<div class="opacity-25">Opacity step 25</div>
++<div class="opacity-50">Opacity step 50</div>
++<div class="opacity-75">Opacity step 75</div>
++<div class="opacity-100">Opacity step 100</div>
++<div class="shadow">Shadow</div>
++<div class="shadow-sm">Small shadow</div>
++<div class="shadow-lg">Large shadow</div>
++<div class="shadow-none">No shadow</div>
+diff --git a/guides/veneer.md b/guides/veneer.md
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -692,6 +692,7 @@
+ | `src/styles/components/_position.scss`       | The fixed and sticky helpers in the components layer.                                                                                                                                                                                              |
+ | `src/styles/components/_vr.scss`             | The vertical rule in the components layer.                                                                                                                                                                                                         |
+ | `src/styles/components/_stacks.scss`         | The horizontal and vertical stack helpers in the components layer.                                                                                                                                                                                 |
++| `src/styles/components/_focus-ring.scss`     | The focus-ring helper, its forced-colors outline, and the role ring classes in the components layer.                                                                                                                                               |
+ | `src/styles/components/_card.scss`           | The card box, its caps and body, the image and overlay placements, the header navigations, and the card group in the components layer.                                                                                                             |
+ | `src/styles/components/_list-group.scss`     | The list-group box, its item joins, action states, numbering, flush edges, horizontal ramp, and contextual roles in the components layer.                                                                                                          |
+ | `src/styles/components/_form-label.scss`     | The form label, the help text, and the horizontal label at each size in the components layer, read by `tests/src/styles/components/form-label.test.ts`.                                                                                            |
+@@ -752,6 +753,8 @@
+ | `src/styles/utilities/_vertical-align.scss`  | The vertical-alignment utilities in the utilities layer.                                                                                                                                                                                           |
+ | `src/styles/utilities/_display.scss`         | The display utilities and their print pass in the utilities layer.                                                                                                                                                                                 |
+ | `src/styles/utilities/_flex.scss`            | The flex, alignment, and order utilities in the utilities layer.                                                                                                                                                                                   |
++| `src/styles/utilities/_opacity.scss`         | The opacity utilities in the utilities layer.                                                                                                                                                                                                      |
++| `src/styles/utilities/_shadow.scss`          | The shadow utilities in the utilities layer.                                                                                                                                                                                                       |
+ | `src/styles/index.scss`                      | The compilation barrel.                                                                                                                                                                                                                            |
+ | `src/styles/index.ts`                        | The side-effect entry, and the build's library entry.                                                                                                                                                                                              |
+ | `configs/src/vite.styles.config.ts`          | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
+@@ -853,7 +856,7 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none");
+ ```
+ 
+ The following recipe is the `preflight` profile, which takes the bare import so Tailwind's own reset
+@@ -866,7 +869,7 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100");
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none");
+ ```
+ 
+ The workspace compiles the `tailwind` recipe as written. The `tests/fixtures/tailwind/consumer.css`
+@@ -928,15 +931,20 @@
+ longhand Veneer declares with `!important`. The `start-*` and `end-*` offsets stay on the line:
+ Tailwind's rule for each declares the logical `inset-inline-start` or `inset-inline-end` longhand,
+ and Veneer's important declaration is on the physical `left` or `right` longhand, which does not
+-cover it. The proof asserts that the `gap-3` name is in the branch and reads what the rule claims:
+-with the exclusion line dropped and Tailwind's own rule on the page, every element carrying a name
+-in the branch resolves, for every property that rule declares, what it resolves under the cascade
+-alone. Each element is read on the longhands its own name's rule declares, because a longhand
+-another name declares can move for a reason outside the equality: the gap rows sit inside the
+-`.container` element, whose width moves when the line is dropped, and the width steps declare the
+-`width` longhand. A planted rule drives the partial-importance case: it declares `!important` on the
+-`grid-column-start` longhand alone, leaving the `grid-column-end` longhand that Tailwind's `col-1`
+-rule also declares normal, and the equality still holds with the `col-1` class on the line.
++cover it. The `opacity-0` to `opacity-100` steps are shipped names off the line: Tailwind's rule for
++each declares the one `opacity` longhand Veneer declares with the `!important` flag. The `shadow`,
++`shadow-sm`, `shadow-lg`, and `shadow-none` classes stay on the line: Tailwind's rule for each
++declares the `--tw-shadow` custom property beside the `box-shadow` longhand, the proof counts a
++custom property among the longhands a rule declares, and Veneer's important declaration is on the
++`box-shadow` longhand alone. The proof asserts that the `gap-3` name is in the branch and reads what
++the rule claims: with the exclusion line dropped and Tailwind's own rule on the page, every element
++carrying a name in the branch resolves, for every property that rule declares, what it resolves
++under the cascade alone. Each element is read on the longhands its own name's rule declares, because
++a longhand another name declares can move for a reason outside the equality: the gap rows sit inside
++the `.container` element, whose width moves when the line is dropped, and the width steps declare
++the `width` longhand. A planted rule drives the partial-importance case: it declares `!important` on
++the `grid-column-start` longhand alone, leaving the `grid-column-end` longhand that Tailwind's
++`col-1` rule also declares normal, and the equality still holds with the `col-1` class on the line.
+ 
+ The workspace executes the profiles from `tests/setup.css` for the `tailwind` profile and
+ `tests/fixtures/tailwind/preflight.css` for the `preflight` profile. Those profiles scan a
+@@ -2928,6 +2936,94 @@
+ or not that rule is important, the escape inside the utilities layer, and a dark island. The
+ visibility keys carry no recorded departure.
+ 
++### Shadow utilities
++
++The shadow key ships whole in the utilities layer from the `src/styles/utilities/_shadow.scss`
++partial: the `.shadow` class and the `.shadow-sm`, `.shadow-lg`, and `.shadow-none` classes, at the
++empty infix alone, because the release's entry is not responsive.
++
++Each class reads the release's own alias byte for byte: the `.shadow` class reads the
++`--bs-box-shadow` property, the `.shadow-sm` class reads the `--bs-box-shadow-sm` property, and the
++`.shadow-lg` class reads the `--bs-box-shadow-lg` property. The `src/styles/_tokens.scss` partial
++binds those aliases to the `--vn-shadow-2`, `--vn-shadow-1`, and `--vn-shadow-3` elevation steps,
++which scale with the `--vn-factor-elevation` token. So a doubled elevation factor doubles every
++length of every shadow class, a retuned step moves the class that reads it, and a rule of your own
++that sets the alias on an element repaints that element's shadow. The `.shadow-none` class writes
++the `none` value and reads no token. No mode retunes the elevation ladder, so a dark island
++resolves the same shadows, and no shadow reads the density factor.
++
++The partial writes the entry through the `utility` mixin that § Styles describes, so every
++declaration carries the `!important` flag the release writes, and a later value in the release's map
++order wins on one element: an element carrying the `.shadow-lg` and `.shadow-none` classes resolves
++no shadow. § Styles shows the escape from an important utility inside the utilities layer.
++
++The `tests/src/styles/utilities/shadow.test.ts` proof reads each class against the elevation step
++its alias reads at the md boundary, one pixel below it, and at a narrow and a wide viewport, the
++absence of an infixed class, the elevation factor, a retuned step and a retuned alias, a dark island
++and the density factor, the order inside the entry, the priority over a later unlayered rule, and
++the escape inside the utilities layer. The shadow key carries no recorded departure.
++
++### Opacity utilities
++
++The opacity key ships whole in the utilities layer from the `src/styles/utilities/_opacity.scss`
++partial: the `.opacity-0`, `.opacity-25`, `.opacity-50`, `.opacity-75`, and `.opacity-100` classes,
++at the empty infix alone, because the release's entry is not responsive. Each step stays a literal,
++because no published Veneer token carries an opacity scale, so neither the density factor nor the
++color mode moves a value.
++
++The partial writes the entry through the `utility` mixin that § Styles describes, so every
++declaration carries the `!important` flag the release writes, and a later step in the release's map
++order wins on one element: an element carrying the `.opacity-100` and `.opacity-0` classes resolves
++the `1` value. The importance is also what lets a step override the opacity a component rests at,
++as each bar in the Opacity region overrides the `0.5` opacity of the `.placeholder` class.
++
++The `tests/src/styles/utilities/opacity.test.ts` proof reads every step at the md boundary, one
++pixel below it, and at a narrow and a wide viewport, the absence of an infixed class, the order
++inside the entry, a dark island and the density factor, the priority over a later unlayered rule,
++and the escape inside the utilities layer. The opacity key carries no recorded departure.
++
++### Focus ring utilities
++
++The focus-ring key ships whole from the `src/styles/components/_focus-ring.scss` partial: the
++`.focus-ring` helper and a role class from the `.focus-ring-primary` class to the
++`.focus-ring-dark` class for each theme color that carries a Bootstrap alias. The `tertiary` role
++carries no `--bs-tertiary-rgb` alias, so no `.focus-ring-tertiary` class ships, and the release
++writes none.
++
++Under focus, the `.focus-ring` helper clears the native outline and paints a box shadow from the
++release's variables: the `--bs-focus-ring-x`, `--bs-focus-ring-y`, and `--bs-focus-ring-blur`
++properties, each falling back to the `0` value because the release declares none of them, then the
++`--bs-focus-ring-width` and `--bs-focus-ring-color` properties. So a rule of your own that sets
++those properties on the element offsets, blurs, and widens the ring. The theme binds the width to
++the `--vn-focus-width` token and the default color to the `--vn-focus-color` token, which each mode
++re-declares, so a dark island paints the dark default ring. Under forced colors the same rule also
++writes an outline in the system highlight color at the focus width through the `forced-ring` mixin,
++because forced colors paint no shadow ring. § Additions records it.
++
++Each role class sets the `--bs-focus-ring-color` property to its role's `--bs-*-rgb` alias at the
++`--bs-focus-ring-opacity` alpha, byte for byte as the release writes it, so the ring takes the
++role's color and each mode's channels. A role class reads the alpha on its own element, while the
++theme resolves the default ring's color on the root and on each mode scope, so a retuned
++`--bs-focus-ring-opacity` property on the element moves a role ring and leaves the default ring as
++the theme resolves it.
++
++The helper and the role classes sit in the components layer at the release's `_helpers.scss`
++position, ahead of the icon link, with normal declarations, as the release writes them. So a rule
++of your own overrides the ring, and so does an important utility: an element carrying the
++`.focus-ring` and `.shadow-none` classes paints no ring under focus, as it does in the release,
++where the utility follows the helper. The role classes are the release's `focus-ring` utility
++entry, a `css-var` entry whose declaration is normal, and the partial writes them through the
++`utility-variable` mixin beside the helper they feed. The only other rules that set the
++`--bs-focus-ring-color` property are the theme's mode scopes in the earlier `theme` layer, so the
++layer the role classes sit in moves no resolution.
++
++The `tests/src/styles/components/focus-ring.test.ts` proof reads the resting link, the default ring
++under keyboard focus against the focus width and the theme's color, the offsets and blur the
++variables set, each role's ring against its alias at a retuned alpha, a dark island, the order
++between role classes, the outline under staged forced colors, the layer, and a consumer rule, the
++shadow utility, and a rule in the utilities layer each overriding the ring. The focus-ring key
++records the forced-colors outline as an addition and carries no recorded departure.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -5255,6 +5351,7 @@
+ | `nav`          | `.nav-link:focus-visible { outline }`                         | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
+ | `accordion`    | `.accordion-button:focus { outline }`                         | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
+ | `navbar`       | `.navbar-toggler:focus { outline }`                           | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
++| `focus-ring`   | `.focus-ring:focus { outline }`                               | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                       |
+ 
+ ### Outside the ledger
+ 
+@@ -5490,6 +5587,10 @@
+ | visually-hidden  | selector       | The official `.visually-hidden` helper and its focusable form ship in the utilities layer ahead of every utility partial; the hidden box and the focus reveal are proved in `tests/src/styles/utilities/visually-hidden.test.ts`.                                                                                                                                                                                                                                | —                     | shipped  |
+ | visible          | selector       | The official `.visible` selector ships in the utilities layer; the resolved visibility is proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
+ | invisible        | selector       | The official `.invisible` selector ships in the utilities layer; the hidden paint and the kept box are proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                | —                     | shipped  |
++| shadow           | selector       | Every official `.shadow` and `.shadow-*` selector ships in the utilities layer, each reading its `--bs-box-shadow*` alias; the resolved shadow at each step and its elevation retune are proved in the `tests/src/styles/utilities/shadow.test.ts` proof.                                                                                                                                                                                                        | —                     | shipped  |
++| opacity          | selector       | Every official `.opacity-*` step ships in the utilities layer as a literal; each resolved step is proved in the `tests/src/styles/utilities/opacity.test.ts` proof.                                                                                                                                                                                                                                                                                              | —                     | shipped  |
++| focus-ring       | selector       | The official `.focus-ring:focus` helper and every official `.focus-ring-*` role class ship in the components layer with normal declarations; the painted ring under keyboard focus and the outline under forced colors are proved in the `tests/src/styles/components/focus-ring.test.ts` proof.                                                                                                                                                                 | —                     | shipped  |
++| focus-ring       | variable       | Each `.focus-ring-*` class sets the `--bs-focus-ring-color` property from its role's `--bs-*-rgb` alias at the `--bs-focus-ring-opacity` alpha; each role's painted ring is proved in the `tests/src/styles/components/focus-ring.test.ts` proof.                                                                                                                                                                                                                | —                     | shipped  |
+ | navbar           | selector       | Every official `.navbar` selector ships in the components layer, the brand, nav list, text, collapsible content, toggler and its icon, scrolling list, expand ramp, expanded offcanvas panel, and dark retunes included, and the container combinators the key records ship from the container partial; resolved behavior is proved in `tests/src/styles/components/navbar.test.ts`.                                                                             | —                     | shipped  |
+ | navbar           | variable       | Every official `--bs-navbar-*` custom property is declared on the `.navbar` class, the color and toggler slots are retuned by the `.navbar-dark` class and the bar's own dark attribute, and the `.navbar-nav` class retunes the `--bs-nav-link-*` slots it records; each one is read beside the property it drives in `tests/src/styles/components/navbar.test.ts`.                                                                                             | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+@@ -5624,6 +5725,7 @@
+ [dropdown specimens](../tests/app/browser/sections/DropdownSection.test.ts),
+ [display specimens](../tests/app/browser/sections/DisplaySection.test.ts),
+ [flex specimens](../tests/app/browser/sections/FlexSection.test.ts),
++[focus ring specimens](../tests/app/browser/sections/FocusRingSection.test.ts),
+ [form check specimens](../tests/app/browser/sections/FormCheckSection.test.ts),
+ [form control specimens](../tests/app/browser/sections/FormControlSection.test.ts),
+ [form floating specimens](../tests/app/browser/sections/FormFloatingSection.test.ts),
+@@ -5635,10 +5737,12 @@
+ [link specimens](../tests/app/browser/sections/LinkSection.test.ts),
+ [list group specimens](../tests/app/browser/sections/ListGroupSection.test.ts),
+ [navbar specimens](../tests/app/browser/sections/NavbarSection.test.ts),
++[opacity specimens](../tests/app/browser/sections/OpacitySection.test.ts),
+ [pagination specimens](../tests/app/browser/sections/PaginationSection.test.ts),
+ [placeholder specimens](../tests/app/browser/sections/PlaceholderSection.test.ts),
+ [position specimens](../tests/app/browser/sections/PositionSection.test.ts),
+ [progress specimens](../tests/app/browser/sections/ProgressSection.test.ts),
++[shadow specimens](../tests/app/browser/sections/ShadowSection.test.ts),
+ [sizing specimens](../tests/app/browser/sections/SizingSection.test.ts),
+ [specimen table rendering](../tests/app/browser/sections/SpecimenSection.test.ts),
+ [spinner specimens](../tests/app/browser/sections/SpinnerSection.test.ts),
+@@ -5760,7 +5864,10 @@
+ [the position helpers](../tests/src/styles/components/position.test.ts),
+ [the sizing utilities](../tests/src/styles/utilities/sizing.test.ts),
+ [the visibility utilities](../tests/src/styles/utilities/visibility.test.ts),
+-[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts), and
++[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts),
++[the shadow utilities](../tests/src/styles/utilities/shadow.test.ts),
++[the opacity utilities](../tests/src/styles/utilities/opacity.test.ts),
++[the focus ring helper and role classes](../tests/src/styles/components/focus-ring.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.

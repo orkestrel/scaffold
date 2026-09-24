@@ -1,0 +1,516 @@
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -86,4 +86,5 @@
+ @use 'utilities/sizing';
+ @use 'utilities/flex';
+ @use 'utilities/gap';
++@use 'utilities/font';
+ @use 'utilities/visibility';
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -124,12 +124,16 @@
+ 			'figure',
+ 			'fixed',
+ 			'flex',
++			'font',
+ 			'form',
+ 			'form-check',
+ 			'form-control',
+ 			'form-floating',
+ 			'form-range',
+ 			'form-select',
++			'fs',
++			'fst',
++			'fw',
+ 			'g',
+ 			'gap',
+ 			'gx',
+@@ -153,6 +157,7 @@
+ 			'is-valid',
+ 			'justify-content',
+ 			'lead',
++			'lh',
+ 			'link',
+ 			'list-group',
+ 			'list-inline',
+@@ -532,6 +537,11 @@
+ 			'min-viewport-height': 'utilities/sizing',
+ 			'row-gap': 'utilities/gap',
+ 			'column-gap': 'utilities/gap',
++			'font-family': 'utilities/font',
++			'font-size': 'utilities/font',
++			'font-style': 'utilities/font',
++			'font-weight': 'utilities/font',
++			'line-height': 'utilities/font',
+ 			'z-index': 'utilities/position',
+ 		}
+ 		const helperOrder = helpers.map((name) => helperPaths[name] ?? `components/${name}`)
+@@ -550,6 +560,7 @@
+ 				'utilities/display',
+ 				'utilities/flex',
+ 				'utilities/gap',
++				'utilities/font',
+ 			]),
+ 		)
+ 		const components = helperOrder.filter((path) => path.startsWith('components/'))
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -2691,6 +2691,72 @@
+ 	}),
+ ])
+ 
++/**
++ * Lists the weight steps the release's `font-weight` utility writes, in its map order, each beside
++ * the value the release records for it.
++ *
++ * @remarks
++ * The `lighter` and `bolder` values are relative keywords, so each resolves against the weight its
++ * parent resolves, and a step written as the number one parent weight resolves it to reads the same
++ * under that parent. A proof reads every step under each of the {@link FONT_WEIGHT_PARENTS}
++ * weights against an inline twin carrying the recorded value.
++ */
++export const FONT_WEIGHT_CASES = Object.freeze([
++	Object.freeze({ key: 'lighter', value: 'lighter' }),
++	Object.freeze({ key: 'light', value: '300' }),
++	Object.freeze({ key: 'normal', value: '400' }),
++	Object.freeze({ key: 'medium', value: '500' }),
++	Object.freeze({ key: 'semibold', value: '600' }),
++	Object.freeze({ key: 'bold', value: '700' }),
++	Object.freeze({ key: 'bolder', value: 'bolder' }),
++])
++
++/**
++ * Lists the parent weights a relative weight step is read under.
++ *
++ * @remarks
++ * CSS resolves the relative keywords in bands, and these weights sit in different bands: under a
++ * parent weight of 400 the `lighter` keyword resolves to 100 and the `bolder` keyword to 700, and
++ * under a parent weight of 600 they resolve to 400 and 900. So a relative step written as either
++ * number it resolves to reads differently under the other parent.
++ */
++export const FONT_WEIGHT_PARENTS = Object.freeze(['400', '600'])
++
++/** Lists the values the release's `font-style` utility writes, in its list order. */
++export const FONT_STYLE_VALUES = Object.freeze(['italic', 'normal'])
++
++/**
++ * Lists the steps the release's `line-height` utility writes, in its map order, each beside the
++ * value the release records for it.
++ *
++ * @remarks
++ * Every value is a unitless factor of the font size, so a proof reads each step over a fixed font
++ * size as that size times the recorded factor. The `base` step reads the `--vn-line-body` token,
++ * which carries the recorded factor by default.
++ */
++export const LINE_HEIGHT_CASES = Object.freeze([
++	Object.freeze({ key: '1', value: '1' }),
++	Object.freeze({ key: 'sm', value: '1.25' }),
++	Object.freeze({ key: 'base', value: '1.5' }),
++	Object.freeze({ key: 'lg', value: '2' }),
++])
++
++/**
++ * Lists each font entry of the release's utility map, in its map order, with the class prefix it
++ * writes, the property it sets, and one class it writes.
++ *
++ * @remarks
++ * No font entry is responsive, so the proof builds an infixed name from each row, the prefix then
++ * the `-md` infix then the class's own step, and reads that the cascade writes no such class.
++ */
++export const FONT_ENTRY_CASES = Object.freeze([
++	Object.freeze({ prefix: 'font', property: 'font-family', name: 'font-monospace' }),
++	Object.freeze({ prefix: 'fs', property: 'font-size', name: 'fs-3' }),
++	Object.freeze({ prefix: 'fst', property: 'font-style', name: 'fst-italic' }),
++	Object.freeze({ prefix: 'fw', property: 'font-weight', name: 'fw-semibold' }),
++	Object.freeze({ prefix: 'lh', property: 'line-height', name: 'lh-lg' }),
++])
++
+ /** Holds the list classes and the readings each one takes over the list tag it sits on. */
+ export const LIST_CLASS_CASES = Object.freeze([
+ 	Object.freeze({
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -88,6 +88,10 @@
+ 	FLEX_ENTRY_CASES,
+ 	FLEX_FAMILY_CASES,
+ 	FLEX_RESTING_VALUES,
++	FONT_ENTRY_CASES,
++	FONT_STYLE_VALUES,
++	FONT_WEIGHT_CASES,
++	FONT_WEIGHT_PARENTS,
+ 	FORM_CHECK_ICON_CASES,
+ 	FORM_CHECK_MARKUP,
+ 	FORM_CHECK_SELECTORS,
+@@ -116,6 +120,7 @@
+ 	INPUT_GROUP_MARKUP,
+ 	INPUT_GROUP_SIZE_CASES,
+ 	INPUT_GROUP_TOGGLE_CASES,
++	LINE_HEIGHT_CASES,
+ 	LINK_OFFSET_CASES,
+ 	LINK_OPACITY_CASES,
+ 	LINK_ROLES,
+@@ -315,6 +320,10 @@
+ 				'FLEX_ENTRY_CASES',
+ 				'FLEX_FAMILY_CASES',
+ 				'FLEX_RESTING_VALUES',
++				'FONT_ENTRY_CASES',
++				'FONT_STYLE_VALUES',
++				'FONT_WEIGHT_CASES',
++				'FONT_WEIGHT_PARENTS',
+ 				'FORM_CHECK_ICON_CASES',
+ 				'FORM_CHECK_MARKUP',
+ 				'FORM_CHECK_SELECTORS',
+@@ -344,6 +353,7 @@
+ 				'INPUT_GROUP_MARKUP',
+ 				'INPUT_GROUP_SIZE_CASES',
+ 				'INPUT_GROUP_TOGGLE_CASES',
++				'LINE_HEIGHT_CASES',
+ 				'LINK_OFFSET_CASES',
+ 				'LINK_OPACITY_CASES',
+ 				'LINK_ROLES',
+@@ -1660,6 +1670,72 @@
+ 		}
+ 		expect(Object.values(FLEX_RESTING_VALUES).every((value) => Object.isFrozen(value))).toBe(true)
+ 	})
++	it('binds the font entry, weight, style, and line-height tables to the inventory in its order', () => {
++		// Each table is read against the rules the release records under its key, in the recorded
++		// order, so a step the table drops, adds, reorders, or values differently reddens here.
++		for (const [key, property, cases] of [
++			['fw', 'font-weight', FONT_WEIGHT_CASES],
++			['lh', 'line-height', LINE_HEIGHT_CASES],
++		] as const) {
++			expect(
++				oracle.components[key].selectors.map(({ selector, declarations }) => [
++					selector,
++					declarations,
++				]),
++			).toEqual(cases.map((entry) => [`.${key}-${entry.key}`, [{ property, value: entry.value }]]))
++		}
++		expect(
++			oracle.components.fst.selectors.map(({ selector, declarations }) => [selector, declarations]),
++		).toEqual(
++			FONT_STYLE_VALUES.map((value) => [`.fst-${value}`, [{ property: 'font-style', value }]]),
++		)
++		// The font keys are read off the inventory by the shape of their rules rather than from the
++		// table: every key whose every recorded rule is a single `.KEY-*` class setting one longhand
++		// of the `font` shorthand, in the order the inventory records the keys, which is the order
++		// the release emits them. So a font key the table leaves out reddens, and so does a row out
++		// of that order, a row naming an unrecorded class, and a row naming the wrong property.
++		const fontKeys = Object.entries(oracle.components)
++			.filter(
++				([key, { selectors }]) =>
++					selectors.length > 0 &&
++					selectors.every(
++						({ selector, declarations }) =>
++							selector.startsWith(`.${key}-`) &&
++							/^[\w-]+$/u.test(selector.slice(key.length + 2)) &&
++							declarations.length === 1 &&
++							/^(?:font-[a-z]+|line-height)$/u.test(declarations[0]?.property ?? ''),
++					),
++			)
++			.map(([key]) => key)
++		expect(FONT_ENTRY_CASES.map((entry) => entry.prefix)).toEqual(fontKeys)
++		expect(
++			FONT_ENTRY_CASES.map((entry) =>
++				requireValue(
++					oracle.components[entry.prefix].selectors.find(
++						({ selector }) => selector === `.${entry.name}`,
++					),
++					`No recorded .${entry.name}`,
++				).declarations.map(({ property }) => property),
++			),
++		).toEqual(FONT_ENTRY_CASES.map((entry) => [entry.property]))
++		expect(FONT_ENTRY_CASES.filter((entry) => !entry.name.startsWith(`${entry.prefix}-`))).toEqual(
++			[],
++		)
++		// The parents are distinct weights on the numeric scale; which band each sits in is a
++		// browser reading, and the font proof takes it where the relative steps resolve.
++		expect(FONT_WEIGHT_PARENTS.map(Number).every((weight) => weight % 100 === 0)).toBe(true)
++		expect(new Set(FONT_WEIGHT_PARENTS).size).toBe(FONT_WEIGHT_PARENTS.length)
++		for (const table of [
++			FONT_ENTRY_CASES,
++			FONT_WEIGHT_CASES,
++			FONT_WEIGHT_PARENTS,
++			FONT_STYLE_VALUES,
++			LINE_HEIGHT_CASES,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of [...FONT_ENTRY_CASES, ...FONT_WEIGHT_CASES, ...LINE_HEIGHT_CASES])
++			expect(Object.isFrozen(entry)).toBe(true)
++	})
+ 	it('binds the placement steps, values, and fixtures to the inventory, the ramp, and the journey', async () => {
+ 		const recorded = new Map(
+ 			Object.entries(oracle.components).map(([key, { selectors }]) => [
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1410,12 +1410,16 @@
+ 				'figure',
+ 				'fixed',
+ 				'flex',
++				'font',
+ 				'form',
+ 				'form-check',
+ 				'form-control',
+ 				'form-floating',
+ 				'form-range',
+ 				'form-select',
++				'fs',
++				'fst',
++				'fw',
+ 				'g',
+ 				'gap',
+ 				'gx',
+@@ -1439,6 +1443,7 @@
+ 				'is-valid',
+ 				'justify-content',
+ 				'lead',
++				'lh',
+ 				'link',
+ 				'list-group',
+ 				'list-inline',
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -277,6 +277,11 @@
+ 	| 'Navbar expand lg'
+ 	| 'Navbar expand xl'
+ 	| 'Navbar expand xxl'
++	| 'Font sizes'
++	| 'Font weights'
++	| 'Font styles'
++	| 'Line heights'
++	| 'Monospace'
+ 
+ /**
+  * Names one state a journey drives its subject to, or reads that subject in.
+@@ -1648,6 +1653,36 @@
+ 		selector: '.navbar-expand-xxl',
+ 		property: 'flex-wrap',
+ 	}),
++	Object.freeze({
++		scenario: 'font-sizes',
++		subject: 'Font sizes',
++		selector: '.fs-1',
++		property: 'font-size',
++	}),
++	Object.freeze({
++		scenario: 'font-weights',
++		subject: 'Font weights',
++		selector: '.fw-bolder',
++		property: 'font-weight',
++	}),
++	Object.freeze({
++		scenario: 'font-styles',
++		subject: 'Font styles',
++		selector: '.fst-italic',
++		property: 'font-style',
++	}),
++	Object.freeze({
++		scenario: 'line-heights',
++		subject: 'Line heights',
++		selector: '.lh-lg',
++		property: 'line-height',
++	}),
++	Object.freeze({
++		scenario: 'monospace',
++		subject: 'Monospace',
++		selector: '.font-monospace',
++		property: 'font-family',
++	}),
+ ])
+ 
+ /**
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -360,10 +360,21 @@
+ /** Holds the Type section's visible copy and accessible name. */
+ export const TYPE_COPY = Object.freeze({
+ 	region: 'Type',
+-	paragraph: 'Heading and display classes, lead copy, inline emphasis, lists, and quotations.',
++	paragraph:
++		'Heading and display classes, lead copy, inline emphasis, lists, quotations, and the font utilities that set the size, weight, style, line height, and monospace stack of a run of text.',
+ })
+ 
+-/** Lists the Type specimens in their rendering order. */
++/**
++ * Lists the Type specimens in their rendering order.
++ *
++ * @remarks
++ * The font utility specimens follow the class specimens, and each labels its text with the full
++ * name of the class that sets it. The weight steps share one paragraph, because the lighter and
++ * bolder steps resolve against the body weight around them. The line-height paragraphs sit in
++ * columns narrow enough to wrap at every width, because a single line shows no spacing between
++ * lines. The monospace specimens set a phrase beside the body stack and a line composed with a
++ * size, a weight, and a line height.
++ */
+ export const TYPE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({ name: 'Heading class 1', markup: '<div class="h1">Heading class 1</div>' }),
+ 	Object.freeze({ name: 'Heading class 2', markup: '<div class="h2">Heading class 2</div>' }),
+@@ -411,6 +422,31 @@
+ 		markup:
+ 			'<figure><blockquote class="blockquote"><p>A quotation that names its source.</p></blockquote><figcaption class="blockquote-footer">A named source</figcaption></figure>',
+ 	}),
++	Object.freeze({
++		name: 'Font sizes',
++		markup:
++			'<p class="fs-1">fs-1</p><p class="fs-2">fs-2</p><p class="fs-3">fs-3</p><p class="fs-4">fs-4</p><p class="fs-5">fs-5</p><p class="fs-6">fs-6</p>',
++	}),
++	Object.freeze({
++		name: 'Font weights',
++		markup:
++			'<p><span class="fw-lighter">fw-lighter</span> <span class="fw-light">fw-light</span> <span class="fw-normal">fw-normal</span> <span class="fw-medium">fw-medium</span> <span class="fw-semibold">fw-semibold</span> <span class="fw-bold">fw-bold</span> <span class="fw-bolder">fw-bolder</span></p>',
++	}),
++	Object.freeze({
++		name: 'Font styles',
++		markup:
++			'<p class="fst-italic">The fst-italic class sets this sentence in italic, and <span class="fst-normal">the fst-normal class</span> sets one phrase upright.</p>',
++	}),
++	Object.freeze({
++		name: 'Line heights',
++		markup:
++			'<div class="container-fluid"><div class="row row-cols-2 row-cols-md-4 g-3"><div><p class="lh-1">The lh-1 class sets the lines of this paragraph one font size apart.</p></div><div><p class="lh-sm">The lh-sm class sets the lines of this paragraph one and a quarter font sizes apart.</p></div><div><p class="lh-base">The lh-base class sets the lines of this paragraph at the spacing of the body text.</p></div><div><p class="lh-lg">The lh-lg class sets the lines of this paragraph two font sizes apart.</p></div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Monospace',
++		markup:
++			'<p>The body stack sets this sentence, and <span class="font-monospace">the font-monospace class</span> sets one phrase in the monospace stack.</p><p class="font-monospace fs-5 fw-semibold lh-sm">A monospace line composed with a size, a weight, and a line height.</p>',
++	}),
+ ])
+ 
+ /** Holds the Media section's visible copy and accessible name. */
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -752,6 +752,7 @@
+ | `src/styles/utilities/_vertical-align.scss`  | The vertical-alignment utilities in the utilities layer.                                                                                                                                                                                           |
+ | `src/styles/utilities/_display.scss`         | The display utilities and their print pass in the utilities layer.                                                                                                                                                                                 |
+ | `src/styles/utilities/_flex.scss`            | The flex, alignment, and order utilities in the utilities layer.                                                                                                                                                                                   |
++| `src/styles/utilities/_font.scss`            | The font family, size, style, weight, and line-height utilities in the utilities layer.                                                                                                                                                            |
+ | `src/styles/index.scss`                      | The compilation barrel.                                                                                                                                                                                                                            |
+ | `src/styles/index.ts`                        | The side-effect entry, and the build's library entry.                                                                                                                                                                                              |
+ | `configs/src/vite.styles.config.ts`          | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                                                                                         |
+@@ -2928,6 +2929,59 @@
+ or not that rule is important, the escape inside the utilities layer, and a dark island. The
+ visibility keys carry no recorded departure.
+ 
++### Font utilities
++
++The font keys ship whole in the utilities layer from the `src/styles/utilities/_font.scss`
++partial: the `.font-monospace` class, the `.fs-1` to `.fs-6` size classes, the `.fst-italic` and
++`.fst-normal` style classes, the `.fw-lighter` to `.fw-bolder` weight classes, and the `.lh-1`,
++`.lh-sm`, `.lh-base`, and `.lh-lg` line-height classes. The release writes none of these entries
++responsive, so each class ships at the empty infix alone and no font class writes a breakpoint
++infix.
++
++A size class resolves what the heading class of the same level resolves: the `.fs-1` class reads
++the `--vn-size-8` token the `.h1` class reads, down to the `.fs-6` class, which reads the
++`--vn-size-3` token the `.h6` class reads. So a retuned size token moves a size class and its
++heading class together, and a size class holds one size at every viewport. The release scales its
++first four sizes with the viewport and caps them from a 1200px viewport; Veneer writes neither the
++fluid formula nor the cap, as the heading classes write neither.
++
++The `.lh-base` class reads the `--vn-line-body` token the body text reads, so a retuned body line
++moves the class with the body text. The `.font-monospace` class reads the `--bs-font-monospace`
++alias, as the release writes it, and the `_tokens.scss` partial declares that alias over the
++`--vn-font-mono-base` token, so a root retune of either name moves the class. The weights, the
++styles, and the other line heights stay literal, because no published Veneer token carries them.
++The `.fw-lighter` and `.fw-bolder` classes resolve against the weight their parent resolves, as the
++release's relative keywords do. No font class reads the density factor or the color mode.
++
++The partial writes every entry through the `utility` mixin that § Styles describes, in the
++release's map order: the family, size, style, weight, and line-height entries. No two entries set
++one property, so the order that decides a resolution is the order inside an entry: an element
++carrying the `.fw-bold` and `.fw-light` classes resolves the `700` weight, because the map writes
++the bold step after the light step. Every declaration carries the `!important` flag the release
++writes. The classes sit in the utilities layer, so a size class beats a heading or display class
++on the same element: an element carrying the `.h1` and `.fs-6` classes resolves the size the
++`--vn-size-3` token carries. § Styles shows the escape from an important utility inside the
++utilities layer.
++
++The `tests/src/styles/utilities/font.test.ts` proof reads each size class against its heading
++class at the 390 and 1280 viewports and under its retuned size token, the base line height under a
++retuned body line, the monospace class under a retuned alias and a retuned token, each weight under
++two parent weights, each style inside an oblique parent, each line height over a fixed font size,
++the absence of an infixed class, a dark island and the density factor, the order inside an entry,
++the size class over a heading class, the priority over a later unlayered rule, and the escape
++inside the utilities layer.
++
++These are the keys' recorded departures.
++
++- **The size classes read Veneer's heading scale.** The release writes the `.fs-1` to `.fs-4`
++  classes as a fluid `calc()` expression of a rem length and a viewport share, capped at a literal
++  size from a 1200px viewport, and the `.fs-5` and `.fs-6` classes as literal sizes. Veneer writes
++  the `var(--vn-size-8)` to `var(--vn-size-3)` values and no cap, so each class resolves its
++  heading class's size at every viewport.
++- **The base line height reads Veneer's body line.** The release writes the `1.5` factor; Veneer
++  writes the `var(--vn-line-body)` value, which resolves to the same factor and moves with the body
++  text.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -3960,6 +4014,21 @@
+ | `fixed`   | `.fixed-top`    | `z-index` | —         | `1030`          | `var(--vn-stack-fixed)` | tokenized |
+ | `fixed`   | `.fixed-bottom` | `z-index` | —         | `1030`          | `var(--vn-stack-fixed)` | tokenized |
+ 
++#### `fs`
++
++| Component | Selector | Property    | Condition                    | Bootstrap 5.3.8          | Veneer             | Departure |
++| --------- | -------- | ----------- | ---------------------------- | ------------------------ | ------------------ | --------- |
++| `fs`      | `.fs-1`  | `font-size` | —                            | `calc(1.375rem + 1.5vw)` | `var(--vn-size-8)` | tokenized |
++| `fs`      | `.fs-1`  | `font-size` | `@media (min-width: 1200px)` | `2.5rem`                 | —                  | dropped   |
++| `fs`      | `.fs-2`  | `font-size` | —                            | `calc(1.325rem + 0.9vw)` | `var(--vn-size-7)` | tokenized |
++| `fs`      | `.fs-2`  | `font-size` | `@media (min-width: 1200px)` | `2rem`                   | —                  | dropped   |
++| `fs`      | `.fs-3`  | `font-size` | —                            | `calc(1.3rem + 0.6vw)`   | `var(--vn-size-6)` | tokenized |
++| `fs`      | `.fs-3`  | `font-size` | `@media (min-width: 1200px)` | `1.75rem`                | —                  | dropped   |
++| `fs`      | `.fs-4`  | `font-size` | —                            | `calc(1.275rem + 0.3vw)` | `var(--vn-size-5)` | tokenized |
++| `fs`      | `.fs-4`  | `font-size` | `@media (min-width: 1200px)` | `1.5rem`                 | —                  | dropped   |
++| `fs`      | `.fs-5`  | `font-size` | —                            | `1.25rem`                | `var(--vn-size-4)` | tokenized |
++| `fs`      | `.fs-6`  | `font-size` | —                            | `1rem`                   | `var(--vn-size-3)` | tokenized |
++
+ #### `g`
+ 
+ | Component | Selector   | Property        | Condition                  | Bootstrap 5.3.8 | Veneer            | Departure |
+@@ -4236,6 +4305,12 @@
+ | --------- | -------- | ----------- | --------- | --------------- | ------------------ | --------- |
+ | `lead`    | `.lead`  | `font-size` | —         | `1.25rem`       | `var(--vn-size-5)` | tokenized |
+ 
++#### `lh`
++
++| Component | Selector   | Property      | Condition | Bootstrap 5.3.8 | Veneer                | Departure |
++| --------- | ---------- | ------------- | --------- | --------------- | --------------------- | --------- |
++| `lh`      | `.lh-base` | `line-height` | —         | `1.5`           | `var(--vn-line-body)` | tokenized |
++
+ #### `link`
+ 
+ | Component | Selector                    | Property                        | Condition | Bootstrap 5.3.8                                                              | Veneer                                                                      | Departure |
+@@ -5490,6 +5565,11 @@
+ | visually-hidden  | selector       | The official `.visually-hidden` helper and its focusable form ship in the utilities layer ahead of every utility partial; the hidden box and the focus reveal are proved in `tests/src/styles/utilities/visually-hidden.test.ts`.                                                                                                                                                                                                                                | —                     | shipped  |
+ | visible          | selector       | The official `.visible` selector ships in the utilities layer; the resolved visibility is proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
+ | invisible        | selector       | The official `.invisible` selector ships in the utilities layer; the hidden paint and the kept box are proved in `tests/src/styles/utilities/visibility.test.ts`.                                                                                                                                                                                                                                                                                                | —                     | shipped  |
++| font             | selector       | The official `.font-monospace` selector ships in the utilities layer, reading the `--bs-font-monospace` alias; the monospace stack and its retune are proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                                                             | —                     | shipped  |
++| fs               | selector       | Every official `.fs-*` selector ships in the utilities layer, reading the size token its heading class reads; each size at the 390 and 1280 viewports and under its retuned token is proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                              | —                     | shipped  |
++| fst              | selector       | Every official `.fst-*` selector ships in the utilities layer; each resolved style is proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                                                                                                                             | —                     | shipped  |
++| fw               | selector       | Every official `.fw-*` selector ships in the utilities layer; each resolved weight, the relative weights under two parent weights included, is proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                                                                    | —                     | shipped  |
++| lh               | selector       | Every official `.lh-*` selector ships in the utilities layer, the `.lh-base` selector reading the `--vn-line-body` token; each resolved line height is proved in the `tests/src/styles/utilities/font.test.ts` proof.                                                                                                                                                                                                                                            | —                     | shipped  |
+ | navbar           | selector       | Every official `.navbar` selector ships in the components layer, the brand, nav list, text, collapsible content, toggler and its icon, scrolling list, expand ramp, expanded offcanvas panel, and dark retunes included, and the container combinators the key records ship from the container partial; resolved behavior is proved in `tests/src/styles/components/navbar.test.ts`.                                                                             | —                     | shipped  |
+ | navbar           | variable       | Every official `--bs-navbar-*` custom property is declared on the `.navbar` class, the color and toggler slots are retuned by the `.navbar-dark` class and the bar's own dark attribute, and the `.navbar-nav` class retunes the `--bs-nav-link-*` slots it records; each one is read beside the property it drives in `tests/src/styles/components/navbar.test.ts`.                                                                                             | —                     | shipped  |
+ | engine           | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                                                                                                                                                                                                                                                  | —                     | accepted |
+@@ -5553,7 +5633,8 @@
+ belongs to rather than in a region of its own, which is how every other section is grouped: the icon
+ links sit in Links, the aspect-ratio boxes share Media with the image classes and the figure
+ classes, the vertical rule and the gap steps sit in Layout beside the gutters, the stacks sit in
+-Flex beside the flex utilities, and the list and quotation classes sit in Type. The
++Flex beside the flex utilities, and the list and quotation classes sit in Type. The font
++utilities join Type beside the heading and display classes whose sizes they share. The
+ showcase's own button drives the controller and announces the selected mode, and its entry
+ constructs a `Delegate` instance beside the showcase. The shell's own stylesheet reaches that button
+ through the `control` class the showcase sets on it, so no rule of the shell's reaches a specimen
+@@ -5760,7 +5841,8 @@
+ [the position helpers](../tests/src/styles/components/position.test.ts),
+ [the sizing utilities](../tests/src/styles/utilities/sizing.test.ts),
+ [the visibility utilities](../tests/src/styles/utilities/visibility.test.ts),
+-[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts), and
++[the visually hidden helpers](../tests/src/styles/utilities/visually-hidden.test.ts),
++[the font utilities](../tests/src/styles/utilities/font.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.

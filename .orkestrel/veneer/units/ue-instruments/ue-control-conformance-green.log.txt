@@ -1,0 +1,43 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-ue/tmp/probe/base
+
+·····x········x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:206:2
+    204|  })
+    205|
+    206|  it(
+       |  ^
+    207|   'records official Button behavior and matches each named fixture ste…
+    208|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > declaration priority > emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:326:2
+    324|   expect(mismatches).toEqual([])
+    325|  })
+    326|  it('emits one forced-colors block per selector, so the content a call…
+       |  ^
+    327|   // A caller's content shares the mixin's media block: the `forced-ri…
+    328|   // `forced-colors` block and writes the content after the outline in…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 20 passed (22)
+   Start at  01:29:33
+   Duration  93.63s (transform 4.15s, setup 446ms, import 53.61s, tests 38.99s, environment 0ms)
+

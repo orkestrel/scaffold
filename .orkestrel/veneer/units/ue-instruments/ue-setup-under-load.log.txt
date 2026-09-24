@@ -1,0 +1,67 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-ue/tmp/probe/base
+
+·····································stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-48k41D'
+    at finishWithoutResolve (/home/user/veneer-ue/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-ue/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-ue/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ue/tmp/probe/base/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ue/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ue/tmp/probe/base/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-ue/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ue/tmp/probe/base/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ue/tmp/probe/base/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ue/tmp/probe/base/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-48k41D'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-48k41D or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-48k41D/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+··············································x···················································------------························································································································
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions
+Error: Hook timed out in 10100ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/setupServer.test.ts:667:3
+    665|  describe('oracle action bindings and exclusions', () => {
+    666|   let fixture: OracleFixture
+    667|   beforeAll(async () => {
+       |   ^
+    668|    fixture = await recordButtonOracle()
+    669|   }, ORACLE_TIMEOUT)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > records and reads official control state and rejects contradicted or absent obligation steps
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupServer.test.ts:616:2
+    614|  })
+    615|
+    616|  it(
+       |  ^
+    617|   'records and reads official control state and rejects contradicted o…
+    618|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 254 passed | 12 skipped (267)
+   Start at  01:01:44
+   Duration  47.02s (transform 5.83s, setup 382ms, import 29.95s, tests 80.43s, environment 5ms)
+

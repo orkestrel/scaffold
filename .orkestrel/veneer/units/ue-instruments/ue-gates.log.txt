@@ -1,0 +1,13 @@
+format exit 0 :: npm run format:check :: Finished in 44426ms on 363 files using 4 threads.
+lint exit 0 :: npm run lint:check :: 
+check exit 0 :: npm run check :: 
+build exit 0 :: npm run build:src :: 
+setup exit 0 :: npm run test:setup :: Tests  267 passed (267)
+styles exit 0 :: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/shadow.test.ts tests/src/styles/utilities/opacity.test.ts tests/src/styles/components/focus-ring.test.ts :: Tests  29 passed (29)
+sections exit 0 :: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/ShadowSection.test.ts tests/app/browser/sections/OpacitySection.test.ts tests/app/browser/sections/FocusRingSection.test.ts tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts :: Tests  12 passed (12)
+conformance exit 0 :: npm run test:conformance :: Tests  22 passed (22)
+service exit 0 :: npm run test:service :: Tests  18 passed (18)
+guides exit 0 :: npm run test:guides :: 
+policy exit 0 :: npm run test:policy :: Tests  109 passed | 1 skipped (110)
+journey exit 0 :: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:light-1280 :: Tests  45 passed (45)
+done

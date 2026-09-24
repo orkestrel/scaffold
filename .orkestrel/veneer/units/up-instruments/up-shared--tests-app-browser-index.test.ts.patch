@@ -1,0 +1,27 @@
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 4ea1d98..6655c7f 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -13,8 +13,12 @@ describe('app browser entry', () => {
+ 			'ALERT_SPECIMENS',
+ 			'AccordionSection',
+ 			'AlertSection',
++			'BACKGROUND_COPY',
++			'BACKGROUND_SPECIMENS',
+ 			'BADGE_COPY',
+ 			'BADGE_SPECIMENS',
++			'BORDER_COPY',
++			'BORDER_SPECIMENS',
+ 			'BREADCRUMB_COPY',
+ 			'BREADCRUMB_SPECIMENS',
+ 			'BUTTON_COPY',
+@@ -25,7 +29,9 @@ describe('app browser entry', () => {
+ 			'BUTTON_GROUP_PAIR',
+ 			'BUTTON_GROUP_SPECIMENS',
+ 			'BUTTON_SPECIMENS',
++			'BackgroundSection',
+ 			'BadgeSection',
++			'BorderSection',
+ 			'BreadcrumbSection',
+ 			'ButtonGroupSection',
+ 			'ButtonSection',

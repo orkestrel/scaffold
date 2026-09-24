@@ -1,0 +1,65 @@
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer-up/tmp/probe/base
+
+········xx········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > declares the one order line in every profile, and leaves the document order unmoved
+AssertionError: expected [ 'properties' ] to deeply equal [ 'theme', 'reset', 'base', …(3) ]
+
+- Expected
++ Received
+
+  [
+-   "theme",
+-   "reset",
+-   "base",
+-   "elements",
+-   "components",
+-   "utilities",
++   "properties",
+  ]
+
+ ❯ tests/service/tailwind/profiles.test.ts:45:48
+     43|   expect(new SheetReader(cascade).order).toEqual(ORDER)
+     44|   for (const compiled of [tailwindProfile, preflightProfile]) {
+     45|    expect(new SheetReader(compiled).statement).toEqual(ORDER)
+       |                                                ^
+     46|    expect(new SheetReader(`${cascade}\n${compiled}`).order).toEqual(OR…
+     47|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > fills Tailwind reset only under the preflight profile
+AssertionError: expected [ 'theme', 'utilities', 'properties' ] to deeply equal [ 'theme', 'utilities' ]
+
+- Expected
++ Received
+
+  [
+    "theme",
+    "utilities",
++   "properties",
+  ]
+
+ ❯ tests/service/tailwind/profiles.test.ts:66:54
+     64|   // utilities, and the reset and its tokens are all that tells them a…
+     65|   const tailwind = new SheetReader(tailwindProfile)
+     66|   expect(tailwind.layers.map((layer) => layer.name)).toEqual(['theme',…
+       |                                                      ^
+     67|   // The generated gap steps read the spacing scale and no other theme…
+     68|   // profile keeps that one variable, and a token the reset or a stati…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 16 passed (18)
+   Start at  01:37:54
+   Duration  40.96s (transform 1.53s, setup 14.31s, import 4.31s, tests 20.81s, environment 0ms)
+

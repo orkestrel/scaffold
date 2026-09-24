@@ -1,0 +1,113 @@
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -88,6 +88,10 @@
+ 	FLEX_ENTRY_CASES,
+ 	FLEX_FAMILY_CASES,
+ 	FLEX_RESTING_VALUES,
++	FONT_ENTRY_CASES,
++	FONT_STYLE_VALUES,
++	FONT_WEIGHT_CASES,
++	FONT_WEIGHT_PARENTS,
+ 	FORM_CHECK_ICON_CASES,
+ 	FORM_CHECK_MARKUP,
+ 	FORM_CHECK_SELECTORS,
+@@ -116,6 +120,7 @@
+ 	INPUT_GROUP_MARKUP,
+ 	INPUT_GROUP_SIZE_CASES,
+ 	INPUT_GROUP_TOGGLE_CASES,
++	LINE_HEIGHT_CASES,
+ 	LINK_OFFSET_CASES,
+ 	LINK_OPACITY_CASES,
+ 	LINK_ROLES,
+@@ -315,6 +320,10 @@
+ 				'FLEX_ENTRY_CASES',
+ 				'FLEX_FAMILY_CASES',
+ 				'FLEX_RESTING_VALUES',
++				'FONT_ENTRY_CASES',
++				'FONT_STYLE_VALUES',
++				'FONT_WEIGHT_CASES',
++				'FONT_WEIGHT_PARENTS',
+ 				'FORM_CHECK_ICON_CASES',
+ 				'FORM_CHECK_MARKUP',
+ 				'FORM_CHECK_SELECTORS',
+@@ -344,6 +353,7 @@
+ 				'INPUT_GROUP_MARKUP',
+ 				'INPUT_GROUP_SIZE_CASES',
+ 				'INPUT_GROUP_TOGGLE_CASES',
++				'LINE_HEIGHT_CASES',
+ 				'LINK_OFFSET_CASES',
+ 				'LINK_OPACITY_CASES',
+ 				'LINK_ROLES',
+@@ -1660,6 +1670,72 @@
+ 		}
+ 		expect(Object.values(FLEX_RESTING_VALUES).every((value) => Object.isFrozen(value))).toBe(true)
+ 	})
++	it('binds the font entry, weight, style, and line-height tables to the inventory in its order', () => {
++		// Each table is read against the rules the release records under its key, in the recorded
++		// order, so a step the table drops, adds, reorders, or values differently reddens here.
++		for (const [key, property, cases] of [
++			['fw', 'font-weight', FONT_WEIGHT_CASES],
++			['lh', 'line-height', LINE_HEIGHT_CASES],
++		] as const) {
++			expect(
++				oracle.components[key].selectors.map(({ selector, declarations }) => [
++					selector,
++					declarations,
++				]),
++			).toEqual(cases.map((entry) => [`.${key}-${entry.key}`, [{ property, value: entry.value }]]))
++		}
++		expect(
++			oracle.components.fst.selectors.map(({ selector, declarations }) => [selector, declarations]),
++		).toEqual(
++			FONT_STYLE_VALUES.map((value) => [`.fst-${value}`, [{ property: 'font-style', value }]]),
++		)
++		// The font keys are read off the inventory by the shape of their rules rather than from the
++		// table: every key whose every recorded rule is a single `.KEY-*` class setting one longhand
++		// of the `font` shorthand, in the order the inventory records the keys, which is the order
++		// the release emits them. So a font key the table leaves out reddens, and so does a row out
++		// of that order, a row naming an unrecorded class, and a row naming the wrong property.
++		const fontKeys = Object.entries(oracle.components)
++			.filter(
++				([key, { selectors }]) =>
++					selectors.length > 0 &&
++					selectors.every(
++						({ selector, declarations }) =>
++							selector.startsWith(`.${key}-`) &&
++							/^[\w-]+$/u.test(selector.slice(key.length + 2)) &&
++							declarations.length === 1 &&
++							/^(?:font-[a-z]+|line-height)$/u.test(declarations[0]?.property ?? ''),
++					),
++			)
++			.map(([key]) => key)
++		expect(FONT_ENTRY_CASES.map((entry) => entry.prefix)).toEqual(fontKeys)
++		expect(
++			FONT_ENTRY_CASES.map((entry) =>
++				requireValue(
++					oracle.components[entry.prefix].selectors.find(
++						({ selector }) => selector === `.${entry.name}`,
++					),
++					`No recorded .${entry.name}`,
++				).declarations.map(({ property }) => property),
++			),
++		).toEqual(FONT_ENTRY_CASES.map((entry) => [entry.property]))
++		expect(FONT_ENTRY_CASES.filter((entry) => !entry.name.startsWith(`${entry.prefix}-`))).toEqual(
++			[],
++		)
++		// The parents are distinct weights on the numeric scale; which band each sits in is a
++		// browser reading, and the font proof takes it where the relative steps resolve.
++		expect(FONT_WEIGHT_PARENTS.map(Number).every((weight) => weight % 100 === 0)).toBe(true)
++		expect(new Set(FONT_WEIGHT_PARENTS).size).toBe(FONT_WEIGHT_PARENTS.length)
++		for (const table of [
++			FONT_ENTRY_CASES,
++			FONT_WEIGHT_CASES,
++			FONT_WEIGHT_PARENTS,
++			FONT_STYLE_VALUES,
++			LINE_HEIGHT_CASES,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of [...FONT_ENTRY_CASES, ...FONT_WEIGHT_CASES, ...LINE_HEIGHT_CASES])
++			expect(Object.isFrozen(entry)).toBe(true)
++	})
+ 	it('binds the placement steps, values, and fixtures to the inventory, the ramp, and the journey', async () => {
+ 		const recorded = new Map(
+ 			Object.entries(oracle.components).map(([key, { selectors }]) => [

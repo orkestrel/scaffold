@@ -1,0 +1,297 @@
+# UTIL-FONT mutation log, 2026-09-24T01:30:26Z, copy /home/user/veneer-uf/tmp/probe/base
+pristine build: npm run build:src exit=0
+
+## control
+site: none
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/control.json tests/src/styles/utilities/font.test.ts
+test exit=0
+summary: 0 failed | 28 passed (28)
+
+## fluid
+site: .fs-1 to .fs-4 written as the release fluid calc()
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/fluid.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 10 failed | 18 passed (28)
+  red: font utilities resolves the size class of the 'h1' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h2' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h3' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h4' level to the size its heading class resolves at each journey viewport
+  red: font utilities reads the size class of the 'h1' level from the '--vn-size-8' token its heading class reads
+  red: font utilities reads the size class of the 'h2' level from the '--vn-size-7' token its heading class reads
+  red: font utilities reads the size class of the 'h3' level from the '--vn-size-6' token its heading class reads
+  red: font utilities reads the size class of the 'h4' level from the '--vn-size-5' token its heading class reads
+  red: font utilities overrides the heading and display classes on the same element
+  red: font utilities yields to an important override inside the utilities layer and to no unlayered one
+
+## literal
+site: .fs-1 to .fs-6 written as the release capped literals
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/literal.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 13 failed | 15 passed (28)
+  red: font utilities resolves the size class of the 'h1' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h2' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h3' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h4' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h5' level to the size its heading class resolves at each journey viewport
+  red: font utilities reads the size class of the 'h1' level from the '--vn-size-8' token its heading class reads
+  red: font utilities reads the size class of the 'h2' level from the '--vn-size-7' token its heading class reads
+  red: font utilities reads the size class of the 'h3' level from the '--vn-size-6' token its heading class reads
+  red: font utilities reads the size class of the 'h4' level from the '--vn-size-5' token its heading class reads
+  red: font utilities reads the size class of the 'h5' level from the '--vn-size-4' token its heading class reads
+  red: font utilities reads the size class of the 'h6' level from the '--vn-size-3' token its heading class reads
+  red: font utilities overrides the heading and display classes on the same element
+  red: font utilities yields to an important override inside the utilities layer and to no unlayered one
+
+## fs6literal
+site: .fs-6 written as the release literal 1rem
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/fs6literal.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities reads the size class of the 'h6' level from the '--vn-size-3' token its heading class reads
+
+## cap
+site: the release (min-width:1200px) cap block added after the font rules
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/cap.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 4 failed | 24 passed (28)
+  red: font utilities resolves the size class of the 'h1' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h2' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h3' level to the size its heading class resolves at each journey viewport
+  red: font utilities resolves the size class of the 'h4' level to the size its heading class resolves at each journey viewport
+
+## lhliteral
+site: .lh-base written as the literal 1.5
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/lhliteral.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities reads the base line height from the body line token
+
+## lhsm
+site: .lh-sm written as 1.2
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/lhsm.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 2 failed | 26 passed (28)
+  red: font utilities resolves the 'sm' line height as its recorded factor of a fixed font size
+  red: font utilities overrides the heading and display classes on the same element
+
+## monotoken
+site: .font-monospace written as var(--vn-font-mono-base)
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/monotoken.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities reads the monospace stack from the alias the release names and the token the alias reads
+
+## monoliteral
+site: .font-monospace written as the literal monospace
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/monoliteral.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities reads the monospace stack from the alias the release names and the token the alias reads
+
+## lighter100
+site: .fw-lighter written as 100
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/lighter100.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 2 failed | 26 passed (28)
+  red: font utilities resolves every weight step under a 600 parent weight
+  red: font utilities resolves the relative weight steps differently under the two parent weights
+
+## bolder700
+site: .fw-bolder written as 700
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/bolder700.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 2 failed | 26 passed (28)
+  red: font utilities resolves every weight step under a 600 parent weight
+  red: font utilities resolves the relative weight steps differently under the two parent weights
+
+## normalmissing
+site: .fw-normal renamed away
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/normalmissing.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities resolves every weight step under a 600 parent weight
+
+## italicmissing
+site: .fst-italic renamed away
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/italicmissing.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 3 failed | 25 passed (28)
+  red: font utilities resolves every style step inside an oblique parent
+  red: font utilities reads no mode or density factor, so a dark island and a doubled factor leave every value
+  red: font utilities keeps its priority over a later unlayered consumer rule
+
+## normal
+site: !important dropped on every font rule
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/normal.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 3 failed | 25 passed (28)
+  red: font utilities resolves the later value of an entry where an element carries two of its classes
+  red: font utilities keeps its priority over a later unlayered consumer rule
+  red: font utilities yields to an important override inside the utilities layer and to no unlayered one
+
+## reorder
+site: the first and last rule of the fs, fst, fw (light and bold), and lh entries swapped in place
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/reorder.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities resolves the later value of an entry where an element carries two of its classes
+
+## unlayered
+site: .fs-3 and .lh-base rules moved out of every layer, still important
+edit: dist/src/styles/index.css replaced by /home/user/veneer-uf/tmp/probe/work/unlayered.css
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/unlayered.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities yields to an important override inside the utilities layer and to no unlayered one
+
+## elementslayer
+site: .fs-6, .fw-light, .lh-sm, .fw-bold, .fs-2 moved to an elements-layer block at normal priority
+edit: dist/src/styles/index.css replaced by /home/user/veneer-uf/tmp/probe/work/elements.css
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/elementslayer.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 2 failed | 26 passed (28)
+  red: font utilities resolves the later value of an entry where an element carries two of its classes
+  red: font utilities overrides the heading and display classes on the same element
+
+## moderule
+site: a [data-bs-theme=dark] .fw-semibold rule added
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/moderule.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities reads no mode or density factor, so a dark island and a doubled factor leave every value
+
+## density
+site: .lh-lg written as calc(2 * var(--vn-factor-density))
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/density.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities reads no mode or density factor, so a dark island and a doubled factor leave every value
+
+## infixed
+site: an (min-width:768px) .fw-md-bold rule added
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/infixed.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities writes no infixed class for any font entry
+
+## infixedsample
+site: an (min-width:768px) .fw-md-semibold rule added, the infixed class the reading case mounts
+edit: dist/src/styles/index.css (built cascade; no rebuild, the proof loads this file)
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=json --outputFile=/home/user/veneer-uf/tmp/probe/work/infixedsample.json tests/src/styles/utilities/font.test.ts
+test exit=1
+summary: 1 failed | 27 passed (28)
+  red: font utilities writes no infixed class for any font entry
+
+pristine cascade restored: yes
+
+## absent
+site: the @use 'utilities/font' line removed
+edit: src/styles/index.scss
+command: npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/font.test.ts
+exit=1
+  ✓ built in 3.18s
+  ⎯⎯⎯⎯⎯⎯ Failed Tests 27 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:27:2 > font utilities > resolves the size class of the 'h1' level to the size its heading class resolves at each journey viewport
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:27:2 > font utilities > resolves the size class of the 'h2' level to the size its heading class resolves at each journey viewport
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:27:2 > font utilities > resolves the size class of the 'h3' level to the size its heading class resolves at each journey viewport
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:27:2 > font utilities > resolves the size class of the 'h4' level to the size its heading class resolves at each journey viewport
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:27:2 > font utilities > resolves the size class of the 'h5' level to the size its heading class resolves at each journey viewport
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:27:2 > font utilities > resolves the size class of the 'h6' level to the size its heading class resolves at each journey viewport
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:48:2 > font utilities > reads the size class of the 'h1' level from the '--vn-size-8' token its heading class reads
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:48:2 > font utilities > reads the size class of the 'h2' level from the '--vn-size-7' token its heading class reads
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:48:2 > font utilities > reads the size class of the 'h3' level from the '--vn-size-6' token its heading class reads
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:48:2 > font utilities > reads the size class of the 'h4' level from the '--vn-size-5' token its heading class reads
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:48:2 > font utilities > reads the size class of the 'h5' level from the '--vn-size-4' token its heading class reads
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:48:2 > font utilities > reads the size class of the 'h6' level from the '--vn-size-3' token its heading class reads
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:62:2 > font utilities > resolves the '1' line height as its recorded factor of a fixed font size
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:62:2 > font utilities > resolves the 'sm' line height as its recorded factor of a fixed font size
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:62:2 > font utilities > resolves the 'base' line height as its recorded factor of a fixed font size
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:62:2 > font utilities > resolves the 'lg' line height as its recorded factor of a fixed font size
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:76:2 > font utilities > reads the base line height from the body line token
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:90:2 > font utilities > reads the monospace stack from the alias the release names and the token the alias reads
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:119:30 > font utilities > resolves every weight step under a 400 parent weight
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:119:30 > font utilities > resolves every weight step under a 600 parent weight
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:136:2 > font utilities > resolves the relative weight steps differently under the two parent weights
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:155:2 > font utilities > resolves every style step inside an oblique parent
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:212:2 > font utilities > reads no mode or density factor, so a dark island and a doubled factor leave every value
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:238:2 > font utilities > resolves the later value of an entry where an element carries two of its classes
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:250:2 > font utilities > overrides the heading and display classes on the same element
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:265:2 > font utilities > keeps its priority over a later unlayered consumer rule
+   FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:286:2 > font utilities > yields to an important override inside the utilities layer and to no unlayered one
+        Tests  27 failed | 1 passed (28)
+rebuilt cascade equals the pristine build: yes
+
+## section
+site: the five font specimens removed from TYPE_SPECIMENS
+edit: app/browser/constants.ts
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/TypeSection.test.ts
+exit=1
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |app:browser (chromium)| tests/app/browser/sections/TypeSection.test.ts:7:2 > TypeSection > renders every Type specimen in table order inside the named region
+        Tests  1 failed | 1 passed (2)
+
+## ledger
+site: the #### fs and #### lh tables removed
+edit: guides/veneer.md
+command: npm run test:conformance
+exit=1
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+        Tests  1 failed | 21 passed (22)
+
+## tablevalue
+site: the LINE_HEIGHT_CASES sm value written as '1.2'
+edit: tests/setupStyles.ts
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t "font entry"
+exit=1
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the font entry, weight, style, and line-height tables to the inventory in its order
+        Tests  1 failed | 121 skipped (122)
+
+## entryrow
+site: the FONT_ENTRY_CASES fst row removed
+edit: tests/setupStyles.ts
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t "font entry"
+exit=1
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the font entry, weight, style, and line-height tables to the inventory in its order
+        Tests  1 failed | 121 skipped (122)
+
+## entryproperty
+site: the FONT_ENTRY_CASES lh row's property written as font-size
+edit: tests/setupStyles.ts
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t "font entry"
+exit=1
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |setup| tests/setupStyles.test.ts > styles setup > binds the font entry, weight, style, and line-height tables to the inventory in its order
+        Tests  1 failed | 121 skipped (122)
+
+## tailwind-line
+site: fw-bold written onto the exclusion line in tests/setup.css, tests/fixtures/tailwind/consumer.css, tests/fixtures/tailwind/preflight.css, and the guide fence
+command: npm run build:src:styles && npm run test:service
+exit=1
+  ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+   FAIL  |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > derives the shared class names, and mounts an element for every one of them
+   FAIL  |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > keeps a shared name on the line while its importance covers only some of the longhands Tailwind declares
+        Tests  2 failed | 16 passed (18)
+exclusion line restored: tests/setup.css:0 tests/fixtures/tailwind/consumer.css:0 tests/fixtures/tailwind/preflight.css:0 guides/veneer.md:0 
+
+# end
