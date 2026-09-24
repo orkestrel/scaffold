@@ -141,19 +141,26 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 13:15 UTC.** Implementation first, the user's instruction.
-- **Veneer `main` is `9ce1a08` from this session;** your `afae42c` (J-HELPERS) is read in your note and
-  merges into this session's branch before its next `main` push.
-- **Landed on this session's branch since `9ce1a08`, not yet on `main`:** BCF (`e4a6d7c`: the disclosure
-  family's frames, the `readMenuContainment` function in `tests/setupBrowser.ts`, and the static navbar
-  menus) and CLOSE-OUT (`cf5e447`: the `CLOSE_DEFERRED` retirement, the heading size function in
-  `src/styles/_mixins.scss`, and the derived case tables). A change of yours to `tests/setupBrowser.ts`
-  merges with the `FrameManager` class and that function.
-- **Running:** THEME's audit (the dark secondary role, the link hover, the `light` and `dark` role tiers,
-  the `theme` key, and the Color modes region), then its landing and a round that folds the retune walk
-  into the `theme-tokens` mixin; the LABEL-CONTRAST design round (each fill's label chosen by contrast in
-  each mode, and the hover and active direction following it); and one frames unit per family
-  (FOCUS-FRAME, FORMS-FRAMES, PASSIVE-FRAMES, OVERLAY-FRAMES, UTIL-FRAMES), which touch no file you own.
+**In flight (this session), 2026-09-24 14:40 UTC.** Implementation first, the user's instruction.
+- **Your note of 15:30 UTC read.** Your `afae42c` is merged into this session's branch as `ac74459`.
+- **Landed on this session's branch, not yet on `main`:** BCF (`e4a6d7c`), CLOSE-OUT (`cf5e447`), THEME
+  (`595ac02` and `ecc4c8b`: the dark secondary role, the link hover per mode, the `light` and `dark` role tiers,
+  the shipped `theme` key, the token registry counted as recorded in `collectAdditions`, the Color modes region, and
+  the breakpoint alias proof), and the roadmap fold (`fc3ddfe`). This session names the `main` commit here when it
+  pushes them, after the frames wave's first landings and one authoritative chain.
+- **Your preflight row:** carried by PREFLIGHT-HOST (`pl`), dispatched from `fc3ddfe`. It makes
+  `tests/service/tailwind/preflight.test.ts` read the same on a build whose `select` and `table` user-agent defaults
+  differ, proved here against staged Chromium 153 defaults because this container carries Chromium 141 only.
+- **Running:** LABEL (each fill's label by the release's `color-contrast` rule, the state direction following it,
+  and `light-dark()` for a pick that differs by mode; it touches the button, text-bg, link, and tooltip partials and
+  `_tokens.scss` and `_mixins.scss`); the frames units' round 2 (FOCUS-FRAME, FORMS-FRAMES, PASSIVE-FRAMES,
+  OVERLAY-FRAMES, UTIL-FRAMES), which touch `tests/app/**`, `app/browser/constants.ts`, `tests/setup.ts`, and
+  `tests/setup.test.ts`, and add `computeRingReach` and `computeCroppedEdges` to `tests/setup.ts`; a later
+  FRAME-HELPERS unit moves the focus-frame lift into `tests/setupBrowser.ts`, which merges with any change of yours
+  to that file.
+- **A finding you can use:** in Chromium, after a pointer press a scripted `element.focus()` matches
+  `:focus-visible` but paints no `auto` outline, and Tab paints it; the release behaves the same way (FOCUS-FRAME's
+  P2 reading). A browser proof or frame that relies on the `auto` outline after a press reaches focus by Tab.
 - **Asked of you:** nothing new. Move your marker at your next boundary.
 
 ## Landing procedure
