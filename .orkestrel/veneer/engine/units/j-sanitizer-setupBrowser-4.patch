@@ -1,0 +1,466 @@
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 418d92c..56a636a 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1,5 +1,6 @@
+ import type { JourneyVariant, RecorderInterface } from '@orkestrel/test'
+ import type { PortfolioInterface, PortfolioOptions } from '@orkestrel/test/browser'
++import type { SanitizerConfig } from '@src/browser'
+ import type {
+ 	ButtonProjection,
+ 	ButtonReading,
+@@ -39,7 +40,7 @@ import {
+ 	waitForState,
+ } from '@orkestrel/test/browser'
+ import { commands, page, userEvent } from 'vitest/browser'
+-import { Delegate } from '@src/browser'
++import { Delegate, SANITIZER_ALLOWLIST, TOOLTIP_TEMPLATE } from '@src/browser'
+ import oracle from './fixtures/oracle/button.json'
+ import {
+ 	computeCroppedEdges,
+@@ -2272,3 +2273,445 @@ export function mountTraversalStart(): HTMLButtonElement {
+ 	control.focus()
+ 	return control
+ }
++
++/**
++ * Pairs one sanitizer configuration and one markup string with the markup a sanitizer keeps.
++ *
++ * @remarks
++ * The `expected` markup is what the platform's `setHTML` method keeps, read on Chromium 153, and
++ * the walk keeps the same wherever the `walked` markup is absent. A case carrying `walked` is one
++ * where the walk's safety floor removes more than the platform does, and `walked` is what it keeps.
++ */
++export interface SanitizerCase {
++	readonly name: string
++	readonly config?: SanitizerConfig
++	readonly markup: string
++	readonly expected: string
++	readonly walked?: string
++}
++
++/**
++ * Lists the markup a sanitizer must keep under each configuration, through the platform and through the walk.
++ *
++ * @remarks
++ * An absent `config` is the `SANITIZER_ALLOWLIST` default. Each expectation is a literal read from
++ * the platform rather than derived from the allowlist or the floor, so a sanitizer that drifts from
++ * either disagrees with it.
++ */
++export const SANITIZER_CASES: readonly SanitizerCase[] = Object.freeze([
++	{
++		name: 'the allowlist keeps its markup and drops scripts, handlers, data attributes, unlisted elements with their content, and a script URL',
++		markup:
++			'<p class="lead" id="p" dir="rtl" lang="fr" role="note" aria-label="Note" aria-describedby="p" data-x="1" onclick="alert(1)" style="color: red">' +
++			'<a href="https://example.com" target="_blank" rel="noopener" title="Site">Site</a>' +
++			'<a href="javascript:alert(2)">Bad</a>' +
++			'<img src="data:image/png;base64,AA==" alt="Dot" width="1" height="1" onerror="alert(3)">' +
++			'<mark>gone</mark><script>alert(4)</script><span aria-vendor="x">kept</span></p>',
++		expected:
++			'<p class="lead" id="p" dir="rtl" lang="fr" role="note" aria-label="Note" aria-describedby="p">' +
++			'<a href="https://example.com" target="_blank" rel="noopener" title="Site">Site</a>' +
++			'<a>Bad</a>' +
++			'<img src="data:image/png;base64,AA==" alt="Dot" width="1" height="1">' +
++			'<span>kept</span></p>',
++	},
++	{
++		name: 'a supplied configuration replaces the allowlist',
++		config: { elements: ['mark'], attributes: ['title'] },
++		markup: '<mark title="t" class="c">kept</mark><b>gone</b>',
++		expected: '<mark title="t">kept</mark>',
++	},
++	{
++		name: 'the omitted configuration keeps less than an empty dictionary does',
++		markup: '<p title="t" data-x="1"><mark>m</mark><span href="h">s</span></p>',
++		expected: '<p><span>s</span></p>',
++	},
++	{
++		name: 'an empty dictionary keeps every element and attribute the floor leaves',
++		config: {},
++		markup: '<p title="t" data-x="1"><mark>m</mark><span href="h">s</span></p>',
++		expected: '<p title="t" data-x="1"><mark>m</mark><span href="h">s</span></p>',
++	},
++	{
++		name: 'an element-scoped attribute survives only on the element that permits it',
++		markup:
++			'<span href="h" src="s" title="t" alt="a">s</span><b title="t">b</b><a href="https://example.com" title="t">a</a><img src="data:image/png;base64,AA==" title="t" alt="a">',
++		expected:
++			'<span>s</span><b>b</b><a href="https://example.com" title="t">a</a><img src="data:image/png;base64,AA==" title="t" alt="a">',
++	},
++	{
++		name: 'the tooltip template survives the allowlist whole',
++		markup: TOOLTIP_TEMPLATE,
++		expected: TOOLTIP_TEMPLATE,
++	},
++	{
++		name: 'a script URL loses its attribute however the scheme is spelled, and a relative, encoded, or data URL keeps it',
++		config: {},
++		markup:
++			'<a href="java&#9;script:a">t</a><a href="JAVASCRIPT:b">u</a><a href="&#1; javascript:c">v</a><a href="javascript&colon;d">w</a>' +
++			'<a href="%6Aavascript:e">x</a><a href="/help">y</a><a href="data:text/html,z">z</a>',
++		expected:
++			'<a>t</a><a>u</a><a>v</a><a>w</a>' +
++			'<a href="%6Aavascript:e">x</a><a href="/help">y</a><a href="data:text/html,z">z</a>',
++	},
++	{
++		name: 'the floor removes the base, iframe, object, and embed elements with their content',
++		config: {},
++		markup:
++			'<base href="https://example.com/"><iframe src="x">i</iframe><object data="x">o</object><embed src="x"><p>kept</p>',
++		expected: '<p>kept</p>',
++	},
++	{
++		name: 'the floor removes the SVG script and use elements',
++		config: {},
++		markup: '<svg><script>alert(1)</script><use href="#a"></use><g></g></svg>',
++		expected: '<svg><g></g></svg>',
++	},
++	{
++		name: 'the floor overrides a configuration that lists a script element, a handler, and a script URL',
++		config: { elements: ['a', 'script'], attributes: ['href', 'onclick'] },
++		markup: '<a href="javascript:x" onclick="y">a</a><script>alert(1)</script>',
++		expected: '<a>a</a>',
++	},
++	{
++		name: 'a form, a button, and an input lose a script URL action',
++		config: {},
++		markup:
++			'<form action="javascript:x"><button formaction="javascript:x">b</button><input formaction="javascript:x"></form>',
++		expected: '<form><button>b</button><input></form>',
++	},
++	{
++		name: 'SVG and MathML links lose a script URL, and an animation loses an attributeName naming a link',
++		config: {},
++		markup:
++			'<svg><a href="javascript:a">s</a><a xlink:href="javascript:b">t</a>' +
++			'<animate attributeName="href" values="x"></animate><set attributeName="xlink:href" to="x"></set>' +
++			'<animate attributeName="fill"></animate></svg><math><mi href="javascript:c">m</mi></math>',
++		expected:
++			'<svg><a>s</a><a>t</a><animate values="x"></animate><set to="x"></set>' +
++			'<animate attributeName="fill"></animate></svg><math><mi>m</mi></math>',
++	},
++	{
++		name: 'a kept template has its content sanitized, nested templates included',
++		config: {},
++		markup:
++			'<template><script>alert(1)</script><b onclick="alert(2)">t</b><template><iframe></iframe><i>n</i></template></template>',
++		expected: '<template><b>t</b><template><i>n</i></template></template>',
++	},
++	{
++		name: 'an empty dictionary removes a comment and keeps a noscript element with its content',
++		config: {},
++		markup: '<!--c--><noscript><b>x</b></noscript>',
++		expected: '<noscript><b>x</b></noscript>',
++	},
++	{
++		name: 'the allowlist removes a comment and a noscript element',
++		markup: '<!--c--><b>x</b><noscript><b>y</b></noscript>',
++		expected: '<b>x</b>',
++	},
++	{
++		name: 'every data attribute survives beside the attribute list when dataAttributes is true',
++		config: { attributes: ['class'], dataAttributes: true },
++		markup: '<b title="t" data-x="1" data-="2" class="c">a</b>',
++		expected: '<b data-x="1" data-="2" class="c">a</b>',
++	},
++	{
++		name: 'only a listed data attribute survives when dataAttributes is false',
++		config: { attributes: ['class', 'data-y'], dataAttributes: false },
++		markup: '<b title="t" data-x="1" data-y="2" class="c">a</b>',
++		expected: '<b data-y="2" class="c">a</b>',
++	},
++	{
++		name: 'an element list without an attribute list keeps every attribute of an element with no list of its own',
++		config: { elements: [{ name: 'b', attributes: ['title'] }, 'i'] },
++		markup: '<b title="t" data-x="1" class="c">a</b><i data-x="1" class="c">i</i>',
++		expected: '<b title="t">a</b><i data-x="1" class="c">i</i>',
++	},
++	{
++		name: 'an empty element list removes every element and keeps the text around them',
++		config: { elements: [] },
++		markup: 'text<b>x</b>tail',
++		expected: 'texttail',
++	},
++	{
++		name: 'an empty attribute list removes every attribute',
++		config: { attributes: [] },
++		markup: '<b title="t" class="c">x</b>',
++		expected: '<b>x</b>',
++	},
++	{
++		name: 'a listed element name matches an HTML element alone',
++		config: { elements: ['svg', 'a', 'b', 'math'] },
++		markup: '<svg><b>x</b></svg><svg><a title="t">y</a></svg><math><b>m</b></math>',
++		expected: '<b>x</b><b>m</b>',
++	},
++	{
++		name: 'a listed attribute name matches an attribute outside any namespace alone',
++		config: { attributes: ['xlink:href', 'title', 'href', 'xml:lang', 'lang'] },
++		markup:
++			'<b xlink:href="x" xml:lang="en" title="t">x</b><svg><a xlink:href="https://example.com" xlink:title="t">y</a></svg>',
++		expected: '<b xlink:href="x" xml:lang="en" title="t">x</b><svg><a>y</a></svg>',
++	},
++	{
++		name: 'table and select markup keeps the structure the parser builds',
++		config: {},
++		markup: '<select><option>o</option></select><table><tr><td>t</td></tr></table>',
++		expected:
++			'<select><option>o</option></select><table><tbody><tr><td>t</td></tr></tbody></table>',
++	},
++	{
++		name: 'an empty dictionary keeps the text of table parts a div context drops',
++		config: {},
++		markup: '<tr><td>x</td></tr><td>y</td><caption>c</caption>',
++		expected: 'xyc',
++	},
++	{
++		name: 'the allowlist keeps the text of table parts a div context drops',
++		markup: '<tr><td>x</td></tr><td>y</td><caption>c</caption>',
++		expected: 'xyc',
++	},
++	{
++		name: 'a form whose named control shadows attributes loses its handler and script URL under an empty dictionary',
++		config: {},
++		markup:
++			'<form onclick="alert(1)" action="javascript:alert(2)"><input name="attributes"><button>Submit</button></form>',
++		expected: '<form><input name="attributes"><button>Submit</button></form>',
++	},
++	{
++		name: 'a form whose named control shadows attributes loses its handler and script URL under a configuration that keeps forms',
++		config: { elements: ['form', 'input', 'button'], attributes: ['name', 'action'] },
++		markup:
++			'<form onclick="alert(1)" action="javascript:alert(2)"><input name="attributes"><button>Submit</button></form>',
++		expected: '<form><input name="attributes"><button>Submit</button></form>',
++	},
++	{
++		name: 'a form whose named control shadows childNodes loses its iframe under an empty dictionary',
++		config: {},
++		markup:
++			'<form><input name="childNodes"><iframe srcdoc="<script>alert(1)</script>"></iframe></form>',
++		expected: '<form><input name="childNodes"></form>',
++	},
++	{
++		name: 'a form whose named control shadows childNodes loses its iframe and unlisted elements under a configuration that keeps forms',
++		config: { elements: ['form', 'input', 'button'], attributes: ['name', 'action'] },
++		markup:
++			'<form><input name="childNodes"><iframe srcdoc="<script>alert(1)</script>"></iframe><b title="x">drop</b><!--c--></form>',
++		expected: '<form><input name="childNodes"></form>',
++	},
++	{
++		name: 'a form whose named control shadows nodeType loses its handler and script',
++		config: {},
++		markup: '<form onclick="alert(1)"><input name="nodeType"><script>alert(2)</script></form>',
++		expected: '<form><input name="nodeType"></form>',
++	},
++	{
++		name: 'a form whose named control shadows localName keeps only what a configuration that keeps forms lists',
++		config: { elements: ['form', 'input', 'button'], attributes: ['name', 'action'] },
++		markup:
++			'<form onclick="alert(1)"><input name="localName"><img src="x" onerror="alert(2)"></form>',
++		expected: '<form><input name="localName"></form>',
++	},
++	{
++		name: 'a form whose named control shadows namespaceURI keeps only what a configuration that keeps forms lists',
++		config: { elements: ['form', 'input', 'button'], attributes: ['name', 'action'] },
++		markup: '<form><input name="namespaceURI"><b>x</b></form>',
++		expected: '<form><input name="namespaceURI"></form>',
++	},
++	{
++		name: 'a form whose named control shadows remove is removed by the allowlist',
++		markup: '<form><input name="remove"></form><b>x</b>',
++		expected: '<b>x</b>',
++	},
++	{
++		name: 'a form whose named control shadows removeChild loses its iframe',
++		config: {},
++		markup: '<form><input name="removeChild"><iframe></iframe></form>',
++		expected: '<form><input name="removeChild"></form>',
++	},
++	{
++		name: 'a form whose named controls shadow removeAttributeNode, getAttributeNames, and getAttributeNode loses its handler',
++		config: {},
++		markup:
++			'<form onclick="alert(1)"><input name="removeAttributeNode"><input name="getAttributeNames"><input name="getAttributeNode"></form>',
++		expected:
++			'<form><input name="removeAttributeNode"><input name="getAttributeNames"><input name="getAttributeNode"></form>',
++	},
++	{
++		name: 'a form inside a kept template whose named control shadows content loses its handler and script',
++		config: {},
++		markup:
++			'<template><form onclick="alert(1)"><input name="content"><script>alert(2)</script></form></template>',
++		expected: '<template><form><input name="content"></form></template>',
++	},
++	{
++		name: 'an attribute list without dataAttributes removes an unlisted data attribute',
++		config: { attributes: ['title'] },
++		markup: '<b data-x="1" title="t">x</b>',
++		expected: '<b title="t">x</b>',
++	},
++	{
++		name: 'the floor removes an animation attributeName naming action, where the platform keeps it',
++		config: {},
++		markup: '<svg><animate attributeName="action"></animate></svg>',
++		expected: '<svg><animate attributeName="action"></animate></svg>',
++		walked: '<svg><animate></animate></svg>',
++	},
++	{
++		name: 'a template inside svg is an SVG element whose children lose a handler',
++		config: {},
++		markup: '<svg><template><g onclick="alert(1)"></g></template></svg>',
++		expected: '<svg><template><g></g></template></svg>',
++	},
++	{
++		name: 'a template inside math is a MathML element whose children lose a handler',
++		config: {},
++		markup: '<math><template><mi onclick="alert(1)">x</mi></template></math>',
++		expected: '<math><template><mi>x</mi></template></math>',
++	},
++	{
++		name: 'an empty dictionary keeps a style element and a style attribute',
++		config: {},
++		markup: '<style>b { color: red }</style><b style="color: red">x</b>',
++		expected: '<style>b { color: red }</style><b style="color: red">x</b>',
++	},
++	{
++		name: 'the allowlist removes a style element and a style attribute',
++		markup: '<style>b { color: red }</style><b style="color: red">x</b>',
++		expected: '<b>x</b>',
++	},
++	{
++		name: 'an empty dictionary keeps a meta element that refreshes',
++		config: {},
++		markup: '<meta http-equiv="refresh" content="0;url=/help"><b>x</b>',
++		expected: '<meta http-equiv="refresh" content="0;url=/help"><b>x</b>',
++	},
++	{
++		name: 'malformed markup keeps the structure the parser repairs it to',
++		markup: '<b><i>x</b>y',
++		expected: '<b><i>x</i></b><i>y</i>',
++	},
++	{
++		name: 'empty markup leaves the target empty',
++		markup: '',
++		expected: '',
++	},
++	{
++		name: 'the floor removes every attribute whose name starts with on, where the platform removes only the handler names it knows',
++		config: {},
++		markup: '<div onfoo="x" onclick="y">d</div>',
++		expected: '<div onfoo="x">d</div>',
++		walked: '<div>d</div>',
++	},
++	{
++		name: 'the floor removes a script URL from a navigating attribute on any element, where the platform checks only the elements that navigate',
++		config: { elements: ['a', 'div'], attributes: ['href', 'action', 'formaction'] },
++		markup:
++			'<div action="javascript:a" formaction="javascript:b">d</div><a href="javascript:c" formaction="javascript:d">a</a>',
++		expected:
++			'<div action="javascript:a" formaction="javascript:b">d</div><a formaction="javascript:d">a</a>',
++		walked: '<div>d</div><a>a</a>',
++	},
++	{
++		name: 'a declarative shadow root stays a template element on the walk, where the platform attaches it',
++		config: {},
++		markup: '<div><template shadowrootmode="open"><b>s</b></template></div>',
++		expected: '<div></div>',
++		walked: '<div><template shadowrootmode="open"><b>s</b></template></div>',
++	},
++])
++
++/**
++ * Lists sanitizer configurations the platform's `setHTML` method accepts and refuses, read on Chromium 153.
++ *
++ * @remarks
++ * Every entry is a well-formed dictionary, so each refusal is one of the platform's validity rules
++ * rather than a type conversion: a `dataAttributes` field without an `attributes` list, a
++ * duplicate name, an element's own attribute that the global list repeats, and a `data-*` name
++ * listed beside `dataAttributes: true`.
++ */
++export const SANITIZER_CONFIGS: readonly SanitizerConfig[] = Object.freeze([
++	{},
++	{ elements: [] },
++	{ attributes: [] },
++	{ elements: ['b'], attributes: ['title'] },
++	{ elements: [{ name: 'b', attributes: ['title'] }] },
++	{ elements: [{ name: 'b', attributes: [] }], attributes: ['title'] },
++	{ attributes: ['title'], dataAttributes: true },
++	{ attributes: ['title'], dataAttributes: false },
++	{ attributes: ['data-x'], dataAttributes: false },
++	{ elements: ['script'], attributes: ['onclick'] },
++	{ dataAttributes: true },
++	{ dataAttributes: false },
++	{ elements: [{ name: 'b' }], dataAttributes: true },
++	{ attributes: ['data-x'], dataAttributes: true },
++	{ elements: [{ name: 'b', attributes: ['data-x'] }], attributes: [], dataAttributes: true },
++	{ elements: ['b', 'b'] },
++	{ elements: ['b', { name: 'b' }] },
++	{ attributes: ['title', 'title'] },
++	{ elements: [{ name: 'b', attributes: ['title', 'title'] }] },
++	{ elements: [{ name: 'b', attributes: ['title'] }], attributes: ['title'] },
++	SANITIZER_ALLOWLIST,
++])
++
++/**
++ * Builds a detached element whose own `setHTML` member is undefined, so a sanitizer writing into it walks the markup.
++ *
++ * @param tag - The element's tag name, such as `div`.
++ * @returns The built element, not yet in any document.
++ *
++ * @remarks
++ * The own property shadows the prototype's method on this element alone, so the element reads to the
++ * `isSanitizeTarget` guard as every element does on a Chromium that carries no `setHTML` method, such
++ * as Chromium 141, while every other element of the page keeps the method.
++ *
++ * @example
++ * ```ts
++ * new ConfigSanitizer().write(buildWalkTarget('div'), '<b>Saved</b>')
++ * ```
++ */
++export function buildWalkTarget<K extends keyof HTMLElementTagNameMap>(
++	tag: K,
++): HTMLElementTagNameMap[K] {
++	return shadowSetHTML(build(tag))
++}
++
++/**
++ * Shadows an element's `setHTML` method with an own member that is undefined, so a sanitizer writing into it walks the markup.
++ *
++ * @param element - The element to shadow the method on, from this window's document or another's.
++ * @returns The same element.
++ *
++ * @remarks
++ * The `buildWalkTarget` function builds a detached HTML element this way. Call this function for an
++ * element that function cannot build, such as a MathML element or an element of another window's
++ * document.
++ *
++ * @example
++ * ```ts
++ * shadowSetHTML(document.createElementNS('http://www.w3.org/1998/Math/MathML', 'annotation-xml'))
++ * ```
++ */
++export function shadowSetHTML<T extends Element>(element: T): T {
++	Object.defineProperty(element, 'setHTML', { value: undefined })
++	return element
++}
++
++/**
++ * Mounts an empty iframe element and returns its document, a document of another window.
++ *
++ * @returns The iframe element's document, inside a container {@link scene} removes for you.
++ *
++ * @remarks
++ * A node the returned document creates belongs to the iframe element's window, so this window's
++ * constructors do not recognise it. A case that proves a mechanism works without this window's
++ * constructors writes into such a node.
++ *
++ * @example
++ * ```ts
++ * const target = shadowSetHTML(mountFrameDocument().createElement('template'))
++ * ```
++ */
++export function mountFrameDocument(): Document {
++	const host = scene.mount('<iframe></iframe>')
++	const frame = requireValue(host.querySelector('iframe'), 'The mounted host renders no iframe')
++	return requireValue(frame.contentDocument, 'The mounted iframe has no document')
++}

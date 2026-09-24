@@ -1,0 +1,34 @@
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 5630d57..e185f7c 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -875,10 +875,13 @@ describe('browser setup', () => {
+ 				'ORACLE_ACTIONS',
+ 				'ORACLE_EXCLUDED',
+ 				'PROBE_CASCADE',
++				'SANITIZER_CASES',
++				'SANITIZER_CONFIGS',
+ 				'SPECIMEN_ATTRIBUTE',
+ 				'SceneManager',
+ 				'applyTheme',
+ 				'buildOracleComparison',
++				'buildWalkTarget',
+ 				'collectCustomProperties',
+ 				'collectLayer',
+ 				'collectLayerOrder',
+@@ -895,6 +898,7 @@ describe('browser setup', () => {
+ 				'measureVariation',
+ 				'mountBadge',
+ 				'mountClose',
++				'mountFrameDocument',
+ 				'mountPagination',
+ 				'mountShowcase',
+ 				'mountTrail',
+@@ -917,6 +921,7 @@ describe('browser setup', () => {
+ 				'recordState',
+ 				'scanPositionalPairs',
+ 				'scene',
++				'shadowSetHTML',
+ 				'visitBreakpoint',
+ 			].sort(),
+ 		)
