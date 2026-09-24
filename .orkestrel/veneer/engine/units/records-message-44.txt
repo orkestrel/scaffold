@@ -1,0 +1,14 @@
+Close the J-BINDER-PRECEDENCE round-3 audit and open its round 5
+
+The precedence unit's round-3 audit reconciles Opus 5.5 on the objective lane, Astra on the
+subjective lane, and the checker: the bounded precedence sentence, the removal bound, the three
+pinned interleavings, the presence proofs, and the readTag guard hold on every path a write does
+not throw; the objective lane found the one path where a throwing inner restoration withdraws an
+earliest recording it replaced so no restoration writes the target back, and the readTag return
+sentence missing the cross-realm element; the Orchestrator's replay reproduces every mutation row
+with every source restored. Round 5 on Astra lands the two sentences in the lane's wording with
+the two cases pinned; its audit is the checker plus the Orchestrator's gates and replay, the lanes
+not run for that recorded reason; the landing follows. The baseline landed the navbar cascade key
+and re-pinned test 0.0.21 on Veneer main, recorded in the plan. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
