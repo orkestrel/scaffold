@@ -80,6 +80,11 @@ UNITS = {
         focus='claims 2, 3, and 5 (each proof against its mutation and its red run, the negative control, the unfiltered journey runs, and the unreachable-state probe)',
         checker='claims 1, 3, and 7',
         bench='the bench round-tripped at 14:30 (fu-audit-2 and fo-audit-2 running through this queue)'),
+    'fp': dict(name='PASSIVE-FRAMES', worktree='/home/user/veneer-fp', base='cf5e447',
+        evidence='`fp-2.diff` and `fp-2-status.txt` (both rounds against `cf5e447`), `fp-shared-2.patch`, `b-passive-frames-report-2.md`, `b-passive-frames-brief-2.md`, `fp-instruments/` (the round-2 records: `fp-mutations-2.log.txt`, `fp-mutate-2.py`, `fp-mutate-2-run.log.txt`, `fp-gate-2.sh`, and the `fp-2-*.log.txt` gate logs), round 1\'s `fp.diff`, `fp-shared.patch`, and `b-passive-frames-report.md`, the round-1 verdict `fp-audit-verdict.md` and its lane verdicts, and the frames under `/home/user/veneer-fp/tmp/capture/states/`',
+        focus='claims 2, 3, 4, 5, and 6 (each proof against its mutation, the contrast bar and its readings, the derived populations and their cascade bindings, and the spinner mutation)',
+        checker='claims 1, 5, and 8',
+        bench='the bench round-tripped at 14:39 (fr-audit-2 returned exit 0) and lc-audit runs through this queue'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"
