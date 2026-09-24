@@ -1,0 +1,18 @@
+Ship the background, border, and rounded keys with their sections and proofs
+
+The background, border, and rounded keys ship in the utilities layer through the utility and
+utility-variable mixins, every property declaration important as the release writes it: the fills walk
+the aliased roles and their subtle and emphasis tiers, the opacity locals sit at the empty infix, the
+border widths read the width steps, and the rounded entries read the radius tokens beside the border
+entries. The Background and Border regions render captioned swatches through one shared helper, each
+swatch that would match the page drawn with a border or a fill that shows it. The Tailwind profiles
+proof compares each profile's whole layer order, the case tables live in the setup file, frozen and
+bound by derivation, each named mutation turns its case red, and the guide carries both sections, their
+compatibility rows, and the paint names off the Tailwind exclusion line.
+
+B-UTILITIES wave 3, unit UTIL-PAINT: three rounds on `opus`, the first audited by `analyst` on Astra,
+`reviewer` on Opus 5.5, and `checker`, the second by `analyst` on Astra and `checker`, and the
+third, a prose round, by `checker`.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
