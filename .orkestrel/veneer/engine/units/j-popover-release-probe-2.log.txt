@@ -1,0 +1,6 @@
+digest before: 7d8a2fa9fc01a74ed14e23b3721f1df5ea21c8bf021a9322567427a45f591885
+HELD exit=0 | a slot write stops without releasing | 2 passed | 55 skipped (57)
+HELD exit=0 | the release step stops without releasing | 2 passed | 55 skipped (57)
+GREEN? exit=0 | unmutated | 2 passed | 55 skipped (57)
+digest after: 7d8a2fa9fc01a74ed14e23b3721f1df5ea21c8bf021a9322567427a45f591885
+receipt: restored byte for byte
