@@ -1,0 +1,42 @@
+C1 .offcanvas-sm fill priority swapped between its conditions in the built cascade
+  1
+  ['Test Files  1 failed (1)', 'Tests  1 failed | 23 passed (24)']
+  FAIL  |conformance| tests/conformance.test.ts > declaration priority > compares each declaration's priority on both sheets at its selector, property, and condition
+  AssertionError: expected [ …(2) ] to deeply equal []
+C2 print row removed from the Media conditions table
+  1
+  ['Test Files  1 failed (1)', 'Tests  1 failed | 23 passed (24)']
+  FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+  AssertionError: expected [ '(forced-colors: active)', …(13) ] to deeply equal [ '(forced-colors: active)', …(12) ]
+C2g print row removed, guides gate
+  0
+  ['Test Files  1 passed (1)', 'Tests  19 passed (19)']
+C3 placeholder-wave row removed from the Keyframes table
+  1
+  ['Test Files  1 failed (1)', 'Tests  1 failed | 23 passed (24)']
+  FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+  AssertionError: expected [ 'placeholder-glow', …(3) ] to deeply equal [ 'placeholder-glow', …(4) ]
+C4 placeholder-glow Key cell set to spinner
+  1
+  ['Test Files  1 failed (1)', 'Tests  1 failed | 23 passed (24)']
+  FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+  AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+C5 @keyframes placeholder-wave deleted from the built cascade
+  1
+  ['Test Files  1 failed (1)', 'Tests  2 failed | 22 passed (24)']
+  FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector and custom property in the built cascade
+  FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+  AssertionError: expected 'Shipped component placeholder is miss…' to be undefined
+  AssertionError: expected [ 'placeholder-glow', …(4) ] to deeply equal [ 'placeholder-glow', …(3) ]
+C6 an unrecorded (min-width: 600px) condition planted in the built cascade
+  1
+  ['Test Files  1 failed (1)', 'Tests  1 failed | 23 passed (24)']
+  FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+  AssertionError: expected [ '(forced-colors: active)', …(14) ] to deeply equal [ '(forced-colors: active)', …(13) ]
+C7 feature spacing left as the sheet writes it (scratch setupServer)
+  1
+  ['Test Files  1 failed (1)', 'Tests  2 failed | 22 passed (24)']
+  FAIL  |conformance| tests/conformance.test.ts > declaration priority > compares each declaration's priority on both sheets at its selector, property, and condition
+  FAIL  |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+  AssertionError: expected [ ':root { --bs-blue }', …(3961) ] to deeply equal ArrayContaining{…}
+  AssertionError: expected [ '(forced-colors: active)', …(13) ] to deeply equal [ '(forced-colors: active)', …(13) ]

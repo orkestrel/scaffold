@@ -1,0 +1,17 @@
+
+> @orkestrel/veneer@0.0.1 test:probe
+> vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe
+
+
+ RUN  v4.1.11 /home/user/veneer-cf/tmp/probe/cf-copy
+
+stdout | tmp/probe/cf-ladder.test.ts > reads the key the ladder answers for each recorded transition selector
+{"shipped":true,"answers":[[".fade",["transition"],"transition"],[".fade:not(.show)",["transition"],"transition"],[".modal.fade .modal-dialog",["transition","modal"],"modal"],[".modal-backdrop.fade",["transition","modal"],"modal"],[".offcanvas-backdrop.fade",["transition","offcanvas"],"offcanvas"]]}
+
+ ✓ |probe| tmp/probe/cf-ladder.test.ts > reads the key the ladder answers for each recorded transition selector 495ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  04:44:03
+   Duration  2.13s (transform 584ms, setup 121ms, import 1.35s, tests 496ms, environment 0ms)
+

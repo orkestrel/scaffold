@@ -1,0 +1,10 @@
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1489,6 +1489,7 @@
+ 				'toast',
+ 				'tooltip',
+ 				'top',
++				'transition',
+ 				'translate-middle',
+ 				'valid-feedback',
+ 				'valid-tooltip',

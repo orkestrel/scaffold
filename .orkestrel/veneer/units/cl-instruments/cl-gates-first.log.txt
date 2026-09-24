@@ -1,0 +1,62 @@
+=== npm run format:check
+exit 0
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 11734ms on 415 files using 4 threads.
+=== npm run lint:check
+exit 0
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+=== npm run check
+exit 0
+> npm run check:app:browser
+
+
+> @orkestrel/veneer@0.0.1 check:app:browser
+> vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+
+=== npm run build:src
+exit 0
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  241.54 kB │ gzip: 30.05 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 2.17s
+=== npm run test:setup
+exit 0
+
+ Test Files  4 passed (4)
+      Tests  295 passed (295)
+   Start at  04:54:20
+   Duration  16.22s (transform 2.31s, setup 522ms, import 8.84s, tests 22.34s, environment 2ms)
+
+=== npm run test:conformance
+exit 0
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  04:54:38
+   Duration  20.23s (transform 398ms, setup 102ms, import 10.42s, tests 9.49s, environment 0ms)
+
+=== npm run test:guides
+exit 0
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  04:54:59
+   Duration  2.10s (transform 581ms, setup 189ms, import 1.63s, tests 105ms, environment 0ms)
+
+=== npm run test:policy
+exit 0
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  04:55:03
+   Duration  3.28s (transform 525ms, setup 229ms, import 651ms, tests 2.19s, environment 0ms)
+

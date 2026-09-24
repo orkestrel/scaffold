@@ -1,0 +1,67 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-cf/tmp/probe/cf-copy
+
+···························stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-IYAXow'
+    at finishWithoutResolve (/home/user/veneer-cf/tmp/probe/cf-copy/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-cf/tmp/probe/cf-copy/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-cf/tmp/probe/cf-copy/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-cf/tmp/probe/cf-copy/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-cf/tmp/probe/cf-copy/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-cf/tmp/probe/cf-copy/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-cf/tmp/probe/cf-copy/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-cf/tmp/probe/cf-copy/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-cf/tmp/probe/cf-copy/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-cf/tmp/probe/cf-copy/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-IYAXow'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-IYAXow or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-IYAXow/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+·········································································································································································································x··························································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > skips engine and CSS obligations whose Proof cell is a dash
+AssertionError: expected Set{ 'g', 'gx', 'gy', …(115) } to deeply equal Set{ 'accordion', 'alert', …(115) }
+
+- Expected
++ Received
+
+@@ -102,10 +102,11 @@
+    "stretched-link",
+    "table",
+    "toast",
+    "tooltip",
+    "top",
++   "transition",
+    "translate-middle",
+    "valid-feedback",
+    "valid-tooltip",
+    "vh",
+    "visible",
+
+ ❯ tests/setupServer.test.ts:1385:53
+    1383|     row.proof === undefined,
+    1384|   )
+    1385|   expect(new Set(rows.map((row) => row.component))).toEqual(
+       |                                                     ^
+    1386|    new Set([
+    1387|     'accordion',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 286 passed (287)
+   Start at  05:02:20
+   Duration  15.64s (transform 2.97s, setup 242ms, import 8.35s, tests 23.36s, environment 2ms)
+

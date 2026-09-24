@@ -1,0 +1,243 @@
+=== M1 the :not(.show) state dropped
+site: src/styles/components/_fade.scss, the .fade:not(.show) rule
+diff:
+@@ -19,7 +19,4 @@
+ 		@include transition(opacity var(--vn-motion-feedback) linear);
+ 	}
+ 
+-	.fade:not(.show) {
+-		opacity: 0;
+-	}
+ }
+command: npm run build:src && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  5 failed | 3 passed (8)
+failing cases:
+  - writes the recorded fade selectors and no other rule on the fade and show classes alone
+  - declares the transition over the motion token, no transition under the reduced-motion condition, and the hidden opacity
+  - hides an element carrying the fade class until the show class joins it, and keeps the hidden box and hit target
+  - fades each component the release animates, and leaves each shown component its own opacity
+  - resolves every state the same inside a dark island as inside a light one
+
+=== M2 the duration written as a literal
+site: src/styles/components/_fade.scss, the .fade rule
+diff:
+@@ -16,7 +16,7 @@
+ 	// collapse rules, so on an element carrying the `fade` class and the `collapsing` class the
+ 	// `.collapsing` rule's transition wins the tie at equal specificity.
+ 	.fade {
+-		@include transition(opacity var(--vn-motion-feedback) linear);
++		@include transition(opacity 0.15s linear);
+ 	}
+ 
+ 	.fade:not(.show) {
+command: npm run build:src && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  2 failed | 6 passed (8)
+failing cases:
+  - declares the transition over the motion token, no transition under the reduced-motion condition, and the hidden opacity
+  - rescales the transition with the published motion factor
+
+=== M3 the reduced-motion twin dropped
+site: src/styles/components/_fade.scss, the .fade rule
+diff:
+@@ -16,7 +16,7 @@
+ 	// collapse rules, so on an element carrying the `fade` class and the `collapsing` class the
+ 	// `.collapsing` rule's transition wins the tie at equal specificity.
+ 	.fade {
+-		@include transition(opacity var(--vn-motion-feedback) linear);
++		transition: opacity var(--vn-motion-feedback) linear;
+ 	}
+ 
+ 	.fade:not(.show) {
+command: npm run build:src && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  2 failed | 6 passed (8)
+failing cases:
+  - declares the transition over the motion token, no transition under the reduced-motion condition, and the hidden opacity
+  - transitions the opacity linearly over the feedback duration and collapses the transition under the reduced-motion preference
+
+=== M4 the partial loaded after collapse
+site: src/styles/index.scss, the fade and collapse @use lines
+diff:
+@@ -57,8 +57,8 @@
+ @use 'components/form-floating';
+ @use 'components/input-group';
+ @use 'components/validation';
+-@use 'components/fade';
+ @use 'components/collapse';
++@use 'components/fade';
+ @use 'components/dropdown';
+ @use 'components/button-group';
+ @use 'components/nav';
+command: npm run build:src && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  1 failed | 7 passed (8)
+failing cases:
+  - yields the transition to the collapsing rule on an element carrying the fade and collapsing classes
+command: npm run test:conformance
+conformance exit: 1
+summary: Tests  1 failed | 21 passed (22)
+failing cases:
+  - Bootstrap source order > loads the passive block and the helpers in the release order, after every forms partial, each important helper ahead of the utilities
+
+=== Control, no mutation
+site: none
+diff:
+command: npm run build:src && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+build exit: 0
+test exit: 0
+summary: Tests  8 passed (8)
+failing cases:
+
+=== M5 the hidden state written as a bare .fade rule
+site: src/styles/components/_fade.scss, the .fade:not(.show) rule
+diff:
+@@ -19,7 +19,7 @@
+ 		@include transition(opacity var(--vn-motion-feedback) linear);
+ 	}
+ 
+-	.fade:not(.show) {
++	.fade {
+ 		opacity: 0;
+ 	}
+ }
+command: npm run build:src && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  5 failed | 3 passed (8)
+failing cases:
+  - writes the recorded fade selectors and no other rule on the fade and show classes alone
+  - declares the transition over the motion token, no transition under the reduced-motion condition, and the hidden opacity
+  - hides an element carrying the fade class until the show class joins it, and keeps the hidden box and hit target
+  - fades each component the release animates, and leaves each shown component its own opacity
+  - resolves every state the same inside a dark island as inside a light one
+
+=== M6 an added .fade.show rule
+site: src/styles/components/_fade.scss, after the .fade:not(.show) rule
+diff:
+@@ -22,4 +22,8 @@
+ 	.fade:not(.show) {
+ 		opacity: 0;
+ 	}
++
++	.fade.show {
++		opacity: 1;
++	}
+ }
+command: npm run build:src && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  1 failed | 7 passed (8)
+failing cases:
+  - writes the recorded fade selectors and no other rule on the fade and show classes alone
+
+=== M7 the hidden state taken out of hit testing
+site: src/styles/components/_fade.scss, the .fade:not(.show) rule
+diff:
+@@ -21,5 +21,6 @@
+ 
+ 	.fade:not(.show) {
+ 		opacity: 0;
++		pointer-events: none;
+ 	}
+ }
+command: npm run build:src && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  1 failed | 7 passed (8)
+failing cases:
+  - hides an element carrying the fade class until the show class joins it, and keeps the hidden box and hit target
+
+=== M8 a dark-mode retune of the hidden state
+site: src/styles/components/_fade.scss, after the .fade:not(.show) rule
+diff:
+@@ -22,4 +22,8 @@
+ 	.fade:not(.show) {
+ 		opacity: 0;
+ 	}
++
++	[data-bs-theme='dark'] .fade:not(.show) {
++		opacity: 0.5;
++	}
+ }
+command: npm run build:src && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/fade.test.ts
+build exit: 0
+test exit: 1
+summary: Tests  2 failed | 6 passed (8)
+failing cases:
+  - writes the recorded fade selectors and no other rule on the fade and show classes alone
+  - resolves every state the same inside a dark island as inside a light one
+
+=== S1 the shown specimen drops the show class
+site: app/browser/constants.ts, TRANSITION_SPECIMENS Fade shown
+diff:
+@@ -2181,7 +2181,7 @@
+ 	Object.freeze({
+ 		name: 'Fade shown',
+ 		markup:
+-			'<div class="card"><div class="card-header">Notice 12</div><div class="card-body fade show">The north pier reopens to cargo at noon.</div></div>',
++			'<div class="card"><div class="card-header">Notice 12</div><div class="card-body fade">The north pier reopens to cargo at noon.</div></div>',
+ 	}),
+ 	Object.freeze({
+ 		name: 'Fade hidden',
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/FadeSection.test.ts
+build exit: skipped
+test exit: 1
+summary: Tests  2 failed | 1 passed (3)
+failing cases:
+  - renders the declared fade specimens through the shared section contract
+  - renders each body in the state its specimen names, inside a card that keeps its box
+
+=== S2 the hidden specimen gains the show class
+site: app/browser/constants.ts, TRANSITION_SPECIMENS Fade hidden
+diff:
+@@ -2186,7 +2186,7 @@
+ 	Object.freeze({
+ 		name: 'Fade hidden',
+ 		markup:
+-			'<div class="card"><div class="card-header">Notice 13</div><div class="card-body fade" aria-hidden="true">The south pier closes for repairs at dusk.</div></div>',
++			'<div class="card"><div class="card-header">Notice 13</div><div class="card-body fade show" aria-hidden="true">The south pier closes for repairs at dusk.</div></div>',
+ 	}),
+ ])
+ 
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/FadeSection.test.ts
+build exit: skipped
+test exit: 1
+summary: Tests  2 failed | 1 passed (3)
+failing cases:
+  - renders the declared fade specimens through the shared section contract
+  - renders each body in the state its specimen names, inside a card that keeps its box
+
+=== S3 the hidden body taken out of the flow
+site: app/browser/constants.ts, TRANSITION_SPECIMENS Fade hidden
+diff:
+@@ -2186,7 +2186,7 @@
+ 	Object.freeze({
+ 		name: 'Fade hidden',
+ 		markup:
+-			'<div class="card"><div class="card-header">Notice 13</div><div class="card-body fade" aria-hidden="true">The south pier closes for repairs at dusk.</div></div>',
++			'<div class="card"><div class="card-header">Notice 13</div><div class="card-body fade d-none" aria-hidden="true">The south pier closes for repairs at dusk.</div></div>',
+ 	}),
+ ])
+ 
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/FadeSection.test.ts
+build exit: skipped
+test exit: 1
+summary: Tests  1 failed | 2 passed (3)
+failing cases:
+  - renders each body in the state its specimen names, inside a card that keeps its box
+
+=== Section control, no mutation
+site: none
+diff:
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/FadeSection.test.ts
+build exit: skipped
+test exit: 0
+summary: Tests  3 passed (3)
+failing cases:
+

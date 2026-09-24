@@ -1,0 +1,24 @@
+{
+ "swap": {
+  "label": "C1 .offcanvas-sm fill priority swapped between its conditions in the built cascade",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "dist/src/styles/index.css",
+  "script": "test:conformance",
+  "old": [
+   "@media (width<576px){.offcanvas-sm{z-index:var(--bs-offcanvas-zindex);max-width:100%;color:var(--bs-offcanvas-color);visibility:hidden;background-color:var(--bs-offcanvas-bg);",
+   ".offcanvas-sm{--bs-offcanvas-height:auto;--bs-offcanvas-border-width:0;background-color:#0000!important}"
+  ],
+  "new": [
+   "@media (width<576px){.offcanvas-sm{z-index:var(--bs-offcanvas-zindex);max-width:100%;color:var(--bs-offcanvas-color);visibility:hidden;background-color:var(--bs-offcanvas-bg)!important;",
+   ".offcanvas-sm{--bs-offcanvas-height:auto;--bs-offcanvas-border-width:0;background-color:#0000}"
+  ]
+ },
+ "case": {
+  "label": "C1b control: the 42fd88e set comparison (release read through readBootstrapCascade) over the unmodified cascade",
+  "root": "/home/user/veneer-cl/tmp/probe/cl-scratch",
+  "path": "tests/conformance.test.ts",
+  "script": "test:conformance",
+  "old": "\tit(\"compares each declaration's priority on both sheets at its selector, property, and condition\", () => {\n\t\tconst release = collectDeclarationPriorities(\n\t\t\tnew SheetReader(readBootstrapCascade()).declarations,\n\t\t)\n\t\tconst cascade = collectDeclarationPriorities(new SheetReader(readBuiltCascade()).declarations)\n\t\tconst compared = [...release.keys()].filter((key) => cascade.has(key))\n\t\texpect(compared).toEqual(\n\t\t\texpect.arrayContaining([\n\t\t\t\t'.offcanvas-sm { background-color } (width < 576px)',\n\t\t\t\t'.offcanvas-sm { background-color } (width >= 576px)',\n\t\t\t]),\n\t\t)\n\t\texpect(\n\t\t\tcompared.flatMap((key) => {\n\t\t\t\tconst written = release.get(key) ?? []\n\t\t\t\tconst carried = cascade.get(key) ?? []\n\t\t\t\treturn written.join() === carried.join()\n\t\t\t\t\t? []\n\t\t\t\t\t: [\n\t\t\t\t\t\t\t`${key}: release ${written.map((entry) => (entry ? 'important' : 'normal')).join(' and ')}, cascade ${carried.map((entry) => (entry ? 'important' : 'normal')).join(' and ')}`,\n\t\t\t\t\t\t]\n\t\t\t}),\n\t\t).toEqual([])\n\t})\n",
+  "new": "\tit(\"compares each sheet's set of priorities for every selector and property both sheets declare\", () => {\n\t\tconst release = new SheetReader(\n\t\t\treadBootstrapCascade(),\n\t\t)\n\t\tconst cascade = new SheetReader(readBuiltCascade())\n\t\tconst written = new Map<string, ReadonlySet<boolean>>()\n\t\tfor (const declaration of release.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\twritten.set(pair, new Set([...(written.get(pair) ?? []), declaration.important]))\n\t\t}\n\t\tconst shipped = new Map<string, ReadonlySet<boolean>>()\n\t\tfor (const declaration of cascade.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\tshipped.set(pair, new Set([...(shipped.get(pair) ?? []), declaration.important]))\n\t\t}\n\t\tconst mismatches: string[] = []\n\t\tlet compared = 0\n\t\tfor (const [pair, priorities] of written) {\n\t\t\tconst carried = shipped.get(pair)\n\t\t\tif (carried === undefined) continue\n\t\t\tcompared += 1\n\t\t\tif (priorities.size !== carried.size || [...priorities].some((entry) => !carried.has(entry)))\n\t\t\t\tmismatches.push(\n\t\t\t\t\t`${pair}: release ${[...priorities].map((entry) => (entry ? 'important' : 'normal')).join(' and ')}, cascade ${[...carried].map((entry) => (entry ? 'important' : 'normal')).join(' and ')}`,\n\t\t\t\t)\n\t\t}\n\t\texpect(compared).toBeGreaterThan(0)\n\t\texpect(mismatches).toEqual([])\n\t})\n"
+ }
+}

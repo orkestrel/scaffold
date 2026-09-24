@@ -1,0 +1,64 @@
+=== npm run format:check
+exit 0
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 10677ms on 415 files using 4 threads.
+=== npm run lint:check
+exit 0
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+=== npm run check
+exit 0
+> npm run check:app:browser
+
+
+> @orkestrel/veneer@0.0.1 check:app:browser
+> vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+
+=== npm run build:src
+exit 0
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  241.54 kB │ gzip: 30.05 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.68s
+=== npm run test:setup
+exit 0
+
+ Test Files  4 passed (4)
+      Tests  295 passed (295)
+   Start at  05:09:31
+   Duration  19.88s (transform 3.95s, setup 481ms, import 11.51s, tests 28.84s, environment 0ms)
+
+=== npm run test:conformance
+exit 0
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  05:09:52
+   Duration  20.40s (transform 516ms, setup 116ms, import 11.03s, tests 9.07s, environment 0ms)
+
+=== npm run test:guides
+exit 0
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  05:10:14
+   Duration  1.67s (transform 493ms, setup 159ms, import 1.22s, tests 87ms, environment 0ms)
+
+=== npm run test:policy
+exit 0
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  05:10:17
+   Duration  2.48s (transform 215ms, setup 104ms, import 394ms, tests 1.82s, environment 0ms)
+
+=== lint instrument control (scratch): a planted tests/cl-plant.ts carrying `export const PLANT: any = 1`
+oxlint --config .oxlintrc.json --deny-warnings . -> exit 1, "tests/cl-plant.ts:1:21: error typescript(no-explicit-any)"; plant removed -> exit 0

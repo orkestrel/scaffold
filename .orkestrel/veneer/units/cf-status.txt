@@ -1,0 +1,4 @@
+?? app/browser/sections/FadeSection.ts
+?? src/styles/components/_fade.scss
+?? tests/app/browser/sections/FadeSection.test.ts
+?? tests/src/styles/components/fade.test.ts

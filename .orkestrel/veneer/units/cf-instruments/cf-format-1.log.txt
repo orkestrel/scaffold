@@ -1,0 +1,7 @@
+
+> @orkestrel/veneer@0.0.1 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+Expected at least one target file. All matched files may have been excluded by ignore rules.
