@@ -1,0 +1,201 @@
+=== mutation text-reads-token on src/styles/utilities/_color.scss; proofs ['retune']; files ['tests/src/styles/utilities/color.test.ts']; -t "retunes a role color from the fill, the body text, and the emphasis token"
+=== file diff against HEAD while mutated:
+diff --git a/src/styles/utilities/_color.scss b/src/styles/utilities/_color.scss
+index b989f65..7a46514 100644
+--- a/src/styles/utilities/_color.scss
++++ b/src/styles/utilities/_color.scss
+@@ -4,12 +4,19 @@
+ @use '../mixins' as *;
+ 
+ @layer utilities {
+-	// Stand in for the release's text color maps. A role, black, white, and the body read the
+-	// release's `--bs-*` channel aliases at the `--bs-text-opacity` variable the entry sets; the
+-	// release's half-strength black and white literals read the palette's channels instead.
++	// Stand in for the release's text color maps. A role outside the neutral roles paints its
++	// on-canvas tier, the `--bs-*-text-emphasis` alias, through relative color at the
++	// `--bs-text-opacity` variable the entry sets, so its text on the page clears the contrast bar in
++	// each mode and the opacity steps still scale it. The neutral roles, black, white, and the body
++	// read the release's `--bs-*` channel aliases at the same variable; the release's half-strength
++	// black and white literals read the palette's channels instead.
+ 	$colors: ();
+ 	@each $name in list.join($aliased, ('black', 'white')) {
+-		$colors: map.set($colors, $name, rgba(var(--bs-#{$name}-rgb), var(--bs-text-opacity)));
++		$color: rgba(var(--bs-#{$name}-rgb), var(--bs-text-opacity));
++		@if list.index($aliased, $name) and not list.index($neutrals, $name) {
++			$color: rgb(from var(--vn-color-#{$name}-emphasis) r g b / var(--bs-text-opacity));
++		}
++		$colors: map.set($colors, $name, $color);
+ 	}
+ 	$colors: map.merge(
+ 		$colors,
+
+=== bash -c npm run build:src:styles && npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/utilities/color.test.ts -t "retunes a role color from the fill, the body text, and the emphasis token" (21:46:36) HEAD 712ae72
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  283.08 kB │ gzip: 33.85 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.66s
+
+ RUN  v4.1.11 /home/user/veneer-apc
+
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:46:51 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:33:2 > color utilities > resolves each text color to the value the release records, and each role outside the neutral roles to its on-canvas tier, in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:33:2 > color utilities > resolves each text color to the value the release records, and each role outside the neutral roles to its on-canvas tier, in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:80:2 > color utilities > keeps the neutral roles on their own channels rather than their emphasis tiers in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:80:2 > color utilities > keeps the neutral roles on their own channels rather than their emphasis tiers in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:106:2 > color utilities > reads each role color outside the neutral roles at or above the contrast bar against the page in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:106:2 > color utilities > reads each role color outside the neutral roles at or above the contrast bar against the page in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:123:2 > color utilities > paints each role color outside the neutral roles and its emphasis class in one color at the default opacity in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:123:2 > color utilities > paints each role color outside the neutral roles and its emphasis class in one color at the default opacity in dark mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:144:2 > color utilities > resolves each emphasis tier through the alias its own mode declares
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:180:2 > color utilities > paints each opacity step as the on-canvas tier of every role outside the neutral roles, at the alpha the step names, in light mode
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:180:2 > color utilities > paints each opacity step as the on-canvas tier of every role outside the neutral roles, at the alpha the step names, in dark mode
+ × |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:220:2 > color utilities > retunes a role color from the fill, the body text, and the emphasis token at the scope declaring the light theme, and from the alias on the element, and ignores the role channels and the density factor 14ms
+   → alias on the element: expected false to be true // Object.is equality
+   → token below the theme scope leaves the text: expected 'color(srgb 0 0.352941 0.235294)' to be 'color(srgb 0.0510206 0.212902 0.67272…' // Object.is equality
+ × |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:220:2 > color utilities > retunes a role color from the fill, the body text, and the emphasis token at the scope declaring the dark theme, and from the alias on the element, and ignores the role channels and the density factor 6ms
+   → alias on the element: expected false to be true // Object.is equality
+   → token below the theme scope leaves the text: expected 'color(srgb 0 0.352941 0.235294)' to be 'color(srgb 0.402622 0.750244 0.93462)' // Object.is equality
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:301:2 > color utilities > keeps its priority over a later unlayered consumer rule
+ ↓ |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:314:2 > color utilities > yields to an important override inside the utilities layer and to no unlayered one
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:220:2 > color utilities > retunes a role color from the fill, the body text, and the emphasis token at the scope declaring the light theme, and from the alias on the element, and ignores the role channels and the density factor
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:220:2 > color utilities > retunes a role color from the fill, the body text, and the emphasis token at the scope declaring the dark theme, and from the alias on the element, and ignores the role channels and the density factor
+AssertionError: alias on the element: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/utilities/color.test.ts:282:5
+    280|    expect
+    281|     .soft(matchesColor(readStyle(local, 'color'), 'rgb(0, 90, 60)'), '…
+    282|     .toBe(true)
+       |     ^
+    283|    expect(readStyle(role, 'color')).toBe(resting[0])
+    284|    local.style.removeProperty('--bs-primary-text-emphasis')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:220:2 > color utilities > retunes a role color from the fill, the body text, and the emphasis token at the scope declaring the light theme, and from the alias on the element, and ignores the role channels and the density factor
+AssertionError: token below the theme scope leaves the text: expected 'color(srgb 0 0.352941 0.235294)' to be 'color(srgb 0.0510206 0.212902 0.67272…' // Object.is equality
+
+Expected: [32m"color(srgb 0[7m.0510206 0.212902 0.672726[27m)"[39m
+Received: [31m"color(srgb 0[7m 0.352941 0.235294[27m)"[39m
+
+ ❯ tests/src/styles/utilities/color.test.ts:291:5
+    289|    expect
+    290|     .soft(readStyle(local, 'color'), 'token below the theme scope leav…
+    291|     .toBe(resting[0])
+       |     ^
+    292|    expect
+    293|     .soft(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color.test.ts:220:2 > color utilities > retunes a role color from the fill, the body text, and the emphasis token at the scope declaring the dark theme, and from the alias on the element, and ignores the role channels and the density factor
+AssertionError: token below the theme scope leaves the text: expected 'color(srgb 0 0.352941 0.235294)' to be 'color(srgb 0.402622 0.750244 0.93462)' // Object.is equality
+
+Expected: [32m"color(srgb 0[7m.402622 0.750244 0.93462[27m)"[39m
+Received: [31m"color(srgb 0[7m 0.352941 0.235294[27m)"[39m
+
+ ❯ tests/src/styles/utilities/color.test.ts:291:5
+    289|    expect
+    290|     .soft(readStyle(local, 'color'), 'token below the theme scope leav…
+    291|     .toBe(resting[0])
+       |     ^
+    292|    expect
+    293|     .soft(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 13 skipped (15)
+   Start at  21:46:40
+   Duration  11.93s (transform 0ms, setup 1.19s, import 51ms, tests 21ms, environment 0ms)
+
+=== exit=1 (21:46:52)
+
+=== proof exit=1 (non-zero means a selected proof reddened)
+=== restored src/styles/utilities/_color.scss: byte-identical to pre-mutation copy = True

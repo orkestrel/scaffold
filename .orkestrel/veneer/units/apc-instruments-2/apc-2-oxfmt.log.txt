@@ -1,0 +1,3 @@
+=== npx oxfmt --config .oxfmtrc.json --write guides/veneer.md src/styles/_tokens.scss src/styles/components/_button.scss src/styles/utilities/_color.scss src/styles/utilities/_link.scss tests/setup.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/button.test.ts tests/src/styles/components/validation.test.ts tests/src/styles/elements/a.test.ts tests/src/styles/theme.test.ts tests/src/styles/utilities/color-bg.test.ts tests/src/styles/utilities/color.test.ts tests/src/styles/utilities/link.test.ts (21:49:14) HEAD 712ae72
+Finished in 23104ms on 15 files using 4 threads.
+=== exit=0 (21:49:38)

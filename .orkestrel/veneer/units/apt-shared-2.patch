@@ -1,0 +1,731 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 144ab45..cf72e1d 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -6151,16 +6151,24 @@ These are the keys' recorded departures.
+ The font keys ship whole in the utilities layer from the `src/styles/utilities/_font.scss`
+ partial: the `.font-monospace` class, the `.fs-1` to `.fs-6` size classes, the `.fst-italic` and
+ `.fst-normal` style classes, the `.fw-lighter` to `.fw-bolder` weight classes, and the `.lh-1`,
+-`.lh-sm`, `.lh-base`, and `.lh-lg` line-height classes. The release writes none of these entries
+-responsive, so each class ships at the empty infix alone and no font class writes a breakpoint
+-infix.
++`.lh-sm`, `.lh-base`, and `.lh-lg` line-height classes. None of these entries takes a breakpoint
++infix, so each class ships at the empty infix alone.
+ 
+ A size class resolves what the heading class of the same level resolves: the `.fs-1` class reads
+ the `--vn-size-8` token the `.h1` class reads, down to the `.fs-6` class, which reads the
+ `--vn-size-3` token the `.h6` class reads. So a retuned size token moves a size class and its
+-heading class together, and a size class holds its size at every viewport. The release scales the
+-`.fs-1` to `.fs-4` sizes with the viewport and caps them from a 1200px viewport; Veneer writes
+-neither the fluid formula nor the cap, as the heading classes write neither.
++heading class together.
++
++Below a 1200px viewport a heading or size class shrinks by the release's responsive rule over its
++`--vn-size-*` token, and a display class over its `--vn-display-*` token; from 1200px each class
++resolves its token. A size at or under 1.25rem holds at every viewport, so `h4` to `h6` hold 20px,
++18px, and 16px, while the `h1` level resolves 26.28px at a 390px viewport and 36px from 1200px.
++The `fluid-size` function in the `src/styles/_mixins.scss` partial writes the rule over the live
++token, so a token retuned above 1.25rem scales and a token retuned under it holds. The heading
++tags, the heading and display classes, and the `legend` element write the fluid value and its cap
++through the `font-size` mixin beside it. This partial writes each size class's fluid value through
++the `utility` mixin and writes the caps, each with the `!important` flag, in one
++`(width >= 1200px)` block after every size class, where the release writes its own cap block.
+ 
+ The `.lh-base` class reads the `--vn-line-body` token the body text reads, so a retuned
+ `--vn-line-body` token moves the class with the body text. The `.font-monospace` class reads the
+@@ -6193,13 +6201,14 @@ rule, and the escape inside the utilities layer.
+ 
+ These are the keys' recorded departures.
+ 
+-- **The size classes read Veneer's heading scale.** The release writes the `.fs-1` to `.fs-4`
+-  classes as a fluid `calc()` expression of a rem length and a viewport share, capped at a literal
+-  size from a 1200px viewport, and the `.fs-5` and `.fs-6` classes as literal sizes. Veneer writes
+-  the `var(--vn-size-8)` to `var(--vn-size-3)` values and no cap, and each class resolves its
+-  heading class's size at every viewport, so the classes resolve Veneer's heading sizes rather than
+-  the release's: the `.fs-1` class resolves 36px where the release caps at 40px, and the `.fs-5`
+-  class resolves 18px where the release resolves 20px.
++- **The size classes follow the release's rule over Veneer's heading scale.** The release writes
++  the `.fs-1` to `.fs-4` classes as a fluid `calc()` expression of a rem length and a viewport
++  share, capped at a literal size from a 1200px viewport, and the `.fs-5` and `.fs-6` classes as
++  literal sizes. Veneer writes every class as the same rule over the `--vn-size-8` to
++  `--vn-size-3` token its heading class reads, and caps every class at that token from 1200px, the
++  `.fs-5` and `.fs-6` classes included. So the classes resolve Veneer's heading sizes rather than
++  the release's: the `.fs-1` class resolves 36px from 1200px where the release caps at 40px, and
++  the `.fs-5` class resolves 18px where the release resolves 20px.
+ - **The base line height reads Veneer's `--vn-line-body` token.** The release writes the `1.5`
+   factor; Veneer writes the `var(--vn-line-body)` value, which resolves to the same factor and moves
+   with the body text.
+@@ -7652,26 +7661,26 @@ declaration.
+ 
+ #### `display`
+ 
+-| Component | Selector     | Property      | Condition                    | Bootstrap 5.3.8          | Veneer                   | Departure |
+-| --------- | ------------ | ------------- | ---------------------------- | ------------------------ | ------------------------ | --------- |
+-| `display` | `.display-1` | `line-height` | —                            | `1.2`                    | `var(--vn-line-heading)` | tokenized |
+-| `display` | `.display-1` | `font-size`   | —                            | `calc(1.625rem + 4.5vw)` | `var(--vn-display-1)`    | tokenized |
+-| `display` | `.display-1` | `font-size`   | `@media (min-width: 1200px)` | `5rem`                   | —                        | dropped   |
+-| `display` | `.display-2` | `line-height` | —                            | `1.2`                    | `var(--vn-line-heading)` | tokenized |
+-| `display` | `.display-2` | `font-size`   | —                            | `calc(1.575rem + 3.9vw)` | `var(--vn-display-2)`    | tokenized |
+-| `display` | `.display-2` | `font-size`   | `@media (min-width: 1200px)` | `4.5rem`                 | —                        | dropped   |
+-| `display` | `.display-3` | `line-height` | —                            | `1.2`                    | `var(--vn-line-heading)` | tokenized |
+-| `display` | `.display-3` | `font-size`   | —                            | `calc(1.525rem + 3.3vw)` | `var(--vn-display-3)`    | tokenized |
+-| `display` | `.display-3` | `font-size`   | `@media (min-width: 1200px)` | `4rem`                   | —                        | dropped   |
+-| `display` | `.display-4` | `line-height` | —                            | `1.2`                    | `var(--vn-line-heading)` | tokenized |
+-| `display` | `.display-4` | `font-size`   | —                            | `calc(1.475rem + 2.7vw)` | `var(--vn-display-4)`    | tokenized |
+-| `display` | `.display-4` | `font-size`   | `@media (min-width: 1200px)` | `3.5rem`                 | —                        | dropped   |
+-| `display` | `.display-5` | `line-height` | —                            | `1.2`                    | `var(--vn-line-heading)` | tokenized |
+-| `display` | `.display-5` | `font-size`   | —                            | `calc(1.425rem + 2.1vw)` | `var(--vn-display-5)`    | tokenized |
+-| `display` | `.display-5` | `font-size`   | `@media (min-width: 1200px)` | `3rem`                   | —                        | dropped   |
+-| `display` | `.display-6` | `line-height` | —                            | `1.2`                    | `var(--vn-line-heading)` | tokenized |
+-| `display` | `.display-6` | `font-size`   | —                            | `calc(1.375rem + 1.5vw)` | `var(--vn-display-6)`    | tokenized |
+-| `display` | `.display-6` | `font-size`   | `@media (min-width: 1200px)` | `2.5rem`                 | —                        | dropped   |
++| Component | Selector     | Property      | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                              | Departure |
++| --------- | ------------ | ------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------- | --------- |
++| `display` | `.display-1` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
++| `display` | `.display-1` | `font-size`   | —                          | `calc(1.625rem + 4.5vw)` | `calc(var(--vn-display-1) - max(var(--vn-display-1) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-1` | `font-size`   | `@media (width >= 1200px)` | `5rem`                   | `var(--vn-display-1)`                                                                               | tokenized |
++| `display` | `.display-2` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
++| `display` | `.display-2` | `font-size`   | —                          | `calc(1.575rem + 3.9vw)` | `calc(var(--vn-display-2) - max(var(--vn-display-2) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-2` | `font-size`   | `@media (width >= 1200px)` | `4.5rem`                 | `var(--vn-display-2)`                                                                               | tokenized |
++| `display` | `.display-3` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
++| `display` | `.display-3` | `font-size`   | —                          | `calc(1.525rem + 3.3vw)` | `calc(var(--vn-display-3) - max(var(--vn-display-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-3` | `font-size`   | `@media (width >= 1200px)` | `4rem`                   | `var(--vn-display-3)`                                                                               | tokenized |
++| `display` | `.display-4` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
++| `display` | `.display-4` | `font-size`   | —                          | `calc(1.475rem + 2.7vw)` | `calc(var(--vn-display-4) - max(var(--vn-display-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-4` | `font-size`   | `@media (width >= 1200px)` | `3.5rem`                 | `var(--vn-display-4)`                                                                               | tokenized |
++| `display` | `.display-5` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
++| `display` | `.display-5` | `font-size`   | —                          | `calc(1.425rem + 2.1vw)` | `calc(var(--vn-display-5) - max(var(--vn-display-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-5` | `font-size`   | `@media (width >= 1200px)` | `3rem`                   | `var(--vn-display-5)`                                                                               | tokenized |
++| `display` | `.display-6` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
++| `display` | `.display-6` | `font-size`   | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-display-6) - max(var(--vn-display-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-6` | `font-size`   | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-display-6)`                                                                               | tokenized |
+ 
+ #### `dropdown`
+ 
+@@ -7899,18 +7908,18 @@ declaration.
+ 
+ #### `fs`
+ 
+-| Component | Selector | Property    | Condition                    | Bootstrap 5.3.8          | Veneer             | Departure |
+-| --------- | -------- | ----------- | ---------------------------- | ------------------------ | ------------------ | --------- |
+-| `fs`      | `.fs-1`  | `font-size` | —                            | `calc(1.375rem + 1.5vw)` | `var(--vn-size-8)` | tokenized |
+-| `fs`      | `.fs-1`  | `font-size` | `@media (min-width: 1200px)` | `2.5rem`                 | —                  | dropped   |
+-| `fs`      | `.fs-2`  | `font-size` | —                            | `calc(1.325rem + 0.9vw)` | `var(--vn-size-7)` | tokenized |
+-| `fs`      | `.fs-2`  | `font-size` | `@media (min-width: 1200px)` | `2rem`                   | —                  | dropped   |
+-| `fs`      | `.fs-3`  | `font-size` | —                            | `calc(1.3rem + 0.6vw)`   | `var(--vn-size-6)` | tokenized |
+-| `fs`      | `.fs-3`  | `font-size` | `@media (min-width: 1200px)` | `1.75rem`                | —                  | dropped   |
+-| `fs`      | `.fs-4`  | `font-size` | —                            | `calc(1.275rem + 0.3vw)` | `var(--vn-size-5)` | tokenized |
+-| `fs`      | `.fs-4`  | `font-size` | `@media (min-width: 1200px)` | `1.5rem`                 | —                  | dropped   |
+-| `fs`      | `.fs-5`  | `font-size` | —                            | `1.25rem`                | `var(--vn-size-4)` | tokenized |
+-| `fs`      | `.fs-6`  | `font-size` | —                            | `1rem`                   | `var(--vn-size-3)` | tokenized |
++| Component | Selector | Property    | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                        | Departure |
++| --------- | -------- | ----------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- | --------- |
++| `fs`      | `.fs-1`  | `font-size` | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `fs`      | `.fs-1`  | `font-size` | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-size-8)`                                                                            | tokenized |
++| `fs`      | `.fs-2`  | `font-size` | —                          | `calc(1.325rem + 0.9vw)` | `calc(var(--vn-size-7) - max(var(--vn-size-7) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `fs`      | `.fs-2`  | `font-size` | `@media (width >= 1200px)` | `2rem`                   | `var(--vn-size-7)`                                                                            | tokenized |
++| `fs`      | `.fs-3`  | `font-size` | —                          | `calc(1.3rem + 0.6vw)`   | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `fs`      | `.fs-3`  | `font-size` | `@media (width >= 1200px)` | `1.75rem`                | `var(--vn-size-6)`                                                                            | tokenized |
++| `fs`      | `.fs-4`  | `font-size` | —                          | `calc(1.275rem + 0.3vw)` | `calc(var(--vn-size-5) - max(var(--vn-size-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `fs`      | `.fs-4`  | `font-size` | `@media (width >= 1200px)` | `1.5rem`                 | `var(--vn-size-5)`                                                                            | tokenized |
++| `fs`      | `.fs-5`  | `font-size` | —                          | `1.25rem`                | `calc(var(--vn-size-4) - max(var(--vn-size-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `fs`      | `.fs-6`  | `font-size` | —                          | `1rem`                   | `calc(var(--vn-size-3) - max(var(--vn-size-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+ 
+ #### `g`
+ 
+@@ -8114,67 +8123,67 @@ declaration.
+ 
+ #### `h1`
+ 
+-| Component | Selector | Property        | Condition                    | Bootstrap 5.3.8          | Veneer                     | Departure |
+-| --------- | -------- | --------------- | ---------------------------- | ------------------------ | -------------------------- | --------- |
+-| `h1`      | `.h1`    | `margin-top`    | —                            | `0`                      | —                          | dropped   |
+-| `h1`      | `.h1`    | `margin-bottom` | —                            | `0.5rem`                 | —                          | dropped   |
+-| `h1`      | `.h1`    | `font-weight`   | —                            | `500`                    | `var(--vn-weight-heading)` | tokenized |
+-| `h1`      | `.h1`    | `line-height`   | —                            | `1.2`                    | `var(--vn-line-heading)`   | tokenized |
+-| `h1`      | `.h1`    | `font-size`     | —                            | `calc(1.375rem + 1.5vw)` | `var(--vn-size-8)`         | tokenized |
+-| `h1`      | `.h1`    | `font-size`     | `@media (min-width: 1200px)` | `2.5rem`                 | —                          | dropped   |
++| Component | Selector | Property        | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                        | Departure |
++| --------- | -------- | --------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- | --------- |
++| `h1`      | `.h1`    | `margin-top`    | —                          | `0`                      | —                                                                                             | dropped   |
++| `h1`      | `.h1`    | `margin-bottom` | —                          | `0.5rem`                 | —                                                                                             | dropped   |
++| `h1`      | `.h1`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `h1`      | `.h1`    | `line-height`   | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                      | tokenized |
++| `h1`      | `.h1`    | `font-size`     | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `h1`      | `.h1`    | `font-size`     | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-size-8)`                                                                            | tokenized |
+ 
+ #### `h2`
+ 
+-| Component | Selector | Property        | Condition                    | Bootstrap 5.3.8          | Veneer                     | Departure |
+-| --------- | -------- | --------------- | ---------------------------- | ------------------------ | -------------------------- | --------- |
+-| `h2`      | `.h2`    | `margin-top`    | —                            | `0`                      | —                          | dropped   |
+-| `h2`      | `.h2`    | `margin-bottom` | —                            | `0.5rem`                 | —                          | dropped   |
+-| `h2`      | `.h2`    | `font-weight`   | —                            | `500`                    | `var(--vn-weight-heading)` | tokenized |
+-| `h2`      | `.h2`    | `line-height`   | —                            | `1.2`                    | `var(--vn-line-heading)`   | tokenized |
+-| `h2`      | `.h2`    | `font-size`     | —                            | `calc(1.325rem + 0.9vw)` | `var(--vn-size-7)`         | tokenized |
+-| `h2`      | `.h2`    | `font-size`     | `@media (min-width: 1200px)` | `2rem`                   | —                          | dropped   |
++| Component | Selector | Property        | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                        | Departure |
++| --------- | -------- | --------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- | --------- |
++| `h2`      | `.h2`    | `margin-top`    | —                          | `0`                      | —                                                                                             | dropped   |
++| `h2`      | `.h2`    | `margin-bottom` | —                          | `0.5rem`                 | —                                                                                             | dropped   |
++| `h2`      | `.h2`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `h2`      | `.h2`    | `line-height`   | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                      | tokenized |
++| `h2`      | `.h2`    | `font-size`     | —                          | `calc(1.325rem + 0.9vw)` | `calc(var(--vn-size-7) - max(var(--vn-size-7) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `h2`      | `.h2`    | `font-size`     | `@media (width >= 1200px)` | `2rem`                   | `var(--vn-size-7)`                                                                            | tokenized |
+ 
+ #### `h3`
+ 
+-| Component | Selector | Property        | Condition                    | Bootstrap 5.3.8        | Veneer                     | Departure |
+-| --------- | -------- | --------------- | ---------------------------- | ---------------------- | -------------------------- | --------- |
+-| `h3`      | `.h3`    | `margin-top`    | —                            | `0`                    | —                          | dropped   |
+-| `h3`      | `.h3`    | `margin-bottom` | —                            | `0.5rem`               | —                          | dropped   |
+-| `h3`      | `.h3`    | `font-weight`   | —                            | `500`                  | `var(--vn-weight-heading)` | tokenized |
+-| `h3`      | `.h3`    | `line-height`   | —                            | `1.2`                  | `var(--vn-line-heading)`   | tokenized |
+-| `h3`      | `.h3`    | `font-size`     | —                            | `calc(1.3rem + 0.6vw)` | `var(--vn-size-6)`         | tokenized |
+-| `h3`      | `.h3`    | `font-size`     | `@media (min-width: 1200px)` | `1.75rem`              | —                          | dropped   |
++| Component | Selector | Property        | Condition                  | Bootstrap 5.3.8        | Veneer                                                                                        | Departure |
++| --------- | -------- | --------------- | -------------------------- | ---------------------- | --------------------------------------------------------------------------------------------- | --------- |
++| `h3`      | `.h3`    | `margin-top`    | —                          | `0`                    | —                                                                                             | dropped   |
++| `h3`      | `.h3`    | `margin-bottom` | —                          | `0.5rem`               | —                                                                                             | dropped   |
++| `h3`      | `.h3`    | `font-weight`   | —                          | `500`                  | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `h3`      | `.h3`    | `line-height`   | —                          | `1.2`                  | `var(--vn-line-heading)`                                                                      | tokenized |
++| `h3`      | `.h3`    | `font-size`     | —                          | `calc(1.3rem + 0.6vw)` | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `h3`      | `.h3`    | `font-size`     | `@media (width >= 1200px)` | `1.75rem`              | `var(--vn-size-6)`                                                                            | tokenized |
+ 
+ #### `h4`
+ 
+-| Component | Selector | Property        | Condition                    | Bootstrap 5.3.8          | Veneer                     | Departure |
+-| --------- | -------- | --------------- | ---------------------------- | ------------------------ | -------------------------- | --------- |
+-| `h4`      | `.h4`    | `margin-top`    | —                            | `0`                      | —                          | dropped   |
+-| `h4`      | `.h4`    | `margin-bottom` | —                            | `0.5rem`                 | —                          | dropped   |
+-| `h4`      | `.h4`    | `font-weight`   | —                            | `500`                    | `var(--vn-weight-heading)` | tokenized |
+-| `h4`      | `.h4`    | `line-height`   | —                            | `1.2`                    | `var(--vn-line-heading)`   | tokenized |
+-| `h4`      | `.h4`    | `font-size`     | —                            | `calc(1.275rem + 0.3vw)` | `var(--vn-size-5)`         | tokenized |
+-| `h4`      | `.h4`    | `font-size`     | `@media (min-width: 1200px)` | `1.5rem`                 | —                          | dropped   |
++| Component | Selector | Property        | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                        | Departure |
++| --------- | -------- | --------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- | --------- |
++| `h4`      | `.h4`    | `margin-top`    | —                          | `0`                      | —                                                                                             | dropped   |
++| `h4`      | `.h4`    | `margin-bottom` | —                          | `0.5rem`                 | —                                                                                             | dropped   |
++| `h4`      | `.h4`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `h4`      | `.h4`    | `line-height`   | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                      | tokenized |
++| `h4`      | `.h4`    | `font-size`     | —                          | `calc(1.275rem + 0.3vw)` | `calc(var(--vn-size-5) - max(var(--vn-size-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `h4`      | `.h4`    | `font-size`     | `@media (width >= 1200px)` | `1.5rem`                 | `var(--vn-size-5)`                                                                            | tokenized |
+ 
+ #### `h5`
+ 
+-| Component | Selector | Property        | Condition | Bootstrap 5.3.8 | Veneer                     | Departure |
+-| --------- | -------- | --------------- | --------- | --------------- | -------------------------- | --------- |
+-| `h5`      | `.h5`    | `margin-top`    | —         | `0`             | —                          | dropped   |
+-| `h5`      | `.h5`    | `margin-bottom` | —         | `0.5rem`        | —                          | dropped   |
+-| `h5`      | `.h5`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)` | tokenized |
+-| `h5`      | `.h5`    | `line-height`   | —         | `1.2`           | `var(--vn-line-heading)`   | tokenized |
+-| `h5`      | `.h5`    | `font-size`     | —         | `1.25rem`       | `var(--vn-size-4)`         | tokenized |
++| Component | Selector | Property        | Condition | Bootstrap 5.3.8 | Veneer                                                                                        | Departure |
++| --------- | -------- | --------------- | --------- | --------------- | --------------------------------------------------------------------------------------------- | --------- |
++| `h5`      | `.h5`    | `margin-top`    | —         | `0`             | —                                                                                             | dropped   |
++| `h5`      | `.h5`    | `margin-bottom` | —         | `0.5rem`        | —                                                                                             | dropped   |
++| `h5`      | `.h5`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `h5`      | `.h5`    | `line-height`   | —         | `1.2`           | `var(--vn-line-heading)`                                                                      | tokenized |
++| `h5`      | `.h5`    | `font-size`     | —         | `1.25rem`       | `calc(var(--vn-size-4) - max(var(--vn-size-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+ 
+ #### `h6`
+ 
+-| Component | Selector | Property        | Condition | Bootstrap 5.3.8 | Veneer                     | Departure |
+-| --------- | -------- | --------------- | --------- | --------------- | -------------------------- | --------- |
+-| `h6`      | `.h6`    | `margin-top`    | —         | `0`             | —                          | dropped   |
+-| `h6`      | `.h6`    | `margin-bottom` | —         | `0.5rem`        | —                          | dropped   |
+-| `h6`      | `.h6`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)` | tokenized |
+-| `h6`      | `.h6`    | `line-height`   | —         | `1.2`           | `var(--vn-line-heading)`   | tokenized |
+-| `h6`      | `.h6`    | `font-size`     | —         | `1rem`          | `var(--vn-size-3)`         | tokenized |
++| Component | Selector | Property        | Condition | Bootstrap 5.3.8 | Veneer                                                                                        | Departure |
++| --------- | -------- | --------------- | --------- | --------------- | --------------------------------------------------------------------------------------------- | --------- |
++| `h6`      | `.h6`    | `margin-top`    | —         | `0`             | —                                                                                             | dropped   |
++| `h6`      | `.h6`    | `margin-bottom` | —         | `0.5rem`        | —                                                                                             | dropped   |
++| `h6`      | `.h6`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `h6`      | `.h6`    | `line-height`   | —         | `1.2`           | `var(--vn-line-heading)`                                                                      | tokenized |
++| `h6`      | `.h6`    | `font-size`     | —         | `1rem`          | `calc(var(--vn-size-3) - max(var(--vn-size-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+ 
+ #### `icon-link`
+ 
+@@ -9112,101 +9121,101 @@ declaration.
+ 
+ #### `reboot`
+ 
+-| Component | Selector      | Property                           | Condition                    | Bootstrap 5.3.8                                             | Veneer                                                          | Departure |
+-| --------- | ------------- | ---------------------------------- | ---------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------- | --------- |
+-| `reboot`  | `body`        | `-webkit-text-size-adjust`         | —                            | `100%`                                                      | —                                                               | dropped   |
+-| `reboot`  | `body`        | `-webkit-tap-highlight-color`      | —                            | `rgba(0, 0, 0, 0)`                                          | `transparent`                                                   | declared  |
+-| `reboot`  | `hr`          | `margin`                           | —                            | `1rem 0`                                                    | `0`                                                             | declared  |
+-| `reboot`  | `hr`          | `border-top`                       | —                            | `var(--bs-border-width) solid`                              | `var(--vn-border-width) solid currentColor`                     | tokenized |
+-| `reboot`  | `hr`          | `opacity`                          | —                            | `0.25`                                                      | `0.2`                                                           | declared  |
+-| `reboot`  | `h6`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `h6`          | `margin-bottom`                    | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `h6`          | `font-weight`                      | —                            | `500`                                                       | `var(--vn-weight-heading)`                                      | tokenized |
+-| `reboot`  | `h6`          | `line-height`                      | —                            | `1.2`                                                       | `var(--vn-line-heading)`                                        | tokenized |
+-| `reboot`  | `h5`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `h5`          | `margin-bottom`                    | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `h5`          | `font-weight`                      | —                            | `500`                                                       | `var(--vn-weight-heading)`                                      | tokenized |
+-| `reboot`  | `h5`          | `line-height`                      | —                            | `1.2`                                                       | `var(--vn-line-heading)`                                        | tokenized |
+-| `reboot`  | `h4`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `h4`          | `margin-bottom`                    | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `h4`          | `font-weight`                      | —                            | `500`                                                       | `var(--vn-weight-heading)`                                      | tokenized |
+-| `reboot`  | `h4`          | `line-height`                      | —                            | `1.2`                                                       | `var(--vn-line-heading)`                                        | tokenized |
+-| `reboot`  | `h3`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `h3`          | `margin-bottom`                    | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `h3`          | `font-weight`                      | —                            | `500`                                                       | `var(--vn-weight-heading)`                                      | tokenized |
+-| `reboot`  | `h3`          | `line-height`                      | —                            | `1.2`                                                       | `var(--vn-line-heading)`                                        | tokenized |
+-| `reboot`  | `h2`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `h2`          | `margin-bottom`                    | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `h2`          | `font-weight`                      | —                            | `500`                                                       | `var(--vn-weight-heading)`                                      | tokenized |
+-| `reboot`  | `h2`          | `line-height`                      | —                            | `1.2`                                                       | `var(--vn-line-heading)`                                        | tokenized |
+-| `reboot`  | `h1`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `h1`          | `margin-bottom`                    | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `h1`          | `font-weight`                      | —                            | `500`                                                       | `var(--vn-weight-heading)`                                      | tokenized |
+-| `reboot`  | `h1`          | `line-height`                      | —                            | `1.2`                                                       | `var(--vn-line-heading)`                                        | tokenized |
+-| `reboot`  | `h1`          | `font-size`                        | —                            | `calc(1.375rem + 1.5vw)`                                    | `var(--vn-size-8)`                                              | tokenized |
+-| `reboot`  | `h1`          | `font-size`                        | `@media (min-width: 1200px)` | `2.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `h2`          | `font-size`                        | —                            | `calc(1.325rem + 0.9vw)`                                    | `var(--vn-size-7)`                                              | tokenized |
+-| `reboot`  | `h2`          | `font-size`                        | `@media (min-width: 1200px)` | `2rem`                                                      | —                                                               | dropped   |
+-| `reboot`  | `h3`          | `font-size`                        | —                            | `calc(1.3rem + 0.6vw)`                                      | `var(--vn-size-6)`                                              | tokenized |
+-| `reboot`  | `h3`          | `font-size`                        | `@media (min-width: 1200px)` | `1.75rem`                                                   | —                                                               | dropped   |
+-| `reboot`  | `h4`          | `font-size`                        | —                            | `calc(1.275rem + 0.3vw)`                                    | `var(--vn-size-5)`                                              | tokenized |
+-| `reboot`  | `h4`          | `font-size`                        | `@media (min-width: 1200px)` | `1.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `h5`          | `font-size`                        | —                            | `1.25rem`                                                   | `var(--vn-size-4)`                                              | tokenized |
+-| `reboot`  | `h6`          | `font-size`                        | —                            | `1rem`                                                      | `var(--vn-size-3)`                                              | tokenized |
+-| `reboot`  | `p`           | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `p`           | `margin-bottom`                    | —                            | `1rem`                                                      | —                                                               | dropped   |
+-| `reboot`  | `abbr[title]` | `-webkit-text-decoration`          | —                            | `underline dotted`                                          | —                                                               | dropped   |
+-| `reboot`  | `abbr[title]` | `-webkit-text-decoration-skip-ink` | —                            | `none`                                                      | —                                                               | dropped   |
+-| `reboot`  | `address`     | `margin-bottom`                    | —                            | `1rem`                                                      | —                                                               | dropped   |
+-| `reboot`  | `ol`          | `padding-left`                     | —                            | `2rem`                                                      | `calc(var(--vn-space-8) * 2)`                                   | tokenized |
+-| `reboot`  | `ul`          | `padding-left`                     | —                            | `2rem`                                                      | `calc(var(--vn-space-8) * 2)`                                   | tokenized |
+-| `reboot`  | `ol`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `ol`          | `margin-bottom`                    | —                            | `1rem`                                                      | —                                                               | dropped   |
+-| `reboot`  | `ul`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `ul`          | `margin-bottom`                    | —                            | `1rem`                                                      | —                                                               | dropped   |
+-| `reboot`  | `dl`          | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `dl`          | `margin-bottom`                    | —                            | `1rem`                                                      | —                                                               | dropped   |
+-| `reboot`  | `dt`          | `font-weight`                      | —                            | `700`                                                       | `var(--vn-weight-heading)`                                      | tokenized |
+-| `reboot`  | `dd`          | `margin-bottom`                    | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `dd`          | `margin-left`                      | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `blockquote`  | `margin`                           | —                            | `0 0 1rem`                                                  | `0 0 var(--vn-space-8)`                                         | tokenized |
+-| `reboot`  | `small`       | `font-size`                        | —                            | `0.875em`                                                   | `87.5%`                                                         | declared  |
+-| `reboot`  | `mark`        | `padding`                          | —                            | `0.1875em`                                                  | `0 0.1875em`                                                    | declared  |
+-| `reboot`  | `mark`        | `color`                            | —                            | `var(--bs-highlight-color)`                                 | `var(--vn-text-mark)`                                           | tokenized |
+-| `reboot`  | `mark`        | `background-color`                 | —                            | `var(--bs-highlight-bg)`                                    | `var(--vn-surface-mark)`                                        | tokenized |
+-| `reboot`  | `sub`         | `font-size`                        | —                            | `0.75em`                                                    | `75%`                                                           | declared  |
+-| `reboot`  | `sup`         | `font-size`                        | —                            | `0.75em`                                                    | `75%`                                                           | declared  |
+-| `reboot`  | `a`           | `color`                            | —                            | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1))` | `rgb(from var(--vn-link-base) r g b/var(--bs-link-opacity, 1))` | tokenized |
+-| `reboot`  | `a`           | `text-decoration`                  | —                            | `underline`                                                 | `var(--vn-link-decoration)`                                     | tokenized |
+-| `reboot`  | `a:hover`     | `--bs-link-color-rgb`              | —                            | `var(--bs-link-hover-color-rgb)`                            | —                                                               | dropped   |
+-| `reboot`  | `pre`         | `font-family`                      | —                            | `var(--bs-font-monospace)`                                  | `ui-monospace, var(--vn-font-mono-base)`                        | tokenized |
+-| `reboot`  | `pre`         | `font-size`                        | —                            | `1em`                                                       | `87.5%`                                                         | declared  |
+-| `reboot`  | `code`        | `font-family`                      | —                            | `var(--bs-font-monospace)`                                  | `ui-monospace, var(--vn-font-mono-base)`                        | tokenized |
+-| `reboot`  | `code`        | `font-size`                        | —                            | `1em`                                                       | `90%`                                                           | declared  |
+-| `reboot`  | `kbd`         | `font-family`                      | —                            | `var(--bs-font-monospace)`                                  | `ui-monospace, var(--vn-font-mono-base)`                        | tokenized |
+-| `reboot`  | `kbd`         | `font-size`                        | —                            | `1em`                                                       | `87.5%`                                                         | declared  |
+-| `reboot`  | `samp`        | `font-family`                      | —                            | `var(--bs-font-monospace)`                                  | `ui-monospace, var(--vn-font-mono-base)`                        | tokenized |
+-| `reboot`  | `samp`        | `font-size`                        | —                            | `1em`                                                       | `90%`                                                           | declared  |
+-| `reboot`  | `pre`         | `margin-top`                       | —                            | `0`                                                         | —                                                               | dropped   |
+-| `reboot`  | `pre`         | `margin-bottom`                    | —                            | `1rem`                                                      | —                                                               | dropped   |
+-| `reboot`  | `pre`         | `font-size`                        | —                            | `0.875em`                                                   | `87.5%`                                                         | declared  |
+-| `reboot`  | `code`        | `font-size`                        | —                            | `0.875em`                                                   | `90%`                                                           | declared  |
+-| `reboot`  | `code`        | `color`                            | —                            | `var(--bs-code-color)`                                      | `var(--vn-text-code)`                                           | tokenized |
+-| `reboot`  | `code`        | `word-wrap`                        | —                            | `break-word`                                                | —                                                               | dropped   |
+-| `reboot`  | `kbd`         | `padding`                          | —                            | `0.1875rem 0.375rem`                                        | `0.0625em 0.375em`                                              | declared  |
+-| `reboot`  | `kbd`         | `font-size`                        | —                            | `0.875em`                                                   | `87.5%`                                                         | declared  |
+-| `reboot`  | `kbd`         | `color`                            | —                            | `var(--bs-body-bg)`                                         | `var(--vn-text-code)`                                           | tokenized |
+-| `reboot`  | `kbd`         | `background-color`                 | —                            | `var(--bs-body-color)`                                      | `var(--vn-surface-code)`                                        | tokenized |
+-| `reboot`  | `kbd`         | `border-radius`                    | —                            | `0.25rem`                                                   | `var(--vn-radius-small)`                                        | tokenized |
+-| `reboot`  | `figure`      | `margin`                           | —                            | `0 0 1rem`                                                  | `0`                                                             | declared  |
+-| `reboot`  | `table`       | `caption-side`                     | —                            | `bottom`                                                    | `top`                                                           | declared  |
+-| `reboot`  | `caption`     | `padding-top`                      | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `caption`     | `padding-bottom`                   | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+-| `reboot`  | `caption`     | `color`                            | —                            | `var(--bs-secondary-color)`                                 | `var(--vn-text-muted)`                                          | tokenized |
+-| `reboot`  | `th`          | `text-align`                       | —                            | `-webkit-match-parent`                                      | `inherit`                                                       | declared  |
+-| `reboot`  | `legend`      | `margin-bottom`                    | —                            | `0.5rem`                                                    | `var(--vn-space-4)`                                             | tokenized |
+-| `reboot`  | `legend`      | `font-size`                        | —                            | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) * 0.85 + 0.3vw)`                         | tokenized |
+-| `reboot`  | `legend`      | `font-size`                        | `@media (width >= 1200px)`   | `1.5rem`                                                    | `var(--vn-size-6)`                                              | tokenized |
++| Component | Selector      | Property                           | Condition                  | Bootstrap 5.3.8                                             | Veneer                                                                                        | Departure |
++| --------- | ------------- | ---------------------------------- | -------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------- |
++| `reboot`  | `body`        | `-webkit-text-size-adjust`         | —                          | `100%`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `body`        | `-webkit-tap-highlight-color`      | —                          | `rgba(0, 0, 0, 0)`                                          | `transparent`                                                                                 | declared  |
++| `reboot`  | `hr`          | `margin`                           | —                          | `1rem 0`                                                    | `0`                                                                                           | declared  |
++| `reboot`  | `hr`          | `border-top`                       | —                          | `var(--bs-border-width) solid`                              | `var(--vn-border-width) solid currentColor`                                                   | tokenized |
++| `reboot`  | `hr`          | `opacity`                          | —                          | `0.25`                                                      | `0.2`                                                                                         | declared  |
++| `reboot`  | `h6`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `h6`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h6`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `reboot`  | `h6`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
++| `reboot`  | `h5`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `h5`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h5`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `reboot`  | `h5`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
++| `reboot`  | `h4`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `h4`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h4`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `reboot`  | `h4`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
++| `reboot`  | `h3`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `h3`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h3`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `reboot`  | `h3`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
++| `reboot`  | `h2`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `h2`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h2`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `reboot`  | `h2`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
++| `reboot`  | `h1`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `h1`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `h1`          | `font-weight`                      | —                          | `500`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `reboot`  | `h1`          | `line-height`                      | —                          | `1.2`                                                       | `var(--vn-line-heading)`                                                                      | tokenized |
++| `reboot`  | `h1`          | `font-size`                        | —                          | `calc(1.375rem + 1.5vw)`                                    | `calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `h1`          | `font-size`                        | `@media (width >= 1200px)` | `2.5rem`                                                    | `var(--vn-size-8)`                                                                            | tokenized |
++| `reboot`  | `h2`          | `font-size`                        | —                          | `calc(1.325rem + 0.9vw)`                                    | `calc(var(--vn-size-7) - max(var(--vn-size-7) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `h2`          | `font-size`                        | `@media (width >= 1200px)` | `2rem`                                                      | `var(--vn-size-7)`                                                                            | tokenized |
++| `reboot`  | `h3`          | `font-size`                        | —                          | `calc(1.3rem + 0.6vw)`                                      | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `h3`          | `font-size`                        | `@media (width >= 1200px)` | `1.75rem`                                                   | `var(--vn-size-6)`                                                                            | tokenized |
++| `reboot`  | `h4`          | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-5) - max(var(--vn-size-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `h4`          | `font-size`                        | `@media (width >= 1200px)` | `1.5rem`                                                    | `var(--vn-size-5)`                                                                            | tokenized |
++| `reboot`  | `h5`          | `font-size`                        | —                          | `1.25rem`                                                   | `calc(var(--vn-size-4) - max(var(--vn-size-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `h6`          | `font-size`                        | —                          | `1rem`                                                      | `calc(var(--vn-size-3) - max(var(--vn-size-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `p`           | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `p`           | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `abbr[title]` | `-webkit-text-decoration`          | —                          | `underline dotted`                                          | —                                                                                             | dropped   |
++| `reboot`  | `abbr[title]` | `-webkit-text-decoration-skip-ink` | —                          | `none`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `address`     | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `ol`          | `padding-left`                     | —                          | `2rem`                                                      | `calc(var(--vn-space-8) * 2)`                                                                 | tokenized |
++| `reboot`  | `ul`          | `padding-left`                     | —                          | `2rem`                                                      | `calc(var(--vn-space-8) * 2)`                                                                 | tokenized |
++| `reboot`  | `ol`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `ol`          | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `ul`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `ul`          | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `dl`          | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `dl`          | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `dt`          | `font-weight`                      | —                          | `700`                                                       | `var(--vn-weight-heading)`                                                                    | tokenized |
++| `reboot`  | `dd`          | `margin-bottom`                    | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `dd`          | `margin-left`                      | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `blockquote`  | `margin`                           | —                          | `0 0 1rem`                                                  | `0 0 var(--vn-space-8)`                                                                       | tokenized |
++| `reboot`  | `small`       | `font-size`                        | —                          | `0.875em`                                                   | `87.5%`                                                                                       | declared  |
++| `reboot`  | `mark`        | `padding`                          | —                          | `0.1875em`                                                  | `0 0.1875em`                                                                                  | declared  |
++| `reboot`  | `mark`        | `color`                            | —                          | `var(--bs-highlight-color)`                                 | `var(--vn-text-mark)`                                                                         | tokenized |
++| `reboot`  | `mark`        | `background-color`                 | —                          | `var(--bs-highlight-bg)`                                    | `var(--vn-surface-mark)`                                                                      | tokenized |
++| `reboot`  | `sub`         | `font-size`                        | —                          | `0.75em`                                                    | `75%`                                                                                         | declared  |
++| `reboot`  | `sup`         | `font-size`                        | —                          | `0.75em`                                                    | `75%`                                                                                         | declared  |
++| `reboot`  | `a`           | `color`                            | —                          | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1))` | `rgb(from var(--vn-link-base) r g b/var(--bs-link-opacity, 1))`                               | tokenized |
++| `reboot`  | `a`           | `text-decoration`                  | —                          | `underline`                                                 | `var(--vn-link-decoration)`                                                                   | tokenized |
++| `reboot`  | `a:hover`     | `--bs-link-color-rgb`              | —                          | `var(--bs-link-hover-color-rgb)`                            | —                                                                                             | dropped   |
++| `reboot`  | `pre`         | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  | `ui-monospace, var(--vn-font-mono-base)`                                                      | tokenized |
++| `reboot`  | `pre`         | `font-size`                        | —                          | `1em`                                                       | `87.5%`                                                                                       | declared  |
++| `reboot`  | `code`        | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  | `ui-monospace, var(--vn-font-mono-base)`                                                      | tokenized |
++| `reboot`  | `code`        | `font-size`                        | —                          | `1em`                                                       | `90%`                                                                                         | declared  |
++| `reboot`  | `kbd`         | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  | `ui-monospace, var(--vn-font-mono-base)`                                                      | tokenized |
++| `reboot`  | `kbd`         | `font-size`                        | —                          | `1em`                                                       | `87.5%`                                                                                       | declared  |
++| `reboot`  | `samp`        | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  | `ui-monospace, var(--vn-font-mono-base)`                                                      | tokenized |
++| `reboot`  | `samp`        | `font-size`                        | —                          | `1em`                                                       | `90%`                                                                                         | declared  |
++| `reboot`  | `pre`         | `margin-top`                       | —                          | `0`                                                         | —                                                                                             | dropped   |
++| `reboot`  | `pre`         | `margin-bottom`                    | —                          | `1rem`                                                      | —                                                                                             | dropped   |
++| `reboot`  | `pre`         | `font-size`                        | —                          | `0.875em`                                                   | `87.5%`                                                                                       | declared  |
++| `reboot`  | `code`        | `font-size`                        | —                          | `0.875em`                                                   | `90%`                                                                                         | declared  |
++| `reboot`  | `code`        | `color`                            | —                          | `var(--bs-code-color)`                                      | `var(--vn-text-code)`                                                                         | tokenized |
++| `reboot`  | `code`        | `word-wrap`                        | —                          | `break-word`                                                | —                                                                                             | dropped   |
++| `reboot`  | `kbd`         | `padding`                          | —                          | `0.1875rem 0.375rem`                                        | `0.0625em 0.375em`                                                                            | declared  |
++| `reboot`  | `kbd`         | `font-size`                        | —                          | `0.875em`                                                   | `87.5%`                                                                                       | declared  |
++| `reboot`  | `kbd`         | `color`                            | —                          | `var(--bs-body-bg)`                                         | `var(--vn-text-code)`                                                                         | tokenized |
++| `reboot`  | `kbd`         | `background-color`                 | —                          | `var(--bs-body-color)`                                      | `var(--vn-surface-code)`                                                                      | tokenized |
++| `reboot`  | `kbd`         | `border-radius`                    | —                          | `0.25rem`                                                   | `var(--vn-radius-small)`                                                                      | tokenized |
++| `reboot`  | `figure`      | `margin`                           | —                          | `0 0 1rem`                                                  | `0`                                                                                           | declared  |
++| `reboot`  | `table`       | `caption-side`                     | —                          | `bottom`                                                    | `top`                                                                                         | declared  |
++| `reboot`  | `caption`     | `padding-top`                      | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `caption`     | `padding-bottom`                   | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
++| `reboot`  | `caption`     | `color`                            | —                          | `var(--bs-secondary-color)`                                 | `var(--vn-text-muted)`                                                                        | tokenized |
++| `reboot`  | `th`          | `text-align`                       | —                          | `-webkit-match-parent`                                      | `inherit`                                                                                     | declared  |
++| `reboot`  | `legend`      | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
++| `reboot`  | `legend`      | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `legend`      | `font-size`                        | `@media (width >= 1200px)` | `1.5rem`                                                    | `var(--vn-size-6)`                                                                            | tokenized |
+ 
+ #### `row`
+ 
+@@ -9795,6 +9804,8 @@ measurement fixes.
+ | `reboot`       | `h4 { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `reboot`       | `h5 { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `reboot`       | `h6 { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
++| `reboot`       | `h5 { font-size }`                                            | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
++| `reboot`       | `h6 { font-size }`                                            | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
+ | `reboot`       | `p { margin }`                                                | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `reboot`       | `a:hover { color }`                                           | —                                                | declaration | Elements repaints a link on hover from its own hover token.                                                                                                                 |
+ | `reboot`       | `ul { margin }`                                               | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+@@ -9934,7 +9945,11 @@ measurement fixes.
+ | `h3`           | `.h3 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `h4`           | `.h4 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
+ | `h5`           | `.h5 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
++| `h5`           | `.h5 { font-size }`                                           | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
+ | `h6`           | `.h6 { margin }`                                              | —                                                | declaration | The margin is written as one shorthand where the release writes block longhands.                                                                                            |
++| `h6`           | `.h6 { font-size }`                                           | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
++| `fs`           | `.fs-5 { font-size }`                                         | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
++| `fs`           | `.fs-6 { font-size }`                                         | `@media (width >= 1200px)`                       | declaration | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.    |
+ | `table`        | `.table > :not(caption) > * > * { border-color }`             | —                                                | declaration | Each cell takes the table’s own border color and alignment, which the release sets on the table and its row groups instead.                                                 |
+ | `table`        | `.table > :not(caption) > * > * { vertical-align }`           | —                                                | declaration | Each cell takes the table’s own border color and alignment, which the release sets on the table and its row groups instead.                                                 |
+ | `form-control` | `.form-control:focus { outline }`                             | `@media (forced-colors: active)`                 | declaration | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                        |
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 46925ab..1068678 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -237,6 +237,9 @@ import {
+ 	USER_SELECT_VALUES,
+ 	VIEWPORT_SIZE_CASES,
+ 	VIEWPORT_WIDTHS,
++	CAPPED_WIDTHS,
++	FLUID_SIZE_CASES,
++	FLUID_WIDTHS,
+ 	VISUALLY_HIDDEN_PROPERTIES,
+ 	VISUALLY_HIDDEN_READING,
+ 	TABLE_ROLE_CASES,
+@@ -260,6 +263,7 @@ import {
+ 	TEXT_BLOCKQUOTE_CASES,
+ 	TEXT_CODE_CASES,
+ 	TEXT_DL_CASES,
++	TEXT_FLOOR_CASES,
+ 	TEXT_HEADING_CASES,
+ 	TEXT_HR_CASES,
+ 	TEXT_KBD_CASES,
+@@ -298,6 +302,7 @@ import {
+ 	compileBreakpointRamp,
+ 	computeContentExtent,
+ 	computeCornerPoints,
++	computeFluidSize,
+ 	extractBootstrapVariables,
+ 	describeIncompleteRow,
+ 	extractShadowLayers,
+@@ -397,6 +402,9 @@ describe('styles setup', () => {
+ 				'FLEX_ENTRY_CASES',
+ 				'FLEX_FAMILY_CASES',
+ 				'FLEX_RESTING_VALUES',
++				'CAPPED_WIDTHS',
++				'FLUID_SIZE_CASES',
++				'FLUID_WIDTHS',
+ 				'FOCUS_RING_ROLES',
+ 				'FLOAT_VALUES',
+ 				'FONT_ENTRY_CASES',
+@@ -550,6 +558,7 @@ describe('styles setup', () => {
+ 				'TEXT_DL_CASES',
+ 				'TEXT_EMPHASIS_CASES',
+ 				'TEXT_ENTRY_CASES',
++				'TEXT_FLOOR_CASES',
+ 				'TEXT_HEADING_CASES',
+ 				'TEXT_HR_CASES',
+ 				'TEXT_KBD_CASES',
+@@ -604,6 +613,7 @@ describe('styles setup', () => {
+ 				'compileBreakpointRamp',
+ 				'computeContentExtent',
+ 				'computeCornerPoints',
++				'computeFluidSize',
+ 				'describeIncompleteRow',
+ 				'extractBootstrapVariables',
+ 				'extractShadowLayers',
+@@ -1517,6 +1527,29 @@ describe('styles setup', () => {
+ 			-0,
+ 		)
+ 	})
++	it('computes the size the responsive font size rule resolves at each viewport width', () => {
++		// The expectations are the rule's figures at a 16px root, written out rather than derived, so
++		// a slope, floor, or boundary that drifted in the function reddens against them.
++		const narrow = [36, 30, 24, 20, 18, 16, 80, 72, 64, 56, 48, 40].map((size) =>
++			computeFluidSize(size, 390),
++		)
++		const expected = [26.28, 23.925, 21.57, 20, 18, 16, 43.55, 40.41, 37.27, 34.13, 30.99, 27.85]
++		expect(narrow).toEqual(expected.map((value) => expect.closeTo(value, 6)))
++		expect([36, 20, 16, 80].map((size) => computeFluidSize(size, 1280))).toEqual([36, 20, 16, 80])
++		expect(computeFluidSize(36, 1200)).toBe(36)
++		// A retuned size: over the floor it scales and meets itself at the boundary without a jump,
++		// and under the floor it holds at every width.
++		expect(computeFluidSize(101, 390)).toBeCloseTo(51.7925, 6)
++		expect(computeFluidSize(101, 1199)).toBeCloseTo(100.93925, 6)
++		expect(computeFluidSize(101, 1200)).toBe(101)
++		expect(computeFluidSize(32, 390)).toBeCloseTo(24.71, 6)
++		expect(computeFluidSize(12, 390)).toBe(12)
++		expect(computeFluidSize(20, 0)).toBe(20)
++		// The floor is 1.25rem, so a 20px root raises it to 25px: a 2.25rem size there is 45px, and
++		// its excess scales from 18px rather than from the 14.4px a 16px root would leave.
++		expect(computeFluidSize(45, 390, 20)).toBeCloseTo(32.85, 6)
++		expect(computeFluidSize(25, 390, 20)).toBe(25)
++	})
+ 	it('binds every grid breakpoint and numbered family to the ramp and inventory', async () => {
+ 		const ramp = await compileBreakpointRamp()
+ 		expect(
+@@ -2899,9 +2932,29 @@ describe('styles setup', () => {
+ 		expect(
+ 			TYPE_MARK_TOKEN_CASES.filter((entry) => painted.has(entry.value)).map((entry) => entry.value),
+ 		).toEqual([])
++		// A floor row is armed only by the side of the floor its retune sits on, so the table names one
++		// row under the 1.25rem floor and one over it, and each value differs from every default.
++		expect(TEXT_FLOOR_CASES.map((entry) => [entry.tag, entry.token, entry.value])).toEqual([
++			['h6', '--vn-size-3', '12px'],
++			['h5', '--vn-size-4', '32px'],
++		])
++		expect(TEXT_FLOOR_CASES.filter((entry) => defaults.has(entry.value))).toEqual([])
++		// The fluid widths sit below the 1200px boundary and the capped widths at and above it, so a
++		// proof reads the rule within a tolerance on one side and the exact token on the other, and
++		// the widths either side of the boundary are each read.
++		expect(FLUID_WIDTHS).toEqual([390, 1199])
++		expect(CAPPED_WIDTHS).toEqual([1200, 1280])
++		// The mixin matrix names a size over the floor, one under it, and one under a raised root.
++		expect(FLUID_SIZE_CASES.map((entry) => [entry.size, entry.root])).toEqual([
++			[3, 16],
++			[1, 16],
++			[2.25, 20],
++		])
++		for (const widths of [FLUID_WIDTHS, CAPPED_WIDTHS]) expect(Object.isFrozen(widths)).toBe(true)
+ 		for (const table of [
+ 			TYPE_HEADING_CASES,
+ 			TYPE_HEADING_TOKEN_CASES,
++			FLUID_SIZE_CASES,
+ 			TYPE_DISPLAY_CASES,
+ 			TYPE_DISPLAY_TOKEN_CASES,
+ 			TYPE_TEXT_CASES,
+@@ -2926,6 +2979,7 @@ describe('styles setup', () => {
+ 			TEXT_BLOCKQUOTE_CASES,
+ 			TEXT_CODE_CASES,
+ 			TEXT_DL_CASES,
++			TEXT_FLOOR_CASES,
+ 			TEXT_HEADING_CASES,
+ 			TEXT_HR_CASES,
+ 			TEXT_KBD_CASES,
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 8f883b6..413dc31 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1163,6 +1163,31 @@ export function computeContentExtent(
+ 	return extent
+ }
+ 
++/**
++ * Computes the size the release's responsive font size rule resolves for a size at a viewport width.
++ *
++ * @param size - The size the rule scales, in CSS pixels.
++ * @param width - The viewport width, in CSS pixels.
++ * @param root - The root font size, in CSS pixels, which fixes the rule's 1.25rem floor.
++ * @returns The size itself at and above the 1200px boundary. Below it, the size less its excess over
++ *   the floor, at nine tenths, scaled by how far the viewport sits below the boundary. A size at or
++ *   under the floor has no excess, so it is returned unchanged at every width.
++ *
++ * @remarks
++ * The function is the proofs' independent statement of the rule the `fluid-size` function in the
++ * `_mixins.scss` partial emits, so a size proof compares a rendered reading with this arithmetic
++ * rather than with a value the cascade supplied.
++ *
++ * @example
++ * ```ts
++ * computeFluidSize(36, 390) // 26.28
++ * ```
++ */
++export function computeFluidSize(size: number, width: number, root = 16): number {
++	if (width >= 1200) return size
++	return size - Math.max(size * 0.9 - 1.125 * root, 0) * (1 - width / 1200)
++}
++
+ // The frozen case tables and markup strings the style proofs drive their scenarios from. A table
+ // here carries written data and nothing that reads a cascade.
+ 
+@@ -1329,7 +1354,13 @@ export const TEXT_DL_CASES = Object.freeze(
+ 	),
+ )
+ 
+-/** Holds the mode and resolved readings for the heading element family. */
++/**
++ * Holds the mode and resolved readings for the heading element family.
++ *
++ * @remarks
++ * The sizes and lines are the readings from the 1200px boundary on. Below it, a proof scales each
++ * size through the {@link computeFluidSize} function, and each line keeps its ratio to its size.
++ */
+ export const TEXT_HEADING_CASES = Object.freeze(
+ 	TEXT_MODES.map((mode) =>
+ 		Object.freeze({
+@@ -1341,6 +1372,18 @@ export const TEXT_HEADING_CASES = Object.freeze(
+ 	),
+ )
+ 
++/**
++ * Holds a heading tag, the size token its level names, and a retune on one side of the 1.25rem floor.
++ *
++ * @remarks
++ * The `h6` row retunes under the floor, where the rule leaves a size fixed at every viewport, and the
++ * `h5` row retunes over it, where the rule scales a size its default would leave fixed.
++ */
++export const TEXT_FLOOR_CASES = Object.freeze([
++	Object.freeze({ tag: 'h6', token: '--vn-size-3', value: '12px' }),
++	Object.freeze({ tag: 'h5', token: '--vn-size-4', value: '32px' }),
++])
++
+ /** Holds the mode and resolved readings for the hr element family. */
+ export const TEXT_HR_CASES = Object.freeze(
+ 	TEXT_MODES.map((mode) =>
+@@ -2145,6 +2188,40 @@ export const BREAKPOINT_INFIXES = Object.freeze(
+ /** Lists the viewport widths the journey's variants render at, narrowest first. */
+ export const VIEWPORT_WIDTHS = Object.freeze([390, 1280])
+ 
++/**
++ * Lists the viewport widths below the `xl` boundary where a fluid size proof reads the responsive
++ * rule, narrowest first: the narrow journey width and the last width before the boundary.
++ *
++ * @remarks
++ * A reading here is compared with the {@link computeFluidSize} function within a tolerance, because
++ * the browser rounds the fluid arithmetic it resolves.
++ */
++export const FLUID_WIDTHS = Object.freeze([390, 1199])
++
++/**
++ * Lists the viewport widths at and above the `xl` boundary where a fluid size proof reads the cap,
++ * narrowest first: the boundary itself and the wide journey width.
++ *
++ * @remarks
++ * A reading here is the size token's exact value, so a proof pins the resolved string.
++ */
++export const CAPPED_WIDTHS = Object.freeze([1200, 1280])
++
++/**
++ * Holds each size, in rem, and the root font size, in pixels, the fluid size mixin proof resolves
++ * it against.
++ *
++ * @remarks
++ * The 3rem row scales over the 1.25rem floor, the 1rem row sits under it, and the 2.25rem row sits
++ * under a 20px root, where the floor and the size in pixels both follow the root. A floor or a
++ * slope written in pixels scales that row by the wrong excess.
++ */
++export const FLUID_SIZE_CASES = Object.freeze([
++	Object.freeze({ size: 3, root: 16 }),
++	Object.freeze({ size: 1, root: 16 }),
++	Object.freeze({ size: 2.25, root: 20 }),
++])
++
+ /**
+  * Holds the inline style of the container the placement proofs mount their boxes in.
+  *
+@@ -3174,11 +3251,13 @@ export const BUTTON_SIZE_CASES = Object.freeze([
+ ] as const)
+ 
+ /**
+- * Holds each heading class, the tag it twins, and the size and line both of them resolve to.
++ * Holds each heading class, the tag it twins, and the size and line both of them resolve to from the
++ * 1200px boundary on.
+  *
+  * @remarks
+  * The class reads the same `--vn-size-*` token its tag reads, so one reading answers for the pair
+- * and a case that found them apart would name which one moved.
++ * and a case that found them apart would name which one moved. Below the boundary, a proof scales
++ * the size through the {@link computeFluidSize} function.
+  */
+ export const TYPE_HEADING_CASES = Object.freeze([
+ 	Object.freeze({ twin: 'h1', size: '36px', line: '43.2px' }),
+@@ -3189,7 +3268,11 @@ export const TYPE_HEADING_CASES = Object.freeze([
+ 	Object.freeze({ twin: 'h6', size: '16px', line: '19.2px' }),
+ ])
+ 
+-/** Holds each display class and the size and line its `--vn-display-*` token resolves to. */
++/**
++ * Holds each display class and the size and line its `--vn-display-*` token resolves to from the
++ * 1200px boundary on. Below the boundary, a proof scales the size through the
++ * {@link computeFluidSize} function.
++ */
+ export const TYPE_DISPLAY_CASES = Object.freeze([
+ 	Object.freeze({ name: 'display-1', size: '80px', line: '96px' }),
+ 	Object.freeze({ name: 'display-2', size: '72px', line: '86.4px' }),
