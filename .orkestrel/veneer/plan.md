@@ -110,29 +110,28 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 23:05 UTC.** Implementation first, the user's instruction.
-- **Your J-SANITIZER landing, read on this host (Chromium 141.0.7390.37) at Veneer `main` `b1d314d`**
-  (`units/sanitizer-read/`): `app:browser` 222 passed, `setup:browser` 83 passed, and `src:browser` 887 passed, 1
-  failed, 2 skipped of 890. Every `Tooltip`, `EngineSection`, and `Placement` red of the 21:40 note is green. The red
-  is `ConfigSanitizer.test.ts` › "parses in the context of the target, so an annotation-xml element whose encoding is
-  text/html keeps an HTML anchor": `expected '' to be '<a>kept</a>'` at the first `innerHTML` assertion; the file run
-  alone reads the same (`units/sanitizer-read/configsanitizer-alone.log.txt`, 63 passed, 1 failed). It is yours to
-  carry; this host re-reads it when you say it has landed. `HostSnapshot.test.ts` also prints an uncaught
-  `DOMTokenList.toggle` error on stderr in the withdrawn-recording case, which passes.
-- **APPEARANCE**: AP-COLOR round 4 (two test titles) and AP-TYPE round 4 (three comment lines) are closing; both land
-  on this session's branch over `b1d314d` and then on `main`. They change `src/styles/**`, `tests/src/styles/**`,
-  `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tests/setup.ts` (the `UNDER_BAR` table), and the guide's
-  color, link, button, validation, font, and type rows and prose, and no engine file.
-- **Next here after APPEARANCE**: E-IDENTITY (design round running: a probe finds Bootstrap's horizontal description
-  list, `<dl class="row">` with `.col-*` children, wrapping each `dd` under its `dt`, because the `dl` element rule's
-  `gap` applies to the `.row` flex container), then J-FIXTURES, E-RECEIPTS, and P1 SCAFFOLD-PROPAGATE. E-VUE wraps
-  your engine API: say whether you take it or this session does.
-- **Answers to your 22:50 note.** J-FIXTURES: this session carries it, because its callers sit in `tests/app/**` and
-  `tests/setupBrowser.test.ts`; the unit follows APPEARANCE and touches only those four lookups in
-  `tests/setupBrowser.ts`. The § Rulings "on its own branch (D43)" sentence is aligned in the APPEARANCE fold commit;
-  this plan's paragraph is aligned here. The closed units' records are pruned here. The Chromium 141 reading is the
-  first bullet of this note. The early E-RECEIPTS reading of `b1d314d` (`units/receipts-read/`): `npm run build`
-  exits 0 and the release-mode distribution proof exits 0 with every case passing that its entry's host publishes.
+**In flight (this session), 2026-09-24 23:40 UTC.** Implementation first, the user's instruction.
+- **Veneer `main` is `6882751`**: APPEARANCE landed (AP-COLOR `8507fba`, P7; AP-TYPE `1775bb7`, P8), the roadmap fold
+  `f1f34dd`, and this session's merge of your J-GUARDS. The landing chain over `ca83afb` read styles 1463, setup
+  321, conformance 26, guides 20, policy 109, and the journey 252 with capture and 252 without; the merge over your
+  J-GUARDS read `format:check`, `lint:check`, `check`, guides, policy, and conformance green
+  (`units/appearance-instruments/`). They change `src/styles/**`, `tests/src/styles/**`, `tests/setupStyles.ts`,
+  `tests/setupStyles.test.ts`, `tests/setup.ts`, and the guide's style sections, and no engine file. The roadmap's
+  rulings sentence now says you work on `main` with one worktree per unit.
+- **Your J-SANITIZER on Chromium 141** (`units/sanitizer-read/`, read at `b1d314d`): `app:browser` 222, `setup:browser`
+  83, `src:browser` 887 passed and 1 failed. The red is `ConfigSanitizer.test.ts` › "parses in the context of the
+  target, so an annotation-xml element whose encoding is text/html keeps an HTML anchor", reading `''` for
+  `<a>kept</a>`, and it reads the same with its file alone. Yours to carry.
+- **In flight here: E-IDENTITY** (`e-identity-design-verdict.md`): a bare element takes Veneer's look, and markup built
+  with Bootstrap's classes lays out as Bootstrap lays it out. E-ID-LAYOUT (`dl`, `blockquote`, `figure`), E-ID-CODE
+  (`pre code`, `a > code`, `kbd kbd`, `samp`), and E-ID-RECORD (every border width reads `--bs-border-width`;
+  `.btn-check` hides as Bootstrap does) run in worktrees cut from `ca83afb`. They touch `src/styles/**`,
+  `tests/src/styles/**`, `tests/setupStyles.ts`, `app/browser/constants.ts` (specimens), and the guide's element rows,
+  and no engine file.
+- **Next here:** J-FIXTURES (this session carries it; its callers sit in `tests/app/**` and `tests/setupBrowser.test.ts`,
+  and it touches only the four lookups in `tests/setupBrowser.ts`), E-RECEIPTS (the release-mode distribution proof
+  read green at `b1d314d`, `units/receipts-read/`), and P1 SCAFFOLD-PROPAGATE. E-VUE wraps your engine API: say
+  whether you take it.
 
 ## Landing procedure
 

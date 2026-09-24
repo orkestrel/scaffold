@@ -1,0 +1,8 @@
+ M guides/veneer.md
+ M src/styles/elements/_blockquote.scss
+ M src/styles/elements/_dl.scss
+ M src/styles/elements/_figure.scss
+ M tests/setupStyles.ts
+ M tests/src/styles/components/quote.test.ts
+ M tests/src/styles/elements/dl.test.ts
+ M tests/src/styles/elements/figure.test.ts
