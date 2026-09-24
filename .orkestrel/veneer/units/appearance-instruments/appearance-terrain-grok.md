@@ -1,0 +1,32 @@
+# Appearance terrain — Cursor Grok distillate (session ad9f6db7-1b32-4995-8068-80e38c417957, journal tmp/cursor/appearance-terrain.jsonl, swept at acceptance)
+
+Question: Terrain for the P7 (dark-mode palette) and P8 (type-scale) appearance ruling on Veneer, comparing the guide's departure rows, Veneer's source tokens, Elements' reference values, and Bootstrap 5.3.8's defaults.
+
+Evidence (P7 — dark palette):
+- Departure rows (`guides/veneer.md:9497,9500,9502,9548,9614,9617,9619,9665,9710`): Veneer tokenizes `--bs-primary`, `--bs-info`, `--bs-danger`, `--bs-body-bg` against `var(--vn-color-*)`/`var(--vn-surface-body-base)`; the `[data-bs-theme=light]` info and danger rows are `dropped`. The dark theme block (`:9708–9771`) carries no `--bs-primary`/`info`/`danger` row — info and danger stay the `:root` values in both modes; only primary retunes by mode, because `theme-tokens` only writes `--bs-primary` when the dark map has a `primary` key (`src/styles/_mixins.scss:449-453`).
+- Stated reasons (`guides/veneer.md:6689-6707,6756-6770`): all four are `elements` — primary/border fill, information-variant fill, danger fill, and page canvas, respectively.
+- Veneer tokens (`src/styles/_tokens.scss`): `--vn-color-primary-base` light `oklch(0.48 0.255 264)` (`:27`) / dark `oklch(0.7 0.15 233)` (`:91`); `--vn-color-info-base` `oklch(0.5 0.134 242.749)` (`:354`, unchanged in dark); `--vn-color-danger-base` `oklch(0.505 0.213 27.518)` (`:356`, unchanged); `--vn-surface-body-base` light `#fff` (`:55,339`) / dark `oklch(0.21 0.013 256)` (`:122`).
+- Elements (`src/styles/_theme.scss`): primary light `oklch(48% 0.255 264)` (`:103`) / dark `oklch(70% 0.15 233)` (`:291,438`); information `oklch(50% 0.134 242.749)` (`:109,125`, not overridden dark); danger `oklch(50.5% 0.213 27.518)` (`:108,126`, not overridden); canvas white (`:137`) / dark `oklch(21% 0.013 256)` (`:288,435`). All match Veneer's numbers.
+- Bootstrap 5.3.8 (`scss/_variables.scss:39,43,48,301,304,306,439,9`): `$primary=#0d6efd`, `$info=#0dcaf0`, `$danger=#dc3545`, `$body-bg=$white=#fff`; none of `$primary`/`$info`/`$danger` are reassigned in `_variables-dark.scss`, only `$body-bg-dark=$gray-900=#212529` (`_variables-dark.scss:44`, `_variables.scss:18`). Primary-button text is `color-contrast($background)` (`mixins/_buttons.scss:10`), compiling to `#fff` for `.btn-primary` (`guides/veneer.md:7217`) — Bootstrap keeps white text on primary in dark mode. Veneer's same property is `light-dark(white, black)` (`:7217`), so Veneer's dark-mode primary button label is black.
+
+Evidence (P8 — type scale):
+- Body size: `--bs-body-font-size` Bootstrap `1rem` → Veneer `var(--vn-size-2)` = `0.875rem` (`guides/veneer.md:9543`, `_tokens.scss:384-404`). Reason: Elements' 12-36px type table (`:6834`).
+- Form label size: no explicit font-size row exists (`:7730` only records margin); Bootstrap's `$form-label-font-size` is `null` (`scss/_variables.scss:878`), so labels inherit body size in both systems.
+- Button label size: `.btn` `--bs-btn-font-size` Bootstrap `1rem` → Veneer `var(--vn-size-2)` = `0.875rem` (`:7196`).
+- Floating-label size: no explicit font-size departure row; the label's `scale(0.85)` transform matches Bootstrap's own transform, and the underlying control uses `--vn-size-3` = `1rem` (`:7757`).
+- Heading weight: Bootstrap `500` → Veneer `var(--vn-weight-heading)` = `600` (`:9124-9144`), sourced from Elements (`:6837`, `_tokens.scss:404`).
+- Heading/paragraph margins: Bootstrap's `0.5rem`/`1rem` margin-bottom rows are `dropped` (`:9123-9157`); Veneer collapses headings to shorthand `margin: 0` (`_mixins.scss:19-21`).
+- `fs-*`/`display-*`: Bootstrap's `$enable-rfs: true` (`scss/_variables.scss:381`) fluid `calc()` + 1200px cap is replaced by fixed Veneer size tokens with the cap dropped, for every `fs-1` through `fs-6` and `display-1` through `display-6` (`guides/veneer.md:7658-7674,7904-7913`).
+- Bootstrap defaults: `$font-size-base: 1rem` (`:615`); `$form-label-font-size: null` (`:878`); `$btn-font-size = $input-btn-font-size = $font-size-base` (`:822,792`); `$headings-font-weight: 500` (`:656`); `$headings-margin-bottom: 0.5rem` (`:653,410`); `$enable-rfs: true` (`:381`).
+
+Distillate — what P7 and P8 mean, for the decision:
+- **P7** is whether Veneer's dark-mode contrast choices are acceptable: Veneer retunes only the primary color for dark mode (Bootstrap and Elements do the same), leaving info/danger unchanged in both modes — this matches Elements exactly. The one place Veneer's ruling actively diverges from Bootstrap's own dark-mode behavior is the primary button's label color: Bootstrap keeps white text on the primary button in dark mode; Veneer switches it to black (through `light-dark(white, black)`). That's the specific contrast call needing sign-off — is black-on-primary-in-dark-mode the correct choice, given Veneer's darker/desaturated dark-mode primary `oklch(0.7 0.15 233)` (a lighter, more cyan-leaning blue) versus Bootstrap's unchanged `#0d6efd`.
+- **P8** is whether Veneer's smaller, denser type scale is acceptable: body text and button labels shrink from Bootstrap's `1rem` to `0.875rem` (matching Elements), heading weight increases from `500` to `600` (matching Elements), heading/paragraph margins collapse to `0`, and the responsive `fs-*`/`display-*` fluid scaling is replaced with fixed sizes (losing Bootstrap's viewport-based scaling and 1200px caps). Every value traced to Elements matches; the design intent is "adopt Elements' fixed, denser scale over Bootstrap's fluid, larger-by-default one."
+
+Unknowns (Grok's own list, verbatim):
+- `$paragraph-margin-bottom`'s assignment was not located in the sections of `scss/_variables.scss` Grok read (options, spacing, body, typography, headings, forms, buttons); only its consumer (`_reboot.scss:131`) and the guide's compiled value (`1rem`, `guides/veneer.md:9157`) were found.
+- Elements' `--text-sm` (the fallback for `--set-input-font-size`, `elements/_input.scss:69`) has no definition in `src/styles/_tokens.scss` within the range Grok read (base-type block ends `:202`); no local value was found.
+
+Journal: `/home/user/scaffold/tmp/cursor/appearance-terrain.jsonl`, session id `ad9f6db7-1b32-4995-8068-80e38c417957`.
+
+Deviation: none. `.err` file is empty; brief and run script written under `/home/user/scaffold/tmp/cursor/` as pinned; `git status --porcelain` clean before and after in both `/home/user/veneer` (not a git repository) and `/home/user/scaffold` (no changes outside the ignored `tmp/cursor/` journal artifacts).
