@@ -1,0 +1,18 @@
+Ship the modal key with its section, proofs, and guide rows
+
+The modal key ships whole in the components layer: the dialog, its content, header, body, and footer,
+the header's close-control combinator, the size caps, the fullscreen ramp at every breakpoint, the
+centered and scrollable forms, the static bounce, and the backdrop, which the overlay-backdrop mixin
+writes. The dialog and backdrop levels bind to the dialog rungs of the stacking ladder, every length and
+colour reads its token, and motion runs through the transition mixin. The Modal region renders each
+dialog shown inside its own frame with the modal body stand-ins the engine would write, and a backdrop
+beside the shown modal alone. The style proof reads every recorded selector against the official
+inventory, the markup constant lives in the setup file, and the guide carries the modal section, the
+ledger and compatibility rows, the stacking paragraph, and the Modal plugin row owned by J-ENGINE.
+
+B-MODAL wave 2, unit MODAL: three rounds on `opus`, the first audited by `analyst` on Astra,
+`reviewer` on Opus 5.5, and `checker`, the second by `analyst` on Astra and `checker`, and the
+third, a prose round, by `checker`.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
