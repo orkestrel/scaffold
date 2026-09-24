@@ -3,3 +3,4 @@
 === lint exit=0  at 15:43:35
 === check exit=0  at 15:44:03
 === build exit=0  at 15:44:20
+=== capture exit=0       Tests  248 passed (248) at 15:52:24

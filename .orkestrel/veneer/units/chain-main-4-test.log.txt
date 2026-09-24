@@ -1,0 +1,13 @@
+command: npm test
+
+> @orkestrel/veneer@0.0.1 test
+> npm run test:src && npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:setup:browser && npm run test:conformance && npm run test:guides
+
+
+> @orkestrel/veneer@0.0.1 test:src
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser && npm run test:src:styles
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+········

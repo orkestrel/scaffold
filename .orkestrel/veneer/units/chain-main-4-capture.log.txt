@@ -292,4 +292,11 @@ stderr | unknown test
 Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
 stderr | unknown test
 Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
-···························
+························································································································································································································································
+
+ Test Files  4 passed (4)
+      Tests  248 passed (248)
+   Start at  15:44:22
+   Duration  481.48s (transform 0ms, setup 10.15s, import 8.76s, tests 1782.75s, environment 0ms)
+
+exit 0
