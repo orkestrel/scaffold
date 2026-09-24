@@ -1,41 +1,38 @@
 # J-INTEGRATION landing: the merge of main into unit/integration (2026-09-24)
+e0dee7e Merge branch 'main' into unit/integration
 7fd28dc Stop a returning step when a reaction inside it starts another change
-55a3b11 Merge branch 'main' into unit/integration
 From https://github.com/mikesaintsg/veneer
  * branch            main       -> FETCH_HEAD
 fetch exit=0
 Already up to date.
 main ff to origin exit=0
-b1d314d Name the sanitizer fixtures in the setup module's export list
+3acad4c State the related-target summaries in plain sentences, pin a truly undefined detail, and state the resolver's constructor-key rule
 Auto-merging guides/veneer.md
+Auto-merging src/browser/Modal.ts
+Auto-merging src/browser/Offcanvas.ts
 Auto-merging src/browser/types.ts
 Merge made by the 'ort' strategy.
- ROADMAP.md                                         |  10 +-
- guides/veneer.md                                   |  55 ++-
- package-lock.json                                  |   8 +-
- package.json                                       |   2 +-
- src/browser/Tooltip.ts                             |   4 +-
- src/browser/constants.ts                           |  43 +-
- src/browser/helpers.ts                             | 256 +++++++++++-
- src/browser/index.ts                               |   2 +-
- src/browser/sanitizers/ConfigSanitizer.ts          | 183 +++++++++
- src/browser/sanitizers/NativeSanitizer.ts          |  45 --
- src/browser/types.ts                               |  53 ++-
- src/browser/validators.ts                          |  97 ++++-
- tests/app/browser/integration.test.ts              |  49 ++-
- tests/setup.ts                                     |   6 +-
- tests/setupBrowser.test.ts                         |   5 +
- tests/setupBrowser.ts                              | 453 ++++++++++++++++++++-
- tests/src/browser/Tooltip.test.ts                  |  38 ++
- tests/src/browser/helpers.test.ts                  | 293 ++++++++++++-
- tests/src/browser/index.test.ts                    |  14 +-
- .../src/browser/sanitizers/ConfigSanitizer.test.ts | 413 +++++++++++++++++++
- .../src/browser/sanitizers/NativeSanitizer.test.ts | 182 ---------
- tests/src/browser/validators.test.ts               | 116 +++++-
- 22 files changed, 2045 insertions(+), 282 deletions(-)
- create mode 100644 src/browser/sanitizers/ConfigSanitizer.ts
- delete mode 100644 src/browser/sanitizers/NativeSanitizer.ts
- create mode 100644 tests/src/browser/sanitizers/ConfigSanitizer.test.ts
- delete mode 100644 tests/src/browser/sanitizers/NativeSanitizer.test.ts
+ ROADMAP.md                           |  19 +-
+ guides/veneer.md                     | 624 +++++++++++++++++------------------
+ src/browser/Alert.ts                 |   4 +-
+ src/browser/Carousel.ts              |   5 +-
+ src/browser/Collapse.ts              |   6 +-
+ src/browser/Dropdown.ts              |   4 +-
+ src/browser/Modal.ts                 |  17 +-
+ src/browser/Offcanvas.ts             |  17 +-
+ src/browser/Popover.ts               |   4 +-
+ src/browser/ScrollSpy.ts             |  10 +-
+ src/browser/Tab.ts                   |   4 +-
+ src/browser/Toast.ts                 |   6 +-
+ src/browser/Tooltip.ts               |  23 +-
+ src/browser/helpers.ts               |  24 +-
+ src/browser/types.ts                 |  69 ++--
+ src/browser/validators.ts            | 210 ++----------
+ tests/src/browser/Popover.test.ts    |  29 +-
+ tests/src/browser/Tooltip.test.ts    |  26 ++
+ tests/src/browser/helpers.test.ts    |  93 ++++++
+ tests/src/browser/index.test.ts      |  10 +-
+ tests/src/browser/validators.test.ts | 439 +++++-------------------
+ 21 files changed, 661 insertions(+), 982 deletions(-)
 merge main into unit/integration exit=0
 conflicts: none

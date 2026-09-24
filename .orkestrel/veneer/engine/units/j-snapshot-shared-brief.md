@@ -2,7 +2,7 @@
 
 ## Role and engine
 
-`opus` on Opus 5.5, a native Claude subagent (Read, Grep, Glob, Edit, Write, Bash), the sole writer in `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/snapshot-shared` (branch `unit/snapshot-shared`, cut from Veneer `main` at BASE_SHA, the J-GUARDS landing, which the Orchestrator names at dispatch; `npm ci` already run). The work is objective and routed native because its proofs run in a browser, which the Astra bench sandbox cannot launch (E25).
+`opus` on Opus 5.5, a native Claude subagent (Read, Grep, Glob, Edit, Write, Bash), the sole writer in `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/snapshot-shared` (branch `unit/snapshot-shared`, cut from Veneer `main` at `3acad4c`, the J-GUARDS landing; `npm ci` already run). The work is objective and routed native because its proofs run in a browser, which the Astra bench sandbox cannot launch (E25).
 
 ## Objective
 
