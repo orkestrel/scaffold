@@ -1,0 +1,18 @@
+=== unit files: guides/veneer.md tests/app/browser/integration.test.ts tests/setup.test.ts tests/setup.ts tests/setupBrowser.test.ts tests/setupBrowser.ts
+=== unit/fh f5a55a8
+=== unit/fh with fh-shared.patch 49cfaa9
+=== session head cf9a292
+Auto-merging guides/veneer.md
+Auto-merging tests/app/browser/integration.test.ts
+Auto-merging tests/setup.ts
+Automatic merge went well; stopped before committing as requested
+Squash commit -- not updating HEAD
+=== squash merge exit=0
+=== landed a947bc8
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 17478ms on 6 files using 4 threads.
+=== oxfmt check exit=0
+=== oxlint exit=0
+=== check exit=0
