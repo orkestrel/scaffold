@@ -927,6 +927,10 @@ Build the dependency from source, pack it, and **install the tarball** into the 
 - **Rebuild and repack whenever the source moves.** A stale tarball is the same defect as a stale
   `dist/`, and it is worse for being invisible: the consumer's gates go green against a fix that no
   longer exists in the dependency's tree.
+- **Delete the consumer's `node_modules/.vite` directory after every tarball install**, or install
+  into a fresh worktree. Vite keys its dependency pre-bundle on the installed version, so a tarball
+  carrying the same version as the copy it replaces leaves the previous build serving every browser
+  run.
 - **Run one unit per checkout, at that checkout's catalog layer.** Give a checkout with no rows an
   adopt unit only when its typecheck against the staged closure reddens.
 - **Fetch and merge the dependency's default branch before packing it**, wherever another session
