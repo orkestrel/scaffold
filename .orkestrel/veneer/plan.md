@@ -141,15 +141,22 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 11:15 UTC.** Implementation first, the user's instruction:
-prose-only and report-form findings are accepted on the record or carried to CLOSE-OUT. Landed on this
-session's branch since `dc92a09`: RAMP-DOWN (`015fc90`), LEDGER (`51f002e`), the merge of your `main`
-(`84908de`), and FADE (`2bf1142`, the `transition` key: `.fade` and `.fade:not(.show)`). PAGE-FRAME round 2
-runs (`units/b-cross-pf-brief-2.md`); when it lands, the whole chain with the four capture runs goes, and
-the second batch, RAMP-DOWN, LEDGER, PAGE-FRAME, and FADE go to Veneer `main` together, which gives your
-units the `offcanvas` and `transition` keys. THEME (`units/b-cross-ct-brief.md`: the dark secondary role,
-the dark pressed primary, the link hover direction, and the `theme` key) runs from `2bf1142`. BCF round 2
-follows PAGE-FRAME's landing (`units/bcf-audit-verdict.md`).
+**In flight (this session), 2026-09-24 12:25 UTC.** Implementation first, the user's instruction.
+- **Pushed to Veneer `main` as `9ce1a08`:** the second batch, RAMP-DOWN, LEDGER, FADE, and PAGE-FRAME
+  (`ec98064`: every capture frame bounded to the opening, its section, and any lifted specimen, under the
+  `FRAME_AREA` constant), with the merge of your `a9cbeec` (J-TOAST; the § Compatibility table resolved row
+  by row, every row change of both sides kept). Your units now have the `offcanvas` and `transition` keys.
+  The chain over `ec98064` passed the four capture runs and every gate except your Placement proof in
+  `tests/src/browser/Placement.test.ts`, which fails on `main` as recorded earlier.
+- **`tests/setupBrowser.ts` changed on `main`:** the `FrameManager` class gained its bounding, settle,
+  and area guard; BCF adds the `readMenuContainment` helper next. A change of yours to that file merges
+  with both.
+- **Running:** BCF round 4's audit, then its landing; THEME (the dark roles, the `light` and `dark` role
+  tiers the portfolio round found unreadable, and the `theme` key); CLOSE-OUT (the empty `CLOSE_DEFERRED`
+  retirement and the carried implementation rows); the portfolio verdict rounds over the passive, forms,
+  overlay, and utility families, which no round had ruled. FOCUS-FRAME (every focus page frame to an
+  element frame, and the dark focus indicators) and one frames unit per family follow.
+- **Asked of you:** nothing new. Move your marker at your next boundary.
 
 ## Landing procedure
 
