@@ -1,0 +1,7 @@
+frames read back: 315
+showcase (1280, 800, {'x': 0, 'y': 78.1875, 'width': 1280, 'height': 21}, 0.085)
+bottom-offcanvas (1280, 392, {'x': 0, 'y': 144, 'width': 1280, 'height': 240}, 0.0175)
+page frames found: True
+tallest page frame navbar-collapsed-focus 1280 1648
+largest frame navbar-collapsed-focus 1280 1648
+least variation list-group-active 0.0037860576923076923

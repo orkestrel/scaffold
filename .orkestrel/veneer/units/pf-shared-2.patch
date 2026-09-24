@@ -1,0 +1,54 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -7741,15 +7741,32 @@
+ | ------------------ | ------------------ | ------------------------------------------------------- |
+ | `capped-container` | `Capped container` | A resting element frame of the specimen's own container |
+ | `primary-hover`    | `Primary`          | A driven state: the specimen under the pointer          |
+-| `showcase`         | `Showcase`         | The page frame, read through the region at rest         |
++| `showcase`         | `Showcase`         | The page's opening and the region, at rest              |
+ 
+ An element frame carries its whole specimen and the background that specimen renders against, and
+ the element the scenario is about is the frame's declared region. A crop of that element alone
+ carries one role link and none of the paint behind it, which is why the frame is the specimen and
+ the region is the reading. The written frame is read back through the installed `readFrame` function
+-for its size and the color its bottom row paints, and its declared region is read for the fraction
+-of pixels differing from that region's first pixel; a region painting one color is refused as a
+-blank.
++for its size and its floor, the one color its bottom row paints. Its declared region is read for the
++fraction of pixels differing from that floor, or from the region's own first pixel where the bottom
++row paints several colors, and a region showing the floor alone is refused as a blank.
++
++A frame is shot in a bounded document. For each shot, every child of the showcase's `main` element
++that holds neither the scenario's subject nor its frame is taken out of the layout through the
++`hidden` attribute, and laid out again when the placement returns. A page frame therefore carries
++the page's opening (the heading and the Dark mode control) and the one section holding its subject.
++The arrival frame's subject is the Showcase region, so that frame carries the opening and the region
++alone. An element frame of a specimen lifted to the document's start is shot beside the opening with
++every section out of the layout, so the specimen's viewport-height lengths resolve against the
++variant's viewport. A section added to the showcase grows no frame shot outside it. The declared
++region is read with the pane staged at the height the capture reaches, which is the variant's
++viewport or the bounded document's height, whichever is taller, and only after the pane is staged
++there again and a second reading of the document's height agrees with the first. A frame larger
++than the largest frame a run has read back is refused before it is shot, on every run, naming its
++scenario; see [the capture registry](../tests/setup.ts). A page frame carries a focus state and
++never a pointer state, because taking the other sections out of the layout can move its subject out
++from under the pointer, so every pointer state is an element frame of a specimen lifted to the
++document's start.
+ 
+ The guard's population is the frames on disk under the `tmp/capture/states` directory, discovered
+ from the registry's own expansion and read back whether or not this run wrote a file, so an ordinary
+@@ -7769,9 +7786,11 @@
+ whole page's tree, the focus inventory, the interaction log, and every reading the journeys took.
+ 
+ The two portfolios read side by side within one stated limit: a counterpart frame is shot on a blank
+-page carrying the specimen alone, and a Veneer frame is a lift out of the mounted showcase. The
+-hosts are not the same document, so inherited context is not proven identical, and a difference
+-between the sides is bounded by that before it is read as a cascade difference.
++page carrying the specimen alone, and a Veneer frame is shot inside the mounted showcase, on a
++specimen lifted to the document's start or where its section renders it, with every other section
++out of the layout. The hosts are not the same document, so inherited context is not proven
++identical, and a difference between the sides is bounded by that before it is read as a cascade
++difference.
+ 
+ The style proofs bind the cascade to the registry and to the calibration; see
+ [token parity and values](../tests/src/styles/tokens.test.ts),

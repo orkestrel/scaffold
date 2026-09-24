@@ -45,6 +45,11 @@ UNITS = {
         focus='claims 1, 2, 3, and 5 (the delta against round 1, the added rows against the release\'s plugins, the registry remark against the declined states, and the failing-first runs under the shipped titles)',
         checker='claims 1, 4, and 6',
         bench='the bench round-tripped at 05:34 (cl-audit-2 launched through this queue)'),
+    'pf': dict(name='PAGE-FRAME', worktree='/home/user/veneer-pf', base='dc92a09',
+        evidence='`pf-2.diff`, `pf-2-status.txt`, `pf-shared-2.patch`, `b-cross-pf-report-2.md`, `b-cross-pf-brief-2.md`, `pf-instruments/` (the round-2 records, each name carrying `-2`: `pf-mutations-2.log.txt`, `pf-mutations-2.sh`, `pf-mutate-2.py`, the `pf-mutation-2-*` logs, `pf-2-red-setup-browser.log.txt`, `pf-2-green-setup-browser.log.txt`, `pf-2-gates.sh` and the `pf-2-gate-*` logs, `pf-2-guides.log.txt`, `pf-2-capture.sh`, `pf-2-capture-light-1280.log.txt`, `pf-2-frames-light-1280.log.txt`, and the two `pf-2-*-primary-hover-column.txt` readings), round 1\'s `pf.diff`, `pf-shared.patch`, `b-cross-pf-report.md`, and `b-cross-pf-brief.md`, and the round-1 verdict `pf-audit-verdict.md` and its lane verdicts; the design verdict `pf-design-verdict.md`; the frames under `/home/user/veneer-pf/tmp/capture/states/` from the round-2 `light-1280` run',
+        focus='claims 2, 3, 4, and 6 (the settle order and its proofs against their mutations, the pointer guard at every pointer-held placement and the un-lift runs, every rewritten re-read comment against the code, and the derived getter and its readers)',
+        checker='claims 1, 5, 7, and 8',
+        bench='the bench round-tripped at 10:39 (bcf-audit returned exit 0 through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"
