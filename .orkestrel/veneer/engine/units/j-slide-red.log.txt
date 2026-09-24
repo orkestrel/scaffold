@@ -1,0 +1,7 @@
+8:⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+10: FAIL  |app:browser (chromium)| tests/app/browser/sections/EngineSection.test.ts:81:2 > EngineSection > carries only class tokens the loaded cascade declares or an engine reads
+11:AssertionError: expected [ 'd-inline-flex', 'gap-1', …(73) ] to include 'slide'
+22: FAIL  |app:browser (chromium)| tests/app/browser/sections/EngineSection.test.ts:350:2 > EngineSection > slides the carousel with its motion from its next control and from an indicator
+23:AssertionError: expected false to be true // Object.is equality
+42: Test Files  1 failed (1)
+43:      Tests  2 failed | 13 passed (15)

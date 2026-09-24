@@ -1,0 +1,108 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index e4e95d4..78082f0 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -54,9 +54,7 @@ export const ENGINE_TOOLTIP_TRIGGER = '[data-bs-toggle="tooltip"]'
+  * - The scrollspy's panel is the shell's `scroller` box inside its `viewport` frame, which bounds
+  *   its height, where the documentation writes a `scrollspy-example` class its own site styles.
+  *   Each section is a heading the nav links name, as in the documented list-group example.
+- * - The carousel carries no `data-bs-ride` attribute, so it moves only from its controls, and no
+- *   `slide` class, which no rule of the cascade declares, so its slides change without the motion
+- *   the engine runs for that class.
++ * - The carousel carries no `data-bs-ride` attribute, so it moves only from its controls.
+  */
+ export const ENGINE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+@@ -134,7 +132,9 @@ export const ENGINE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	}),
+ 	Object.freeze({
+ 		name: 'Live carousel',
+-		markup: `<div id="engine-carousel" class="carousel"><div class="carousel-indicators">${[0, 1, 2]
++		markup: `<div id="engine-carousel" class="carousel slide"><div class="carousel-indicators">${[
++			0, 1, 2,
++		]
+ 			.map(
+ 				(index) =>
+ 					`<button type="button" data-bs-target="#engine-carousel" data-bs-slide-to="${index}"${index === 0 ? ' class="active" aria-current="true"' : ''} aria-label="Stop ${index + 1}"></button>`,
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 11e6e9a..59893c6 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -112,6 +112,7 @@ import {
+ 	TEXT_SPECIMENS,
+ 	COLOR_SPECIMENS,
+ } from '@app/browser'
++import { CAROUSEL_CLASSES } from '@src/browser'
+ import {
+ 	buildStem,
+ 	CAPTURE_KEYS,
+@@ -4464,7 +4465,10 @@ describe('matrix', () => {
+ 	it('reads the mounted class and style populations with their published controls', () => {
+ 		const census = readCensus(mounted.host)
+ 		expect(census.elements).toBeGreaterThan(0)
+-		expect(census.undeclared).toEqual([])
++		// The carousel's `slide` class is the one behaviour token the showcase carries: no rule of the
++		// cascade declares it, as none of Bootstrap's does, and the engine reads it to decide whether a
++		// move waits for its transition. Every other undeclared token renders as nothing.
++		expect(census.undeclared.filter((token) => token !== CAROUSEL_CLASSES.slide)).toEqual([])
+ 		expect(extractStyles(mounted.host)).toEqual([])
+ 		const classes = buildCensus()
+ 		const escapes = buildEscapes('veneer-permitted-control')
+diff --git a/tests/app/browser/sections/EngineSection.test.ts b/tests/app/browser/sections/EngineSection.test.ts
+index 4473194..501ca4e 100644
+--- a/tests/app/browser/sections/EngineSection.test.ts
++++ b/tests/app/browser/sections/EngineSection.test.ts
+@@ -6,7 +6,7 @@ import {
+ 	EngineSection,
+ 	SpecimenSection,
+ } from '@app/browser'
+-import { Delegate, ScrollSpy, Toast, TOAST_CLASSES, Tooltip } from '@src/browser'
++import { CAROUSEL_CLASSES, Delegate, ScrollSpy, Toast, TOAST_CLASSES, Tooltip } from '@src/browser'
+ import { requireValue, waitForCondition } from '@orkestrel/test'
+ import {
+ 	build,
+@@ -74,15 +74,17 @@ describe('EngineSection', () => {
+ 		expect(ENGINE_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
+ 	})
+ 
+-	// The mutation this catches is a specimen carrying a class no loaded rule declares, which renders
+-	// as nothing and fails silently. The carousel's `slide` class is such a class: the engine reads it
+-	// to decide whether a move animates, and no rule of the cascade declares it.
+-	it('carries only class tokens the loaded cascade declares', () => {
++	// The mutation this catches is a specimen carrying a class no loaded rule declares and no engine
++	// reads, which renders as nothing and fails silently. The carousel's `slide` class is the one
++	// behaviour token here: no rule of the cascade declares it, as none of Bootstrap's does, and the
++	// engine reads it to decide whether a move waits for its transition.
++	it('carries only class tokens the loaded cascade declares or an engine reads', () => {
+ 		const region = requireValue(host.querySelector('section'), 'No Engine region')
+ 		const classes = [...readClasses(region)]
+-		expect(classes).toContain('carousel')
++		expect(classes).toContain(CAROUSEL_CLASSES.slide)
+ 		const declared = readCascade()
+-		expect(classes.filter((name) => !declared.has(name))).toStrictEqual([])
++		const read = new Set([CAROUSEL_CLASSES.slide])
++		expect(classes.filter((name) => !declared.has(name) && !read.has(name))).toStrictEqual([])
+ 	})
+ 
+ 	// Each engine the data API cannot start is the section's, one per host, and the delegate's scan
+@@ -345,7 +347,7 @@ describe('EngineSection', () => {
+ 		)
+ 	})
+ 
+-	it('slides the carousel from its next control and from an indicator', async () => {
++	it('slides the carousel with its motion from its next control and from an indicator', async () => {
+ 		const specimen = readSpecimen(host, 'Live carousel')
+ 		const items = [...specimen.querySelectorAll('.carousel-item')]
+ 		const indicators = [...specimen.querySelectorAll('[data-bs-slide-to]')]
+@@ -355,6 +357,11 @@ describe('EngineSection', () => {
+ 			false,
+ 		])
+ 		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Next stop')
++		// The host carries the `slide` token, so the move waits for the incoming item's transition:
++		// right after the click the item is still sliding in, where a host without the token has
++		// already moved the `active` token and cleared the direction tokens.
++		expect(items[1]?.classList.contains('carousel-item-start')).toBe(true)
++		expect(items[1]?.classList.contains('active')).toBe(false)
+ 		await waitForCondition('the second slide settles', () =>
+ 			items.every(
+ 				(item, position) =>

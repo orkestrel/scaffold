@@ -108,3 +108,7 @@ J-OFFCANVAS round 1 counted a press as a backdrop press when its target was the 
 The same round ruled on the hide: the backdrop's removal is a write of the hide sequence and runs as the step after the panel's post-settle door, so a hide a reaction stops removes no backdrop; `Backdrop.hide()` fades and resolves without removing, and `Backdrop.destroy()` removes. `Modal` calls the two in sequence and is unchanged.
 
 Design verdict R5 named a delegate construction-time scan for `.offcanvas.show`. The J-OFFCANVAS brief excluded load adoption and the guide says to construct the engine over shown markup, so R5's letter is amended: no scan; a consumer constructs `Offcanvas` over a panel that is already shown.
+
+## E20 — a class census admits a behaviour token an engine reads, by name from the engine's table (2026-09-24)
+
+A class census refuses a token no loaded rule declares, because such a token renders as nothing. Bootstrap's `slide` class on a carousel is declared by no rule of Bootstrap's cascade or Veneer's; the carousel engine reads it to decide whether a move waits for its transition. The showcase's live carousel carries it (J-SLIDE), and each census over the showcase — the Engine section's own case and the journey's matrix census — admits exactly that token, named from `CAROUSEL_CLASSES.slide`, beside the declared tokens. A further behaviour token is admitted the same way, one named entry at a time from its engine's class table; a token no rule declares and no engine reads still fails the census.
