@@ -1,0 +1,15 @@
+Place THEME's test populations in setup, plant the registry's added-selector branch, and prove the breakpoint alias (THEME rounds 2 and 3)
+
+- The color mode controls, the retuned roles, the tier aliases, and the dark component sites each
+  live in a frozen setup constant or derive from the population that owns them, and each reading
+  case reddens on its named mutation.
+- The registry rule's added-selector branch in collectAdditions has a plant that reddens when its
+  registry check is deleted, which the recorded-selector plant could not see.
+- The md breakpoint alias moves with a --vn-breakpoint-md override while the breakpoint-up(md)
+  condition holds at its compiled width; the guide's breakpoint token paragraph states that limit.
+
+Audit: analyst on Astra and the checker on round 2 (ct-audit-2-*); round 3's one TSDoc sentence and
+its setup-case mutations ruled by the Orchestrator (ct-audit-3-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

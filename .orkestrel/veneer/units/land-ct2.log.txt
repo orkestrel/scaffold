@@ -1,0 +1,18 @@
+=== applied
+=== landed ecc4c8b
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 18011ms on 11 files using 4 threads.
+=== oxfmt check exit=0
+=== oxlint exit=0
+=== check exit=0
+=== build:src exit=0
+      Tests  73 passed (73)
+=== styles scoped exit=0
+      Tests  280 passed (280)
+=== setup scoped exit=0
+      Tests  26 passed (26)
+=== conformance exit=0
+      Tests  4 passed (4)
+=== color modes section exit=0
