@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/veneer-t5probe-2
+
+5:20:53 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+5:20:55 PM [vite] (client) [optimizer] bundling dependencies...
+······························································
+
+ Test Files  1 passed (1)
+      Tests  62 passed (62)
+   Start at  17:20:53
+   Duration  295.63s (transform 0ms, setup 397ms, import 1.24s, tests 283.29s, environment 0ms)
+
