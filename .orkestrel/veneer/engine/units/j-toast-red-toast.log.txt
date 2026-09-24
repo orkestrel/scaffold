@@ -1,0 +1,557 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Toast.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/toast
+
+··xxxxxxxxxxxxxxx··xxxxxxxxxxx·
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 26 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:81:2 > Toast > shows through the fade and showing tokens and hides back under the shipped cascade, awaiting the fade out
+AssertionError: expected [ 'toast' ] to deeply equal [ 'toast', 'fade', 'show', 'showing' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "toast",[22m
+[32m-   "fade",[39m
+[32m-   "show",[39m
+[32m-   "showing",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Toast.test.ts:107:37
+    105|   expect(toast.shown).toBe(false)
+    106|   const showing = toast.show()
+    107|   expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show',…
+       |                                     ^
+    108|   expect(toast.shown).toBe(true)
+    109|   // The toast goes from no display to displayed at no opacity, so no …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:130:2 > Toast > dispatches shown after the fade in finishes when the toast is displayed before it shows, under the fade sheet alone
+AssertionError: expected undefined to be an instance of CSSTransition
+ ❯ tests/src/browser/Toast.test.ts:148:21
+    146|   const showing = toast.show()
+    147|   const [transition] = host.getAnimations()
+    148|   expect(transition).toBeInstanceOf(CSSTransition)
+       |                     ^
+    149|   void transition?.finished.then(() => order.handler('finished'))
+    150|   expect(await showing).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:156:2 > Toast > shows and hides at once with animated false, writing no fade token and awaiting nothing
+AssertionError: expected [] to deeply equal [ [ 'show.vn.toast' ], …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   [[39m
+[32m-     "show.vn.toast",[39m
+[32m-   ],[39m
+[32m-   [[39m
+[32m-     "shown.vn.toast",[39m
+[32m-   ],[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/src/browser/Toast.test.ts:173:23
+    171|   onTestFinished(() => toast.destroy())
+    172|   const showing = toast.show()
+    173|   expect(events.calls).toEqual([['show.vn.toast'], ['shown.vn.toast']])
+       |                       ^
+    174|   expect(Array.from(host.classList)).toEqual(['toast', 'show'])
+    175|   expect(host.getAnimations()).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:188:2 > Toast > dispatches shown with no animation created under staged reduced motion
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:201:45
+    199|   onTestFinished(() => toast.destroy())
+    200|   const showing = toast.show()
+    201|   expect(host.classList.contains('showing')).toBe(true)
+       |                                             ^
+    202|   expect(getComputedStyle(host).transitionDuration).toBe('0s')
+    203|   expect(host.getAnimations()).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:209:2 > Toast > resolves false for a hide on a hidden toast and for a call while a transition is in flight, completing the transition in flight once
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:230:24
+    228|   expect(await toast.show()).toBe(false)
+    229|   expect(await toast.hide()).toBe(false)
+    230|   expect(await showing).toBe(true)
+       |                        ^
+    231|   await waitForAnimations(host)
+    232|   const hiding = toast.hide()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:245:2 > Toast > hides itself after the delay its attribute names, and never with autohide off
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:274:30
+    272|   )
+    273|   const start = performance.now()
+    274|   expect(await keeper.show()).toBe(true)
+       |                              ^
+    275|   expect(await toast.show()).toBe(true)
+    276|   await hidden
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:288:2 > Toast > restarts the delay when show runs on a shown toast, dispatching both events again
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:309:29
+    307|   onTestFinished(() => toast.destroy())
+    308|   onTestFinished(() => control.destroy())
+    309|   expect(await toast.show()).toBe(true)
+       |                             ^
+    310|   const cycled = waitForEvent<readonly [Event]>(
+    311|    (listener) => other.addEventListener('hidden.vn.toast', listener, {…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:334:2 > Toast > holds the delay while the pointer rests inside or focus stays inside, focus moving between descendants included, and starts it in full once both have left
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:354:29
+    352|   onTestFinished(() => control.destroy())
+    353|   await userEvent.hover(inner)
+    354|   expect(await toast.show()).toBe(true)
+       |                             ^
+    355|   // Each cycle shows the control toast with the same delay and waits …
+    356|   // delay the toast started before the cycle ends first.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:387:2 > Toast > clears a pending delay when focus or the pointer enters, and starts it again in full when both have left
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:406:30
+    404|   for (const input of ['focus', 'pointer']) {
+    405|    stamps.clear()
+    406|    expect(await toast.show()).toBe(true)
+       |                              ^
+    407|    if (input === 'focus') inner.focus()
+    408|    else await userEvent.hover(inner)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:430:2 > Toast > clears the pending delay when a hide is accepted, so a toast its markup shows again stays shown
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:442:29
+    440|   onTestFinished(() => toast.destroy())
+    441|   onTestFinished(() => control.destroy())
+    442|   expect(await toast.show()).toBe(true)
+       |                             ^
+    443|   expect(await toast.hide()).toBe(true)
+    444|   host.classList.add('show')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:454:2 > Toast > leaves the toast untouched when a listener prevents show or hide, and resolves false
+AssertionError: expected [] to deeply equal [ [ true ], [ true ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   [[39m
+[32m-     true,[39m
+[32m-   ],[39m
+[32m-   [[39m
+[32m-     true,[39m
+[32m-   ],[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/src/browser/Toast.test.ts:491:25
+    489|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    490|   expect(Array.from(host.classList)).toEqual(['toast', 'show'])
+    491|   expect(refusals.calls).toEqual([[true], [true]])
+       |                         ^
+    492|   expect(completed.count).toBe(0)
+    493|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:495:2 > Toast > dispatches bubbling events, the pre-change ones cancelable, with no detail, and binds only engine-shaped events to hooks
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:525:29
+    523|   })
+    524|   onTestFinished(() => toast.destroy())
+    525|   expect(await toast.show()).toBe(true)
+       |                             ^
+    526|   expect(await toast.hide()).toBe(true)
+    527|   expect(readings.calls).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:544:2 > Toast > abandons the transition in flight on destruction, resolving false and restoring the toast
+AssertionError: expected [ …(3) ] to deeply equal [ …(7) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -9,31 +9,7 @@[39m
+[2m      class="toast fade"[22m
+[2m      id="note"[22m
+[2m    >[22m
+[2m      Saved[22m
+[2m    </div>,[22m
+[32m-   <div[39m
+[32m-     class="toast fade"[39m
+[32m-     id="note"[39m
+[32m-   >[39m
+[32m-     Saved[39m
+[32m-   </div>,[39m
+[32m-   <div[39m
+[32m-     class="toast fade"[39m
+[32m-     id="note"[39m
+[32m-   >[39m
+[32m-     Saved[39m
+[32m-   </div>,[39m
+[32m-   <div[39m
+[32m-     class="toast fade"[39m
+[32m-     id="note"[39m
+[32m-   >[39m
+[32m-     Saved[39m
+[32m-   </div>,[39m
+[32m-   <div[39m
+[32m-     class="toast fade"[39m
+[32m-     id="note"[39m
+[32m-   >[39m
+[32m-     Saved[39m
+[32m-   </div>,[39m
+[2m    AbortSignal {},[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Toast.test.ts:561:18
+    559|    })
+    560|   })
+    561|   expect(targets).toEqual([host, host, host, host, host, host, lifetim…
+       |                  ^
+    562|   const showing = toast?.show()
+    563|   expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show',…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:585:2 > Toast > restores the tokens it wrote after a completed change, keeping consumer edits, and a toast its markup showed
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:595:29
+    593|   onTestFinished(() => toast.destroy())
+    594|   onTestFinished(() => shown.destroy())
+    595|   expect(await toast.show()).toBe(true)
+       |                             ^
+    596|   host.classList.add('consumer')
+    597|   toast.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:606:2 > Toast > writes, removes, tests, and reads only the replacing values when every group is replaced
+AssertionError: expected [ 'note' ] to deeply equal [ 'note', 'is-faded', 'is-open', …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "note",[22m
+[32m-   "is-faded",[39m
+[32m-   "is-open",[39m
+[32m-   "is-fading",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Toast.test.ts:629:37
+    627|   expect(toast.shown).toBe(false)
+    628|   const showing = toast.show()
+    629|   expect(Array.from(host.classList)).toEqual(['note', 'is-faded', 'is-…
+       |                                     ^
+    630|   expect(await showing).toBe(true)
+    631|   expect(Array.from(host.classList)).toEqual(['note', 'is-faded', 'is-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:702:2 > Toast > destroys the toast when its signal aborts, and at construction when it arrived aborted
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:708:29
+    706|   const toast = new Toast(host, { autohide: false, signal: controller.…
+    707|   onTestFinished(() => toast.destroy())
+    708|   expect(await toast.show()).toBe(true)
+       |                             ^
+    709|   controller.abort()
+    710|   expect(Toast.find(host)).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:720:2 > Toast > stops writing when a reaction to its own write destroys it, resolving false and restoring the toast
+AssertionError: expected +0 to be 1 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+ ❯ tests/src/browser/Toast.test.ts:755:26
+    753|   })
+    754|   expect(await toast.show()).toBe(false)
+    755|   expect(destroyed.count).toBe(1)
+       |                          ^
+    756|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    757|   expect(events.calls).toEqual([['show.vn.toast']])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:761:2 > Toast > writes nothing when a listener to its show event destroys it, resolving false
+AssertionError: expected [] to deeply equal [ [ 'show.vn.toast' ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   [[39m
+[32m-     "show.vn.toast",[39m
+[32m-   ],[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/src/browser/Toast.test.ts:781:23
+    779|   expect(await toast.show()).toBe(false)
+    780|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    781|   expect(events.calls).toEqual([['show.vn.toast']])
+       |                       ^
+    782|   expect(Toast.find(host)).toBeUndefined()
+    783|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:785:2 > Toast > runs one transition and one shown event when a listener to its show event shows it again, the inner call resolving true and the outer false
+AssertionError: expected +0 to be 1 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+ ❯ tests/src/browser/Toast.test.ts:819:22
+    817|   onTestFinished(() => toast.destroy())
+    818|   expect(await toast.show()).toBe(false)
+    819|   expect(inner.count).toBe(1)
+       |                      ^
+    820|   expect(await inner.calls[0]?.[0]).toBe(true)
+    821|   expect(events.calls).toEqual([['show.vn.toast'], ['show.vn.toast'], …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:832:2 > Toast > resolves false for the call whose transition another call took over during the await, and dispatches shown once
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Toast.test.ts:844:45
+    842|   host.classList.remove('showing')
+    843|   const second = toast.show()
+    844|   expect(host.classList.contains('showing')).toBe(true)
+       |                                             ^
+    845|   expect(await first).toBe(false)
+    846|   expect(await second).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:851:2 > Toast > stops a show when the transition token leaves during its await, dispatching no shown event
+Error: No transition
+ ❯ requireValue node_modules/@orkestrel/test/dist/src/core/index.js:516:30
+ ❯ tests/src/browser/Toast.test.ts:859:21
+    857|   onTestFinished(() => toast.destroy())
+    858|   const showing = toast.show()
+    859|   const transition = requireValue(host.getAnimations()[0], 'No transit…
+       |                     ^
+    860|   await transition.ready
+    861|   host.classList.remove('showing')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:871:2 > Toast > stops a show whose fade write a reaction answers by writing the transition token, writing nothing more
+AssertionError: expected [ 'toast' ] to deeply equal [ 'toast', 'fade', 'showing' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "toast",[22m
+[32m-   "fade",[39m
+[32m-   "showing",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Toast.test.ts:902:37
+    900|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    901|   expect(events.count).toBe(0)
+    902|   expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'showin…
+       |                                     ^
+    903|  })
+    904|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:905:2 > Toast > stops a show whose shown-and-transition write a reaction answers by removing the transition token, writing nothing more
+AssertionError: expected [ 'toast' ] to deeply equal [ 'toast', 'fade', 'show' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "toast",[22m
+[32m-   "fade",[39m
+[32m-   "show",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Toast.test.ts:936:37
+    934|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    935|   expect(events.count).toBe(0)
+    936|   expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
+       |                                     ^
+    937|  })
+    938|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:939:2 > Toast > stops a show whose completing removal a reaction answers by removing the shown token, dispatching no shown event
+AssertionError: expected [ 'toast' ] to deeply equal [ 'toast', 'fade' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "toast",[22m
+[32m-   "fade",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Toast.test.ts:972:37
+    970|   expect(events.count).toBe(0)
+    971|   expect(toast.shown).toBe(false)
+    972|   expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
+       |                                     ^
+    973|  })
+    974|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:975:2 > Toast > stops a hide whose transition-token write a reaction answers by removing the shown token, writing nothing more
+AssertionError: expected [ 'toast', 'show' ] to deeply equal [ 'toast', 'showing' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "toast",[22m
+[32m-   "showing",[39m
+[31m+   "show",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Toast.test.ts:1006:37
+    1004|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    1005|   expect(events.count).toBe(0)
+    1006|   expect(Array.from(host.classList)).toEqual(['toast', 'showing'])
+       |                                     ^
+    1007|  })
+    1008|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/26]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1009:2 > Toast > stops a hide when the shown token leaves during its transition, dispatching no hidden event
+Error: No transition
+ ❯ requireValue node_modules/@orkestrel/test/dist/src/core/index.js:516:30
+ ❯ tests/src/browser/Toast.test.ts:1018:21
+    1016|   onTestFinished(() => toast.destroy())
+    1017|   const hiding = toast.hide()
+    1018|   const transition = requireValue(host.getAnimations()[0], 'No transit…
+       |                     ^
+    1019|   await transition.ready
+    1020|   host.classList.remove('show')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/26]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  26 failed | 5 passed (31)
+   Start at  23:50:07
+   Duration  1.74s (transform 0ms, setup 210ms, import 215ms, tests 391ms, environment 0ms)
+
