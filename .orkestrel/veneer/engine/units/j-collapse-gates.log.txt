@@ -395,3 +395,8 @@ check exit=0
  Test Files  1 passed (1)
       Tests  22 passed (22)
 test:conformance exit=0
+--- the six report-only patches applied together (the Orchestrator's git apply --check, appended after the checker's reading; 0 is the pass)
+apply --check (all six) exit=0
+12
+--- the writing.md unconditional substitution sweep over the added lines of j-collapse.diff (the Orchestrator's, appended after the checker's reading; the hits are ruled here)
+substitution sweep hits listed above (an empty list is the pass; a hit inside a code identifier or a fixture string is data)
