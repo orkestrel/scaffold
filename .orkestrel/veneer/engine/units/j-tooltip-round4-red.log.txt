@@ -1,0 +1,251 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Tooltip.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/tooltip
+
+Port 63315 is in use, trying another one...
+······································xxxx·xxxxx·x·
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1625:2 > Tooltip > stops a rebuild whose final release runs a reaction that destroys the tooltip, publishing and linking nothing
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:1661:48
+    1659|   expect(await tooltip.show()).toBe(false)
+    1660|   expect(document.querySelector('.tooltip')).toBeNull()
+    1661|   expect(host.hasAttribute('aria-describedby')).toBe(false)
+       |                                                ^
+    1662|   expect(first.parentElement).toBe(firstHome)
+    1663|   expect(second.parentElement).toBe(secondHome)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1666:2 > Tooltip > resolves a hide false and leaves the tip where a closing beforetoggle listener moved it during the teardown
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:1694:31
+    1692|    'No tip',
+    1693|   )
+    1694|   expect(await tooltip.hide()).toBe(false)
+       |                               ^
+    1695|   expect(tip.parentElement).toBe(elsewhere)
+    1696|   expect(hidden.calls).toEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1699:2 > Tooltip > resolves a show false and leaves the tip unmarked where an opening beforetoggle listener moved it during the promotion
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:1727:41
+    1725|   const tip = requireValue(tips.calls[0]?.[0], 'No inserted tip')
+    1726|   expect(tip.parentElement).toBe(elsewhere)
+    1727|   expect(tip.classList.contains('show')).toBe(false)
+       |                                         ^
+    1728|   expect(shown.calls).toEqual([])
+    1729|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1731:2 > Tooltip > stops a show whose trigger reacts to its aria-describedby write by destroying the tooltip, dispatching no inserted event
+AssertionError: expected [ [ false ] ] to deeply equal [ [ true ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[32m-     true,[39m
+[31m+     false,[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Tooltip.test.ts:1765:23
+    1763|   })
+    1764|   expect(await tooltip.show()).toBe(false)
+    1765|   expect(linked.calls).toEqual([[true]])
+       |                       ^
+    1766|   expect(inserted.calls).toEqual([])
+    1767|   expect(document.querySelector('.tooltip')).toBeNull()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1799:2 > Tooltip > stops a show before the promotion when an inserted listener marks the tip shown, promoting nothing
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:1819:31
+    1817|   })
+    1818|   onTestFinished(() => tooltip.destroy())
+    1819|   expect(await tooltip.show()).toBe(false)
+       |                               ^
+    1820|   const tip = requireValue(tips.calls[0]?.[0], 'No inserted tip')
+    1821|   expect(tip.hasAttribute('popover')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1826:2 > Tooltip > calls every content function before the build moves anything, so a function that destroys the tooltip leaves every element home
+AssertionError: expected [ [ 2 ], [ +0 ] ] to deeply equal [ [ +0 ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[31m+     2,[39m
+[31m+   ],[39m
+[31m+   [[39m
+[2m      0,[22m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Tooltip.test.ts:1849:57
+    1847|   onTestFinished(() => moves.disconnect())
+    1848|   expect(await tooltip.show()).toBe(false)
+    1849|   expect([...moved.calls, [moves.takeRecords().length]]).toEqual([[0]])
+       |                                                         ^
+    1850|   expect(rich.parentElement).toBe(home)
+    1851|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1853:2 > Tooltip > leaves a tip that other code moved where it is on destruction, and restores aria-describedby
+AssertionError: expected null to be <div id="elsewhere"></div> // Object.is equality
+
+[32m- Expected:[39m
+<div
+  id="elsewhere"
+/>
+
+[31m+ Received:[39m
+null
+
+ ❯ tests/src/browser/Tooltip.test.ts:1866:28
+    1864|   elsewhere.append(tip)
+    1865|   tooltip.destroy()
+    1866|   expect(tip.parentElement).toBe(elsewhere)
+       |                            ^
+    1867|   expect(host.getAttribute('aria-describedby')).toBe('help')
+    1868|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1870:2 > Tooltip > refuses a fill a content function makes during a build, releasing nothing
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:1889:67
+    1887|    }),
+    1888|   ).toBe(true)
+    1889|   expect(await requireValue(nested.calls[0], 'No nested fill')[0]).toB…
+       |                                                                   ^
+    1890|   const tip = requireValue(
+    1891|    document.getElementById(host.getAttribute('aria-describedby') ?? ''…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1899:2 > Tooltip > moves nothing before a throwing content function stops the build, and returns the moved elements home before a throwing sanitizer rejects it
+AssertionError: expected <div class="tooltip-inner">…(1)</div> to be <div id="home"></div> // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  <div[22m
+[32m-   id="home"[39m
+[32m- />[39m
+[31m+   class="tooltip-inner"[39m
+[31m+ >[39m
+[31m+   <b[39m
+[31m+     id="rich"[39m
+[31m+   >[39m
+[31m+     Rich[39m
+[31m+   </b>[39m
+[31m+ </div>[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:1919:29
+    1917|   ).toBe(true)
+    1918|   await expect(tooltip.show()).rejects.toThrow('Refused content')
+    1919|   expect(rich.parentElement).toBe(home)
+       |                             ^
+    1920|   const sanitizer: SanitizerInterface = {
+    1921|    write: (element, html) => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:1952:2 > Tooltip > stops a build at the token or id write an upgraded custom tip answers by destroying the tooltip, writing nothing after it
+AssertionError: expected [ [ 1, false, 3, '' ], …(4) ] to deeply equal [ [ 1, false, +0, '' ], …(4) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,22 +1,22 @@[39m
+[2m  [[22m
+[2m    [[22m
+[2m      1,[22m
+[2m      false,[22m
+[32m-     0,[39m
+[31m+     3,[39m
+[2m      "",[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      2,[22m
+[2m      false,[22m
+[32m-     0,[39m
+[31m+     2,[39m
+[2m      "",[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      3,[22m
+[2m      false,[22m
+[32m-     0,[39m
+[31m+     1,[39m
+[2m      "",[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      4,[22m
+[2m      false,[22m
+
+ ❯ tests/src/browser/Tooltip.test.ts:2005:19
+    2003|    ])
+    2004|   }
+    2005|   expect(readings).toEqual([
+       |                   ^
+    2006|    [1, false, 0, ''],
+    2007|    [2, false, 0, ''],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 41 passed (51)
+   Start at  11:34:41
+   Duration  8.57s (transform 0ms, setup 418ms, import 263ms, tests 6.90s, environment 0ms)
+
