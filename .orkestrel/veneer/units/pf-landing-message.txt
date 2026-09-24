@@ -1,0 +1,29 @@
+Bound every capture frame to its opening, its section, and its lifted specimen
+
+The FrameManager class takes each main child that holds neither the
+subject nor the frame out of the layout for the shot, and restores
+exactly the hidden attributes it set in a finally block. It stages the
+pane at the viewport, reads the bounded content height, stages the pane
+again at the taller of the two on every path, and reads the region only
+when a second reading agrees. It refuses a frame whose area in device
+pixels exceeds FRAME_AREA (1280 x 41954, the largest frame a run has
+read back), naming the scenario and its size. The scenarios getter
+derives from the recorded placements.
+
+The page strip's hover and focus frames become element frames of their
+padded stage, and every pointer-held placement sits on a lifted
+specimen behind a structural guard that fails an in-place host. The
+un-lift mutation reddens the primary-hover case on that guard; without
+the guard it passes while its frame paints the rest fill.
+
+At light-1280 the showcase frame is 1280 x 800 and the tallest page
+frame 1280 x 1648, under the decode ceiling every 1280 page frame
+exceeded before; the bottom offcanvas region is read at the viewport
+the shot uses.
+
+Unit PAGE-FRAME (pf), rounds 1 and 2, on opus; audited by analyst on
+Astra, reviewer on Opus, and checker on Sonnet (pf-audit-verdict.md,
+pf-audit-2-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
