@@ -1,0 +1,49 @@
+
+ RUN  v4.1.11 /home/user/veneer-ct2/tmp/probe/ct2-copy
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+ ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:22:2 > ColorModeSection > renders the declared color mode specimens through the shared section contract 4ms
+ × |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:56:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls 10ms
+   → expected [ [ 1, 1, 1, 1, 1, 1 ], …(2) ] to deeply equal [ [ 1, 1, 1, 1, 1, 1 ], …(2) ]
+ ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:94:2 > ColorModeSection > resolves each surface to its own mode, and keeps the dark caret in the nested light island 22ms
+ ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:130:2 > ColorModeSection > releases the region and preserves adjacent content on repeated destruction 1ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  13:43:05
+   Duration  19.14s (transform 0ms, setup 1.23s, import 820ms, tests 5.80s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:56:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls
+AssertionError: expected [ [ 1, 1, 1, 1, 1, 1 ], …(2) ] to deeply equal [ [ 1, 1, 1, 1, 1, 1 ], …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -18,9 +18,9 @@[39m
+[2m    [[22m
+[2m      1,[22m
+[2m      1,[22m
+[2m      1,[22m
+[2m      1,[22m
+[32m-     1,[39m
+[31m+     0,[39m
+[2m      1,[22m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/sections/ColorModeSection.test.ts:83:5
+     81|      ),
+     82|     ),
+     83|    ).toEqual(surfaces.map(() => COLOR_MODE_CONTROLS.map(() => 1)))
+       |     ^
+     84|   } finally {
+     85|    section.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

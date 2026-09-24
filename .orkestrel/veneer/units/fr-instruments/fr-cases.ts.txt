@@ -1,0 +1,444 @@
+
+	it('rings the switch under keyboard focus with its focus knob on the lifted specimen, and holds the ring inside the frame', async () => {
+		await applyTheme(VARIANT)
+		const specimen = readSpecimen(mounted.host, 'Form check switch')
+		const control = requireValue(
+			specimen.querySelector<HTMLElement>('.form-switch .form-check-input'),
+			'The "Form check switch" specimen renders no switch',
+		)
+		const knob = readStyle(control, 'background-image')
+		let focused = ''
+		let ring = 'none'
+		let framed = false
+		let inside: readonly boolean[] = []
+		// The specimen itself is moved to the document's start inside a padded wrapper and put back
+		// afterwards, the placement the underline focus case uses and for its reasons: the ring paints
+		// outside the switch's box, and the wrapper's padding holds it. The lifted switch is the
+		// document's first control, so Tab from the document's start reaches it as keyboard focus.
+		const marker = document.createComment('form-check-switch')
+		specimen.before(marker)
+		const lifted = build('div', { classes: 'p-2' })
+		lifted.append(specimen)
+		document.body.prepend(lifted)
+		try {
+			expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
+			// The ring's transition would otherwise land a frame part of the way to its paint.
+			await stageMedia({ motion: false })
+			expect(await traverseAccessible(readName(control))).toBe(control)
+			expect(control.matches(':focus-visible')).toBe(true)
+			focused = readStyle(control, 'background-image')
+			ring = readStyle(control, 'box-shadow')
+			await FRAMES.place('form-check-switch-focus', control, lifted)
+			// The readings that decide the frame are taken again in the layout the shot was taken in.
+			await stagePane(window.innerWidth, window.innerHeight)
+			framed =
+				control.matches(':focus-visible') && readStyle(control, 'background-image') === focused
+			// The ring's painted extent is the switch's box grown by the largest length its shadow
+			// carries, read against the frame's edges in the frame's own device pixels, the reading the
+			// underline focus case takes.
+			const reach = Math.max(
+				...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
+			)
+			const { region } = requireValue(
+				FRAMES.placements.find((placement) => placement.scenario === 'form-check-switch-focus'),
+				'The switch focus frame recorded no placement',
+			)
+			const ratio = window.devicePixelRatio
+			const frame = lifted.getBoundingClientRect()
+			inside = [
+				reach > 0,
+				region.x - reach * ratio >= 0,
+				region.y - reach * ratio >= 0,
+				region.x + region.width + reach * ratio <= frame.width * ratio,
+				region.y + region.height + reach * ratio <= frame.height * ratio,
+			]
+			await releasePane()
+			control.blur()
+			await releaseMedia()
+		} finally {
+			marker.replaceWith(specimen)
+			lifted.remove()
+		}
+		// The focus rule swaps the knob for its focus glyph, so a frame taken after focus left the
+		// switch, a ring the frame crops, or a knob that never changed reports here.
+		expect(framed).toBe(true)
+		expect(focused).not.toBe(knob)
+		expect(ring).not.toBe('none')
+		expect(inside).toStrictEqual([true, true, true, true, true])
+		expect(readStyle(control, 'background-image')).toBe(knob)
+		expect(specimen.parentElement).not.toBe(lifted)
+		ARTIFACT.push(JSON.stringify({ reading: 'switch focus', mode: VARIANT, ring, inside }))
+		JOURNAL.record('focus', readName(control), ring)
+	})
+
+	it('holds each resting form control pressed on its lifted specimen and photographs the paint its press rule writes', async () => {
+		await applyTheme(VARIANT)
+		// The rows are the driven press rows whose subject a forms table declares.
+		const declared = new Set(
+			[
+				FORM_CHECK_SPECIMENS,
+				FORM_CONTROL_SPECIMENS,
+				FORM_FLOATING_SPECIMENS,
+				FORM_RANGE_SPECIMENS,
+				FORM_SELECT_SPECIMENS,
+				INPUT_GROUP_SPECIMENS,
+				VALIDATION_SPECIMENS,
+			].flatMap((table) => table.map((specimen) => specimen.name)),
+		)
+		const keys = DRIVEN_KEYS.filter(
+			(key) => declared.has(key.subject) && key.scenario.endsWith('-active'),
+		)
+		expect(keys).not.toStrictEqual([])
+		const shots = new Map<CaptureScenario, readonly string[]>()
+		const framed: Array<readonly [CaptureScenario, boolean]> = []
+		for (const key of keys) {
+			const specimen = readSpecimen(mounted.host, key.subject)
+			const control = requireValue(
+				specimen.querySelector<HTMLElement>('input'),
+				`The "${key.subject}" specimen renders no control`,
+			)
+			// The specimen itself is moved to the document's start inside a padded wrapper, the
+			// placement every pointer state takes, because a pointer placed where the showcase renders
+			// the specimen does not survive the staging a shot takes.
+			const marker = document.createComment(key.scenario)
+			specimen.before(marker)
+			const lifted = build('div', { classes: 'p-2' })
+			lifted.append(specimen)
+			document.body.prepend(lifted)
+			try {
+				// The press paints a part whose computed style Chromium withholds on the range thumb, so
+				// the paint is read off the pixel at the control's centre, before and during the hold.
+				// The centre lies inside the checkbox and on the range thumb, whose value sits
+				// mid-track; the ring a pointer focus also paints lies outside both. Reduced motion is
+				// staged so neither reading lands inside the fill's transition.
+				await stageMedia({ motion: false })
+				const rest = await page.screenshot({ element: control, save: false })
+				// A held pointer captures the press, so the pressed state survives the staging a shot
+				// takes, and the reading after the shot answers for the frame.
+				await driveHold(() => control, readName(control))
+				expect(control.matches(':active')).toBe(true)
+				expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
+				const held = await page.screenshot({ element: control, save: false })
+				shots.set(key.scenario, [rest, held])
+				await FRAMES.place(key.scenario, control, lifted)
+				framed.push([key.scenario, control.matches(':active')])
+				await releasePointer()
+				await releaseMedia()
+			} finally {
+				marker.replaceWith(specimen)
+				lifted.remove()
+			}
+		}
+		const centres = new Map<CaptureScenario, readonly string[]>()
+		for (const [scenario, pair] of shots) {
+			const pixels: string[] = []
+			for (const encoded of pair) {
+				const image = new Image()
+				image.src = `data:image/png;base64,${encoded}`
+				await image.decode()
+				const context = requireValue(
+					new OffscreenCanvas(image.width, image.height).getContext('2d'),
+					'The pressed control reading requires a 2D canvas',
+				)
+				context.drawImage(image, 0, 0)
+				const [red, green, blue] = context.getImageData(
+					Math.floor(image.width / 2),
+					Math.floor(image.height / 2),
+					1,
+					1,
+				).data
+				pixels.push(`rgb(${String(red)}, ${String(green)}, ${String(blue)})`)
+			}
+			centres.set(scenario, pixels)
+		}
+		ARTIFACT.push(JSON.stringify({ reading: 'form press', mode: VARIANT, centres: [...centres] }))
+		// Every frame was taken while its press held, and every press repainted the control's centre:
+		// a press rule that stopped painting leaves the held centre at its resting color.
+		expect(framed.map(([scenario]) => scenario)).toStrictEqual(keys.map((key) => key.scenario))
+		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
+		expect([...centres.keys()]).toStrictEqual(keys.map((key) => key.scenario))
+		expect([...centres].filter(([, [rest, held]]) => rest === held)).toStrictEqual([])
+		JOURNAL.record('hold', 'forms', String(centres.size))
+	})
+
+	it('hovers the file control on its lifted specimen and photographs the button surface the pointer paints', async () => {
+		await applyTheme(VARIANT)
+		const specimen = readSpecimen(mounted.host, 'Form control file')
+		const control = requireValue(
+			specimen.querySelector<HTMLElement>('input[type="file"]'),
+			'The "Form control file" specimen renders no file control',
+		)
+		const rest = readStyle(control, 'background-color', '::file-selector-button')
+		let hovered = ''
+		let framed = false
+		let settled = ''
+		// The specimen itself is moved to the document's start inside a padded wrapper, the placement
+		// every pointer state takes, and put back afterwards.
+		const marker = document.createComment('form-control-file')
+		specimen.before(marker)
+		const lifted = build('div', { classes: 'p-2' })
+		lifted.append(specimen)
+		document.body.prepend(lifted)
+		try {
+			expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
+			// The button part's surface transitions, and the control reports none of its part's
+			// animations, so reduced motion is staged and the reading is the settled surface. The pane
+			// is staged before the pointer is placed, because a control hovered before the staging is
+			// no longer under the pointer at the shot.
+			await stageMedia({ motion: false })
+			await stagePane(window.innerWidth, window.innerHeight)
+			await hoverAccessible(readName(control))
+			expect(control.matches(':hover')).toBe(true)
+			hovered = readStyle(control, 'background-color', '::file-selector-button')
+			await FRAMES.place('form-control-file-hover', control, lifted)
+			await stagePane(window.innerWidth, window.innerHeight)
+			framed =
+				control.matches(':hover') &&
+				readStyle(control, 'background-color', '::file-selector-button') === hovered
+			await releasePane()
+			await releasePointer()
+			await page.elementLocator(control).unhover()
+			expect(control.matches(':hover')).toBe(false)
+			settled = readStyle(control, 'background-color', '::file-selector-button')
+			await releaseMedia()
+		} finally {
+			marker.replaceWith(specimen)
+			lifted.remove()
+		}
+		// The frame was taken under the pointer, and the hover rule repaints the button's surface,
+		// which falls back to rest when the pointer leaves.
+		expect(framed).toBe(true)
+		expect(hovered).not.toBe(rest)
+		expect(settled).toBe(rest)
+		expect(specimen.parentElement).not.toBe(lifted)
+		ARTIFACT.push(JSON.stringify({ reading: 'file hover', mode: VARIANT, rest, hovered }))
+		JOURNAL.record('hover', readName(control), hovered)
+	})
+
+	it('floats the empty textarea label with its backdrop under keyboard focus on the lifted specimen, and holds the ring inside the frame', async () => {
+		await applyTheme(VARIANT)
+		const specimen = readSpecimen(mounted.host, 'Form floating empty textarea')
+		const control = requireValue(
+			specimen.querySelector<HTMLElement>('.form-floating > textarea.form-control'),
+			'The "Form floating empty textarea" specimen renders no textarea',
+		)
+		const label = requireValue(
+			specimen.querySelector('.form-floating > label'),
+			'The "Form floating empty textarea" specimen renders no label',
+		)
+		const resting = [readStyle(label, 'transform'), readStyle(label, 'background-color', '::after')]
+		let floated: readonly string[] = []
+		let ring = 'none'
+		let framed = false
+		let empty = false
+		let inside: readonly boolean[] = []
+		// The specimen itself is moved to the document's start inside a padded wrapper, whose padding
+		// holds the ring the textarea paints outside its box, and put back afterwards.
+		const marker = document.createComment('form-floating-empty-textarea')
+		specimen.before(marker)
+		const lifted = build('div', { classes: 'p-2' })
+		lifted.append(specimen)
+		document.body.prepend(lifted)
+		try {
+			expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
+			// The label transitions its transform, so reduced motion is staged and the frame shows the
+			// label floated rather than part of the way up.
+			await stageMedia({ motion: false })
+			expect(await traverseAccessible(readName(control))).toBe(control)
+			expect(control.matches(':focus-visible')).toBe(true)
+			floated = [readStyle(label, 'transform'), readStyle(label, 'background-color', '::after')]
+			ring = readStyle(control, 'box-shadow')
+			await FRAMES.place('form-floating-empty-textarea-focus', control, lifted)
+			await stagePane(window.innerWidth, window.innerHeight)
+			framed = document.activeElement === control && readStyle(label, 'transform') === floated[0]
+			empty = control.matches(':placeholder-shown')
+			const reach = Math.max(
+				...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
+			)
+			const { region } = requireValue(
+				FRAMES.placements.find(
+					(placement) => placement.scenario === 'form-floating-empty-textarea-focus',
+				),
+				'The empty textarea focus frame recorded no placement',
+			)
+			const ratio = window.devicePixelRatio
+			const frame = lifted.getBoundingClientRect()
+			inside = [
+				reach > 0,
+				region.x - reach * ratio >= 0,
+				region.y - reach * ratio >= 0,
+				region.x + region.width + reach * ratio <= frame.width * ratio,
+				region.y + region.height + reach * ratio <= frame.height * ratio,
+			]
+			await releasePane()
+			control.blur()
+			await releaseMedia()
+		} finally {
+			marker.replaceWith(specimen)
+			lifted.remove()
+		}
+		// Focus alone floats the label over the still empty textarea and paints the backdrop behind
+		// it, which the filled textarea's frame shows only because it carries text.
+		const [transform, backdrop] = floated
+		const [restingTransform, restingBackdrop] = resting
+		expect(framed).toBe(true)
+		expect(empty).toBe(true)
+		expect(transform).not.toBe(restingTransform)
+		expect(backdrop).not.toBe(restingBackdrop)
+		expect(inside).toStrictEqual([true, true, true, true, true])
+		expect(readStyle(label, 'transform')).toBe(restingTransform)
+		ARTIFACT.push(
+			JSON.stringify({ reading: 'empty textarea focus', mode: VARIANT, resting, floated, ring }),
+		)
+		JOURNAL.record('focus', readName(control), String(transform))
+	})
+
+	it('lifts the focused grouped button over the button beside it on the lifted specimen, and holds its ring inside the frame', async () => {
+		await applyTheme(VARIANT)
+		const specimen = readSpecimen(mounted.host, 'Input group buttons')
+		const [button, neighbour] = specimen.querySelectorAll<HTMLElement>('.input-group > .btn')
+		const leading = requireValue(button, 'The "Input group buttons" specimen renders no button')
+		const beside = requireValue(neighbour, 'The "Input group buttons" specimen renders one button')
+		// At rest both buttons sit one step above the control, on one level, so the later button's
+		// border paints over the line the two share.
+		const resting = [readStyle(leading, 'z-index'), readStyle(beside, 'z-index')]
+		let raised = ''
+		let ring = 'none'
+		let framed = false
+		let inside: readonly boolean[] = []
+		// The specimen itself is moved to the document's start inside a padded wrapper, whose padding
+		// holds the ring the button paints outside its box, and put back afterwards.
+		const marker = document.createComment('input-group-buttons')
+		specimen.before(marker)
+		const lifted = build('div', { classes: 'p-2' })
+		lifted.append(specimen)
+		document.body.prepend(lifted)
+		try {
+			expect(mounted.host.querySelector('main')?.contains(leading)).toBe(false)
+			await stageMedia({ motion: false })
+			expect(await traverseAccessible(readName(leading))).toBe(leading)
+			expect(leading.matches(':focus-visible')).toBe(true)
+			raised = readStyle(leading, 'z-index')
+			ring = readStyle(leading, 'box-shadow')
+			await FRAMES.place('input-group-buttons-focus', leading, lifted)
+			await stagePane(window.innerWidth, window.innerHeight)
+			framed = leading.matches(':focus-visible') && readStyle(leading, 'z-index') === raised
+			const reach = Math.max(
+				...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
+			)
+			const { region } = requireValue(
+				FRAMES.placements.find((placement) => placement.scenario === 'input-group-buttons-focus'),
+				'The grouped button focus frame recorded no placement',
+			)
+			const ratio = window.devicePixelRatio
+			const frame = lifted.getBoundingClientRect()
+			inside = [
+				reach > 0,
+				region.x - reach * ratio >= 0,
+				region.y - reach * ratio >= 0,
+				region.x + region.width + reach * ratio <= frame.width * ratio,
+				region.y + region.height + reach * ratio <= frame.height * ratio,
+			]
+			await releasePane()
+			leading.blur()
+			await releaseMedia()
+		} finally {
+			marker.replaceWith(specimen)
+			lifted.remove()
+		}
+		// Focus lifts the button above the level its neighbour rests on, so its ring paints over that
+		// neighbour rather than under its border; the neighbour keeps its resting level throughout.
+		expect(resting).toStrictEqual(['2', '2'])
+		expect(framed).toBe(true)
+		expect(raised).toBe('5')
+		expect(readStyle(beside, 'z-index')).toBe('2')
+		expect(ring).not.toBe('none')
+		expect(inside).toStrictEqual([true, true, true, true, true])
+		expect(readStyle(leading, 'z-index')).toBe('2')
+		ARTIFACT.push(JSON.stringify({ reading: 'grouped button focus', mode: VARIANT, raised, ring }))
+		JOURNAL.record('focus', readName(leading), raised)
+	})
+
+	it('rings each validated select and check under keyboard focus in its state color on the lifted specimen, and holds the ring inside the frame', async () => {
+		await applyTheme(VARIANT)
+		// The rows are the driven rows whose subject is a validation specimen rendering a select or
+		// a check; the text controls take their focus frames in the validation ring case.
+		const declared = new Set(
+			VALIDATION_SPECIMENS.filter(
+				({ markup }) => markup.includes('<select') || markup.includes('type="checkbox"'),
+			).map((specimen) => specimen.name),
+		)
+		const keys = DRIVEN_KEYS.filter((key) => declared.has(key.subject))
+		expect(keys).not.toStrictEqual([])
+		const rings = new Map<CaptureScenario, readonly [string, string]>()
+		const framed: Array<readonly [CaptureScenario, boolean]> = []
+		const inside: Array<readonly [CaptureScenario, readonly boolean[]]> = []
+		for (const key of keys) {
+			const specimen = readSpecimen(mounted.host, key.subject)
+			const control = requireValue(
+				specimen.querySelector<HTMLElement>('select, input'),
+				`The "${key.subject}" specimen renders no control`,
+			)
+			const state = control.classList.contains('is-valid') ? 'valid' : 'invalid'
+			// The specimen itself is moved to the document's start inside a padded wrapper, whose
+			// padding holds the ring the control paints outside its box, and put back afterwards.
+			const marker = document.createComment(key.scenario)
+			specimen.before(marker)
+			const lifted = build('div', { classes: 'p-2' })
+			lifted.append(specimen)
+			document.body.prepend(lifted)
+			try {
+				expect(mounted.host.querySelector('main')?.contains(control)).toBe(false)
+				await stageMedia({ motion: false })
+				expect(await traverseAccessible(readName(control))).toBe(control)
+				expect(control.matches(':focus-visible')).toBe(true)
+				const ring = readStyle(control, 'box-shadow')
+				rings.set(key.scenario, [state, ring])
+				await FRAMES.place(key.scenario, control, lifted)
+				await stagePane(window.innerWidth, window.innerHeight)
+				framed.push([
+					key.scenario,
+					control.matches(':focus-visible') && readStyle(control, 'box-shadow') === ring,
+				])
+				const reach = Math.max(
+					...[...ring.matchAll(/(-?[\d.]+)px/gu)].map((match) => Number(match[1])),
+				)
+				const { region } = requireValue(
+					FRAMES.placements.find((placement) => placement.scenario === key.scenario),
+					`The "${key.scenario}" frame recorded no placement`,
+				)
+				const ratio = window.devicePixelRatio
+				const frame = lifted.getBoundingClientRect()
+				inside.push([
+					key.scenario,
+					[
+						reach > 0,
+						region.x - reach * ratio >= 0,
+						region.y - reach * ratio >= 0,
+						region.x + region.width + reach * ratio <= frame.width * ratio,
+						region.y + region.height + reach * ratio <= frame.height * ratio,
+					],
+				])
+				await releasePane()
+				control.blur()
+				await releaseMedia()
+			} finally {
+				marker.replaceWith(specimen)
+				lifted.remove()
+			}
+		}
+		ARTIFACT.push(JSON.stringify({ reading: 'validated focus', mode: VARIANT, rings: [...rings] }))
+		// Every frame was taken while its ring held and carries that ring whole. The ring's color is
+		// the state's own: every passing host rings in one color, every failing host in another.
+		expect(framed.map(([scenario]) => scenario)).toStrictEqual(keys.map((key) => key.scenario))
+		expect(framed.filter(([, held]) => !held)).toStrictEqual([])
+		expect(inside.filter(([, edges]) => edges.includes(false))).toStrictEqual([])
+		const valid = new Set([...rings.values()].filter(([state]) => state === 'valid').map(([, ring]) => ring))
+		const invalid = new Set(
+			[...rings.values()].filter(([state]) => state === 'invalid').map(([, ring]) => ring),
+		)
+		expect([valid.size, invalid.size]).toStrictEqual([1, 1])
+		expect([...valid][0]).not.toBe([...invalid][0])
+		expect([...rings.values()].filter(([, ring]) => ring === 'none')).toStrictEqual([])
+		JOURNAL.record('focus', 'validated hosts', String(rings.size))
+	})

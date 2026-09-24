@@ -1,0 +1,11 @@
+ M app/browser/constants.ts
+ M src/styles/components/_form-range.scss
+ M tests/app/browser/integration.test.ts
+ M tests/app/browser/sections/FormControlSection.test.ts
+ M tests/app/browser/sections/FormFloatingSection.test.ts
+ M tests/app/browser/sections/InputGroupSection.test.ts
+ M tests/app/browser/sections/ValidationSection.test.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/setupStyles.ts
+ M tests/src/styles/components/form-range.test.ts

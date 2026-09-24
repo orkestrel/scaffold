@@ -1,0 +1,127 @@
+
+ RUN  v4.1.11 /home/user/veneer-fo
+
+1:38:42 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+1:38:44 PM [vite] (client) [optimizer] bundling dependencies...
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:38:56 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:240:2 > journey > arrives at the showcase through its named region 10100ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:254:2 > journey > switches the announced and painted mode through the control 1493ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:277:2 > journey > reaches and operates the mode control through the keyboard 1070ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:289:2 > journey > toggles a delegated host through a click on the element carrying its label 1081ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:327:2 > journey > toggles a native host and an anchor host through the keyboard 5297ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:348:2 > journey > refuses a native disabled host and an aria-disabled anchor with the unreachable voice 201ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:372:2 > journey > refuses a covered host, then activates it once the cover is out of the way 580ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:399:2 > journey > paints a focus ring on every variant reached through the keyboard 8931ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:442:2 > journey > paints one focus ring on every variant in dark mode as well 9143ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:476:2 > journey > measures the composed contrast of every variant and state against its control 611ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:518:2 > journey > repaints a host under the pointer while it is hovered and while it is held 5524ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:631:2 > journey > holds the feedback transition off while reduced motion is staged 1021ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:646:2 > journey > drives a delegated host to pressed and photographs it in both modes 2593ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:674:2 > journey > reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark 183121ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:830:2 > journey > paints a validation focus ring on the passing and the failing text control, in the variant this run renders 2571ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:867:2 > journey > repaints and lifts a page under the pointer and under keyboard focus, in both modes 3954ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:977:2 > journey > lifts the checked label of the grouped alignment control over the border it shares 1242ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1043:2 > journey > rings the checked label of the grouped alignment control when Tab reaches it 2503ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1077:2 > journey > reaches the range slider through the keyboard and leaves its ring to the thumb 2064ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1132:2 > journey > floats the empty field label under keyboard focus and photographs the floated field 1667ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1197:2 > journey > reaches the plain select through the keyboard and rings it with the focus binding the button carries 1636ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1247:2 > journey > reaches the text control through the keyboard and paints the calibrated focus ring on it 27813ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1280:2 > journey > drives one list-group action to hover, focus, and press, and photographs each state 2615ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1372:2 > journey > drives one menu item to hover and to focus and photographs each state 1887ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1436:2 > journey > matches the official recording step for step on the same markup 914ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1450:2 > journey > matches the official recording step for step under reduced motion 1487ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1464:2 > journey > drives the close control to hover and to focus and photographs each state 2912ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1565:2 > journey > drives a carousel control to hover and to focus and photographs each state 3069ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1658:2 > journey > drives the next control of a second carousel to hover and to focus on the lifted specimen, and photographs each state 4022ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1762:2 > journey > reaches the resting checkbox through the keyboard and photographs its ring 4115ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1812:2 > journey > marks a copy of the resting checkbox mixed and photographs the mixed glyph 1422ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1873:2 > journey > reaches the input group control beside a button through the keyboard and lifts it over the button 1377ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1936:2 > journey > drives a plain nav link to hover and to focus and a resting tab to hover, and photographs each state 5177ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2034:2 > journey > drives an underline link to hover and to focus on the lifted specimen, and photographs each state 3388ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2151:2 > journey > reaches a collapsed accordion button through the keyboard and lifts its ring over the items beside it 2362ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2202:2 > journey > reveals the skip link under focus and photographs the revealed link 1367ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2237:2 > journey > drives an expanded bar link to hover and rings a collapsed bar toggler under focus, and photographs each state 4193ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2311:2 > journey > paints the default focus ring and a role ring under keyboard focus and photographs each 3188ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2369:2 > refusal > answers each refused reading in the voice the installed resolver raises for it 338ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2396:2 > matrix > reads the settled background at every declared mode and viewport 1799ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2421:2 > matrix > reads the mounted class and style populations with their published controls 308ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2449:2 > portfolio > expands one filename per scenario and variant, and places every registered scenario 344ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2470:2 > portfolio > names a specimen the showcase declares, or its own region, as every scenario subject 757ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2540:2 > portfolio > writes each subject its own accessibility artifact for the variant that rendered it 5444ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2592:2 > portfolio > records the toggle host as pressed at the moment its frame was shot 167ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2611:2 > portfolio > reads every frame this variant left in the portfolio directory inside its declared region 9874ms
+ ✓ |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:2675:2 > portfolio > proves every declared family and declares every proven family 171ms
+
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+   Start at  13:38:42
+   Duration  350.94s (transform 0ms, setup 636ms, import 2.10s, tests 336.95s, environment 0ms)
+

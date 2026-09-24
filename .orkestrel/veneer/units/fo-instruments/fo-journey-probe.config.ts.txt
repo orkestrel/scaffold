@@ -1,0 +1,13 @@
+import { defineConfig } from 'vitest/config'
+import { appJourney } from '../../vite.config.ts'
+
+const variants = [
+	{ name: 'light-1280', width: 1280, height: 800 },
+	{ name: 'dark-390', width: 390, height: 844 },
+]
+const project = appJourney(variants[0], variants)
+
+export default defineConfig({
+	...project,
+	test: { ...project.test, include: ['tmp/probe/fo-reach.test.ts'], exclude: [], testTimeout: 120_000 },
+})

@@ -1,0 +1,99 @@
+=== R1
+site: tests/setupServer.ts, collectAdditions: the registry check in the added-selector branch deleted
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup -t "registry name"
+test exit: 1
+summary: Test Files  1 failed | 3 skipped (4)
+summary: Tests  1 failed | 1 passed | 302 skipped (304)
+failed: × |setup| tests/setupServer.test.ts > server setup > records a registry name an added selector declares, and names the planted name beside it 1911ms
+failed: FAIL  |setup| tests/setupServer.test.ts > server setup > records a registry name an added selector declares, and names the planted name beside it
+passed: ✓ |setup| tests/setupServer.test.ts > server setup > records a registry name a recorded selector declares, and names the planted name beside it 3136ms
+restored: True
+=== B1
+site: src/styles/_tokens.scss: the --bs-breakpoint-* alias written as the compiled width instead of reading the token
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/tokens.test.ts -t "md breakpoint"
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 31 skipped (32)
+failed: × |[object Object] (chromium)| tests/src/styles/tokens.test.ts:236:2 > token cascade > moves the md breakpoint alias with a token override, and holds the condition the ramp compiled 344ms
+failed: FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:236:2 > token cascade > moves the md breakpoint alias with a token override, and holds the condition the ramp compiled
+restored: True
+rebuild exit: 0
+=== M1
+site: src/styles/_tokens.scss, $dark: the 'secondary' and 'secondary-rgb' entries reverted to the light slate
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/theme.test.ts -t "resolves every role tier"
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 12 skipped (13)
+failed: × |[object Object] (chromium)| tests/src/styles/theme.test.ts:113:2 > theme scopes > resolves every role tier and the body tokens per island over nested modes 19ms
+failed: FAIL  |[object Object] (chromium)| tests/src/styles/theme.test.ts:113:2 > theme scopes > resolves every role tier and the body tokens per island over nested modes
+restored: True
+rebuild exit: 0
+=== D1
+site: tests/setupStyles.ts, THEME_DARK_ADDITIONS: the '--bs-secondary' row deleted
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/theme.test.ts -t "resolves every role tier"
+test exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 12 skipped (13)
+failed: × |[object Object] (chromium)| tests/src/styles/theme.test.ts:113:2 > theme scopes > resolves every role tier and the body tokens per island over nested modes 14ms
+failed: FAIL  |[object Object] (chromium)| tests/src/styles/theme.test.ts:113:2 > theme scopes > resolves every role tier and the body tokens per island over nested modes
+restored: True
+=== A1
+site: src/styles/_tokens.scss, $dark: the 'dark-border' entry set to the gray-700 step the light role's border takes
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/alert.test.ts -t "alert from its own role aliases"
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  2 failed | 14 passed | 12 skipped (28)
+failed: × |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the light alert from its own role aliases 11ms
+failed: × |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the dark alert from its own role aliases 4ms
+failed: FAIL  |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the light alert from its own role aliases
+failed: FAIL  |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the dark alert from its own role aliases
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the primary alert from its own role aliases 8ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the secondary alert from its own role aliases 3ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the success alert from its own role aliases 3ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the info alert from its own role aliases 3ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the warning alert from its own role aliases 9ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the danger alert from its own role aliases 15ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the light alert from its own role aliases 2ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the dark alert from its own role aliases 2ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the primary alert from its own role aliases 3ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the secondary alert from its own role aliases 8ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the success alert from its own role aliases 2ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the info alert from its own role aliases 15ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the warning alert from its own role aliases 3ms
+passed: ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the danger alert from its own role aliases 2ms
+restored: True
+rebuild exit: 0
+=== C1
+site: guides/veneer.md: the theme compatibility row deleted
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project conformance -t "dark component rules"
+test exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 25 skipped (26)
+failed: × |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld 15ms
+failed: FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+restored: True
+=== C2
+site: tests/setupStyles.ts, COMPONENT_DARK_ASSETS: the '--bs-navbar-toggler-icon-bg' row deleted
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project conformance -t "dark component rules"
+test exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 25 skipped (26)
+failed: × |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld 12ms
+failed: FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+restored: True
+=== S3
+site: app/browser/constants.ts, COLOR_MODE_SPECIMENS: the nested island's navbar toggler deleted
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ColorModeSection.test.ts
+test exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 3 passed (4)
+failed: × |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:56:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls 10ms
+failed: FAIL  |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:56:2 > ColorModeSection > nests a dark island in a light surface and a light island in the dark one, each carrying the same controls
+passed: ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:22:2 > ColorModeSection > renders the declared color mode specimens through the shared section contract 4ms
+passed: ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:94:2 > ColorModeSection > resolves each surface to its own mode, and keeps the dark caret in the nested light island 22ms
+passed: ✓ |app:browser (chromium)| tests/app/browser/sections/ColorModeSection.test.ts:130:2 > ColorModeSection > releases the region and preserves adjacent content on repeated destruction 1ms
+restored: True
+exit=0

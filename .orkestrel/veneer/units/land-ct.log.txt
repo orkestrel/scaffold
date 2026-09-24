@@ -1,0 +1,32 @@
+=== unit/ct 793f0bb
+=== patches applied on unit/ct
+=== unit/ct 0cd70ed
+=== unit files: app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/sections/ColorModeSection.ts guides/veneer.md src/styles/_theme.scss src/styles/_tokens.scss tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts tests/app/browser/integration.test.ts tests/app/browser/sections/ColorModeSection.test.ts tests/conformance.test.ts tests/setup.ts tests/setupServer.test.ts tests/setupServer.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/alert.test.ts tests/src/styles/components/button.test.ts tests/src/styles/elements/a.test.ts tests/src/styles/theme.test.ts 
+Auto-merging app/browser/Showcase.ts
+Auto-merging app/browser/constants.ts
+Auto-merging app/browser/index.ts
+Auto-merging guides/veneer.md
+Auto-merging tests/app/browser/Showcase.test.ts
+Auto-merging tests/app/browser/integration.test.ts
+Auto-merging tests/setup.ts
+Auto-merging tests/setupStyles.test.ts
+Auto-merging tests/setupStyles.ts
+CONFLICT (content): Merge conflict in tests/setupStyles.ts
+Squash commit -- not updating HEAD
+Automatic merge failed; fix conflicts and then commit the result.
+=== squash merge exit=1
+resolved /home/user/veneer/tests/setupStyles.ts
+=== landed 595ac02
+tests/app/browser/index.test.ts: already sorted; no duplicates
+tests/conformance.test.ts: already sorted; no duplicates
+tests/setup.css: 0 split exclusion line(s) merged
+tests/fixtures/tailwind/consumer.css: 0 split exclusion line(s) merged
+tests/fixtures/tailwind/preflight.css: 0 split exclusion line(s) merged
+guides/veneer.md: 0 split exclusion line(s) merged
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 30695ms on 21 files using 4 threads.
+=== oxfmt check exit=0
+=== oxlint exit=0
+=== check exit=0

@@ -1,0 +1,11 @@
+import { releasePane, stagePane } from '@orkestrel/test/browser'
+import { expect, it } from 'vitest'
+
+it('reports the window the tester sits in', async () => {
+	const lines: string[] = []
+	lines.push(`before staging: tester ${String(window.innerWidth)}x${String(window.innerHeight)} parent ${String(window.parent.innerWidth)}x${String(window.parent.innerHeight)} frame ${JSON.stringify(window.frameElement?.getBoundingClientRect())}`)
+	await stagePane(window.innerWidth, window.innerHeight)
+	lines.push(`staged: tester ${String(window.innerWidth)}x${String(window.innerHeight)} parent ${String(window.parent.innerWidth)}x${String(window.parent.innerHeight)} frame ${JSON.stringify(window.frameElement?.getBoundingClientRect())}`)
+	await releasePane()
+	expect(lines).toEqual([])
+})

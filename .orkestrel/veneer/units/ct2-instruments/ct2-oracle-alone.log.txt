@@ -1,0 +1,315 @@
+ 13:49:37 up  3:11,  0 user,  load average: 12.69, 12.81, 12.36
+
+ RUN  v4.1.11 /home/user/veneer-ct2/tmp/probe/ct2-copy
+
+ ↓ |setup| tests/setupServer.test.ts > scanStyleBlocks > discovers root and nested partials and reports every file pair and block intersection with forward slashes
+ ↓ |setup| tests/setupServer.test.ts > scanStyleBlocks > keeps sibling and nested blocks separate and counts distinct declarations only
+ ↓ |setup| tests/setupServer.test.ts > scanStyleBlocks > reads multiline declarations past comments and interpolation without expanding includes
+ ↓ |setup| tests/setupServer.test.ts > scanStyleBlocks > protects quoted punctuation and whitespace from block grouping and normalization
+ ↓ |setup| tests/setupServer.test.ts > scanStyleBlocks > reports shared interpolated property names within custom and ordinary declarations
+ ↓ |setup| tests/setupServer.test.ts > scanStyleBlocks > folds whitespace inside interpolation while preserving quoted whitespace
+ ↓ |setup| tests/setupServer.test.ts > scanStyleBlocks > returns empty readings for empty and singleton populations and refuses a missing root
+ ↓ |setup| tests/setupServer.test.ts > findDuplication > reports a whole five-declaration block one partial copies into another, naming each site and every declaration
+ ↓ |setup| tests/setupServer.test.ts > findDuplication > refuses a four-declaration overlap between two eight-declaration blocks, and reports it after a fifth is shared
+ ↓ |setup| tests/setupServer.test.ts > findDuplication > refuses a whole two-declaration copy, a whole three-declaration copy, and a whole four-declaration copy, while the sweep still reports every one
+ ↓ |setup| tests/setupServer.test.ts > findDuplication > refuses a five-declaration overlap tied at half of a ten-declaration block, and reports it after that block narrows to nine
+ ↓ |setup| tests/setupServer.test.ts > findDuplication > reports an overlap wider than accident reaches inside large blocks, and refuses its narrower twin
+ ↓ |setup| tests/setupServer.test.ts > findDuplication > leaves the sweep reporting every refused intersection it found
+ ↓ |setup| tests/setupServer.test.ts > server setup > declares the identity constants, the specifier walk, the guide and ledger readers, the stylesheet reader, and the helpers the conformance proof measures with
+ ↓ |setup| tests/setupServer.test.ts > server setup > pins the copied inventory release and digests and reads its component vocabulary
+ ↓ |setup| tests/setupServer.test.ts > server setup > keeps a digest and a component the inventory records under the __proto__ key
+ ↓ |setup| tests/setupService.test.ts > service setup > exports the readiness verdict and its gathering, the compiler loader, the profile compile, the Tailwind paths, and the stage
+ ↓ |setup| tests/setupService.test.ts > scanReadiness > passes evidence from every gate
+ ↓ |setup| tests/setupService.test.ts > scanReadiness > refuses the compiler first, then the cascade, then the browser, then the floor
+ ↓ |setup| tests/setupService.test.ts > scanReadiness > refuses a compile without the readiness rule and a cascade with nothing in it
+ ↓ |setup| tests/setupService.test.ts > scanReadiness > refuses a cascade missing any one member of the candidate floor, by name
+ ↓ |setup| tests/setupService.test.ts > CANDIDATE_FLOOR > holds a floor every member of which the tailwind profile excludes
+ ↓ |setup| tests/setupService.test.ts > TAILWIND_PATHS > locates each Tailwind profile and fixture the service proofs read, as a file under the workspace root
+ ↓ |setup| tests/setupService.test.ts > resolveBrowserTarget > names the executable a local launch uses, and nothing for a path with no executable
+ ↓ |setup| tests/setupService.test.ts > resolveBrowserTarget > names the channel a launch takes, without launching it
+ ↓ |setup| tests/setupService.test.ts > resolveBrowserTarget > refuses a remote endpoint, because the stage launches a local browser and connects to none
+ ↓ |setup| tests/setupService.test.ts > importCompiler > resolves the installed plugin, which compiles the readiness input
+ ↓ |setup| tests/setupService.test.ts > verifyReadiness > passes the real gates and writes every class the cascade declares, sorted, one per line
+ ↓ |setup| tests/setupService.test.ts > verifyReadiness > refuses a compiler that does not load, naming the restoring command and keeping the load error as its cause
+ ↓ |setup| tests/setupService.test.ts > verifyReadiness > refuses a missing cascade under a scratch root before writing anything
+ ↓ |setup| tests/setupService.test.ts > verifyReadiness > refuses a cascade missing a floor member, and writes a complete one sorted
+ ↓ |setup| tests/setupService.test.ts > compileProfile > compiles a profile from its own path through the installed plugin
+ ↓ |setup| tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+ ↓ |setup| tests/setupService.test.ts > StageManager > an open stage > reads what a sheet loaded after the cascade resolves
+ ↓ |setup| tests/setupService.test.ts > StageManager > an open stage > reads every non-custom property the computed style enumerates by default
+ ↓ |setup| tests/setupService.test.ts > StageManager > an open stage > expands each rule to the longhand names Chromium assigns and the ones it declares important, nested rules included, without applying the sheet
+ ↓ |setup| tests/setupService.test.ts > StageManager > an open stage > removes every loaded sheet and the mounted markup, and keeps the cascade linked
+ ↓ |setup| tests/setupService.test.ts > StageManager > an open stage > refuses to open a stage that is already open
+ ↓ |setup| tests/setupService.test.ts > StageManager > destroys a stage whose open failed part way, releasing what it acquired and emptying its list
+ ↓ |setup| tests/setupService.test.ts > StageManager > destroys a stage it never opened as a no-op, and refuses a reading on it
+ ↓ |setup| tests/setup.test.ts > shared setup > exports the token prefix, the capture registry, the case matrices, the walks, and the reduction
+ ↓ |setup| tests/setup.test.ts > shared setup > registers one scenario per photographed frame, each naming the subject it shows
+ ↓ |setup| tests/setup.test.ts > shared setup > names each scenario for its own subject, which is what aligns the two portfolios
+ ↓ |setup| tests/setup.test.ts > shared setup > carries no mode token in a scenario, because the variant names the mode
+ ↓ |setup| tests/setup.test.ts > shared setup > names each driven row for its subject's stem and one state, on a specimen the resting registry photographs or one it exempts by name
+ ↓ |setup| tests/setup.test.ts > shared setup > describes each photographed cascade key by its specimen, its element, and its property
+ ↓ |setup| tests/setup.test.ts > shared setup > reduces a declared subject name to one hyphen-separated stem
+ ↓ |setup| tests/setup.test.ts > shared setup > reads a variant name as a theme followed by the viewport width it renders at
+ ↓ |setup| tests/setup.test.ts > shared setup > measures contrast against the ratio body text is read at, and dimming below full opacity
+ ↓ |setup| tests/setup.test.ts > shared setup > pins one focus-ring ratio per mode, each a reading a contrast reader can return
+ ↓ |setup| tests/setup.test.ts > shared setup > names each color mode control once, in a frozen list
+ ↓ |setup| tests/setup.test.ts > shared setup > records each reading under the bar once, in the order a sorted reading arrives in
+ ↓ |setup| tests/setup.test.ts > shared setup > reports a bare name as one node at the path it was given
+ ↓ |setup| tests/setup.test.ts > shared setup > reports a group before its members, and an empty group as itself alone
+ ↓ |setup| tests/setup.test.ts > shared setup > collapses a selector for comparison, dropping its quotation marks
+ ↓ |setup| tests/setup.test.ts > shared setup > reduces an activation to its classes, pressed state, mutations, clicks, and focus
+ ↓ |setup| tests/setup.test.ts > shared setup > reports an absent pressed attribute as absence rather than as a value
+ ↓ |setup| tests/setup.test.ts > shared setup > drops the recording members Veneer cannot answer for
+ ↓ |setup| tests/setup.test.ts > shared setup > distinguishes a reading whose mutation order is reversed
+ ↓ |setup| tests/setup.test.ts > shared setup > reports a refused action as refused, whatever sentence refused it
+ ↓ |setup| tests/setup.test.ts > shared setup > returns collections of its own rather than the reading it was handed
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > pins the reduced-motion query the `reduced-motion` mixin emits
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > matches the non-zero ramp names to the container token keys
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > matches even-child selectors after an escaped colon through the shared presence scanner
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > equates optimized even-column selectors while preserving literal text and other progressions
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > equates fractional maximum widths with exclusive ranges without losing direction or boundary
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the built class-family selector and media-condition multiset to the inventory minus deferrals
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > collects grouped gutter selectors without admitting unrelated prefixes
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > collects the helper prefixes and their preference condition without admitting longer names
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > normalizes grid selector spacing and minimum widths while retaining media ancestry and duplicates
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > repeats no partial's written declaration block in another partial beyond the coincidence floor
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > reads the width out of either spelling of a width condition, and refuses a condition naming none
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > requires the built cascade from npm run build:src:styles
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > refuses a breakpoint name the ramp does not carry, and gates each name it does
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > splits a shorthand value into its top-level values, treating calc() as one value
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > splits a value that carries a quoted string with a space, treating the quoted content as one token
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > splits a value whose parenthesized content carries a quoted close paren, treating it as one token
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > splits a value with an unmatched closing paren without throwing, clamping depth at zero
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > splits a bare slash into its own token, and keeps a parenthesized slash inside its token
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > splits text on its top-level commas, keeping a bracketed or parenthesized comma inside its item
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > splits past a quoted parenthesis, which opens no group and so leaves the comma after it at the top level
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > extracts a resolved box-shadow into its color, lengths, and inset flag
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > stands every combinator alone, and leaves the whitespace inside parentheses, brackets, and quotation alone
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > canonicalizes legacy pseudo-elements without changing pseudo-classes or literal text
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > drops only a universal immediately preceding a pseudo-element in its compound
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > keeps a genuinely absent selector absent from the built cascade after canonicalization
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > leaves an escaped combinator inside the identifier it belongs to, and stands an unescaped one alone
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > walks each character of a selector with the group depth it sits at and whether it is text rather than syntax
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > decodes a hex escape with the whitespace that ends it, a literal escape, and an out-of-range code point
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > reads an identifier through the hyphens, digits, and escapes it is written with, and none where one does not begin
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > begins no identifier inside a quoted string, and ends one the quotation opens
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > names each whitespace character CSS separates on, and trims those and no others
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > keeps the whitespace an escape owns, and trims only the whitespace the walk reads as syntax
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > reads a no-break space as an identifier character rather than as a separator
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > reduces a registry to its leaf names, and pairs each group declaring a color beside its triplet
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > carries each name once per scope, reporting the value its first rule declares
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > takes each scope from its own selector, and reports nothing for a rule outside it
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > excludes the navbar rule from the dark scope, which paints a component inside a dark island
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds table case families and maximum widths to the inventory and ramp
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the pagination selectors, sizes, states, and state twins to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the button group selectors, corner resets, and lift states to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the split toggle padding forms, caret margins, and specimen forms to the inventory and the capture registry
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > renders each tag the preflight pairing reaches once, inside a parent its content model mandates
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds every grid breakpoint and numbered family to the ramp and inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > pins the grid viewport readings on each side of every breakpoint
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds every named ratio to the inventory, to its own name, and to the scale the family carries
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > carries the official icon-link classes and the undefined icon class in the mounted markup
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the progress selectors, variables, and specimen markup to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the spinner selectors, variables, and size ramp to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the placeholder selectors, size ramp, and specimen markup to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the gap steps, values, and infixes to the inventory and ramp
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the display values, the vertical-alignment positions, and the flex entries to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the float sides, the overflow entries and values, and the object-fit values to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the hit corners to the edges the stretched link records and the stretched-link hosts to those corners
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the font entry, weight, style, and line-height tables to the inventory in its order
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the placement steps, values, and fixtures to the inventory, the ramp, and the journey
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the shadow values, the opacity steps, and the focus-ring roles to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the paint fills, tiers, opacity steps, border sides and widths, and radius steps to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the spacing steps, properties, and sides and the interaction values to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > pins the frozen container variants and payload widths against the retained scale
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds the text alignment, entry, color, emphasis, opacity, and pair tables to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > carries the pinned link role and utility scales as frozen case data
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > freezes the boundary table and its below, at, and above readings
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > freezes each component case table and gives it the rows its own family ships
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > freezes every text case table with its entries
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > names every partial the elements layer ships, and gives each mandated child a legal parent
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > freezes each mandated pair as a distinct ancestor and descendant written once
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > names in every calibration row a role tier the token registry declares, in a mode the theme scopes
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > reads back the retained root and dark name lists from the installed Bootstrap stylesheet
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > carries one unique prefixed name per compatibility row, in each scope
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > reads the release secondary and link cases back from the installed stylesheet
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > reads every light and dark role tier back from the installed stylesheet
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > names the Veneer dark additions outside the Bootstrap dark scope and inside its root scope
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > freezes the component-owned dark assets and names each inside the Bootstrap dark scope
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > records for every retained row the value Bootstrap declares for its alias at root
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > overrides in the customization recipe only names the token registry declares
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > carries the customization fence the guide publishes, byte for byte
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > reads a reference map into one row per token, each carrying a value for both modes
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > reads a cell as stated values only where one separator joins its spans
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > expands a suffix over the token before it, and a range over the registry order
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > writes every number in full and every millisecond duration in seconds
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds every range rule to the inventory, to its engine, and each declaration to the tokens its row names for that property
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > leaves a range rule under a condition no range rule records out of the compared keys and compares one under a recorded condition
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > carries the classed pair, the disabled control, and the bare control in the range markup
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > binds every text-control selector to the inventory, to its evidence rung, and each declaration to the tokens its row names for that property
+ ↓ |setup| tests/setupStyles.test.ts > styles setup > names every case subject once in the text-control markup, beside the bare controls
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > refuses a range whose endpoint the registry order does not carry
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > refuses a table whose value column it cannot resolve
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > refuses a role table carrying a column it does not read
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > refuses a value cell written in a form it cannot read
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > refuses a role cell stating a surplus value
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > states a dark value the dark cell alone decides
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > binds each form mark in the token map to the release declaration that bakes it
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > compares a percentage as its own number written in full
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > binds the card case families to the inventory and the ramp
+ ↓ |setup| tests/setupStyles.test.ts > reference map refusals > binds the list-group case families to the inventory and the ramp
+ ↓ |setup| tests/setupStyles.test.ts > passive component case tables > binds the breadcrumb, badge, and close selector tables to the official inventory
+ ↓ |setup| tests/setupStyles.test.ts > passive component case tables > binds the alert tables to the official inventory and the recorded dismissible geometry
+ ↓ |setup| tests/setupStyles.test.ts > passive component case tables > derives the badge geometry and the breadcrumb inset from the recorded declarations
+ ↓ |setup| tests/setupStyles.test.ts > passive component case tables > derives each close state opacity and the recorded mark from the official declarations
+ ↓ |setup| tests/setupStyles.test.ts > passive component case tables > freezes every passive case table and each of its entries
+ ↓ |setup| tests/setupStyles.test.ts > fade case tables > binds the fade selector table to the selectors the official inventory records under the transition key alone
+ ↓ |setup| tests/setupStyles.test.ts > fade case tables > names in each fade component case the classes its own key and the transition key record
+ ↓ |setup| tests/setupStyles.test.ts > toast case tables > binds the toast tables to the official inventory and the recorded header close margins
+ ↓ |setup| tests/setupStyles.test.ts > carousel case tables > binds the carousel selector table to the official inventory, each name once
+ ↓ |setup| tests/setupStyles.test.ts > carousel case tables > derives each control mark and the dark filter from the official declarations
+ ↓ |setup| tests/setupStyles.test.ts > carousel case tables > freezes every carousel case table
+ ↓ |setup| tests/setupStyles.test.ts > modal case tables > binds the modal selector table to the official inventory, each name once
+ ↓ |setup| tests/setupStyles.test.ts > modal case tables > derives the stacking levels, the space slots, the margins, and the backdrop opacity from the official declarations
+ ↓ |setup| tests/setupStyles.test.ts > modal case tables > derives every dialog cap from the recorded width at each boundary, and reaches every recorded width
+ ↓ |setup| tests/setupStyles.test.ts > modal case tables > derives each fullscreen class and its boundary from the recorded conditions
+ ↓ |setup| tests/setupStyles.test.ts > modal case tables > freezes every modal case table and each of its entries
+ ↓ |setup| tests/setupStyles.test.ts > tip case tables > binds the tooltip and popover selector tables to the official inventory, each name once
+ ↓ |setup| tests/setupStyles.test.ts > tip case tables > pairs every explicit placement rule with the automatic rule the release extends it into
+ ↓ |setup| tests/setupStyles.test.ts > tip case tables > reads every box, offset, border width, and border color the release records on either arrow
+ ↓ |setup| tests/setupStyles.test.ts > tip case tables > pins the text reset both tips record, the later alignment included
+ ↓ |setup| tests/setupStyles.test.ts > tip case tables > freezes every tip case table
+ ↓ |setup| tests/setupStyles.test.ts > offcanvas case tables > partitions the recorded offcanvas vocabulary between the offcanvas selectors and the navbar combinators
+ ↓ |setup| tests/setupStyles.test.ts > offcanvas case tables > derives each placement, each state, and the panel geometry from the official declarations
+ ↓ |setup| tests/setupStyles.test.ts > offcanvas case tables > freezes every offcanvas case table and each of its entries
+ ↓ |setup| tests/setupStyles.test.ts > check case tables > partitions the recorded check vocabulary between the check selectors and the validation rules
+ ↓ |setup| tests/setupStyles.test.ts > check case tables > binds each check glyph to the recorded declaration that bakes it and to the site its drive reaches
+ ↓ |setup| tests/setupStyles.test.ts > check case tables > carries every layout and state the check proof mounts in the check markup
+ ↓ |setup| tests/setupStyles.test.ts > input group case tables > partitions the recorded input-group selectors into the partial and the validation stacking
+ ↓ |setup| tests/setupStyles.test.ts > input group case tables > writes each recorded input-group rule as often as the release records it, each declaration reading the tokens its row names for that property
+ ↓ |setup| tests/setupStyles.test.ts > input group case tables > freezes the input-group tables and carries the grouped children the proofs mount
+ ↓ |setup| tests/setupStyles.test.ts > input group case tables > derives each dropdown toggle corner row from the count the inventory squares the toggle at
+ ↓ |setup| tests/setupStyles.test.ts > input group case tables > names the first filled column, and names no column when every cell is empty
+ ↓ |setup| tests/setupStyles.test.ts > input group case tables > selects one subsection's tables, their columns, and their cells
+ ↓ |setup| tests/setupStyles.test.ts > input group case tables > reads the fenced blocks of one language, and leaves every other block out
+ ↓ |setup| tests/setupStyles.test.ts > input group case tables > reads the tag a compound opens with, and none where it opens with something else
+ ↓ |setup| tests/setupStyles.test.ts > input group case tables > reads the preflight departures the guide records, and refuses a table it cannot resolve
+ ↓ |setup| tests/setupStyles.test.ts > form label case table > binds every label selector to the one inventory key recording it and each declaration to the tokens its row names for that property
+ ↓ |setup| tests/setupStyles.test.ts > form label case table > carries the stacked label, control, and help text under a sized parent, a horizontal row at each size, and a labelled group in the label markup
+ ↓ |setup| tests/setupStyles.test.ts > floating label case table > binds every floating selector to the inventory, to its condition, and each declaration to the tokens its row names for that property
+ ↓ |setup| tests/setupStyles.test.ts > floating label case table > names the undrivable autofill rules and the shadowed disabled twin as the declaration-read rows
+ ↓ |setup| tests/setupStyles.test.ts > floating label case table > carries every floated host, the disabled select, and the bare pair in the floating markup
+ ↓ |setup| tests/setupStyles.test.ts > form select case tables > binds every select case row and the focus treatment to the official inventory
+ ↓ |setup| tests/setupStyles.test.ts > form select case tables > reads the Gecko focus-ring reset out of the compiled cascade, where no browser parser has been
+ ↓ |setup| tests/setupStyles.test.ts > form select case tables > carries every recorded select form, a single-row control, and a bare control in the markup
+ ↓ |setup| tests/setupStyles.test.ts > form select case tables > freezes the select case table, each of its rows, and the focus treatment
+ ↓ |setup| tests/setupStyles.test.ts > dropdown case tables > partitions the recorded dropdown selectors among this partial, the partials sharing them, and the deferrals
+ ↓ |setup| tests/setupStyles.test.ts > dropdown case tables > derives each caret side, the dark slots, the space slots, and the ramp from the recorded rules
+ ↓ |setup| tests/setupStyles.test.ts > nav case tables > binds the nav selectors, published properties, rows, and markup to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > accordion case tables > binds the accordion selectors, published properties, and markup to the inventory
+ ↓ |setup| tests/setupStyles.test.ts > navbar case tables > binds the navbar selectors, published properties, dark retunes, ramp, and markup to the inventory
+ ✓ |setup| tests/setupServer.test.ts > server setup > records and reads official control state and rejects contradicted or absent obligation steps 7342ms
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > binds every table entry to a saved fixture step and a ledger row, and omits keyboard obligations
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > binds every entry to a ledger row of its own component and category, fallbacks included
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > binds data-api proofs to activation steps and distinguishes an absent step
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > refuses an enabled click as proof of disabled refusal
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > requires an explicit pressed attribute even when the accessible toggle is released
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > refuses an event obligation the table names no events for, and one it binds no predicate for
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > reads the required events from the binding rather than from the obligation wording
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > returns an invalid-fixture finding for values JSON cannot serialize
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > requires boolean pressed attributes for accessibility and every toggle predicate
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > skips differing readings in a written excluded step and still compares other steps
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > requires the recording browser as provenance and excludes it from the comparison
+ ↓ |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions > rejects exclusions outside the recording and malformed fixture metadata
+ ↓ |setup| tests/setupServer.test.ts > server setup > proof cell naming a test file > reads undefined for a plugin row whose Proof names an existing file
+ ↓ |setup| tests/setupServer.test.ts > server setup > proof cell naming a test file > reads a missing proof file finding for a plugin row whose Proof names a missing file
+ ↓ |setup| tests/setupServer.test.ts > server setup > proof cell naming a test file > refuses a file proof outside a plugin row as a plugin row's
+ ↓ |setup| tests/setupServer.test.ts > server setup > proof cell naming a test file > accepts a test file path and refuses a recording step name or a non-test path
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads compatibility rows from a written guide and rejects missing columns and invalid statuses
+ ↓ |setup| tests/setupServer.test.ts > server setup > names an incomplete compatibility row by its position and the first column it filled
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads the built cascade and refuses a missing artifact
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads the Veneer guide anchored at the workspace root rather than the working directory
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads deferred selectors and properties only within their Styles subsection
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads the media condition and keyframes rows only within their Styles subsections
+ ↓ |setup| tests/setupServer.test.ts > server setup > rejects excluded names across the cascade even before their inventory key has a guide row
+ ↓ |setup| tests/setupServer.test.ts > server setup > admits a property-free inventory key on its shipped selector row alone
+ ↓ |setup| tests/setupServer.test.ts > server setup > selects shipped CSS keys independently of behavior rows and excludes the shared engine
+ ↓ |setup| tests/setupServer.test.ts > server setup > withholds a component carrying an accepted row beside a shipped one in the same category
+ ↓ |setup| tests/setupServer.test.ts > server setup > partitions shipped vocabulary against written CSS and refuses missing, present-deferred, and unknown names
+ ↓ |setup| tests/setupServer.test.ts > server setup > skips engine and CSS obligations whose Proof cell is a dash
+ ↓ |setup| tests/setupServer.test.ts > server setup > locates this workspace and the installed Bootstrap manifest
+ ↓ |setup| tests/setupServer.test.ts > server setup > pins the release the installed manifest declares
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads the installed Bootstrap stylesheet the compatibility oracle measures
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads the manifest-rooted Bootstrap cascade outside the workspace working directory
+ ↓ |setup| tests/setupServer.test.ts > server setup > pins a distinct digest for the CSS and the bundle
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads only a string member and reports absence as undefined
+ ↓ |setup| tests/setupServer.test.ts > server setup > scans runtime manifest sections without rejecting development tooling
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads a call argument written as a literal and refuses every other argument node
+ ↓ |setup| tests/setupServer.test.ts > server setup > extracts imports and re-exports, parenthesized or not, while rejecting comments and strings as module edges
+ ↓ |setup| tests/setupServer.test.ts > server setup > finds forbidden package roots, subpaths, scopes, and dynamic imports
+ ↓ |setup| tests/setupServer.test.ts > server setup > matches a signature as a whole word, so a longer identifier sharing its prefix is not one
+ ↓ |setup| tests/setupServer.test.ts > server setup > keeps each reading its own, and exposes no state a caller could alter
+ ↓ |setup| tests/setupServer.test.ts > server setup > finds a forbidden runtime in a built entry through its specifier and through its signature
+ ↓ |setup| tests/setupServer.test.ts > server setup > detects a parent escape without rejecting a relative path that stays inside
+ ↓ |setup| tests/setupServer.test.ts > server setup > walks transitive imports, cycles, and Sass dependencies and refuses an unresolved edge
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads a written departure ledger and refuses a missing column, an empty cell, and an unknown member
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads an empty value cell as a value and an absent one as no declaration
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads a ledger table only inside its own subsection
+ ↓ |setup| tests/setupServer.test.ts > server setup > reports a planted tokenized, aliased, declared, dropped, and fallback difference against a written cascade
+ ↓ |setup| tests/setupServer.test.ts > server setup > refuses one emitted declaration two shipped components both claim
+ ↓ |setup| tests/setupServer.test.ts > server setup > writes one declaration site as the line both comparison paths claim it by
+ ↓ |setup| tests/setupServer.test.ts > server setup > refuses one emitted declaration two shipped components claim through different paths
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads an identical recording apart from a differing one at the same site
+ ↓ |setup| tests/setupServer.test.ts > server setup > writes one row for a declaration two shipped components record identically
+ ↓ |setup| tests/setupServer.test.ts > server setup > accepts one shipped component writing one site from two recorded rules
+ ↓ |setup| tests/setupServer.test.ts > server setup > reports a planted selector, declaration, and custom property the inventory lacks, and no recorded animation
+ ↓ |setup| tests/setupServer.test.ts > server setup > refuses a shipped component whose recorded animation the cascade does not define, which the ledger does not read
+ ↓ |setup| tests/setupServer.test.ts > server setup > refuses an animation the inventory records under no shipped key, naming it, and admits one a shipped key records
+ ↓ |setup| tests/setupServer.test.ts > server setup > names an emitted rule the release records under no such condition
+ ↓ |setup| tests/setupServer.test.ts > server setup > attributes an emitted selector the official inventory records under a shipped key
+ ↓ |setup| tests/setupServer.test.ts > server setup > names a custom property an added selector declares
+ ↓ |setup| tests/setupServer.test.ts > server setup > records a registry name a recorded selector declares, and names the planted name beside it
+ ↓ |setup| tests/setupServer.test.ts > server setup > records a registry name an added selector declares, and names the planted name beside it
+ ↓ |setup| tests/setupServer.test.ts > server setup > names a planted unrecorded difference, a planted stale row, and a planted unrecorded name
+ ↓ |setup| tests/setupServer.test.ts > server setup > names a deferred selector the built cascade ships whatever its combinator spacing
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads each rule of a written cascade with the layer and the conditions around it
+ ↓ |setup| tests/setupServer.test.ts > server setup > renders a rule under no condition as its selector and a rule under one as the selector, a space, and the condition
+ ↓ |setup| tests/setupServer.test.ts > server setup > keeps the blocks under the selector prefix whose condition a recorded rule sits under, in either width notation
+ ↓ |setup| tests/setupServer.test.ts > server setup > collects the custom properties each declaration reads, keyed by selector and by condition
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads the release width notation and the range notation as one condition
+ ↓ |setup| tests/setupServer.test.ts > server setup > reads a minified condition and a condition under several at-rules in the range notation
+ ↓ |setup| tests/setupServer.test.ts > server setup > collects each feature a list of conditions writes, once, in the range notation
+ ↓ |setup| tests/setupServer.test.ts > server setup > collects the breakpoint ramp a sheet declares, at the first declaration of each name
+ ↓ |setup| tests/setupServer.test.ts > server setup > expands each templated condition over the nonzero boundaries of a ramp
+ ↓ |setup| tests/setupServer.test.ts > server setup > keys each declaration's priority by its selector, property, and condition, so a priority swapped between conditions differs
+ ↓ |setup| tests/setupServer.test.ts > server setup > names each departure member from the two values alone
+ ↓ |setup| tests/setupServer.test.ts > server setup > attributes a rule by its layer first and by its longest matching class otherwise
+ ↓ |setup| tests/setupServer.test.ts > server setup > selects the longest key any class of a selector equals or opens with
+ ↓ |setup| tests/setupServer.test.ts > server setup > drops a tag the elements layer stops selecting rather than restoring it from the content model
+ ↓ |setup| tests/setupServer.test.ts > server setup > names the tag each elements-layer compound selects and refuses a compound it cannot read
+ ↓ |setup| tests/setupServer.test.ts > server setup > compiles the authored styles entry with every value as the source writes it
+ ↓ |setup| tests/setupServer.test.ts > server setup > attributes a selector two shipped keys record to the more specific key
+ ↓ |setup| tests/setupServer.test.ts > server setup > computes a SHA-256 digest sensitive to a byte change and throws on a missing file
+ ↓ |setup| tests/setupServer.test.ts > SheetReader > reads the statement a sheet opens with, past a leading comment and nowhere else
+ ↓ |setup| tests/setupServer.test.ts > SheetReader > orders each layer at its first placement, statement or block
+ ↓ |setup| tests/setupServer.test.ts > SheetReader > reads each opened block by its own name, and loses a relabelled block while its variables stay declared
+ ↓ |setup| tests/setupServer.test.ts > SheetReader > reads class names with adjacent classes and escapes, and refuses a functional argument and an attribute string
+ ↓ |setup| tests/setupServer.test.ts > SheetReader > reads every style rule selector, nested ones included, and no keyframe step, prefixed or not
+ ↓ |setup| tests/setupServer.test.ts > SheetReader > reads the variables a sheet declares, and no registration
+ ↓ |setup| tests/setupServer.test.ts > SheetReader > reads each declaration with its importance and the layer it sits in, and no keyframe step
+ ↓ |setup| tests/setupServer.test.ts > SheetReader > reads a declaration a conditional block wraps inside a rule under that rule selector
+ ↓ |setup| tests/setupServer.test.ts > SheetReader > reads each declaration with the conditional at-rules around it and no layer among them
+ ↓ |setup| tests/setupServer.test.ts > collectSharedNames > keeps the names both lists carry, once, in the first list order
+ ↓ |setup| tests/setupServer.test.ts > collectRuleLonghands > unions the properties of every rule whose selector names the class, in the order the names are given
+ ↓ |setup| tests/setupServer.test.ts > collectImportantNames > reports a name whose importance covers every longhand it has to cover, across the rules naming it
+ ↓ |setup| tests/setupServer.test.ts > collectImportantNames > keeps a name out whose importance covers only some of its longhands or another longhand, or that declares its longhands normally
+ ↓ |setup| tests/setupServer.test.ts > collectInlineSources > reads the source directives a stylesheet declares, apart from what a compiler does with them
+ ↓ |setup| tests/setupServer.test.ts > collectInlineSources > refuses a directive written in a form the grammar cannot read, rather than skipping it
+
+ Test Files  1 passed | 3 skipped (4)
+      Tests  1 passed | 303 skipped (304)
+   Start at  13:49:40
+   Duration  14.04s (transform 7.67s, setup 917ms, import 22.61s, tests 7.36s, environment 1ms)
+
+exit=0

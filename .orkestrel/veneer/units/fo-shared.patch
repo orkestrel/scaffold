@@ -1,0 +1,55 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -4211,8 +4211,10 @@
+   the room and the control together. The ledger files that inset under the `btn-close` table,
+   because the release records the combinator under the close key as well.
+ 
+-The showcase's Alert region carries every role in one ramp, an alert with a heading and a link, and a
+-dismissible alert whose close control is named through its `aria-label` attribute.
++The showcase's Alert region carries a plain alert with no role class, every role in one ramp, an
++alert with a heading and a link, and a dismissible alert whose close control is named through its
++`aria-label` attribute. The plain alert shows the alert rule alone: the text of the
++region around it inside a transparent fill and edge.
+ 
+ The `tests/src/styles/components/alert.test.ts` proof reads each resolved treatment in the browser:
+ the box and its slots, a consumer retune and an ancestor retune, the density and radius factors, the
+@@ -4647,6 +4649,14 @@
+ specimen sits below its host with an empty header, which the `.popover-header:empty` rule removes
+ from the flow, so it shows its body alone.
+ 
++No frame is registered for the header strip on its own. The strip lays the header's fill over the
++header's first row, which already paints that fill, so it changes a pixel only where the edge
++smoothing of the popover's fractional offset blends that row into the edge above it, and no frame
++shows it at any size. The `bottom-popover` frame carries the header the strip sits on, the
++`tests/src/styles/components/popover.test.ts` proof reads the strip's box and fill, and the Popover
++section proof reads that each titled popover below its host lays its strip on the header's first
++row in the header's own fill.
++
+ The `tests/src/styles/components/popover.test.ts` proof reads each resolved treatment in the browser:
+ the written selectors, the popover rung below a tooltip and a wrapper retuning it, the reset over an
+ inherited treatment, the box beside the engine's classes, the cap, edge, radii, insets, and text
+@@ -4722,7 +4732,12 @@
+   becomes the `var(--vn-palette-black-base)` value, which holds the same bytes.
+ 
+ The Carousel region renders a captioned carousel, a fading one, an inverted one over light pictures,
+-and one caught advancing to its next slide, each slide a fluid image over an inline SVG document.
++and one caught advancing to its next slide, each slide a picture over an inline SVG document. Each
++picture carries the `w-100` class the release's markup gives it, so it spans its slide at every
++width and the controls, the caption, and the indicators sit over the picture; the elements layer
++draws it as a block, so no picture carries the `d-block` class the release writes beside it. The
++journey photographs the previous control under the pointer and on focus on the captioned carousel,
++and the next control in the same states on the fading carousel.
+ The inverted specimen carries the `.carousel-dark` class and is named for what that class does,
+ because a capture scenario's name carries no mode word. Each control is named by its `aria-label`
+ attribute. The region renders no slide carrying an incoming class alone and no carousel carrying the
+@@ -9414,7 +9429,9 @@
+ scenario; see [the capture registry](../tests/setup.ts). A page frame carries a focus state and
+ never a pointer state, because taking the other sections out of the layout can move its subject out
+ from under the pointer, so every pointer state is an element frame of a specimen lifted to the
+-document's start.
++document's start. The pointer reaches only the part of the staged pane inside the runner's own
++window, which is narrower than the widest variant, so a pointer state on a control at the far edge
++of a full-width specimen is driven on a specimen lifted into a narrower wrapper.
+ 
+ The guard's population is the frames on disk under the `tmp/capture/states` directory, discovered
+ from the registry's own expansion and read back whether or not this run wrote a file, so an ordinary
