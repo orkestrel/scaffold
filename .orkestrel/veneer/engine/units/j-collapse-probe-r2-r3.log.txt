@@ -1,0 +1,4 @@
+# The Orchestrator's R2 and R3 probe over the J-COLLAPSE round-2 worktree (2026-09-24, Chromium 153.0.8010.12)
+GREEN (a hole: no case reddens) exit=0 | R2: the trigger-write door reads no token (writeTriggers receives [] in show and hide) | tests/src/browser/Collapse.test.ts | 0 failed of 31 | []
+GREEN (a hole: no case reddens) exit=0 | R3: #prune runs after the refusals instead of before them | tests/src/browser/Collapse.test.ts | 0 failed of 31 | []
+digest before=8f6372b917655608bd17726da9139b3be16fa78e7b59020265cfa0c08d66f388 after=8f6372b917655608bd17726da9139b3be16fa78e7b59020265cfa0c08d66f388 restored byte for byte

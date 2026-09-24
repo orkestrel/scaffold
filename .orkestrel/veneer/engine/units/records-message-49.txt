@@ -1,0 +1,20 @@
+Reconcile the J-COLLAPSE round-2 audit and send round 3
+
+The round-2 audit ran three lanes blind on units/j-collapse-audit-claims-2.md: the analyst on Astra
+(FAIL 2, 6), the reviewer on Opus (FAIL 2, 4, 6; F1), and the checker on Sonnet (PASS). The
+Orchestrator's replay reproduced every row of the writer's whole-file mutation log with every source
+restored byte for byte, closing claim 6; its probes reproduced the reviewer's R1 on Chromium 153 (a
+trigger reaction re-adding the shown token during hide passes the trigger door and the call writes on
+until the completing read) and found R2 and R3 holes (the trigger-door read and the prune order
+survive their mutations). The reconciled verdict (units/j-collapse-audit-2-verdict.md) reads FAIL 2,
+4 with F1: the same-host proof fixes a click R5 and E12 refuse; the nested-root sentences are false
+for the destroyed-delegate hand-off; the nesting sentence omits the parent's scope and the
+token-order departure misstates Bootstrap's hide; the parseElement remark carries a count. E12 is
+amended with the refusal's letter. Round 3 (units/j-collapse-brief-3.md, D1 to D7) resumes the same
+writer: the hide doors after the removal refuse a re-added shown token, the same-host click is
+refused before either route runs, the trigger door and the prune order gain red-first proofs, the
+guide sentences are made true, and the report copies the mutation log verbatim. The lane verdicts,
+the probes and their instruments, and the J-ISINSTANCE builder brief for after the landing are
+retained beside them. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
