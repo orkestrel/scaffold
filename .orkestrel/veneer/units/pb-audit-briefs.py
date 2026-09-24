@@ -27,6 +27,17 @@ UNITS = {
         analyst='claims 2, 3, 4, 5, 6, and 7 (the V2 probe and its red runs, each proof against its mutation, the V14 readings, and the derivation)',
         reviewer='claims 2 to 5 and 8 (open every frame the report names and rule whether it shows the row it closes; the specimens\' and labels\' fit), and the guide sentences',
         checker='claims 1, 8, and 9'),
+    'xo': dict(
+        name='CLOSE-OUT', worktree='/home/user/veneer-xo', base='ec98064',
+        law=("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{styles,tests,browser,names,typescript,architecture,patterns,documentation,writing,quality}.md`; "
+             "the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` and its references (the verdict shape)"),
+        family='the brief `b-close-out-brief.md`, the Veneer `ROADMAP.md` § Carriers rows naming CLOSE-OUT (read at `ec98064`), the B-MODAL design verdict `/home/user/scaffold/.orkestrel/veneer/b-modal-design-verdict.md` (its CLOSE-OUT row), and `w2-w3-note-1.md` and `w2-w3-note-2.md`',
+        precedent='the base `tests/setupStyles.ts`, `src/styles/_mixins.scss` and its `breakpoint` functions, the base `CarouselSection.test.ts` and `ToastSection.test.ts`, and the base `tests/guides.test.ts`',
+        evidence='`xo.diff`, `xo-status.txt`, `xo-shared.patch`, `xo-unscoped.patch`, `b-close-out-report.md`, and `xo-instruments/` (`xo-mutations.log.txt` and every `xo-mutation-*` log, the `xo-red-*` and `xo-green-*` logs, `xo-byte-equality.log.txt` and `xo-dist-base.sha256.txt`, `xo-ledger-obligation-key.log.txt`, the `xo-gate-*` and `xo-scratch-*` logs, `xo-field-scan.py` with its readings, and the instruments beside them)',
+        subject='the retired deferral, the heading function, the derived and frozen case populations, the ledger assertion, the region order, and the prose against the brief',
+        analyst='claims 2, 3, 4, 5, and 6 (each proof against its mutation, the byte equality, and the ledger premise against the proof steps)',
+        reviewer='claims 3 (the function\'s name and placement), 6 (the premise ruling), 7 (the order rule and the regions it moves), and 8 (the prose)',
+        checker='claims 1, 7, and 8'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]

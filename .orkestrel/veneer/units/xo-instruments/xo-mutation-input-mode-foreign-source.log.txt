@@ -1,0 +1,41 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer-xo
+
+··························································································································x·····················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > input group case tables > writes each recorded input-group rule as often as the release records it, each declaration reading the tokens its row names for that property
+AssertionError: expected [ { reads: 'background-color', …(1) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "reads": "background-color",
++     "source": "--bs-secondary-bg",
++   },
++ ]
+
+ ❯ tests/setupStyles.test.ts:4277:5
+    4275|      ),
+    4276|    ),
+    4277|   ).toEqual([])
+       |     ^
+    4278|  })
+    4279|  it('freezes the input-group tables and carries the grouped children t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 143 passed (144)
+   Start at  11:56:38
+   Duration  18.21s (transform 2.24s, setup 313ms, import 4.42s, tests 13.22s, environment 0ms)
+

@@ -1,0 +1,36 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer-xo
+
+·············································································································································x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > nav case tables > binds the nav selectors, published properties, rows, and markup to the inventory
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/setupStyles.test.ts:4961:62
+    4959|    expect(Object.isFrozen(cases)).toBe(true)
+    4960|   for (const cases of [NAV_LENGTH_CASES, NAV_COLOR_CASES, NAV_ROW_CASE…
+    4961|    for (const entry of cases) expect(Object.isFrozen(entry)).toBe(true)
+       |                                                              ^
+    4962|  })
+    4963| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 143 passed (144)
+   Start at  11:55:50
+   Duration  18.19s (transform 2.40s, setup 230ms, import 4.12s, tests 13.59s, environment 0ms)
+

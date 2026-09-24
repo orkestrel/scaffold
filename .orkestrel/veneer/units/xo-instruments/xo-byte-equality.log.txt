@@ -1,0 +1,12 @@
+equal src/browser/index.d.ts
+equal src/browser/index.js
+equal src/browser/index.js.map
+equal src/core/index.cjs
+equal src/core/index.cjs.map
+equal src/core/index.d.cts
+equal src/core/index.d.ts
+equal src/core/index.js
+equal src/core/index.js.map
+equal src/styles/index.css
+equal src/styles/index.js
+file set: identical (diff of sorted find lists empty)

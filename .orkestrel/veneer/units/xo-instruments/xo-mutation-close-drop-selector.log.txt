@@ -1,0 +1,73 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer-xo
+
+······························································································x··········x······································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > passive component case tables > binds the breadcrumb, badge, and close selector tables to the official inventory
+AssertionError: expected Set{ '.btn-close', …(8) } to deeply equal Set{ …(10) }
+
+- Expected
++ Received
+
+@@ -4,9 +4,8 @@
+    ".btn-close-white",
+    ".btn-close.disabled",
+    ".btn-close:disabled",
+    ".btn-close:focus",
+    ".btn-close:hover",
+-   ".modal-header .btn-close",
+    ".offcanvas-header .btn-close",
+    ".toast-header .btn-close",
+  }
+
+ ❯ tests/setupStyles.test.ts:3498:36
+    3496|   // Every overlay partial ships its header combinator, so the close t…
+    3497|   // recorded population and the deferral ledger holds no row for an o…
+    3498|   expect(new Set(CLOSE_SELECTORS)).toEqual(
+       |                                    ^
+    3499|    new Set(oracle.components['btn-close'].selectors.map(({ selector })…
+    3500|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |setup| tests/setupStyles.test.ts > modal case tables > binds the modal selector table to the official inventory, each name once
+AssertionError: expected Set{ '.modal', '.modal-dialog', …(49) } to deeply equal Set{ '.modal', '.modal-dialog', …(50) }
+
+- Expected
++ Received
+
+@@ -41,11 +41,10 @@
+    ".modal-fullscreen-xxl-down .modal-body",
+    ".modal-fullscreen-xxl-down .modal-content",
+    ".modal-fullscreen-xxl-down .modal-footer",
+    ".modal-fullscreen-xxl-down .modal-header",
+    ".modal-header",
+-   ".modal-header .btn-close",
+    ".modal-lg",
+    ".modal-sm",
+    ".modal-title",
+    ".modal-xl",
+    ".modal.fade .modal-dialog",
+
+ ❯ tests/setupStyles.test.ts:3790:36
+    3788|   expect(recorded.length).toBeGreaterThan(0)
+    3789|   expect(new Set(MODAL_SELECTORS).size).toBe(MODAL_SELECTORS.length)
+    3790|   expect(new Set(MODAL_SELECTORS)).toEqual(new Set(recorded.map(({ sel…
+       |                                    ^
+    3791|  })
+    3792|  it('derives the stacking levels, the space slots, the margins, and th…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 142 passed (144)
+   Start at  11:47:06
+   Duration  12.97s (transform 2.45s, setup 173ms, import 3.94s, tests 8.66s, environment 0ms)
+
