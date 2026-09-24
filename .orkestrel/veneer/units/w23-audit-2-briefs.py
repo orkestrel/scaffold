@@ -55,6 +55,11 @@ UNITS = {
         focus='claims 2, 3, 5, and 6 (each converted population against its added-row mutation, the helper and its mutations, the ring check against the placement mutation, and the attribute and in-flow readings against the release)',
         checker='claims 1, 4, 7, and 8',
         bench='the bench round-tripped at 11:21 (pf-audit-2 returned exit 0 through this queue)'),
+    'xo': dict(name='CLOSE-OUT', worktree='/home/user/veneer-xo', base='ec98064',
+        evidence='`xo-2.diff`, `xo-2-status.txt`, `xo-shared-2.patch`, `xo-unscoped.patch`, `b-close-out-report-2.md`, `b-close-out-brief-2.md`, `xo-instruments/` (the round-2 records: `xo-mutations-2.log.txt`, `xo-mutate-2.sh`, `xo-mutate-py-2.sh`, `xo-plant-carousel-2.py`, the `xo-mutation-*` logs of round 2, and the `xo-2-scratch-*` logs), round 1\'s `xo.diff`, `xo-shared.patch`, and `b-close-out-report.md`, and the round-1 verdict `xo-audit-verdict.md` and its lane verdicts',
+        focus='claims 2 and 4 (the class-selector populations against both controls, and the ledger key against both copies)',
+        checker='claims 1, 3, and 5',
+        bench='the bench round-tripped at 12:30 (xo-audit returned exit 0 through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"

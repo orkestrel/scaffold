@@ -33,6 +33,6 @@ AssertionError: expected [ Array(1) ] to deeply equal []
 
  Test Files  1 failed (1)
       Tests  1 failed | 19 passed (20)
-   Start at  12:36:39
-   Duration  4.07s (transform 1.12s, setup 225ms, import 2.94s, tests 685ms, environment 0ms)
+   Start at  12:36:33
+   Duration  4.11s (transform 1.12s, setup 302ms, import 2.96s, tests 567ms, environment 0ms)
 
