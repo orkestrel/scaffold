@@ -1,0 +1,14 @@
+# J-GUARDS landing: the merge of main into unit/guards (2026-09-24)
+f609bb0 Name the event guards for the detail they narrow, and read each declared option once
+b1d314d Name the sanitizer fixtures in the setup module's export list
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+ca83afb State in the roadmap that the engine session works on main, one worktree per unit
+Merge made by the 'ort' strategy.
+ ROADMAP.md | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+merge main into unit/guards exit=0
+conflicts: none

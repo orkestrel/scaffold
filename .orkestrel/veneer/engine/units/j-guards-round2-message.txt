@@ -1,0 +1,6 @@
+State the related-target summaries in plain sentences, pin a truly undefined detail, and state the resolver's constructor-key rule
+
+The landing audit's subjective lane found the Modal and Offcanvas event-map summaries shortened by dropping helper words and joining two ideas, and one idea named by two verbs across `RelatedDetail` and the `isRelatedEvent` remarks; each now reads as two plain sentences with `carries` throughout, and the guide's Summary cells follow. The guide's `resolveOptions` paragraph states that a constructor key the parser table does not declare is never read and never reaches the result, and that each declared key is read once. A case pins `isBareEvent` refusing a custom event whose detail accessor returns `undefined` (it read red with `=== null` loosened to `== null`), and a type receipt shows `ParserMap` refusing a table that misses an optional key (admitted with `-?` removed).
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

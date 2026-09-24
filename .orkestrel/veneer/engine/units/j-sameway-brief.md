@@ -2,7 +2,7 @@
 
 ## Role and engine
 
-`opus` on Opus 5.5, a native Claude subagent (Read, Grep, Glob, Edit, Write, Bash), the sole writer in `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration` (branch `unit/integration`: J-INTEGRATION rounds 1 to 3 through `7fd28dc`, merged over Veneer `main` with J-GUARDS as BASE_SHA, which the Orchestrator names at dispatch; `node_modules` matches the merged lockfile). The work is objective and routed native because its proofs run in a browser, which the Astra bench sandbox cannot launch (E24). This unit is J-INTEGRATION's round 4: its landing lands both.
+`opus` on Opus 5.5, a native Claude subagent (Read, Grep, Glob, Edit, Write, Bash), the sole writer in `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration` (branch `unit/integration`: J-INTEGRATION rounds 1 to 3 through `7fd28dc`, merged over Veneer `main` `3acad4c` (J-GUARDS) as `4b62bca`; `node_modules` matches the merged lockfile). The work is objective and routed native because its proofs run in a browser, which the Astra bench sandbox cannot launch (E24). This unit is J-INTEGRATION's round 4: its landing lands both.
 
 ## Objective
 
@@ -31,7 +31,7 @@ Implement E24 and its J-REENTRY-SWEEP amendment in `Modal` and `Offcanvas`, so e
 
 **Measurements.** Take first: whether Chromium 153 runs `attributeChangedCallback` for a `class` write that leaves the value unchanged (the planner's risk: it decides whether "skip the token write" is observable), and the red reading of each seed case on your base.
 
-**Standing conditions.** J-SNAPSHOT-SHARED writes `HostSnapshot.ts`, `Tab.ts`, `Alert.ts`, `Tooltip.ts`, and the `HostSnapshotInterface` slice of `types.ts` in another worktree beside you. The whole browser suite passes on your base. `HostSnapshot.test.ts` prints an uncaught `DOMTokenList` error on purpose in one passing case.
+**Standing conditions.** J-SNAPSHOT-SHARED writes `HostSnapshot.ts`, `Tab.ts`, `Alert.ts`, `Tooltip.ts`, and the `HostSnapshotInterface` slice of `types.ts` in another worktree beside you. On your base `4b62bca`, `check:src:browser` exits 0 and `Modal.test.ts`, `Offcanvas.test.ts`, and `Backdrop.test.ts` pass (105 tests, the Orchestrator's run); J-GUARDS's landing ran the whole browser suite green on `3acad4c`. `HostSnapshot.test.ts` prints an uncaught `DOMTokenList` error on purpose in one passing case.
 
 ## Unknowns
 

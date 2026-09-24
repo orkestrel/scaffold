@@ -1,0 +1,20 @@
+// P3 admitted: the same calls with the guard each map's detail takes typecheck.
+import type { CollapseHooks, ModalHooks, ScrollSpyHooks } from '../../../src/browser/index.ts'
+import {
+	bindEventMap,
+	COLLAPSE_EVENTS,
+	isBareEvent,
+	isRelatedEvent,
+	isScrollSpyEvent,
+	MODAL_EVENTS,
+	SCROLL_SPY_EVENTS,
+} from '../../../src/browser/index.ts'
+
+const host = document.createElement('div')
+const signal = new AbortController().signal
+const spy: ScrollSpyHooks = { activate: (event) => event.detail.relatedTarget.focus() }
+const modal: ModalHooks = { shown: (event) => event.detail.relatedTarget?.focus() }
+const collapse: CollapseHooks = { shown: (event) => event.detail }
+bindEventMap(host, SCROLL_SPY_EVENTS, isScrollSpyEvent, spy, signal)
+bindEventMap(host, MODAL_EVENTS, isRelatedEvent, modal, signal)
+bindEventMap(host, COLLAPSE_EVENTS, isBareEvent, collapse, signal)
