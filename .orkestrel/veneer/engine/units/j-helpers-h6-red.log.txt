@@ -1,0 +1,34 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Dropdown.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/helpers
+
+········x························
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:350:2 > Dropdown > refuses to show, toggle, or hide an anchor toggle whose disabled attribute is not false, and shows one whose value is false
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Dropdown.test.ts:381:31
+    379|   onTestFinished(() => shown.destroy())
+    380|   onTestFinished(() => allowed.destroy())
+    381|   expect(await refused.show()).toBe(false)
+       |                               ^
+    382|   expect(await refused.toggle()).toBe(false)
+    383|   expect(await shown.hide()).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 32 passed (33)
+   Start at  07:47:00
+   Duration  2.15s (transform 0ms, setup 369ms, import 268ms, tests 297ms, environment 0ms)
+
