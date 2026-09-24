@@ -151,7 +151,12 @@ UTIL-PAINT, UTIL-TEXT, and UTIL-SPACING on `opus` in `/home/user/veneer-{ue,uf,u
 (`units/b-utilities-*-brief.md` over `units/b-utilities-w3-terrain-report.md`; UTIL-SPACING
 dispatched 01:55 UTC). Returned and in audit: MODAL, TIP, TOAST round 2, and UTIL-FLOW (claims
 `units/{md,tp,ufl}-audit-claims.md` and `units/to-audit-2-claims.md`); UTIL-FONT returned at 01:58.
-Mid-campaign notes `units/w2-w3-note-1.md` and `units/w2-w3-note-2.md` bind every unit in flight.
+Mid-campaign notes `units/w2-w3-note-1.md`, `units/w2-w3-note-2.md`, and `units/w2-w3-note-3.md`
+bind every unit in flight. Ruled and in a fix round: UTIL-FLOW (`units/ufl-audit-verdict.md`, round 2
+on `units/b-utilities-ufl-brief-2.md`) and MODAL (`units/md-audit-verdict.md`, round 2 on
+`units/b-modal-md-brief-2.md`). Added by the MODAL verdict's re-baseline: RAMP-DOWN (`rd`), after
+MODAL and OFFCANVAS land, a down-direction twin of the `breakpoint-each` mixin through which
+`_modal.scss`, `_table.scss`, and `_offcanvas.scss` write their down-walk rule sets once.
 B-COLLAPSE VERIFY: round 1 is ruled in `b-collapse-verify-verdict.md`, and round 2 runs over the
 frames round 1 never handed a lens. B-CROSS waits for both families, with BARE-BUTTON added and
 THEME carrying the verify round's dark-mode contrast findings.
