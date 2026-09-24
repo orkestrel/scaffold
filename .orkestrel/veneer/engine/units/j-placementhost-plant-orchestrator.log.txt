@@ -1,0 +1,10 @@
+digest before: 84f25073e89d987419c2a438cb0aca1b37638b2a106dc1d22b2fda46c2692a13
+site occurrences: 1
+planted exit=1
+      Tests  1 failed | 19 passed (20)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:196:2 > Placement > flips to the opposite side when the preferred side overflows, and tries the listed fallbacks instead when given
+AssertionError: expected false to be true // Object.is equality
+ ❯ tests/src/browser/Placement.test.ts:222:34
+digest after: 84f25073e89d987419c2a438cb0aca1b37638b2a106dc1d22b2fda46c2692a13
+receipt: restored byte for byte
