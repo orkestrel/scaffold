@@ -1,6 +1,0 @@
-Assert only what the placement promises when it has no fallback
-
-The Placement case over an overflowing reference asserted, for an empty `fallbacks` list, that the element is shifted into the viewport and overlaps its reference. That is Chromium 153's behaviour; Chromium 141, which the styles session's gates run, leaves the element overflowing. The engine promises no fallback and no flip, so the segment now asserts that the element stays below its reference's top and that `position-try-fallbacks` reads `none`. Writing `flip-block` for an empty list reddens it on the new assertion (the builder's plant and the Orchestrator's replay, the source restored byte for byte).
-
-Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

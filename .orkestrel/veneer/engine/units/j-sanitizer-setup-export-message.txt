@@ -1,6 +1,0 @@
-Name the sanitizer fixtures in the setup module's export list
-
-The setup:browser case that lists every export of tests/setupBrowser.ts gains the five the sanitizer unit added: SANITIZER_CASES, SANITIZER_CONFIGS, buildWalkTarget, mountFrameDocument, and shadowSetHTML. The landing chain found the list stale; setup:browser reads 83 passed with it.
-
-Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

@@ -1,0 +1,58 @@
+# J-ROADMAP landing (2026-09-24): paths ROADMAP.md
+[unit/roadmap ca83afb] State in the roadmap that the engine session works on main, one worktree per unit
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+commit exit=0
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+merge exit=0
+npm notice run @orkestrel/veneer@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 11535ms on 476 files using 16 threads.
+format:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/roadmap
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  18:38:29
+   Duration  2.52s (transform 135ms, setup 87ms, import 306ms, tests 1.98s, environment 0ms)
+
+test:policy exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/roadmap[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 18:38:33
+[2m   Duration [22m 2.63s[2m (transform 488ms, setup 96ms, import 2.06s, tests 316ms, environment 0ms)[22m
+
+test:guides exit=0
+Already up to date.
+main ff to origin exit=0
+Updating b1d314d..ca83afb
+Fast-forward
+ ROADMAP.md | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+main ff to unit/roadmap exit=0
+To https://github.com/mikesaintsg/veneer.git
+   b1d314d..ca83afb  main -> main
+push exit=0
+worktree remove exit=0
+Deleted branch unit/roadmap (was ca83afb).
+branch delete exit=0
+ca83afb State in the roadmap that the engine session works on main, one worktree per unit
+b1d314d Name the sanitizer fixtures in the setup module's export list
+b7ae0ee Merge branch 'main' into unit/sanitizer

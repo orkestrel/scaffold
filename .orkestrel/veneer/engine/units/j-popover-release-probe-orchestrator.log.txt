@@ -1,9 +1,0 @@
-digest before: 7d8a2fa9fc01a74ed14e23b3721f1df5ea21c8bf021a9322567427a45f591885
-RED exit=1 | R1 the build releases nothing it moved into an unfinished tip | 1 ⎯⎯⎯⎯⎯⎯⎯
-    failed: moves nothing before a throwing content function stops the build, and returns the moved elements home before a throwing sanitizer rejects it
-HELD exit=0 | R2 a slot write whose door fails stops the build without releasing | 56 passed (56)
-RED exit=1 | R3 a throwing step stops the build without releasing | 1 ⎯⎯⎯⎯⎯⎯⎯
-    failed: moves nothing before a throwing content function stops the build, and returns the moved elements home before a throwing sanitizer rejects it
-GREEN? exit=0 | unmutated Tooltip suite | 56 passed (56)
-digest after: 7d8a2fa9fc01a74ed14e23b3721f1df5ea21c8bf021a9322567427a45f591885
-receipt: restored byte for byte
