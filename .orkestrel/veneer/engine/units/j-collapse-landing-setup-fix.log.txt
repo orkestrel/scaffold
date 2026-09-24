@@ -1,0 +1,51 @@
+npm notice run @orkestrel/veneer@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+All matched files use the correct format.
+Finished in 6113ms on 359 files using 16 threads.
+format:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+lint:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer
+···································stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in 'C:\Users\mikes\AppData\Local\Temp\orkestrel-test-Ql6KUm'
+    at finishWithoutResolve (C:\Users\mikes\WebstormProjects\veneer\node_modules\enhanced-resolve\lib\Resolver.js:957:18)
+    at C:\Users\mikes\WebstormProjects\veneer\node_modules\enhanced-resolve\lib\Resolver.js:1053:13
+    at C:\Users\mikes\WebstormProjects\veneer\node_modules\enhanced-resolve\lib\Resolver.js:1137:5
+    at eval (eval at create (C:\Users\mikes\WebstormProjects\veneer\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at C:\Users\mikes\WebstormProjects\veneer\node_modules\enhanced-resolve\lib\Resolver.js:1137:5
+    at eval (eval at create (C:\Users\mikes\WebstormProjects\veneer\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at C:\Users\mikes\WebstormProjects\veneer\node_modules\enhanced-resolve\lib\Resolver.js:1137:5
+    at eval (eval at create (C:\Users\mikes\WebstormProjects\veneer\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at C:\Users\mikes\WebstormProjects\veneer\node_modules\enhanced-resolve\lib\Resolver.js:1137:5
+    at eval (eval at create (C:\Users\mikes\WebstormProjects\veneer\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in 'C:\\Users\\mikes\\AppData\\Local\\Temp\\orkestrel-test-Ql6KUm'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in C:\\Users\\mikes\\AppData\\Local\\Temp\\orkestrel-test-Ql6KUm or above\n' +
+    '  resolve as module\n' +
+    "    C:\\Users\\mikes\\AppData\\Local\\Temp\\orkestrel-test-Ql6KUm\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\mikes\\AppData\\Local\\Temp\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\mikes\\AppData\\Local\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\mikes\\AppData\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\mikes\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\Users\\node_modules doesn't exist or is not a directory\n" +
+    "    C:\\node_modules doesn't exist or is not a directory"
+}
+········································································································································································································································
+ Test Files  4 passed (4)
+      Tests  267 passed (267)
+   Start at  23:32:28
+   Duration  8.45s (transform 1.01s, setup 220ms, import 3.94s, tests 11.11s, environment 0ms)
+test:setup exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer
+······················
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  23:32:38
+   Duration  10.73s (transform 194ms, setup 65ms, import 6.07s, tests 4.45s, environment 0ms)
+test:conformance exit=0
