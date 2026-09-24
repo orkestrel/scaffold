@@ -1,7 +1,0 @@
-Land J-TESTPIN: pin @orkestrel/test 0.0.23 and hold the oracle button through driveHold
-
-The test package's 0.0.23 release makes driveHold release the pointer on any failure after its marker write, which was the one behaviour Veneer's copied holdOraclePointer sequence had over it. The pin moves to ^0.0.23, the pointer.hold oracle row drives driveHold with the oracle button as its resolver, the copied sequence and the imports only it used are deleted, and the setup proof drives the row.
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-
-Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F

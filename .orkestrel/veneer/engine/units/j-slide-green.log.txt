@@ -1,2 +1,0 @@
-8: Test Files  1 passed (1)
-9:      Tests  15 passed (15)

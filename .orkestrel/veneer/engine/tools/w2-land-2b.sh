@@ -25,7 +25,9 @@ cd "$TREE" || exit 1
 	git status --short
 	echo "--- integration gates (read-only, in the worktree)"
 	FAIL=0
-	for step in format:check lint:check check test:guides test:policy test:src:browser build:src:core build:src:styles build:src:browser test:conformance test:setup; do
+	# A unit that touches app/** or tests/setup* adds the app, journey, and app build gates (J-DEMOFIX, 2026-09-24).
+	EXTRA=""; if [ -n "$(git diff --name-only MERGE_HEAD HEAD -- app tests/setup.ts tests/setupBrowser.ts tests/app 2>/dev/null; git diff --name-only main HEAD -- app tests/setup.ts tests/setupBrowser.ts tests/app)" ]; then EXTRA="test:app test:journey build:app"; fi; echo "extra gates: [$EXTRA]"
+	for step in format:check lint:check check test:guides test:policy test:src:browser build:src:core build:src:styles build:src:browser test:conformance test:setup test:setup:browser $EXTRA; do
 		npm run "$step"; code=$?; echo "$step exit=$code"; [ "$code" -ne 0 ] && FAIL=1
 	done
 	if [ "$FAIL" -ne 0 ]; then echo "a gate is red; the fast-forward is not run"; exit 71; fi

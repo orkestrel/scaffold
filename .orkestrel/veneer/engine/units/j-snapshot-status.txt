@@ -1,5 +1,0 @@
- M guides/veneer.md
- M src/browser/HostSnapshot.ts
- M src/browser/types.ts
- M tests/src/browser/HostSnapshot.test.ts
- M tests/src/browser/Modal.test.ts

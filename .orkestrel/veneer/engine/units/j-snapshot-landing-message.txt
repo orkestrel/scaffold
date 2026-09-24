@@ -1,7 +1,0 @@
-Land J-SNAPSHOT: one shared presence record per attribute and the write-back re-entry hand-off in HostSnapshot
-
-Every snapshot that saves a class token or an inline property on an element shares one record of whether the element carried the class or style attribute, read at the first save while no snapshot holds the record and forgotten after the last holder restores, and every restoration whose record reads the attribute absent removes it when its own writes leave it empty, a record a re-entrant save took back included, so neither a complete set of restorations in any order nor a partial one leaves the attribute present and empty. A restore a reaction calls on the same snapshot while a write runs writes back every target the interrupted restoration still owns, the entry whose write is running excepted, and the interrupted call writes nothing more. The E13 bounds the guide stated for the modal, the dropdown, and the shared restoration are replaced by the closed behaviour; the Tab and Carousel sentences state their remaining bound without a campaign unit name. The presence members are one layer under one term, the Map constructions carry explicit type arguments, the Dropdown reproduction retains its observer's deliveries, and the Modal case asserts the removed attribute. The mutation instrument reddens every row and restores the tree byte for byte.
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-
-Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F

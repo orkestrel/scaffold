@@ -1,6 +1,0 @@
-Give the Engine region's carousel its slide motion back
-
-The live carousel carries Bootstrap's `slide` class again, so each move waits for the incoming item's transition and the slides glide instead of switching at once. `slide` is a behaviour token: no rule of the cascade declares it, as none of Bootstrap's does, and the carousel engine reads it to decide whether a move waits. The Engine section's class census now admits the tokens an engine reads (the carousel's `slide`) beside the tokens the cascade declares, and the carousel case asserts the motion: right after a click on the next control the incoming item is still sliding in. Without the class that case and the census fail; with it all fifteen pass.
-
-Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F
