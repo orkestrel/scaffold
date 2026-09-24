@@ -1,0 +1,10 @@
+{
+ "note": "The scroll restore after the release removed; the restore beside the offset stays.",
+ "edits": [
+  {
+   "from": "\t\t} finally {\n\t\t\twindow.scrollTo({ left: scroll.left, top: scroll.top, behavior: 'instant' })\n\t\t}",
+   "to": "\t\t} finally {\n\t\t\tvoid scroll\n\t\t}"
+  }
+ ],
+ "file": "src/browser/helpers.ts"
+}

@@ -1,0 +1,68 @@
+
+> @orkestrel/veneer@0.0.1 test:setup:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup:browser
+
+
+ RUN  v4.1.11 /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/veneer-main-probe
+
+6:18:51 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+6:18:52 PM [vite] (client) [optimizer] bundling dependencies...
+···································x··············xx·······················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:887:2 > browser setup > preserves the pressed-state failure on its own when the pointer release succeeds
+AssertionError: expected undefined to be <div …(1)></div> // Object.is equality
+
+- Expected:
+<div
+  style="position: fixed; top: 1645.1875px; left: 183.578125px; width: 71.015625px; height: 35px; z-index: 9"
+/>
+
++ Received:
+undefined
+
+ ❯ tests/setupBrowser.test.ts:903:27
+    901|   let refused: unknown
+    902|   try {
+    903|    expect(readHit(target)).toBe(cover)
+       |                           ^
+    904|    try {
+    905|     await driveHold(() => readOracleButton(mounted.section, 'Toggle'),…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1186:2 > browser setup > names the focused control rather than the page when focus rests somewhere else
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupBrowser.test.ts:1186:1
+    1184|  })
+    1185|
+    1186|  it('names the focused control rather than the page when focus rests s…
+       | ^
+    1187|   const mounted = await mountShowcase()
+    1188|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1198:2 > browser setup > drives dark and light variants and leaves the requested mode applied on repetition
+Error: Interactive target "Dark mode" is ambiguous across 2 elements
+ ❯ resolveRendered node_modules/@orkestrel/test/dist/src/browser/index.js:465:33
+ ❯ clickAccessible node_modules/@orkestrel/test/dist/src/browser/index.js:484:16
+ ❯ applyTheme tests/setupBrowser.ts:1237:8
+    1235|  const dark = variant.startsWith('dark-')
+    1236|  if ((document.documentElement.getAttribute('data-bs-theme') === 'dark…
+    1237|   await clickAccessible('button', 'Dark mode')
+       |        ^
+    1238|  }
+    1239|  await waitForState('button', 'Dark mode', `pressed=${String(dark)}`)
+ ❯ tests/setupBrowser.test.ts:1201:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 72 passed (75)
+   Start at  18:18:51
+   Duration  41.54s (transform 0ms, setup 262ms, import 968ms, tests 27.33s, environment 0ms)
+

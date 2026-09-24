@@ -1,0 +1,8 @@
+=== head e42b5fa
+=== build exit=0 
+=== setup-browser exit=1       Tests  3 failed | 72 passed (75)
+=== src-browser exit=1       Tests  56 failed | 743 passed (799)
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:887:2 > browser setup > preserves the pressed-state failure on its own when the pointer release succeeds
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1186:2 > browser setup > names the focused control rather than the page when focus rests somewhere else
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1198:2 > browser setup > drives dark and light variants and leaves the requested mode applied on repetition
+=== done

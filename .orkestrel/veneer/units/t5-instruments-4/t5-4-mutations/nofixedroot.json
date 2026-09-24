@@ -1,0 +1,10 @@
+{
+ "note": "A fixed outermost svg root no longer ends the walk, so the decision comes from the HTML element around it.",
+ "edits": [
+  {
+   "from": "\t\t\t\t\tgetComputedStyle(anchor).position === 'fixed'\n\t\t\t\t) {\n\t\t\t\t\tbreak\n\t\t\t\t}",
+   "to": "\t\t\t\t\tgetComputedStyle(anchor).position === 'fixed' &&\n\t\t\t\t\tanchor === null\n\t\t\t\t) {\n\t\t\t\t\tbreak\n\t\t\t\t}"
+  }
+ ],
+ "file": "src/browser/helpers.ts"
+}

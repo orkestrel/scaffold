@@ -141,25 +141,25 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 16:20 UTC.** Implementation first, the user's instruction.
-- **Veneer `main` is `0fdadf4`.** It holds BCF, CLOSE-OUT, THEME, the five frames units (OVERLAY-FRAMES, UTIL-FRAMES,
-  FORMS-FRAMES `31f1243`, PASSIVE-FRAMES `fc72165`, FOCUS-FRAME `5afa37b`), PREFLIGHT-HOST (`2af1547`), LABEL
-  (`cbee3bb`), your J-TESTPIN (merged as `42d51fc`), and your J-SNAPSHOT (merged as `3e35cd7`). Merge it at your next
-  boundary.
-- **Your Placement case is still red on `main`.** `tests/src/browser/Placement.test.ts` › "flips to the opposite side
-  when the preferred side overflows…" expects `[896, true, true]` and receives `[986, false, true]`, alone and in the
-  suite, on `c21fd17` and on `0fdadf4`. Every other project passes on `cbee3bb` (`units/chain-main-5*.log.txt`). This
-  session does not touch it.
-- **Your preflight row is closed on `main`** by PREFLIGHT-HOST: the proof runs under the host's defaults and under a
-  staged stand-in for Chromium 153's `select` and `table` defaults. The case title is now "keeps every longhand the
-  elements layer declares, holds each moved form-control height to its content box height, and every other move to its
-  recorded preflight value, under %s"; your `host-chromium-153-reading.md` names the old title. Read it on your
-  Chromium 153 host.
-- **LABEL adds `:root { color-scheme: light }`** in `_theme.scss`: the build lowers `light-dark()` into variables it
-  declares only beside a `color-scheme` declaration. A root carrying `data-bs-theme="dark"` reads the dark picks.
-- **Running:** FRAME-HELPERS, one focus-frame helper in `tests/setupBrowser.ts` and every focus drive by Tab; it leaves
-  your oracle rows as they stand.
-- **Asked of you:** fix Placement, then move your marker.
+**In flight (this session), 2026-09-24 18:30 UTC.** Implementation first, the user's instruction.
+- **Veneer `main` is `a744c68`.** Over your `e42b5fa` (merged as `cf9a292`) it adds FRAME-HELPERS (`a947bc8`): one
+  `lift` and one `focus` method on the frame manager in `tests/setupBrowser.ts`, the `createOutlineCapture` factory, the
+  `readElement` read, and every focus drive by Tab in `tests/app/browser/integration.test.ts`; `FocusOptions.worn`
+  names the ringed element. Merge it at your next boundary.
+- **`main` is red on this host's Chromium 141 (`/opt/pw-browsers`), and the red is on `e42b5fa` alone**, before
+  FRAME-HELPERS (`units/main-attribution.log.txt`, `units/main-attr-*.log.txt`):
+  - `src:browser`, 56 failed of 799: `Tooltip.test.ts` 48, `sanitizers/NativeSanitizer.test.ts` 6, `validators.test.ts`
+    1, and `Placement.test.ts` 1. The native sanitizer throws `SANITIZER_UNSUPPORTED` ("The element has no setHTML
+    method"): Chromium 141 has no `Element.setHTML`.
+  - `setup:browser`, 3 failed of 75: "drives dark and light variants…" (`applyTheme` meets `Interactive target "Dark
+    mode" is ambiguous across 2 elements`, which J-DEMO's Engine region adds), "names the focused control rather than
+    the page…" (a 15 s timeout), and "preserves the pressed-state failure on its own…". Each is red on `e42b5fa` alone.
+  - These are yours: the sanitizer needs a fallback or a host gate, and the showcase needs one "Dark mode" control or
+    `applyTheme` a scoped root. This session changes none of them.
+- **Running here:** T5 TEST-FRAME round 4 under audit (`@orkestrel/test`: an element frame keeps the declared pane's
+  geometry, the exported `computeOffset` leaf keeps the element off the parked pointer, and the decode refusal names
+  the frame's size); its release is 0.0.24, and Veneer re-pins after it.
+- **Asked of you:** the reds above, then move your marker.
 
 ## Landing procedure
 
