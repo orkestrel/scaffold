@@ -1,0 +1,78 @@
+command: npm test
+
+> @orkestrel/veneer@0.0.1 test
+> npm run test:src && npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:setup:browser && npm run test:conformance && npm run test:guides
+
+
+> @orkestrel/veneer@0.0.1 test:src
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser && npm run test:src:styles
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+·········································································································································································································································································································································································································································································x···········3:53:18 PM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+ > src/browser/HostSnapshot.ts:163:30
+    161 |  				const key = HostSnapshot.#key(target.category, target.name)
+    162 |  				HostSnapshot.#writeBack(target.element, key, this, () =>
+    163 |  					target.element.classList.toggle(target.name, value !== undefined),
+        |                                ^
+    164 |  				)
+    165 |  			}
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:343:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:316:27
+ > src/browser/HostSnapshot.ts:163:30
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:345:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=0a50abe8:302:11
+
+3:53:18 PM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63315/@fs/home/user/veneer/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at http://localhost:63315/src/browser/HostSnapshot.ts:125:87
+    at #writeBack (http://localhost:63315/src/browser/HostSnapshot.ts:194:3)
+    at HostSnapshot.restore (http://localhost:63315/src/browser/HostSnapshot.ts:125:28)
+    at http://localhost:63315/home/user/veneer/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790265198820:476:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=0a50abe8:302:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=0a50abe8:1903:26
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=0a50abe8:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=0a50abe8:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:308:2 > HostSnapshot > withdraws an overlapping earliest recording when its restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+·····················································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:196:2 > Placement > flips to the opposite side when the preferred side overflows, and tries the listed fallbacks instead when given
+AssertionError: expected [ 986, false, true ] to deeply equal [ 896, true, true ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   896,[39m
+[32m-   true,[39m
+[31m+   986,[39m
+[31m+   false,[39m
+[2m    true,[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Placement.test.ts:222:73
+    220|   placement = new Placement({ reference, element }, { position: 'botto…
+    221|   box = element.getBoundingClientRect()
+    222|   expect([box.bottom, box.top < anchor.bottom, box.bottom > anchor.top…
+       |                                                                         ^
+    223|    innerHeight,
+    224|    true,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 23 passed (24)
+      Tests  1 failed | 649 passed (650)
+   Start at  15:52:25
+   Duration  56.58s (transform 609ms, setup 2.41s, import 1.43s, tests 38.54s, environment 0ms)
+
+exit 1

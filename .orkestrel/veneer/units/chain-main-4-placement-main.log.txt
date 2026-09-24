@@ -1,0 +1,6 @@
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project src:browser tests/src/browser/Placement.test.ts (Veneer main c21fd17, a detached worktree, load 2.29)
+ × |src:browser (chromium)| tests/src/browser/Placement.test.ts:196:2 > Placement > flips to the opposite side when the preferred side overflows, and tries the listed fallbacks instead when given 7ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 986, false, true ] to deeply equal [ 896, true, true ]
+      Tests  1 failed | 15 passed (16)
+exit 1
