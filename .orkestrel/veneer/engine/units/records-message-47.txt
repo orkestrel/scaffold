@@ -1,0 +1,18 @@
+Retain J-COLLAPSE round 2 and open its audit round
+
+The resumed collapse writer returned round 2 green on the merged tree eab447e (units/j-collapse-report-2.md):
+#holds reads the panel per phase at every write door with five door proofs, the delegate's collapse
+mark is keyed on the panel inside the containment check with three proofs, parseElement returns the
+first HTML match in document order, #prune destroys a constructed sibling whose panel left the
+document, the private names take one term each, the mutation instrument runs every mutation over the
+whole file with a digest receipt, the landed binder follow-ups are adopted, the guide's Collapse
+subsection carries its three default tables per R18's amendment, and four patches are returned under
+units/j-collapse-patches-2/. The Orchestrator's run (units/j-collapse-gates-2.log.txt) reads every
+scoped gate green, 198 of 198 browser proofs on Chromium 153.0.8010.12, conformance 22 of 22 after
+the three builds, the tree-wide typecheck green, and the patches applying together; the review diffs
+are units/j-collapse-2.diff and units/j-collapse-2-unit.diff. The audit round 2 runs on
+units/j-collapse-audit-claims-2.md (claims 1 to 10, written from the diffs) with the analyst on
+Astra, the reviewer on Opus, and the checker on Sonnet, briefs retained beside the claims. J-ENGINE
+campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

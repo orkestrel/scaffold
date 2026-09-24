@@ -1,0 +1,20 @@
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -699,7 +699,7 @@
+ 	/**
+ 	 * Shows the panel and hides its open accordion siblings.
+ 	 *
+-	 * @returns Resolves true after the `shown` event; false when the panel was shown, a transition was in flight on the panel or on an open accordion sibling, a listener prevented `show`, or the collapse is destroyed.
++	 * @returns Resolves true after the `shown` event; false when the panel was shown, a transition was in flight on the panel or on an open accordion sibling, a listener prevented `show`, the collapse is destroyed, or the panel showed the change was taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const opened = await collapse.show()
+@@ -709,7 +709,7 @@
+ 	/**
+ 	 * Hides the panel.
+ 	 *
+-	 * @returns Resolves true after the `hidden` event; false when the panel was hidden, a transition was in flight, a listener prevented `hide`, or the collapse is destroyed.
++	 * @returns Resolves true after the `hidden` event; false when the panel was hidden, a transition was in flight, a listener prevented `hide`, the collapse is destroyed, or the panel showed the change was taken over.
+ 	 * @example
+ 	 * ```ts
+ 	 * const closed = await collapse.hide()

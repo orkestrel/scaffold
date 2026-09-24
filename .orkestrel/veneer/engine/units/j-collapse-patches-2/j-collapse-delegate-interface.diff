@@ -1,0 +1,39 @@
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -134,10 +134,10 @@
+ 	readonly carousel?: Pick<CarouselOptions, 'classes' | 'attributes' | 'selectors'>
+ }
+ 
+-/** Owns delegated activation and the button engines it constructs. */
++/** Owns delegated activation and the engines it constructs. */
+ export interface DelegateInterface {
+ 	readonly root: ParentNode
+-	/** Releases the click listener and destroys every owned button engine. */
++	/** Releases the click listener and destroys every engine it owns. */
+ 	destroy(): void
+ }
+ 
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -38,7 +38,7 @@
+ | `ButtonVocabulary`                        | interface | Carries a button's resolved markup vocabulary: each group with every key present.                                                                      |
+ | `CollapseVocabulary`                      | interface | Carries a collapse's resolved markup vocabulary: each group with every key present.                                                                    |
+ | `Delegate`                                | class     | Activates data-attribute hosts through a root's delegated click listener.                                                                              |
+-| `DelegateInterface`                       | interface | Owns delegated activation and the button engines it constructs.                                                                                        |
++| `DelegateInterface`                       | interface | Owns delegated activation and the engines it constructs.                                                                                               |
+ | `DelegateOptions`                         | interface | Configures the root of delegated activation and the markup vocabulary of each entity it routes.                                                        |
+ | `bindEventMap`                            | function  | Binds an entity's hooks to the wire events its table names until the signal aborts.                                                                    |
+ | `emitEvent`                               | function  | Dispatches a bubbling DOM event carrying the supplied detail.                                                                                          |
+@@ -223,9 +223,9 @@
+ 
+ #### `DelegateInterface`
+ 
+-| Method    | Summary                                                             |
+-| --------- | ------------------------------------------------------------------- |
+-| `destroy` | Releases the click listener and destroys every owned button engine. |
++| Method    | Summary                                                        |
++| --------- | -------------------------------------------------------------- |
++| `destroy` | Releases the click listener and destroys every engine it owns. |
+ 
+ #### `RegistryInterface`
+ 
