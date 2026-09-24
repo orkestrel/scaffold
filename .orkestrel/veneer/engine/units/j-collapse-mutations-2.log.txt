@@ -1,5 +1,0 @@
-RED  exit=1 | the pre-change event return value is ignored | tests/src/browser/Collapse.test.ts -t "untouched when a listener prevents" | 1 failed | 23 skipped (24)
-RED  exit=1 | destruction omits the abort | tests/src/browser/Collapse.test.ts -t "abandons the transition in flight on destruction" | 1 failed | 23 skipped (24)
-RED  exit=1 | a write is not followed by a read | tests/src/browser/Collapse.test.ts -t "stops writing when a reaction to its own write destroys it" | 1 failed | 23 skipped (24)
-RED  exit=1 | the show dispatch is not followed by a read | tests/src/browser/Collapse.test.ts -t "writes nothing when a listener to its show event destroys it" | 1 failed | 23 skipped (24)
-RED  exit=1 | the show dispatch is not followed by a read (re-entry) | tests/src/browser/Collapse.test.ts -t "runs one transition and one shown event" | 1 failed | 23 skipped (24)

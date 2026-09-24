@@ -1,9 +1,0 @@
-[
- {
-  "name": "reflow: no layout read",
-  "file": "src/browser/helpers.ts",
-  "proof": "tests/src/browser/helpers.test.ts",
-  "find": "\telement.getBoundingClientRect()\n",
-  "replace": "\tvoid element\n"
- }
-]

@@ -1,6 +1,0 @@
-# The Orchestrator's R2 and R3 single-door probe over the J-COLLAPSE round-3 worktree at C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\collapse (2026-09-24, Chromium 153.0.8010.12)
-GREEN (a hole: no case reddens) exit=0 | R2a: the host-and-shown removal door admits the shown token | tests/src/browser/Collapse.test.ts | 0 failed of 32 | []
-GREEN (a hole: no case reddens) exit=0 | R2b: the size-clearing door admits the shown token | tests/src/browser/Collapse.test.ts | 0 failed of 32 | []
-GREEN (a hole: no case reddens) exit=0 | R2c: the post-await read admits the shown token | tests/src/browser/Collapse.test.ts | 0 failed of 32 | []
-GREEN (a hole: no case reddens) exit=0 | R3: the conflict read names a panel through the target attribute alone | tests/src/browser/Delegate.test.ts | 0 failed of 33 | []
-digests restored byte for byte
