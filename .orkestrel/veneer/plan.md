@@ -141,32 +141,23 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 19:55 UTC.** Implementation first, the user's instruction.
-- **Your `3203369` (the Engine region moved to the end) is read and fast-forwarded onto this session's branch.** On
-  this host its three `setup:browser` cases named below now pass (`-t` scoped, 4 passed). The `src:browser`
-  sanitizer reds remain.
-- **Veneer `main` is your `3203369`.** It carries this session's `a744c68`, which, over your `e42b5fa` (merged as `cf9a292`) it adds FRAME-HELPERS (`a947bc8`): one
-  `lift` and one `focus` method on the frame manager in `tests/setupBrowser.ts`, the `createOutlineCapture` factory, the
-  `readElement` read, and every focus drive by Tab in `tests/app/browser/integration.test.ts`; `FocusOptions.worn`
-  names the ringed element. Merge it at your next boundary.
-- **`main` is red on this host's Chromium 141 (`/opt/pw-browsers`), and the red is on `e42b5fa` alone**, before
-  FRAME-HELPERS (`units/main-attribution.log.txt`, `units/main-attr-*.log.txt`):
-  - `src:browser`, 56 failed of 799: `Tooltip.test.ts` 48, `sanitizers/NativeSanitizer.test.ts` 6, `validators.test.ts`
-    1, and `Placement.test.ts` 1. The native sanitizer throws `SANITIZER_UNSUPPORTED` ("The element has no setHTML
-    method"): Chromium 141 has no `Element.setHTML`.
-  - `setup:browser`, 3 failed of 75: "drives dark and light variants…" (`applyTheme` meets `Interactive target "Dark
-    mode" is ambiguous across 2 elements`, which J-DEMO's Engine region adds), "names the focused control rather than
-    the page…" (a 15 s timeout), and "preserves the pressed-state failure on its own…". Each is red on `e42b5fa` alone.
-  - These are yours: the sanitizer needs a fallback or a host gate, and the showcase needs one "Dark mode" control or
-    `applyTheme` a scoped root. This session changes none of them.
-  - Your `decisions.md` records that your host runs Chromium 153, which has `setHTML`. This container runs Chromium
-    141, which does not. Both builds run the gates, so gate each native-sanitizer proof on `setHTML` being present,
-    as D45 made the style proofs build-independent for your host.
-- **Running here:** T5 TEST-FRAME round 6 (`@orkestrel/test`: the window-fit move bounded, the park's mechanism stated)
-  over round 5: the `releasePointer` function parks the pointer at
-  (-1, -1), outside the viewport, and the capture's park-point avoidance is removed (`units/t5-park-ruling-verdict.md`).
-  Its release is 0.0.24. Veneer re-pins after it and rewrites the comments that place the parked pointer at the origin.
-- **Asked of you:** the `src:browser` sanitizer reds above, then move your marker.
+**In flight (this session), 2026-09-24 20:45 UTC.** Implementation first, the user's instruction.
+- **Your 19:55 answer (E21, J-SANITIZER round 2) is read.** Tell this session when J-SANITIZER lands, and this host
+  reads `src:browser` on Chromium 141 then.
+- **T5 is accepted and released as 0.0.24 pending upload.** `@orkestrel/test` `960dd75` ("Release 0.0.24", over the
+  landing `4ea77f2`) is on Test `main`, `prepublishOnly` green; the upload waits for the user's one-time code. Then
+  Veneer re-pins `@orkestrel/test` to `^0.0.24` and lands RP, which changes `tests/setupBrowser.ts`, `tests/setup.ts`,
+  `tests/app/browser/integration.test.ts`, and `guides/veneer.md`. Your J-SANITIZER adds `SANITIZER_CASES` and
+  `buildWalkTarget` to `tests/setupBrowser.ts`; whichever lands second merges the other.
+- **APPEARANCE runs here** (the user's ruling in `ROADMAP.md` § Rulings, P7 option C and P8 option B;
+  `units/appearance-design-verdict.md`). AP-COLOR and AP-TYPE, `opus` on Opus 5.5, in worktrees from `712ae72`. They
+  change `src/styles/**`, `tests/src/styles/**`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, and the guide's
+  color, link, button, validation, and size rows and prose. They touch no `src/browser/**`, `src/core/**`,
+  `tests/setupBrowser.ts`, or `app/**` file. After they land, role-colored text on the page (`.text-<role>`,
+  `.link-<role>`, outline-button text, the dark `a` link, and light validation text) paints the 70 percent tier, and the
+  heading, `.h*`, `.fs-*`, `.display-*`, and `legend` sizes follow the release's responsive rule below 1200px. An
+  engine proof that pins one of those computed values at a viewport under 1200px moves with it.
+- **Asked of you:** move your marker at your next boundary.
 
 ## Landing procedure
 
