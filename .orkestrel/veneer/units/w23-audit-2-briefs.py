@@ -60,6 +60,11 @@ UNITS = {
         focus='claims 2 and 4 (the class-selector populations against both controls, and the ledger key against both copies)',
         checker='claims 1, 3, and 5',
         bench='the bench round-tripped at 12:30 (xo-audit returned exit 0 through this queue)'),
+    'ct': dict(name='THEME', worktree='/home/user/veneer-ct2', base='ac74459',
+        evidence='`ct2.diff`, `ct2-status.txt`, `ct2-shared.patch` (all against `ac74459`, which carries round 1 as `595ac02`), `b-cross-ct-report-2.md`, `b-cross-ct-brief-3.md`, `ct2-instruments/` (`ct2-mutations.log.txt`, `ct2-mutate.py`, the `ct2-mutation-*` logs, `ct2-gates.sh`, `ct2-gates.log.txt` and the `ct2-gate-*` logs, `ct2-oracle-alone.log.txt`, `ct2-r1-green.log.txt`, and `ct2-lint-plant.log.txt`), round 1\'s `ct.diff`, `ct-shared.patch`, `ct-unscoped.patch`, and `b-cross-ct-report.md`, the round-1 verdict `ct-audit-verdict.md` and its lane verdicts, and the design verdict `/home/user/scaffold/.orkestrel/veneer/b-cross-design-verdict.md` (X3 and X8)',
+        focus='claims 2, 3, and 4 (each population\'s home or derivation against its mutation, the added-selector plant against R1, and the breakpoint alias case against B1 and its control)',
+        checker='claims 1, 5, and 6',
+        bench='the bench round-tripped at 13:52 (fr-audit returned exit 0 through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"

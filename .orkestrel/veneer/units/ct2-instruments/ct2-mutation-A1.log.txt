@@ -1,0 +1,161 @@
+
+ RUN  v4.1.11 /home/user/veneer-ct2/tmp/probe/ct2-copy
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:30:2 > alert box > carries a rule for every shipped alert name
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:37:2 > alert box > pads, spaces, and rounds the box from its own slots and paints no fill or edge at rest
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:61:2 > alert box > reads '--bs-alert-padding-x' from its own token
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:61:2 > alert box > reads '--bs-alert-padding-y' from its own token
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:61:2 > alert box > reads '--bs-alert-margin-bottom' from its own token
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:76:2 > alert box > moves the padding through a consumer scope retuning its slots and shadows an ancestor retune
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:96:2 > alert box > rescales the box with the density and radius factors
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:120:2 > alert content > paints the heading in the alert text color where a bare heading reads the heading slot
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:134:2 > alert content > weights the link and paints it from its own slot, inheriting the alert text at rest
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the primary alert from its own role aliases 8ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the secondary alert from its own role aliases 3ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the success alert from its own role aliases 3ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the info alert from its own role aliases 3ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the warning alert from its own role aliases 9ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the danger alert from its own role aliases 15ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the light alert from its own role aliases 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in light > paints the dark alert from its own role aliases 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the primary alert from its own role aliases 3ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the secondary alert from its own role aliases 8ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the success alert from its own role aliases 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the info alert from its own role aliases 15ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the warning alert from its own role aliases 3ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the danger alert from its own role aliases 2ms
+ × |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the light alert from its own role aliases 11ms
+   → expected [ [ 'dark', …(1) ] ] to deeply equal []
+ × |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the dark alert from its own role aliases 4ms
+   → expected [ [ 'light', …(1) ] ] to deeply equal []
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:214:2 > contextual alert roles > emits no variant for the role Bootstrap 5.3.8 does not name
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:229:2 > dismissible alert > reserves the right padding and pins the close control to the top-right corner above the content
+ ↓ |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:260:2 > dismissible alert > leaves a close control inside a plain alert in flow
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 passed | 12 skipped (28)
+   Start at  13:41:26
+   Duration  16.42s (transform 0ms, setup 3.22s, import 188ms, tests 95ms, environment 0ms)
+
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:41:41 PM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the light alert from its own role aliases
+AssertionError: expected [ [ 'dark', …(1) ] ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   [[39m
+[31m+     "dark",[39m
+[31m+     "--bs-light-border-subtle",[39m
+[31m+   ],[39m
+[31m+ ][39m
+
+ ❯ tests/src/styles/components/alert.test.ts:196:5
+    194|      .filter(({ twin, value }) => matchesColor(readToken(island, twin)…
+    195|      .map(({ other, name }) => [other, name]),
+    196|    ).toEqual([])
+       |     ^
+    197|    expect(matchesColor(readStyle(alert, 'color'), readToken(island, te…
+    198|    expect(matchesColor(readStyle(alert, 'background-color'), readToken…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/alert.test.ts:155:23 > contextual alert roles > in dark > paints the dark alert from its own role aliases
+AssertionError: expected [ [ 'light', …(1) ] ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   [[39m
+[31m+     "light",[39m
+[31m+     "--bs-dark-border-subtle",[39m
+[31m+   ],[39m
+[31m+ ][39m
+
+ ❯ tests/src/styles/components/alert.test.ts:196:5
+    194|      .filter(({ twin, value }) => matchesColor(readToken(island, twin)…
+    195|      .map(({ other, name }) => [other, name]),
+    196|    ).toEqual([])
+       |     ^
+    197|    expect(matchesColor(readStyle(alert, 'color'), readToken(island, te…
+    198|    expect(matchesColor(readStyle(alert, 'background-color'), readToken…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

@@ -1,0 +1,63 @@
+
+ RUN  v4.1.11 /home/user/veneer-ct2/tmp/probe/ct2-copy
+
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > installs the exact Bootstrap release this package tracks
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > pins the installed CSS and bundled JavaScript bytes
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted container navigation selector even when its fluid shell ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted link hover selector even when its resting twin ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted dark component rule the theme key records even when its component ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector, custom property, and recorded animation in the built cascade
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+ × |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld 12ms
+   → expected [ …(5) ] to deeply equal [ …(4) ]
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > defers no name the built cascade ships
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > selects in the elements layer exactly the tags the partial table names
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > compares each declaration's priority on both sheets at its selector, property, and condition
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads every forms partial in the release order, validation last
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads the passive block and the helpers in the release order, after every forms partial, each important helper ahead of the utilities
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > declares no forbidden runtime dependency or peer
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > imports no forbidden runtime package from source, application, or tests
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps relative module imports inside the workspace
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps every published entry closure inside source
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 skipped (26)
+   Start at  13:42:28
+   Duration  34.58s (transform 1.47s, setup 328ms, import 33.94s, tests 13ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ …(5) ] to deeply equal [ …(4) ]
+
+- Expected
++ Received
+
+  [
+    "--bs-accordion-btn-active-icon",
+    "--bs-accordion-btn-icon",
+    "--bs-form-select-bg-img",
+    "--bs-form-switch-bg",
++   "--bs-navbar-toggler-icon-bg",
+  ]
+
+ ❯ tests/conformance.test.ts:325:55
+    323|  it('measures the dark component rules under the theme key, and leaves…
+    324|   // The component-owned dark images are a second record of the same r…
+    325|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+       |                                                       ^
+    326|   expect(darkened).toEqual([
+    327|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
