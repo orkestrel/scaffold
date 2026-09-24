@@ -1,0 +1,87 @@
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+EXIT npm run check:src:browser -> 0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings src/browser tests/src/browser
+EXIT npx oxlint --config .oxlintrc.json --deny-warnings src/browser tests/src/browser -> 0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxfmt --config .oxfmtrc.json --write guides/veneer.md
+Finished in 6427ms on 1 files using 16 threads.
+EXIT npx oxfmt --config .oxfmtrc.json --write guides/veneer.md -> 0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxfmt --config .oxfmtrc.json --check src/browser tests/src/browser guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 6631ms on 46 files using 16 threads.
+EXIT npx oxfmt --config .oxfmtrc.json --check src/browser tests/src/browser guides/veneer.md -> 0
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal
+
+········································································································································································································································································································································································································6:04:53 AM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mSyntaxError[22m: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+[39m > src/browser/HostSnapshot.ts:163:30
+    161 |  				const key = HostSnapshot.#key(target.category, target.name)
+    162 |  				HostSnapshot.#writeBack(target.element, key, this, () =>
+    163 |  					target.element.classList.toggle(target.name, value !== undefined),
+        |                                ^
+    164 |  				)
+    165 |  			}
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:343:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:316:27
+ > src/browser/HostSnapshot.ts:163:30
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:345:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:302:11
+
+6:04:53 AM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at http://localhost:63315/src/browser/HostSnapshot.ts:125:87
+    at #writeBack (http://localhost:63315/src/browser/HostSnapshot.ts:194:3)
+    at HostSnapshot.restore (http://localhost:63315/src/browser/HostSnapshot.ts:125:28)
+    at http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790244293527:476:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:302:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:1903:26
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57bcfe92:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:308:2 > HostSnapshot > withdraws an overlapping earliest recording when its restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+···················································································································································································
+
+ Test Files  21 passed (21)
+      Tests  571 passed (571)
+   Start at  06:04:17
+   Duration  38.12s (transform 0ms, setup 1.03s, import 666ms, tests 34.03s, environment 0ms)
+
+EXIT npm run test:src:browser -> 0
+npm notice run @orkestrel/veneer@0.0.1 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m19 passed[39m[22m[90m (19)[39m
+[2m   Start at [22m 06:04:56
+[2m   Duration [22m 1.56s[2m (transform 354ms, setup 69ms, import 1.27s, tests 68ms, environment 0ms)[22m
+
+EXIT npm run test:guides -> 0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  06:04:59
+   Duration  2.32s (transform 112ms, setup 67ms, import 287ms, tests 1.82s, environment 0ms)
+
+EXIT npm run test:policy -> 0
