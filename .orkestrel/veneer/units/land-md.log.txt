@@ -1,0 +1,37 @@
+=== md landing at 03:13:46 over eb5ff15
+=== applied /home/user/scaffold/.orkestrel/veneer/units/md-shared-3.patch
+## app/browser/Showcase.ts
+concatenated: ours=1 base=0 theirs=1 -> 2
+## app/browser/index.ts
+concatenated: ours=1 base=0 theirs=1 -> 2
+## guides/veneer.md
+table: ours=1 base=0 theirs=1 -> 2
+concatenated: ours=72 base=0 theirs=105 -> 177
+table: ours=1 base=2 theirs=1 -> 0
+table: ours=2 base=2 theirs=2 -> 2
+table: ours=13 base=0 theirs=15 -> 23
+table: ours=222 base=210 theirs=213 -> 225
+base-union: ours=11 base=6 theirs=7 -> 15
+concatenated: ours=5 base=0 theirs=5 -> 10
+## src/styles/index.scss
+concatenated: ours=1 base=0 theirs=1 -> 2
+## tests/app/browser/Showcase.test.ts
+concatenated: ours=1 base=0 theirs=1 -> 2
+concatenated: ours=1 base=0 theirs=1 -> 2
+## tests/conformance.test.ts
+concatenated: ours=1 base=0 theirs=1 -> 2
+concatenated: ours=1 base=0 theirs=1 -> 2
+## tests/setup.ts
+concatenated: ours=3 base=0 theirs=13 -> 16
+concatenated: ours=5 base=0 theirs=5 -> 10
+concatenated: ours=18 base=0 theirs=78 -> 96
+## tests/setupStyles.ts
+concatenated: ours=1 base=0 theirs=1 -> 2
+base-union: ours=1 base=2 theirs=1 -> 1
+concatenated: ours=47 base=0 theirs=161 -> 208
+=== continued: 1ef335a
+=== land-unit exit=0
+=== oxfmt exit=0
+ M guides/veneer.md
+=== oxlint exit=0
+=== check exit=0

@@ -5,7 +5,7 @@
 `2a3f223`). Every criterion reads green on the validation copy, and the worktree's format and lint
 checks exit 0. No stop condition fired. The brief, the family record, and the tree agreed wherever
 the unit read them. The shared patches are in the last section and in
-`/home/user/veneer-usp/.orkestrel/veneer/units/usp-shared.patch`. That patch applies cleanly to `2a3f223`
+`/home/user/scaffold/.orkestrel/veneer/units/usp-shared.patch`. That patch applies cleanly to `2a3f223`
 (`patch -p1 --dry-run`).
 
 ## Touched files (owned)
