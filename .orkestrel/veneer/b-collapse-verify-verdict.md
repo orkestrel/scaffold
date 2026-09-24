@@ -47,7 +47,14 @@ Each finding names its one carrier. `BCF` is the family's fix unit dispatched fr
 
 ## Round 2
 
-Pending the successor workflow's return.
+Workflow `wf_d16206fb-0ff` (every lane's return `units/bc-verify-lenses-2.json`): the fidelity and
+state lenses, `reviewer` on Opus 5.5 in clean contexts, opened every frame of both slices.
+
+| # | Finding | Ruling | Carrier |
+| --- | --- | --- | --- |
+| V16 | `dropup`, `dropup-center`, `dropend`, and `dropstart` at every variant: each menu opens on its named side with the spacer gap, its caret points that way, and the menu box, border, radius, and items match the release. | Clean under both lenses. `dropup-center` places its menu at the start edge, because the static markup never invokes the positioning engine's centring, which is what the release paints for the same markup. | none |
+| V17 | The direction toggles' labels read smaller than their menu items, and the toggles' secondary fill is the blue slate in both modes. | Repeats V13 (a recorded size departure) and V10 (the secondary role, THEME's input); no new ruling. | none |
+| V18 | `navbar-scroll--dark-390`, `navbar-inverted--dark-1280`, and `navbar-inverted-class--dark-1280` each paint one resting link near its hover tint; every other navbar frame in the slice is clean. | Confirms V2 on the same three frames and no others. | BCF |
 
 ## Re-baseline
 
