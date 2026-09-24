@@ -1,0 +1,6 @@
+Move the Engine region to the end of the showcase
+
+J-DEMO put the Engine region first in the page, which moved every later region down and changed the focus order. Two setup:browser cases read that layout: the pressed-state cover's hit test found the Toggle host below the viewport, and the Tab traversal from the Toggle section never reached the Dark mode control. The region now follows the Color modes region, and the Showcase case's region and specimen order lists match. setup:browser reads 83 passed (2 failed before), app:browser 222, and the journey 248.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

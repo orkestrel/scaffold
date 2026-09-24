@@ -1,0 +1,8 @@
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+························································································································································································································································
+
+ Test Files  4 passed (4)
+      Tests  248 passed (248)
+   Start at  15:37:20
+   Duration  210.44s (transform 0ms, setup 6.22s, import 11.90s, tests 769.28s, environment 0ms)
+
