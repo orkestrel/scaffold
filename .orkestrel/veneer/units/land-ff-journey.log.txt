@@ -1,0 +1,1 @@
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-1280* -t 'focus|Tab|ring|skip link|list-group action'

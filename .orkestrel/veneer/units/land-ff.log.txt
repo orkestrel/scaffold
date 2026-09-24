@@ -1,0 +1,37 @@
+=== unit files: tests/app/browser/integration.test.ts tests/setup.test.ts tests/setup.ts
+=== unit/ff 08cc1e0
+=== unit/ff with ff-shared-2.patch 6d27e42
+=== session head 42d51fc
+Auto-merging guides/veneer.md
+CONFLICT (content): Merge conflict in guides/veneer.md
+Auto-merging tests/app/browser/integration.test.ts
+CONFLICT (content): Merge conflict in tests/app/browser/integration.test.ts
+Auto-merging tests/setup.test.ts
+CONFLICT (content): Merge conflict in tests/setup.test.ts
+Auto-merging tests/setup.ts
+Squash commit -- not updating HEAD
+Automatic merge failed; fix conflicts and then commit the result.
+=== squash merge exit=1
+=== CONFLICTS: guides/veneer.md tests/app/browser/integration.test.ts tests/setup.test.ts
+=== resolved by ff-resolve.py and the § Tests hand merge: the export list and the setup test cases take both sides; the focus-ring journey case takes HEAD (UTIL-FRAMES' conversion), carried to FRAME-HELPERS for the Tab drive and the reach and crop reading; each guide hunk applies FOCUS-FRAME's edit onto HEAD's text; § Tests keeps HEAD's pointer and press sentences and lists the focus-ring scenarios under their own drive
+=== landed 73105f0
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 15494ms on 4 files using 4 threads.
+=== oxfmt check exit=0
+=== oxlint exit=0
+=== check exit=2
+      Tests  29 passed (29)
+=== setup proof exit=0
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+=== guides exit=0
+=== merge seam: the focus-ring case's artifact line read FOCUS-FRAME's reaches map, which HEAD's side of the case does not declare; the line is dropped with that side (check exit 2 before, TS2304)
+=== landed 5afa37b (amended, unpushed)
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 90ms on 1 files using 4 threads.
+=== oxfmt check exit=0
+=== check exit=0
+=== lint:check exit=0
