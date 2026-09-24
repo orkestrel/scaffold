@@ -1,0 +1,6 @@
+Park probe (Orchestrator, 2026-09-24, t5probe = Test 80c419e + the round-1 diff; a zzpark block appended to tests/src/browser/helpers.test.ts, then restored).
+Fixture: pane staged 390x844; html, body margin 0; a 400px spacer, a 390x300 .target, a 2000px tail. The pointer is parked by
+sendProtocol('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y }), then the tester scrolls to 400, which moves .target to top 0.
+ZZPARK outside: park=ok before=0 afterScroll=0 hover=false top=0      (x = -1, y = -1)
+ZZPARK origin: park=ok before=0 afterScroll=1 hover=true top=0        (x = 0, y = 0, what releasePointer parks at)
+      Tests  2 passed | 349 skipped (351)
