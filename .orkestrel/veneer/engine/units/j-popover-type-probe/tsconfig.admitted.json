@@ -1,0 +1,6 @@
+{
+	"extends": "../../../configs/src/tsconfig.browser.json",
+	"compilerOptions": { "noEmit": true, "declaration": false, "emitDeclarationOnly": false, "rootDir": "../../.." },
+	"include": ["../../../src/browser/**/*.ts", "./admitted.ts"],
+	"exclude": []
+}
