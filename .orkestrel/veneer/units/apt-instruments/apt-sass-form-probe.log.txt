@@ -1,0 +1,17 @@
+interp => .c { font-size: calc(var(--s) - max(var(--s) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)); }
+DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
+
+Recommendation: math.div(100vw, $b) or calc(100vw / $b)
+
+More info and automated migrator: https://sass-lang.com/d/slash-div
+
+  ╷
+1 │ $b: 1200px; .c { font-size: calc(var(--s) - max(var(--s) * 0.9 - 1.125rem, 0px) * (1 - #{100vw / $b})); }
+  │                                                                                          ^^^^^^^^^^
+  ╵
+    - 1:90  root stylesheet
+
+interpAll => .c { font-size: calc(var(--s) - max(var(--s) * 0.9 - 1.125rem, 0px) * (1 - calc(0.0833333333vw / 1px))); }
+unquote => .c { font-size: calc(var(--s) - max(var(--s) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)); }
+fnInterp => .c { font-size: calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)); } .d { font-size: calc(2.25rem - max(2.25rem * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)); }
+fnPlain => .c { font-size: calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)); } .d { font-size: calc(2.25rem - max(0.9rem, 0px) * (1 - 100vw / 1200px)); } .e { font-size: calc(1rem - max(-0.225rem, 0px) * (1 - 100vw / 1200px)); }

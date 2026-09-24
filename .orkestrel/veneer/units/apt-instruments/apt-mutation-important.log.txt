@@ -1,0 +1,708 @@
+=== mutation important
+diff --git a/src/styles/utilities/_font.scss b/src/styles/utilities/_font.scss
+index ee524c5..c5c2fb7 100644
+--- a/src/styles/utilities/_font.scss
++++ b/src/styles/utilities/_font.scss
+@@ -2,13 +2,15 @@
+ @use '../mixins' as *;
+ 
+ @layer utilities {
+-	// Stands in for the release's `$font-sizes` map. Each step reads the size token its heading
+-	// class reads, so the `.fs-1` class resolves what the `.h1` class resolves and a retuned size
+-	// token moves both. The release's fluid formula and its `(min-width: 1200px)` cap are not
+-	// written, as the heading classes write neither.
++	// Stands in for the release's `$font-sizes` map. Each step scales the size token its heading
++	// class reads through the `fluid` function, so the `.fs-1` class resolves what the `.h1` class
++	// resolves at every viewport and a retuned size token moves both. `$caps` holds the tokens
++	// themselves, which the block after the walk writes from the `xl` boundary on.
+ 	$sizes: ();
++	$caps: ();
+ 	@for $level from 1 through 6 {
+-		$sizes: map.set($sizes, $level, heading-size($level));
++		$sizes: map.set($sizes, $level, fluid(heading-size($level)));
++		$caps: map.set($caps, $level, heading-size($level));
+ 	}
+ 	// None of the release's font entries is responsive, so the walk writes each at the empty infix
+ 	// alone, ahead of every media block, in the release's map order.
+@@ -51,4 +53,14 @@
+ 			$infix
+ 		);
+ 	}
++	// The release writes its size caps in a block of their own after its responsive utilities, each
++	// with the `!important` flag, so a cap outranks the important fluid value of its class. The block
++	// follows the walk here, after every value it caps, and each cap is the token its class scales.
++	@include breakpoint-up(xl) {
++		@each $level, $cap in $caps {
++			.fs-#{$level} {
++				font-size: $cap;
++			}
++		}
++	}
+ }
+=== build exit 0
+
+ RUN  v4.1.11 /home/user/veneer-apt
+
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:38:2 > declaration mixins > paints the calibrated focus ring on its mounted element caller 862ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:55:2 > declaration mixins > emits the calibrated feedback duration and easing, and collapses it under reduced motion 585ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:67:2 > declaration mixins > applies a reduced-motion block to a treatment that carries no transition 120ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:78:2 > declaration mixins > applies a forced-colors treatment only while the engine reports forced colors 248ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:101:2 > declaration mixins > covers the whole of its containing block on every physical edge 34ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:117:2 > declaration mixins > paints the subtle, emphasis, and border tiers at the percentages it was given 21ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:146:2 > declaration mixins > paints the backdrop at its stacking level and fill, transparent while fading and at its opacity when shown 67ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:189:2 > declaration mixins > resets every text treatment the tip rules reset, over a treatment staged beneath it 27ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:219:2 > value functions > returns the size token each heading level names, from the largest level down 33ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:240:2 > fluid size mixin > scales a 3 rem size under a 16 px root below the boundary and caps it there 194ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:240:2 > fluid size mixin > scales a 1 rem size under a 16 px root below the boundary and caps it there 203ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:240:2 > fluid size mixin > scales a 2.25 rem size under a 20 px root below the boundary and caps it there 188ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:281:2 > breakpoint mixins > emits each condition at the width its own published token resolves to 48ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:311:2 > breakpoint mixins > applies the up content at and above each boundary, and the down content below it 635ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:376:2 > breakpoint mixins > walks the ramp down, emitting the zero entry unwrapped and each named entry below its own boundary 566ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:470:2 > utility mixins > names each class from its class, infix, key, and state, with no hyphen where the class or the key is absent 16ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:529:2 > utility mixins > gates each responsive class at the width its own infix names, and gates no static class 49ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:577:2 > utility mixins > writes every utility property important and every local and custom property normal 24ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's primary fill in light mode 26ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's primary fill in dark mode 18ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's secondary fill in light mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's secondary fill in dark mode 20ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's tertiary fill in light mode 13ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's tertiary fill in dark mode 19ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's success fill in light mode 15ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's success fill in dark mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's info fill in light mode 16ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's info fill in dark mode 19ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's warning fill in light mode 15ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's warning fill in dark mode 26ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's danger fill in light mode 31ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's danger fill in dark mode 10ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's light fill in light mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's light fill in dark mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's dark fill in light mode 20ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:624:2 > contrast functions > picks the label the release's own function picks against Veneer's dark fill in dark mode 14ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:638:2 > contrast functions > picks the foreground the release records against its own 'primary' fill 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:638:2 > contrast functions > picks the foreground the release records against its own 'secondary' fill 16ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:638:2 > contrast functions > picks the foreground the release records against its own 'success' fill 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:638:2 > contrast functions > picks the foreground the release records against its own 'info' fill 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:638:2 > contrast functions > picks the foreground the release records against its own 'warning' fill 180ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:638:2 > contrast functions > picks the foreground the release records against its own 'danger' fill 261ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:638:2 > contrast functions > picks the foreground the release records against its own 'light' fill 237ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:638:2 > contrast functions > picks the foreground the release records against its own 'dark' fill 21ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:647:2 > contrast functions > picks white on the release primary, whose white ratio sits at the 4.5 to 1 boundary 18ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:657:2 > contrast functions > writes one value for a pair that agrees and a light-dark pair for one that differs 16ms
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h1' level to the size its heading class resolves at each journey viewport 188ms
+   → .fs-1 at 1280: expected 36.96 to be close to 36, received difference is 0.9600000000000009, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h2' level to the size its heading class resolves at each journey viewport 65ms
+   → .fs-2 at 1280: expected 30.6 to be close to 30, received difference is 0.6000000000000014, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h3' level to the size its heading class resolves at each journey viewport 85ms
+   → .fs-3 at 1280: expected 24.24 to be close to 24, received difference is 0.23999999999999844, but expected 0.005
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h5' level to the size its heading class resolves at each journey viewport 68ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h4' level to the size its heading class resolves at each journey viewport 60ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h6' level to the size its heading class resolves at each journey viewport 66ms
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h1' level from the '--vn-size-8' token its heading class reads at each side of the boundary 305ms
+   → .fs-1 at 1280: expected 105.86 to be close to 101, received difference is 4.859999999999999, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h2' level from the '--vn-size-7' token its heading class reads at each side of the boundary 264ms
+   → .fs-2 at 1280: expected 106.92 to be close to 102, received difference is 4.920000000000002, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h3' level from the '--vn-size-6' token its heading class reads at each side of the boundary 453ms
+   → .fs-3 at 1280: expected 107.98 to be close to 103, received difference is 4.980000000000004, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h4' level from the '--vn-size-5' token its heading class reads at each side of the boundary 186ms
+   → .fs-4 at 1280: expected 109.04 to be close to 104, received difference is 5.040000000000006, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h5' level from the '--vn-size-4' token its heading class reads at each side of the boundary 196ms
+   → .fs-5 at 1280: expected 110.1 to be close to 105, received difference is 5.099999999999994, but expected 0.005
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h6' level from the '--vn-size-3' token its heading class reads at each side of the boundary 132ms
+   → .fs-6 at 1280: expected 111.16 to be close to 106, received difference is 5.159999999999997, but expected 0.005
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:90:2 > font utilities > resolves the size class on a heading tag at each journey viewport 68ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:106:2 > font utilities > resolves the '1' line height as its recorded factor of a fixed font size 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:106:2 > font utilities > resolves the 'sm' line height as its recorded factor of a fixed font size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:106:2 > font utilities > resolves the 'base' line height as its recorded factor of a fixed font size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:106:2 > font utilities > resolves the 'lg' line height as its recorded factor of a fixed font size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:120:2 > font utilities > reads the base line height from the body line token 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:134:2 > font utilities > reads the monospace stack from the alias the release names and the token the alias reads 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:163:30 > font utilities > resolves every weight step under a 400 parent weight 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:163:30 > font utilities > resolves every weight step under a 600 parent weight 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:180:2 > font utilities > resolves the relative weight steps differently under a 400 and a 600 parent weight 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:199:2 > font utilities > resolves every style step inside an oblique parent 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:216:2 > font utilities > writes no infixed class for any font entry 207ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:257:2 > font utilities > reads no mode or density factor, so a dark island and a doubled factor leave every value 3ms
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:283:2 > font utilities > resolves the later value of an entry where an element carries conflicting classes of it 2ms
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:295:2 > font utilities > overrides the heading and display classes on the same element 34ms
+   → expected [ '30.6px', '700' ] to deeply equal [ '30px', '700' ]
+ ✓ |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:314:2 > font utilities > keeps its priority over a later unlayered consumer rule 1ms
+ × |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:335:2 > font utilities > yields to an important override inside the utilities layer and to no unlayered one 27ms
+   → expected '24.24px' to be '24px' // Object.is equality
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h1' class to the size and line its own tag resolves to at each journey viewport 64ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h2' class to the size and line its own tag resolves to at each journey viewport 69ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h3' class to the size and line its own tag resolves to at each journey viewport 64ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h4' class to the size and line its own tag resolves to at each journey viewport 85ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h5' class to the size and line its own tag resolves to at each journey viewport 65ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:29:2 > type classes > resolves the 'h6' class to the size and line its own tag resolves to at each journey viewport 74ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h1' class and to its own tag 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h2' class and to its own tag 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h3' class and to its own tag 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h4' class and to its own tag 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h5' class and to its own tag 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:66:2 > type classes > delivers a declared heading color to the 'h6' class and to its own tag 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-1' from its own display token at each journey viewport 58ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-2' from its own display token at each journey viewport 67ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-3' from its own display token at each journey viewport 66ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-4' from its own display token at each journey viewport 68ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-5' from its own display token at each journey viewport 66ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:79:2 > type classes > resolves 'display-6' from its own display token at each journey viewport 66ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h1' size from the '--vn-size-8' token its own level names at each side of the boundary 169ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h2' size from the '--vn-size-7' token its own level names at each side of the boundary 131ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h3' size from the '--vn-size-6' token its own level names at each side of the boundary 132ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h4' size from the '--vn-size-5' token its own level names at each side of the boundary 134ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h5' size from the '--vn-size-4' token its own level names at each side of the boundary 132ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:110:2 > type classes > reads the 'h6' size from the '--vn-size-3' token its own level names at each side of the boundary 147ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-1' size from the '--vn-display-1' token its own level names at each side of the boundary 272ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-2' size from the '--vn-display-2' token its own level names at each side of the boundary 196ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-3' size from the '--vn-display-3' token its own level names at each side of the boundary 155ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-4' size from the '--vn-display-4' token its own level names at each side of the boundary 147ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-5' size from the '--vn-display-5' token its own level names at each side of the boundary 320ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:140:2 > type classes > reads the 'display-6' size from the '--vn-display-6' token its own level names at each side of the boundary 131ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:161:26 > type classes > resolves the 'lead' values over the body size 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:161:26 > type classes > resolves the 'small' values over the body size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:161:26 > type classes > resolves the 'initialism' values over the body size 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:178:2 > type classes > renders the mark class as the bare mark tag renders in 'light' mode 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:178:2 > type classes > renders the mark class as the bare mark tag renders in 'dark' mode 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/type.test.ts:202:2 > type classes > reads the mark paint from the mark tokens on the tag and on the class 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:21:2 > heading scale > resolves the calibrated heading family at each journey viewport in 'light' mode 324ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:21:2 > heading scale > resolves the calibrated heading family at each journey viewport in 'dark' mode 67ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:57:2 > heading scale > resolves the 'h6' size from a '12px' retune of the '--vn-size-3' token at each journey viewport 138ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:57:2 > heading scale > resolves the 'h5' size from a '32px' retune of the '--vn-size-4' token at each journey viewport 304ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/heading.test.ts:77:2 > heading scale > reads the compatible heading color from its consumer island 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/fieldset.test.ts:12:21 > fieldset retained treatment > resolves the reset and responsive legend in light mode 185ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/fieldset.test.ts:12:21 > fieldset retained treatment > resolves the reset and responsive legend in dark mode 180ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/fieldset.test.ts:51:2 > fieldset retained treatment > scales a retuned size token on the legend and caps it at the token 152ms
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  11 failed | 108 passed (119)
+   Start at  20:55:39
+   Duration  42.63s (transform 0ms, setup 7.27s, import 6.00s, tests 11.71s, environment 0ms)
+
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+13 │ @import 'bootstrap/scss/functions';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 13:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+14 │ @import 'bootstrap/scss/variables';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 14:9  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:55  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:30  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 177:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 191:13  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 217:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+     ╷
+1753 │ @import "variables-dark"; // TODO: can be removed safely in v6, only here to avoid breaking changes in v5.3
+     │         ^^^^^^^^^^^^^^^^
+     ╵
+    node_modules/bootstrap/scss/_variables.scss 1753:9  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 207:11  tint-color()
+    node_modules/bootstrap/scss/_variables.scss 79:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 212:11  shade-color()
+    node_modules/bootstrap/scss/_variables.scss 84:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_variables.scss 342:27  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:30  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:51  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 185:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 186:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 187:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:11   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:24   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+WARNING: 35 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h1' level to the size its heading class resolves at each journey viewport
+AssertionError: .fs-1 at 1280: expected 36.96 to be close to 36, received difference is 0.9600000000000009, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:42:7
+     40|       readPixels(utility, 'font-size'),
+     41|       `.fs-${level} at ${String(viewport)}`,
+     42|      ).toBeCloseTo(computeFluidSize(Number.parseFloat(size), viewport)…
+       |       ^
+     43|      expect(readStyle(utility, 'font-size')).toBe(readStyle(heading, '…
+     44|     })
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:38:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h2' level to the size its heading class resolves at each journey viewport
+AssertionError: .fs-2 at 1280: expected 30.6 to be close to 30, received difference is 0.6000000000000014, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:42:7
+     40|       readPixels(utility, 'font-size'),
+     41|       `.fs-${level} at ${String(viewport)}`,
+     42|      ).toBeCloseTo(computeFluidSize(Number.parseFloat(size), viewport)…
+       |       ^
+     43|      expect(readStyle(utility, 'font-size')).toBe(readStyle(heading, '…
+     44|     })
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:38:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:29:2 > font utilities > resolves the size class of the 'h3' level to the size its heading class resolves at each journey viewport
+AssertionError: .fs-3 at 1280: expected 24.24 to be close to 24, received difference is 0.23999999999999844, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:42:7
+     40|       readPixels(utility, 'font-size'),
+     41|       `.fs-${level} at ${String(viewport)}`,
+     42|      ).toBeCloseTo(computeFluidSize(Number.parseFloat(size), viewport)…
+       |       ^
+     43|      expect(readStyle(utility, 'font-size')).toBe(readStyle(heading, '…
+     44|     })
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:38:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h1' level from the '--vn-size-8' token its heading class reads at each side of the boundary
+AssertionError: .fs-1 at 1280: expected 105.86 to be close to 101, received difference is 4.859999999999999, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h2' level from the '--vn-size-7' token its heading class reads at each side of the boundary
+AssertionError: .fs-2 at 1280: expected 106.92 to be close to 102, received difference is 4.920000000000002, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h3' level from the '--vn-size-6' token its heading class reads at each side of the boundary
+AssertionError: .fs-3 at 1280: expected 107.98 to be close to 103, received difference is 4.980000000000004, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h4' level from the '--vn-size-5' token its heading class reads at each side of the boundary
+AssertionError: .fs-4 at 1280: expected 109.04 to be close to 104, received difference is 5.040000000000006, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h5' level from the '--vn-size-4' token its heading class reads at each side of the boundary
+AssertionError: .fs-5 at 1280: expected 110.1 to be close to 105, received difference is 5.099999999999994, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:55:2 > font utilities > reads the size class of the 'h6' level from the '--vn-size-3' token its heading class reads at each side of the boundary
+AssertionError: .fs-6 at 1280: expected 111.16 to be close to 106, received difference is 5.159999999999997, but expected 0.005
+ ❯ tests/src/styles/utilities/font.test.ts:70:7
+     68|       readPixels(utility, 'font-size'),
+     69|       `.fs-${level} at ${String(viewport)}`,
+     70|      ).toBeCloseTo(expected, 2)
+       |       ^
+     71|      expect(readPixels(heading, 'font-size'), `.${twin} at ${String(vi…
+     72|       expected,
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:65:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:295:2 > font utilities > overrides the heading and display classes on the same element
+AssertionError: expected [ '30.6px', '700' ] to deeply equal [ '30px', '700' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "30px",[39m
+[31m+   "30.6px",[39m
+[2m    "700",[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/utilities/font.test.ts:307:88
+    305|     ['font-size', 'font-weight', 'line-height'].map((property) => read…
+    306|    ).toEqual(['16px', '300', '20px'])
+    307|    expect(['font-size', 'font-weight'].map((property) => readStyle(dis…
+       |                                                                                        ^
+    308|     '30px',
+    309|     '700',
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:303:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/font.test.ts:335:2 > font utilities > yields to an important override inside the utilities layer and to no unlayered one
+AssertionError: expected '24.24px' to be '24px' // Object.is equality
+
+Expected: [32m"24px"[39m
+Received: [31m"[7m24.[27m24px"[39m
+
+ ❯ tests/src/styles/utilities/font.test.ts:342:43
+    340|   await visitBreakpoint(1280, () => {
+    341|    scene.load('.fs-3 { font-size: 7px !important } .lh-base { line-hei…
+    342|    expect(readStyle(element, 'font-size')).toBe('24px')
+       |                                           ^
+    343|    expect(readStyle(element, 'line-height')).toBe('36px')
+    344|    scene.load(
+ ❯ visitBreakpoint tests/setupBrowser.ts:288:18
+ ❯ tests/src/styles/utilities/font.test.ts:340:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+=== vitest exit 1
+=== restored src/styles/utilities/_font.scss identical=True
