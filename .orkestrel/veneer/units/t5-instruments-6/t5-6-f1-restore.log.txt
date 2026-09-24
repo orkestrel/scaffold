@@ -1,0 +1,2 @@
+releasePointer doc identical to round 5: True
+guide releasePointer bullet identical to round 5: True

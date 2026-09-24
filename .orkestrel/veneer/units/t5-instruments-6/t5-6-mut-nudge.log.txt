@@ -1,0 +1,163 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+·························································································································································································································································x··x···xxxx·x···················································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3662:2 > captureFrame > keeps the hover a resting pointer paints on the element it shoots
+AssertionError: expected 'rgb(0, 0, 255)' to be 'rgb(255, 0, 0)' // Object.is equality
+
+Expected: [32m"rgb([7m255[27m, 0, [7m0[27m)"[39m
+Received: [31m"rgb([7m0[27m, 0, [7m255[27m)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3681:43
+    3679|    element: requireValue(container.lastElementChild),
+    3680|   })
+    3681|   expect((await readFrame(written)).floor).toBe('rgb(255, 0, 0)')
+       |                                           ^
+    3682|  })
+    3683|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3714:2 > computeOffset > leaves an element touching the origin, or starting above it, where it is
+AssertionError: expected { top: 1, left: +0 } to strictly equal { top: +0, left: +0 }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "left": 0,[22m
+[32m-   "top": 0,[39m
+[31m+   "top": 1,[39m
+[2m  }[22m
+
+ ❯ tests/src/browser/helpers.test.ts:3715:71
+    3713|
+    3714|  it('leaves an element touching the origin, or starting above it, wher…
+    3715|   expect(computeOffset(new DOMRectReadOnly(0, 0, 390, 100), 800, 513))…
+       |                                                                       ^
+    3716|    top: 0,
+    3717|    left: 0,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3748:2 > computeOffset > moves a fitting box with a fractional top only as far as the window start
+AssertionError: expected { top: -1, left: 1 } to strictly equal { top: -0.5, left: +0 }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "left": 0,[39m
+[32m-   "top": -0.5,[39m
+[31m+   "left": 1,[39m
+[31m+   "top": -1,[39m
+[2m  }[22m
+
+ ❯ tests/src/browser/helpers.test.ts:3753:15
+    3751|   const box = new DOMRectReadOnly(0, 0.5, 100, 513)
+    3752|   const move = computeOffset(box, 800, 513)
+    3753|   expect(move).toStrictEqual({ top: -0.5, left: 0 })
+       |               ^
+    3754|   expect([box.top + move.top, box.bottom + move.top]).toStrictEqual([0…
+    3755|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3757:2 > computeOffset > moves a fitting box with a fractional left only as far as the window start
+AssertionError: expected { top: 1, left: -1 } to strictly equal { top: +0, left: -0.5 }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "left": -0.5,[39m
+[32m-   "top": 0,[39m
+[31m+   "left": -1,[39m
+[31m+   "top": 1,[39m
+[2m  }[22m
+
+ ❯ tests/src/browser/helpers.test.ts:3760:15
+    3758|   const box = new DOMRectReadOnly(0.5, 0, 800, 100)
+    3759|   const move = computeOffset(box, 800, 513)
+    3760|   expect(move).toStrictEqual({ top: 0, left: -0.5 })
+       |               ^
+    3761|   expect([box.left + move.left, box.right + move.left]).toStrictEqual(…
+    3762|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3764:2 > computeOffset > leaves a box that already ends inside a fractional window where it is
+AssertionError: expected { top: -0.5, left: +0 } to strictly equal { top: +0, left: +0 }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "left": 0,[22m
+[32m-   "top": 0,[39m
+[31m+   "top": -0.5,[39m
+[2m  }[22m
+
+ ❯ tests/src/browser/helpers.test.ts:3768:15
+    3766|   const box = new DOMRectReadOnly(0, 0, 800, 512.5)
+    3767|   const move = computeOffset(box, 800, 512.5)
+    3768|   expect(move).toStrictEqual({ top: 0, left: 0 })
+       |               ^
+    3769|   expect([box.top + move.top, box.bottom + move.top]).toStrictEqual([0…
+    3770|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3772:2 > computeOffset > moves the frame left only as far as brings an element past the right edge inside
+AssertionError: expected { top: 1, left: -800 } to strictly equal { top: +0, left: -800 }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "left": -800,[22m
+[32m-   "top": 0,[39m
+[31m+   "top": 1,[39m
+[2m  }[22m
+
+ ❯ tests/src/browser/helpers.test.ts:3773:73
+    3771|
+    3772|  it('moves the frame left only as far as brings an element past the ri…
+    3773|   expect(computeOffset(new DOMRectReadOnly(800, 0, 800, 100), 800, 513…
+       |                                                                         ^
+    3774|    top: 0,
+    3775|    left: -800,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3788:2 > computeOffset > does not move an element too large for the window
+AssertionError: expected { top: 1, left: +0 } to strictly equal { top: +0, left: +0 }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "left": 0,[22m
+[32m-   "top": 0,[39m
+[31m+   "top": 1,[39m
+[2m  }[22m
+
+ ❯ tests/src/browser/helpers.test.ts:3789:72
+    3787|
+    3788|  it('does not move an element too large for the window', () => {
+    3789|   expect(computeOffset(new DOMRectReadOnly(0, 0, 390, 1112), 800, 513)…
+       |                                                                        ^
+    3790|    top: 0,
+    3791|    left: 0,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 368 passed | 2 expected fail (377)
+   Start at  19:50:25
+   Duration  48.34s (transform 0ms, setup 213ms, import 324ms, tests 33.18s, environment 0ms)
+

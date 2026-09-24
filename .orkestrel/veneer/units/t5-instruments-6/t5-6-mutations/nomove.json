@@ -1,0 +1,10 @@
+{
+ "note": "No park move: the pointer stays where the last verb left it.",
+ "edits": [
+  {
+   "from": "\t\tawait sendProtocol('Input.dispatchMouseEvent', { type: 'mouseMoved', x: -1, y: -1 })\n",
+   "to": ""
+  }
+ ],
+ "file": "src/browser/helpers.ts"
+}

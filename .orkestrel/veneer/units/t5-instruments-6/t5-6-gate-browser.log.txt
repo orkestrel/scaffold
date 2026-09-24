@@ -1,0 +1,49 @@
+
+> @orkestrel/test@0.0.23 test:src:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+
+ RUN  v4.1.11 /home/user/test-tf
+
+·········································································································································································································································································································································································································8:00:43 PM [vite] (client) [Unhandled error] Error: Boom
+ > ../../../@vite/client:305:50
+ > tests/src/browser/factories.test.ts:464:10
+    462 |  		try {
+    463 |  			journal.start()
+    464 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Boom' }))
+        |            ^
+    465 |  			window.dispatchEvent(
+    466 |  				new PromiseRejectionEvent('unhandledrejection', {
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:302:11
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:1903:26
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:2326:20
+ > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:2323:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:2305:20
+ > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:2272:10
+
+8:00:43 PM [vite] (client) [Unhandled rejection] Unknown Error: Refused
+
+8:00:43 PM [vite] (client) [Unhandled error] Error: Ignored
+ > ../../../@vite/client:305:50
+ > tests/src/browser/factories.test.ts:473:10
+    471 |  			journal.stop()
+    472 |  			recorded = journal.output
+    473 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Ignored' }))
+        |            ^
+    474 |  		} finally {
+    475 |  			Object.assign(console, channels)
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:302:11
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:1903:26
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:2326:20
+ > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:2323:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:2305:20
+ > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=35945398:2272:10
+
+······································
+
+ Test Files  2 passed (2)
+      Tests  429 passed | 2 expected fail (431)
+   Start at  19:59:58
+   Duration  47.53s (transform 0ms, setup 364ms, import 334ms, tests 37.28s, environment 0ms)
+
+exit 0
