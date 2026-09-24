@@ -1,8 +1,0 @@
-place lines left: 0
-test 0.0.23 park: 
-registry exit=0
-      Tests  1 passed | 62 skipped (63)
-test round-5 tarball park: 
-round5 exit=0
-      Tests  1 passed | 62 skipped (63)
-=== done

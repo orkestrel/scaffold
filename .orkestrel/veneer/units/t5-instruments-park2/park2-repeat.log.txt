@@ -1,9 +1,0 @@
-/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/veneer-rpctl3 build 4f240fcce6a6e284
-/home/user/vp3 build 4f240fcce6a6e284
-run 1 veneer-rpctl3 exit=0 primary-parked capturing 0,0
-run 1 vp3 exit=0 
-run 2 veneer-rpctl3 exit=0 primary-parked capturing 0,0
-run 2 vp3 exit=0 
-run 3 veneer-rpctl3 exit=0 primary-parked capturing 0,0
-run 3 vp3 exit=0 
-=== done

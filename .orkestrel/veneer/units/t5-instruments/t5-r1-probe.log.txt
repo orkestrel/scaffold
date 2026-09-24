@@ -1,6 +1,0 @@
-R1 probe (Orchestrator, 2026-09-24, t5probe = Test 80c419e + t5.diff; a zzprobe block appended to tests/src/browser/helpers.test.ts, then restored)
-Fixture: <div style="height: SPACERpx"> then <div class="probe" style="height: SHAREvh">, tester scrolled to 300, captureFrame at 390x844 with the probe as element.
-ZZPROBE 50vh: height=900 floor=rgb(0, 0, 255) declared=422 scrollAfter=0
-ZZPROBE 30vh: refused: Capture frame at ../../../tmp/capture/frame/zzprobe-30vh.png never settled after 4 restagings: 1295 over a 1314 pane declared=253 scrollAfter=0
-ZZPROBE 30vh-1000: refused: Capture frame at ../../../tmp/capture/frame/zzprobe-30vh-1000.png never settled after 4 restagings: 1440 over a 1464 pane declared=253 scrollAfter=0
-      Tests  3 passed | 349 skipped (352)

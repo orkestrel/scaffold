@@ -1,1 +1,0 @@
-types.ts hunk identical in t5-5.diff and t5-6.diff: True

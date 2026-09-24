@@ -1,5 +1,0 @@
-before:
-bdad0a88cac820278f0ea6e9811877b0c47b4192b427d861d2978e031a82740b  tests/src/browser/helpers.test.ts
-after:
-tests/src/browser/helpers.test.ts: OK
-check exit 0

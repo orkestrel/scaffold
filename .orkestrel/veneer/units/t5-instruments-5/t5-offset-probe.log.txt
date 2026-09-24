@@ -1,8 +1,0 @@
-{"box":[0,0.5,100,513],"W":800,"H":513,"round5":{"top":-1,"left":0},"bounded":{"top":-0.5,"left":0}}
-{"box":[0.5,0,800,100],"W":800,"H":513,"round5":{"top":0,"left":-1},"bounded":{"top":0,"left":-0.5}}
-{"box":[0,0,800,512.5],"W":800,"H":512.5,"round5":{"top":-0.5,"left":0},"bounded":{"top":0,"left":0}}
-{"box":[0,400,100,344.5],"W":800,"H":413,"round5":{"top":-332,"left":0},"bounded":{"top":-332,"left":0}}
-{"box":[0,-10,100,50],"W":800,"H":513,"round5":{"top":0,"left":0},"bounded":{"top":0,"left":0}}
-{"box":[0,0,100,100],"W":800,"H":513,"round5":{"top":0,"left":0},"bounded":{"top":0,"left":0}}
-{"box":[750,480,100,100],"W":800,"H":513,"round5":{"top":-67,"left":-50},"bounded":{"top":-67,"left":-50}}
-sweep 10854 boxes; bounded moves leaving a fitting box outside or moving down: 0
