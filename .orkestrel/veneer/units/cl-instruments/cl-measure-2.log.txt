@@ -1,6 +1,0 @@
-stdout | tmp/probe/cl-measure.test.ts > measures the keyed rows of every inventory key that records keyframes
-progress | keyframes progress-bar-stripes | rows selector:shipped, variable:shipped | collectShippedComponents true
-spinner | keyframes spinner-border, spinner-grow | rows selector:shipped, variable:shipped | collectShippedComponents true
-placeholder | keyframes placeholder-glow, placeholder-wave | rows selector:shipped | collectShippedComponents true
-keys with a shipped selector or variable row: 116; recording keyframes without a shipped selector row: []
- ✓ |probe| tmp/probe/cl-measure.test.ts > measures the keyed rows of every inventory key that records keyframes 337ms

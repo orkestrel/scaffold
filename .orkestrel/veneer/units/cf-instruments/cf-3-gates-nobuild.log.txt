@@ -1,4 +1,0 @@
-1	npm run format:check	0	Finished in 13336ms on 419 files using 4 threads.
-2	npm run lint:check	0	(no result line; exit only)
-3	npm run check	0	(no result line; exit only)
-4	npm run test:setup	1	Tests  7 failed | 256 passed (263)

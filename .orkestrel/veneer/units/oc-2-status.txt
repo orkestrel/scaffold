@@ -1,7 +1,0 @@
- M src/styles/components/_navbar.scss
- M tests/app/browser/sections/NavbarSection.test.ts
- M tests/src/styles/components/navbar.test.ts
-?? app/browser/sections/OffcanvasSection.ts
-?? src/styles/components/_offcanvas.scss
-?? tests/app/browser/sections/OffcanvasSection.test.ts
-?? tests/src/styles/components/offcanvas.test.ts

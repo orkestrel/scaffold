@@ -1,2 +1,0 @@
-git apply --check up-shared-2.patch exit 0
-git apply --check up-unscoped-profiles-2.patch (after up-shared-2.patch) exit 0

@@ -1,5 +1,0 @@
-[
- {"label":"P3 the guard admits the keyframes category again","root":"/home/user/veneer-cl","path":"tests/setupServer.ts","script":"test:setup",
-  "old":["\treturn text === 'selector' || text === 'declaration' || text === 'property'"],
-  "new":["\treturn text === 'selector' || text === 'declaration' || text === 'property' || text === 'keyframes'"]}
-]
