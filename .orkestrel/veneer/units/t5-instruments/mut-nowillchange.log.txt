@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+Port 63315 is in use, trying another one...
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------········x······---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane rather than at the document height
+AssertionError: expected 'rgb(0, 128, 0)' to be 'rgb(0, 0, 255)' // Object.is equality
+
+Expected: [32m"rgb(0, [7m0, 255[27m)"[39m
+Received: [31m"rgb(0, [7m128, 0[27m)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3196:24
+    3194|   // The panel's own color on the bottom row is what separates a shot …
+    3195|   // of the document behind it or of the runner's page.
+    3196|   expect(reading.floor).toBe('rgb(0, 0, 255)')
+       |                        ^
+    3197|  })
+    3198|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 passed | 334 skipped (349)
+   Start at  16:36:31
+   Duration  13.16s (transform 0ms, setup 275ms, import 300ms, tests 4.42s, environment 0ms)
+

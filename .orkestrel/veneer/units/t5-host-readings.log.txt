@@ -1,0 +1,35 @@
+=== green
+exit=0
+      Tests  15 passed | 334 skipped (349)
+=== red-base
+exit=1
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane rather than at the document height
+AssertionError: expected 480 to be 254 // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3199:2 > captureFrame > shoots an element that ends below the declared pane whole, on the document floor
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 128, 0)' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3289:2 > readFrame > names the size a PNG header declares when the image under it does not decode
+AssertionError: expected Error: Capture frame at /tmp/claude-0/-ho… to have property "message" with value 'Capture frame at /tmp/claude-0/-home-…'
+      Tests  3 failed | 12 passed | 334 skipped (349)
+=== mutation-no-compositing
+exit=1
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane rather than at the document height
+AssertionError: expected 'rgb(0, 128, 0)' to be 'rgb(0, 0, 255)' // Object.is equality
+      Tests  1 failed | 14 passed | 334 skipped (349)
+=== mutation-content-edge
+exit=1
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane rather than at the document height
+AssertionError: expected 480 to be 254 // Object.is equality
+      Tests  1 failed | 14 passed | 334 skipped (349)
+=== mutation-no-lift
+exit=1
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane rather than at the document height
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 0, 255)' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3199:2 > captureFrame > shoots an element that ends below the declared pane whole, on the document floor
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 128, 0)' // Object.is equality
+      Tests  2 failed | 13 passed | 334 skipped (349)
+=== restored
+=== done

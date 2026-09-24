@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+Port 63315 is in use, trying another one...
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------········xx·····---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane rather than at the document height
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 0, 255)' // Object.is equality
+
+Expected: [32m"rgb([7m0, 0[27m, 255)"[39m
+Received: [31m"rgb([7m255, 255[27m, 255)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3196:24
+    3194|   // The panel's own color on the bottom row is what separates a shot …
+    3195|   // of the document behind it or of the runner's page.
+    3196|   expect(reading.floor).toBe('rgb(0, 0, 255)')
+       |                        ^
+    3197|  })
+    3198|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3199:2 > captureFrame > shoots an element that ends below the declared pane whole, on the document floor
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 128, 0)' // Object.is equality
+
+Expected: [32m"rgb([7m0, 128, 0[27m)"[39m
+Received: [31m"rgb([7m255, 255, 255[27m)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3218:24
+    3216|   expect(reading.width).toBe(390)
+    3217|   expect(reading.height).toBe(100)
+    3218|   expect(reading.floor).toBe('rgb(0, 128, 0)')
+       |                        ^
+    3219|  })
+    3220|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 13 passed | 334 skipped (349)
+   Start at  16:36:46
+   Duration  17.39s (transform 0ms, setup 216ms, import 354ms, tests 4.52s, environment 0ms)
+

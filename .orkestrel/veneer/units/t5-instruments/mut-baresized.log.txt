@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+Port 63315 is in use, trying another one...
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·············x·---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3276:2 > readFrame > refuses a path holding no file, and a file holding no image
+AssertionError: expected Error: Capture frame at /home/user/test-t… to have property "message" with value 'Capture frame at /home/user/test-tf/t…'
+
+Expected: [32m"Capture frame at /home/user/test-tf/tmp/capture/frame/planted-read.png is not an image this browser decodes"[39m
+Received: [31m"Capture frame at /home/user/test-tf/tmp/capture/frame/planted-read.png is not an image this browser decodes[7m: its header declares 0x0 device pixels[27m"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3283:35
+    3281|   const planted = `${server.config.root}/tmp/capture/frame/planted-rea…
+    3282|   await commands.writeFile(planted, 'not a frame')
+    3283|   await expect(readFrame(planted)).rejects.toHaveProperty(
+       |                                   ^
+    3284|    'message',
+    3285|    `Capture frame at ${planted} is not an image this browser decodes`,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 passed | 334 skipped (349)
+   Start at  16:37:47
+   Duration  14.38s (transform 0ms, setup 268ms, import 324ms, tests 4.56s, environment 0ms)
+
