@@ -1,0 +1,59 @@
+# The Orchestrator's mutation replay for J-BINDER-PRECEDENCE (2026-09-23, Chromium 153.0.8010.12, the Orchestrator's instrument precedence-mutate.mjs over precedence-mutations.json, retained as j-binder-precedence-mutate.mjs and j-binder-precedence-mutations.json)
+worktree: 1395361 Merge branch 'main' into unit/binder
+--- results
+{
+ "name": "HostSnapshot: #publish ignores the stamp (the first publisher keeps the target)",
+ "tally": "3 failed | 14 passed (17)",
+ "failed": [
+  "HostSnapshot > removes a shared class attribute using the presence the earlier token save recorded",
+  "HostSnapshot > restores a target two snapshots saved to the value the snapshot that saved it first recorded, whichever restoration started first",
+  "HostSnapshot > preserves the save order of a value taken from a pending restoration"
+ ]
+}
+{
+ "name": "HostSnapshot: a taken value discards its stamp",
+ "tally": "1 failed | 16 passed (17)",
+ "failed": [
+  "HostSnapshot > preserves the save order of a value taken from a pending restoration"
+ ]
+}
+{
+ "name": "HostSnapshot: the style removal omits its presence read",
+ "tally": "2 failed | 15 passed (17)",
+ "failed": [
+  "HostSnapshot > removes a style attribute created by property writes while preserving an original empty attribute and consumer properties",
+  "HostSnapshot > restores class tokens, then inline properties, then attributes, whatever the save order"
+ ]
+}
+{
+ "name": "HostSnapshot: the style removal ignores the original presence",
+ "tally": "1 failed | 16 passed (17)",
+ "failed": [
+  "HostSnapshot > removes a style attribute created by property writes while preserving an original empty attribute and consumer properties"
+ ]
+}
+{
+ "name": "resolveOptions: the attribute parses under an overridden key",
+ "tally": "1 failed | 27 passed (28)",
+ "failed": [
+  "resolveOptions > leaves an invalid overridden attribute unparsed and rejects it when the constructor leaves the key undefined"
+ ]
+}
+{
+ "name": "readTag: always undefined",
+ "tally": "1 failed | 27 passed (28)",
+ "failed": [
+  "readTag > reads element tag names and returns undefined for other values and hostile prototypes"
+ ]
+}
+--- restore check
+every source restored byte for byte
+--- status after
+ M guides/veneer.md
+ M src/browser/Button.ts
+ M src/browser/HostSnapshot.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M tests/src/browser/HostSnapshot.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
