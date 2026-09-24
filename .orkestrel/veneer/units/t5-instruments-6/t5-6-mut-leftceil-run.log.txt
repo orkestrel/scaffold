@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·········x·-------------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3779:2 > computeOffset > moves the frame up and left for an element past both edges
+AssertionError: expected { top: -332, left: -390.5 } to strictly equal { top: -332, left: -391 }
+
+- Expected
++ Received
+
+  {
+-   "left": -391,
++   "left": -390.5,
+    "top": -332,
+  }
+
+ ❯ tests/src/browser/helpers.test.ts:3782:79
+    3780|   // Both far edges are fractional, 844.5 and 1190.5, so each rounds u…
+    3781|   // or column before the move is taken.
+    3782|   expect(computeOffset(new DOMRectReadOnly(800.5, 744.5, 390, 100), 80…
+       |                                                                               ^
+    3783|    top: -332,
+    3784|    left: -391,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed | 366 skipped (377)
+   Start at  20:21:26
+   Duration  8.41s (transform 0ms, setup 274ms, import 303ms, tests 632ms, environment 0ms)
+
