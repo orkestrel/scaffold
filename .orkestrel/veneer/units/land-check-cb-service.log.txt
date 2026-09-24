@@ -1,0 +1,14 @@
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+··················
+
+ Test Files  3 passed (3)
+      Tests  18 passed (18)
+   Start at  04:46:25
+   Duration  18.31s (transform 433ms, setup 3.70s, import 779ms, tests 13.39s, environment 0ms)
+
