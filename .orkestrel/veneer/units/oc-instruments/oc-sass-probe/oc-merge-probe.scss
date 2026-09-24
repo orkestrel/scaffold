@@ -1,0 +1,3 @@
+@layer components {
+.a { @media (width < 576px) { color: red; @media (prefers-reduced-motion: reduce) { color: blue; } } }
+}

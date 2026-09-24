@@ -1,0 +1,34 @@
+import subprocess, sys, os
+BASE='/home/user/veneer-oc/tmp/probe/base'
+C=BASE+'/app/browser/constants.ts'
+SH=BASE+'/app/browser/Showcase.ts'
+IX=BASE+'/app/browser/index.ts'
+files=[C,SH,IX]
+orig={f:open(f).read() for f in files}
+env=dict(os.environ)
+env['PATH']='/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/npm11/node_modules/.bin:'+env['PATH']
+env['PLAYWRIGHT_BROWSERS_PATH']='/opt/pw-browsers'
+def base(f):
+    return subprocess.run(['git','show','HEAD:'+f[len(BASE)+1:]],cwd=BASE,capture_output=True,text=True).stdout
+muts={
+ 'base-app': 'BASE',
+ 'no-show': [(C,'offcanvas offcanvas-${placement} show"','offcanvas offcanvas-${placement}"')],
+ 'backdrop-on-end': [(C,"${placement === 'start' ?","${placement === 'end' ?")],
+ 'aria-modal': [(C,'role="dialog" aria-labelledby="offcanvas-${step}-title"','role="dialog" aria-modal="true" aria-labelledby="offcanvas-${step}-title"')],
+ 'frame-dropped': [(C,'markup: `<div class="viewport"><div class="offcanvas-${step}','markup: `<div><div class="offcanvas-${step}')],
+}
+tests=['tests/app/browser/sections/OffcanvasSection.test.ts','tests/app/browser/sections/NavbarSection.test.ts']
+for name in (sys.argv[1:] or list(muts)):
+    for f,s in orig.items(): open(f,'w').write(s)
+    if muts[name]=='BASE':
+        for f in files: open(f,'w').write(base(f))
+    else:
+        for f,a,b in muts[name]:
+            s=open(f).read(); assert a in s,(name,a); open(f,'w').write(s.replace(a,b,1))
+    r=subprocess.run(['npx','vitest','run','--config','vite.config.ts','--no-cache','--reporter=verbose','--project','app:browser']+tests,cwd=BASE,env=env,capture_output=True,text=True)
+    out=r.stdout+r.stderr
+    fails=[l.strip() for l in out.splitlines() if l.strip().startswith('×') or 'FAIL ' in l]
+    summ=[l.strip() for l in out.splitlines() if l.strip().startswith('Tests ') or l.strip().startswith('Test Files')]
+    print('==',name,'exit',r.returncode,summ)
+    for l in fails[:12]: print('   ',l[:190])
+for f,s in orig.items(): open(f,'w').write(s)

@@ -1,6 +1,6 @@
 # Writes the audit lane briefs and the Astra launchers for MODAL round 1 (md), TIP round 1 (tp), and
 # TOAST round 2 (to-2) from one table, so no field is carried over from another round's files.
-import pathlib
+import pathlib, sys
 
 U = pathlib.Path('/home/user/scaffold/.orkestrel/veneer/units')
 LAW = ("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{styles,tests,browser,writing,documentation,typescript,names,quality}.md`; "
@@ -32,8 +32,18 @@ UNITS = {
         analyst='claims 1, 3, 5, 6, and 7 (the patch delta against round 1, the plugin row against the release source, each derivation and binding against its retained mutation runs, and the round-1 confirmations on round 2\'s files)',
         reviewer=None,
         checker=[1, 2, 4, 8], author='`opus` on Opus 5.5', lanes='analyst checker'),
+    'oc': dict(
+        title='Audit round 1 — OFFCANVAS (`oc`)', worktree='/home/user/veneer-oc', claims='oc-audit-claims.md',
+        evidence='`oc.diff`, `oc-status.txt`, `oc-shared.patch`, `b-modal-oc-report.md`, `b-modal-oc-brief.md`, `oc-instruments/` (the mutation, gate, cascade, Tailwind, first-run, and journey logs and the instrument copies), `b-modal-w2-terrain-report.md`, `b-modal-terrain-report.md`, `w2-w3-note-1.md`, and `w2-w3-note-2.md`',
+        source='`node_modules/bootstrap/js/src/offcanvas.js` and its `util/` imports',
+        precedent='the landed `src/styles/components/_navbar.scss`, `_alert.scss`, and `_carousel.scss`, `app/browser/sections/NavbarSection.ts` and `AlertSection.ts`, the landed `tests/conformance.test.ts` priority case, and their proofs',
+        analyst='claims 2, 4, 5, and 8 (the partial against the inventory, the priority gate refinement against every priority mutation it must still catch, each proof against its retained mutation log, and the plugin row against the release source)',
+        reviewer='claims 3 (the two emission sites against MODAL\'s fullscreen shape, and whether a shared mixin should retire both), 4 (whether the gate refinement belongs in this unit), 6 (specimen names, the navbar specimen, the section ergonomics), and 8 (every added guide sentence against what ships, note 1, and the writing rule)',
+        checker=[1, 7, 9], author='`opus` on Opus 5.5', lanes='analyst reviewer checker'),
 }
 for key, u in UNITS.items():
+    if sys.argv[1:] and key not in sys.argv[1:]:
+        continue
     lanes = u['lanes'].split()
     others = {'analyst': 'the subjective lane (`reviewer` on Opus 5.5) and the checker (Sonnet) run blind beside you' if 'reviewer' in lanes else 'the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, as the round-1 verdict records'}
     (U / f'{key}-audit-analyst-brief.md').write_text(f"""# {u['title']}: objective lane on GPT-6 Astra

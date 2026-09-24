@@ -1,0 +1,320 @@
+== absent-partial  (2026-09-24T01:21:19.523034Z)
+site: src/styles/index.scss: "@use 'components/offcanvas';\n" -> ''
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  26 failed | 3 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'bottom' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'end' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until sh
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'start' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'top' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until sh
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:190:2 > offcanvas placements > paints a panel carrying "''" when the state shows it and keeps the slide while the state leaves it 15ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:190:2 > offcanvas placements > paints a panel carrying "'hiding'" when the state shows it and keeps the slide while the state leaves it 26ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:190:2 > offcanvas placements > paints a panel carrying "'show hiding'" when the state shows it and keeps the slide while the state leaves it 26
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'lg' panel below its boundary and lays it inline at and above it 55ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'md' panel below its boundary and lays it inline at and above it 60ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'sm' panel below its boundary and lays it inline at and above it 71ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'xl' panel below its boundary and lays it inline at and above it 145ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'xxl' panel below its boundary and lays it inline at and above it 66ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:273:2 > offcanvas ramp > keeps the bare panel fixed at every width 84ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:294:2 > offcanvas content > fits the header close control into the header inset while a control outside the header takes none 19ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:330:2 > offcanvas content > sets the title line and the body inset, and rescales both insets with the density factor 13ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:359:3 > offcanvas content > in dark > paints the panel from the body aliases and follows their retune 32ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:359:3 > offcanvas content > in light > paints the panel from the body aliases and follows their retune 35ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:398:2 > offcanvas motion > slides with the recorded transform transition and collapses it under the reduced-motion preference 146ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'lg' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'md' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'sm' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xl' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xxl' expanded bar and leaves them fixed below the boundary
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:47:2 > offcanvas classes > writes the recorded offcanvas selectors and no other rule on their classes 159ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:69:2 > offcanvas classes > stacks the panel on the drawer rung over its backdrop on the rung beneath, and follows a retuned rung 33ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:97:2 > offcanvas classes > covers the viewport from the frame corner, transparent with the fade class alone and at the release opacity with the
+
+== literal-rungs  (2026-09-24T01:21:47.610348Z)
+site: src/styles/components/_offcanvas.scss: '--bs-offcanvas-zindex: var(--vn-stack-drawer-base);' -> '--bs-offcanvas-zindex: 1045;'; src/styles/components/_offcanvas.scss: 'overlay-backdrop(var(--vn-stack-drawer-backdrop),' -> 'overlay-backdrop(1040,'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 28 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:69:2 > offcanvas classes > stacks the panel on the drawer rung over its backdrop on the rung beneath, and follows a retuned rung 204ms
+
+== backdrop-without-mixin-no-states  (2026-09-24T01:22:22.183695Z)
+site: src/styles/components/_offcanvas.scss: '@include overlay-backdrop(var(--vn-stack-drawer-backdrop), var(--vn-palette-black-base), 0.5);' -> 'position: fixed;\n\t\ttop: 0;\n\t\tleft: 0;\n\t\tz-index: var(--vn-stack-drawer-backdrop);\n\t\twidth: 100vw;\n\t\theight: 100vh;\n\t\tbackground-color: var(--vn-palette-black-base);\n\t\topacity: 0.5;'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  2 failed | 27 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:47:2 > offcanvas classes > writes the recorded offcanvas selectors and no other rule on their classes 254ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:97:2 > offcanvas classes > covers the viewport from the frame corner, transparent with the fade class alone and at the release opacity with the
+
+== backdrop-without-mixin-full-copy  (2026-09-24T01:22:40.796029Z)
+site: src/styles/components/_offcanvas.scss: '@include overlay-backdrop(var(--vn-stack-drawer-backdrop), var(--vn-palette-black-base), 0.5);' -> 'position: fixed;\n\t\ttop: 0;\n\t\tleft: 0;\n\t\tz-index: var(--vn-stack-drawer-backdrop);\n\t\twidth: 100vw;\n\t\theight: 100vh;\n\t\tbackground-color: var(--vn-palette-black-base);\n\n\t\t&.fade {\n\t\t\topacity: 0;\n\t\t}\n\n\t\t&.show {\n\t\t\topacity: 0.5;\n\t\t}'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t offcanvas|repeats no partial (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 3 passed | 120 skipped (124)
+failing: × |setup| tests/setupStyles.test.ts > styles setup > repeats no partial's written declaration block in another partial beyond the coincidence floor 528ms
+
+== placements-start-end-transforms-swapped  (2026-09-24T01:23:08.010134Z)
+site: src/styles/components/_offcanvas.scss: 'border-right: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color),\n\t\ttransform: translateX(-100%),' -> 'border-right: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color),\n\t\ttransform: translateX(100%),'; src/styles/components/_offcanvas.scss: 'border-left: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color),\n\t\ttransform: translateX(100%),' -> 'border-left: var(--bs-offcanvas-border-width) solid var(--bs-offcanvas-border-color),\n\t\ttransform: translateX(-100%),'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  10 failed | 19 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'end' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until sh
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'start' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:190:2 > offcanvas placements > paints a panel carrying "''" when the state shows it and keeps the slide while the state leaves it 23ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:190:2 > offcanvas placements > paints a panel carrying "'hiding'" when the state shows it and keeps the slide while the state leaves it 28ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:190:2 > offcanvas placements > paints a panel carrying "'show hiding'" when the state shows it and keeps the slide while the state leaves it 23
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'lg' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'md' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'sm' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xl' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xxl' expanded bar and leaves them fixed below the boundary
+
+== show-rule-dropped  (2026-09-24T01:23:34.677818Z)
+site: src/styles/components/_offcanvas.scss: "'&.showing, &.hiding, &.show'" -> "'&.showing, &.hiding'"
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  7 failed | 22 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'bottom' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'end' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until sh
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'start' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:135:2 > offcanvas placements > pins the 'top' panel to its edge, spans its axis, draws its inner border, and slides out along its axis until sh
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:190:2 > offcanvas placements > paints a panel carrying "'show'" when the state shows it and keeps the slide while the state leaves it 16ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:47:2 > offcanvas classes > writes the recorded offcanvas selectors and no other rule on their classes 214ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:69:2 > offcanvas classes > stacks the panel on the drawer rung over its backdrop on the rung beneath, and follows a retuned rung 16ms
+
+== md-down-and-up-names-shifted-apart  (2026-09-24T01:24:12.991561Z)
+site: src/styles/components/_offcanvas.scss: '@include breakpoint-up($name) {' -> '@include breakpoint-up(if($name == md, lg, $name)) {'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 28 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'md' panel below its boundary and lays it inline at and above it 201ms
+
+== combinator-widened-to-offcanvas-btn-close  (2026-09-24T01:25:01.337829Z)
+site: src/styles/components/_offcanvas.scss: '.offcanvas-header .btn-close {' -> '.offcanvas .btn-close {'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  2 failed | 27 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:294:2 > offcanvas content > fits the header close control into the header inset while a control outside the header takes none 14ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:47:2 > offcanvas classes > writes the recorded offcanvas selectors and no other rule on their classes 170ms
+
+== literal-colours  (2026-09-24T01:25:39.028868Z)
+site: src/styles/components/_offcanvas.scss: '--bs-offcanvas-color: var(--bs-body-color);' -> '--bs-offcanvas-color: #212529;'; src/styles/components/_offcanvas.scss: '--bs-offcanvas-bg: var(--bs-body-bg);' -> '--bs-offcanvas-bg: #fff;'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  2 failed | 27 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:359:3 > offcanvas content > in dark > paints the panel from the body aliases and follows their retune 15ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:359:3 > offcanvas content > in light > paints the panel from the body aliases and follows their retune 15ms
+
+== transition-without-mixin  (2026-09-24T01:26:13.329053Z)
+site: src/styles/components/_offcanvas.scss: '@include transition(var(--bs-offcanvas-transition));' -> 'transition: var(--bs-offcanvas-transition);'; src/styles/components/_offcanvas.scss: '@include transition(var(--bs-offcanvas-transition));' -> 'transition: var(--bs-offcanvas-transition);'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  7 failed | 22 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'lg' panel below its boundary and lays it inline at and above it 236ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'md' panel below its boundary and lays it inline at and above it 134ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'sm' panel below its boundary and lays it inline at and above it 183ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'xl' panel below its boundary and lays it inline at and above it 165ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'xxl' panel below its boundary and lays it inline at and above it 135ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:273:2 > offcanvas ramp > keeps the bare panel fixed at every width 117ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:398:2 > offcanvas motion > slides with the recorded transform transition and collapses it under the reduced-motion preference 171ms
+
+== insets-literal  (2026-09-24T01:26:48.468886Z)
+site: src/styles/components/_offcanvas.scss: '--bs-offcanvas-padding-x: var(--vn-space-8);' -> '--bs-offcanvas-padding-x: 1rem;'; src/styles/components/_offcanvas.scss: '--bs-offcanvas-padding-y: var(--vn-space-8);' -> '--bs-offcanvas-padding-y: 1rem;'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 28 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:330:2 > offcanvas content > sets the title line and the body inset, and rescales both insets with the density factor 15ms
+
+== navbar-expanded-width-flag-dropped  (2026-09-24T01:27:22.079050Z)
+site: src/styles/components/_navbar.scss: 'width: auto !important;' -> 'width: auto;'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  6 failed | 23 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'lg' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'md' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'sm' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xl' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xs' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xxl' expanded bar and leaves them fixed below the boundary
+
+== navbar-expanded-transform-flag-dropped  (2026-09-24T01:28:01.483769Z)
+site: src/styles/components/_navbar.scss: 'transform: none !important;' -> 'transform: none;'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  6 failed | 23 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'lg' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'md' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'sm' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xl' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xs' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xxl' expanded bar and leaves them fixed below the boundary
+
+== navbar-expanded-border-flag-dropped  (2026-09-24T01:28:34.918797Z)
+site: src/styles/components/_navbar.scss: 'border: 0 !important;' -> 'border: 0;'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  6 failed | 23 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'lg' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'md' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'sm' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xl' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xs' expanded bar and leaves them fixed below the boundary 
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:442:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xxl' expanded bar and leaves them fixed below the boundary
+
+== body-fill-important-dropped  (2026-09-24T01:29:34.063206Z)
+site: src/styles/components/_offcanvas.scss: 'overflow-y: visible;\n\t\t\t\t\t\tbackground-color: transparent !important;' -> 'overflow-y: visible;\n\t\t\t\t\t\tbackground-color: transparent;'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project conformance -t priority (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 1 passed | 20 skipped (22)
+failing: × |conformance| tests/conformance.test.ts > declaration priority > carries the priority the release writes on every declaration both sheets make, and adds none 922ms
+
+== priority-gate-before-refinement  (2026-09-24T01:31:42.015552Z)
+site: tests/conformance.test.ts: '\t\tconst written = new Map<string, ReadonlySet<boolean>>()\n\t\tfor (const declaration of release.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\twritten.set(pair, new Set([...(written.get(pair) ?? []), declaration.important]))\n\t\t}\n\t\tconst shipped = new Map<string, ReadonlySet<boolean>>()\n\t\tfor (const declaration of cascade.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\tshipped.set(pair, new Set([...(shipped.get(pair) ?? []), declaration.important]))\n\t\t}\n\t\tconst mismatches: string[] = []\n\t\tlet compared = 0\n\t\tfor (const [pair, priorities] of written) {\n\t\t\tconst carried = shipped.get(pair)\n\t\t\tif (carried === undefined) continue\n\t\t\tcompared += 1\n\t\t\tif (priorities.size !== carried.size || [...priorities].some((entry) => !carried.has(entry)))\n\t\t\t\tmismatches.push(' -> '\t\tconst shipped = new Map<string, boolean>()\n\t\tfor (const declaration of cascade.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\tshipped.set(pair, (shipped.get(pair) ?? false) || declaration.important)\n\t\t}\n\t\tconst seen = new Set<string>()\n\t\tconst mismatches: string[] = []\n\t\tlet compared = 0\n\t\tfor (const declaration of release.declarations) {\n\t\t\tconst pair = `${declaration.selector} { ${declaration.property} }`\n\t\t\tconst important = shipped.get(pair)\n\t\t\tif (important === undefined || seen.has(pair)) continue\n\t\t\tseen.add(pair)\n\t\t\tcompared += 1\n\t\t\tconst priorities = new Set([declaration.important])\n\t\t\tconst carried = new Set([important])\n\t\t\tif (important !== declaration.important)\n\t\t\t\tmismatches.push('
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project conformance -t priority (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  2 failed | 20 skipped (22)
+failing: × |conformance| tests/conformance.test.ts > declaration priority > carries the priority the release writes on every declaration both sheets make, and adds none 1528ms
+failing: × |conformance| tests/conformance.test.ts > declaration priority > emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline 6248ms
+
+== navbar-proof-reading-before-correction  (2026-09-24T01:33:18.009426Z)
+site: tests/src/styles/components/navbar.test.ts: the below-boundary expectation restored to the NAVBAR readings (position static, header block) over the shipped offcanvas partial
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/navbar.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 39 passed (40)
+failing: × |[object Object] (chromium)| tests/src/styles/components/navbar.test.ts:318:2 > navbar classes > turns an offcanvas panel into part of the expanded row above the boundary, over the hidden state the panel carries inline
+
+== state-case-hiding-marked-unslid  (2026-09-24T01:33:59.778382Z)
+site: tests/setupStyles.ts: "Object.freeze({ classes: 'hiding', visible: true, slid: true })," -> "Object.freeze({ classes: 'hiding', visible: true, slid: false }),"
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t offcanvas|repeats no partial (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 3 passed | 120 skipped (124)
+failing: × |setup| tests/setupStyles.test.ts > offcanvas case tables > derives each placement, each state, and the panel geometry from the official declarations 112ms
+
+== placement-start-sign-flipped  (2026-09-24T01:34:35.577435Z)
+site: tests/setupStyles.ts: "side: 'right',\n\t\taxis: 'X',\n\t\tsign: -1," -> "side: 'right',\n\t\taxis: 'X',\n\t\tsign: 1,"
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t offcanvas|repeats no partial (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 3 passed | 120 skipped (124)
+failing: × |setup| tests/setupStyles.test.ts > offcanvas case tables > derives each placement, each state, and the panel geometry from the official declarations 297ms
+
+== geometry-width-wrong  (2026-09-24T01:35:07.949154Z)
+site: tests/setupStyles.ts: 'width: 400,\n\theight: 30,' -> 'width: 480,\n\theight: 30,'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts -t offcanvas|repeats no partial (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 3 passed | 120 skipped (124)
+failing: × |setup| tests/setupStyles.test.ts > offcanvas case tables > derives each placement, each state, and the panel geometry from the official declarations 25ms
+
+== priority-gate-before-refinement, rerun for the failure detail
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project conformance -t priority
+test exit: 1
+      Tests  1 failed | 1 passed | 20 skipped (22)
+      Tests  1 failed | 1 passed | 20 skipped (22)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |conformance| tests/conformance.test.ts > declaration priority > carries the priority the release writes on every declaration both sheets make, and adds none
+AssertionError: expected [ …(5) ] to deeply equal []
++   ".offcanvas-sm { background-color }: release normal, cascade important",
++   ".offcanvas-md { background-color }: release normal, cascade important",
++   ".offcanvas-lg { background-color }: release normal, cascade important",
++   ".offcanvas-xl { background-color }: release normal, cascade important",
++   ".offcanvas-xxl { background-color }: release normal, cascade important",
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |conformance| tests/conformance.test.ts > declaration priority > carries the priority the release writes on every declaration both sheets make, and adds none
+AssertionError: expected [ …(5) ] to deeply equal []
++   ".offcanvas-sm { background-color }: release normal, cascade important",
++   ".offcanvas-md { background-color }: release normal, cascade important",
++   ".offcanvas-lg { background-color }: release normal, cascade important",
++   ".offcanvas-xl { background-color }: release normal, cascade important",
++   ".offcanvas-xxl { background-color }: release normal, cascade important",
+
+== app-panel-without-show  (2026-09-24T01:36:51.237433Z)
+site: app/browser/constants.ts: 'offcanvas offcanvas-${placement} show"' -> 'offcanvas offcanvas-${placement}"'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/OffcanvasSection.test.ts tests/app/browser/sections/NavbarSection.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed | 1 passed (2) | Tests  2 failed | 5 passed (7)
+failing: × |app:browser (chromium)| tests/app/browser/sections/OffcanvasSection.test.ts:103:2 > OffcanvasSection > renders one backdrop, beside the start panel inside its frame and beneath it 7ms
+failing: × |app:browser (chromium)| tests/app/browser/sections/OffcanvasSection.test.ts:59:2 > OffcanvasSection > renders each panel shown inside its own frame, with the placement or breakpoint its name states 4ms
+
+== app-backdrop-on-end-panel  (2026-09-24T01:37:28.972131Z)
+site: app/browser/constants.ts: "${placement === 'start' ?" -> "${placement === 'end' ?"
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/OffcanvasSection.test.ts tests/app/browser/sections/NavbarSection.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed | 1 passed (2) | Tests  1 failed | 6 passed (7)
+failing: × |app:browser (chromium)| tests/app/browser/sections/OffcanvasSection.test.ts:103:2 > OffcanvasSection > renders one backdrop, beside the start panel inside its frame and beneath it 9ms
+
+== app-aria-modal-added  (2026-09-24T01:37:59.463220Z)
+site: app/browser/constants.ts: 'role="dialog" aria-labelledby="offcanvas-${step}-title"' -> 'role="dialog" aria-modal="true" aria-labelledby="offcanvas-${step}-title"'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/OffcanvasSection.test.ts tests/app/browser/sections/NavbarSection.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed | 1 passed (2) | Tests  1 failed | 6 passed (7)
+failing: × |app:browser (chromium)| tests/app/browser/sections/OffcanvasSection.test.ts:127:2 > OffcanvasSection > announces each panel as a dialog named by its title with no modal state, and names each close control 5ms
+
+== app-responsive-frame-dropped  (2026-09-24T01:38:28.589340Z)
+site: app/browser/constants.ts: 'markup: `<div class="viewport"><div class="offcanvas-${step}' -> 'markup: `<div><div class="offcanvas-${step}'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/OffcanvasSection.test.ts tests/app/browser/sections/NavbarSection.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed | 1 passed (2) | Tests  3 failed | 4 passed (7)
+failing: × |app:browser (chromium)| tests/app/browser/sections/OffcanvasSection.test.ts:103:2 > OffcanvasSection > renders one backdrop, beside the start panel inside its frame and beneath it 18ms
+failing: × |app:browser (chromium)| tests/app/browser/sections/OffcanvasSection.test.ts:127:2 > OffcanvasSection > announces each panel as a dialog named by its title with no modal state, and names each close control 2ms
+failing: × |app:browser (chromium)| tests/app/browser/sections/OffcanvasSection.test.ts:59:2 > OffcanvasSection > renders each panel shown inside its own frame, with the placement or breakpoint its name states 9ms
+
+== app-navbar-offcanvas-specimen-dropped  (2026-09-24T01:39:02.169512Z)
+site: app/browser/constants.ts: "\tObject.freeze({\n\t\tname: 'Navbar with offcanvas'," -> "\tObject.freeze({\n\t\tname: 'Navbar without offcanvas',"
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/OffcanvasSection.test.ts tests/app/browser/sections/NavbarSection.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed | 1 passed (2) | Tests  1 failed | 6 passed (7)
+failing: × |app:browser (chromium)| tests/app/browser/sections/NavbarSection.test.ts:10:2 > NavbarSection > renders every navbar form and every state set in markup through the shared section contract 9ms
+
+== failing-first-section-proofs  (2026-09-24T01:39:42.817189Z)
+site: app/browser/constants.ts, app/browser/Showcase.ts, app/browser/index.ts at 2a3f223 (no OFFCANVAS_* constants, no OffcanvasSection export, no Navbar with offcanvas specimen), owned proofs as written
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/OffcanvasSection.test.ts tests/app/browser/sections/NavbarSection.test.ts
+test exit: 1
+summary: Test Files  2 failed (2) | Tests  1 failed | 1 passed (2)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/NavbarSection.test.ts:10:2 > NavbarSection > renders every navbar form and every state set in markup through the shared section contract
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/OffcanvasSection.test.ts [ tests/app/browser/sections/OffcanvasSection.test.ts ]
+failing: × |app:browser (chromium)| tests/app/browser/sections/NavbarSection.test.ts:10:2 > NavbarSection > renders every navbar form and every state set in markup through the shared section contract 13ms
+
+== title-margin-reset-dropped  (2026-09-24T01:55:03.019931Z)
+site: src/styles/components/_offcanvas.scss: 'margin-bottom: 0;\n\t\tline-height: var(--bs-offcanvas-title-line-height);' -> 'line-height: var(--bs-offcanvas-title-line-height);'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  1 failed | 28 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:330:2 > offcanvas content > sets the title line and the body inset, and rescales both insets with the density factor 19ms
+
+== ramp-nested-rules-dropped  (2026-09-24T01:55:21.155903Z)
+site: src/styles/components/_offcanvas.scss: '\t\t\t\t\t@include transition(var(--bs-offcanvas-transition));\n\t\t\t\t\t@each $selector, $declarations in $nested {' -> '\t\t\t\t\t@include transition(var(--bs-offcanvas-transition));\n\t\t\t\t\t@each $selector, $declarations in () {'
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/offcanvas.test.ts (after npm run build:src:styles)
+build exit: 0
+test exit: 1
+summary: Test Files  1 failed (1) | Tests  6 failed | 23 passed (29)
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'lg' panel below its boundary and lays it inline at and above it 50ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'md' panel below its boundary and lays it inline at and above it 50ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'sm' panel below its boundary and lays it inline at and above it 50ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'xl' panel below its boundary and lays it inline at and above it 53ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:212:2 > offcanvas ramp > fixes the 'xxl' panel below its boundary and lays it inline at and above it 48ms
+failing: × |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:47:2 > offcanvas classes > writes the recorded offcanvas selectors and no other rule on their classes 98ms
+
