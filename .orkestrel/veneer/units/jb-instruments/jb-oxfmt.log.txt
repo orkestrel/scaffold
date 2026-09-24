@@ -1,0 +1,10 @@
+Checking formatting...
+
+tests/app/browser/integration.test.ts (6ms)
+
+Format issues found in above 1 files. Run without `--check` to fix.
+Finished in 10ms on 3 files using 4 threads.
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 14ms on 3 files using 4 threads.
