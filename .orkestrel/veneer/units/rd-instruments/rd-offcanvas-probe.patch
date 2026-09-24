@@ -1,0 +1,75 @@
+--- tmp/probe/rd-offcanvas-base.scss	2026-09-24 04:36:14.632750346 +0000
++++ src/styles/components/_offcanvas.scss	2026-09-24 04:36:14.643779553 +0000
+@@ -89,30 +89,28 @@
+ 		--bs-offcanvas-title-line-height: var(--vn-line-body);
+ 	}
+ 
+-	// Each responsive panel is fixed below its own boundary and sits in the flow at and above it,
+-	// where it drops its fill and its edge, hides its header, and lays its body out as a row. The
+-	// panel's and the body's transparent fills carry the release's `!important` flag, and in this
+-	// layer that flag also holds the inline panel clear under an important background utility, where
+-	// the release's later utility paints it. The height and border-width variables the class
+-	// redeclares there are the release's; no rule reads them at that width, because the placement
+-	// rules apply below the boundary alone.
+-	@each $name, $boundary in breakpoints() {
+-		@if $boundary != 0 {
+-			.offcanvas-#{$name} {
+-				@include breakpoint-down($name) {
+-					@each $property, $value in $panel {
++	// The bare panel is fixed at every width, and each responsive panel below its own boundary alone.
++	@include breakpoint-each-down using ($infix, $_boundary) {
++		.offcanvas#{$infix} {
++			@each $property, $value in $panel {
++				#{$property}: $value;
++			}
++			@include transition(var(--bs-offcanvas-transition));
++			@each $selector, $declarations in $nested {
++				#{$selector} {
++					@each $property, $value in $declarations {
+ 						#{$property}: $value;
+ 					}
+-					@include transition(var(--bs-offcanvas-transition));
+-					@each $selector, $declarations in $nested {
+-						#{$selector} {
+-							@each $property, $value in $declarations {
+-								#{$property}: $value;
+-							}
+-						}
+-					}
+ 				}
++			}
++		}
++	}
+ 
++	// Each responsive panel sits in the flow at and above its boundary, where it drops its fill and its
++	// edge, hides its header, and lays its body out as a row.
++	@each $name, $boundary in breakpoints() {
++		@if $boundary != 0 {
++			.offcanvas-#{$name} {
+ 				@include breakpoint-up($name) {
+ 					--bs-offcanvas-height: auto;
+ 					--bs-offcanvas-border-width: 0;
+@@ -132,23 +130,6 @@
+ 				}
+ 			}
+ 		}
+-	}
+-
+-	// The bare panel is fixed at every width. The `breakpoint-down` mixin emits nothing at the zero
+-	// boundary, so the walk cannot write these unconditioned rules, and they are written here from
+-	// the same maps.
+-	.offcanvas {
+-		@each $property, $value in $panel {
+-			#{$property}: $value;
+-		}
+-		@include transition(var(--bs-offcanvas-transition));
+-		@each $selector, $declarations in $nested {
+-			#{$selector} {
+-				@each $property, $value in $declarations {
+-					#{$property}: $value;
+-				}
+-			}
+-		}
+ 	}
+ 
+ 	.offcanvas-backdrop {

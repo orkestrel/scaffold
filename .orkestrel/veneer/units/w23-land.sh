@@ -3,7 +3,7 @@
 # Usage: w23-land.sh <unit> <message-file> <patch> [<patch> ...]
 # Applies the unit's accepted patches, in the order given, to its worktree over the owned files, then
 # runs land-unit.sh (commit on unit/<unit>, cherry-pick onto the session branch, diff3 resolution of
-# the shared append-heavy files against the base 2a3f223), then formats the files the landing touched
+# the shared append-heavy files against the base in the BASE variable, 2a3f223 when unset), then formats the files the landing touched
 # and runs the fast checks. The caller reads the log before the next unit lands. The refresh loop, the
 # portfolio regeneration, and the authoritative chain run once per batch, after its last unit.
 set -u
@@ -17,7 +17,7 @@ export PATH="$S/npm11/node_modules/.bin:$PATH"
   echo "=== $U landing at $(date -u +%H:%M:%S) over $(git -C $MAIN rev-parse --short HEAD)"
   BEFORE=$(git -C $MAIN rev-parse HEAD)
   for p in "$@"; do git -C "$WT" apply --check "$p" && git -C "$WT" apply "$p" && echo "=== applied $p" || { echo "=== APPLY FAILED $p"; exit 2; }; done
-  bash "$R/land-unit.sh" "$U" "$MSG" 2a3f223; rc=$?; echo "=== land-unit exit=$rc"
+  bash "$R/land-unit.sh" "$U" "$MSG" "${BASE:-2a3f223}"; rc=$?; echo "=== land-unit exit=$rc"
   [ $rc -eq 0 ] || exit $rc
   [ "$(git -C $MAIN rev-parse HEAD)" != "$BEFORE" ] || { echo "=== NOTHING LANDED: HEAD unchanged"; exit 5; }
   cd "$MAIN" || exit 1

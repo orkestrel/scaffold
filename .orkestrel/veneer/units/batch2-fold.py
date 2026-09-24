@@ -1,10 +1,11 @@
 # batch2-fold.py: fold the second wave-2/3 landing batch into Veneer's ROADMAP.md — the landing commits in
 # the B-MODAL, B-UTILITIES, and B-CROSS rows, the B-CROSS units and re-baseline, and the findings the landed
 # units' verdicts routed to later units as rows of § Carriers — so the scaffold records of those units can be
-# pruned. A successor of batch1-fold.py for UTIL-PAINT, UTIL-TEXT, UTIL-SPACING, RESIDUE, and OFFCANVAS. Run
-# from the Veneer checkout root after batch1-fold.py, with the landing commits as arguments: up ut usp dr oc.
+# pruned. A successor of batch1-fold.py for UTIL-PAINT, UTIL-TEXT, UTIL-SPACING, RESIDUE, OFFCANVAS,
+# BACKGROUND-SIZE, JOURNEY-BUDGET, and BARE-BUTTON. Run from the Veneer checkout root after batch1-fold.py, with
+# the landing commits as arguments: up ut usp dr oc bz jb cb.
 import pathlib, re, sys
-up, ut, usp, dr, oc = sys.argv[1:6]
+up, ut, usp, dr, oc, bz, jb, cb = sys.argv[1:9]
 p = pathlib.Path('ROADMAP.md'); s = p.read_text()
 def once(old, new):
     global s
@@ -34,9 +35,15 @@ assert row, 'B-CROSS row'
 cell = ("LEDGER (`cl`), FADE (`cf`), RESIDUE (`dr`), and BARE-BUTTON (`cb`) in wave 1 and THEME (`ct`) in "
         "wave 2 on `opus` on Opus 5.5, RESIDUE on `builder`, per "
         "`/home/user/scaffold/.orkestrel/veneer/b-cross-design-verdict.md` and its re-baseline; RESIDUE "
-        "landed as `%s` (audited by `analyst` on Astra and `checker`); LEDGER and FADE dispatch from the "
-        "OFFCANVAS landing, because neither reads a utility key, and merge three-way with the utility "
-        "landings that follow" % dr)
+        "landed as `%s` (audited by `analyst` on Astra and `checker`); BARE-BUTTON landed as `%s` (the "
+        "calibrated surface scoped to a button with no class and no data-bs-target attribute, the "
+        "showcase control hooked by a data attribute; two rounds on `opus`, the first audited by "
+        "`analyst` on Astra, `reviewer` on Opus 5.5, and `checker`, the second by `analyst` on Astra and "
+        "`checker`); two support units on `builder`, each verified by `checker`: BACKGROUND-SIZE landed as "
+        "`%s` (the accordion and navbar background-size readings under D45) and JOURNEY-BUDGET as `%s` "
+        "(the resting-key journey case's timeout scaled by the key table); LEDGER and FADE dispatch from the "
+        "OFFCANVAS landing, because neither reads a utility key, and merge three-way with the landings "
+        "that follow" % (dr, cb, bz, jb))
 old = row.group(0)
 s = s.replace(old, '| B-CROSS                  | ' + cell + ' |', 1)
 rows = [
@@ -44,8 +51,6 @@ rows = [
      "LEDGER keys the comparison by condition over a condition-aware `SheetReader` reading, with the `.offcanvas-sm` swap as its negative control"),
     ("The `readOracleInventory` reader writes each digest into an ordinary object, whose prototype setter swallows a `__proto__` key, so the digest pin cannot see one (the RESIDUE audit)",
      "LEDGER reads the digests into a null-prototype object and proves the key is kept"),
-    ("The elements layer's bare `button` rules reach every component's button form, so a disabled `button.nav-link` and a `button.dropdown-item` paint paler and smaller than their anchor forms (the B-COLLAPSE verify verdict V9)",
-     "BARE-BUTTON scopes the calibrated surface to a button no component class claims"),
 ]
 table_end = s.index("\n## Decisions")
 before = s[:table_end].rstrip('\n')
