@@ -50,6 +50,11 @@ UNITS = {
         focus='claims 2, 3, 4, and 6 (the settle order and its proofs against their mutations, the pointer guard at every pointer-held placement and the un-lift runs, every rewritten re-read comment against the code, and the derived getter and its readers)',
         checker='claims 1, 5, 7, and 8',
         bench='the bench round-tripped at 10:39 (bcf-audit returned exit 0 through this queue)'),
+    'bcf': dict(name='BCF', worktree='/home/user/veneer-bcf', base='f4e5693',
+        evidence='`bcf-3.diff` and `bcf-3-status.txt` (rounds 2 and 3 together against `f4e5693`), `bcf-2.diff`, `bcf-2-status.txt`, `bcf-shared-2.patch`, `b-collapse-bcf-report-2.md`, `b-collapse-bcf-report-3.md`, `b-collapse-bcf-brief-2.md`, `b-collapse-bcf-brief-3.md`, `bcf-instruments/` (the round-2 records: `bcf-mutations-2.log.txt`, `bcf-mutate-2.py`, the `bcf-mutation-2-*` logs, `bcf-gates-2.sh` and the `bcf-gates-2*` logs, `bcf-2-stem-prefix.log.txt`, `bcf-test-guides-2.log.txt`, `bcf-2-baseline-sections.log.txt`; the round-3 records: `bcf-mutations-3.log.txt`, `bcf-mutate-3.py`, the `bcf-mutation-3-*` logs, `bcf-3-red-before-fix.log.txt`, `bcf-3-cascade.log.txt`, `bcf-3-resting-dark-390.log.txt`, `bcf-gates-3.sh` and the `bcf-gates-3*` logs), round 1\'s `bcf.diff`, `bcf-shared.patch`, `b-collapse-bcf-report.md`, `b-collapse-bcf-brief.md`, and the round-1 verdict `bcf-audit-verdict.md` and its lane verdicts; `pf-design-verdict.md`',
+        focus='claims 2, 3, 5, and 6 (each converted population against its added-row mutation, the helper and its mutations, the ring check against the placement mutation, and the attribute and in-flow readings against the release)',
+        checker='claims 1, 4, 7, and 8',
+        bench='the bench round-tripped at 11:21 (pf-audit-2 returned exit 0 through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"
