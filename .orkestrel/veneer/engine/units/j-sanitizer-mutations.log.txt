@@ -1,0 +1,30 @@
+# J-SANITIZER mutation instrument
+
+## Recorded digests (SHA-256)
+
+- `src/browser/helpers.ts` a4095bd6c501b00e832909f8d2b6e4cc0fc01c8ce96da4a9ae36b0e528ea77e5
+- `src/browser/sanitizers/ConfigSanitizer.ts` 58bdbd9cd9df2d5f542efe5b5ee910a8ad405f0c7aa1ebac72e17c8aa128a9ab
+
+## Rows
+
+| Row | Mutation | File | Test file | Named case | Named case status | Failed / total | Verdict | Restore |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | the walk ignores the element list | `src/browser/helpers.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | a supplied configuration replaces the allowlist | failed | 9 / 39 | reddened | restored byte for byte |
+| 2 | the floor element set dropped | `src/browser/helpers.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | the floor removes the base, iframe, object, and embed elements with their content | failed | 6 / 39 | reddened | restored byte for byte |
+| 3 | the floor on-prefix rule dropped | `src/browser/helpers.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | the floor removes every attribute whose name starts with on, where the platform removes only the handler names it knows | failed | 4 / 39 | reddened | restored byte for byte |
+| 4 | the URL check is a regex without the platform parser | `src/browser/helpers.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | a script URL loses its attribute however the scheme is spelled, and a relative, encoded, or data URL keeps it | failed | 1 / 39 | reddened | restored byte for byte |
+| 5 | the floor animation rule dropped | `src/browser/helpers.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | SVG and MathML links lose a script URL, and an animation loses an attributeName naming a link | failed | 1 / 39 | reddened | restored byte for byte |
+| 6 | template content not walked | `src/browser/sanitizers/ConfigSanitizer.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | a kept template has its content sanitized, nested templates included | failed | 1 / 39 | reddened | restored byte for byte |
+| 7 | reserialization instead of replaceChildren | `src/browser/sanitizers/ConfigSanitizer.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | moves the parsed nodes in without serializing them again, so a noscript element keeps the elements parsed inside it | failed | 1 / 39 | reddened | restored byte for byte |
+| 8 | always-native selection | `src/browser/sanitizers/ConfigSanitizer.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | calls the setHTML method an element carries once with the configuration, and walks an element that carries none | failed | 34 / 39 | reddened | restored byte for byte |
+| 9 | always-native selection, seen by the default tooltip | `src/browser/sanitizers/ConfigSanitizer.ts` | `tests/src/browser/Tooltip.test.ts` | shows a default tooltip, text and markup, where no element carries a setHTML method | failed | 1 / 57 | reddened | restored byte for byte |
+| 10 | always-walk selection | `src/browser/sanitizers/ConfigSanitizer.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | calls the setHTML method an element carries once with the configuration, and walks an element that carries none | failed | 3 / 39 | reddened | restored byte for byte |
+| 11 | validation removed | `src/browser/sanitizers/ConfigSanitizer.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | refuses a configuration the platform refuses when it is constructed | failed | 1 / 39 | reddened | restored byte for byte |
+| 12 | the caller configuration held by reference | `src/browser/sanitizers/ConfigSanitizer.ts` | `tests/src/browser/sanitizers/ConfigSanitizer.test.ts` | holds its own copy of the configuration, so a later edit to the object the caller passed changes no write | failed | 1 / 39 | reddened | restored byte for byte |
+
+## Final digests
+
+- `src/browser/helpers.ts` a4095bd6c501b00e832909f8d2b6e4cc0fc01c8ce96da4a9ae36b0e528ea77e5 restored byte for byte
+- `src/browser/sanitizers/ConfigSanitizer.ts` 58bdbd9cd9df2d5f542efe5b5ee910a8ad405f0c7aa1ebac72e17c8aa128a9ab restored byte for byte
+
+Rows that did not redden their named case or did not restore: 0
