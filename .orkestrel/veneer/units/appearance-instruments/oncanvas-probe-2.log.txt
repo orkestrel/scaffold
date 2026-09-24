@@ -1,0 +1,14 @@
+dark  primary      raw #0841ea  2.49  mix70 #4a7df1  4.63  mix80 #356bef  3.79
+dark  primaryDark  raw #00acec  6.83  mix70 #67bfee  8.64  mix80 #4fb9ee  8.01
+dark  secondary    raw #45556c  2.33  mix70 #717e92   4.3  mix80 #627085  3.52
+dark  success      raw #008236  3.58  mix70 #58a16e  5.67  mix80 #41975c  4.89
+dark  info         raw #0069a8  3.02  mix70 #508fbf  5.07  mix80 #3883b8   4.3
+dark  warning      raw #bb4d00  3.52  mix70 #cc7e5c  5.65  mix80 #c76f46  4.88
+dark  danger       raw #c10007  2.75  mix70 #d46159  4.76  mix80 #ce4a43  3.95
+light primary      raw #0841ea  7.11  mix70 #0d36ac  9.81  mix80 #0c3ac0  8.82
+light primaryDark  raw #00acec  2.59  mix70 #0e7bad  4.71  mix80 #038bc1  3.84
+light secondary    raw #45556c  7.58  mix70 #344158 10.28  mix80 #39485e  9.28
+light success      raw #008236  4.95  mix70 #026038  7.68  mix80 #006b38  6.65
+light info         raw #0069a8  5.86  mix70 #004f80  8.64  mix80 #00578d  7.64
+light warning      raw #bb4d00  5.03  mix70 #844026  7.66  mix80 #964420  6.68
+light danger       raw #c10007  6.42  mix70 #891d23  9.28  mix80 #9b171e  8.28

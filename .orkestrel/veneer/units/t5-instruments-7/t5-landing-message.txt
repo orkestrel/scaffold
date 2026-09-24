@@ -1,0 +1,16 @@
+Park the released pointer outside the page, and frame an element at its own edge
+
+captureFrame stages an element frame's pane to the element's own bottom edge rather than to the whole document's
+content height, moves the calling frame up and left by the bounded window-fit move computeOffset returns so the
+element is shot inside the runner's window, and restores the frame's style attribute and the document's scroll after
+the shot. readFrame's decode refusal names the frame's size in device pixels. releasePointer parks the pointer at
+(-1, -1) in the runner page's coordinates, outside that page's viewport, where the browser hit-tests nothing, so no
+staging, scroll, or offset gives an element a mouseover event or hover paint from the parked pointer; the capture's
+earlier park-point avoidance is removed. computeOffset leaves an axis whose far edge already lies inside the window
+unmoved and never moves a fitting box's start edge past zero.
+
+Audited over seven rounds: analyst on GPT-6 Astra, reviewer on Opus 5.5, and checker, with a park-point ruling from
+planner on Opus 5.5 and analyst on GPT-6 Astra between rounds 4 and 5. Veneer's journeys pass on the packed build.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
