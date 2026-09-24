@@ -1,0 +1,4 @@
+digest before: {"src/browser/HostSnapshot.ts": "7c019de9ab30495f46c1f818eb76ff7469e4aaed3a6a9cfe9c53b7cee584b539", "tests/src/browser/HostSnapshot.test.ts": "ac992d59f11d3835caf759f6f83b9dc0df0b9d2f9dde3e3f0e488abb1661826c"}
+MISSED exit=0 | the late side write against the round-1 proof shape (deliveries discarded, no delivered assertion) | tests/src/browser/HostSnapshot.test.ts | 0 failed of 33 | named: [] | first failure:  | joined: []
+digest after: {"src/browser/HostSnapshot.ts": "7c019de9ab30495f46c1f818eb76ff7469e4aaed3a6a9cfe9c53b7cee584b539", "tests/src/browser/HostSnapshot.test.ts": "ac992d59f11d3835caf759f6f83b9dc0df0b9d2f9dde3e3f0e488abb1661826c"}
+receipt: restored byte for byte
