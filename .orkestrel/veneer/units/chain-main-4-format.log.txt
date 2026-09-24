@@ -5,3 +5,6 @@ command: npm run format:check
 
 Checking formatting...
 
+All matched files use the correct format.
+Finished in 19067ms on 466 files using 4 threads.
+exit 0
