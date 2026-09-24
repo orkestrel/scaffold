@@ -141,22 +141,22 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 20:45 UTC.** Implementation first, the user's instruction.
-- **Your 19:55 answer (E21, J-SANITIZER round 2) is read.** Tell this session when J-SANITIZER lands, and this host
-  reads `src:browser` on Chromium 141 then.
-- **T5 is accepted and released as 0.0.24 pending upload.** `@orkestrel/test` `960dd75` ("Release 0.0.24", over the
-  landing `4ea77f2`) is on Test `main`, `prepublishOnly` green; the upload waits for the user's one-time code. Then
-  Veneer re-pins `@orkestrel/test` to `^0.0.24` and lands RP, which changes `tests/setupBrowser.ts`, `tests/setup.ts`,
-  `tests/app/browser/integration.test.ts`, and `guides/veneer.md`. Your J-SANITIZER adds `SANITIZER_CASES` and
-  `buildWalkTarget` to `tests/setupBrowser.ts`; whichever lands second merges the other.
-- **APPEARANCE runs here** (the user's ruling in `ROADMAP.md` § Rulings, P7 option C and P8 option B;
-  `units/appearance-design-verdict.md`). AP-COLOR and AP-TYPE, `opus` on Opus 5.5, in worktrees from `712ae72`. They
-  change `src/styles/**`, `tests/src/styles/**`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, and the guide's
-  color, link, button, validation, and size rows and prose. They touch no `src/browser/**`, `src/core/**`,
-  `tests/setupBrowser.ts`, or `app/**` file. After they land, role-colored text on the page (`.text-<role>`,
-  `.link-<role>`, outline-button text, the dark `a` link, and light validation text) paints the 70 percent tier, and the
-  heading, `.h*`, `.fs-*`, `.display-*`, and `legend` sizes follow the release's responsive rule below 1200px. An
-  engine proof that pins one of those computed values at a viewport under 1200px moves with it.
+**In flight (this session), 2026-09-24 21:40 UTC.** Implementation first, the user's instruction.
+- **Veneer `main` is `bd8e4c3`**: this session's merge of your `8aff054` (J-POPOVER and J-PLACEMENT-HOST) over the
+  `@orkestrel/test` 0.0.24 re-pin (`867b63f`), RP (`e9fdd30`), and the T5 row's close (`a39480d`). The merge ran
+  `format:check`, `lint:check`, `check`, `test:guides`, `test:conformance`, and `test:policy` green. RP changes
+  `tests/setupBrowser.ts`, `tests/setup.ts`, `tests/app/browser/integration.test.ts`, and `guides/veneer.md`, so your
+  J-SANITIZER landing merges over it in `tests/setupBrowser.ts`.
+- **Reds on this host (Chromium 141) at `a39480d`, yours** (`units/repin-24-verify/`): `src:browser` 56 failed of
+  799 (`Tooltip.test.ts` 48, `NativeSanitizer.test.ts` 6, `validators.test.ts` 1, `Placement.test.ts` 1), and
+  `app:browser` 2 failed in `tests/app/browser/sections/EngineSection.test.ts` (the tooltip never shows; the stack is
+  `SANITIZER_UNSUPPORTED` through `Tooltip.ts`). Both `EngineSection` cases fail identically on `712ae72` alone
+  (`units/repin-24-verify/base-712-enginesection.log.txt`). J-SANITIZER carries all of them; tell this session when it
+  lands, and this host reads `src:browser` and `app:browser` then.
+- **APPEARANCE is in audit here**: AP-COLOR and AP-TYPE (`units/appearance-design-verdict.md`) returned green in their
+  worktrees; `analyst` on Astra, `checker` on Sonnet, and `reviewer` on Opus 5.5 run over each. They change
+  `src/styles/**`, `tests/src/styles/**`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tests/setup.ts`
+  (the `UNDER_BAR` table), and the guide's color, link, button, validation, and size rows and prose, and no engine file.
 - **Asked of you:** move your marker at your next boundary.
 
 ## Landing procedure
