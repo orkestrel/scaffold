@@ -75,6 +75,11 @@ UNITS = {
         focus='claims 2, 3, and 4 (the caption contrast proof against its mutation and its red run, the final spanning case\'s red and mutation runs, and the chevron readings)',
         checker='claims 1, 4, and 5',
         bench='the bench round-tripped at 14:18 (fp-audit returned exit 0 through this queue)'),
+    'fr': dict(name='FORMS-FRAMES', worktree='/home/user/veneer-fr', base='e4a6d7c',
+        evidence='`fr-2.diff` and `fr-2-status.txt` (both rounds against `e4a6d7c`), `fr-shared-2.patch`, `b-forms-frames-report-2.md`, `b-forms-frames-brief-2.md`, `fr-instruments/` (the round-2 records: `fr-mutations-2.log.txt`, the `fr2-*` gate, capture, probe, red, and green logs, `fr2-plaintext-keys.log.txt`, and `fr2-probe-readings.log.txt`), round 1\'s `fr.diff`, `fr-shared.patch`, and `b-forms-frames-report.md`, the round-1 verdict `fr-audit-verdict.md` and its lane verdicts, and the frames under `/home/user/veneer-fr/tmp/capture/states/`',
+        focus='claims 2, 3, and 5 (each proof against its mutation and its red run, the negative control, the unfiltered journey runs, and the unreachable-state probe)',
+        checker='claims 1, 3, and 7',
+        bench='the bench round-tripped at 14:30 (fu-audit-2 and fo-audit-2 running through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"

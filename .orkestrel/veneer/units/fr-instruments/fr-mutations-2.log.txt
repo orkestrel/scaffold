@@ -1,0 +1,150 @@
+=== MUTATION: P10 hairline-only: the hairline restored to the body surface, the hairline case alone
+site (scratch copy tmp/probe/fr2-scratch): src/styles/components/_form-range.scss
+replaced: 0 0 0 1px var(--vn-palette-white-base),
+with: 0 0 0 1px var(--vn-surface-body-base),
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/form-range.test.ts -t hairline
+output: tmp/units/fr2-mutate-P10-hairline-only-the-hairline-restored-to-the-body-surface-.log.txt
+build exit: 0
+test exit: 1
+summary:       Tests  1 failed | 7 skipped (8)
+failing:  FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:112:2 > form range classes > paints the focused thumb hairline white in the light and the dark mode, as the release compiles it
+reason: AssertionError: expected [ Array(2) ] to strictly equal [ [ 'light', true ], [ 'dark', true ] ]
+
+=== MUTATION: P10 whole range proof: the hairline restored to the body surface, every range case
+site (scratch copy tmp/probe/fr2-scratch): src/styles/components/_form-range.scss
+replaced: 0 0 0 1px var(--vn-palette-white-base),
+with: 0 0 0 1px var(--vn-surface-body-base),
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/components/form-range.test.ts
+output: tmp/units/fr2-mutate-P10-whole-range-proof-the-hairline-restored-to-the-body-surf.log.txt
+build exit: 0
+test exit: 1
+summary:       Tests  3 failed | 5 passed (8)
+failing:  FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:75:2 > form range classes > clears the control outline under keyboard focus and leaves the ring to the thumb
+failing:  FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:112:2 > form range classes > paints the focused thumb hairline white in the light and the dark mode, as the release compiles it
+failing:  FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:165:2 > form range classes > keeps the WebKit part rules in the cascade and reports the host style for a part pseudo
+reason: AssertionError: expected '0 0 0 1px var(--vn-surface-body-base)…' to contain 'var(--vn-palette-white-base)'
+reason: AssertionError: expected [ Array(2) ] to strictly equal [ [ 'light', true ], [ 'dark', true ] ]
+reason: AssertionError: expected [ [ 'box-shadow', [ …(3) ] ] ] to deeply equal []
+
+=== MUTATION: Validation negative control: a validation row added without its host-table row (the objective lane's escaping row)
+site (scratch copy tmp/probe/fr2-scratch): app/browser/constants.ts
+replaced: 			name: 'Invalid multiple select',
+			host: 'multiple',
+			state: 'invalid',
+			id: 'invalid-warehouses',
+			label: 'Invalid warehouses',
+			value: 'Unassigned',
+		},
+with: 			name: 'Invalid multiple select',
+			host: 'multiple',
+			state: 'invalid',
+			id: 'invalid-warehouses',
+			label: 'Invalid warehouses',
+			value: 'Unassigned',
+		},
+		{
+			name: 'Valid additional control',
+			host: 'control',
+			state: 'valid',
+			id: 'valid-additional-entry',
+			label: 'Valid additional material',
+			value: 'Ash',
+		},
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/ValidationSection.test.ts
+output: tmp/units/fr2-mutate-Validation-negative-control-a-validation-row-added-without-i.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 1 passed (2)
+failing:  FAIL  |app:browser (chromium)| tests/app/browser/sections/ValidationSection.test.ts:14:2 > ValidationSection > renders a passing and a failing specimen for every host the state reaches
+reason: AssertionError: expected [ …(19) ] to strictly equal [ …(18) ]
+
+=== MUTATION: Validated select, unfiltered journey: the state focus rule writes no ring
+site (scratch copy tmp/probe/fr2-scratch): src/styles/components/_validation.scss
+replaced: 			border-color: var(--bs-form-#{$state}-border-color);
+			box-shadow: 0 0 0 var(--vn-focus-width) rgba(var(--bs-#{$role}-rgb), 0.25);
+		}
+
+		// The swatch width
+with: 			border-color: var(--bs-form-#{$state}-border-color);
+		}
+
+		// The swatch width
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project journey:light-1280*
+output: tmp/units/fr2-mutate-Validated-select-unfiltered-journey-the-state-focus-rule-wri.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 53 passed (54)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2324:2 > journey > rings each validated select and check under keyboard focus in its state color on the lifted specimen, and holds the ring inside the frame
+reason: AssertionError: expected [ 2, 2 ] to strictly equal [ 1, 1 ]
+
+=== MUTATION: Pressed check, unfiltered journey: the .form-check-input:active rule writes no filter
+site (scratch copy tmp/probe/fr2-scratch): src/styles/components/_form-check.scss
+replaced: 	.form-check-input:active {
+		filter: brightness(90%);
+	}
+with: 	.form-check-input:active {
+	}
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project journey:light-1280*
+output: tmp/units/fr2-mutate-Pressed-check-unfiltered-journey-the-form-check-input-active.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 53 passed (54)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:1854:2 > journey > holds each pressed form control on its lifted specimen and photographs the paint its press rule writes
+reason: AssertionError: expected [ …(2) ] to strictly equal []
+
+=== MUTATION: Plaintext focus: the .form-control-plaintext:focus rule writes no outline reset
+site (scratch copy tmp/probe/fr2-scratch): src/styles/components/_form-control.scss
+replaced: 	.form-control-plaintext:focus {
+		outline: 0;
+	}
+with: 	.form-control-plaintext:focus {
+	}
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project journey:light-1280* -t plaintext control
+output: tmp/units/fr2-mutate-Plaintext-focus-the-form-control-plaintext-focus-rule-writes.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 53 skipped (54)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2248:2 > journey > focuses each plaintext control on its lifted specimen with no ring, and photographs the focused control
+reason: AssertionError: expected [ [ …(3) ], [ …(3) ] ] to strictly equal [ [ …(3) ], [ …(3) ] ]
+
+=== MUTATION: Empty floating plaintext focus: the floated inset leaves out a focused plaintext control
+site (scratch copy tmp/probe/fr2-scratch): src/styles/components/_form-floating.scss
+replaced: 	.form-floating > .form-control-plaintext:focus,
+
+with: 
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project journey:light-1280* -t plaintext control
+output: tmp/units/fr2-mutate-Empty-floating-plaintext-focus-the-floated-inset-leaves-out-.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 53 skipped (54)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2248:2 > journey > focuses each plaintext control on its lifted specimen with no ring, and photographs the focused control
+reason: AssertionError: expected [ Array(1) ] to strictly equal []
+
+=== MUTATION: Grouped floating lift: the lift rule leaves out the floating wrapper
+site (scratch copy tmp/probe/fr2-scratch): src/styles/components/_input-group.scss
+replaced: 	.input-group > .form-select:focus,
+	.input-group > .form-floating:focus-within {
+with: 	.input-group > .form-select:focus {
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project journey:light-1280* -t grouped select and the grouped floating
+output: tmp/units/fr2-mutate-Grouped-floating-lift-the-lift-rule-leaves-out-the-floating-.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 53 skipped (54)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2151:2 > journey > lifts the grouped select and the grouped floating wrapper under keyboard focus over the button beside each on the lifted specimen, and holds the ring inside the frame
+reason: AssertionError: expected [ [ …(2) ], [ …(2) ] ] to strictly equal [ [ …(2) ], [ …(2) ] ]
+
+=== MUTATION: Grouped select lift: the lift rule leaves out the select
+site (scratch copy tmp/probe/fr2-scratch): src/styles/components/_input-group.scss
+replaced: 	.input-group > .form-control:focus,
+	.input-group > .form-select:focus,
+
+with: 	.input-group > .form-control:focus,
+
+command: npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=verbose --project journey:light-1280* -t grouped select and the grouped floating
+output: tmp/units/fr2-mutate-Grouped-select-lift-the-lift-rule-leaves-out-the-select-.log.txt
+build exit: skipped
+test exit: 1
+summary:       Tests  1 failed | 53 skipped (54)
+failing:  FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:2151:2 > journey > lifts the grouped select and the grouped floating wrapper under keyboard focus over the button beside each on the lifted specimen, and holds the ring inside the frame
+reason: AssertionError: expected [ [ …(2) ], [ …(2) ] ] to strictly equal [ [ …(2) ], [ …(2) ] ]
+
