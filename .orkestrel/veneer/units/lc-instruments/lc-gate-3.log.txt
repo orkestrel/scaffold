@@ -1,0 +1,6 @@
+# cwd: /home/user/veneer-lc/tmp/probe/lc-scratch
+# command: npm run lint:check
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+

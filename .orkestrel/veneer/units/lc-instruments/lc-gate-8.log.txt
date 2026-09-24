@@ -1,0 +1,16 @@
+# cwd: /home/user/veneer-lc/tmp/probe/lc-scratch
+# command: npm run test:conformance
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lc/tmp/probe/lc-scratch
+
+··························
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  14:27:10
+   Duration  37.15s (transform 1.10s, setup 315ms, import 23.78s, tests 12.79s, environment 0ms)
+

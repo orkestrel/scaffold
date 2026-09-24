@@ -1,0 +1,96 @@
+# build: npm run build:src:styles (in /home/user/veneer-lc/tmp/probe/lc-scratch)
+# build exit 0
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/validation.test.ts
+ RUN  v4.1.11 /home/user/veneer-lc/tmp/probe/lc-scratch
+·········xxxx··········
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:239:2 > validation classes > floats the 'valid' tooltip under its control on the release stacking level
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:239:2 > validation classes > floats the 'invalid' tooltip under its control on the release stacking level
+AssertionError: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/validation.test.ts:259:5
+    257|    expect(
+    258|     matchesColor(readStyle(tooltip, 'color'), readToken(tooltip, '--vn…
+    259|    ).toBe(true)
+       |     ^
+    260|    // The gauge resolves the same alias the tooltip's own `border-radi…
+    261|    // declaration reports the browser's square corner here; comparing …
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'valid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'invalid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+AssertionError: light label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/validation.test.ts:288:83
+    286|      `No ${role} label in ${mode} mode`,
+    287|     )[2]
+    288|     expect.soft(matchesColor(readStyle(tooltip, 'color'), label), `${m…
+       |                                                                                   ^
+    289|     expect.soft(readContrast(tooltip), `${mode} contrast`).toBeGreater…
+    290|    }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'valid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+AssertionError: light contrast: expected 4.248018258328519 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/validation.test.ts:289:59
+    287|     )[2]
+    288|     expect.soft(matchesColor(readStyle(tooltip, 'color'), label), `${m…
+    289|     expect.soft(readContrast(tooltip), `${mode} contrast`).toBeGreater…
+       |                                                           ^
+    290|    }
+    291|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'valid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'invalid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+AssertionError: dark label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/components/validation.test.ts:288:83
+    286|      `No ${role} label in ${mode} mode`,
+    287|     )[2]
+    288|     expect.soft(matchesColor(readStyle(tooltip, 'color'), label), `${m…
+       |                                                                                   ^
+    289|     expect.soft(readContrast(tooltip), `${mode} contrast`).toBeGreater…
+    290|    }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'valid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+AssertionError: dark contrast: expected 4.248018258328519 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/validation.test.ts:289:59
+    287|     )[2]
+    288|     expect.soft(matchesColor(readStyle(tooltip, 'color'), label), `${m…
+    289|     expect.soft(readContrast(tooltip), `${mode} contrast`).toBeGreater…
+       |                                                           ^
+    290|    }
+    291|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'invalid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+AssertionError: light contrast: expected 3.2708521477412145 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/validation.test.ts:289:59
+    287|     )[2]
+    288|     expect.soft(matchesColor(readStyle(tooltip, 'color'), label), `${m…
+    289|     expect.soft(readContrast(tooltip), `${mode} contrast`).toBeGreater…
+       |                                                           ^
+    290|    }
+    291|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'invalid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+AssertionError: dark contrast: expected 3.2708521477412145 to be greater than or equal to 4.5
+ ❯ tests/src/styles/components/validation.test.ts:289:59
+    287|     )[2]
+    288|     expect.soft(matchesColor(readStyle(tooltip, 'color'), label), `${m…
+    289|     expect.soft(readContrast(tooltip), `${mode} contrast`).toBeGreater…
+       |                                                           ^
+    290|    }
+    291|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+ Test Files  1 failed (1)
+      Tests  4 failed | 19 passed (23)
+   Start at  14:23:10
+   Duration  7.02s (transform 0ms, setup 1.64s, import 87ms, tests 1.72s, environment 0ms)
+# vitest exit 1

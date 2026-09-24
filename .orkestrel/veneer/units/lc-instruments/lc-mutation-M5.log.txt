@@ -1,0 +1,193 @@
+# build: npm run build:src:styles (in /home/user/veneer-lc/tmp/probe/lc-scratch)
+# build exit 0
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/color-bg.test.ts
+ RUN  v4.1.11 /home/user/veneer-lc/tmp/probe/lc-scratch
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+··xx··
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in light mode, at or above the contrast bar
+AssertionError: info light agreement: expected 'rgb(0, 0, 0)' to be 'rgb(255, 255, 255)' // Object.is equality
+Expected: [32m"rgb([7m255, 255, 255[27m)"[39m
+Received: [31m"rgb([7m0, 0, 0[27m)"[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:64:6
+     62|     expect
+     63|      .soft(readStyle(pair, 'color'), `${role} ${mode} agreement`)
+     64|      .toBe(readStyle(button, 'color'))
+       |      ^
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in light mode, at or above the contrast bar
+AssertionError: info light label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:67:6
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+     67|      .toBe(true)
+       |      ^
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in light mode, at or above the contrast bar
+AssertionError: info light contrast: expected 3.5860607743410453 to be greater than or equal to 4.5
+ ❯ tests/src/styles/utilities/color-bg.test.ts:70:6
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+     70|      .toBeGreaterThanOrEqual(CONTRAST_BAR)
+       |      ^
+     71|    }
+     72|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in light mode, at or above the contrast bar
+AssertionError: warning light agreement: expected 'rgb(0, 0, 0)' to be 'rgb(255, 255, 255)' // Object.is equality
+Expected: [32m"rgb([7m255, 255, 255[27m)"[39m
+Received: [31m"rgb([7m0, 0, 0[27m)"[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:64:6
+     62|     expect
+     63|      .soft(readStyle(pair, 'color'), `${role} ${mode} agreement`)
+     64|      .toBe(readStyle(button, 'color'))
+       |      ^
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in light mode, at or above the contrast bar
+AssertionError: warning light label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:67:6
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+     67|      .toBe(true)
+       |      ^
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in light mode, at or above the contrast bar
+AssertionError: warning light contrast: expected 4.174509977108481 to be greater than or equal to 4.5
+ ❯ tests/src/styles/utilities/color-bg.test.ts:70:6
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+     70|      .toBeGreaterThanOrEqual(CONTRAST_BAR)
+       |      ^
+     71|    }
+     72|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+AssertionError: primary dark agreement: expected 'rgb(255, 255, 255)' to be 'rgb(0, 0, 0)' // Object.is equality
+Expected: [32m"rgb([7m0, 0, 0[27m)"[39m
+Received: [31m"rgb([7m255, 255, 255[27m)"[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:64:6
+     62|     expect
+     63|      .soft(readStyle(pair, 'color'), `${role} ${mode} agreement`)
+     64|      .toBe(readStyle(button, 'color'))
+       |      ^
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+AssertionError: primary dark label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:67:6
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+     67|      .toBe(true)
+       |      ^
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+AssertionError: primary dark contrast: expected 2.588682302890358 to be greater than or equal to 4.5
+ ❯ tests/src/styles/utilities/color-bg.test.ts:70:6
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+     70|      .toBeGreaterThanOrEqual(CONTRAST_BAR)
+       |      ^
+     71|    }
+     72|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+AssertionError: info dark agreement: expected 'rgb(0, 0, 0)' to be 'rgb(255, 255, 255)' // Object.is equality
+Expected: [32m"rgb([7m255, 255, 255[27m)"[39m
+Received: [31m"rgb([7m0, 0, 0[27m)"[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:64:6
+     62|     expect
+     63|      .soft(readStyle(pair, 'color'), `${role} ${mode} agreement`)
+     64|      .toBe(readStyle(button, 'color'))
+       |      ^
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+AssertionError: info dark label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:67:6
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+     67|      .toBe(true)
+       |      ^
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+AssertionError: info dark contrast: expected 3.5860607743410453 to be greater than or equal to 4.5
+ ❯ tests/src/styles/utilities/color-bg.test.ts:70:6
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+     70|      .toBeGreaterThanOrEqual(CONTRAST_BAR)
+       |      ^
+     71|    }
+     72|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+AssertionError: warning dark agreement: expected 'rgb(0, 0, 0)' to be 'rgb(255, 255, 255)' // Object.is equality
+Expected: [32m"rgb([7m255, 255, 255[27m)"[39m
+Received: [31m"rgb([7m0, 0, 0[27m)"[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:64:6
+     62|     expect
+     63|      .soft(readStyle(pair, 'color'), `${role} ${mode} agreement`)
+     64|      .toBe(readStyle(button, 'color'))
+       |      ^
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+AssertionError: warning dark label: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- true[39m
+[31m+ false[39m
+ ❯ tests/src/styles/utilities/color-bg.test.ts:67:6
+     65|     expect
+     66|      .soft(matchesColor(readStyle(pair, 'color'), label), `${role} ${m…
+     67|      .toBe(true)
+       |      ^
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+AssertionError: warning dark contrast: expected 4.174509977108481 to be greater than or equal to 4.5
+ ❯ tests/src/styles/utilities/color-bg.test.ts:70:6
+     68|     expect
+     69|      .soft(readContrast(pair), `${role} ${mode} contrast`)
+     70|      .toBeGreaterThanOrEqual(CONTRAST_BAR)
+       |      ^
+     71|    }
+     72|   },
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  14:20:15
+   Duration  17.98s (transform 0ms, setup 3.29s, import 113ms, tests 44ms, environment 0ms)
+# vitest exit 1

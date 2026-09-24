@@ -1,0 +1,174 @@
+## M1: the rule tries the candidates in reverse order
+site: src/styles/_mixins.scss: 1 occurrence(s) of the site rewritten
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/mixins.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  4 failed | 21 passed (25)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:578:2 > contrast functions > picks the foreground the release records against its own 'danger' fill
+  FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:578:2 > contrast functions > picks the foreground the release records against its own 'primary' fill
+  FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:578:2 > contrast functions > picks the foreground the release records against its own 'success' fill
+  FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:587:2 > contrast functions > picks white on the release primary, whose white ratio sits at the 4.5 to 1 boundary
+full log: tmp/units/lc-mutation-M1.log.txt
+
+## M2: the rule minimum is raised to 4.6
+site: src/styles/_mixins.scss: 1 occurrence(s) of the site rewritten
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/mixins.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  4 failed | 21 passed (25)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:578:2 > contrast functions > picks the foreground the release records against its own 'danger' fill
+  FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:578:2 > contrast functions > picks the foreground the release records against its own 'primary' fill
+  FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:578:2 > contrast functions > picks the foreground the release records against its own 'success' fill
+  FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:587:2 > contrast functions > picks white on the release primary, whose white ratio sits at the 4.5 to 1 boundary
+full log: tmp/units/lc-mutation-M2.log.txt
+
+## M3: the primary label is pinned to white
+site: src/styles/components/_button.scss: 1 occurrence(s) of the site rewritten
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/button.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  5 failed | 76 passed (81)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:115:2 > button classes > reads the primary label in the island the button sits in, and never from a bare scheme
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints primary in dark mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline primary in dark mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in dark mode
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the primary hover and active fills in dark mode the way its black label and tint direction name
+full log: tmp/units/lc-mutation-M3.log.txt
+
+## M4: the variants read --vn-state-mixer again
+site: src/styles/components/_button.scss: 3 occurrence(s) of the site rewritten
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/button.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  29 failed | 52 passed (81)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints danger in dark mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints dark in light mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints info in dark mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints light in dark mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints secondary in dark mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints success in dark mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints tertiary in dark mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints warning in dark mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline danger in dark mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline dark in light mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline info in dark mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline light in dark mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline secondary in dark mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline success in dark mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline tertiary in dark mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline warning in dark mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the info label legible over every filled and outline state in dark mode
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the secondary label legible over every filled and outline state in dark mode
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the success label legible over every filled and outline state in dark mode
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the tertiary label legible over every filled and outline state in dark mode
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the warning label legible over every filled and outline state in dark mode
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the danger hover and active fills in dark mode the way its white label and shade direction name
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the dark hover and active fills in light mode the way its white label and tint direction name
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the info hover and active fills in dark mode the way its white label and shade direction name
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the light hover and active fills in dark mode the way its black label and shade direction name
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the secondary hover and active fills in dark mode the way its white label and shade direction name
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the success hover and active fills in dark mode the way its white label and shade direction name
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the tertiary hover and active fills in dark mode the way its white label and shade direction name
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the warning hover and active fills in dark mode the way its white label and shade direction name
+full log: tmp/units/lc-mutation-M4.log.txt
+
+## M5: the $dark-labels list is restored
+site: src/styles/utilities/_color-bg.scss replaced by its ac74459 text
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/color-bg.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in dark mode, at or above the contrast bar
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/color-bg.test.ts:47:2 > color-and-background pairs > carries the label its filled button carries in light mode, at or above the contrast bar
+full log: tmp/units/lc-mutation-M5.log.txt
+
+## M6: the dark pick is written for both modes
+site: src/styles/_mixins.scss: 1 occurrence(s) of the site rewritten
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/button.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  6 failed | 75 passed (81)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:115:2 > button classes > reads the primary label in the island the button sits in, and never from a bare scheme
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:157:2 > button classes > paints primary in light mode across rest, focus, hover, active, pressed, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:211:2 > button classes > paints outline primary in light mode across rest, hover, active, focus, and disabled states
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:302:2 > button classes > paints the checked label, carries keyboard focus to it, and refuses disabled label paint
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:39:2 > button classes > keeps the primary label legible over every filled and outline state in light mode
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:75:2 > button classes > moves the primary hover and active fills in light mode the way its white label and shade direction name
+full log: tmp/units/lc-mutation-M6.log.txt
+
+## M7: the dark veil reads the black palette entry
+site: src/styles/_tokens.scss: 1 occurrence(s) of the site rewritten
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/elements/button.test.ts tests/src/styles/components/button.test.ts
+# build exit 0
+ Test Files  2 failed (2)
+      Tests  3 failed | 86 passed (89)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:141:2 > button classes > steps the bare class veil in a dark island by at least the least hover step
+  FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:149:2 > bare button > resolves the calibrated geometry and interaction paint in dark mode
+  FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:194:2 > bare button > steps the bare veil in a dark island by at least the least hover step
+full log: tmp/units/lc-mutation-M7.log.txt
+
+## M8: the colored-link hover is written as the resting color
+site: src/styles/utilities/_link.scss: 1 occurrence(s) of the site rewritten
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/link.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  16 failed | 66 passed (82)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the danger hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the dark hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the info hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the light hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the primary hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the secondary hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the success hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in dark mode > moves the warning hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the danger hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the dark hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the info hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the light hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the primary hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the secondary hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the success hover and focus color away from its label, and scales it by the opacity variables
+  FAIL  |[object Object] (chromium)| tests/src/styles/utilities/link.test.ts:42:2 > link classes in light mode > moves the warning hover and focus color away from its label, and scales it by the opacity variables
+full log: tmp/units/lc-mutation-M8.log.txt
+
+## M9: the tooltip label is pinned to black
+site: src/styles/components/_validation.scss: 1 occurrence(s) of the site rewritten
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/validation.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  4 failed | 19 passed (23)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:239:2 > validation classes > floats the 'invalid' tooltip under its control on the release stacking level
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:239:2 > validation classes > floats the 'valid' tooltip under its control on the release stacking level
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'invalid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+  FAIL  |[object Object] (chromium)| tests/src/styles/components/validation.test.ts:271:2 > validation classes > labels the 'valid' tooltip as its role button is labeled, at or above the contrast bar in both modes
+full log: tmp/units/lc-mutation-M9.log.txt
+
+## M10: the scheme function writes a pair even where the modes agree
+site: src/styles/_mixins.scss: 1 occurrence(s) of the site rewritten
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/mixins.test.ts
+# build exit 0
+ Test Files  1 failed (1)
+      Tests  1 failed | 24 passed (25)
+# vitest exit 1
+failing cases:
+  FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:597:2 > contrast functions > writes one value for a pair that agrees and a light-dark pair for one that differs
+full log: tmp/units/lc-mutation-M10.log.txt
+

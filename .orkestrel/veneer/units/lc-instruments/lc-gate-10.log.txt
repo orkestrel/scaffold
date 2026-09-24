@@ -1,0 +1,32 @@
+# cwd: /home/user/veneer-lc
+# command: npm run check
+
+> @orkestrel/veneer@0.0.1 check
+> tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+
+tests/src/styles/components/button.test.ts(25,2): error TS2724: '"../../../setupStyles.js"' has no exported member named 'BUTTON_LABEL_CASES'. Did you mean 'BUTTON_BARE_CASES'?
+tests/src/styles/components/button.test.ts(40,3): error TS2345: Argument of type '(role: any, mode: any, label: any) => Promise<void>' is not assignable to parameter of type '(...args: any[] | [any]) => Awaitable<void>'.
+  Types of parameters 'role' and 'args' are incompatible.
+    Type 'any[] | [any]' is not assignable to type '[role: any, mode: any, label: any]'.
+      Type 'any[]' is not assignable to type '[role: any, mode: any, label: any]'.
+        Target requires 3 element(s) but source may have fewer.
+tests/src/styles/components/button.test.ts(76,3): error TS2345: Argument of type '(role: any, mode: any, label: any, direction: any) => Promise<void>' is not assignable to parameter of type '(...args: any[] | [any]) => Awaitable<void>'.
+  Types of parameters 'role' and 'args' are incompatible.
+    Type 'any[] | [any]' is not assignable to type '[role: any, mode: any, label: any, direction: any]'.
+      Type 'any[]' is not assignable to type '[role: any, mode: any, label: any, direction: any]'.
+        Target requires 4 element(s) but source may have fewer.
+tests/src/styles/components/button.test.ts(152,23): error TS2339: Property 'step' does not exist on type 'Readonly<{ durations: readonly string[]; ring: readonly number[]; }>'.
+tests/src/styles/components/button.test.ts(160,31): error TS7031: Binding element 'name' implicitly has an 'any' type.
+tests/src/styles/components/button.test.ts(160,37): error TS7031: Binding element 'candidate' implicitly has an 'any' type.
+tests/src/styles/components/button.test.ts(223,31): error TS7031: Binding element 'name' implicitly has an 'any' type.
+tests/src/styles/components/button.test.ts(223,37): error TS7031: Binding element 'candidate' implicitly has an 'any' type.
+tests/src/styles/components/validation.test.ts(19,2): error TS2724: '"../../../setupStyles.js"' has no exported member named 'BUTTON_LABEL_CASES'. Did you mean 'BUTTON_BARE_CASES'?
+tests/src/styles/components/validation.test.ts(285,32): error TS7031: Binding element 'name' implicitly has an 'any' type.
+tests/src/styles/components/validation.test.ts(285,38): error TS7031: Binding element 'candidate' implicitly has an 'any' type.
+tests/src/styles/elements/button.test.ts(205,23): error TS2339: Property 'step' does not exist on type 'Readonly<{ durations: readonly string[]; ring: readonly number[]; }>'.
+tests/src/styles/utilities/color-bg.test.ts(12,10): error TS2724: '"../../../setupStyles.js"' has no exported member named 'BUTTON_LABEL_CASES'. Did you mean 'BUTTON_BARE_CASES'?
+tests/src/styles/utilities/color-bg.test.ts(59,32): error TS7031: Binding element 'name' implicitly has an 'any' type.
+tests/src/styles/utilities/color-bg.test.ts(59,38): error TS7031: Binding element 'candidate' implicitly has an 'any' type.
+tests/src/styles/utilities/link.test.ts(13,2): error TS2724: '"../../../setupStyles.js"' has no exported member named 'BUTTON_LABEL_CASES'. Did you mean 'BUTTON_BARE_CASES'?
+tests/src/styles/utilities/link.test.ts(49,31): error TS7031: Binding element 'name' implicitly has an 'any' type.
+tests/src/styles/utilities/link.test.ts(49,37): error TS7031: Binding element 'candidate' implicitly has an 'any' type.

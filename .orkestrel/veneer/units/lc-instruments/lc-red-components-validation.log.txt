@@ -1,0 +1,12 @@
+# build: npm run build:src:styles (in /home/user/veneer-lc/tmp/probe/lc-scratch)
+# build exit 0
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/components/validation.test.ts
+ RUN  v4.1.11 /home/user/veneer-lc/tmp/probe/lc-scratch
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+·······················
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+   Start at  14:17:32
+   Duration  12.54s (transform 0ms, setup 2.66s, import 86ms, tests 1.67s, environment 0ms)
+# vitest exit 0
