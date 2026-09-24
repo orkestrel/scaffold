@@ -1,0 +1,8 @@
+command: npm run test:src:browser
+
+> @orkestrel/veneer@0.0.1 test:src:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+
+ RUN  v4.1.11 /home/user/veneer
+
