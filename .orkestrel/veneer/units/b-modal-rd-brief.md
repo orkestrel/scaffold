@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native subagent in the worktree `/home/user/veneer-rd` (branch `unit/rd` from the
-session head BASE, after OFFCANVAS lands). The executor that opens this brief is that subagent.
+session head 42fd88e, after OFFCANVAS lands). The executor that opens this brief is that subagent.
 
 ## Objective
 
@@ -13,7 +13,7 @@ through it, with the built cascade unchanged.
 
 ## Context
 
-**Ruling.** `/home/user/scaffold/.orkestrel/veneer/units/md-audit-verdict.md` § Re-baseline: the twin
+**Ruling.** The RAMP-DOWN row of `ROADMAP.md` § Carriers in the worktree, from the MODAL round-1 audit's § Re-baseline (the verdict is pruned; read it with `git -C /home/user/scaffold show 8c46b904~1:.orkestrel/veneer/units/md-audit-verdict.md`): the twin
 emits its content unwrapped at the zero boundary and under `(width < boundary)` elsewhere, yielding the
 same `($infix, $boundary)` pair the `breakpoint-each` mixin yields, so the fullscreen modal classes, the
 responsive tables, and the responsive and bare offcanvas panels each write their rule set once, where
@@ -53,7 +53,7 @@ into the session scratchpad or the system temporary directory.
 and `tests/src/styles/mixins.test.ts` (the twin's fixture and case).
 
 **Shared (report-only).** `guides/veneer.md` (the § Styles mixin paragraph and any sentence the change
-makes false); return `rd-shared.patch` against BASE.
+makes false); return `rd-shared.patch` against 42fd88e.
 
 **Off-limits.** Every other file.
 
@@ -68,7 +68,7 @@ A native subagent: perform the assignment directly and spawn nothing.
 
 The report `/home/user/veneer-rd/tmp/units/rd-report.md` and the same text as the final message: the
 twin and each rewritten walk as before and after code; the byte comparison of `dist/src/styles/index.css`
-built at BASE and after the change (the command and its result); the fixture case and its red run with
+built at 42fd88e and after the change (the command and its result); the fixture case and its red run with
 the twin's zero-boundary branch dropped; each gate's command exactly as it ran with its exit and result
 line; `rd.diff`, `rd-status.txt`, and `rd-shared.patch` under `tmp/units/`. The report states no tally of
 a growable set and follows every code token with a noun.
@@ -81,7 +81,7 @@ record, and carry on for the twin's name and its comment's wording.
 ## Acceptance criteria
 
 1. `npm run format:check`, `npm run lint:check`, and `npm run check` exit 0 in the worktree.
-2. `npm run build:src` exits 0, and `cmp` of the built stylesheet at BASE and after the change exits 0.
+2. `npm run build:src` exits 0, and `cmp` of the built stylesheet at 42fd88e and after the change exits 0.
 3. The mixins proof, the modal, table, and offcanvas style proofs, `npm run test:conformance`, and
    `npm run test:guides` exit 0; the twin's fixture case reddens with its zero-boundary branch dropped.
 4. No partial writes a rule set both unconditioned and inside a down walk (read from the diff).

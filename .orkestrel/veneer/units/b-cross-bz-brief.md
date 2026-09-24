@@ -3,7 +3,7 @@
 ## Role and engine
 
 `builder` on Sonnet, a native subagent in the worktree `/home/user/veneer-bz` (branch `unit/bz` from the
-session head `BASE`). The executor that opens this brief is that subagent.
+session head `42fd88e`). The executor that opens this brief is that subagent.
 
 ## Objective
 
@@ -19,7 +19,7 @@ style proof accepts every serialization of the same computed value. Chromium 141
 both sites as standing rows in `/home/user/scaffold/.orkestrel/veneer/engine/units/host-chromium-153-reading.md` and asked this session to apply
 D45's reading to them.
 
-**The sites, at `a9dff19` (re-read at `BASE`).**
+**The sites, at `a9dff19` (re-read at `42fd88e`).**
 
 - `tests/src/styles/components/accordion.test.ts`: the button's `::after` chevron case asserts
   `readStyle(button, 'background-size', '::after')` equals `'20px'`.

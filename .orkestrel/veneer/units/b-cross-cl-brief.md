@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native subagent in the worktree `/home/user/veneer-cl` (branch `unit/cl` from the
-session head `BASE`). The executor that opens this brief is that subagent.
+session head `42fd88e`). The executor that opens this brief is that subagent.
 
 ## Objective
 
@@ -30,7 +30,7 @@ the notes `w2-w3-note-1.md` and `w2-w3-note-2.md` beside this brief; skill: none
 red run is retained. The `key` arrow function declared inside the priority case is a nested function
 under `AGENTS.md` § Design laws; the rewrite extracts it to the module that owns the reader.
 
-**Terrain, measured at `a9dff19` (re-measure at `BASE` before editing).**
+**Terrain, measured at `a9dff19` (re-measure at `42fd88e` before editing).**
 
 - `tests/setupServer.ts` exports `readCompatibility`, `collectKeyframeNames`, the `SheetReader` class,
   `collectAdditions`, `scanCompatibilityPresence`, and `readOracleInventory`. No `readConditions` or
@@ -40,10 +40,10 @@ under `AGENTS.md` § Design laws; the rewrite extracts it to the module that own
 - CONDITIONS landed as `8ca1609`, so compound-condition normalization exists; X6 gives it to this unit
   only if it were absent.
 - `guides/veneer.md` carries no `### Media conditions` and no `### Keyframes` section.
-- At `BASE`, OFFCANVAS's refinement of the priority case has landed; the condition-keyed comparison
+- At `42fd88e`, OFFCANVAS's refinement of the priority case has landed; the condition-keyed comparison
   builds on that version.
 
-**Tree.** `/home/user/veneer-cl` at `BASE`: the session branch with the B-MODAL wave 2 landings and
+**Tree.** `/home/user/veneer-cl` at `42fd88e`: the session branch with the B-MODAL wave 2 landings and
 Veneer `main`'s engine landings merged. FADE runs beside this unit in `/home/user/veneer-cf` and owns
 the `transition` entries in the conformance file; UTIL-SPACING, UTIL-TEXT, and BARE-BUTTON may land
 after this checkout is cut. Shared patches merge three-way at landing.
@@ -71,7 +71,7 @@ keyframe refusal, the condition-aware reading, the null-prototype digest map, an
 **Shared (report-only).** `tests/conformance.test.ts` (the priority case, the media and keyframes
 parity cases); `tests/setup.ts` and `tests/setup.test.ts` (a row type that must be shared);
 `guides/veneer.md` (`### Media conditions`, `### Keyframes`, § Tests, and each sentence the readers
-make false). Return one `cl-shared.patch` against `BASE` and edit nothing there.
+make false). Return one `cl-shared.patch` against `42fd88e` and edit nothing there.
 
 **Off-limits.** `src/styles/**` (no cascade byte changes; a unit that finds it needs one stops);
 `tests/fixtures/oracle/**`; `app/**`; `src/browser/**`; `src/core/**`; `tests/src/browser/**`;

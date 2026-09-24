@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native subagent in the worktree `/home/user/veneer-cf` (branch `unit/cf` from the
-session head `BASE`). The executor that opens this brief is that subagent.
+session head `42fd88e`). The executor that opens this brief is that subagent.
 
 ## Objective
 
@@ -24,7 +24,7 @@ the notes `w2-w3-note-1.md` and `w2-w3-note-2.md` beside this brief (nouns after
 populations in setup tables, mutation logs, no scratchpad writes); skill: none. Proofs read computed
 values (D45), and each named mutation's red run is retained.
 
-**Terrain, measured at `a9dff19` (re-measure at `BASE` before editing).**
+**Terrain, measured at `a9dff19` (re-measure at `42fd88e` before editing).**
 
 - The inventory (`tests/fixtures/oracle/inventory.json`, `components.transition`) records `.fade` with
   `transition: opacity 0.15s linear`, its `prefers-reduced-motion: reduce` twin with `transition: none`,
@@ -43,9 +43,9 @@ values (D45), and each named mutation's red run is retained.
   searching `guides/veneer.md` for the `fade` class, and name the search in the report.
 - Every showcase specimen carrying the `fade` class at `a9dff19` also carries the `show` class (the
   modal and its backdrop in `app/browser/constants.ts`); `carousel-fade` is a distinct class. Re-run
-  that search at `BASE` and stop if a specimen carries `fade` without `show`.
+  that search at `42fd88e` and stop if a specimen carries `fade` without `show`.
 
-**Tree.** `/home/user/veneer-cf` at `BASE`: the session branch with the MODAL, TIP, TOAST, and OFFCANVAS
+**Tree.** `/home/user/veneer-cf` at `42fd88e`: the session branch with the MODAL, TIP, TOAST, and OFFCANVAS
 landings, so every compound fade selector ships. UTIL-SPACING, UTIL-TEXT, and BARE-BUTTON may land after
 this checkout is cut; none touches the files this unit owns, and the shared patch merges three-way.
 
@@ -78,7 +78,7 @@ case table the proof adds); `app/browser/constants.ts` (`TRANSITION_COPY`, `TRAN
 `tests/app/browser/index.test.ts`; `tests/app/browser/integration.test.ts`; `guides/veneer.md`
 (`### Fade classes`, § Files, § Showcase, § Tests, the § Compatibility row, the `#### transition`
 ledger rows, and every sentence the search in § Context finds). Return one `cf-shared.patch` against
-`BASE` and edit nothing there.
+`42fd88e` and edit nothing there.
 
 **Off-limits.** Every other partial under `src/styles/**`, including `_mixins.scss`, `_tokens.scss`,
 `_theme.scss`, `_modal.scss`, `_offcanvas.scss`, and `_collapse.scss`; `tests/setupServer.ts` and
