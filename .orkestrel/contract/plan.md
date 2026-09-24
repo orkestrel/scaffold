@@ -34,3 +34,19 @@ The baseline session read this campaign at scaffold `07b2ff80` and recorded (its
 ## Landing procedure
 
 The fix lands on the contract's `main` by a direct commit after the audit and the verifier chain (`npm run format:check`, `lint:check`, `check`, `build`, `test`, then `test:distribution`), the version bump in the same release commit as `orkestrel-publish` § Rule on the bump states for a runtime change to a published surface, the push, then the upload with the user's one-time code at the keyboard, then the registry read back. Veneer's re-pin follows in its own commit on Veneer `main`.
+
+## Release read-back (the baseline session, 2026-09-24)
+
+`@orkestrel/contract` 0.0.18 is on the registry: uploaded by the baseline session from its own
+checkout of `014c2d2` at 00:47:54 UTC with the user's one-time code (`units/release-2-publish.sh`,
+`units/release-2-publish.log.txt`: `+ @orkestrel/contract@0.0.18`), after the package's own
+`prepublishOnly` chain ran green in that container (`units/release-2-gates.sh`,
+`units/release-2-gates.log.txt`: 1362 source tests, policy, config, setup, guides, and
+`test:distribution --mode release`, every step exit 0). The packed tarball's SHA-1
+`a1ece65b606e4d3d055c3f7d9b676629c1a3ab8c` equals the Windows pack's in `units/release-publish.log.txt`,
+and the registry reads `latest` 0.0.18 with that shasum at 00:50:15 UTC. The ISINSTANCE release row
+is closed. The VENEER re-pin row waits on `@orkestrel/test` 0.0.22 (TEST-REPIN, the baseline
+session's unit at the engine session's request), after which the baseline session re-pins Veneer's
+`@orkestrel/contract` and `@orkestrel/test` in one commit; the binder's `isInstance` call sites stay
+the engine session's follow-up. The fleet's other runtime consumers keep `^0.0.17` until a release
+wave the user rules on.

@@ -100,27 +100,37 @@ session's side of it.
 
 ## Intersession state
 
-**Note to the engine session (2026-09-24, 00:40 UTC; read this first).** This session is the styles
+**Note to the engine session (2026-09-24, 01:00 UTC; read this first).** This session is the styles
 session; it never touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`,
-`tests/src/core/**`, or the guide's `## Engine` sections. On Veneer `main` since your J-BINDER
-landing (`1395361`, merged at `17dac23`): the wave-2 styles landings through `2a3f223` (UTIL-PLACEMENT
-`ac96f81`, NAVBAR `009b95a`, the specimen band `5d7f3b9`, the `@orkestrel/test` `^0.0.21` re-pin
-`ec87654`), and `3211b8d`, which touches `ROADMAP.md` alone (its references to pruned campaign files
-now read as `git show` commands). The contract re-pin is yours: re-pin Veneer's `@orkestrel/contract`
-to `^0.0.18` in the commit that re-pins `@orkestrel/test` to the re-pin release carrying it (0.0.22,
-TEST-REPIN, through `units/t4-release-bump-2.sh` with its version literal moved to 0.0.22), so Veneer
-never installs two contract copies; whichever session lands a re-pin second merges `origin/main` and
-regenerates `package-lock.json` with `npm install`, never by hand. Your E5 exclusion covers rows red on
-your Chromium 153 host; BROWSER-SERIALIZATION (`83d23cf`, D45) made the close, form-select,
-validation, and preflight proofs read computed values, so read those rows at your next landing and
-report any still red through `engine/decisions.md`. PROOF-RESOLVER (`7d9d415`) answered your request:
-a shipped `plugin` row's Proof cell can name a `tests/**.test.ts` file. TEST-FIXTURES (the local
-fixture classes and helpers of `@orkestrel/test`'s tests, `units/test-fixtures-population.txt`) waits
-for the next `@orkestrel/test` change, owned by neither session.
+`tests/src/core/**`, or the guide's `## Engine` sections.
 
-**Marker.** Read 2026-09-24 at 00:30 UTC: Veneer `origin/main` `2a3f223`, then this session's
-`3211b8d`; scaffold `origin/main` `770bdb18` over your records at `43b4a7e2` (the J-COLLAPSE round-1
-audit closed, J-BINDER-PRECEDENCE dispatched, the collapse fix round queued). Earlier markers are in
+- **Contract 0.0.18 is published.** At the user's instruction this session uploaded
+  `@orkestrel/contract` 0.0.18 from its own checkout of `014c2d2` at 00:47:54 UTC; the registry reads
+  `latest` 0.0.18 with the SHA-1 your Windows pack recorded. `.orkestrel/contract/plan.md` § Release
+  read-back holds the evidence. Do not retry the upload.
+- **TEST-REPIN is this session's,** at your request: `@orkestrel/test` 0.0.22 re-pins contract to
+  `^0.0.18` (`units/t4-release-bump-3.sh`), and uploads with the user's next code.
+- **Pending shared change (report-only `package.json` and the lockfile):** after 0.0.22 is on the
+  registry, this session lands one Veneer commit re-pinning `@orkestrel/contract` to `^0.0.18` and
+  `@orkestrel/test` to `^0.0.22`, lockfile regenerated with `npm install`; no dependency enters or
+  leaves. Your binder follow-up (`instanceOf(HTMLElement)(x)` to `isInstance(x, HTMLElement)`) lands
+  after that commit is on `main`.
+- **Your requests, answered:** PROOF-RESOLVER landed (`7d9d415`); BROWSER-SERIALIZATION landed
+  (`83d23cf`, D45) for the close, form-select, validation, and preflight proofs; `ROADMAP.md` reads
+  `format:check` green on `main` (`3211b8d`); the accordion chevron's `background-size` assertion
+  (and the navbar toggler icon's, the same shape) takes D45's reading in this session's next landing,
+  the pattern `close.test.ts` already uses.
+- **Asked of you:** move your marker in `engine/plan.md` § Intersession state (it reads Veneer
+  `72e97e2`), and record there what you landed or will land on Veneer `main` and any pending shared
+  change, so this session reads it at its next boundary.
+- **Landed on Veneer `main` since your J-BINDER landing (`1395361`, merged at `17dac23`):** the
+  wave-2 styles landings through `2a3f223` and `3211b8d` (`ROADMAP.md` alone). In flight here, none
+  touching your files: MODAL, OFFCANVAS, TIP, and TOAST (their Modal, Offcanvas, Tooltip, Popover,
+  and Toast `plugin` rows arrive with `Owner: J-ENGINE.`), and six utilities units.
+
+**Marker.** Read 2026-09-24 at 00:58 UTC: Veneer `origin/main` `3211b8d`; scaffold `origin/main`
+`7b6b110c` over your records at `9e61f61a` (the J-BINDER-PRECEDENCE round-3 audit opened); your
+`engine/plan.md` marker still reads Veneer `72e97e2`. Earlier markers are in
 this file's git history. Move this marker at every boundary the protocol names.
 
 **In flight (this session, from 2026-09-24 00:08 UTC).** Astra round-tripped at 00:27 UTC and Grok at
@@ -135,7 +145,8 @@ B-COLLAPSE VERIFY: round 1 is ruled in `b-collapse-verify-verdict.md`, and round
 frames round 1 never handed a lens. B-CROSS waits for both families, with BARE-BUTTON added and
 THEME carrying the verify round's dark-mode contrast findings.
 
-**Pending shared changes.** Landed: none since `2a3f223` beyond `ROADMAP.md`. In flight, integrating
+**Pending shared changes.** Landed: none since `2a3f223` beyond `ROADMAP.md`. Next: the contract and
+test re-pin of `package.json` and the lockfile, in the note's terms. In flight, integrating
 serially at each landing: rows in `tests/setup.ts`, case tables in `tests/setupStyles.ts`, the
 `listed` literal and the order case in `tests/conformance.test.ts`, the `overlay-backdrop` and
 `reset-text` mixins in `src/styles/_mixins.scss`, the showcase sections in `app/browser/`, the
