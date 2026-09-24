@@ -1,0 +1,18 @@
+# J-INTEGRATION landing audit — the checker lane's verdict (Sonnet, native; retained verbatim 2026-09-24)
+
+The `m2-modal-reshow-display.json` spec's target line `if (name === 'display') host.style.setProperty('display', 'block')` matches the source at `#reshow` (`Modal.ts` around line 322). The mechanism (`plant` requires exactly one occurrence, refuses otherwise; `restore` copies the backup back) is mechanically sound for the digest-stable claim.
+
+| Claim | Verdict | Evidence |
+|---|---|---|
+| 1 (stopped Modal hide → `#reshow`) | CONFIRMED | `Modal.ts` hide() calls `#reshow(written, backdrop)` with `written` growing `['display']` → `[...,'aria-hidden']` → `[...,'aria-modal']` → full `['display','aria-hidden','aria-modal','role']` at successive failure points (landing diff ~253-299); `#reshow` (~315-330) writes display `'block'`, removes `aria-hidden`, sets `aria-modal='true'`, sets `role='dialog'`, then `backdrop.show()` when `backdrop !== undefined`; no `emitEvent` inside `#reshow`. |
+| 2 (stopped Modal show → `#rehide`) | CONFIRMED | `Modal.ts show()` (worktree 260-299) writes the backdrop insertion (261-267), `display:'block'` (272), removes `aria-hidden` (273), sets `aria-modal`/`role` (274-275), all before the `shown` token add (280); every `#rehide()` call site (280, 283, 295, 299) fires after that token write, so `#rehide` (sets `display:none`, `aria-hidden:'true'`, removes `aria-modal`/`role`, hides and destroys the backdrop) reverts exactly what show wrote by every door it is called from. |
+| 3 (Offcanvas steps) | CONFIRMED | `Offcanvas.ts` 401-419: `#reshow` removes `hiding`, sets `aria-modal`/`role`, calls `backdrop.show()` (same live object, press listener persists); `#rehide(showing)` conditionally removes `showing`, removes `aria-modal`/`role`, then `backdrop.hide()`+`destroy()` and aborts `#listening`. Round-1 `#halt` absent. |
+| 4 (lifetime read) | CONFIRMED | `#revert(write)` in both engines gates every write on `!this.#controller.signal.aborted`; the re-run shows `m2-modal-lifetime` and `m2-offcanvas-lifetime` each failing "abandons a show in flight on destruction…" and the lifetime cases, digest unchanged. |
+| 5 (backdrop lifetime across a stopped hide) | CONFIRMED | Both engines call `backdrop.element.remove()` as an `#apply` step with a door read after it, and clear `this.#backdrop` / call `backdrop.destroy()` only after every later step succeeds, so `#reshow` can call `backdrop.show()` on the live object at any earlier door. |
+| 6 (the proofs / mutation exits) | CONFIRMED | Every `m2-*` mutation in the re-run reports `run exit: 1` with identical before/after digests; the spot-checked spec's target line matches the source exactly; `mutate.cjs` requires one occurrence and round-trips through a backup file. |
+| 7 (E13 resources) | CONFIRMED | Modal H1/H2 readings carry `open: document.body.classList.contains('modal-open')`; Offcanvas H1/H2 readings carry `locked: document.body.style.overflow === 'hidden'`; both are asserted in each row's expected table. |
+| 9 (scope and merge) | CONFIRMED | The landing diff's files match the brief's owned scope; the `types.ts` hunk only adds an `@remarks` block to `BackdropInterface.show`; `oxfmt --check` and `oxlint --deny-warnings` exit 0; no mock, spy, `vi.fn`, or fake timer; only benign `as const` and prose "as"; no non-null assertion or suppression. |
+
+VERDICT: PASS
+
+Orchestrator's note (not part of the lane's verdict): claim 8 (the round-1 items hold) carries no row in the lane's table; it is the objective lane's to rule, and the Orchestrator's gate run over the branch (`j-integration-gates-2.log.txt`, 809 of 809) keeps every round-1 case green.
