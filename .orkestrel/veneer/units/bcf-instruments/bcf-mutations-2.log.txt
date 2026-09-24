@@ -1,0 +1,86 @@
+== helper-menu-spilled (2026-09-24T11:43:59+00:00)
+site: tests/setupBrowser.test.ts: replaced one 'show" style="position: absolute; display: block; top: 10px;' with 'show" style="position: absolute; display: block; top: 100px;'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup:browser
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 74 passed (75)
+failing: FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:178:2 > menu containment > reads each shown menu against the specimen holding it, at the width it visits, and restores the viewport
+whole output: tmp/units/bcf-mutation-2-helper-menu-spilled.log.txt
+
+== helper-empty-population (2026-09-24T11:44:23+00:00)
+site: tests/setupBrowser.test.ts: replaced every 'class="dropdown-menu show"' with 'class="dropdown-menu"'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup:browser
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 74 passed (75)
+failing: FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:178:2 > menu containment > reads each shown menu against the specimen holding it, at the width it visits, and restores the viewport
+whole output: tmp/units/bcf-mutation-2-helper-empty-population.log.txt
+
+== accordion-ordinary-added (2026-09-24T11:44:46+00:00)
+site: app/browser/constants.ts: replaced one "\tObject.freeze({\n\t\tname: 'Accordion flush'," with '\tObject.freeze({\n\t\tname: \'Accordion spare\',\n\t\tmarkup:\n\t\t\t\'<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><b'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  4 failed | 22 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:156:2 > AccordionSection > rounds the ordinary group at its ends and squares the flush group throughout
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:206:2 > AccordionSection > hands the outer bottom corners to the panel of an expanded last item and squares its button
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:21:2 > AccordionSection > renders an ordinary and a flush group and every resting state class in markup through the shared section contract
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/AccordionSection.test.ts:98:2 > AccordionSection > renders each item in the state its button announces, with the panel it names shown or hidden to match
+whole output: tmp/units/bcf-mutation-2-accordion-ordinary-added.log.txt
+
+== dropdown-infix-added (2026-09-24T11:45:03+00:00)
+site: tests/app/browser/sections/DropdownSection.test.ts: replaced one '...BREAKPOINT_INFIXES.flatMap((step) => [' with "...[...BREAKPOINT_INFIXES, 'xxxl'].flatMap((step) => ["
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  1 failed | 25 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:56:2 > DropdownSection > sets every state in markup and announces each toggle as its menu stands
+whole output: tmp/units/bcf-mutation-2-dropdown-infix-added.log.txt
+
+== dropdown-ramp-row-added (2026-09-24T11:45:33+00:00)
+site: app/browser/constants.ts: replaced one "\t...['sm', 'md', 'lg', 'xl', 'xxl'].map((step) =>\n\t\tObject.freeze({\n\t\t\tname: `Dropdown align ${step}`," with '\tObject.freeze({\n\t\tname: \'Dropdown align huge\',\n\t\tmarkup:\n\t\t\t\'<div class="dropdown"><button type="button" class="btn btn-secondary dropdown-'
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
+exit: 1
+summary: Test Files  1 failed | 4 passed (5)
+summary: Tests  5 failed | 21 passed (26)
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:177:2 > DropdownSection > fits each toggle inside the column that seats it at a 1280-pixel viewport
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:177:2 > DropdownSection > fits each toggle inside the column that seats it at a 390-pixel viewport
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:17:2 > DropdownSection > renders every dropdown specimen through the shared section contract
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:225:2 > DropdownSection > keeps each shown menu inside the specimen that holds it at a 1280-pixel viewport
+failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/DropdownSection.test.ts:225:2 > DropdownSection > keeps each shown menu inside the specimen that holds it at a 390-pixel viewport
+whole output: tmp/units/bcf-mutation-2-dropdown-ramp-row-added.log.txt
+
+== underline-unmutated (2026-09-24T11:46:01+00:00)
+site: none (the unmutated tree)
+command: CAPTURE=1 npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-390* -t 'drives an underline link to hover and to focus'
+exit: 0
+summary: Test Files  1 passed (1)
+summary: Tests  1 passed | 45 skipped (46)
+whole output: tmp/units/bcf-mutation-2-underline-unmutated.log.txt
+
+== underline-focus-on-specimen (2026-09-24T11:46:23+00:00)
+site: tests/app/browser/integration.test.ts: replaced one "await FRAMES.place('nav-underline-focus', link, shot)" with "await FRAMES.place('nav-underline-focus', link, specimen)"
+command: CAPTURE=1 npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-390* -t 'drives an underline link to hover and to focus'
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 45 skipped (46)
+failing: FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1930:2 > journey > drives an underline link to hover and to focus on the lifted specimen, and photographs each state
+whole output: tmp/units/bcf-mutation-2-underline-focus-on-specimen.log.txt
+
+== v6-underline-unregistered-capture (2026-09-24T11:46:42+00:00)
+site: tests/setup.ts: replaced one "\tObject.freeze({ scenario: 'nav-underline-hover', subject: 'Nav underline' }),\n\tObject.freeze({ scenario: 'nav-underline-focus', subject: 'N" with ''
+command: CAPTURE=1 npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-390* -t 'drives an underline link to hover and to focus'
+exit: 1
+summary: Test Files  1 failed (1)
+summary: Tests  1 failed | 45 skipped (46)
+failing: FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:1930:2 > journey > drives an underline link to hover and to focus on the lifted specimen, and photographs each state
+whole output: tmp/units/bcf-mutation-2-v6-underline-unregistered-capture.log.txt
+
+== underline-unmutated (2026-09-24T11:47:25+00:00)
+site: none (the unmutated tree)
+command: CAPTURE=1 npx vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot --project journey:dark-390* -t 'drives an underline link to hover and to focus'
+exit: 0
+summary: Test Files  1 passed (1)
+summary: Tests  1 passed | 45 skipped (46)
+whole output: tmp/units/bcf-mutation-2-underline-unmutated.log.txt
+
