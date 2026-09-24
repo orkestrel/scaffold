@@ -1,0 +1,7 @@
+{"value":"0","read":0,"type":"number","accepted":false,"truthy":false}
+{"value":"1","read":1,"type":"number","accepted":false,"truthy":true}
+{"value":"01","read":"01","type":"string","accepted":true,"truthy":true}
+{"value":"00","read":"00","type":"string","accepted":true,"truthy":true}
+{"value":"0x10","read":"0x10","type":"string","accepted":true,"truthy":true}
+{"value":"1e3","read":1000,"type":"number","accepted":false,"truthy":true}
+{"value":"1.0","read":1,"type":"number","accepted":false,"truthy":true}

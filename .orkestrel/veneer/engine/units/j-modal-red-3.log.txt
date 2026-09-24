@@ -1,0 +1,75 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/modal
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+····································xx······x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1249:2 > Modal > releases the scroll lock whose compensation write a reaction answers by destroying the modal, writing nothing more
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Modal.test.ts:1289:63
+    1287|   })
+    1288|   expect(await modal.show()).toBe(false)
+    1289|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    1290|   expect(body.getAttribute('style')).toBe(styled)
+    1291|   expect(reactor.style.paddingRight).toBe('')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1304:2 > Modal > releases the scroll lock it constructed when a reaction inside the construction takes the show over
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Modal.test.ts:1332:29
+    1330|    host.classList.add('show')
+    1331|   })
+    1332|   expect(await modal.show()).toBe(false)
+       |                             ^
+    1333|   expect(body.getAttribute('style')).toBe(styled)
+    1334|   expect(reactor.style.paddingRight).toBe('')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollLock.test.ts:120:2 > ScrollLock > takes no reference under an aborted signal and releases its reference when its signal aborts
+AssertionError: expected 'overflow: hidden; padding-right: 0px;' to be null // Object.is equality
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+"overflow: hidden; padding-right: 0px;"
+
+ ❯ tests/src/browser/ScrollLock.test.ts:125:37
+    123|   const aborted = new ScrollLock({ signal: AbortSignal.abort() })
+    124|   onTestFinished(() => aborted.destroy())
+    125|   expect(body.getAttribute('style')).toBe(styled)
+       |                                     ^
+    126|   const first = new AbortController()
+    127|   const second = new AbortController()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 42 passed (45)
+   Start at  02:46:19
+   Duration  11.02s (transform 0ms, setup 312ms, import 32ms, tests 9.52s, environment 0ms)
+
+EXIT 1

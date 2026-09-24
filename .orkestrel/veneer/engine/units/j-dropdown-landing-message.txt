@@ -1,0 +1,26 @@
+Land J-DROPDOWN: the Dropdown and Placement engines and the delegate's dropdown click and key routes
+
+The Dropdown engine over the landed binder: construction resolves the toggle's menu, the dismissal
+and placement options, and the vocabulary before the claim, and writes nothing; showing dispatches
+the show event, restores a placement a taken-over show left, constructs a Placement over the menu
+(anchoring it to the toggle or its reference through the native popover and anchor positioning,
+refusing the show when a listener cancels the promotion), focuses the toggle, writes aria-expanded
+and the shown tokens behind doors that read the lifetime, the call identity, and the toggle's
+disabled state, and dispatches shown; hiding dispatches hide, destroys the placement (its
+restoration completing before any destroy returns, whatever call is in flight), removes the tokens,
+and dispatches hidden; dismissal listens for outside clicks, Escape, and Tab per Bootstrap's
+autoClose rule; destruction releases the claim, aborts (the placement holds the signal), and
+restores the toggle. The Placement engine: static or promoted, a preferred position with fallbacks
+and an offset, updated on scroll end and resize, restoring what it wrote on destruction or refusal.
+The delegate routes toggle clicks and the ArrowUp, ArrowDown, and Escape keys from a toggle or a
+menu, moving focus among the enabled visible entries while the delegate is still live. The parsers
+(parseOffset, parseStatic, parseDismiss), the guards, the frozen tables with DropdownVocabulary and
+DropdownDefaults, the barrel exports, and the guide's Dropdown subsection with its plugin row
+shipped. Three rounds: the round-1 audit by the analyst on Astra, the reviewer on Opus, and the
+checker (units/j-dropdown-audit-verdict.md); round 2 by the analyst on Astra and the checker
+(units/j-dropdown-audit-2-verdict.md); round 3 by the analyst on Astra and the checker
+(units/j-dropdown-audit-3-verdict.md); the landing round merges main and folds the shared delegate
+members. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F

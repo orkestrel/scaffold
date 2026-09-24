@@ -1,0 +1,21 @@
+Land J-SCROLLSPY: the ScrollSpy engine and the delegate's construction scan
+
+The ScrollSpy engine over the landed binder: construction resolves the target, the smooth scroll,
+and the intersection group as its own layer, validates the margin and the threshold before the claim,
+keeps a frozen copy of the ratios, and refreshes; a refresh reads the links whose fragments name
+visible sections inside the host, replaces the observer (its root the host unless overflow-y is
+visible), and forgets a selected link it no longer observes; each delivery follows Bootstrap's
+direction rule behind doors that read the lifetime, the observer identity, the selected link's token
+from its write on, and each removed token absent, stopping the delivery on any takeover; smooth
+scroll reads the nearest href ancestor and scrolls the root or the document to the section; the link
+property reads the selected link while it carries its token; destruction restores each active token
+the scrollspy wrote or removed. The delegate scans its root at construction for scrollspy hosts,
+destroying itself and rethrowing when one refuses. The guard, the two parsers (parseRootMargin,
+parseThreshold), the frozen tables with their nested defaults, the barrel export, and the guide's
+ScrollSpy subsection with its plugin row shipped. Two rounds: the round-1 audit by the analyst on
+Astra, the reviewer on Opus, and the checker (units/j-scrollspy-audit-verdict.md); round 2 by the
+analyst on Astra and the checker (units/j-scrollspy-audit-2-verdict.md); the landing round merges
+main and folds the shared delegate members. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F

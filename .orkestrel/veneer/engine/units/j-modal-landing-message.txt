@@ -1,0 +1,28 @@
+Land J-MODAL: the Modal, Backdrop, ScrollLock, and Isolation engines and the delegate's modal routes
+
+The Modal engine over the landed binder: construction resolves the backdrop, dismissal, and focus
+options and the vocabulary before the claim, claims the host, and writes nothing; showing takes a
+reference to the document's scroll lock (constructed under the modal's lifetime, released when the
+show's door fails), writes the body's open token, shows the backdrop, displays the host, writes its
+attributes and shown token behind doors that read the lifetime and the in-flight flag, waits for the
+dialog's transition, constructs the isolation under the modal's lifetime, moves focus, and dispatches
+shown; hiding releases the isolation, removes the tokens, waits for the fades, hides the backdrop,
+releases the open token and the lock, and dispatches hidden; the bounce dispatches prevent and
+writes the static token only while the modal is idle; destruction aborts (which releases the
+isolation and the lock through their signals), releases the claim, destroys the backdrop, and
+restores the host and the body. The Backdrop engine fades one shared backdrop per document; the
+ScrollLock engine holds one reference-counted lock per document over the first holder's selectors,
+reading its lifetime after each compensating write; the Isolation engine claims every element of
+the host's chain as not inert and every element beside it as inert, sharing claims by newest owner.
+The delegate routes toggle and dismiss triggers, reads its lifetime before it prevents or marks,
+skips a modal another delegate drove for the click, hides the open modal first, arms the focus
+return before the show, and refuses a same-host conflict (E12). The guard, the parsers with
+parseBackdrop, the frozen tables, the barrel exports, and the guide's Modal subsection with its
+plugin row shipped. Three rounds: the round-1 audit by the analyst on Astra, the reviewer on Opus,
+and the checker (units/j-modal-audit-verdict.md); rounds 2 and 3 by the analyst on Astra and the
+checker (units/j-modal-audit-2-verdict.md, units/j-modal-audit-3-verdict.md); the landing round
+merges main, folds the shared delegate members, and carries the overflow-write lifetime read, the
+normalization paragraph, and the targeted rows under an objective lane. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F

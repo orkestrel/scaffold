@@ -1,0 +1,72 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Toast.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/toast
+
+························xx·····x·····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:869:2 > Toast > runs one sequence when a listener to its show event shows it again without a transition, the inner call resolving true and the outer false
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Toast.test.ts:889:29
+    887|   })
+    888|   onTestFinished(() => toast.destroy())
+    889|   expect(await toast.show()).toBe(false)
+       |                             ^
+    890|   expect(inner.count).toBe(1)
+    891|   expect(await inner.calls[0]?.[0]).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:896:2 > Toast > resolves false for a hide whose event listener shows the toast, and the show completes once
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Toast.test.ts:915:29
+    913|   })
+    914|   onTestFinished(() => toast.destroy())
+    915|   expect(await toast.hide()).toBe(false)
+       |                             ^
+    916|   expect(await nested.calls[0]?.[0]).toBe(true)
+    917|   expect(events.calls).toEqual([['hide.vn.toast'], ['show.vn.toast'], …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1066:2 > Toast > stops a show of a shown toast whose fade write a reaction answers by removing the shown token, writing nothing more
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Toast.test.ts:1094:29
+    1092|    observer.observe(root, { attributes: true, subtree: true })
+    1093|   })
+    1094|   expect(await toast.show()).toBe(false)
+       |                             ^
+    1095|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    1096|   expect(events.count).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 34 passed (37)
+   Start at  01:49:38
+   Duration  6.05s (transform 0ms, setup 215ms, import 218ms, tests 4.49s, environment 0ms)
+

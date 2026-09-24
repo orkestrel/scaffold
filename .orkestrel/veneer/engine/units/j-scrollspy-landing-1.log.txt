@@ -1,0 +1,58 @@
+# J-SCROLLSPY landing, step 1: the patches, the landing commit, and the merge of main (2026-09-24)
+no patches directory; the report's patches are applied by hand before this step or none exist
+ M guides/veneer.md
+ M src/browser/Delegate.ts
+ A src/browser/ScrollSpy.ts
+ M src/browser/constants.ts
+ M src/browser/index.ts
+ M src/browser/parsers.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Delegate.test.ts
+ A tests/src/browser/ScrollSpy.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/parsers.test.ts
+ M tests/src/browser/validators.test.ts
+[unit/scrollspy 6d8bd13] Land J-SCROLLSPY: the ScrollSpy engine and the delegate's construction scan
+ 13 files changed, 2463 insertions(+), 238 deletions(-)
+ create mode 100644 src/browser/ScrollSpy.ts
+ create mode 100644 tests/src/browser/ScrollSpy.test.ts
+landing commit exit=0
+6d8bd13 Land J-SCROLLSPY: the ScrollSpy engine and the delegate's construction scan
+e24e2c3 Select the rows whose Proof cell is a dash in the setup proof, now that a plugin row names its proof file
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+f377579 Merge branch 'main' into unit/tab
+Auto-merging guides/veneer.md
+CONFLICT (content): Merge conflict in guides/veneer.md
+Auto-merging src/browser/Delegate.ts
+CONFLICT (content): Merge conflict in src/browser/Delegate.ts
+Auto-merging src/browser/constants.ts
+CONFLICT (content): Merge conflict in src/browser/constants.ts
+Auto-merging src/browser/index.ts
+CONFLICT (content): Merge conflict in src/browser/index.ts
+Auto-merging src/browser/parsers.ts
+CONFLICT (content): Merge conflict in src/browser/parsers.ts
+Auto-merging src/browser/types.ts
+Auto-merging src/browser/validators.ts
+CONFLICT (content): Merge conflict in src/browser/validators.ts
+Auto-merging tests/src/browser/Delegate.test.ts
+CONFLICT (content): Merge conflict in tests/src/browser/Delegate.test.ts
+Auto-merging tests/src/browser/index.test.ts
+CONFLICT (content): Merge conflict in tests/src/browser/index.test.ts
+Auto-merging tests/src/browser/validators.test.ts
+CONFLICT (content): Merge conflict in tests/src/browser/validators.test.ts
+Automatic merge failed; fix conflicts and then commit the result.
+merge main into unit/scrollspy exit=1
+conflicts: guides/veneer.md
+src/browser/Delegate.ts
+src/browser/constants.ts
+src/browser/index.ts
+src/browser/parsers.ts
+src/browser/validators.ts
+tests/src/browser/Delegate.test.ts
+tests/src/browser/index.test.ts
+tests/src/browser/validators.test.ts

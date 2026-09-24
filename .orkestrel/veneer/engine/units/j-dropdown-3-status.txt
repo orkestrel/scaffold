@@ -1,0 +1,17 @@
+ M guides/veneer.md
+ M src/browser/Delegate.ts
+ A src/browser/Dropdown.ts
+ A src/browser/Placement.ts
+ M src/browser/constants.ts
+ M src/browser/helpers.ts
+ M src/browser/index.ts
+ M src/browser/parsers.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Delegate.test.ts
+ A tests/src/browser/Dropdown.test.ts
+ A tests/src/browser/Placement.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/parsers.test.ts
+ M tests/src/browser/validators.test.ts
