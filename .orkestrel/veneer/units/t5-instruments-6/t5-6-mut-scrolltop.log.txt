@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+··················································································································································································································································x······································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3473:2 > captureFrame > takes no mouseover or scroll event for an element inside the runner window
+AssertionError: expected 2 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 2[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3493:25
+    3491|   }
+    3492|   expect(entered.count).toBe(0)
+    3493|   expect(scrolled.count).toBe(0)
+       |                         ^
+    3494|  })
+    3495|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 374 passed | 2 expected fail (377)
+   Start at  19:52:05
+   Duration  41.64s (transform 0ms, setup 222ms, import 287ms, tests 32.91s, environment 0ms)
+

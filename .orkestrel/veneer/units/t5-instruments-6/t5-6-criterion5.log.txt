@@ -1,0 +1,8 @@
+$ grep -n "puts content under" src/browser/helpers.ts guides/test.md
+exit 1
+$ grep -n -E "\.held|A held hover|held pointer paints|hoverAccessible\('button', 'Held'\)" tests/src/browser/helpers.test.ts guides/test.md
+exit 1
+$ grep -n "holdAccessible(.Held.)" tests/src/browser/helpers.test.ts
+1003:		await holdAccessible('Held')
+1005:		await expect(holdAccessible('Held')).rejects.toThrow(`Pointer is already held at ${held}`)
+1011:		await holdAccessible('Held')

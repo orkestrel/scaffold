@@ -1,0 +1,10 @@
+{
+ "note": "The offset never written.",
+ "edits": [
+  {
+   "from": "\t\t\tconst offset = frame !== null && (move.top !== 0 || move.left !== 0)",
+   "to": "\t\t\tconst offset = frame !== null && move.top === 12345"
+  }
+ ],
+ "file": "src/browser/helpers.ts"
+}

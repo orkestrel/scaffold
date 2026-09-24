@@ -1,0 +1,10 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "The round-5 computeOffset: every edge rounded up and the move not bounded by the window start.",
+ "edits": [
+  {
+   "from": "export function computeOffset(box: DOMRectReadOnly, width: number, height: number): FrameOffset {\n\tconst fits = box.width <= width && box.height <= height\n\treturn {\n\t\ttop: fits && box.bottom > height ? Math.max(height - Math.ceil(box.bottom), -box.top) : 0,\n\t\tleft: fits && box.right > width ? Math.max(width - Math.ceil(box.right), -box.left) : 0,\n\t}\n}\n",
+   "to": "export function computeOffset(box: DOMRectReadOnly, width: number, height: number): FrameOffset {\n\tconst fits = box.width <= width && box.height <= height\n\treturn {\n\t\ttop: fits ? Math.min(0, height - Math.ceil(box.bottom)) : 0,\n\t\tleft: fits ? Math.min(0, width - Math.ceil(box.right)) : 0,\n\t}\n}\n"
+  }
+ ]
+}

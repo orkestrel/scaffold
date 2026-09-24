@@ -1,0 +1,10 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "The round-4 computeOffset, nudge included, reinstated.",
+ "edits": [
+  {
+   "from": "export function computeOffset(box: DOMRectReadOnly, width: number, height: number): FrameOffset {\n\tconst fits = box.width <= width && box.height <= height\n\treturn {\n\t\ttop: fits && box.bottom > height ? Math.max(height - Math.ceil(box.bottom), -box.top) : 0,\n\t\tleft: fits && box.right > width ? Math.max(width - Math.ceil(box.right), -box.left) : 0,\n\t}\n}\n",
+   "to": "export function computeOffset(box: DOMRectReadOnly, width: number, height: number): FrameOffset {\n\tconst fits = box.width <= width && box.height <= height\n\tlet top = fits ? Math.min(0, height - Math.ceil(box.bottom)) : 0\n\tlet left = fits ? Math.min(0, width - Math.ceil(box.right)) : 0\n\tconst upper = box.top + top\n\tconst start = box.left + left\n\tif (upper <= 0 && start <= 0 && box.bottom + top > 0 && box.right + left > 0) {\n\t\tconst rows = fits ? height - box.bottom - top : Number.POSITIVE_INFINITY\n\t\tconst columns = fits ? width - box.right - left : Number.POSITIVE_INFINITY\n\t\tif (rows > -upper) top += Math.min(1 - upper, rows)\n\t\telse if (columns > -start) left += Math.min(1 - start, columns)\n\t}\n\treturn { top, left }\n}\n"
+  }
+ ]
+}
