@@ -1,0 +1,30 @@
+{
+ "reached": true,
+ "visible": true,
+ "padding": "16px",
+ "host": "none",
+ "thumb": "none",
+ "thumbWidth": "1248px",
+ "value": "50",
+ "box": {
+  "x": 16,
+  "y": 16,
+  "width": 1248,
+  "height": 24,
+  "top": 16,
+  "right": 1264,
+  "bottom": 40,
+  "left": 16
+ },
+ "specimenBox": {
+  "x": 16,
+  "y": 16,
+  "width": 1248,
+  "height": 30,
+  "top": 16,
+  "right": 1264,
+  "bottom": 46,
+  "left": 16
+ },
+ "html": "<div data-specimen=\"Range\"><input class=\"form-range\" type=\"range\" aria-label=\"Range value\" min=\"0\" max=\"100\" value=\"50\"></div>"
+}

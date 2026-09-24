@@ -1,0 +1,106 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-ff
+
+····························stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-WwNv1S'
+    at finishWithoutResolve (/home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-WwNv1S'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-WwNv1S or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-WwNv1S/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+···················································································xxxxx····························································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > reads a ring reach from the largest outer shadow layer, whatever color syntax precedes it
+Error: computeRingReach is declared and not built: rgba(13, 110, 253, 0.25) 0px 0px 0px 3px
+ ❯ computeRingReach tests/setup.ts:2534:8
+    2532|  */
+    2533| export function computeRingReach(read: (property: string) => string): …
+    2534|  throw new Error(`computeRingReach is declared and not built: ${read('…
+       |        ^
+    2535| }
+    2536|
+ ❯ tests/setup.test.ts:218:4
+ ❯ tests/setup.test.ts:217:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > reads a ring reach from an outline as its width plus its offset, unless its style is none
+Error: computeRingReach is declared and not built: none
+ ❯ computeRingReach tests/setup.ts:2534:8
+    2532|  */
+    2533| export function computeRingReach(read: (property: string) => string): …
+    2534|  throw new Error(`computeRingReach is declared and not built: ${read('…
+       |        ^
+    2535| }
+    2536|
+ ❯ tests/setup.test.ts:232:4
+ ❯ tests/setup.test.ts:231:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > reads the larger of a ring shadow and an outline worn together
+Error: computeRingReach is declared and not built: rgb(0, 0, 0) 0px 0px 0px 3px
+ ❯ computeRingReach tests/setup.ts:2534:8
+    2532|  */
+    2533| export function computeRingReach(read: (property: string) => string): …
+    2534|  throw new Error(`computeRingReach is declared and not built: ${read('…
+       |        ^
+    2535| }
+    2536|
+ ❯ tests/setup.test.ts:251:4
+ ❯ tests/setup.test.ts:250:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > lists no edge for a box the frame holds whole, however close it sits to an edge
+Error: computeCroppedEdges is declared and not built: 91
+ ❯ computeCroppedEdges tests/setup.ts:2558:8
+    2556|  frame: { readonly width: number; readonly height: number },
+    2557| ): readonly FrameEdge[] {
+    2558|  throw new Error(
+       |        ^
+    2559|   `computeCroppedEdges is declared and not built: ${String(box.x + rea…
+    2560|  )
+ ❯ tests/setup.test.ts:266:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > lists each edge a grown box crosses, in top, right, bottom, left order
+Error: computeCroppedEdges is declared and not built: 77
+ ❯ computeCroppedEdges tests/setup.ts:2558:8
+    2556|  frame: { readonly width: number; readonly height: number },
+    2557| ): readonly FrameEdge[] {
+    2558|  throw new Error(
+       |        ^
+    2559|   `computeCroppedEdges is declared and not built: ${String(box.x + rea…
+    2560|  )
+ ❯ tests/setup.test.ts:273:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  5 failed | 299 passed (304)
+   Start at  12:45:57
+   Duration  17.76s (transform 3.84s, setup 443ms, import 7.43s, tests 26.07s, environment 0ms)
+

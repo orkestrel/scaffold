@@ -1,0 +1,59 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-ff
+
+································stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-1vZYai'
+    at finishWithoutResolve (/home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ff/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ff/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-1vZYai'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-1vZYai or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-1vZYai/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+·················································································x······························································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > lists each edge a grown box crosses, in top, right, bottom, left order
+AssertionError: expected [] to strictly equal [ 'left' ]
+
+- Expected
++ Received
+
+- [
+-   "left",
+- ]
++ []
+
+ ❯ tests/setup.test.ts:273:81
+    271|  it('lists each edge a grown box crosses, in top, right, bottom, left …
+    272|   const frame = { width: 72, height: 52 }
+    273|   expect(computeCroppedEdges({ x: 2, y: 16, width: 40, height: 20 }, 3…
+       |                                                                                 ^
+    274|    'left',
+    275|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 303 passed (304)
+   Start at  13:01:48
+   Duration  23.18s (transform 4.47s, setup 274ms, import 12.14s, tests 35.30s, environment 0ms)
+

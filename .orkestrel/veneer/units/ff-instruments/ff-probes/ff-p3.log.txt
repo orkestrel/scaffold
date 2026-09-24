@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/veneer-ff
+
+Port 63315 is in use, trying another one...
+
+ Test Files  2 passed (2)
+      Tests  4 passed (4)
+   Start at  12:36:57
+   Duration  17.06s (transform 0ms, setup 739ms, import 50ms, tests 8.44s, environment 0ms)
+
