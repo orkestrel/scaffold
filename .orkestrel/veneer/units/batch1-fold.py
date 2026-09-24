@@ -39,6 +39,8 @@ rows = [
      "CLOSE-OUT states the mapping once in a function the three sites call"),
     ("The wave-3 regions, their `### … utilities` guide sections, and their § Tests links sit in landing order, where the family record's showcase ruling asks for barrel order and the landed Display, Flex, Position, and Sizing regions follow neither (the first wave-2/3 landing batch)",
      "CLOSE-OUT states one order rule for the utility regions, their guide sections, and their links, and applies it once every B-UTILITIES unit has landed"),
+    ("The `TYPE_SPECIMENS` remark says the line-height paragraphs sit in columns narrow enough to wrap at every width; the `line-heights` frames show every paragraph wrapping at the 390 and 1280 journey widths, and the fluid container sets no cap that proves the wider widths (the UTIL-FONT round-1 audit, read at the first wave-2/3 landing batch)",
+     "CLOSE-OUT narrows the remark to the 390 and 1280 journey widths the frames prove"),
     ("A mechanical three-way merge of `guides/veneer.md` duplicates a paragraph's sentences or detaches a table row when two units edit the same paragraph (the first wave-2/3 landing batch: the § Showcase grouping sentence, the viewport-frame paragraph, the Tailwind paragraph, the § Tests link list, and the deferral table's closing row, each repaired at the landing)",
      "Closed at the landing: each paragraph rewritten to carry every unit's clause, and the landing's `land-sort.py` check scans for detached table rows before each later landing"),
 ]
