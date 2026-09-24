@@ -1,0 +1,46 @@
+# J-BINDER-PRECEDENCE landing gates — the verifier's Gate Report (returned 2026-09-23 by `verifier` on Sonnet, native subagent, 17 tool uses, 189 s; retained verbatim from the subagent's return text; the Orchestrator's ruling follows)
+
+## Gate Report
+
+**Commit:** `git -C C:/Users/mikes/WebstormProjects/veneer log --oneline -1` → `468a118 Land J-BINDER-PRECEDENCE: the first-saved restoration precedence and the binder follow-ups the collapse owes` (matches the named landing).
+
+**Browser build:** Playwright's managed Chromium 153.0.8010.12 (browser-project output shows the version-tagged chunk load; consistent with the standing-row file's recorded build).
+
+| Gate | Command | Result |
+|---|---|---|
+| 1 | `npm run format:check` | PASS (exit 0) |
+| 2 | `npm run lint:check` | PASS (exit 0) |
+| 3 | `npm run check` | PASS (exit 0) |
+| 4 | `npm run build` | PASS (exit 0) |
+| 5 | `npm test` | FAIL (exit 1) |
+| 6 | `npm run test:service` | FAIL (exit 1) |
+
+### Gate 5 — `npm test` failure excerpt
+
+Two failing tests, `Test Files 2 failed | 90 passed (92)`, `Tests 2 failed | 1057 passed (1059)`:
+
+1. `tests/src/styles/components/accordion.test.ts:110` — `accordion classes > lays each button out as a full-width row with its chevron at the end, and zeroes the header margin`
+   `AssertionError: expected '20px auto' to be '20px'` — matches the standing row in `host-chromium-153-reading.md` § New standing row exactly.
+
+2. `tests/src/styles/components/navbar.test.ts:63` — `navbar classes > lays the bar out as a wrapping row, writes no rule for the light class, and every shipped selector reaches the components layer`
+   `AssertionError: expected '100% auto' to be '100%'` — same cause (Chromium 153's one-value `background-size` serialized as `<length> auto`), but this file and title are **not** listed in `host-chromium-153-reading.md`'s tables. Report this as a new red row on the same standing cause, not covered by the retained reading.
+
+Suspected owning files: `src/styles/components/accordion.ts` (or its Tailwind source) and `src/styles/components/navbar.ts` — both are baseline-owned style proofs per D43, not this landing's diff.
+
+### Gate 6 — `npm run test:service` failure excerpt
+
+`tests/service/tailwind/preflight.test.ts:156` — `the preflight pairing > keeps every property the elements layer declares, and records every property the profile moves`
+`AssertionError: expected [ …(195) ] to deeply equal [ …(199) ]` — diff shows `select | height | 18px` (expected) vs `21px` (received), and the four `table | border-*-color` rows present in the expected set but absent in the received set. This matches the standing preflight row in `host-chromium-153-reading.md` exactly (line 15 of that file's table).
+
+### Overall verdict
+
+Not GREEN. Gates 1–4 passed. Gates 5 and 6 failed: gate 6's failure and one of gate 5's two failures (`accordion.test.ts`) match the retained standing reading exactly. Gate 5's second failure (`navbar.test.ts:63`) is the same underlying cause but is a row the retained reading file does not yet carry — first place to check is whether `host-chromium-153-reading.md` needs a new row for `navbar.test.ts`, or whether this landing's diff touched navbar styling (it should not have, per the binder/precedence scope).
+
+### Anomalies
+
+- `tests/src/browser/HostSnapshot.test.ts` (around lines 308–345 of the `test:src` sub-run) prints an unhandled `SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.` console diagnostic during "withdraws an overlapping earliest recording when its restoration throws inside a reaction" — this is the by-design reported diagnostic the dispatch names; `test:src` (10 files, 161 tests) passed with exit 0, so this is not a failure.
+- `git status --porcelain` at `C:/Users/mikes/WebstormProjects/veneer` reports no output — no dirty tracked file to report.
+
+---
+
+The Orchestrator's ruling (2026-09-23): the chain is green except the standing host rows. The preflight row and the accordion row are the rows `host-chromium-153-reading.md` carries; the navbar row (`tests/src/styles/components/navbar.test.ts:63`, `expected '100% auto' to be '100%'`) is the same one-value `background-size` serialization on a file the baseline landed in its wave 2 (`3211b8d`, after the accordion row was recorded), and the landing's diff against `3211b8d` (`j-binder-precedence-landing.log.txt`: `src/browser/Button.ts`, `HostSnapshot.ts`, `helpers.ts`, `types.ts`, `tests/src/browser/HostSnapshot.test.ts`, `helpers.test.ts`, `index.test.ts`, `guides/veneer.md`) touches no style source or style proof, so it does not introduce it. The navbar row is recorded as a standing row under E5 in `host-chromium-153-reading.md` § Second standing row, and veneer `main` was pushed at `468a118` (`3211b8d..468a118 main -> main`).

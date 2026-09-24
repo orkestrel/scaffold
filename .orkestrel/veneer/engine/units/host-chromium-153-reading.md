@@ -38,3 +38,12 @@ The verifier's chain on Veneer `main` `f538d48` (this session's landing over the
 
 The cause is the one this file records for the struck `close.test.ts:35` row, the one-value `background-size` serialization, which D45 ruled build-independent for the close, form-select, and validation proofs; the accordion proof was written after that ruling in the same string form. The row is standing under E5 until the baseline applies D45's reading to it (the request is in `plan.md` § Requests to the baseline session), and this session's landing, whose diff against `72e97e2` touches `src/browser/types.ts` and `guides/veneer.md` alone, does not introduce it. The chain's `format:check` red on `ROADMAP.md` at the same reading is the baseline's file at its own tip and is recorded in the same request, not in this table.
 
+## Second standing row (2026-09-23, the J-BINDER-PRECEDENCE landing)
+
+The verifier's chain on Veneer `main` `468a118` (this session's landing over the baseline's wave-2 tip `3211b8d`; `j-binder-precedence-landing-gates.log.txt`) reads one more red row on a file the baseline landed in that wave:
+
+| Proof | Assertion | Chromium 141 (the recorded expectation) | Chromium 153 (this host) |
+| --- | --- | --- | --- |
+| `tests/src/styles/components/navbar.test.ts:63` (lays the bar out as a wrapping row, writes no rule for the light class, and every shipped selector reaches the components layer; the baseline's NAVBAR landing in `3211b8d`) | a `background-size` reading equals `'100%'` | `100%` | `100% auto` |
+
+The cause is the one-value `background-size` serialization the accordion row records, on a proof written in the same string form after D45's ruling. The row is standing under E5 until the baseline applies D45's reading to it (the request joins the accordion's in `plan.md` § Requests to the baseline session), and this session's landing, whose diff against `3211b8d` touches `src/browser/` sources, `tests/src/browser/` proofs, and `guides/veneer.md` alone, does not introduce it. The accordion row and the preflight row read red at `468a118` with the messages this file records, so E5's gate is the chain green except those three rows.
