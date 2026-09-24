@@ -1,0 +1,14 @@
+=== cf landing at 11:06:22 over 84908de
+=== applied /home/user/scaffold/.orkestrel/veneer/units/cf-shared-3.patch
+=== applied /home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-offlimits.patch
+## app/browser/Showcase.ts
+concatenated: ours=1 base=0 theirs=1 -> 2
+## guides/veneer.md
+table: ours=122 base=116 theirs=117 -> 123
+table: ours=262 base=244 theirs=245 -> 263
+=== continued: 60da007
+=== land-unit exit=0
+=== oxfmt exit=0
+ M guides/veneer.md
+=== oxlint exit=0
+=== check exit=0

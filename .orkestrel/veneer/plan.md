@@ -141,14 +141,15 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session).** PAGE-FRAME (`units/b-cross-pf-brief.md`, `opus` on Opus 5.5 from
-`dc92a09`), per its design verdict `units/pf-design-verdict.md`: every placement takes the showcase's
-other `main` children out of the layout for the shot, reads its region at the shot's geometry, and
-refuses a frame above `FRAME_AREA`. FADE and
-LEDGER (`units/b-cross-cf-brief.md`, `units/b-cross-cl-brief.md`) from `42fd88e`. BCF
-(`units/b-collapse-bcf-brief.md`) from `dc92a09`, with the verify verdict's row V1 moved to
-FOCUS-FRAME, which PAGE-FRAME's verdict names and which dispatches after it lands. RAMP-DOWN is accepted (`units/rd-audit-2-verdict.md`) and lands after the batch-2
-verification releases the tree.
+**In flight (this session), 2026-09-24 11:15 UTC.** Implementation first, the user's instruction:
+prose-only and report-form findings are accepted on the record or carried to CLOSE-OUT. Landed on this
+session's branch since `dc92a09`: RAMP-DOWN (`015fc90`), LEDGER (`51f002e`), the merge of your `main`
+(`84908de`), and FADE (`2bf1142`, the `transition` key: `.fade` and `.fade:not(.show)`). PAGE-FRAME round 2
+runs (`units/b-cross-pf-brief-2.md`); when it lands, the whole chain with the four capture runs goes, and
+the second batch, RAMP-DOWN, LEDGER, PAGE-FRAME, and FADE go to Veneer `main` together, which gives your
+units the `offcanvas` and `transition` keys. THEME (`units/b-cross-ct-brief.md`: the dark secondary role,
+the dark pressed primary, the link hover direction, and the `theme` key) runs from `2bf1142`. BCF round 2
+follows PAGE-FRAME's landing (`units/bcf-audit-verdict.md`).
 
 ## Landing procedure
 
