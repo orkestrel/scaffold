@@ -1,0 +1,181 @@
+--- a/src/styles/components/_popover.scss
++++ b/src/styles/components/_popover.scss
+@@ -79,9 +79,9 @@
+ 		height: var(--bs-popover-arrow-height);
+ 	}
+ 
+-	// The arrow is two triangles stacked in one box: the first paints the popover's edge color and
+-	// the second, drawn over it, paints the popover's fill one edge width further in, so the arrow
+-	// carries the popover's border around its fill.
++	// The arrow is two triangles stacked in one box: the `::before` triangle paints the popover's
++	// edge color, and the `::after` triangle, drawn over it, paints the popover's fill one edge width
++	// further in, so the arrow carries the popover's border around its fill.
+ 	.popover .popover-arrow::before,
+ 	.popover .popover-arrow::after {
+ 		position: absolute;
+--- a/tests/src/styles/components/tooltip.test.ts
++++ b/tests/src/styles/components/tooltip.test.ts
+@@ -148,9 +148,10 @@
+ })
+ 
+ describe('tooltip arrow', () => {
+-	// The mutation this catches is two placements' rules swapped: each tip then hangs its arrow from
+-	// the wrong edge and paints the wrong side of its triangle, which is what these readings pin.
+-	it('hangs the arrow from the edge facing the host and paints the triangle side toward it in the fill', () => {
++	// The mutation this catches is a placement's rules written for another side: that tip then hangs
++	// its arrow from the wrong edge and paints the wrong border of its triangle, which is what these
++	// readings pin.
++	it("hangs the arrow from the edge facing the host and paints the tip's fill on its border facing the tip, so it points at the host", () => {
+ 		const host = scene.mount(
+ 			`<div style="position: relative; height: 480px">${TIP_PLACEMENTS.map(
+ 				({ name, side }) =>
+@@ -168,8 +169,8 @@
+ 			const across = side === 'top' || side === 'bottom'
+ 			expect(readPixels(arrow, 'width')).toBeCloseTo(across ? 12.8 : 6.4, 1)
+ 			expect(readPixels(arrow, 'height')).toBeCloseTo(across ? 6.4 : 12.8, 1)
+-			// The triangle paints only its border on the tip's side, in the tip's own fill, and
+-			// overlaps the tip by one pixel on that side.
++			// The triangle paints only its border facing the tip, in the tip's own fill, and overlaps
++			// the tip by one pixel on that side.
+ 			expect(
+ 				matchesColor(
+ 					readStyle(arrow, `border-${side}-color`, '::before'),
+--- a/tests/src/styles/components/popover.test.ts
++++ b/tests/src/styles/components/popover.test.ts
+@@ -172,11 +172,12 @@
+ })
+ 
+ describe('popover arrow', () => {
+-	// The mutation this catches is two placements' rules swapped: each popover then hangs its arrow
+-	// from the wrong edge and paints the wrong side of its triangles, which is what these readings
+-	// pin. The arrow's first triangle paints the popover's edge and the second, one edge width
+-	// further in, paints its fill, so the arrow carries the border around its fill.
+-	it('hangs the arrow past the edge facing the host and paints the border under the fill toward it', () => {
++	// The mutation this catches is a placement's rules written for another side: that popover then
++	// hangs its arrow from the wrong edge and paints the wrong border of its triangles, which is what
++	// these readings pin. The arrow's `::before` triangle paints the popover's edge color and the
++	// `::after` triangle, one edge width further in, paints its fill, so the arrow carries the border
++	// around its fill.
++	it('hangs the arrow past the edge facing the host and paints the edge color under the fill on its borders facing the popover, so it points at the host', () => {
+ 		const host = scene.mount(
+ 			`<div style="position: relative; height: 640px">${TIP_PLACEMENTS.map(
+ 				({ name, side }) =>
+--- a/tests/app/browser/sections/PopoverSection.test.ts
++++ b/tests/app/browser/sections/PopoverSection.test.ts
+@@ -14,7 +14,7 @@
+ })
+ 
+ describe('PopoverSection', () => {
+-	it('renders one popover per explicit placement alone in a frame through the shared section contract', () => {
++	it('renders one popover per explicit placement and an untitled popover alone in a frame through the shared section contract', () => {
+ 		const host = mount(build('div'))
+ 		const section: SectionInterface = new PopoverSection(host)
+ 		try {
+@@ -25,19 +25,21 @@
+ 			expect(region.getAttribute('aria-label')).toBe('Popover')
+ 			expect(region.querySelector('p')?.textContent).toBe(POPOVER_COPY.paragraph)
+ 			const rendered = [...region.querySelectorAll('[data-specimen]')]
+-			// Each specimen is named for the physical side of its host its popover sits on, in the
+-			// placement order the table pins.
+-			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
+-				TIP_PLACEMENTS.map(({ side }) => `${side.charAt(0).toUpperCase()}${side.slice(1)} popover`),
+-			)
++			// Each placement specimen is named for the physical side of its host its popover sits on,
++			// in the placement order the table pins, and the untitled popover follows them.
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				...TIP_PLACEMENTS.map(
++					({ side }) => `${side.charAt(0).toUpperCase()}${side.slice(1)} popover`,
++				),
++				'Untitled popover',
++			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				POPOVER_SPECIMENS.map(({ markup }) => markup),
+ 			)
+ 			// Each specimen is the shell's frame holding one popover and nothing else, in the placement
+ 			// order the table pins, and each popover stands in for the placement the engine would write
+ 			// with the shipped position utilities on the popover and on its arrow. Each carries the
+-			// release's template order: the arrow, the header, and the body.
+-			expect(rendered).toHaveLength(TIP_PLACEMENTS.length)
++			// release's template order: the arrow, the `h3` header, and the body.
+ 			for (const [index, { name, side }] of TIP_PLACEMENTS.entries()) {
+ 				const specimen = requireValue(rendered[index], `No ${name} specimen`)
+ 				expect(specimen.children).toHaveLength(1)
+@@ -57,7 +59,7 @@
+ 				expect(tip.id).toBe(`${side}-popover`)
+ 				expect(
+ 					[...tip.children].map((child) => `${child.tagName} ${child.classList[0] ?? ''}`),
+-				).toEqual(['DIV popover-arrow', 'H2 popover-header', 'DIV popover-body'])
++				).toEqual(['DIV popover-arrow', 'H3 popover-header', 'DIV popover-body'])
+ 				const arrow = requireValue(tip.querySelector(':scope > .popover-arrow'), `No ${name} arrow`)
+ 				expect([...arrow.classList]).toEqual(
+ 					side === 'top' || side === 'bottom'
+@@ -69,9 +71,29 @@
+ 				)
+ 				expect(tip.querySelector(':scope > .popover-body')?.textContent).not.toBe('')
+ 			}
++			// The untitled popover sits below its host in its own frame, with the release's template
++			// order, an empty header, and a populated body, so the rule hiding an empty header renders.
++			const untitled = requireValue(
++				rendered[TIP_PLACEMENTS.length]?.querySelector(':scope > .viewport > .popover'),
++				'No untitled popover',
++			)
++			expect([...untitled.classList]).toEqual([
++				'popover',
++				'bs-popover-bottom',
++				'position-absolute',
++				'top-50',
++				'start-50',
++				'translate-middle',
++			])
++			expect(untitled.id).toBe('untitled-popover')
++			expect(
++				[...untitled.children].map((child) => `${child.tagName} ${child.classList[0] ?? ''}`),
++			).toEqual(['DIV popover-arrow', 'H3 popover-header', 'DIV popover-body'])
++			expect(untitled.querySelector(':scope > .popover-header')?.childNodes).toHaveLength(0)
++			expect(untitled.querySelector(':scope > .popover-body')?.textContent).not.toBe('')
+ 			// Every popover's identity is its own, so a trigger naming one names that popover alone.
+ 			const ids = [...region.querySelectorAll('.popover')].map((tip) => tip.id)
+-			expect(new Set(ids).size).toBe(TIP_PLACEMENTS.length)
++			expect(new Set(ids).size).toBe(rendered.length)
+ 			// No specimen renders a trigger, claims the wiring a trigger would carry, writes the
+ 			// automatic placement the engine writes, or carries the engine's `fade` and `show` classes,
+ 			// which no popover rule reads.
+@@ -119,7 +141,7 @@
+ 						}
+ 					}),
+ 				)
+-				expect(readings).toHaveLength(TIP_PLACEMENTS.length)
++				expect(readings).toHaveLength(POPOVER_SPECIMENS.length)
+ 				for (const { edge, bottom, inside } of readings) {
+ 					expect(inside).toBe(true)
+ 					expect(bottom).toBeLessThanOrEqual(requireValue(edge, 'The frame clips nothing'))
+@@ -131,6 +153,29 @@
+ 		},
+ 	)
+ 
++	// The mutation this catches is a stand-in that leaves a popover its whole frame to lay out in, or
++	// a cap the box stops reading: the `left: 50%` offset the `start-50` utility writes leaves an
++	// absolutely positioned popover half its frame, so at the 390 variant each popover wraps narrower
++	// than its `276px` cap, and at the 1280 variant each one reaches the cap.
++	it('wraps each popover narrower than its cap at the 390 variant and holds it at the cap at 1280', async () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new PopoverSection(host)
++		try {
++			const narrow = await visitBreakpoint(390, () =>
++				[...host.querySelectorAll('.popover')].map((tip) => tip.getBoundingClientRect().width),
++			)
++			const wide = await visitBreakpoint(1280, () =>
++				[...host.querySelectorAll('.popover')].map((tip) => tip.getBoundingClientRect().width),
++			)
++			expect(narrow).toHaveLength(POPOVER_SPECIMENS.length)
++			expect(narrow.filter((width) => width >= 276)).toEqual([])
++			expect(wide).toEqual(POPOVER_SPECIMENS.map(() => 276))
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
+ 	it('releases the region and preserves adjacent content on repeated destruction', () => {
+ 		const host = mount(build('div'))
+ 		const neighbor = build('p', { text: 'Existing content' })

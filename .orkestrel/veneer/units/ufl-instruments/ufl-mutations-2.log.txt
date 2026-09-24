@@ -1,0 +1,74 @@
+=== mutation: cover-block-right-omitted
+site: src/styles/_mixins.scss
+--- replaced
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+@mixin image-size
+--- with
+	bottom: 0;
+	left: 0;
+}
+
+@mixin image-size
+---
+command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=verbose tests/src/styles/mixins.test.ts tests/src/styles/components/stretched-link.test.ts tests/src/styles/components/card.test.ts
+build exit: 0
+command exit: 1
+summary: Tests  7 failed | 34 passed (41)
+failing cases:
+tests/src/styles/components/card.test.ts:112:2 > card geometry > bounds the overlay to the card box and pads it from its own slot
+tests/src/styles/mixins.test.ts:89:2 > declaration mixins > covers the whole of its containing block on every physical edge
+tests/src/styles/components/stretched-link.test.ts:18:2 > stretched link helper > answers a pointer at every corner of its positioned ancestor with the link, where a bare link leaves the corner
+tests/src/styles/components/stretched-link.test.ts:32:2 > stretched link helper > writes its generated box absolute on every physical edge with empty content
+tests/src/styles/components/stretched-link.test.ts:44:2 > stretched link helper > covers the nearest positioned ancestor rather than the parent the link sits in
+tests/src/styles/components/stretched-link.test.ts:62:2 > stretched link helper > stacks its generated box at level 1, over a positioned sibling at level 0 and under one at level 2
+tests/src/styles/components/stretched-link.test.ts:73:2 > stretched link helper > reaches the link from a corner inside a dark island, reading no token or mode
+
+=== mutation: hit-corner-dropped
+site: tests/setupStyles.ts
+--- replaced
+		Object.freeze({ across: 'right', down: 'bottom' }),
+
+--- with
+
+---
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts
+build exit: skipped
+command exit: 1
+summary: Tests  1 failed | 122 passed (123)
+failing cases:
+tests/setupStyles.test.ts > styles setup > binds the hit corners to the edges the stretched link records and the stretched-link hosts to those corners
+
+=== mutation: stretched-host-dropped
+site: tests/setupStyles.ts
+--- replaced
+	Object.freeze({ stretched: false, hits: Object.freeze(['p', 'p', 'div', 'div']) }),
+
+--- with
+
+---
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts
+build exit: skipped
+command exit: 1
+summary: Tests  1 failed | 122 passed (123)
+failing cases:
+tests/setupStyles.test.ts > styles setup > binds the hit corners to the edges the stretched link records and the stretched-link hosts to those corners
+
+=== mutation: float-side-dropped
+site: tests/setupStyles.ts
+--- replaced
+	Object.freeze({ key: 'end', value: 'right' }),
+
+--- with
+
+---
+command: npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/sections/FloatSection.test.ts
+build exit: skipped
+command exit: 1
+summary: Tests  1 failed | 2 passed (3)
+failing cases:
+tests/app/browser/sections/FloatSection.test.ts:29:2 > FloatSection > renders every declared specimen through the shared section contract
+
