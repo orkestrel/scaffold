@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Modal.ts",
+	"backup": "tmp/j-integration/m2-modal-reshow-aria-hidden.backup",
+	"pairs": [
+		[
+			"if (name === 'aria-hidden') host.removeAttribute('aria-hidden')",
+			"if (name === 'aria-hidden') {}"
+		]
+	]
+}

@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Offcanvas.ts",
+	"backup": "tmp/j-integration/m2-offcanvas-lifetime.backup",
+	"pairs": [
+		[
+			"if (!this.#controller.signal.aborted) write()",
+			"write()"
+		]
+	]
+}

@@ -1,0 +1,12 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts -t at each door after|returning step
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+-----------------------------···-----------
+
+ Test Files  1 passed (1)
+      Tests  3 passed | 40 skipped (43)
+   Start at  16:45:48
+   Duration  9.18s (transform 0ms, setup 444ms, import 315ms, tests 7.48s, environment 0ms)
+

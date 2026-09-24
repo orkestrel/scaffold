@@ -1,0 +1,131 @@
+subject: src/browser/Offcanvas.ts
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+·······························x·········x··x····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+AssertionError: expected [ [ { …(6) } ], [ { …(6) } ], …(8) ] to deeply equal [ [ { …(6) } ], [ { …(6) } ], …(8) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -99,13 +99,11 @@[39m
+[2m        "row": [[22m
+[2m          "hide",[22m
+[2m          "token",[22m
+[2m          "token",[22m
+[2m        ],[22m
+[32m-       "stale": [[39m
+[32m-         "DIV class",[39m
+[32m-       ],[39m
+[31m+       "stale": [],[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [],[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1400:25
+    1398|    root.remove()
+    1399|   }
+    1400|   expect(readings.calls).toEqual(
+       |                         ^
+    1401|    rows.map(([phase, write, reaction, modal, returned]) => [
+    1402|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1716:2 > Offcanvas > returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+AssertionError: expected [ [ { …(13) } ], [ { …(13) } ], …(4) ] to deeply equal [ [ { …(13) } ], [ { …(13) } ], …(4) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -15,17 +15,18 @@[39m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "class",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[32m-       "target": true,[39m
+[31m+       "target": false,[39m
+[2m        "tokens": [[22m
+[2m          "offcanvas",[22m
+[2m          "offcanvas-start",[22m
+[31m+         "hiding",[39m
+[2m          "show",[22m
+[2m        ],[22m
+[32m-       "transform": "none",[39m
+[31m+       "transform": "matrix(1, 0, 0, 1, -401, 0)",[39m
+[2m        "visibility": "visible",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[33m@@ -43,17 +44,18 @@[39m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "wait",[22m
+[2m          undefined,[22m
+[2m        ],[22m
+[32m-       "target": true,[39m
+[31m+       "target": false,[39m
+[2m        "tokens": [[22m
+[2m          "offcanvas",[22m
+[2m          "offcanvas-start",[22m
+[31m+         "hiding",[39m
+[2m          "show",[22m
+[2m        ],[22m
+[32m-       "transform": "none",[39m
+[31m+       "transform": "matrix(1, 0, 0, 1, -401, 0)",[39m
+[2m        "visibility": "visible",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1842:25
+    1840|    root.remove()
+    1841|   }
+    1842|   expect(readings.calls).toEqual(
+       |                         ^
+    1843|    rows.map((row) => [
+    1844|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:2051:2 > Offcanvas > stops a hide whose token removal a reaction answers by adding the shown token back, writing only the hiding token's removal and dispatching no hidden event
+AssertionError: expected [] to deeply equal [ 'class' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "class",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:2084:4
+    2082|   expect(
+    2083|    [...writes.calls.flat(2), ...observer.takeRecords()].map((record) =…
+    2084|   ).toEqual(['class'])
+       |    ^
+    2085|   expect(Array.from(host.classList)).toEqual(['offcanvas', 'offcanvas-…
+    2086|   expect(events.count).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 46 passed (49)
+   Start at  16:59:01
+   Duration  29.83s (transform 0ms, setup 461ms, import 332ms, tests 28.01s, environment 0ms)
+
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts

@@ -1,0 +1,176 @@
+subject: src/browser/Offcanvas.ts
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+Port 63315 is in use, trying another one...
+···················x·········x·xx··········x·····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:767:2 > Offcanvas > abandons a show in flight on destruction, resolving false and restoring the host, the body, and the page
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:793:61
+    791|   quiet.observe(body, { attributes: true, childList: true, subtree: tr…
+    792|   expect(await showing).toBe(false)
+    793|   expect([...settled.calls.flat(2), ...quiet.takeRecords()]).toEqual([…
+       |                                                             ^
+    794|   quiet.disconnect()
+    795|   expect(hooks.calls).toEqual([['show.vn.offcanvas']])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1115:2 > Offcanvas > stops each write sequence at the door after a write whose reaction destroys the panel, writing and dispatching nothing more
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1179:64
+    1177|     resolved: false,
+    1178|    })
+    1179|    expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqua…
+       |                                                                ^
+    1180|    expect(events.calls).toEqual([])
+    1181|    expect(Offcanvas.find(host)).toBeUndefined()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+AssertionError: expected [ [ { …(6) } ], [ { …(6) } ], …(8) ] to deeply equal [ [ { …(6) } ], [ { …(6) } ], …(8) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -52,11 +52,13 @@[39m
+[2m        "row": [[22m
+[2m          "show",[22m
+[2m          "token",[22m
+[2m          "destroy",[22m
+[2m        ],[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV class",[39m
+[31m+       ],[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [],[22m
+[33m@@ -85,11 +87,13 @@[39m
+[2m        "row": [[22m
+[2m          "hide",[22m
+[2m          "token",[22m
+[2m          "destroy",[22m
+[2m        ],[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV class",[39m
+[31m+       ],[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [],[22m
+[33m@@ -107,19 +111,22 @@[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [],[22m
+[32m-       "modal": null,[39m
+[31m+       "modal": "true",[39m
+[2m        "opposite": undefined,[22m
+[2m        "resolved": false,[22m
+[2m        "row": [[22m
+[2m          "hide",[22m
+[2m          "removal",[22m
+[2m          "destroy",[22m
+[2m        ],[22m
+[32m-       "stale": [],[39m
+[31m+       "stale": [[39m
+[31m+         "DIV aria-modal",[39m
+[31m+         "DIV role",[39m
+[31m+       ],[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [],[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1400:25
+    1398|    root.remove()
+    1399|   }
+    1400|   expect(readings.calls).toEqual(
+       |                         ^
+    1401|    rows.map(([phase, write, reaction, modal, returned]) => [
+    1402|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1417:2 > Offcanvas > writes nothing after a destruction during the slide-out, resolving the hide false
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1433:63
+    1431|   observer.observe(document.body, { attributes: true, childList: true,…
+    1432|   expect(await hiding).toBe(false)
+    1433|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    1434|   expect(events.count).toBe(0)
+    1435|   expect(Array.from(host.classList)).toEqual(['offcanvas', 'offcanvas-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:2005:2 > Offcanvas > writes nothing more of the returning step after a reaction inside it destroys the panel
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:2045:63
+    2043|   expect(await offcanvas.hide()).toBe(false)
+    2044|   expect(Offcanvas.find(host)).toBeUndefined()
+    2045|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    2046|   expect(host.hasAttribute('aria-modal')).toBe(false)
+    2047|   expect(host.hasAttribute('role')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 44 passed (49)
+   Start at  17:03:44
+   Duration  29.96s (transform 0ms, setup 514ms, import 361ms, tests 28.02s, environment 0ms)
+
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts

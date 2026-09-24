@@ -1,0 +1,12 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts tests/src/browser/Offcanvas.test.ts tests/src/browser/Backdrop.test.ts tests/src/browser/Delegate.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+·················································································································································································································································
+
+ Test Files  4 passed (4)
+      Tests  241 passed (241)
+   Start at  16:54:11
+   Duration  48.73s (transform 0ms, setup 608ms, import 457ms, tests 46.42s, environment 0ms)
+

@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Offcanvas.ts",
+	"backup": "tmp/j-integration/m2-offcanvas-reinsert.backup",
+	"pairs": [
+		[
+			"if (backdrop !== undefined) this.#revert(() => void backdrop.show())",
+			"if (backdrop !== undefined && backdrop.element.isConnected) this.#revert(() => void backdrop.show())"
+		]
+	]
+}

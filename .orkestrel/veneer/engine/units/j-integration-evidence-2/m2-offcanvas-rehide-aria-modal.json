@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Offcanvas.ts",
+	"backup": "tmp/j-integration/m2-offcanvas-rehide-aria-modal.backup",
+	"pairs": [
+		[
+			"this.#revert(() => host.removeAttribute('aria-modal'))",
+			""
+		]
+	]
+}

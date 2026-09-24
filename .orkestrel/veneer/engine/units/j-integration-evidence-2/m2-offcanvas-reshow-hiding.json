@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Offcanvas.ts",
+	"backup": "tmp/j-integration/m2-offcanvas-reshow-hiding.backup",
+	"pairs": [
+		[
+			"if (name === 'hiding') host.classList.remove(this.#classes.hiding)",
+			"if (name === 'hiding') {}"
+		]
+	]
+}

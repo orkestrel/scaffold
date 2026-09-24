@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Modal.ts",
+	"backup": "tmp/j-integration/m2-modal-reshow-aria-modal.backup",
+	"pairs": [
+		[
+			"if (name === 'aria-modal') host.setAttribute('aria-modal', 'true')",
+			"if (name === 'aria-modal') {}"
+		]
+	]
+}

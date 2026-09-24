@@ -1,0 +1,1 @@
+m2-modal-lifetime src/browser/Modal.ts tests/src/browser/Modal.test.ts

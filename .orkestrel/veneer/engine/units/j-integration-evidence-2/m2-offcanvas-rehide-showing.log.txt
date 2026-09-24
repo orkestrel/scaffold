@@ -1,0 +1,127 @@
+subject: src/browser/Offcanvas.ts
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+·······························x········x·x······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+AssertionError: expected [ [ { …(6) } ], [ { …(6) } ], …(8) ] to deeply equal [ [ { …(6) } ], [ { …(6) } ], …(8) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -67,11 +67,10 @@[39m
+[2m          "show",[22m
+[2m          "token",[22m
+[2m          "token",[22m
+[2m        ],[22m
+[2m        "stale": [[22m
+[32m-         "DIV class",[39m
+[2m          "DIV aria-modal",[22m
+[2m          "DIV role",[22m
+[2m          "DIV children",[22m
+[2m        ],[22m
+[2m      },[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1400:25
+    1398|    root.remove()
+    1399|   }
+    1400|   expect(readings.calls).toEqual(
+       |                         ^
+    1401|    rows.map(([phase, write, reaction, modal, returned]) => [
+    1402|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1658:2 > Offcanvas > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+AssertionError: expected [ 'aria-modal', 'role' ] to deeply equal [ 'class', 'aria-modal', 'role' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "class",[39m
+[2m    "aria-modal",[22m
+[2m    "role",[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1695:4
+    1693|   expect(
+    1694|    [...writes.calls.flat(2), ...observer.takeRecords()].map((record) =…
+    1695|   ).toEqual(['class', 'aria-modal', 'role'])
+       |    ^
+    1696|   expect(Array.from(host.classList)).toEqual(['offcanvas', 'offcanvas-…
+    1697|   expect(events.count).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1870:2 > Offcanvas > returns the panel to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+AssertionError: expected [ [ { door: 'token', …(9) } ], …(4) ] to deeply equal [ [ { door: 'token', …(9) } ], …(4) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -6,16 +6,17 @@[39m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": null,[22m
+[2m        "resolved": false,[22m
+[2m        "role": null,[22m
+[32m-       "target": false,[39m
+[31m+       "target": true,[39m
+[2m        "tokens": [[22m
+[2m          "offcanvas",[22m
+[2m          "offcanvas-start",[22m
+[31m+         "showing",[39m
+[2m        ],[22m
+[32m-       "visibility": "hidden",[39m
+[31m+       "visibility": "visible",[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "backdrops": 0,[22m
+[33m@@ -23,16 +24,17 @@[39m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": null,[22m
+[2m        "resolved": false,[22m
+[2m        "role": null,[22m
+[32m-       "target": false,[39m
+[31m+       "target": true,[39m
+[2m        "tokens": [[22m
+[2m          "offcanvas",[22m
+[2m          "offcanvas-start",[22m
+[31m+         "showing",[39m
+[2m        ],[22m
+[32m-       "visibility": "hidden",[39m
+[31m+       "visibility": "visible",[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "backdrops": 0,[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1984:25
+    1982|    root.remove()
+    1983|   }
+    1984|   expect(readings.calls).toEqual(
+       |                         ^
+    1985|    rows.map((door) => [
+    1986|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 46 passed (49)
+   Start at  17:01:38
+   Duration  29.92s (transform 0ms, setup 458ms, import 354ms, tests 28.12s, environment 0ms)
+
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts

@@ -1,0 +1,12 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+·················································
+
+ Test Files  1 passed (1)
+      Tests  49 passed (49)
+   Start at  16:51:24
+   Duration  30.10s (transform 0ms, setup 461ms, import 358ms, tests 28.06s, environment 0ms)
+

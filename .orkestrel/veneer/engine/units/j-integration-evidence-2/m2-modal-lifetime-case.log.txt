@@ -1,0 +1,43 @@
+subject: src/browser/Modal.ts
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+planted: 2e8ce472cc3bb01e4b6cd439d13cf3dc7cce04d486c2a66aa1ecc1f875aa4a2f *src/browser/Modal.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts -t returning step
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+Port 63315 is in use, trying another one...
+-------------------------------x-----------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1348:2 > Modal > writes nothing more of the returning step after a reaction inside it destroys the modal
+AssertionError: expected [ MutationRecord{}, MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Modal.test.ts:1386:63
+    1384|   expect(await modal.hide()).toBe(false)
+    1385|   expect(Modal.find(host)).toBeUndefined()
+    1386|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    1387|   expect(host.hasAttribute('aria-modal')).toBe(false)
+    1388|   expect(host.hasAttribute('role')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 42 skipped (43)
+   Start at  17:04:50
+   Duration  1.89s (transform 0ms, setup 466ms, import 327ms, tests 13ms, environment 0ms)
+
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts

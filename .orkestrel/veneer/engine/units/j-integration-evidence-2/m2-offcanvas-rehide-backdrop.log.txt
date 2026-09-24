@@ -1,0 +1,173 @@
+subject: src/browser/Offcanvas.ts
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+······························xx········x·x······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1192:2 > Offcanvas > stops each write sequence at the door after a write whose reaction takes the change over, writing only the return to the state the host chose
+AssertionError: expected { Object (row, writes) } to deeply equal { Object (row, writes) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -6,8 +6,7 @@[39m
+[2m      false,[22m
+[2m    ],[22m
+[2m    "writes": [[22m
+[2m      "aria-modal",[22m
+[2m      "role",[22m
+[32m-     "children",[39m
+[2m    ],[22m
+[2m  }[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1267:6
+    1265|       record.type === 'attributes' ? String(record.attributeName) : 'c…
+    1266|      ),
+    1267|    }).toEqual({ row: [phase, attribute, token, present], writes: retur…
+       |      ^
+    1268|    expect(events.calls).toEqual([])
+    1269|    expect(offcanvas.shown).toBe(shown)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+AssertionError: expected [ [ { …(6) } ], [ { …(6) } ], …(8) ] to deeply equal [ [ { …(6) } ], [ { …(6) } ], …(8) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -70,11 +70,10 @@[39m
+[2m        ],[22m
+[2m        "stale": [[22m
+[2m          "DIV class",[22m
+[2m          "DIV aria-modal",[22m
+[2m          "DIV role",[22m
+[32m-         "DIV children",[39m
+[2m        ],[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1400:25
+    1398|    root.remove()
+    1399|   }
+    1400|   expect(readings.calls).toEqual(
+       |                         ^
+    1401|    rows.map(([phase, write, reaction, modal, returned]) => [
+    1402|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1658:2 > Offcanvas > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+AssertionError: expected <div …(1)></div> to have a length of +0 but got 1
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1700:55
+    1698|   expect(offcanvas.shown).toBe(false)
+    1699|   expect(document.body.style.overflow).toBe('hidden')
+    1700|   expect(root.querySelectorAll('.offcanvas-backdrop')).toHaveLength(0)
+       |                                                       ^
+    1701|   expect(await offcanvas.hide()).toBe(false)
+    1702|   host.classList.add('show')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1870:2 > Offcanvas > returns the panel to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+AssertionError: expected [ [ { door: 'token', …(9) } ], …(4) ] to deeply equal [ [ { door: 'token', …(9) } ], …(4) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,9 +1,9 @@[39m
+[2m  [[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrops": 0,[39m
+[31m+       "backdrops": 1,[39m
+[2m        "door": "token",[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": null,[22m
+[2m        "resolved": false,[22m
+[33m@@ -16,11 +16,11 @@[39m
+[2m        "visibility": "hidden",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrops": 0,[39m
+[31m+       "backdrops": 1,[39m
+[2m        "door": "wait",[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": null,[22m
+[2m        "resolved": false,[22m
+[33m@@ -33,11 +33,11 @@[39m
+[2m        "visibility": "hidden",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrops": 0,[39m
+[31m+       "backdrops": 1,[39m
+[2m        "door": "showing",[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": null,[22m
+[2m        "resolved": false,[22m
+[33m@@ -50,11 +50,11 @@[39m
+[2m        "visibility": "hidden",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrops": 0,[39m
+[31m+       "backdrops": 1,[39m
+[2m        "door": "isolation",[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": null,[22m
+[2m        "resolved": false,[22m
+[33m@@ -67,11 +67,11 @@[39m
+[2m        "visibility": "hidden",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrops": 0,[39m
+[31m+       "backdrops": 1,[39m
+[2m        "door": "focus",[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": null,[22m
+[2m        "resolved": false,[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1984:25
+    1982|    root.remove()
+    1983|   }
+    1984|   expect(readings.calls).toEqual(
+       |                         ^
+    1985|    rows.map((door) => [
+    1986|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 45 passed (49)
+   Start at  17:03:12
+   Duration  29.98s (transform 0ms, setup 465ms, import 347ms, tests 28.10s, environment 0ms)
+
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts

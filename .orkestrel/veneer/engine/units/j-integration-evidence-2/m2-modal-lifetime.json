@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Modal.ts",
+	"backup": "tmp/j-integration/m2-modal-lifetime.backup",
+	"pairs": [
+		[
+			"if (!this.#controller.signal.aborted) write()",
+			"write()"
+		]
+	]
+}

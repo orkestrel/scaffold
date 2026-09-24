@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Modal.ts",
+	"backup": "tmp/j-integration/m2-modal-rehide-aria-hidden.backup",
+	"pairs": [
+		[
+			"this.#revert(() => host.setAttribute('aria-hidden', 'true'))",
+			""
+		]
+	]
+}

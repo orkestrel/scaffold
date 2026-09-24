@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Modal.ts",
+	"backup": "tmp/j-integration/m2-modal-reshow-backdrop.backup",
+	"pairs": [
+		[
+			"if (backdrop !== undefined) this.#revert(() => void backdrop.show())",
+			"if (backdrop !== undefined) {}"
+		]
+	]
+}

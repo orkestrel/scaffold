@@ -1,0 +1,117 @@
+subject: src/browser/Offcanvas.ts
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+······························xx·········x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1192:2 > Offcanvas > stops each write sequence at the door after a write whose reaction takes the change over, writing only the return to the state the host chose
+AssertionError: expected { row: [ 'hide', 'role', …(2) ], …(1) } to deeply equal { row: [ 'hide', 'role', …(2) ], …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -5,8 +5,7 @@[39m
+[2m      undefined,[22m
+[2m      false,[22m
+[2m    ],[22m
+[2m    "writes": [[22m
+[2m      "aria-modal",[22m
+[32m-     "role",[39m
+[2m    ],[22m
+[2m  }[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1267:6
+    1265|       record.type === 'attributes' ? String(record.attributeName) : 'c…
+    1266|      ),
+    1267|    }).toEqual({ row: [phase, attribute, token, present], writes: retur…
+       |      ^
+    1268|    expect(events.calls).toEqual([])
+    1269|    expect(offcanvas.shown).toBe(shown)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+AssertionError: expected [ [ { …(6) } ], [ { …(6) } ], …(8) ] to deeply equal [ [ { …(6) } ], [ { …(6) } ], …(8) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -131,11 +131,10 @@[39m
+[2m          "removal",[22m
+[2m          "token",[22m
+[2m        ],[22m
+[2m        "stale": [[22m
+[2m          "DIV aria-modal",[22m
+[32m-         "DIV role",[39m
+[2m          "DIV children",[22m
+[2m        ],[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1400:25
+    1398|    root.remove()
+    1399|   }
+    1400|   expect(readings.calls).toEqual(
+       |                         ^
+    1401|    rows.map(([phase, write, reaction, modal, returned]) => [
+    1402|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1716:2 > Offcanvas > returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+AssertionError: expected [ [ { …(13) } ], [ { …(13) } ], …(4) ] to deeply equal [ [ { …(13) } ], [ { …(13) } ], …(4) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -122,11 +122,11 @@[39m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "resolved": false,[22m
+[32m-       "role": "dialog",[39m
+[31m+       "role": null,[39m
+[2m        "row": [[22m
+[2m          "role",[22m
+[2m          undefined,[22m
+[2m        ],[22m
+[2m        "target": true,[22m
+[33m@@ -150,11 +150,11 @@[39m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "resolved": false,[22m
+[32m-       "role": "dialog",[39m
+[31m+       "role": null,[39m
+[2m        "row": [[22m
+[2m          "removal",[22m
+[2m          undefined,[22m
+[2m        ],[22m
+[2m        "target": true,[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1842:25
+    1840|    root.remove()
+    1841|   }
+    1842|   expect(readings.calls).toEqual(
+       |                         ^
+    1843|    rows.map((row) => [
+    1844|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 46 passed (49)
+   Start at  17:00:04
+   Duration  29.86s (transform 0ms, setup 445ms, import 337ms, tests 28.08s, environment 0ms)
+
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts

@@ -1,0 +1,161 @@
+subject: src/browser/Offcanvas.ts
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+······························xx·········x·x·····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1192:2 > Offcanvas > stops each write sequence at the door after a write whose reaction takes the change over, writing only the return to the state the host chose
+AssertionError: expected { row: [ 'hide', …(3) ], writes: [] } to deeply equal { row: [ 'hide', …(3) ], …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -3,9 +3,7 @@[39m
+[2m      "hide",[22m
+[2m      "aria-modal",[22m
+[2m      undefined,[22m
+[2m      false,[22m
+[2m    ],[22m
+[32m-   "writes": [[39m
+[32m-     "aria-modal",[39m
+[32m-   ],[39m
+[31m+   "writes": [],[39m
+[2m  }[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1267:6
+    1265|       record.type === 'attributes' ? String(record.attributeName) : 'c…
+    1266|      ),
+    1267|    }).toEqual({ row: [phase, attribute, token, present], writes: retur…
+       |      ^
+    1268|    expect(events.calls).toEqual([])
+    1269|    expect(offcanvas.shown).toBe(shown)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+AssertionError: expected [ [ { …(6) } ], [ { …(6) } ], …(8) ] to deeply equal [ [ { …(6) } ], [ { …(6) } ], …(8) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -121,20 +121,19 @@[39m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[2m        "events": [],[22m
+[32m-       "modal": "true",[39m
+[31m+       "modal": null,[39m
+[2m        "opposite": undefined,[22m
+[2m        "resolved": false,[22m
+[2m        "row": [[22m
+[2m          "hide",[22m
+[2m          "removal",[22m
+[2m          "token",[22m
+[2m        ],[22m
+[2m        "stale": [[22m
+[32m-         "DIV aria-modal",[39m
+[2m          "DIV role",[22m
+[2m          "DIV children",[22m
+[2m        ],[22m
+[2m      },[22m
+[2m    ],[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1400:25
+    1398|    root.remove()
+    1399|   }
+    1400|   expect(readings.calls).toEqual(
+       |                         ^
+    1401|    rows.map(([phase, write, reaction, modal, returned]) => [
+    1402|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1716:2 > Offcanvas > returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+AssertionError: expected [ [ { …(13) } ], [ { …(13) } ], …(4) ] to deeply equal [ [ { …(13) } ], [ { …(13) } ], …(4) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -91,11 +91,11 @@[39m
+[2m          "show",[22m
+[2m        ],[22m
+[2m        "beside": true,[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[32m-       "modal": "true",[39m
+[31m+       "modal": null,[39m
+[2m        "opacity": "0.5",[22m
+[2m        "resolved": false,[22m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "aria-modal",[22m
+[33m@@ -119,11 +119,11 @@[39m
+[2m          "show",[22m
+[2m        ],[22m
+[2m        "beside": true,[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[32m-       "modal": "true",[39m
+[31m+       "modal": null,[39m
+[2m        "opacity": "0.5",[22m
+[2m        "resolved": false,[22m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "role",[22m
+[33m@@ -147,11 +147,11 @@[39m
+[2m          "show",[22m
+[2m        ],[22m
+[2m        "beside": true,[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[32m-       "modal": "true",[39m
+[31m+       "modal": null,[39m
+[2m        "opacity": "0.5",[22m
+[2m        "resolved": false,[22m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "removal",[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1842:25
+    1840|    root.remove()
+    1841|   }
+    1842|   expect(readings.calls).toEqual(
+       |                         ^
+    1843|    rows.map((row) => [
+    1844|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:2005:2 > Offcanvas > writes nothing more of the returning step after a reaction inside it destroys the panel
+AssertionError: expected Offcanvas{} to be undefined
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+Offcanvas {}
+
+ ❯ tests/src/browser/Offcanvas.test.ts:2044:31
+    2042|   })
+    2043|   expect(await offcanvas.hide()).toBe(false)
+    2044|   expect(Offcanvas.find(host)).toBeUndefined()
+       |                               ^
+    2045|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    2046|   expect(host.hasAttribute('aria-modal')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 45 passed (49)
+   Start at  16:59:32
+   Duration  29.85s (transform 0ms, setup 448ms, import 334ms, tests 28.03s, environment 0ms)
+
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts

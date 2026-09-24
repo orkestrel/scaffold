@@ -1,0 +1,12 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Backdrop.test.ts -t starts later calls
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+--------·-
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 9 skipped (10)
+   Start at  16:52:13
+   Duration  1.73s (transform 0ms, setup 532ms, import 19ms, tests 6ms, environment 0ms)
+

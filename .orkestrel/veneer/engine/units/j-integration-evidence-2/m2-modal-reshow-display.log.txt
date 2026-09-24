@@ -1,0 +1,180 @@
+subject: src/browser/Modal.ts
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+·····························x·x···········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+AssertionError: expected [ [ { row: [ …(2) ], …(11) } ], …(5) ] to deeply equal [ [ { row: [ …(2) ], …(11) } ], …(5) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -22,11 +22,11 @@[39m
+[2m        "transform": "none",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "display": "block",[39m
+[31m+       "display": "none",[39m
+[2m        "events": [],[22m
+[2m        "hidden": null,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "open": true,[22m
+[33m@@ -34,22 +34,22 @@[39m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "modal fade",[22m
+[2m          "aria-hidden",[22m
+[2m        ],[22m
+[32m-       "target": true,[39m
+[31m+       "target": false,[39m
+[2m        "tokens": [[22m
+[2m          "modal-backdrop",[22m
+[2m          "fade",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[2m        "transform": "none",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "display": "block",[39m
+[31m+       "display": "none",[39m
+[2m        "events": [],[22m
+[2m        "hidden": null,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "open": true,[22m
+[33m@@ -57,22 +57,22 @@[39m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "modal fade",[22m
+[2m          "role",[22m
+[2m        ],[22m
+[32m-       "target": true,[39m
+[31m+       "target": false,[39m
+[2m        "tokens": [[22m
+[2m          "modal-backdrop",[22m
+[2m          "fade",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[2m        "transform": "none",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "display": "block",[39m
+[31m+       "display": "none",[39m
+[2m        "events": [],[22m
+[2m        "hidden": null,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "open": true,[22m
+[33m@@ -80,22 +80,22 @@[39m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "modal fade",[22m
+[2m          "backdrop",[22m
+[2m        ],[22m
+[32m-       "target": true,[39m
+[31m+       "target": false,[39m
+[2m        "tokens": [[22m
+[2m          "modal-backdrop",[22m
+[2m          "fade",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[2m        "transform": "none",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "display": "block",[39m
+[31m+       "display": "none",[39m
+[2m        "events": [],[22m
+[2m        "hidden": null,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "open": true,[22m
+[33m@@ -103,21 +103,21 @@[39m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "modal",[22m
+[2m          "backdrop",[22m
+[2m        ],[22m
+[32m-       "target": true,[39m
+[31m+       "target": false,[39m
+[2m        "tokens": [[22m
+[2m          "modal-backdrop",[22m
+[2m          "show",[22m
+[2m        ],[22m
+[2m        "transform": "none",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "display": "block",[39m
+[31m+       "display": "none",[39m
+[2m        "events": [],[22m
+[2m        "hidden": null,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "open": true,[22m
+[33m@@ -125,11 +125,11 @@[39m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "modal fade",[22m
+[2m          "removal",[22m
+[2m        ],[22m
+[32m-       "target": true,[39m
+[31m+       "target": false,[39m
+[2m        "tokens": [[22m
+[2m          "modal-backdrop",[22m
+[2m          "fade",[22m
+[2m          "show",[22m
+[2m        ],[22m
+
+ ❯ tests/src/browser/Modal.test.ts:1195:25
+    1193|    root.remove()
+    1194|   }
+    1195|   expect(readings.calls).toEqual(
+       |                         ^
+    1196|    rows.map(([classes, door]) => [
+    1197|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1348:2 > Modal > writes nothing more of the returning step after a reaction inside it destroys the modal
+AssertionError: expected Modal{} to be undefined
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+Modal {}
+
+ ❯ tests/src/browser/Modal.test.ts:1385:27
+    1383|   })
+    1384|   expect(await modal.hide()).toBe(false)
+    1385|   expect(Modal.find(host)).toBeUndefined()
+       |                           ^
+    1386|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    1387|   expect(host.hasAttribute('aria-modal')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 41 passed (43)
+   Start at  16:55:04
+   Duration  17.52s (transform 0ms, setup 468ms, import 331ms, tests 15.74s, environment 0ms)
+
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts

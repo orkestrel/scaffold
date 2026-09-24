@@ -1,0 +1,8 @@
+== m2-modal-lifetime (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:674:2 > Modal > abandons a show in flight on destruction, resolving false and restoring the host, the body, and the page
+ FAIL tests/src/browser/Modal.test.ts:1348:2 > Modal > writes nothing more of the returning step after a reaction inside it destroys the modal
+      Tests  2 failed | 41 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+done

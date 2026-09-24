@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Modal.ts",
+	"backup": "tmp/j-integration/m2-modal-rehide-backdrop.backup",
+	"pairs": [
+		[
+			"void backdrop?.hide()\n\t\t\tbackdrop?.destroy()",
+			""
+		]
+	]
+}

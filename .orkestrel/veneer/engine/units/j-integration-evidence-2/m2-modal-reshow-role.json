@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Modal.ts",
+	"backup": "tmp/j-integration/m2-modal-reshow-role.backup",
+	"pairs": [
+		[
+			"if (name === 'role') host.setAttribute('role', 'dialog')",
+			"if (name === 'role') {}"
+		]
+	]
+}

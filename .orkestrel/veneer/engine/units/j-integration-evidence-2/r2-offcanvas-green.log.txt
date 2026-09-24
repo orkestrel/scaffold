@@ -1,0 +1,13 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts -t at each door after|returning step
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+Port 63315 is in use, trying another one...
+-----------------------------------------···-----
+
+ Test Files  1 passed (1)
+      Tests  3 passed | 46 skipped (49)
+   Start at  16:49:21
+   Duration  11.72s (transform 0ms, setup 454ms, import 340ms, tests 9.93s, environment 0ms)
+

@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Modal.ts",
+	"backup": "tmp/j-integration/m2-modal-reshow-display.backup",
+	"pairs": [
+		[
+			"if (name === 'display') host.style.setProperty('display', 'block')",
+			"if (name === 'display') {}"
+		]
+	]
+}

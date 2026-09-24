@@ -1,0 +1,2496 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 144ab45..89ee256 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -111,15 +111,29 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `SWIPE_CLASSES`                           | const     | Names the class token a swipe writes by default, the token Bootstrap's cascade selects on.                                                                           |
+ | `SWIPE_DEFAULTS`                          | const     | Names a swipe's default options, Bootstrap's swipe threshold in pixels.                                                                                              |
+ | `SanitizerInterface`                      | interface | Writes markup into an element through a sanitizing policy the engine does not own.                                                                                   |
+-| `NativeSanitizerOptions`                  | interface | Configures the native sanitizer adapter, which writes markup through the platform's `setHTML` method.                                                                |
++| `ConfigSanitizerOptions`                  | interface | Configures the sanitizer that writes markup through one sanitizer configuration, whether or not the element carries the platform's `setHTML` method.                 |
++| `SanitizerElementNamespace`               | interface | Mirrors the HTML standard's dictionary that names one element by its local name and namespace.                                                                       |
++| `SanitizerBaseline`                       | interface | Declares what a sanitizer's walk removes whatever its configuration lists.                                                                                           |
+ | `SanitizerElementNamespaceWithAttributes` | interface | Mirrors the HTML standard's dictionary that names one element the platform sanitizer keeps and the attributes kept on it.                                            |
+ | `SanitizerConfig`                         | interface | Mirrors the HTML standard's dictionary that lists the elements and attributes the platform sanitizer keeps.                                                          |
+ | `SetHTMLOptions`                          | interface | Mirrors the HTML standard's dictionary the platform's `setHTML` method reads its sanitizer from.                                                                     |
+ | `SanitizeTargetInterface`                 | interface | Describes a node whose `setHTML` method parses markup through a sanitizer.                                                                                           |
+ | `TipContent`                              | type      | Describes the content of a tip slot: text, an element moved in, or a function of the trigger returning either.                                                       |
+-| `NativeSanitizer`                         | class     | Writes markup into an element through the platform's `setHTML` method and a sanitizer configuration.                                                                 |
+-| `SANITIZER_ALLOWLIST`                     | const     | Lists the elements and attributes the native sanitizer keeps by default, the platform dictionary built from Bootstrap's default allowlist.                           |
++| `ConfigSanitizer`                         | class     | Writes markup into an element through one sanitizer configuration, by the element's `setHTML` method where it has one and by a walk of the parsed markup otherwise.  |
++| `SANITIZER_ALLOWLIST`                     | const     | Lists the elements and attributes the `ConfigSanitizer` class keeps by default, the platform dictionary built from Bootstrap's default allowlist.                    |
++| `SANITIZER_BASELINE`                      | const     | Declares the safety floor the `ConfigSanitizer` class's walk applies whatever its configuration lists.                                                               |
++| `SANITIZER_NAMESPACE`                     | const     | Names the namespace a sanitizer configuration's element names designate, the HTML namespace.                                                                         |
+ | `isSanitizeTarget`                        | function  | Checks whether a value carries the platform's `setHTML` method, which parses markup through a sanitizer.                                                             |
++| `isSanitizerConfig`                       | function  | Checks whether a value is a sanitizer configuration the platform's `setHTML` method accepts, within the fields the engine mirrors.                                   |
++| `matchesJavaScriptURL`                    | function  | Checks whether an attribute value is a URL the platform's URL parser reads as a `javascript:` URL.                                                                   |
++| `readElementName`                         | function  | Reads an element's local name and namespace through the accessors of the `Element` prototype.                                                                        |
++| `collectChildren`                         | function  | Collects a node's children, in order, through a tree walker.                                                                                                         |
++| `collectAttributes`                       | function  | Collects an element's attributes, in order, through the methods of the `Element` prototype.                                                                          |
++| `matchesBaselineElement`                  | function  | Checks whether an element name is one the `SANITIZER_BASELINE` safety floor removes with its content.                                                                |
++| `matchesBaselineAttribute`                | function  | Checks whether an attribute is one the `SANITIZER_BASELINE` safety floor removes from its element.                                                                   |
++| `matchesKeptElement`                      | function  | Checks whether a sanitizer configuration keeps an element, before the safety floor applies.                                                                          |
++| `matchesKeptAttribute`                    | function  | Checks whether a sanitizer configuration keeps an attribute on an element, before the safety floor applies.                                                          |
++| `matchesPlainData`                        | function  | Checks whether a value is plain data at its own level: a primitive, an array, or a record, holding only enumerable data members.                                     |
+ | `buildTip`                                | function  | Builds a detached tip from a template, writing the template through a sanitizer.                                                                                     |
+ | `fillSlot`                                | function  | Fills one slot of a tip with its content, or removes the slot when the content is empty.                                                                             |
+ | `writeContent`                            | function  | Replaces a slot's children with an element, text, or markup.                                                                                                         |
+@@ -2623,15 +2637,18 @@ from the tip, as Bootstrap's template factory removes it.
+ 
+ The template and every markup string reach the tip through the `sanitizer` option, a
+ `SanitizerInterface` implementation read from the constructor alone. Without that option the tooltip
+-constructs a `NativeSanitizer` instance, which writes through the platform's `setHTML` method over
+-the `SANITIZER_ALLOWLIST` constant. That dictionary keeps the elements Bootstrap's
+-`DefaultAllowlist` names, the `a` and `img` elements with their own attributes, the `class`, `dir`,
+-`id`, `lang`, and `role` attributes, and, by name, every attribute WAI-ARIA 1.2 defines and every
+-one the WAI-ARIA 1.3 draft adds, and it keeps no `data-*` attribute. The platform dictionary lists
+-attribute names and carries no pattern, so it cannot express Bootstrap's `aria-*` pattern: an
+-`aria-*` name no WAI-ARIA version defines is dropped, where Bootstrap keeps it. Like Bootstrap's
+-sanitizer, the platform removes an unlisted element with its content, removes a `javascript:` URL
+-attribute while keeping its element, and keeps a `data:` URL. Bootstrap's `sanitize: false` and
++constructs a `ConfigSanitizer` instance over the `SANITIZER_ALLOWLIST` constant. It writes through
++the platform's `setHTML` method where the element has one. Where the element has none, as on
++Chromium 141, it parses the markup inert, walks the parsed tree against the same dictionary and the
++`SANITIZER_BASELINE` floor, and moves what survives into the element. That dictionary keeps the
++elements Bootstrap's `DefaultAllowlist` names, the `a` and `img` elements with their own
++attributes, the `class`, `dir`, `id`, `lang`, and `role` attributes, and, by name, every attribute
++WAI-ARIA 1.2 defines and every one the WAI-ARIA 1.3 draft adds, and it keeps no `data-*`
++attribute. The platform dictionary lists attribute names and carries no pattern, so it cannot
++express Bootstrap's `aria-*` pattern: an `aria-*` name no WAI-ARIA version defines is dropped,
++where Bootstrap keeps it. Like Bootstrap's sanitizer, the platform and the walk remove an unlisted
++element with its content, remove a `javascript:` URL attribute while keeping its element, and keep
++a `data:` URL. Bootstrap's `sanitize: false` and
+ `sanitizeFn` options have no counterpart: you supply your own `SanitizerInterface` implementation,
+ and Veneer ships no writer that skips sanitizing. The `buildTip`, `fillSlot`, and `writeContent`
+ functions carry the template and slot writes, and you can call them to build a tip of your own.
+@@ -2720,7 +2737,7 @@ tip, under the names the `attributes` group resolves; each default is Bootstrap'
+ The `TOOLTIP_DEFAULTS` constant holds the options the tooltip starts from, before the attributes and
+ the constructor; each default is Bootstrap's. An option absent from it, such as `title`,
+ `container`, `descendants`, or `tip.class`, starts undefined, and `sanitizer` starts as a
+-`NativeSanitizer` instance.
++`ConfigSanitizer` instance.
+ 
+ | Option                | Default                              | Controls                                                        |
+ | --------------------- | ------------------------------------ | --------------------------------------------------------------- |
+diff --git a/src/browser/Tooltip.ts b/src/browser/Tooltip.ts
+index d62ceca..f967b41 100644
+--- a/src/browser/Tooltip.ts
++++ b/src/browser/Tooltip.ts
+@@ -43,7 +43,7 @@ import {
+ } from './parsers.js'
+ import { Placement } from './Placement.js'
+ import { Registry } from './Registry.js'
+-import { NativeSanitizer } from './sanitizers/NativeSanitizer.js'
++import { ConfigSanitizer } from './sanitizers/ConfigSanitizer.js'
+ import { isAttributeName, isClassToken, isSelector, isTooltipEvent } from './validators.js'
+ 
+ /**
+@@ -262,7 +262,7 @@ export class Tooltip implements TooltipInterface {
+ 		this.#offset = placement.offset ?? TOOLTIP_DEFAULTS.placement.offset
+ 		this.#fallbacks = placement.fallbacks ?? TOOLTIP_DEFAULTS.placement.fallbacks
+ 		this.#descendants = descendants
+-		this.#sanitizer = options?.sanitizer ?? new NativeSanitizer()
++		this.#sanitizer = options?.sanitizer ?? new ConfigSanitizer()
+ 		this.#options = options
+ 		// A delegating tooltip keeps its trigger's `title` attribute, as Bootstrap's does.
+ 		const title = descendants === undefined ? host.getAttribute('title') : null
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index f8637bc..e786eb7 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -37,6 +37,7 @@ import type {
+ 	PlacementAttributeMap,
+ 	PlacementOptions,
+ 	PlacementPosition,
++	SanitizerBaseline,
+ 	SanitizerConfig,
+ 	ScrollLockSelectorMap,
+ 	ScrollSpyAttributeMap,
+@@ -574,7 +575,7 @@ export const TOOLTIP_DEFAULTS: Required<Pick<TooltipOptions, 'animated' | 'html'
+ })
+ 
+ /**
+- * Lists the elements and attributes the native sanitizer keeps by default, the platform dictionary built from Bootstrap's default allowlist.
++ * Lists the elements and attributes the `ConfigSanitizer` class keeps by default, the platform dictionary built from Bootstrap's default allowlist.
+  *
+  * @remarks
+  * Each element Bootstrap's `DefaultAllowlist` names is kept, `a` and `img` with their own
+@@ -684,3 +685,43 @@ export const SANITIZER_ALLOWLIST: SanitizerConfig = Object.freeze({
+ 	]),
+ 	dataAttributes: false,
+ })
++
++/**
++ * Names the namespace a sanitizer configuration's element names designate, the HTML namespace.
++ *
++ * @remarks
++ * The HTML standard's sanitizer reads an element name that carries no namespace as an HTML element
++ * name, so a listed `a` keeps an HTML `a` element and not an SVG one.
++ */
++export const SANITIZER_NAMESPACE = 'http://www.w3.org/1999/xhtml'
++
++/**
++ * Declares the safety floor the `ConfigSanitizer` class's walk applies whatever its configuration lists.
++ *
++ * @remarks
++ * The elements are the platform's built-in safe baseline as Chromium 153 reports it: the HTML
++ * `base`, `embed`, `frame`, `iframe`, `object`, and `script` elements and the SVG `script`
++ * and `use` elements. The `urls` names are the navigating attributes the HTML standard checks for a
++ * `javascript:` URL, and the `animations` entries are the SVG animation elements whose
++ * `attributeName` attribute can retarget one of them.
++ */
++export const SANITIZER_BASELINE: SanitizerBaseline = Object.freeze({
++	elements: Object.freeze([
++		Object.freeze({ name: 'base', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'embed', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'frame', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'iframe', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'object', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'script', namespace: SANITIZER_NAMESPACE }),
++		Object.freeze({ name: 'script', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'use', namespace: 'http://www.w3.org/2000/svg' }),
++	]),
++	handlers: 'on',
++	urls: Object.freeze(['action', 'formaction', 'href', 'xlink:href']),
++	animations: Object.freeze([
++		Object.freeze({ name: 'animate', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'animateMotion', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'animateTransform', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'set', namespace: 'http://www.w3.org/2000/svg' }),
++	]),
++})
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 4c87055..68bdd29 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -3,6 +3,8 @@ import type {
+ 	EventHooks,
+ 	EventWire,
+ 	ParserMap,
++	SanitizerConfig,
++	SanitizerElementNamespace,
+ 	SanitizerInterface,
+ 	TabSelectorMap,
+ 	TipContent,
+@@ -10,6 +12,7 @@ import type {
+ import type { Guard } from '@orkestrel/contract'
+ import { AppError } from '@src/core'
+ import { instanceOf, isInstance } from '@orkestrel/contract'
++import { SANITIZER_BASELINE, SANITIZER_NAMESPACE } from './constants.js'
+ 
+ /**
+  * Dispatches a bubbling DOM event carrying the supplied detail.
+@@ -510,7 +513,7 @@ export function matchesReducedMotion(element: Element): boolean {
+  * the sanitizer removes throws.
+  * @example
+  * ```ts
+- * const tip = buildTip(TOOLTIP_TEMPLATE, new NativeSanitizer())
++ * const tip = buildTip(TOOLTIP_TEMPLATE, new ConfigSanitizer())
+  * ```
+  */
+ export function buildTip(template: string, sanitizer: SanitizerInterface): HTMLElement {
+@@ -592,6 +595,257 @@ export function writeContent(
+ 	else slot.textContent = content
+ }
+ 
++/**
++ * Checks whether an attribute value is a URL the platform's URL parser reads as a `javascript:` URL.
++ *
++ * @param value - The attribute's value, as the element holds it.
++ * @returns True if the value parses as an absolute URL whose scheme is `javascript`; false otherwise,
++ *   including for a relative URL and for a value the parser refuses.
++ * @remarks
++ * The platform's parser, not a pattern, reads the scheme: it strips leading and trailing spaces and
++ * control characters, removes every tab and newline, and lowercases the scheme, so `JAVASCRIPT:`,
++ * ` javascript:`, and `java\tscript:` all match, while `%6Aavascript:` is a relative path and does
++ * not. A relative URL resolves against a base whose scheme it keeps, so no base can turn one into a
++ * `javascript:` URL, and none is read.
++ * @example
++ * ```ts
++ * matchesJavaScriptURL('java\tscript:alert(1)') // true
++ * matchesJavaScriptURL('/help') // false
++ * ```
++ */
++export function matchesJavaScriptURL(value: string): boolean {
++	return URL.parse(value)?.protocol === 'javascript:'
++}
++
++/**
++ * Reads an element's local name and namespace through the accessors of the `Element` prototype.
++ *
++ * @param element - The element to read, from this window's document or another's.
++ * @returns The element's local name and namespace URI, or undefined when its namespace is null.
++ * @throws Thrown when the value is not an element, as the platform's `TypeError`.
++ * @remarks
++ * The accessors are read from the `Element` prototype and applied to the element, so a member a
++ * form's named control defines on the form, such as an `input` element named `localName`, cannot
++ * stand in for the element's own name.
++ * @example
++ * ```ts
++ * readElementName(document.createElement('b')) // { name: 'b', namespace: 'http://www.w3.org/1999/xhtml' }
++ * ```
++ */
++export function readElementName(element: Element): SanitizerElementNamespace | undefined {
++	const name: unknown = Object.getOwnPropertyDescriptor(Element.prototype, 'localName')?.get?.call(
++		element,
++	)
++	const namespace: unknown = Object.getOwnPropertyDescriptor(
++		Element.prototype,
++		'namespaceURI',
++	)?.get?.call(element)
++	return typeof name === 'string' && typeof namespace === 'string' ? { name, namespace } : undefined
++}
++
++/**
++ * Collects a node's children, in order, through a tree walker.
++ *
++ * @param node - The node whose children are collected.
++ * @returns A snapshot of the node's children; later removals do not change it.
++ * @remarks
++ * A tree walker moves through the tree itself rather than through the node's members, so a form
++ * whose named control is called `childNodes` or `firstChild` still yields its real children.
++ * @example
++ * ```ts
++ * collectChildren(slot).length // 2 for <b>x</b>text
++ * ```
++ */
++export function collectChildren(node: Node): readonly Node[] {
++	const walker = Document.prototype.createTreeWalker.call(document, node)
++	const children: Node[] = []
++	for (let child = walker.firstChild(); child !== null; child = walker.nextSibling()) {
++		children.push(child)
++	}
++	return children
++}
++
++/**
++ * Collects an element's attributes, in order, through the methods of the `Element` prototype.
++ *
++ * @param element - The element whose attributes are collected.
++ * @returns A snapshot of the element's attributes; later removals do not change it.
++ * @remarks
++ * The names and the attributes are read through the `Element` prototype's `getAttributeNames` and
++ * `getAttributeNode` methods applied to the element, so a form whose named control is called
++ * `attributes` still yields its real attributes.
++ * @example
++ * ```ts
++ * collectAttributes(link).map((attribute) => attribute.name) // ['href', 'title']
++ * ```
++ */
++export function collectAttributes(element: Element): readonly Attr[] {
++	const names = Element.prototype.getAttributeNames.call(element)
++	return names.flatMap((name) => {
++		const attribute = Element.prototype.getAttributeNode.call(element, name)
++		return attribute === null ? [] : [attribute]
++	})
++}
++
++/**
++ * Checks whether an element name is one the `SANITIZER_BASELINE` safety floor removes with its content.
++ *
++ * @param name - The element's local name and namespace, as the `readElementName` function reads them.
++ * @returns True if the floor lists the namespace and the local name; false otherwise.
++ * @remarks
++ * The match reads the namespace, so the SVG `use` element matches and an HTML element that the
++ * parser names `use` does not.
++ * @example
++ * ```ts
++ * matchesBaselineElement({ name: 'iframe', namespace: 'http://www.w3.org/1999/xhtml' }) // true
++ * ```
++ */
++export function matchesBaselineElement(name: SanitizerElementNamespace): boolean {
++	return SANITIZER_BASELINE.elements.some(
++		(entry) => entry.name === name.name && entry.namespace === name.namespace,
++	)
++}
++
++/**
++ * Checks whether an attribute is one the `SANITIZER_BASELINE` safety floor removes from its element.
++ *
++ * @param name - The local name and namespace of the element carrying the attribute.
++ * @param attribute - The attribute to inspect.
++ * @returns True if the floor removes the attribute; false otherwise.
++ * @remarks
++ * The floor removes an attribute whose local name starts with the `handlers` prefix, an attribute
++ * whose local name the `urls` list names when the `matchesJavaScriptURL` function reads its value
++ * as a `javascript:` URL, and the `attributeName` attribute of an element the `animations` list
++ * names when its value is one of the `urls` names.
++ * @example
++ * ```ts
++ * const link = document.createElement('a')
++ * link.setAttribute('href', 'javascript:alert(1)')
++ * matchesBaselineAttribute(readElementName(link), link.getAttributeNode('href')) // true
++ * ```
++ */
++export function matchesBaselineAttribute(
++	name: SanitizerElementNamespace,
++	attribute: Attr,
++): boolean {
++	const { handlers, urls, animations } = SANITIZER_BASELINE
++	if (attribute.localName.startsWith(handlers)) return true
++	if (urls.includes(attribute.localName) && matchesJavaScriptURL(attribute.value)) return true
++	return (
++		attribute.localName === 'attributeName' &&
++		attribute.namespaceURI === null &&
++		urls.includes(attribute.value) &&
++		animations.some((entry) => entry.name === name.name && entry.namespace === name.namespace)
++	)
++}
++
++/**
++ * Checks whether a sanitizer configuration keeps an element, before the safety floor applies.
++ *
++ * @param name - The element's local name and namespace, as the `readElementName` function reads them.
++ * @param config - The configuration whose `elements` list is read.
++ * @returns True if the configuration lists no elements, or lists the local name and the namespace is
++ *   the `SANITIZER_NAMESPACE` constant; false otherwise.
++ * @remarks
++ * A list entry, a string or an entry's `name`, designates an HTML element, as the platform reads an
++ * entry that names no namespace, so a listed `a` keeps an HTML `a` element and not an SVG one.
++ * @example
++ * ```ts
++ * matchesKeptElement({ name: 'b', namespace: SANITIZER_NAMESPACE }, { elements: ['b'] }) // true
++ * matchesKeptElement({ name: 'i', namespace: SANITIZER_NAMESPACE }, { elements: ['b'] }) // false
++ * ```
++ */
++export function matchesKeptElement(
++	name: SanitizerElementNamespace,
++	config: SanitizerConfig,
++): boolean {
++	if (config.elements === undefined) return true
++	return (
++		name.namespace === SANITIZER_NAMESPACE &&
++		config.elements.some((entry) => (typeof entry === 'string' ? entry : entry.name) === name.name)
++	)
++}
++
++/**
++ * Checks whether a sanitizer configuration keeps an attribute on an element, before the safety floor applies.
++ *
++ * @param name - The local name and namespace of the element carrying the attribute.
++ * @param attribute - The attribute to inspect.
++ * @param config - The configuration whose `elements`, `attributes`, and `dataAttributes` fields are read.
++ * @returns True if the configuration keeps the attribute; false otherwise.
++ * @remarks
++ * A listed name matches an attribute outside any namespace. With an `attributes` list, an attribute
++ * survives when that list or the element's own entry names it, or when `dataAttributes` is `true`
++ * and its name starts with `data-`. Without one, an element's own entry that lists attributes keeps
++ * only those, and every other element keeps every attribute. An entry applies to an element in the
++ * `SANITIZER_NAMESPACE` namespace alone. These are the rules the `SanitizerConfig` fields state.
++ * @example
++ * ```ts
++ * const bold = document.createElement('b')
++ * bold.setAttribute('title', 'Saved')
++ * matchesKeptAttribute(readElementName(bold), bold.getAttributeNode('title'), { attributes: ['title'] }) // true
++ * ```
++ */
++export function matchesKeptAttribute(
++	name: SanitizerElementNamespace,
++	attribute: Attr,
++	config: SanitizerConfig,
++): boolean {
++	const own =
++		name.namespace === SANITIZER_NAMESPACE
++			? config.elements?.find((entry) => typeof entry !== 'string' && entry.name === name.name)
++			: undefined
++	const local = typeof own === 'object' ? own.attributes : undefined
++	const listing = attribute.namespaceURI === null ? attribute.localName : undefined
++	const listed =
++		listing !== undefined &&
++		((config.attributes?.includes(listing) ?? false) || (local?.includes(listing) ?? false))
++	if (config.attributes !== undefined) {
++		return listed || (config.dataAttributes === true && listing?.startsWith('data-') === true)
++	}
++	return local === undefined || listed
++}
++
++/**
++ * Checks whether a value is plain data at its own level: a primitive, an array, or a record, holding only enumerable data members.
++ *
++ * @param value - The value to inspect.
++ * @returns True if the value is a primitive other than a function, an array whose prototype is this
++ *   window's `Array` prototype, or an object whose prototype is this window's `Object` prototype or
++ *   null, and every own member is an enumerable data property with a string key, besides an array's
++ *   `length`; false otherwise, including when a trap or an accessor throws.
++ * @remarks
++ * The check reads property descriptors and never a member's value, so no accessor runs. It inspects
++ * one level: a caller checks each nested value it reads the same way. A record or an array from
++ * another window's realm has that realm's prototype and reads as false.
++ * @example
++ * ```ts
++ * matchesPlainData({ elements: ['b'] }) // true
++ * matchesPlainData(Object.create({ elements: ['b'] })) // false
++ * ```
++ */
++export function matchesPlainData(value: unknown): boolean {
++	if (typeof value !== 'object' || value === null) return typeof value !== 'function'
++	try {
++		const prototype: unknown = Object.getPrototypeOf(value)
++		const array = Array.isArray(value)
++		if (
++			array ? prototype !== Array.prototype : prototype !== Object.prototype && prototype !== null
++		) {
++			return false
++		}
++		return Reflect.ownKeys(value).every((key) => {
++			const descriptor = Reflect.getOwnPropertyDescriptor(value, key)
++			if (descriptor === undefined || !('value' in descriptor)) return false
++			return (
++				(array && key === 'length') || (typeof key === 'string' && descriptor.enumerable === true)
++			)
++		})
++	} catch {
++		return false
++	}
++}
++
+ /**
+  * Returns the width of the vertical scrollbar a document's view shows, as Bootstrap's `ScrollBarHelper` measures it.
+  *
+diff --git a/src/browser/index.ts b/src/browser/index.ts
+index 354dd8e..a09002f 100644
+--- a/src/browser/index.ts
++++ b/src/browser/index.ts
+@@ -22,5 +22,5 @@ export * from './Modal.js'
+ export * from './Delegate.js'
+ export * from './Toast.js'
+ export * from './Offcanvas.js'
+-export * from './sanitizers/NativeSanitizer.js'
++export * from './sanitizers/ConfigSanitizer.js'
+ export * from './Tooltip.js'
+diff --git a/src/browser/sanitizers/ConfigSanitizer.ts b/src/browser/sanitizers/ConfigSanitizer.ts
+new file mode 100644
+index 0000000..b41f4a0
+--- /dev/null
++++ b/src/browser/sanitizers/ConfigSanitizer.ts
+@@ -0,0 +1,165 @@
++import type { ConfigSanitizerOptions, SanitizerConfig, SanitizerInterface } from '../types.js'
++import { AppError } from '@src/core'
++import { isInstance } from '@orkestrel/contract'
++import { SANITIZER_ALLOWLIST, SANITIZER_NAMESPACE } from '../constants.js'
++import {
++	collectAttributes,
++	collectChildren,
++	matchesBaselineAttribute,
++	matchesBaselineElement,
++	matchesKeptAttribute,
++	matchesKeptElement,
++	readElementName,
++	readTag,
++} from '../helpers.js'
++import { isSanitizerConfig, isSanitizeTarget } from '../validators.js'
++
++/**
++ * Writes markup into an element through one sanitizer configuration, by the element's `setHTML` method where it has one and by a walk of the parsed markup otherwise.
++ *
++ * @remarks
++ * The sanitizer holds one `SanitizerConfig` dictionary, a frozen copy of the `config` option or, by
++ * default, the `SANITIZER_ALLOWLIST` constant built from Bootstrap's allowlist. Each write reads
++ * whether the element carries a `setHTML` method, through the `isSanitizeTarget` guard, and passes
++ * the dictionary as that method's `sanitizer` option when it does. Where it does not, as on
++ * Chromium 141, the markup is parsed through the `innerHTML` property of a shallow copy of the
++ * target, with its attributes, imported into an inert document this window's `document` creates, so
++ * the parse runs in the target's context as the `setHTML` method's does, and no script runs and
++ * nothing loads. The parsed tree is then walked: an element the configuration does not keep is
++ * removed with its content, an attribute it does not keep is removed, a comment is removed, text and
++ * processing instructions stay, and a kept `template` element's content is walked as well. The
++ * `SANITIZER_BASELINE` floor applies whatever the configuration lists, and it removes more than the
++ * platform in the places the `SanitizerBaseline` type names. The survivors move into the element, or
++ * into its content when it is a `template` element, with nothing serialized again. No engine file
++ * constructs or names the platform's `Sanitizer` class: the dictionary is the configuration.
++ *
++ * The walk reads every node through the prototypes of this window's DOM interfaces rather than
++ * through the node's own members, so a form's named control, such as an `input` element named
++ * `attributes` or `childNodes`, cannot hide the form's attributes or children from it. Because the
++ * parse runs in this window's inert document, markup written into an element of another window's
++ * document is sanitized the same way and keeps what the configuration and the floor keep. The copy
++ * of the target carries no ancestors, so a `form` element the markup opens inside a target that
++ * itself sits inside a form stays on the walk, where the `setHTML` method drops it, and the inert
++ * document is in no-quirks mode whatever mode the target's document is in. The `innerHTML` property
++ * attaches no declarative shadow root, so a `template` element carrying a `shadowrootmode` attribute
++ * stays a `template` element on the walk, with its content walked, where the `setHTML` method
++ * attaches the shadow root; inserting the walked `template` element attaches none either. Assigning
++ * markup to the `innerHTML` property is a Trusted Types sink, so on a page that requires Trusted
++ * Types for scripts the walk throws the platform's `TypeError`, where the `setHTML` method would
++ * not. A failure the walk or `setHTML` throws, such as that refusal, reaches the caller unchanged and
++ * leaves the element's children as they were.
++ *
++ * @example
++ * ```ts
++ * const sanitizer = new ConfigSanitizer()
++ * sanitizer.write(slot, '<b>Saved</b>')
++ * ```
++ */
++export class ConfigSanitizer implements SanitizerInterface {
++	readonly #config: SanitizerConfig
++
++	/**
++	 * Validates the configuration and holds a frozen copy of it.
++	 *
++	 * @param options - The sanitizer configuration; an absent `config` selects `SANITIZER_ALLOWLIST`.
++	 * @throws Thrown when the `config` option is not a configuration the `isSanitizerConfig` guard admits, such as a `dataAttributes` field without an `attributes` list or a record whose field is an accessor, as an `AppError` carrying the `SANITIZER_OPTION_INVALID` code.
++	 */
++	constructor(options?: ConfigSanitizerOptions) {
++		const config = options?.config
++		if (config === undefined) {
++			this.#config = SANITIZER_ALLOWLIST
++			return
++		}
++		// The caller's object is validated as plain data before it is copied, so no accessor runs and no
++		// member the clone would drop is lost; the clone is validated again, so a proxy that answered
++		// the first reading differently, or that the clone cannot copy, fails.
++		let copy: unknown
++		try {
++			copy = isSanitizerConfig(config) ? structuredClone(config) : undefined
++		} catch {
++			copy = undefined
++		}
++		if (!isSanitizerConfig(copy)) {
++			throw new AppError('The sanitizer configuration is invalid', 'SANITIZER_OPTION_INVALID', {
++				key: 'config',
++			})
++		}
++		for (const entry of copy.elements ?? []) {
++			if (typeof entry === 'string') continue
++			Object.freeze(entry.attributes)
++			Object.freeze(entry)
++		}
++		Object.freeze(copy.elements)
++		Object.freeze(copy.attributes)
++		this.#config = Object.freeze(copy)
++	}
++
++	/**
++	 * Replaces the element's children with the markup the configuration and the safety floor keep.
++	 *
++	 * @param element - The element whose children are replaced.
++	 * @param html - The markup to sanitize and write.
++	 * @throws Thrown when the `SANITIZER_BASELINE` floor removes the element itself, such as a `script` or `iframe` element, as an `AppError` carrying the `SANITIZER_TARGET_INVALID` code, before any write.
++	 */
++	write(element: Element, html: string): void {
++		const name = readElementName(element)
++		if (name !== undefined && matchesBaselineElement(name)) {
++			throw new AppError(
++				'The sanitizer refuses to write into this element',
++				'SANITIZER_TARGET_INVALID',
++				{
++					tag: readTag(element),
++				},
++			)
++		}
++		if (isSanitizeTarget(element)) {
++			element.setHTML(html, { sanitizer: this.#config })
++			return
++		}
++		const inert = document.implementation.createHTMLDocument('')
++		const context = inert.importNode(element, false)
++		context.innerHTML = html
++		const parsed = isInstance(context, HTMLTemplateElement) ? context.content : context
++		this.#clean(parsed)
++		const nodes = collectChildren(parsed)
++		// A template target of any window receives the nodes into its content, as the `setHTML` method
++		// writes them, read through the `HTMLTemplateElement` prototype rather than this window's class.
++		const content: unknown =
++			name?.name === 'template' && name.namespace === SANITIZER_NAMESPACE
++				? Object.getOwnPropertyDescriptor(HTMLTemplateElement.prototype, 'content')?.get?.call(
++						element,
++					)
++				: undefined
++		if (content === undefined) Element.prototype.replaceChildren.call(element, ...nodes)
++		else Reflect.apply(DocumentFragment.prototype.replaceChildren, content, nodes)
++	}
++
++	// Walks the parent's children, read through a tree walker, and recurses into every kept element and
++	// into a kept template's content. Every read and removal goes through a prototype, so a named
++	// control of a parsed form cannot stand in for the member it names.
++	#clean(parent: Node): void {
++		for (const node of collectChildren(parent)) {
++			if (isInstance(node, Text) || isInstance(node, ProcessingInstruction)) continue
++			const name = isInstance(node, Element) ? readElementName(node) : undefined
++			if (
++				!isInstance(node, Element) ||
++				name === undefined ||
++				matchesBaselineElement(name) ||
++				!matchesKeptElement(name, this.#config)
++			) {
++				Node.prototype.removeChild.call(parent, node)
++				continue
++			}
++			for (const attribute of collectAttributes(node)) {
++				if (
++					matchesBaselineAttribute(name, attribute) ||
++					!matchesKeptAttribute(name, attribute, this.#config)
++				) {
++					Element.prototype.removeAttributeNode.call(node, attribute)
++				}
++			}
++			if (isInstance(node, HTMLTemplateElement)) this.#clean(node.content)
++			this.#clean(node)
++		}
++	}
++}
+diff --git a/src/browser/sanitizers/NativeSanitizer.ts b/src/browser/sanitizers/NativeSanitizer.ts
+deleted file mode 100644
+index 44eb8b5..0000000
+--- a/src/browser/sanitizers/NativeSanitizer.ts
++++ /dev/null
+@@ -1,45 +0,0 @@
+-import type { NativeSanitizerOptions, SanitizerConfig, SanitizerInterface } from '../types.js'
+-import { AppError } from '@src/core'
+-import { SANITIZER_ALLOWLIST } from '../constants.js'
+-import { readTag } from '../helpers.js'
+-import { isSanitizeTarget } from '../validators.js'
+-
+-/**
+- * Writes markup into an element through the platform's `setHTML` method and a sanitizer configuration.
+- *
+- * @remarks
+- * The adapter holds one `SanitizerConfig` dictionary, the `config` option or, by default, the
+- * `SANITIZER_ALLOWLIST` constant built from Bootstrap's allowlist, and passes it as the `sanitizer`
+- * option of each `setHTML` call. It keeps no reference to an element or to markup after a call
+- * returns. No engine file constructs or names the platform's `Sanitizer` class: the dictionary is the
+- * configuration. A write into an element that carries no `setHTML` method throws an `AppError`
+- * carrying the `SANITIZER_UNSUPPORTED` code, and a failure `setHTML` throws, such as the platform's
+- * refusal of the configuration, reaches the caller unchanged.
+- *
+- * @example
+- * ```ts
+- * const sanitizer = new NativeSanitizer()
+- * sanitizer.write(slot, '<b>Saved</b>')
+- * ```
+- */
+-export class NativeSanitizer implements SanitizerInterface {
+-	readonly #config: SanitizerConfig
+-
+-	/**
+-	 * Holds the configuration each write passes to the platform.
+-	 *
+-	 * @param options - The sanitizer configuration; an absent `config` selects `SANITIZER_ALLOWLIST`.
+-	 */
+-	constructor(options?: NativeSanitizerOptions) {
+-		this.#config = options?.config ?? SANITIZER_ALLOWLIST
+-	}
+-
+-	write(element: Element, html: string): void {
+-		if (!isSanitizeTarget(element)) {
+-			throw new AppError('The element has no setHTML method', 'SANITIZER_UNSUPPORTED', {
+-				tag: readTag(element),
+-			})
+-		}
+-		element.setHTML(html, { sanitizer: this.#config })
+-	}
+-}
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 9b9014e..34f2484 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -647,12 +647,53 @@ export interface SanitizerInterface {
+ 	write(element: Element, html: string): void
+ }
+ 
+-/** Configures the native sanitizer adapter, which writes markup through the platform's `setHTML` method. */
+-export interface NativeSanitizerOptions {
+-	/** Carries the configuration the markup is sanitized through; an empty dictionary is an explicit platform configuration. Default: the engine's configuration built from Bootstrap's allowlist. */
++/** Configures the sanitizer that writes markup through one sanitizer configuration, whether or not the element carries the platform's `setHTML` method. */
++export interface ConfigSanitizerOptions {
++	/** Carries the configuration the markup is sanitized through; an empty dictionary lists nothing, so only comments and what the safety floor removes are dropped. Default: the engine's configuration built from Bootstrap's allowlist. */
+ 	readonly config?: SanitizerConfig
+ }
+ 
++/**
++ * Mirrors the HTML standard's dictionary that names one element by its local name and namespace.
++ *
++ * @remarks
++ * The HTML standard names this dictionary `SanitizerElementNamespace`. The mirror carries its `name`
++ * and `namespace` fields, and the namespace is required rather than defaulting to HTML's, so an entry
++ * reads the same wherever it is written.
++ */
++export interface SanitizerElementNamespace {
++	/** Names the element's local name, mirroring the dictionary's `name` field. */
++	readonly name: string
++	/** Names the element's namespace URI, mirroring the dictionary's `namespace` field. */
++	readonly namespace: string
++}
++
++/**
++ * Declares what a sanitizer's walk removes whatever its configuration lists.
++ *
++ * @remarks
++ * The floor stands in for the platform's own removal of unsafe markup where the element carries no
++ * `setHTML` method. It removes at least what the platform's built-in safe baseline removes, and it
++ * removes more than the platform in these places, each read on Chromium 153:
++ *
++ * - every attribute whose name starts with the `handlers` prefix, where the platform removes only
++ *   the event handler names it knows, such as an `onfoo` attribute;
++ * - a `javascript:` URL in a `urls` attribute on any element, where the platform checks only the
++ *   elements that navigate, such as a `formaction` attribute on an `a` element;
++ * - an animation element's `attributeName` attribute naming any `urls` attribute, where the
++ *   platform removes it only when it names `href` or `xlink:href`, such as `attributeName="action"`.
++ */
++export interface SanitizerBaseline {
++	/** Lists the elements removed with their content, each matched by namespace and local name. */
++	readonly elements: readonly SanitizerElementNamespace[]
++	/** Names the prefix of the attribute names removed as event handlers. */
++	readonly handlers: string
++	/** Lists the attribute names removed when the platform's URL parser reads their value as a `javascript:` URL; the element stays. */
++	readonly urls: readonly string[]
++	/** Lists the animation elements whose `attributeName` attribute is removed when it names one of the `urls` attributes, each matched by namespace and local name. */
++	readonly animations: readonly SanitizerElementNamespace[]
++}
++
+ /**
+  * Mirrors the HTML standard's dictionary that names one element the platform sanitizer keeps and the attributes kept on it.
+  *
+@@ -703,8 +744,8 @@ export interface SetHTMLOptions {
+  * Describes a node whose `setHTML` method parses markup through a sanitizer.
+  *
+  * @remarks
+- * The DOM library of TypeScript 6.0.3 omits `setHTML`, so a guard narrows an element to this contract
+- * before the native sanitizer adapter writes markup into it.
++ * The DOM library of TypeScript 6.0.3 omits `setHTML`, and Chromium 141 carries no such method, so a
++ * sanitizer reads through a guard, at each write, whether the element carries it.
+  */
+ export interface SanitizeTargetInterface {
+ 	/**
+@@ -1633,7 +1674,7 @@ export interface TooltipOptions {
+ 		/** Lists the placements tried in order when the preferred one overflows, mirroring Bootstrap's `fallbackPlacements` option. Default: `['top', 'right', 'bottom', 'left']`. */
+ 		readonly fallbacks?: readonly PlacementPosition[]
+ 	}
+-	/** Writes markup content and the template through this sanitizer, read from the constructor alone. Default: the platform's `setHTML` over Bootstrap's allowlist. */
++	/** Writes markup content and the template through this sanitizer, read from the constructor alone. Default: a `ConfigSanitizer` instance over Bootstrap's allowlist. */
+ 	readonly sanitizer?: SanitizerInterface
+ 	/** Delegates the tooltip to descendants of the host matching this selector, mirroring Bootstrap's `selector` option. */
+ 	readonly descendants?: string
+diff --git a/src/browser/validators.ts b/src/browser/validators.ts
+index 50ba7a0..8230fdc 100644
+--- a/src/browser/validators.ts
++++ b/src/browser/validators.ts
+@@ -8,13 +8,26 @@ import type {
+ 	ModalEventMap,
+ 	OffcanvasEventMap,
+ 	SanitizeTargetInterface,
++	SanitizerConfig,
+ 	ScrollSpyEventMap,
+ 	TabEventMap,
+ 	ToastEventMap,
+ 	TooltipEventMap,
+ } from './types.js'
+ import type { Guard } from '@orkestrel/contract'
+-import { isInstance, isNonNegativeInteger, isRecord, literalOf } from '@orkestrel/contract'
++import {
++	arrayOf,
++	isArray,
++	isBoolean,
++	isInstance,
++	isNonNegativeInteger,
++	isRecord,
++	isString,
++	literalOf,
++	recordOf,
++	unionOf,
++} from '@orkestrel/contract'
++import { matchesPlainData } from './helpers.js'
+ 
+ /**
+  * Checks whether a value names a supported color mode.
+@@ -417,12 +430,12 @@ export function isTooltipEvent(value: unknown): value is TooltipEventMap['show']
+  * @param value - The value to inspect.
+  * @returns True if the value is an object whose `setHTML` member is a function; false otherwise.
+  * @remarks
+- * TypeScript's DOM library omits `setHTML`, so the native sanitizer narrows an element through this
+- * guard before it writes markup. A value whose `setHTML` accessor or prototype trap throws reads as
+- * false.
++ * TypeScript's DOM library omits `setHTML`, so the `ConfigSanitizer` class narrows an element
++ * through this guard at each write, and writes through the method only where the guard holds. A
++ * value whose `setHTML` accessor or prototype trap throws reads as false.
+  * @example
+  * ```ts
+- * isSanitizeTarget(document.createElement('div')) // true on Chromium
++ * isSanitizeTarget({ setHTML() {} }) // true
+  * isSanitizeTarget({}) // false
+  * ```
+  */
+@@ -438,3 +451,77 @@ export function isSanitizeTarget(value: unknown): value is SanitizeTargetInterfa
+ 		return false
+ 	}
+ }
++
++/**
++ * Checks whether a value is a sanitizer configuration the platform's `setHTML` method accepts, within the fields the engine mirrors.
++ *
++ * @param value - The value to inspect.
++ * @returns True if the value is plain data, a record carrying only the `elements`, `attributes`,
++ *   and `dataAttributes` fields in their declared types and breaking none of the platform's validity
++ *   rules; false otherwise.
++ * @remarks
++ * The platform refuses, as Chromium 153 reports, a `dataAttributes` field without an `attributes`
++ * list, a name listed twice in one list, an element string and an element entry naming the same
++ * element, an element's own attribute that the `attributes` list names too, and a `data-*` name
++ * listed while `dataAttributes` is `true`. The guard also refuses a field outside the mirrored
++ * subset, which the platform would honour, because the walk of the `ConfigSanitizer` class reads
++ * none. The record, its lists, and each element entry must pass the `matchesPlainData` function
++ * before any member is read, so a configuration with an accessor, a non-enumerable member, or a
++ * prototype other than the `Object` or `Array` prototype, such as a class instance, reads as
++ * false without running the accessor. A value whose trap throws reads as false.
++ * @example
++ * ```ts
++ * isSanitizerConfig({ elements: ['b'], attributes: ['title'] }) // true
++ * isSanitizerConfig({ dataAttributes: true }) // false
++ * ```
++ */
++export function isSanitizerConfig(value: unknown): value is SanitizerConfig {
++	try {
++		if (!matchesPlainData(value) || !isRecord(value)) return false
++		const { elements: listed, attributes: named } = value
++		if (!matchesPlainData(listed) || !matchesPlainData(named)) return false
++		if (
++			isArray(listed) &&
++			!listed.every(
++				(entry) =>
++					matchesPlainData(entry) && (!isRecord(entry) || matchesPlainData(entry.attributes)),
++			)
++		) {
++			return false
++		}
++		if (
++			!recordOf(
++				{
++					elements: arrayOf(
++						unionOf(
++							isString,
++							recordOf({ name: isString, attributes: arrayOf(isString) }, ['attributes']),
++						),
++					),
++					attributes: arrayOf(isString),
++					dataAttributes: isBoolean,
++				},
++				true,
++			)(value)
++		) {
++			return false
++		}
++		const elements = value.elements ?? []
++		const names = elements.map((entry) => (typeof entry === 'string' ? entry : entry.name))
++		const locals = elements.map((entry) =>
++			typeof entry === 'string' ? [] : (entry.attributes ?? []),
++		)
++		const global = value.attributes
++		if (new Set(names).size !== names.length) return false
++		if (locals.some((list) => new Set(list).size !== list.length)) return false
++		if (global === undefined) return value.dataAttributes === undefined
++		if (new Set(global).size !== global.length) return false
++		if (locals.some((list) => list.some((name) => global.includes(name)))) return false
++		return (
++			value.dataAttributes !== true ||
++			[global, ...locals].every((list) => list.every((name) => !name.startsWith('data-')))
++		)
++	} catch {
++		return false
++	}
++}
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 418d92c..8b4b83e 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1,5 +1,6 @@
+ import type { JourneyVariant, RecorderInterface } from '@orkestrel/test'
+ import type { PortfolioInterface, PortfolioOptions } from '@orkestrel/test/browser'
++import type { SanitizerConfig } from '@src/browser'
+ import type {
+ 	ButtonProjection,
+ 	ButtonReading,
+@@ -39,7 +40,7 @@ import {
+ 	waitForState,
+ } from '@orkestrel/test/browser'
+ import { commands, page, userEvent } from 'vitest/browser'
+-import { Delegate } from '@src/browser'
++import { Delegate, SANITIZER_ALLOWLIST, TOOLTIP_TEMPLATE } from '@src/browser'
+ import oracle from './fixtures/oracle/button.json'
+ import {
+ 	computeCroppedEdges,
+@@ -2272,3 +2273,416 @@ export function mountTraversalStart(): HTMLButtonElement {
+ 	control.focus()
+ 	return control
+ }
++
++/**
++ * Pairs one sanitizer configuration and one markup string with the markup a sanitizer keeps.
++ *
++ * @remarks
++ * The `expected` markup is what the platform's `setHTML` method keeps, read on Chromium 153, and
++ * the walk keeps the same wherever the `walked` markup is absent. A case carrying `walked` is one
++ * where the walk's safety floor removes more than the platform does, and `walked` is what it keeps.
++ */
++export interface SanitizerCase {
++	readonly name: string
++	readonly config?: SanitizerConfig
++	readonly markup: string
++	readonly expected: string
++	readonly walked?: string
++}
++
++/**
++ * Lists the markup a sanitizer must keep under each configuration, through the platform and through the walk.
++ *
++ * @remarks
++ * An absent `config` is the `SANITIZER_ALLOWLIST` default. Each expectation is a literal read from
++ * the platform rather than derived from the allowlist or the floor, so a sanitizer that drifts from
++ * either disagrees with it.
++ */
++export const SANITIZER_CASES: readonly SanitizerCase[] = Object.freeze([
++	{
++		name: 'the allowlist keeps its markup and drops scripts, handlers, data attributes, unlisted elements with their content, and a script URL',
++		markup:
++			'<p class="lead" id="p" dir="rtl" lang="fr" role="note" aria-label="Note" aria-describedby="p" data-x="1" onclick="alert(1)" style="color: red">' +
++			'<a href="https://example.com" target="_blank" rel="noopener" title="Site">Site</a>' +
++			'<a href="javascript:alert(2)">Bad</a>' +
++			'<img src="data:image/png;base64,AA==" alt="Dot" width="1" height="1" onerror="alert(3)">' +
++			'<mark>gone</mark><script>alert(4)</script><span aria-vendor="x">kept</span></p>',
++		expected:
++			'<p class="lead" id="p" dir="rtl" lang="fr" role="note" aria-label="Note" aria-describedby="p">' +
++			'<a href="https://example.com" target="_blank" rel="noopener" title="Site">Site</a>' +
++			'<a>Bad</a>' +
++			'<img src="data:image/png;base64,AA==" alt="Dot" width="1" height="1">' +
++			'<span>kept</span></p>',
++	},
++	{
++		name: 'a supplied configuration replaces the allowlist',
++		config: { elements: ['mark'], attributes: ['title'] },
++		markup: '<mark title="t" class="c">kept</mark><b>gone</b>',
++		expected: '<mark title="t">kept</mark>',
++	},
++	{
++		name: 'the omitted configuration keeps less than an empty dictionary does',
++		markup: '<p title="t" data-x="1"><mark>m</mark><span href="h">s</span></p>',
++		expected: '<p><span>s</span></p>',
++	},
++	{
++		name: 'an empty dictionary keeps every element and attribute the floor leaves',
++		config: {},
++		markup: '<p title="t" data-x="1"><mark>m</mark><span href="h">s</span></p>',
++		expected: '<p title="t" data-x="1"><mark>m</mark><span href="h">s</span></p>',
++	},
++	{
++		name: 'an element-scoped attribute survives only on the element that permits it',
++		markup:
++			'<span href="h" src="s" title="t" alt="a">s</span><b title="t">b</b><a href="https://example.com" title="t">a</a><img src="data:image/png;base64,AA==" title="t" alt="a">',
++		expected:
++			'<span>s</span><b>b</b><a href="https://example.com" title="t">a</a><img src="data:image/png;base64,AA==" title="t" alt="a">',
++	},
++	{
++		name: 'the tooltip template survives the allowlist whole',
++		markup: TOOLTIP_TEMPLATE,
++		expected: TOOLTIP_TEMPLATE,
++	},
++	{
++		name: 'a script URL loses its attribute however the scheme is spelled, and a relative, encoded, or data URL keeps it',
++		config: {},
++		markup:
++			'<a href="java&#9;script:a">t</a><a href="JAVASCRIPT:b">u</a><a href="&#1; javascript:c">v</a><a href="javascript&colon;d">w</a>' +
++			'<a href="%6Aavascript:e">x</a><a href="/help">y</a><a href="data:text/html,z">z</a>',
++		expected:
++			'<a>t</a><a>u</a><a>v</a><a>w</a>' +
++			'<a href="%6Aavascript:e">x</a><a href="/help">y</a><a href="data:text/html,z">z</a>',
++	},
++	{
++		name: 'the floor removes the base, iframe, object, and embed elements with their content',
++		config: {},
++		markup:
++			'<base href="https://example.com/"><iframe src="x">i</iframe><object data="x">o</object><embed src="x"><p>kept</p>',
++		expected: '<p>kept</p>',
++	},
++	{
++		name: 'the floor removes the SVG script and use elements',
++		config: {},
++		markup: '<svg><script>alert(1)</script><use href="#a"></use><g></g></svg>',
++		expected: '<svg><g></g></svg>',
++	},
++	{
++		name: 'the floor overrides a configuration that lists a script element, a handler, and a script URL',
++		config: { elements: ['a', 'script'], attributes: ['href', 'onclick'] },
++		markup: '<a href="javascript:x" onclick="y">a</a><script>alert(1)</script>',
++		expected: '<a>a</a>',
++	},
++	{
++		name: 'a form, a button, and an input lose a script URL action',
++		config: {},
++		markup:
++			'<form action="javascript:x"><button formaction="javascript:x">b</button><input formaction="javascript:x"></form>',
++		expected: '<form><button>b</button><input></form>',
++	},
++	{
++		name: 'SVG and MathML links lose a script URL, and an animation loses an attributeName naming a link',
++		config: {},
++		markup:
++			'<svg><a href="javascript:a">s</a><a xlink:href="javascript:b">t</a>' +
++			'<animate attributeName="href" values="x"></animate><set attributeName="xlink:href" to="x"></set>' +
++			'<animate attributeName="fill"></animate></svg><math><mi href="javascript:c">m</mi></math>',
++		expected:
++			'<svg><a>s</a><a>t</a><animate values="x"></animate><set to="x"></set>' +
++			'<animate attributeName="fill"></animate></svg><math><mi>m</mi></math>',
++	},
++	{
++		name: 'a kept template has its content sanitized, nested templates included',
++		config: {},
++		markup:
++			'<template><script>alert(1)</script><b onclick="alert(2)">t</b><template><iframe></iframe><i>n</i></template></template>',
++		expected: '<template><b>t</b><template><i>n</i></template></template>',
++	},
++	{
++		name: 'an empty dictionary removes a comment and keeps a noscript element with its content',
++		config: {},
++		markup: '<!--c--><noscript><b>x</b></noscript>',
++		expected: '<noscript><b>x</b></noscript>',
++	},
++	{
++		name: 'the allowlist removes a comment and a noscript element',
++		markup: '<!--c--><b>x</b><noscript><b>y</b></noscript>',
++		expected: '<b>x</b>',
++	},
++	{
++		name: 'every data attribute survives beside the attribute list when dataAttributes is true',
++		config: { attributes: ['class'], dataAttributes: true },
++		markup: '<b title="t" data-x="1" data-="2" class="c">a</b>',
++		expected: '<b data-x="1" data-="2" class="c">a</b>',
++	},
++	{
++		name: 'only a listed data attribute survives when dataAttributes is false',
++		config: { attributes: ['class', 'data-y'], dataAttributes: false },
++		markup: '<b title="t" data-x="1" data-y="2" class="c">a</b>',
++		expected: '<b data-y="2" class="c">a</b>',
++	},
++	{
++		name: 'an element list without an attribute list keeps every attribute of an element with no list of its own',
++		config: { elements: [{ name: 'b', attributes: ['title'] }, 'i'] },
++		markup: '<b title="t" data-x="1" class="c">a</b><i data-x="1" class="c">i</i>',
++		expected: '<b title="t">a</b><i data-x="1" class="c">i</i>',
++	},
++	{
++		name: 'an empty element list removes every element and keeps the text around them',
++		config: { elements: [] },
++		markup: 'text<b>x</b>tail',
++		expected: 'texttail',
++	},
++	{
++		name: 'an empty attribute list removes every attribute',
++		config: { attributes: [] },
++		markup: '<b title="t" class="c">x</b>',
++		expected: '<b>x</b>',
++	},
++	{
++		name: 'a listed element name matches an HTML element alone',
++		config: { elements: ['svg', 'a', 'b', 'math'] },
++		markup: '<svg><b>x</b></svg><svg><a title="t">y</a></svg><math><b>m</b></math>',
++		expected: '<b>x</b><b>m</b>',
++	},
++	{
++		name: 'a listed attribute name matches an attribute outside any namespace alone',
++		config: { attributes: ['xlink:href', 'title', 'href', 'xml:lang', 'lang'] },
++		markup:
++			'<b xlink:href="x" xml:lang="en" title="t">x</b><svg><a xlink:href="https://example.com" xlink:title="t">y</a></svg>',
++		expected: '<b xlink:href="x" xml:lang="en" title="t">x</b><svg><a>y</a></svg>',
++	},
++	{
++		name: 'table and select markup keeps the structure the parser builds',
++		config: {},
++		markup: '<select><option>o</option></select><table><tr><td>t</td></tr></table>',
++		expected:
++			'<select><option>o</option></select><table><tbody><tr><td>t</td></tr></tbody></table>',
++	},
++	{
++		name: 'an empty dictionary keeps the text of table parts a div context drops',
++		config: {},
++		markup: '<tr><td>x</td></tr><td>y</td><caption>c</caption>',
++		expected: 'xyc',
++	},
++	{
++		name: 'the allowlist keeps the text of table parts a div context drops',
++		markup: '<tr><td>x</td></tr><td>y</td><caption>c</caption>',
++		expected: 'xyc',
++	},
++	{
++		name: 'a form whose named control shadows attributes loses its handler and script URL under an empty dictionary',
++		config: {},
++		markup:
++			'<form onclick="alert(1)" action="javascript:alert(2)"><input name="attributes"><button>Submit</button></form>',
++		expected: '<form><input name="attributes"><button>Submit</button></form>',
++	},
++	{
++		name: 'a form whose named control shadows attributes loses its handler and script URL under a configuration that keeps forms',
++		config: { elements: ['form', 'input', 'button'], attributes: ['name', 'action'] },
++		markup:
++			'<form onclick="alert(1)" action="javascript:alert(2)"><input name="attributes"><button>Submit</button></form>',
++		expected: '<form><input name="attributes"><button>Submit</button></form>',
++	},
++	{
++		name: 'a form whose named control shadows childNodes loses its iframe under an empty dictionary',
++		config: {},
++		markup:
++			'<form><input name="childNodes"><iframe srcdoc="<script>alert(1)</script>"></iframe></form>',
++		expected: '<form><input name="childNodes"></form>',
++	},
++	{
++		name: 'a form whose named control shadows childNodes loses its iframe and unlisted elements under a configuration that keeps forms',
++		config: { elements: ['form', 'input', 'button'], attributes: ['name', 'action'] },
++		markup:
++			'<form><input name="childNodes"><iframe srcdoc="<script>alert(1)</script>"></iframe><b title="x">drop</b><!--c--></form>',
++		expected: '<form><input name="childNodes"></form>',
++	},
++	{
++		name: 'a form whose named control shadows nodeType loses its handler and script',
++		config: {},
++		markup: '<form onclick="alert(1)"><input name="nodeType"><script>alert(2)</script></form>',
++		expected: '<form><input name="nodeType"></form>',
++	},
++	{
++		name: 'a form whose named control shadows localName keeps only what a configuration that keeps forms lists',
++		config: { elements: ['form', 'input', 'button'], attributes: ['name', 'action'] },
++		markup:
++			'<form onclick="alert(1)"><input name="localName"><img src="x" onerror="alert(2)"></form>',
++		expected: '<form><input name="localName"></form>',
++	},
++	{
++		name: 'a form whose named control shadows namespaceURI keeps only what a configuration that keeps forms lists',
++		config: { elements: ['form', 'input', 'button'], attributes: ['name', 'action'] },
++		markup: '<form><input name="namespaceURI"><b>x</b></form>',
++		expected: '<form><input name="namespaceURI"></form>',
++	},
++	{
++		name: 'a form whose named control shadows remove is removed by the allowlist',
++		markup: '<form><input name="remove"></form><b>x</b>',
++		expected: '<b>x</b>',
++	},
++	{
++		name: 'a form whose named control shadows removeChild loses its iframe',
++		config: {},
++		markup: '<form><input name="removeChild"><iframe></iframe></form>',
++		expected: '<form><input name="removeChild"></form>',
++	},
++	{
++		name: 'a form whose named controls shadow removeAttributeNode, getAttributeNames, and getAttributeNode loses its handler',
++		config: {},
++		markup:
++			'<form onclick="alert(1)"><input name="removeAttributeNode"><input name="getAttributeNames"><input name="getAttributeNode"></form>',
++		expected:
++			'<form><input name="removeAttributeNode"><input name="getAttributeNames"><input name="getAttributeNode"></form>',
++	},
++	{
++		name: 'a form inside a kept template whose named control shadows content loses its handler and script',
++		config: {},
++		markup:
++			'<template><form onclick="alert(1)"><input name="content"><script>alert(2)</script></form></template>',
++		expected: '<template><form><input name="content"></form></template>',
++	},
++	{
++		name: 'an attribute list without dataAttributes removes an unlisted data attribute',
++		config: { attributes: ['title'] },
++		markup: '<b data-x="1" title="t">x</b>',
++		expected: '<b title="t">x</b>',
++	},
++	{
++		name: 'the floor removes an animation attributeName naming action, where the platform keeps it',
++		config: {},
++		markup: '<svg><animate attributeName="action"></animate></svg>',
++		expected: '<svg><animate attributeName="action"></animate></svg>',
++		walked: '<svg><animate></animate></svg>',
++	},
++	{
++		name: 'malformed markup keeps the structure the parser repairs it to',
++		markup: '<b><i>x</b>y',
++		expected: '<b><i>x</i></b><i>y</i>',
++	},
++	{
++		name: 'empty markup leaves the target empty',
++		markup: '',
++		expected: '',
++	},
++	{
++		name: 'the floor removes every attribute whose name starts with on, where the platform removes only the handler names it knows',
++		config: {},
++		markup: '<div onfoo="x" onclick="y">d</div>',
++		expected: '<div onfoo="x">d</div>',
++		walked: '<div>d</div>',
++	},
++	{
++		name: 'the floor removes a script URL from a navigating attribute on any element, where the platform checks only the elements that navigate',
++		config: { elements: ['a', 'div'], attributes: ['href', 'action', 'formaction'] },
++		markup:
++			'<div action="javascript:a" formaction="javascript:b">d</div><a href="javascript:c" formaction="javascript:d">a</a>',
++		expected:
++			'<div action="javascript:a" formaction="javascript:b">d</div><a formaction="javascript:d">a</a>',
++		walked: '<div>d</div><a>a</a>',
++	},
++	{
++		name: 'a declarative shadow root stays a template element on the walk, where the platform attaches it',
++		config: {},
++		markup: '<div><template shadowrootmode="open"><b>s</b></template></div>',
++		expected: '<div></div>',
++		walked: '<div><template shadowrootmode="open"><b>s</b></template></div>',
++	},
++])
++
++/**
++ * Lists sanitizer configurations the platform's `setHTML` method accepts and refuses, read on Chromium 153.
++ *
++ * @remarks
++ * Every entry is a well-formed dictionary, so each refusal is one of the platform's validity rules
++ * rather than a type conversion: a `dataAttributes` field without an `attributes` list, a
++ * duplicate name, an element's own attribute that the global list repeats, and a `data-*` name
++ * listed beside `dataAttributes: true`.
++ */
++export const SANITIZER_CONFIGS: readonly SanitizerConfig[] = Object.freeze([
++	{},
++	{ elements: [] },
++	{ attributes: [] },
++	{ elements: ['b'], attributes: ['title'] },
++	{ elements: [{ name: 'b', attributes: ['title'] }] },
++	{ elements: [{ name: 'b', attributes: [] }], attributes: ['title'] },
++	{ attributes: ['title'], dataAttributes: true },
++	{ attributes: ['title'], dataAttributes: false },
++	{ attributes: ['data-x'], dataAttributes: false },
++	{ elements: ['script'], attributes: ['onclick'] },
++	{ dataAttributes: true },
++	{ dataAttributes: false },
++	{ elements: [{ name: 'b' }], dataAttributes: true },
++	{ attributes: ['data-x'], dataAttributes: true },
++	{ elements: [{ name: 'b', attributes: ['data-x'] }], attributes: [], dataAttributes: true },
++	{ elements: ['b', 'b'] },
++	{ elements: ['b', { name: 'b' }] },
++	{ attributes: ['title', 'title'] },
++	{ elements: [{ name: 'b', attributes: ['title', 'title'] }] },
++	{ elements: [{ name: 'b', attributes: ['title'] }], attributes: ['title'] },
++	SANITIZER_ALLOWLIST,
++])
++
++/**
++ * Builds a detached element whose own `setHTML` member is undefined, so a sanitizer writing into it walks the markup.
++ *
++ * @param tag - The element's tag name, such as `div`.
++ * @returns The built element, not yet in any document.
++ *
++ * @remarks
++ * The own property shadows the prototype's method on this element alone, so the element reads to the
++ * `isSanitizeTarget` guard as every element does on a Chromium that carries no `setHTML` method, such
++ * as Chromium 141, while every other element of the page keeps the method.
++ *
++ * @example
++ * ```ts
++ * new ConfigSanitizer().write(buildWalkTarget('div'), '<b>Saved</b>')
++ * ```
++ */
++export function buildWalkTarget<K extends keyof HTMLElementTagNameMap>(
++	tag: K,
++): HTMLElementTagNameMap[K] {
++	return shadowSetHTML(build(tag))
++}
++
++/**
++ * Shadows an element's `setHTML` method with an own member that is undefined, so a sanitizer writing into it walks the markup.
++ *
++ * @param element - The element to shadow the method on, from this window's document or another's.
++ * @returns The same element.
++ *
++ * @remarks
++ * The `buildWalkTarget` function builds a detached HTML element this way. Call this function for an
++ * element that function cannot build, such as a MathML element or an element of another window's
++ * document.
++ *
++ * @example
++ * ```ts
++ * shadowSetHTML(document.createElementNS('http://www.w3.org/1998/Math/MathML', 'annotation-xml'))
++ * ```
++ */
++export function shadowSetHTML<T extends Element>(element: T): T {
++	Object.defineProperty(element, 'setHTML', { value: undefined })
++	return element
++}
++
++/**
++ * Mounts an empty iframe element and returns its document, a document of another window.
++ *
++ * @returns The iframe element's document, inside a container {@link scene} removes for you.
++ *
++ * @remarks
++ * A node the returned document creates belongs to the iframe element's window, so this window's
++ * constructors do not recognise it. A case that proves a mechanism works without this window's
++ * constructors writes into such a node.
++ *
++ * @example
++ * ```ts
++ * const target = shadowSetHTML(mountFrameDocument().createElement('template'))
++ * ```
++ */
++export function mountFrameDocument(): Document {
++	const host = scene.mount('<iframe></iframe>')
++	const frame = requireValue(host.querySelector('iframe'), 'The mounted host renders no iframe')
++	return requireValue(frame.contentDocument, 'The mounted iframe has no document')
++}
+diff --git a/tests/src/browser/Tooltip.test.ts b/tests/src/browser/Tooltip.test.ts
+index a8a25a5..92ea229 100644
+--- a/tests/src/browser/Tooltip.test.ts
++++ b/tests/src/browser/Tooltip.test.ts
+@@ -386,6 +386,44 @@ describe('Tooltip', () => {
+ 		expect(tip.querySelector('.tooltip-inner')?.innerHTML).toBe('<b class="x">Bold</b><a>link</a>')
+ 	})
+ 
++	it('shows a default tooltip, text and markup, where no element carries a setHTML method', async () => {
++		// Chromium 141 carries no `setHTML` method. Shadowing the prototype's method for this case makes
++		// every element read as it does there, so the default sanitizer walks the template and the markup.
++		const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'setHTML')
++		Object.defineProperty(Element.prototype, 'setHTML', { value: undefined, configurable: true })
++		onTestFinished(() => {
++			if (descriptor === undefined) Reflect.deleteProperty(Element.prototype, 'setHTML')
++			else Object.defineProperty(Element.prototype, 'setHTML', descriptor)
++		})
++		const root = scene.mount(
++			'<button type="button" id="trigger" title="Saved">Save</button><button type="button" id="rich">Rich</button>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const rich = requireValue(root.querySelector<HTMLElement>('#rich'), 'No rich trigger')
++		const tooltip = new Tooltip(host, { animated: false })
++		onTestFinished(() => tooltip.destroy())
++		expect(await tooltip.show()).toBe(true)
++		const tip = requireValue(
++			document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++			'No tip',
++		)
++		expect(tip.getAttribute('role')).toBe('tooltip')
++		expect(tip.querySelector('.tooltip-arrow')).not.toBeNull()
++		expect(tip.querySelector('.tooltip-inner')?.textContent).toBe('Saved')
++		const markup = new Tooltip(rich, {
++			animated: false,
++			html: true,
++			title: '<b class="x" onclick="alert(1)">Bold</b><script>alert(2)</script>',
++		})
++		onTestFinished(() => markup.destroy())
++		expect(await markup.show()).toBe(true)
++		const other = requireValue(
++			document.getElementById(rich.getAttribute('aria-describedby') ?? ''),
++			'No markup tip',
++		)
++		expect(other.querySelector('.tooltip-inner')?.innerHTML).toBe('<b class="x">Bold</b>')
++	})
++
+ 	it('writes the template and markup through a supplied sanitizer, and writes text content as text', async () => {
+ 		const root = scene.mount(
+ 			'<button type="button" id="trigger">Save</button><button type="button" id="text">Text</button>',
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index 25c50b7..393fbd4 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -1,4 +1,4 @@
+-import type { ButtonDetail, CollapseHooks, SanitizerInterface } from '@src/browser'
++import type { ButtonDetail, CollapseHooks, SanitizerConfig, SanitizerInterface } from '@src/browser'
+ import {
+ 	BUTTON_EVENTS,
+ 	BUTTON_SELECTORS,
+@@ -7,7 +7,17 @@ import {
+ 	computeNeighbor,
+ 	emitEvent,
+ 	fillSlot,
++	collectAttributes,
++	collectChildren,
++	matchesBaselineAttribute,
++	matchesBaselineElement,
+ 	matchesDisabled,
++	matchesJavaScriptURL,
++	matchesKeptAttribute,
++	matchesKeptElement,
++	matchesPlainData,
++	readElementName,
++	SANITIZER_NAMESPACE,
+ 	readControls,
+ 	isButtonEvent,
+ 	isClassToken,
+@@ -1016,6 +1026,287 @@ describe('writeContent', () => {
+ 	})
+ })
+ 
++describe('matchesJavaScriptURL', () => {
++	it('matches a javascript: URL however the platform parser lets it be spelled, and nothing else', () => {
++		const scripts = [
++			'javascript:alert(1)',
++			'JAVASCRIPT:alert(1)',
++			' javascript:alert(1)',
++			'\u0001javascript:alert(1)',
++			'java\tscript:alert(1)',
++			'java\nscript:alert(1)',
++			'javascript:',
++		]
++		const others = [
++			'/help',
++			'https://example.com/',
++			'%6Aavascript:alert(1)',
++			'javascript',
++			'java script:alert(1)',
++			'https:javascript:alert(1)',
++			'data:text/html,x',
++			'',
++		]
++		expect(scripts.filter((value) => !matchesJavaScriptURL(value))).toEqual([])
++		expect(others.filter((value) => matchesJavaScriptURL(value))).toEqual([])
++	})
++})
++
++describe('readElementName', () => {
++	it('reads the local name and namespace through the prototype, past a form control that shadows them', () => {
++		const host = build('div')
++		host.setHTMLUnsafe('<form><input name="localName"><input name="namespaceURI"></form>')
++		const form = requireValue(host.querySelector('form'), 'No form')
++		expect(form.localName).not.toBe('form')
++		expect(readElementName(form)).toEqual({ name: 'form', namespace: SANITIZER_NAMESPACE })
++		expect(
++			readElementName(document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion')),
++		).toEqual({ name: 'animateMotion', namespace: 'http://www.w3.org/2000/svg' })
++		expect(readElementName(document.createElementNS(null, 'plain'))).toBeUndefined()
++	})
++})
++
++describe('collectChildren', () => {
++	it('collects the children of a form whose control shadows childNodes, as a snapshot', () => {
++		const host = build('div')
++		host.setHTMLUnsafe('<form><input name="childNodes">text<!--c--><b>x</b></form>')
++		const form = requireValue(host.querySelector('form'), 'No form')
++		expect(form.childNodes).not.toBeInstanceOf(NodeList)
++		const children = collectChildren(form)
++		expect(children.map((child) => child.nodeName)).toEqual(['INPUT', '#text', '#comment', 'B'])
++		form.replaceChildren()
++		expect(children).toHaveLength(4)
++		expect(collectChildren(build('div'))).toEqual([])
++	})
++})
++
++describe('collectAttributes', () => {
++	it('collects the attributes of a form whose control shadows attributes, as a snapshot', () => {
++		const host = build('div')
++		host.setHTMLUnsafe(
++			'<form onclick="alert(1)" action="/save"><input name="attributes"><input name="getAttributeNames"></form>',
++		)
++		const form = requireValue(host.querySelector('form'), 'No form')
++		expect(form.attributes).not.toBeInstanceOf(NamedNodeMap)
++		const attributes = collectAttributes(form)
++		expect(attributes.map((attribute) => [attribute.name, attribute.value])).toEqual([
++			['onclick', 'alert(1)'],
++			['action', '/save'],
++		])
++		form.removeAttribute('onclick')
++		expect(attributes).toHaveLength(2)
++		expect(collectAttributes(build('b'))).toEqual([])
++	})
++})
++
++describe('matchesBaselineElement', () => {
++	it('matches the floor elements by namespace and local name', () => {
++		const svg = 'http://www.w3.org/2000/svg'
++		expect(
++			['base', 'embed', 'frame', 'iframe', 'object', 'script'].filter(
++				(name) => !matchesBaselineElement({ name, namespace: SANITIZER_NAMESPACE }),
++			),
++		).toEqual([])
++		expect(matchesBaselineElement({ name: 'script', namespace: svg })).toBe(true)
++		expect(matchesBaselineElement({ name: 'use', namespace: svg })).toBe(true)
++		expect(matchesBaselineElement({ name: 'b', namespace: SANITIZER_NAMESPACE })).toBe(false)
++		expect(matchesBaselineElement({ name: 'template', namespace: SANITIZER_NAMESPACE })).toBe(false)
++		expect(matchesBaselineElement({ name: 'use', namespace: SANITIZER_NAMESPACE })).toBe(false)
++		expect(matchesBaselineElement({ name: 'iframe', namespace: svg })).toBe(false)
++		expect(
++			matchesBaselineElement({ name: 'script', namespace: 'http://www.w3.org/1998/Math/MathML' }),
++		).toBe(false)
++	})
++})
++
++describe('matchesBaselineAttribute', () => {
++	it('matches an on-prefixed name and a JavaScript URL in a navigating attribute on any element', () => {
++		const div = build('div', {
++			attributes: {
++				onclick: 'alert(1)',
++				onfoo: 'alert(2)',
++				formaction: 'javascript:alert(3)',
++				src: 'javascript:alert(4)',
++				title: 'javascript:alert(5)',
++				href: '/help',
++			},
++		})
++		const name = { name: 'div', namespace: SANITIZER_NAMESPACE }
++		const matched = Array.from(div.attributes)
++			.filter((attribute) => matchesBaselineAttribute(name, attribute))
++			.map((attribute) => attribute.name)
++		expect(matched).toEqual(['onclick', 'onfoo', 'formaction'])
++		const link = document.createElementNS('http://www.w3.org/2000/svg', 'a')
++		link.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', 'javascript:alert(6)')
++		const namespaced = requireValue(
++			link.getAttributeNodeNS('http://www.w3.org/1999/xlink', 'href'),
++			'No xlink:href attribute',
++		)
++		expect(
++			matchesBaselineAttribute({ name: 'a', namespace: 'http://www.w3.org/2000/svg' }, namespaced),
++		).toBe(true)
++	})
++
++	it('matches the attributeName of an SVG animation element only when it names a link attribute', () => {
++		const svg = 'http://www.w3.org/2000/svg'
++		const rows = [
++			{ name: { name: 'animate', namespace: svg }, value: 'href' },
++			{ name: { name: 'set', namespace: svg }, value: 'xlink:href' },
++			{ name: { name: 'animateMotion', namespace: svg }, value: 'href' },
++			{ name: { name: 'animate', namespace: svg }, value: 'action' },
++			{ name: { name: 'animate', namespace: svg }, value: 'fill' },
++			{ name: { name: 'animate', namespace: svg }, value: 'HREF' },
++			{ name: { name: 'animate', namespace: SANITIZER_NAMESPACE }, value: 'href' },
++			{ name: { name: 'rect', namespace: svg }, value: 'href' },
++		]
++		const matched = rows.map(({ name, value }) => {
++			const element = document.createElementNS(svg, 'animate')
++			element.setAttribute('attributeName', value)
++			const attribute = requireValue(
++				element.getAttributeNode('attributeName'),
++				'No attributeName attribute',
++			)
++			return matchesBaselineAttribute(name, attribute)
++		})
++		expect(matched).toEqual([true, true, true, true, false, false, false, false])
++	})
++})
++
++describe('matchesKeptElement', () => {
++	it('keeps every element without an elements list, and only a listed HTML element with one', () => {
++		const svg = { name: 'b', namespace: 'http://www.w3.org/2000/svg' }
++		expect(matchesKeptElement({ name: 'mark', namespace: SANITIZER_NAMESPACE }, {})).toBe(true)
++		expect(matchesKeptElement(svg, {})).toBe(true)
++		expect(
++			matchesKeptElement({ name: 'b', namespace: SANITIZER_NAMESPACE }, { elements: ['b'] }),
++		).toBe(true)
++		expect(
++			matchesKeptElement(
++				{ name: 'a', namespace: SANITIZER_NAMESPACE },
++				{ elements: [{ name: 'a' }] },
++			),
++		).toBe(true)
++		expect(
++			matchesKeptElement({ name: 'i', namespace: SANITIZER_NAMESPACE }, { elements: ['b'] }),
++		).toBe(false)
++		expect(matchesKeptElement(svg, { elements: ['b'] })).toBe(false)
++		expect(
++			matchesKeptElement({ name: 'b', namespace: SANITIZER_NAMESPACE }, { elements: [] }),
++		).toBe(false)
++	})
++})
++
++describe('matchesKeptAttribute', () => {
++	it('keeps an attribute by the global list, the element entry, and the data attribute rule', () => {
++		const link = build('a', {
++			attributes: { href: '/help', title: 'Help', class: 'c', 'data-x': '1', 'data-': '2' },
++		})
++		const bold = build('b', { attributes: { href: '/help', title: 'Help' } })
++		const configs: readonly SanitizerConfig[] = [
++			{},
++			{ attributes: ['title'] },
++			{ attributes: ['title'], dataAttributes: true },
++			{ attributes: ['data-x'], dataAttributes: false },
++			{ elements: [{ name: 'a', attributes: ['href'] }, 'b'], attributes: ['title'] },
++			{ elements: [{ name: 'a', attributes: ['href'] }, 'b'] },
++		]
++		const kept = configs.map((config) =>
++			[link, bold].map((element) =>
++				Array.from(element.attributes)
++					.filter((attribute) =>
++						matchesKeptAttribute(
++							{ name: element.localName, namespace: SANITIZER_NAMESPACE },
++							attribute,
++							config,
++						),
++					)
++					.map((attribute) => attribute.name),
++			),
++		)
++		expect(kept).toEqual([
++			[
++				['href', 'title', 'class', 'data-x', 'data-'],
++				['href', 'title'],
++			],
++			[['title'], ['title']],
++			[['title', 'data-x', 'data-'], ['title']],
++			[['data-x'], []],
++			[['href', 'title'], ['title']],
++			[['href'], ['href', 'title']],
++		])
++	})
++
++	it('matches a listed name only against an attribute outside any namespace, and an entry only against an HTML element', () => {
++		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'a')
++		svg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '/help')
++		svg.setAttribute('href', '/help')
++		const name = { name: 'a', namespace: 'http://www.w3.org/2000/svg' }
++		const namespaced = requireValue(
++			svg.getAttributeNodeNS('http://www.w3.org/1999/xlink', 'href'),
++			'No xlink:href attribute',
++		)
++		const plain = requireValue(svg.getAttributeNode('href'), 'No href attribute')
++		expect(matchesKeptAttribute(name, namespaced, { attributes: ['href', 'xlink:href'] })).toBe(
++			false,
++		)
++		expect(matchesKeptAttribute(name, namespaced, {})).toBe(true)
++		expect(
++			matchesKeptAttribute(name, plain, { elements: [{ name: 'a', attributes: ['title'] }] }),
++		).toBe(true)
++		expect(matchesKeptAttribute(name, plain, { attributes: ['title'] })).toBe(false)
++	})
++})
++
++describe('matchesPlainData', () => {
++	it('accepts primitives, plain arrays, and plain records of enumerable data members', () => {
++		const values: readonly unknown[] = [
++			'b',
++			1,
++			true,
++			null,
++			undefined,
++			[],
++			['b', 'i'],
++			{},
++			{ elements: ['b'] },
++			Object.create(null),
++			Object.freeze({ elements: Object.freeze(['b']) }),
++		]
++		expect(values.filter((value) => !matchesPlainData(value))).toEqual([])
++	})
++
++	it('refuses a function, a foreign prototype, an accessor, a non-enumerable member, a symbol key, and a throwing trap, without running an accessor', () => {
++		const reads = createRecorder<readonly []>()
++		const accessor = Object.defineProperty({}, 'elements', {
++			get: () => {
++				reads.handler()
++				return ['b']
++			},
++			enumerable: true,
++		})
++		const values: readonly unknown[] = [
++			() => undefined,
++			Object.create({ elements: ['b'] }),
++			new Date(),
++			new Map(),
++			accessor,
++			Object.defineProperty({}, 'elements', { value: ['b'] }),
++			Object.defineProperty(['b'], 'extra', { value: 1 }),
++			{ [Symbol('key')]: 1 },
++			new Proxy(
++				{},
++				{
++					ownKeys() {
++						throw new Error('Unreadable')
++					},
++				},
++			),
++		]
++		expect(values.filter((value) => matchesPlainData(value))).toEqual([])
++		expect(reads.count).toBe(0)
++	})
++})
++
+ describe('readScrollbarWidth', () => {
+ 	it('returns 0 for a document with no view', () => {
+ 		const viewless = document.implementation.createHTMLDocument('')
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index 7915504..61f2525 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -91,6 +91,7 @@ describe('src browser entry', () => {
+ 			'Carousel',
+ 			'Collapse',
+ 			'ColorMode',
++			'ConfigSanitizer',
+ 			'DROPDOWN_ATTRIBUTES',
+ 			'DROPDOWN_CLASSES',
+ 			'DROPDOWN_DEFAULTS',
+@@ -106,7 +107,6 @@ describe('src browser entry', () => {
+ 			'MODAL_EVENTS',
+ 			'MODAL_SELECTORS',
+ 			'Modal',
+-			'NativeSanitizer',
+ 			'OFFCANVAS_ATTRIBUTES',
+ 			'OFFCANVAS_CLASSES',
+ 			'OFFCANVAS_DEFAULTS',
+@@ -120,6 +120,8 @@ describe('src browser entry', () => {
+ 			'Placement',
+ 			'Registry',
+ 			'SANITIZER_ALLOWLIST',
++			'SANITIZER_BASELINE',
++			'SANITIZER_NAMESPACE',
+ 			'SCROLL_LOCK_SELECTORS',
+ 			'SCROLL_SPY_ATTRIBUTES',
+ 			'SCROLL_SPY_CLASSES',
+@@ -152,6 +154,8 @@ describe('src browser entry', () => {
+ 			'Tooltip',
+ 			'bindEventMap',
+ 			'buildTip',
++			'collectAttributes',
++			'collectChildren',
+ 			'computeNeighbor',
+ 			'emitEvent',
+ 			'fillSlot',
+@@ -166,12 +170,19 @@ describe('src browser entry', () => {
+ 			'isModalEvent',
+ 			'isOffcanvasEvent',
+ 			'isSanitizeTarget',
++			'isSanitizerConfig',
+ 			'isScrollSpyEvent',
+ 			'isSelector',
+ 			'isTabEvent',
+ 			'isToastEvent',
+ 			'isTooltipEvent',
++			'matchesBaselineAttribute',
++			'matchesBaselineElement',
+ 			'matchesDisabled',
++			'matchesJavaScriptURL',
++			'matchesKeptAttribute',
++			'matchesKeptElement',
++			'matchesPlainData',
+ 			'matchesReducedMotion',
+ 			'parseBackdrop',
+ 			'parseDelay',
+@@ -187,6 +198,7 @@ describe('src browser entry', () => {
+ 			'parseTrigger',
+ 			'readClosest',
+ 			'readControls',
++			'readElementName',
+ 			'readOutermost',
+ 			'readScrollbarWidth',
+ 			'readSiblings',
+diff --git a/tests/src/browser/sanitizers/ConfigSanitizer.test.ts b/tests/src/browser/sanitizers/ConfigSanitizer.test.ts
+new file mode 100644
+index 0000000..d4f7bcc
+--- /dev/null
++++ b/tests/src/browser/sanitizers/ConfigSanitizer.test.ts
+@@ -0,0 +1,401 @@
++import type { SanitizerConfig } from '@src/browser'
++import {
++	ConfigSanitizer,
++	isSanitizerConfig,
++	matchesBaselineAttribute,
++	matchesBaselineElement,
++	SANITIZER_ALLOWLIST,
++	SANITIZER_NAMESPACE,
++} from '@src/browser'
++import { arrayOf, attempt, isFunction, isObject, isString, objectOf } from '@orkestrel/contract'
++import { createRecorder, requireValue, waitForCondition } from '@orkestrel/test'
++import { build } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
++import {
++	buildWalkTarget,
++	mountFrameDocument,
++	SANITIZER_CASES,
++	SANITIZER_CONFIGS,
++	scene,
++	shadowSetHTML,
++} from '../../../setupBrowser.js'
++
++// The attribute names WAI-ARIA 1.2 defines (https://www.w3.org/TR/wai-aria-1.2/#state_prop_def),
++// written out here rather than read from the allowlist, so a name missing from the constant reddens.
++const ARIA_ATTRIBUTES = Object.freeze([
++	'aria-activedescendant',
++	'aria-atomic',
++	'aria-autocomplete',
++	'aria-busy',
++	'aria-checked',
++	'aria-colcount',
++	'aria-colindex',
++	'aria-colspan',
++	'aria-controls',
++	'aria-current',
++	'aria-describedby',
++	'aria-details',
++	'aria-disabled',
++	'aria-dropeffect',
++	'aria-errormessage',
++	'aria-expanded',
++	'aria-flowto',
++	'aria-grabbed',
++	'aria-haspopup',
++	'aria-hidden',
++	'aria-invalid',
++	'aria-keyshortcuts',
++	'aria-label',
++	'aria-labelledby',
++	'aria-level',
++	'aria-live',
++	'aria-modal',
++	'aria-multiline',
++	'aria-multiselectable',
++	'aria-orientation',
++	'aria-owns',
++	'aria-placeholder',
++	'aria-posinset',
++	'aria-pressed',
++	'aria-readonly',
++	'aria-relevant',
++	'aria-required',
++	'aria-roledescription',
++	'aria-rowcount',
++	'aria-rowindex',
++	'aria-rowspan',
++	'aria-selected',
++	'aria-setsize',
++	'aria-sort',
++	'aria-valuemax',
++	'aria-valuemin',
++	'aria-valuenow',
++	'aria-valuetext',
++])
++
++afterEach(() => scene.clear())
++
++describe('ConfigSanitizer', () => {
++	it('publishes a frozen allowlist naming Bootstrap elements, their own attributes, the global names, and no data attributes', () => {
++		const elements = SANITIZER_ALLOWLIST.elements ?? []
++		expect(elements.map((entry) => (typeof entry === 'string' ? entry : entry.name))).toEqual([
++			'a',
++			'area',
++			'b',
++			'br',
++			'col',
++			'code',
++			'dd',
++			'div',
++			'dl',
++			'dt',
++			'em',
++			'hr',
++			'h1',
++			'h2',
++			'h3',
++			'h4',
++			'h5',
++			'h6',
++			'i',
++			'img',
++			'li',
++			'ol',
++			'p',
++			'pre',
++			's',
++			'small',
++			'span',
++			'sub',
++			'sup',
++			'strong',
++			'u',
++			'ul',
++		])
++		expect(elements.filter((entry) => typeof entry !== 'string')).toEqual([
++			{ name: 'a', attributes: ['target', 'href', 'title', 'rel'] },
++			{ name: 'img', attributes: ['src', 'srcset', 'alt', 'title', 'width', 'height'] },
++		])
++		const attributes = SANITIZER_ALLOWLIST.attributes ?? []
++		expect(attributes.slice(0, 5)).toEqual(['class', 'dir', 'id', 'lang', 'role'])
++		expect(attributes.slice(5).every((name) => /^aria-[a-z]+$/.test(name))).toBe(true)
++		expect(attributes).toContain('aria-label')
++		expect(attributes).toContain('aria-describedby')
++		expect(SANITIZER_ALLOWLIST.dataAttributes).toBe(false)
++		for (const value of [SANITIZER_ALLOWLIST, elements, attributes, elements[0]]) {
++			expect(Object.isFrozen(value)).toBe(true)
++		}
++	})
++
++	it.for(SANITIZER_CASES.map((entry) => [entry.name, entry] as const))('%s', ([, entry]) => {
++		const { config, markup, expected, walked } = entry
++		const sanitizer = new ConfigSanitizer(config === undefined ? undefined : { config })
++		const slot = build('div')
++		slot.setHTMLUnsafe('<i>Old</i>')
++		sanitizer.write(slot, markup)
++		const target = buildWalkTarget('div')
++		target.setHTMLUnsafe('<i>Old</i>')
++		sanitizer.write(target, markup)
++		expect(target.innerHTML).toBe(walked ?? expected)
++		// The host's own route is the walk wherever the element carries no `setHTML` method, as on
++		// Chromium 141, so a case where the floor removes more expects the walked markup there.
++		const native = typeof Reflect.get(slot, 'setHTML') === 'function'
++		expect(slot.innerHTML).toBe(native ? expected : (walked ?? expected))
++	})
++
++	it('keeps every WAI-ARIA 1.2 attribute and drops an aria name no version defines, through the host route and the walk', () => {
++		const attributes = [...ARIA_ATTRIBUTES, 'aria-vendor'].map((name) => `${name}="v"`).join(' ')
++		for (const slot of [build('div'), buildWalkTarget('div')]) {
++			new ConfigSanitizer().write(slot, `<span ${attributes}>kept</span>`)
++			const span = slot.querySelector('span')
++			expect(ARIA_ATTRIBUTES.filter((name) => span?.getAttribute(name) !== 'v')).toEqual([])
++			expect(span?.hasAttribute('aria-vendor')).toBe(false)
++		}
++	})
++
++	it('calls the setHTML method an element carries once with the configuration, and walks an element that carries none', () => {
++		const config: SanitizerConfig = { elements: ['b'] }
++		const sanitizer = new ConfigSanitizer(config === undefined ? undefined : { config })
++		const calls = createRecorder<readonly [string, unknown]>()
++		const native = build('div')
++		native.append('Previous')
++		Object.defineProperty(native, 'setHTML', { value: calls.handler })
++		sanitizer.write(native, '<b>x</b><i>y</i>')
++		expect(calls.calls).toEqual([['<b>x</b><i>y</i>', { sanitizer: config }]])
++		expect(native.textContent).toBe('Previous')
++		const walked = buildWalkTarget('div')
++		walked.append('Previous')
++		sanitizer.write(walked, '<b>x</b><i>y</i>')
++		expect(walked.innerHTML).toBe('<b>x</b>')
++	})
++
++	it('refuses a configuration the platform refuses when it is constructed', () => {
++		for (const config of [
++			{ dataAttributes: true },
++			{ elements: ['b', 'b'] },
++			{ elements: [{ name: 'b', attributes: ['title'] }], attributes: ['title'] },
++		]) {
++			expect(attempt(() => new ConfigSanitizer({ config }))).toMatchObject({
++				error: { code: 'SANITIZER_OPTION_INVALID', context: { key: 'config' } },
++			})
++		}
++	})
++
++	it('holds its own copy of the configuration, so a later edit to the object the caller passed changes no write', () => {
++		const elements = ['b']
++		const attributes = ['title']
++		const sanitizer = new ConfigSanitizer({ config: { elements, attributes } })
++		elements.push('i')
++		attributes.push('class')
++		for (const slot of [build('div'), buildWalkTarget('div')]) {
++			sanitizer.write(slot, '<b title="t" class="c">x</b><i>y</i>')
++			expect(slot.innerHTML).toBe('<b title="t">x</b>')
++		}
++	})
++
++	it('refuses a destination the floor removes before writing into it, through the host route and the walk', () => {
++		const targets = [
++			build('script'),
++			buildWalkTarget('script'),
++			document.createElementNS('http://www.w3.org/2000/svg', 'script'),
++			build('iframe'),
++			buildWalkTarget('object'),
++		]
++		for (const target of targets) {
++			target.textContent = 'Kept'
++			expect(attempt(() => new ConfigSanitizer().write(target, '<b>x</b>'))).toMatchObject({
++				error: { code: 'SANITIZER_TARGET_INVALID', context: { tag: target.tagName } },
++			})
++			expect(target.textContent).toBe('Kept')
++		}
++	})
++
++	it('writes into the content of a template element, as setHTML does, through the host route and the walk', () => {
++		for (const target of [build('template'), buildWalkTarget('template')]) {
++			new ConfigSanitizer().write(target, '<b>x</b><mark>y</mark>')
++			expect(target.childNodes).toHaveLength(0)
++			expect(target.content.childNodes).toHaveLength(1)
++			expect(target.innerHTML).toBe('<b>x</b>')
++		}
++	})
++
++	it('sanitizes markup written into an element of another window as it does in this one', () => {
++		const other = mountFrameDocument()
++		const target = shadowSetHTML(other.createElement('div'))
++		new ConfigSanitizer().write(
++			target,
++			'<b onclick="alert(1)">Bold</b><script>alert(2)</script><mark>gone</mark> text',
++		)
++		expect(target.innerHTML).toBe('<b>Bold</b> text')
++		const script = shadowSetHTML(other.createElement('script'))
++		expect(attempt(() => new ConfigSanitizer().write(script, '<b>x</b>'))).toMatchObject({
++			error: { code: 'SANITIZER_TARGET_INVALID' },
++		})
++	})
++
++	it('replaces the content of a template element of another window through the walk, and leaves its own children', () => {
++		const other = mountFrameDocument()
++		const target = shadowSetHTML(other.createElement('template'))
++		target.append(other.createTextNode('Direct'))
++		new ConfigSanitizer().write(target, '<b onclick="alert(1)">x</b><mark>y</mark>')
++		expect(target.innerHTML).toBe('<b>x</b>')
++		expect(target.textContent).toBe('Direct')
++	})
++
++	it('parses in the context of the target, so an annotation-xml element whose encoding is text/html keeps an HTML anchor', () => {
++		const math = 'http://www.w3.org/1998/Math/MathML'
++		const targets = [
++			document.createElementNS(math, 'annotation-xml'),
++			shadowSetHTML(document.createElementNS(math, 'annotation-xml')),
++		]
++		for (const target of targets) {
++			target.setAttribute('encoding', 'text/html')
++			new ConfigSanitizer().write(target, '<a>kept</a>')
++			expect(target.innerHTML).toBe('<a>kept</a>')
++			expect(target.firstElementChild?.namespaceURI).toBe('http://www.w3.org/1999/xhtml')
++		}
++	})
++
++	it('refuses a configuration that is not plain data before copying it', () => {
++		const configs = [
++			Object.create(SANITIZER_ALLOWLIST),
++			Object.create({
++				get elements() {
++					return ['b']
++				},
++			}),
++			Object.defineProperty({}, 'elements', { get: () => ['b'], enumerable: true }),
++			Object.defineProperty({}, 'elements', { value: ['b'] }),
++			{
++				elements: [
++					Object.defineProperty({ name: 'b' }, 'attributes', {
++						get: () => ['title'],
++						enumerable: true,
++					}),
++				],
++			},
++		]
++		for (const config of configs) {
++			expect(attempt(() => new ConfigSanitizer({ config }))).toMatchObject({
++				error: { code: 'SANITIZER_OPTION_INVALID', context: { key: 'config' } },
++			})
++		}
++	})
++
++	it('parses in an inert document, so an image inside a removed object requests nothing', async () => {
++		const probe = new URL('/j-sanitizer-inert-probe.png', location.href).href
++		const control = new URL('/j-sanitizer-inert-control.png', location.href).href
++		new ConfigSanitizer({ config: {} }).write(
++			buildWalkTarget('div'),
++			`<object><img src="${probe}"></object>`,
++		)
++		const image = new Image()
++		image.src = control
++		await waitForCondition(
++			'the control image request is recorded',
++			() => performance.getEntriesByName(control).length > 0,
++		)
++		expect(performance.getEntriesByName(probe)).toEqual([])
++	})
++
++	it('moves the parsed nodes in without serializing them again, so a noscript element keeps the elements parsed inside it', () => {
++		const sanitizer = new ConfigSanitizer({ config: {} })
++		for (const slot of [build('div'), buildWalkTarget('div')]) {
++			sanitizer.write(slot, '<noscript><b>Bold</b></noscript>')
++			expect(slot.querySelector('noscript > b')?.textContent).toBe('Bold')
++		}
++	})
++
++	it('walks the content of a declarative shadow root template and attaches no shadow root on the walk', () => {
++		const target = buildWalkTarget('div')
++		new ConfigSanitizer({ config: {} }).write(
++			target,
++			'<div><template shadowrootmode="open"><b onclick="alert(1)">s</b><script>alert(2)</script></template></div>',
++		)
++		const host = requireValue(target.querySelector('div'), 'No host')
++		expect(host.shadowRoot).toBeNull()
++		const template = requireValue(host.querySelector('template'), 'No template')
++		expect(template.innerHTML).toBe('<b>s</b>')
++		document.body.append(target)
++		onTestFinished(() => target.remove())
++		expect(host.shadowRoot).toBeNull()
++	})
++
++	it('replaces the previous children on each write', () => {
++		const sanitizer = new ConfigSanitizer()
++		for (const slot of [build('div'), buildWalkTarget('div')]) {
++			sanitizer.write(slot, '<b>First</b>')
++			sanitizer.write(slot, '<i>Second</i>')
++			expect(slot.innerHTML).toBe('<i>Second</i>')
++		}
++	})
++
++	// The platform's `Sanitizer` class reports its built-in safe baseline through `removeUnsafe` and
++	// `get`. Chromium 141 carries no `Sanitizer` class, so there is no baseline to compare against.
++	it.skipIf(typeof Reflect.get(globalThis, 'Sanitizer') !== 'function')(
++		'removes every element and attribute the safe baseline of the platform removes',
++		() => {
++			const constructor: unknown = Reflect.get(globalThis, 'Sanitizer')
++			const platform: unknown = isFunction(constructor)
++				? Reflect.construct(constructor, [{}])
++				: undefined
++			const removeUnsafe: unknown = isObject(platform)
++				? Reflect.get(platform, 'removeUnsafe')
++				: undefined
++			const get: unknown = isObject(platform) ? Reflect.get(platform, 'get') : undefined
++			if (!isObject(platform) || !isFunction(removeUnsafe) || !isFunction(get)) {
++				throw new Error('The Sanitizer class carries no removeUnsafe and get methods')
++			}
++			Reflect.apply(removeUnsafe, platform, [])
++			const reading: unknown = Reflect.apply(get, platform, [])
++			if (
++				!objectOf({
++					removeElements: arrayOf(objectOf({ name: isString, namespace: isString })),
++					removeAttributes: arrayOf(objectOf({ name: isString })),
++				})(reading)
++			) {
++				throw new Error('The baseline reading has no removal lists')
++			}
++			expect(reading.removeElements.length).toBeGreaterThan(0)
++			expect(reading.removeAttributes.length).toBeGreaterThan(0)
++			expect(
++				reading.removeElements.filter(
++					(entry) => !matchesBaselineElement({ name: entry.name, namespace: entry.namespace }),
++				),
++			).toEqual([])
++			const host = build('div')
++			expect(
++				reading.removeAttributes.filter((entry) => {
++					host.setAttribute(entry.name, 'alert(1)')
++					const attribute = host.getAttributeNode(entry.name)
++					return (
++						attribute === null ||
++						!matchesBaselineAttribute({ name: 'div', namespace: SANITIZER_NAMESPACE }, attribute)
++					)
++				}),
++			).toEqual([])
++		},
++	)
++
++	// The platform's `setHTML` method refuses an invalid configuration with a `TypeError`. Chromium 141
++	// carries no `setHTML` method, so there is no refusal to agree with.
++	it.skipIf(typeof Reflect.get(build('div'), 'setHTML') !== 'function')(
++		'admits exactly the configurations the setHTML method of the platform accepts',
++		() => {
++			const agreements = SANITIZER_CONFIGS.map((config) => {
++				const slot = build('div')
++				const setHTML: unknown = Reflect.get(slot, 'setHTML')
++				const accepted =
++					isFunction(setHTML) &&
++					attempt(() => Reflect.apply(setHTML, slot, ['<b>x</b>', { sanitizer: config }])).success
++				return { config: JSON.stringify(config), accepted, admitted: isSanitizerConfig(config) }
++			})
++			expect(new Set(agreements.map((agreement) => agreement.accepted))).toEqual(
++				new Set([true, false]),
++			)
++			expect(agreements.filter((agreement) => agreement.accepted !== agreement.admitted)).toEqual(
++				[],
++			)
++		},
++	)
++})
+diff --git a/tests/src/browser/sanitizers/NativeSanitizer.test.ts b/tests/src/browser/sanitizers/NativeSanitizer.test.ts
+deleted file mode 100644
+index 0ca31d8..0000000
+--- a/tests/src/browser/sanitizers/NativeSanitizer.test.ts
++++ /dev/null
+@@ -1,182 +0,0 @@
+-import { NativeSanitizer, SANITIZER_ALLOWLIST } from '@src/browser'
+-import { attempt } from '@orkestrel/contract'
+-import { build } from '@orkestrel/test/browser'
+-import { describe, expect, it } from 'vitest'
+-
+-// The attribute names WAI-ARIA 1.2 defines (https://www.w3.org/TR/wai-aria-1.2/#state_prop_def),
+-// written out here rather than read from the allowlist, so a name missing from the constant reddens.
+-const ARIA_ATTRIBUTES = Object.freeze([
+-	'aria-activedescendant',
+-	'aria-atomic',
+-	'aria-autocomplete',
+-	'aria-busy',
+-	'aria-checked',
+-	'aria-colcount',
+-	'aria-colindex',
+-	'aria-colspan',
+-	'aria-controls',
+-	'aria-current',
+-	'aria-describedby',
+-	'aria-details',
+-	'aria-disabled',
+-	'aria-dropeffect',
+-	'aria-errormessage',
+-	'aria-expanded',
+-	'aria-flowto',
+-	'aria-grabbed',
+-	'aria-haspopup',
+-	'aria-hidden',
+-	'aria-invalid',
+-	'aria-keyshortcuts',
+-	'aria-label',
+-	'aria-labelledby',
+-	'aria-level',
+-	'aria-live',
+-	'aria-modal',
+-	'aria-multiline',
+-	'aria-multiselectable',
+-	'aria-orientation',
+-	'aria-owns',
+-	'aria-placeholder',
+-	'aria-posinset',
+-	'aria-pressed',
+-	'aria-readonly',
+-	'aria-relevant',
+-	'aria-required',
+-	'aria-roledescription',
+-	'aria-rowcount',
+-	'aria-rowindex',
+-	'aria-rowspan',
+-	'aria-selected',
+-	'aria-setsize',
+-	'aria-sort',
+-	'aria-valuemax',
+-	'aria-valuemin',
+-	'aria-valuenow',
+-	'aria-valuetext',
+-])
+-
+-describe('NativeSanitizer', () => {
+-	it('publishes a frozen allowlist naming Bootstrap elements, their own attributes, the global names, and no data attributes', () => {
+-		const elements = SANITIZER_ALLOWLIST.elements ?? []
+-		expect(elements.map((entry) => (typeof entry === 'string' ? entry : entry.name))).toEqual([
+-			'a',
+-			'area',
+-			'b',
+-			'br',
+-			'col',
+-			'code',
+-			'dd',
+-			'div',
+-			'dl',
+-			'dt',
+-			'em',
+-			'hr',
+-			'h1',
+-			'h2',
+-			'h3',
+-			'h4',
+-			'h5',
+-			'h6',
+-			'i',
+-			'img',
+-			'li',
+-			'ol',
+-			'p',
+-			'pre',
+-			's',
+-			'small',
+-			'span',
+-			'sub',
+-			'sup',
+-			'strong',
+-			'u',
+-			'ul',
+-		])
+-		expect(elements.filter((entry) => typeof entry !== 'string')).toEqual([
+-			{ name: 'a', attributes: ['target', 'href', 'title', 'rel'] },
+-			{ name: 'img', attributes: ['src', 'srcset', 'alt', 'title', 'width', 'height'] },
+-		])
+-		const attributes = SANITIZER_ALLOWLIST.attributes ?? []
+-		expect(attributes.slice(0, 5)).toEqual(['class', 'dir', 'id', 'lang', 'role'])
+-		expect(attributes.slice(5).every((name) => /^aria-[a-z]+$/.test(name))).toBe(true)
+-		expect(attributes).toContain('aria-label')
+-		expect(attributes).toContain('aria-describedby')
+-		expect(SANITIZER_ALLOWLIST.dataAttributes).toBe(false)
+-		for (const value of [SANITIZER_ALLOWLIST, elements, attributes, elements[0]]) {
+-			expect(Object.isFrozen(value)).toBe(true)
+-		}
+-	})
+-
+-	it('keeps the allowlist markup and drops scripts, handlers, data attributes, unlisted elements with their content, and a script URL', () => {
+-		const slot = build('div')
+-		slot.setHTMLUnsafe('<i>Old</i>')
+-		new NativeSanitizer().write(
+-			slot,
+-			'<p class="lead" id="p" dir="rtl" lang="fr" role="note" aria-label="Note" aria-describedby="p" data-x="1" onclick="alert(1)" style="color: red">' +
+-				'<a href="https://example.com" target="_blank" rel="noopener" title="Site">Site</a>' +
+-				'<a href="javascript:alert(2)">Bad</a>' +
+-				'<img src="data:image/png;base64,AA==" alt="Dot" width="1" height="1" onerror="alert(3)">' +
+-				'<mark>gone</mark><script>alert(4)</script><span aria-vendor="x">kept</span></p>',
+-		)
+-		expect(slot.innerHTML).toBe(
+-			'<p class="lead" id="p" dir="rtl" lang="fr" role="note" aria-label="Note" aria-describedby="p">' +
+-				'<a href="https://example.com" target="_blank" rel="noopener" title="Site">Site</a>' +
+-				'<a>Bad</a>' +
+-				'<img src="data:image/png;base64,AA==" alt="Dot" width="1" height="1">' +
+-				'<span>kept</span></p>',
+-		)
+-	})
+-
+-	it('writes through the configuration its options carry in place of the allowlist', () => {
+-		const slot = build('div')
+-		new NativeSanitizer({ config: { elements: ['mark'], attributes: ['title'] } }).write(
+-			slot,
+-			'<mark title="t" class="c">kept</mark><b>gone</b>',
+-		)
+-		expect(slot.innerHTML).toBe('<mark title="t">kept</mark>')
+-	})
+-
+-	it('keeps every WAI-ARIA 1.2 attribute and drops an aria name no version defines', () => {
+-		const slot = build('div')
+-		const attributes = [...ARIA_ATTRIBUTES, 'aria-vendor'].map((name) => `${name}="v"`).join(' ')
+-		new NativeSanitizer().write(slot, `<span ${attributes}>kept</span>`)
+-		const span = slot.querySelector('span')
+-		expect(ARIA_ATTRIBUTES.filter((name) => span?.getAttribute(name) !== 'v')).toEqual([])
+-		expect(span?.hasAttribute('aria-vendor')).toBe(false)
+-	})
+-
+-	it('writes through the allowlist when the configuration is omitted, which keeps less than an empty dictionary does', () => {
+-		const markup = '<p title="t" data-x="1"><mark>m</mark><span href="h">s</span></p>'
+-		const omitted = build('div')
+-		const empty = build('div')
+-		new NativeSanitizer().write(omitted, markup)
+-		new NativeSanitizer({ config: {} }).write(empty, markup)
+-		expect(omitted.innerHTML).toBe('<p><span>s</span></p>')
+-		expect(empty.innerHTML).toBe(markup)
+-	})
+-
+-	it('keeps an element-scoped attribute only on the element that permits it', () => {
+-		const slot = build('div')
+-		new NativeSanitizer().write(
+-			slot,
+-			'<span href="h" src="s" title="t" alt="a">s</span><b title="t">b</b><a href="https://example.com" title="t">a</a><img src="data:image/png;base64,AA==" title="t" alt="a">',
+-		)
+-		expect(slot.innerHTML).toBe(
+-			'<span>s</span><b>b</b><a href="https://example.com" title="t">a</a><img src="data:image/png;base64,AA==" title="t" alt="a">',
+-		)
+-	})
+-
+-	it('refuses an element without setHTML and propagates the platform refusal of a configuration', () => {
+-		const shadowed = build('div')
+-		Object.defineProperty(shadowed, 'setHTML', { value: undefined })
+-		expect(attempt(() => new NativeSanitizer().write(shadowed, '<b>x</b>'))).toMatchObject({
+-			error: { code: 'SANITIZER_UNSUPPORTED', context: { tag: 'DIV' } },
+-		})
+-		const refused = attempt(() =>
+-			new NativeSanitizer({ config: { dataAttributes: true } }).write(build('div'), '<b>x</b>'),
+-		)
+-		expect(refused.success).toBe(false)
+-		expect(refused.success ? undefined : refused.error).toBeInstanceOf(TypeError)
+-	})
+-})
+diff --git a/tests/src/browser/validators.test.ts b/tests/src/browser/validators.test.ts
+index c86682a..5d369cf 100644
+--- a/tests/src/browser/validators.test.ts
++++ b/tests/src/browser/validators.test.ts
+@@ -12,11 +12,14 @@ import {
+ 	isScrollSpyEvent,
+ 	isSelector,
+ 	isTabEvent,
++	isSanitizerConfig,
+ 	isSanitizeTarget,
+ 	isToastEvent,
+ 	isTooltipEvent,
++	SANITIZER_ALLOWLIST,
+ } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
++import { createRecorder } from '@orkestrel/test'
+ import { build } from '@orkestrel/test/browser'
+ import { describe, expect, it } from 'vitest'
+ 
+@@ -640,7 +643,7 @@ describe('isTooltipEvent', () => {
+ 
+ describe('isSanitizeTarget', () => {
+ 	it('accepts an object whose setHTML member is a function and refuses every other value', () => {
+-		expect(isSanitizeTarget(document.createElement('div'))).toBe(true)
++		expect(isSanitizeTarget(Object.create({ setHTML() {} }))).toBe(true)
+ 		expect(isSanitizeTarget({ setHTML: () => undefined })).toBe(true)
+ 		expect(isSanitizeTarget({ setHTML: 'markup' })).toBe(false)
+ 		expect(isSanitizeTarget({})).toBe(false)
+@@ -673,3 +676,114 @@ describe('isSanitizeTarget', () => {
+ 		expect(isSanitizeTarget(hostile)).toBe(false)
+ 	})
+ })
++
++describe('isSanitizerConfig', () => {
++	it('admits a configuration the platform accepts, frozen or not', () => {
++		expect(isSanitizerConfig({})).toBe(true)
++		expect(isSanitizerConfig({ elements: [] })).toBe(true)
++		expect(isSanitizerConfig({ attributes: [] })).toBe(true)
++		expect(isSanitizerConfig({ elements: ['b'], attributes: ['title'] })).toBe(true)
++		expect(isSanitizerConfig({ elements: [{ name: 'b', attributes: ['title'] }] })).toBe(true)
++		expect(isSanitizerConfig({ elements: [{ name: 'b' }], attributes: ['title'] })).toBe(true)
++		expect(isSanitizerConfig({ attributes: ['title'], dataAttributes: true })).toBe(true)
++		expect(isSanitizerConfig({ attributes: ['data-x'], dataAttributes: false })).toBe(true)
++		expect(isSanitizerConfig(SANITIZER_ALLOWLIST)).toBe(true)
++	})
++
++	it('refuses a configuration that breaks one of the platform validity rules', () => {
++		expect(isSanitizerConfig({ dataAttributes: true })).toBe(false)
++		expect(isSanitizerConfig({ dataAttributes: false })).toBe(false)
++		expect(isSanitizerConfig({ elements: ['b', 'b'] })).toBe(false)
++		expect(isSanitizerConfig({ elements: ['b', { name: 'b' }] })).toBe(false)
++		expect(isSanitizerConfig({ attributes: ['title', 'title'] })).toBe(false)
++		expect(isSanitizerConfig({ elements: [{ name: 'b', attributes: ['title', 'title'] }] })).toBe(
++			false,
++		)
++		expect(
++			isSanitizerConfig({
++				elements: [{ name: 'b', attributes: ['title'] }],
++				attributes: ['title'],
++			}),
++		).toBe(false)
++		expect(isSanitizerConfig({ attributes: ['data-x'], dataAttributes: true })).toBe(false)
++		expect(
++			isSanitizerConfig({
++				elements: [{ name: 'b', attributes: ['data-x'] }],
++				attributes: [],
++				dataAttributes: true,
++			}),
++		).toBe(false)
++	})
++
++	it('refuses a value that is not a record of the mirrored fields in their declared types', () => {
++		expect(isSanitizerConfig(undefined)).toBe(false)
++		expect(isSanitizerConfig(null)).toBe(false)
++		expect(isSanitizerConfig('config')).toBe(false)
++		expect(isSanitizerConfig([])).toBe(false)
++		expect(isSanitizerConfig(new Date())).toBe(false)
++		expect(isSanitizerConfig({ comments: false })).toBe(false)
++		expect(isSanitizerConfig({ elements: undefined })).toBe(false)
++		expect(isSanitizerConfig({ elements: 'b' })).toBe(false)
++		expect(isSanitizerConfig({ elements: [1] })).toBe(false)
++		expect(isSanitizerConfig({ elements: [{ attributes: [] }] })).toBe(false)
++		expect(isSanitizerConfig({ elements: [{ name: 'b', namespace: null }] })).toBe(false)
++		expect(isSanitizerConfig({ elements: [{ name: 'b', attributes: 'title' }] })).toBe(false)
++		expect(isSanitizerConfig({ attributes: [1] })).toBe(false)
++		expect(isSanitizerConfig({ attributes: [], dataAttributes: 'yes' })).toBe(false)
++	})
++
++	it('refuses a configuration that is not plain data at any level, without running an accessor', () => {
++		const reads = createRecorder<readonly []>()
++		const values: readonly unknown[] = [
++			Object.create(SANITIZER_ALLOWLIST),
++			Object.create({ elements: ['b'] }),
++			Object.defineProperty({}, 'elements', {
++				get: () => {
++					reads.handler()
++					return ['b']
++				},
++				enumerable: true,
++			}),
++			Object.defineProperty({}, 'elements', { value: ['b'] }),
++			{ elements: Object.defineProperty(['b'], 'extra', { value: 1 }) },
++			{ attributes: Object.create(Array.prototype) },
++			{ elements: [Object.create({ name: 'b' })] },
++			{
++				elements: [
++					Object.defineProperty({ name: 'b' }, 'attributes', {
++						get: () => {
++							reads.handler()
++							return ['title']
++						},
++						enumerable: true,
++					}),
++				],
++			},
++		]
++		expect(values.filter((value) => isSanitizerConfig(value))).toEqual([])
++		expect(reads.count).toBe(0)
++	})
++
++	it('returns false when a trap or an accessor throws', () => {
++		expect(
++			isSanitizerConfig(
++				new Proxy(
++					{},
++					{
++						ownKeys() {
++							throw new Error('Unreadable')
++						},
++					},
++				),
++			),
++		).toBe(false)
++		const hostile = {}
++		Object.defineProperty(hostile, 'elements', {
++			enumerable: true,
++			get() {
++				throw new Error('Unreadable')
++			},
++		})
++		expect(isSanitizerConfig(hostile)).toBe(false)
++	})
++})

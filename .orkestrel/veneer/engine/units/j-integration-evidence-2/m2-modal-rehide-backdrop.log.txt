@@ -1,0 +1,168 @@
+subject: src/browser/Modal.ts
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+···························x·xxx······x····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:979:2 > Modal > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+AssertionError: expected <div class="modal-backdrop show"></div> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<div
+  class="modal-backdrop show"
+/>
+
+ ❯ tests/src/browser/Modal.test.ts:1019:52
+    1017|   expect(modal.shown).toBe(false)
+    1018|   expect(document.body.classList.contains('modal-open')).toBe(true)
+    1019|   expect(document.querySelector('.modal-backdrop')).toBeNull()
+       |                                                    ^
+    1020|   expect(await modal.hide()).toBe(false)
+    1021|   host.classList.add('show')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+AssertionError: expected <div class="modal-backdrop show"></div> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<div
+  class="modal-backdrop show"
+/>
+
+ ❯ tests/src/browser/Modal.test.ts:1191:60
+    1189|    // The hide the stop left undone completes from the shown state it …
+    1190|    expect(await modal.hide()).toBe(true)
+    1191|    expect(document.querySelector('body > .modal-backdrop')).toBeNull()
+       |                                                            ^
+    1192|    modal.destroy()
+    1193|    root.remove()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1223:2 > Modal > returns the host to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+AssertionError: expected [ [ { door: 'token', …(9) } ], …(3) ] to deeply equal [ [ { door: 'token', …(9) } ], …(3) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,9 +1,9 @@[39m
+[2m  [[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrops": 0,[39m
+[31m+       "backdrops": 2,[39m
+[2m        "display": "none",[22m
+[2m        "door": "token",[22m
+[2m        "events": [],[22m
+[2m        "hidden": "true",[22m
+[2m        "modal": null,[22m
+[33m@@ -13,11 +13,11 @@[39m
+[2m        "target": false,[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrops": 0,[39m
+[31m+       "backdrops": 3,[39m
+[2m        "display": "none",[22m
+[2m        "door": "transition",[22m
+[2m        "events": [],[22m
+[2m        "hidden": "true",[22m
+[2m        "modal": null,[22m
+[33m@@ -27,11 +27,11 @@[39m
+[2m        "target": false,[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrops": 0,[39m
+[31m+       "backdrops": 4,[39m
+[2m        "display": "none",[22m
+[2m        "door": "isolation",[22m
+[2m        "events": [],[22m
+[2m        "hidden": "true",[22m
+[2m        "modal": null,[22m
+[33m@@ -41,11 +41,11 @@[39m
+[2m        "target": false,[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrops": 0,[39m
+[31m+       "backdrops": 5,[39m
+[2m        "display": "none",[22m
+[2m        "door": "focus",[22m
+[2m        "events": [],[22m
+[2m        "hidden": "true",[22m
+[2m        "modal": null,[22m
+
+ ❯ tests/src/browser/Modal.test.ts:1327:25
+    1325|    root.remove()
+    1326|   }
+    1327|   expect(readings.calls).toEqual(
+       |                         ^
+    1328|    rows.map((door) => [
+    1329|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1348:2 > Modal > writes nothing more of the returning step after a reaction inside it destroys the modal
+AssertionError: expected <div class="modal-backdrop show"></div> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<div
+  class="modal-backdrop show"
+/>
+
+ ❯ tests/src/browser/Modal.test.ts:1389:52
+    1387|   expect(host.hasAttribute('aria-modal')).toBe(false)
+    1388|   expect(host.hasAttribute('role')).toBe(false)
+    1389|   expect(document.querySelector('.modal-backdrop')).toBeNull()
+       |                                                    ^
+    1390|  })
+    1391|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1553:2 > Modal > releases the scroll lock and the open token a show the host took over held at a later show and its hide, the backdrop already gone
+AssertionError: expected …(6) to have a length of +0 but got 6
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 6[39m
+
+ ❯ tests/src/browser/Modal.test.ts:1580:55
+    1578|   expect(document.body.style.overflow).toBe('hidden')
+    1579|   expect(document.body.classList.contains('modal-open')).toBe(true)
+    1580|   expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(0)
+       |                                                       ^
+    1581|   expect(await modal.show()).toBe(true)
+    1582|   expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 38 passed (43)
+   Start at  16:58:26
+   Duration  13.43s (transform 0ms, setup 446ms, import 317ms, tests 11.74s, environment 0ms)
+
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts

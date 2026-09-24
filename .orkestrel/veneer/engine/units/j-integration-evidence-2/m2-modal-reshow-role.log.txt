@@ -1,0 +1,88 @@
+subject: src/browser/Modal.ts
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+·····························x·············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+AssertionError: expected [ [ { row: [ …(2) ], …(11) } ], …(5) ] to deeply equal [ [ { row: [ …(2) ], …(11) } ], …(5) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -52,11 +52,11 @@[39m
+[2m        "hidden": null,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "open": true,[22m
+[2m        "resolved": false,[22m
+[32m-       "role": "dialog",[39m
+[31m+       "role": null,[39m
+[2m        "row": [[22m
+[2m          "modal fade",[22m
+[2m          "role",[22m
+[2m        ],[22m
+[2m        "target": true,[22m
+[33m@@ -75,11 +75,11 @@[39m
+[2m        "hidden": null,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "open": true,[22m
+[2m        "resolved": false,[22m
+[32m-       "role": "dialog",[39m
+[31m+       "role": null,[39m
+[2m        "row": [[22m
+[2m          "modal fade",[22m
+[2m          "backdrop",[22m
+[2m        ],[22m
+[2m        "target": true,[22m
+[33m@@ -98,11 +98,11 @@[39m
+[2m        "hidden": null,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "open": true,[22m
+[2m        "resolved": false,[22m
+[32m-       "role": "dialog",[39m
+[31m+       "role": null,[39m
+[2m        "row": [[22m
+[2m          "modal",[22m
+[2m          "backdrop",[22m
+[2m        ],[22m
+[2m        "target": true,[22m
+[33m@@ -120,11 +120,11 @@[39m
+[2m        "hidden": null,[22m
+[2m        "modal": "true",[22m
+[2m        "opacity": "0.5",[22m
+[2m        "open": true,[22m
+[2m        "resolved": false,[22m
+[32m-       "role": "dialog",[39m
+[31m+       "role": null,[39m
+[2m        "row": [[22m
+[2m          "modal fade",[22m
+[2m          "removal",[22m
+[2m        ],[22m
+[2m        "target": true,[22m
+
+ ❯ tests/src/browser/Modal.test.ts:1195:25
+    1193|    root.remove()
+    1194|   }
+    1195|   expect(readings.calls).toEqual(
+       |                         ^
+    1196|    rows.map(([classes, door]) => [
+    1197|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 42 passed (43)
+   Start at  16:56:03
+   Duration  19.07s (transform 0ms, setup 487ms, import 335ms, tests 17.02s, environment 0ms)
+
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts

@@ -1,0 +1,13 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts -t returning step
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+Port 63315 is in use, trying another one...
+-------------------------------·-----------
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 42 skipped (43)
+   Start at  17:04:46
+   Duration  1.78s (transform 0ms, setup 452ms, import 325ms, tests 9ms, environment 0ms)
+

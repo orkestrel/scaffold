@@ -1,0 +1,10 @@
+{
+	"file": "src/browser/Backdrop.ts",
+	"backup": "tmp/j-integration/m2-backdrop-identity.backup",
+	"pairs": [
+		[
+			"this.#parent.append(element)\n\t\t\tif (!this.#holds(change)) return false",
+			"this.#parent.append(element)\n\t\t\tif (this.#controller.signal.aborted) return false"
+		]
+	]
+}

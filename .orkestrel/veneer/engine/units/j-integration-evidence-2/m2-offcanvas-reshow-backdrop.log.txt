@@ -1,0 +1,184 @@
+subject: src/browser/Offcanvas.ts
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Offcanvas.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+·······························x·········x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+AssertionError: expected [ [ { …(6) } ], [ { …(6) } ], …(8) ] to deeply equal [ [ { …(6) } ], [ { …(6) } ], …(8) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -132,11 +132,10 @@[39m
+[2m          "token",[22m
+[2m        ],[22m
+[2m        "stale": [[22m
+[2m          "DIV aria-modal",[22m
+[2m          "DIV role",[22m
+[32m-         "DIV children",[39m
+[2m        ],[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1400:25
+    1398|    root.remove()
+    1399|   }
+    1400|   expect(readings.calls).toEqual(
+       |                         ^
+    1401|    rows.map(([phase, write, reaction, modal, returned]) => [
+    1402|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:1716:2 > Offcanvas > returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+AssertionError: expected [ [ { …(13) } ], [ { …(13) } ], …(4) ] to deeply equal [ [ { …(13) } ], [ { …(13) } ], …(4) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -2,17 +2,16 @@[39m
+[2m    [[22m
+[2m      {[22m
+[2m        "backdrop": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[32m-         "show",[39m
+[2m        ],[22m
+[2m        "beside": true,[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": "true",[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": "0",[39m
+[2m        "resolved": false,[22m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "class",[22m
+[2m          "show",[22m
+[33m@@ -30,17 +29,16 @@[39m
+[2m    [[22m
+[2m      {[22m
+[2m        "backdrop": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[32m-         "show",[39m
+[2m        ],[22m
+[2m        "beside": true,[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": "true",[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": "0",[39m
+[2m        "resolved": false,[22m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "wait",[22m
+[2m          undefined,[22m
+[33m@@ -58,17 +56,16 @@[39m
+[2m    [[22m
+[2m      {[22m
+[2m        "backdrop": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[32m-         "show",[39m
+[2m        ],[22m
+[2m        "beside": true,[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": "true",[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": "0",[39m
+[2m        "resolved": false,[22m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "class",[22m
+[2m          "hiding",[22m
+[33m@@ -86,17 +83,16 @@[39m
+[2m    [[22m
+[2m      {[22m
+[2m        "backdrop": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[32m-         "show",[39m
+[2m        ],[22m
+[2m        "beside": true,[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": "true",[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": "0",[39m
+[2m        "resolved": false,[22m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "aria-modal",[22m
+[2m          undefined,[22m
+[33m@@ -114,17 +110,16 @@[39m
+[2m    [[22m
+[2m      {[22m
+[2m        "backdrop": [[22m
+[2m          "offcanvas-backdrop",[22m
+[2m          "fade",[22m
+[32m-         "show",[39m
+[2m        ],[22m
+[2m        "beside": true,[22m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": "true",[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": "0",[39m
+[2m        "resolved": false,[22m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "role",[22m
+[2m          undefined,[22m
+[33m@@ -139,20 +134,16 @@[39m
+[2m        "visibility": "visible",[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[32m-       "backdrop": [[39m
+[32m-         "offcanvas-backdrop",[39m
+[32m-         "fade",[39m
+[32m-         "show",[39m
+[32m-       ],[39m
+[32m-       "beside": true,[39m
+[31m+       "backdrop": undefined,[39m
+[31m+       "beside": false,[39m
+[2m        "events": [],[22m
+[2m        "locked": true,[22m
+[2m        "modal": "true",[22m
+[32m-       "opacity": "0.5",[39m
+[31m+       "opacity": undefined,[39m
+[2m        "resolved": false,[22m
+[2m        "role": "dialog",[22m
+[2m        "row": [[22m
+[2m          "removal",[22m
+[2m          undefined,[22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:1842:25
+    1840|    root.remove()
+    1841|   }
+    1842|   expect(readings.calls).toEqual(
+       |                         ^
+    1843|    rows.map((row) => [
+    1844|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 47 passed (49)
+   Start at  17:00:35
+   Duration  30.11s (transform 0ms, setup 447ms, import 338ms, tests 28.36s, environment 0ms)
+
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts

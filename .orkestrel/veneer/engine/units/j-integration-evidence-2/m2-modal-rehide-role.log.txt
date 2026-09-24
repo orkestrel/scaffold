@@ -1,0 +1,110 @@
+subject: src/browser/Modal.ts
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Modal.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+
+···························x··x············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:979:2 > Modal > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+AssertionError: expected [ Array(3) ] to deeply equal [ 'style', 'aria-hidden', …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "style",[22m
+[2m    "aria-hidden",[22m
+[2m    "aria-modal",[22m
+[32m-   "role",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Modal.test.ts:1015:4
+    1013|   expect(
+    1014|    [...writes.calls.flat(2), ...observer.takeRecords()].map((record) =…
+    1015|   ).toEqual(['style', 'aria-hidden', 'aria-modal', 'role'])
+       |    ^
+    1016|   expect(events.count).toBe(0)
+    1017|   expect(modal.shown).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1223:2 > Modal > returns the host to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+AssertionError: expected [ [ { door: 'token', …(9) } ], …(3) ] to deeply equal [ [ { door: 'token', …(9) } ], …(3) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -7,11 +7,11 @@[39m
+[2m        "events": [],[22m
+[2m        "hidden": "true",[22m
+[2m        "modal": null,[22m
+[2m        "open": true,[22m
+[2m        "resolved": false,[22m
+[32m-       "role": null,[39m
+[31m+       "role": "dialog",[39m
+[2m        "target": false,[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[33m@@ -21,11 +21,11 @@[39m
+[2m        "events": [],[22m
+[2m        "hidden": "true",[22m
+[2m        "modal": null,[22m
+[2m        "open": true,[22m
+[2m        "resolved": false,[22m
+[32m-       "role": null,[39m
+[31m+       "role": "dialog",[39m
+[2m        "target": false,[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[33m@@ -35,11 +35,11 @@[39m
+[2m        "events": [],[22m
+[2m        "hidden": "true",[22m
+[2m        "modal": null,[22m
+[2m        "open": true,[22m
+[2m        "resolved": false,[22m
+[32m-       "role": null,[39m
+[31m+       "role": "dialog",[39m
+[2m        "target": false,[22m
+[2m      },[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      {[22m
+[33m@@ -49,10 +49,10 @@[39m
+[2m        "events": [],[22m
+[2m        "hidden": "true",[22m
+[2m        "modal": null,[22m
+[2m        "open": true,[22m
+[2m        "resolved": false,[22m
+[32m-       "role": null,[39m
+[31m+       "role": "dialog",[39m
+[2m        "target": false,[22m
+[2m      },[22m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Modal.test.ts:1327:25
+    1325|    root.remove()
+    1326|   }
+    1327|   expect(readings.calls).toEqual(
+       |                         ^
+    1328|    rows.map((door) => [
+    1329|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 41 passed (43)
+   Start at  16:58:06
+   Duration  18.97s (transform 0ms, setup 470ms, import 355ms, tests 17.03s, environment 0ms)
+
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
