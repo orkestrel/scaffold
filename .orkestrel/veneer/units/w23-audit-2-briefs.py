@@ -30,6 +30,11 @@ UNITS = {
         focus='claims 1, 2, 3, and 5 (the delta against round 1, the list-group case and its red runs, the token-metric wrapper and its red run, and the coverage matrix against the retained readings)',
         checker='claims 1, 4, and 6',
         bench='the bench round-tripped at 04:06 (cb-audit returned exit 0 through this queue)'),
+    'rd': dict(name='RAMP-DOWN', worktree='/home/user/veneer-rd', base='42fd88e',
+        evidence='`rd-2.diff`, `rd-2-status.txt`, `rd-shared.patch` (unchanged from round 1), `b-modal-rd-report-2.md`, `b-modal-rd-brief-2.md`, `rd-instruments/` (the round-2 records: `rd-mutation-2.patch`, `rd-mutation-2.log.txt`, `rd-mutation-zero-2.patch`, `rd-mutation-zero-2.log.txt`, `rd-mixins-green-2.log.txt`, `rd-guides-2.log.txt`, `rd-gates-2.sh`, `rd-gates-2.log.txt`, the `rd-gate-*-2.log.txt` logs, and `rd-base.css`), round 1\'s `rd.diff` and `b-modal-rd-report.md`, and the round-1 verdict `rd-audit-verdict.md` and its lane verdicts',
+        focus='claims 1, 2, and 3 (the delta against round 1 and the byte equality, the fixture case against both mutations, and each comment against the compiled stylesheets)',
+        checker='claims 1, 4, and 5',
+        bench='the bench round-tripped at 04:48 (rd-audit returned exit 0 through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"
