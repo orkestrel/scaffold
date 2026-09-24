@@ -52,7 +52,9 @@ UNITS = {
    outside the journey's variants.
 3. **P18, § Showcase.** The guide's § Showcase paragraph carries garbled fragments from mechanical merges (a
    repeated "Flex beside the flex utilities" clause, a repeated list clause, and a dangling Offcanvas run).
-   Rewrite the paragraph so every region appears once, in the order the showcase mounts them (shared patch).''',
+   Rewrite the paragraph so every region appears once, in the order the showcase mounts them, and move the link
+   utilities proof's § Tests link beside the Color utilities companions, the order the § Tests sentence states
+   (`xo-audit-2-verdict.md` claim 3) (shared patch).''',
     owned='The utility specimen tables in `app/browser/constants.ts` (`LINK_SPECIMENS`, `FOCUS_RING_SPECIMENS`, `VISIBILITY_SPECIMENS`, `COLOR_SPECIMENS`, and `TEXT_SPECIMENS`, with their TSDoc); the utility registry rows in `tests/setup.ts` and their TSDoc; the utility driven cases in `tests/app/browser/integration.test.ts`; the utility section proofs under `tests/app/browser/sections/`; `src/styles/utilities/_color-bg.scss` and its style proof; `tests/setup.test.ts` and `tests/app/browser/Showcase.test.ts` where a registry or specimen change makes a case false.',
     shared='the `text-bg` ledger row, § Showcase, the utility sections a specimen changes, and § Tests', offl='every other partial under `src/styles/**`',
     crit='3. `npm run build:src` exits 0, the color-bg proof reads every role\'s label and reddens on its mutation, `npm run test:setup` exits 0 with the added registry rows, and the utility section proofs and `tests/app/browser/Showcase.test.ts` exit 0.'),

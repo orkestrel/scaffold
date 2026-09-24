@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native subagent in the worktree `/home/user/veneer-fu` (branch `unit/fu` from the
-session head `BASE_TBD`). The executor that opens this brief is that subagent.
+session head `cf5e447`). The executor that opens this brief is that subagent.
 
 ## Objective
 
@@ -28,7 +28,9 @@ P9, P17, and P18, with the lens returns `/home/user/scaffold/.orkestrel/veneer/u
    outside the journey's variants.
 3. **P18, § Showcase.** The guide's § Showcase paragraph carries garbled fragments from mechanical merges (a
    repeated "Flex beside the flex utilities" clause, a repeated list clause, and a dangling Offcanvas run).
-   Rewrite the paragraph so every region appears once, in the order the showcase mounts them (shared patch).
+   Rewrite the paragraph so every region appears once, in the order the showcase mounts them, and move the link
+   utilities proof's § Tests link beside the Color utilities companions, the order the § Tests sentence states
+   (`xo-audit-2-verdict.md` claim 3) (shared patch).
 
 Each focus or pointer state is an element frame of its lifted specimen inside a padded wrapper, the pattern the
 `nav-underline-focus` case uses, never a page frame; each pointer-held placement carries the structural guard
@@ -67,7 +69,7 @@ with a variant from `light-1280`, `dark-1280`, `light-390`, and `dark-390`; run 
 
 **Owned.** The utility specimen tables in `app/browser/constants.ts` (`LINK_SPECIMENS`, `FOCUS_RING_SPECIMENS`, `VISIBILITY_SPECIMENS`, `COLOR_SPECIMENS`, and `TEXT_SPECIMENS`, with their TSDoc); the utility registry rows in `tests/setup.ts` and their TSDoc; the utility driven cases in `tests/app/browser/integration.test.ts`; the utility section proofs under `tests/app/browser/sections/`; `src/styles/utilities/_color-bg.scss` and its style proof; `tests/setup.test.ts` and `tests/app/browser/Showcase.test.ts` where a registry or specimen change makes a case false.
 
-**Shared (report-only).** `guides/veneer.md` (the `text-bg` ledger row, § Showcase, the utility sections a specimen changes, and § Tests). Return one `fu-shared.patch` against `BASE_TBD` and
+**Shared (report-only).** `guides/veneer.md` (the `text-bg` ledger row, § Showcase, the utility sections a specimen changes, and § Tests). Return one `fu-shared.patch` against `cf5e447` and
 edit nothing there.
 
 **Off-limits.** every other partial under `src/styles/**`; every other specimen table; `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts`;
