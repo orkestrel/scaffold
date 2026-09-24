@@ -1,0 +1,14 @@
+Paint role-colored text on the page in its on-canvas tier
+
+The user's appearance ruling (P7, option C) puts colored text on the page on
+the role's 70 percent oklab mix with the body text, in both modes. The
+.text-<role> and .link-<role> classes outside the neutral roles, the resting
+and disabled outline-button labels, the dark link, and the light validation
+tokens now read the emphasis tier, so dark danger text clears 4.5 to 1 at
+4.76 where it read 2.75. The colored-link hover moves the tier 20 percent
+toward the emphasis text. The neutral light and dark roles keep their own
+colors through one exclusion list. Retuning a role's -rgb channels no longer
+moves its text; the guide states the departure and the tokens that do.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
