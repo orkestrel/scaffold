@@ -1,0 +1,138 @@
+# J-BINDER-PRECEDENCE round 5 — the Orchestrator's own gate run (2026-09-23)
+1395361 Merge branch 'main' into unit/binder
+ M guides/veneer.md
+ M src/browser/Button.ts
+ M src/browser/HostSnapshot.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M tests/src/browser/HostSnapshot.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+check:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings src/browser tests/src/browser
+oxlint exit=0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxfmt --config .oxfmtrc.json --check src/browser tests/src/browser guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 5194ms on 20 files using 16 threads.
+oxfmt exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer-precedence
+
+·······················9:07:59 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mSyntaxError[22m: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+[39m > src/browser/HostSnapshot.ts:163:30
+    161 |  				const key = HostSnapshot.#key(target.category, target.name)
+    162 |  				HostSnapshot.#writeBack(target.element, key, this, () =>
+    163 |  					target.element.classList.toggle(target.name, value !== undefined),
+        |                                ^
+    164 |  				)
+    165 |  			}
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:343:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:316:27
+ > src/browser/HostSnapshot.ts:163:30
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:345:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=57b6f09d:302:11
+
+9:07:59 PM [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mError: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer-precedence/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at http://localhost:63315/src/browser/HostSnapshot.ts:125:87
+    at #writeBack (http://localhost:63315/src/browser/HostSnapshot.ts:194:3)
+    at HostSnapshot.restore (http://localhost:63315/src/browser/HostSnapshot.ts:125:28)
+    at http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer-precedence/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790212079927:476:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57b6f09d:302:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57b6f09d:1903:26
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57b6f09d:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=57b6f09d:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:308:2 > HostSnapshot > withdraws an overlapping earliest recording when its restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+··································································································································
+
+ Test Files  8 passed (8)
+      Tests  153 passed (153)
+   Start at  21:07:58
+   Duration  2.05s (transform 0ms, setup 336ms, import 89ms, tests 214ms, environment 0ms)
+
+test:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/mikes/WebstormProjects/veneer-precedence[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m19 passed[39m[22m[90m (19)[39m
+[2m   Start at [22m 21:08:01
+[2m   Duration [22m 1.04s[2m (transform 189ms, setup 62ms, import 788ms, tests 49ms, environment 0ms)[22m
+
+test:guides exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer-precedence
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  21:08:04
+   Duration  2.19s (transform 108ms, setup 63ms, import 248ms, tests 1.72s, environment 0ms)
+
+test:policy exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:browser
+npm notice run vite build --config configs/src/vite.browser.config.ts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 11 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  34.57 kB │ gzip: 9.89 kB │ map: 58.34 kB
+
+[32m✓ built in 80ms[39m
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+build:src:browser exit=0
+--- brief-5 criterion-5 greps
+always-restored-grep exit=1 (1 is the pass)
+src/browser/HostSnapshot.ts:30: * restored unless a write throws. A restoration runs synchronously, so only a synchronous reaction
+src/browser/types.ts:305:	 * restored unless a write throws.
+guides/veneer.md:569:unless a write throws.
+unless-throws-grep exit=0 (0 with three sites is the pass)
+src/browser/HostSnapshot.ts:26: * whose earliest recording it held included, so no restoration writes that target back.
+src/browser/HostSnapshot.ts:223:	// whose earliest recording it held included, so no restoration writes that target back.
+src/browser/types.ts:301:	 * whose earliest recording it held included, so no restoration writes that target back.
+guides/veneer.md:564:not written back, a target whose earliest recording it held included, so no restoration writes that
+withdrawn-earliest-grep exit=0 (0 with four sites is the pass)
+280: * @returns The value's string tag name, or undefined when the value fails this realm's `instanceof Element` check, its tag name is not a string, or reading it throws.
+realm-grep exit=0 (0 is the pass)
+--- the earlier rounds' greps
+old-sentence-grep exit=1 (1 is the pass)
+undefined-detail-grep exit=1 (1 is the pass)
+--- tree-wide typecheck
+npm notice run @orkestrel/veneer@0.0.1 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+npm notice run @orkestrel/veneer@0.0.1 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+npm notice run @orkestrel/veneer@0.0.1 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:styles
+npm notice run tsc --noEmit -p configs/src/tsconfig.styles.json
+npm notice run @orkestrel/veneer@0.0.1 check:app
+npm notice run npm run check:app:browser
+npm notice run @orkestrel/veneer@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+check exit=0
