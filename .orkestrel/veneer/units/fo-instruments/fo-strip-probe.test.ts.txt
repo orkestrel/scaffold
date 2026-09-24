@@ -1,0 +1,61 @@
+import { POPOVER_SPECIMENS } from '@app/browser'
+import { requireValue } from '@orkestrel/test'
+import { build, mount, readStyle, releasePane, stagePane } from '@orkestrel/test/browser'
+import { beforeAll, expect, it } from 'vitest'
+import { page } from 'vitest/browser'
+
+async function decode(base64: string): Promise<ImageData> {
+	const image = new Image()
+	image.src = `data:image/png;base64,${base64}`
+	await image.decode()
+	const canvas = document.createElement('canvas')
+	canvas.width = image.naturalWidth
+	canvas.height = image.naturalHeight
+	const context = requireValue(canvas.getContext('2d'), 'No context')
+	context.drawImage(image, 0, 0)
+	return context.getImageData(0, 0, canvas.width, canvas.height)
+}
+
+beforeAll(async () => {
+	await import('../../src/styles/index.scss')
+	await import('../../app/browser/styles/index.scss')
+})
+
+it('reports what the header strip changes in the painted pixels', async () => {
+	const lines: string[] = []
+	await page.viewport(1280, 800)
+	await stagePane(1280, 800)
+	for (const zoom of ['1', '4'])
+	for (const mode of ['light', 'dark']) {
+		const bottom = requireValue(POPOVER_SPECIMENS.find(({ name }) => name === 'Bottom popover'), 'No bottom')
+		const host = mount(build('div'))
+		host.setAttribute('data-bs-theme', mode)
+		host.style.zoom = zoom
+		host.innerHTML = bottom.markup
+		const popover = requireValue(host.querySelector<HTMLElement>('.popover'), 'No popover')
+		const header = requireValue(host.querySelector<HTMLElement>('.popover-header'), 'No header')
+		const before = getComputedStyle(header, '::before')
+		lines.push(`${mode} strip content ${before.content} top ${before.top} left ${before.left} width ${before.width} height ${before.height} border ${before.borderBottomWidth} ${before.borderBottomColor} header-bg ${readStyle(header, 'background-color')} header-border-top ${readStyle(header, 'border-top-width')} popover-border ${readStyle(popover, 'border-top-color')} header-position ${readStyle(header, 'position')}`)
+		const withStrip = await page.screenshot({ element: popover, base64: true, save: false })
+		const off = build('style', { text: '.popover-header::before { content: none !important }' })
+		document.head.append(off)
+		const withoutStrip = await page.screenshot({ element: popover, base64: true, save: false })
+		off.remove()
+		const arrow = build('style', { text: '.popover-arrow { display: none !important }' })
+		document.head.append(arrow)
+		const withoutArrow = await page.screenshot({ element: popover, base64: true, save: false })
+		arrow.remove()
+		const a = await decode(withStrip)
+		const b = await decode(withoutStrip)
+		const diffs: string[] = []
+		for (let y = 0; y < a.height; y++) for (let x = 0; x < a.width; x++) {
+			const i = (y * a.width + x) * 4
+			if (a.data[i] !== b.data[i] || a.data[i + 1] !== b.data[i + 1] || a.data[i + 2] !== b.data[i + 2]) diffs.push(`${x},${y}:${a.data[i]},${a.data[i+1]},${a.data[i+2]}<-${b.data[i]},${b.data[i+1]},${b.data[i+2]}`)
+		}
+		lines.push(`${mode} zoom ${zoom} size ${a.width}x${a.height} dpr ${window.devicePixelRatio} rect ${JSON.stringify(popover.getBoundingClientRect())} diffs ${diffs.length} ${diffs.slice(0, 6).join(' ')} ... ${diffs.slice(-3).join(' ')}`)
+		lines.push(`${mode} strip changes pixels: ${String(withStrip !== withoutStrip)}; control (arrow hidden) changes pixels: ${String(withStrip !== withoutArrow)}`)
+		host.remove()
+	}
+	await releasePane()
+	expect(lines).toEqual([])
+})
