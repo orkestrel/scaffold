@@ -1,0 +1,26 @@
+mutation: ScrollLock abort listener bound to an unused event (vn-never)
+command: node node_modules/vitest/vitest.mjs run --config vite.config.ts --no-cache --reporter=verbose --project src:browser tests/src/browser/Modal.test.ts -t "releases the scroll lock whose compensation write a reaction answers by destroying the modal, writing nothing more"
+exit=1
+ × |src:browser (chromium)| tests/src/browser/Modal.test.ts:1250:2 > Modal > releases the scroll lock whose compensation write a reaction answers by destroying the modal, writing nothing more 8ms
+      Tests  1 failed | 39 skipped (40)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Modal.test.ts:1250:2 > Modal > releases the scroll lock whose compensation write a reaction answers by destroying the modal, writing nothing more
+AssertionError: expected [ MutationRecord{}, …(5) ] to deeply equal []
+ ❯ tests/src/browser/Modal.test.ts:1290:63
+digest before: e04a2efaa233fe73d4bc83ea5655e405433b33bd44188126b35ea3d615613f08
+digest after: e04a2efaa233fe73d4bc83ea5655e405433b33bd44188126b35ea3d615613f08
+receipt: restored byte for byte
+
+mutation: ScrollLock abort listener bound to an unused event (vn-never)
+command: node node_modules/vitest/vitest.mjs run --config vite.config.ts --no-cache --reporter=verbose --project src:browser tests/src/browser/ScrollLock.test.ts -t "takes no reference under an aborted signal and releases its reference when its signal aborts"
+exit=1
+ × |src:browser (chromium)| tests/src/browser/ScrollLock.test.ts:120:2 > ScrollLock > takes no reference under an aborted signal and releases its reference when its signal aborts 5ms
+      Tests  1 failed | 6 skipped (7)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollLock.test.ts:120:2 > ScrollLock > takes no reference under an aborted signal and releases its reference when its signal aborts
+AssertionError: expected 'overflow: hidden; padding-right: 0px;' to be null // Object.is equality
+ ❯ tests/src/browser/ScrollLock.test.ts:136:37
+digest before: e04a2efaa233fe73d4bc83ea5655e405433b33bd44188126b35ea3d615613f08
+digest after: e04a2efaa233fe73d4bc83ea5655e405433b33bd44188126b35ea3d615613f08
+receipt: restored byte for byte
+
