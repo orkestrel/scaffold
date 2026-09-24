@@ -88,6 +88,12 @@ UNITS = {
         checker='claims 1, 3, and 4',
         lanes='the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, by the user\'s instruction to put implementation first, because the round adds no frame and no behavior and its subjective findings were prose',
         bench='the bench round-tripped at 14:49 (lc-audit returned exit 0)'),
+    'fp': dict(name='PASSIVE-FRAMES', worktree='/home/user/veneer-fp', base='cf5e447',
+        evidence='`fp-3.diff` and `fp-3-status.txt` (all rounds against `cf5e447`), `fp-shared-3.patch` and `fp-shared-2.patch`, `b-passive-frames-report-3.md`, `b-passive-frames-brief-3.md`, `fp-instruments/` (`fp-mutations-3.log.txt`, `fp-mutate-3.py`, the `fp-3-*.log.txt` gate logs, and round 2\'s `fp-mutations-2.log.txt`), and the round-2 verdict `fp-audit-2-verdict.md` and its lane verdicts',
+        focus='claims 1 and 2 (the one-class assertion against its mutation and N2, and the patch delta)',
+        checker='claims 2 and 3',
+        lanes='the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, by the user\'s instruction to put implementation first, because the round adds one assertion and two sentences and no frame',
+        bench='the bench round-tripped at 14:49 (lc-audit returned exit 0)'),
 }
 N = sys.argv[1]
 for key in sys.argv[2:]:
