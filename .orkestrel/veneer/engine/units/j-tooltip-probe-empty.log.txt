@@ -1,0 +1,39 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/probe-empty.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/tooltip
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/probe-empty.test.ts (1 test | 1 failed) 6ms
+   × reads the empty dictionary against the allowlist 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/probe-empty.test.ts:6:1 > reads the empty dictionary against the allowlist
+AssertionError: expected [ …(2) ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "<p class=\"c\"><b>b</b><a href=\"https://x\" rel=\"r\">a</a><span>s</span><img src=\"data:image/png;base64,AA==\" alt=\"x\"></p>",[39m
+[31m+   "<p class=\"c\" title=\"t\" data-x=\"1\" style=\"color: red\"><b>b</b><mark>m</mark><a href=\"https://x\" rel=\"r\">a</a><span href=\"h\">s</span><img src=\"data:image/png;base64,AA==\" alt=\"x\"></p>",[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/probe-empty.test.ts:15:18
+     13|   readings.push(slot.innerHTML)
+     14|  }
+     15|  expect(readings).toEqual([])
+       |                  ^
+     16| })
+     17|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  09:15:20
+   Duration  1.39s (transform 0ms, setup 413ms, import 7ms, tests 6ms, environment 0ms)
+

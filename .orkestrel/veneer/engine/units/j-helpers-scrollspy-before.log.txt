@@ -1,6 +1,0 @@
- ✓ |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:157:2 > ScrollSpy > observes a link whose disabled attribute reads false 11ms
- ✓ |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:293:2 > ScrollSpy > observes no link without a fragment, no disabled link, and no hidden section, and re-reads the links at refresh 92ms
- Test Files  1 passed (1)
-      Tests  27 passed (27)
-exit=0
-receipt: restored byte for byte
