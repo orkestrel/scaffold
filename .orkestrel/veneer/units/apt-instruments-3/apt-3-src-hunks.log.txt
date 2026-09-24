@@ -1,0 +1,1 @@
+=== diff of the src hunks of apt-3.diff and apt-2.diff: exit 0 (0 means identical)
