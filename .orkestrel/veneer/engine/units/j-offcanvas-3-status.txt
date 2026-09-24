@@ -1,0 +1,16 @@
+ M guides/veneer.md
+ M src/browser/Backdrop.ts
+ M src/browser/Delegate.ts
+ M src/browser/Isolation.ts
+ A src/browser/Offcanvas.ts
+ M src/browser/constants.ts
+ M src/browser/index.ts
+ M src/browser/parsers.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Backdrop.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/Isolation.test.ts
+ A tests/src/browser/Offcanvas.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/validators.test.ts

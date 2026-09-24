@@ -1,0 +1,92 @@
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/Tooltip.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/tooltip
+
+Port 63315 is in use, trying another one...
+··················································xxxx··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:2031:2 > Tooltip > stops a rebuild whose show listener moves the settled tip into another container, building and announcing no replacement
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:2054:31
+    2052|    signal: controller.signal,
+    2053|   })
+    2054|   expect(await tooltip.show()).toBe(false)
+       |                               ^
+    2055|   expect(tip.parentElement).toBe(elsewhere)
+    2056|   expect(document.querySelectorAll('.tooltip')).toHaveLength(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:2060:2 > Tooltip > stops a rebuild whose show listener takes the shown token from the settled tip, building and announcing no replacement
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:2080:31
+    2078|    signal: controller.signal,
+    2079|   })
+    2080|   expect(await tooltip.show()).toBe(false)
+       |                               ^
+    2081|   expect(tip.isConnected).toBe(true)
+    2082|   expect(document.querySelectorAll('.tooltip')).toHaveLength(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:2086:2 > Tooltip > stops a rebuild whose old tip a closing beforetoggle listener moves during its removal, building and announcing no replacement
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:2112:31
+    2110|    { signal: controller.signal },
+    2111|   )
+    2112|   expect(await tooltip.show()).toBe(false)
+       |                               ^
+    2113|   expect(tip.parentElement).toBe(elsewhere)
+    2114|   expect(document.querySelectorAll('.tooltip')).toHaveLength(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tooltip.test.ts:2118:2 > Tooltip > resolves a hide false and leaves the tip shown where it is when a closing beforetoggle listener adds its shown token back
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tooltip.test.ts:2136:31
+    2134|    if (event.newState === 'closed') tip.classList.add(TOOLTIP_CLASSES.…
+    2135|   })
+    2136|   expect(await tooltip.hide()).toBe(false)
+       |                               ^
+    2137|   expect(tip.parentElement).toBe(container)
+    2138|   expect(tip.classList.contains(TOOLTIP_CLASSES.shown)).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 52 passed (56)
+   Start at  12:18:18
+   Duration  8.60s (transform 0ms, setup 424ms, import 267ms, tests 6.93s, environment 0ms)
+

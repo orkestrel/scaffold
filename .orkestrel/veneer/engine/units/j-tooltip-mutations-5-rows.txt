@@ -1,0 +1,101 @@
+digest before: {"src/browser/Tooltip.ts": "554e12fdee6e45c2e365b54e9fcbb7fba57eaee4a9c4989abc0a
+| JOINED | the door reads no container | Tooltip | 2/56 | AssertionError: expected true to be false // Object.is equality |
+| JOINED | the door reads no token | Tooltip | 2/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | the show re-reads no refusal after its dispatch | Tooltip | 1/56 | AssertionError: expected true to be false // Object.is equality |
+| JOINED | the inserted step reads no door | Tooltip | 3/56 | AppError: Placement requires a connected element |
+| JOINED | a show runs while a change is in flight | Tooltip | 3/56 | AssertionError: expected false to be true // Object.is equality |
+| EXACT | the build reads no door after a content function | Tooltip | 1/56 | AssertionError: expected 1 to be +0 // Object.is equality |
+| JOINED | the hide removes a tip a reaction moved during the wait | Tooltip | 6/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | the show completion reads no door | Tooltip | 1/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | P1 the final release and the listener step read no door | Tooltip | 1/56 | AssertionError: expected <div …(3)>…(2)</div> to be null |
+| JOINED | P2 the discard removes a tip other code moved | Tooltip | 5/56 | AssertionError: expected true to be false // Object.is equality |
+| JOINED | P2 the discard reports every tip as removed | Tooltip | 3/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | P3 the promotion reads no door | Tooltip | 1/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | P4 the link step reads no door | Tooltip | 1/56 | AssertionError: expected [ [ 'inserted.vn.tooltip' ] ] to deeply equal [] |
+| JOINED | P5 the inserted step reads no container | Tooltip | 2/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | P6 each content function runs beside its move | Tooltip | 1/56 | AssertionError: expected [ [ 2 ], [ +0 ] ] to deeply equal [ [ +0 ] ] |
+| JOINED | P7 destruction removes a tip other code moved | Tooltip | 5/56 | AssertionError: expected null to be <div id="elsewhere"></div> // Object.is equality |
+| EXACT | fill runs while a change is in flight | Tooltip | 1/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | a throw returns nothing home | Tooltip | 1/56 | AssertionError: expected <div class="tooltip-inner">…(1)</div> to be <div id="other-home"></div> // Object.is equality |
+| EXACT | the completion releases after dispatch | Tooltip | 1/56 | AssertionError: expected false to be true // Object.is equality |
+| EXACT | the rebuild's dispatch reads no tip | Tooltip | 1/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | the rebuild ignores the old tip's report | Tooltip | 1/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | the teardown reads no token | Tooltip | 1/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | the token removal step reads no door | Tooltip | 1/56 | AssertionError: expected [ [ 1, false, 1, '' ], …(4) ] to deeply equal [ [ 1, false, +0, '' ], …(4) ] |
+| EXACT | the token step reads no door | Tooltip | 1/56 | AssertionError: expected [ [ 1, false, +0, '' ], …(4) ] to deeply equal [ [ 1, false, +0, '' ], …(4) ] |
+| EXACT | the fade token step reads no door | Tooltip | 1/56 | AssertionError: expected [ [ 1, false, +0, '' ], …(4) ] to deeply equal [ [ 1, false, +0, '' ], …(4) ] |
+| MISSED | the id step reads no door | Tooltip | 0/56 |  |
+| JOINED | no record precedes the move | Tooltip | 7/56 | AssertionError: expected [ [ …(1) ] ] to deeply equal [ [ <div id="home">…(1)</div> ] ] |
+| EXACT | the origin is captured before the move and published after it | Tooltip | 1/56 | AssertionError: expected [ [ …(1) ] ] to deeply equal [ [ <div id="home">…(2)</div> ] ] |
+| EXACT | an engine-displaced element is not restored | Tooltip | 1/56 | AssertionError: expected null to be <div id="first-home"></div> // Object.is equality |
+| EXACT | fill resolves after destruction | Tooltip | 1/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | the one timer is not cleared | Tooltip | 1/56 | AssertionError: expected 296.6000000089407 to be greater than or equal to 400 |
+| EXACT | the active-trigger read is dropped | Tooltip | 1/56 | AssertionError: expected false to be true // Object.is equality |
+| EXACT | an ask during a hide in flight is dropped | Tooltip | 1/56 | Error: Condition "the returned tip shows again" did not hold within 3000ms (waited 3014.6000000089407ms) |
+| EXACT | a disabled click asks for the tip | Tooltip | 1/56 | Error: Condition "the enabled tip shows" did not hold within 1000ms (waited 1004.6999999880791ms) |
+| JOINED | markup skips the sanitizer | Tooltip | 3/56 | AssertionError: expected '<b class="x" data-x="1" onclick="aler…' to be '<b class="x">Bold</b><a>link</a>' // Object.is equality |
+| JOINED | the template skips the sanitizer | Tooltip | 2/56 | AssertionError: expected [ Array(1) ] to deeply equal [ [ '', …(1) ], …(1) ] |
+| JOINED | the native sanitizer drops its configuration | NativeSanitizer | 6/7 | AssertionError: expected '<p title="t" data-x="1"><mark>m</mark…' to be '<p><span>s</span></p>' // Object.is equality |
+| JOINED | the allowlist moves href from the a element to every element | NativeSanitizer | 3/7 | AssertionError: expected '<span href="h">s</span><b>b</b><a hre…' to be '<span>s</span><b>b</b><a href="https:…' // Object.is equality |
+| EXACT | the allowlist loses an ARIA name | NativeSanitizer | 1/7 | AssertionError: expected [ 'aria-valuetext' ] to deeply equal [] |
+| JOINED | the allowlist admits data attributes | NativeSanitizer | 3/7 | AssertionError: expected '<p class="lead" id="p" dir="rtl" lang…' to be '<p class="lead" id="p" dir="rtl" lang…' // Object.is equality |
+| EXACT | the unsupported refusal is removed | NativeSanitizer | 1/7 | AssertionError: expected { success: false, …(1) } to match object { error: { …(2) } } |
+| EXACT | an empty slot is kept | Tooltip | 1/56 | AssertionError: expected <div class="tooltip-arrow" …(1)></div> to be null |
+| JOINED | no inserted event | Tooltip | 12/56 | AssertionError: expected [ [ 'show.vn.tooltip' ], …(1) ] to deeply equal [ [ 'show.vn.tooltip' ], …(2) ] |
+| JOINED | hide keeps the placement | Tooltip | 4/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | the container ignores aria-modal | Tooltip | 1/56 | AssertionError: expected [ <div id="box"></div>, …(2) ] to deeply equal [ <div id="box"></div>, …(2) ] |
+| JOINED | aria-describedby is not written | Tooltip | 35/56 | Error: No tip |
+| JOINED | aria-describedby keeps the id after hide | Tooltip | 7/56 | AssertionError: expected 'help vn-tooltip-1' to be 'help' // Object.is equality |
+| JOINED | the constructor placement is ignored (precedence reversed) | Tooltip | 3/56 | AssertionError: expected 'bottom' to be 'left' // Object.is equality |
+| EXACT | an invalid descendants selector is accepted | Tooltip | 1/56 | AssertionError: expected { success: true, value: Tooltip{} } to match object { error: { …(2) } } |
+| JOINED | the promotion compensation is omitted | Tooltip | 2/56 | AssertionError: expected [ '3px', 'solid', '4px', '4px', …(5) ] to deeply equal [ '0px', 'none', '0px', '0px', …(5) ] |
+| JOINED | the offset is not passed | Tooltip | 4/56 | AssertionError: expected '0px' to be '10px' // Object.is equality |
+| EXACT | update is not forwarded | Tooltip | 1/56 | AssertionError: expected null to be 'right' // Object.is equality |
+| JOINED | a prevented hide proceeds | Tooltip | 2/56 | AssertionError: expected true to be false // Object.is equality |
+| JOINED | a hide on a hidden tip proceeds | Tooltip | 2/56 | AssertionError: expected [ [ 'hide.vn.tooltip' ] ] to deeply equal [] |
+| EXACT | a refused promotion is not cleaned up | Tooltip | 1/56 | AssertionError: expected <div …(3)>…(2)</div> to be null |
+| EXACT | a refused promotion rejects the show | Tooltip | 1/56 | AppError: The platform refused the popover promotion |
+| EXACT | an arrow that is not an HTML element is accepted | Placement | 2/18 | AssertionError: expected { success: true, value: Placement{} } to match object { error: { …(2) } } |
+| EXACT | the aborted signal at construction is ignored | Tooltip | 1/56 | AssertionError: expected Tooltip{} to be undefined |
+| JOINED | the signal abort is not heard | Tooltip | 7/56 | AssertionError: expected Tooltip{} to be undefined |
+| JOINED | the modal hide is not heard | Tooltip | 2/56 | Error: Event "the modal hide hides the tip" was not delivered within 1000ms |
+| EXACT | the modal ancestor is found by the default token | Tooltip | 1/56 | AssertionError: expected false to be true // Object.is equality |
+| JOINED | the platform close is not bridged | Tooltip | 2/56 | Error: Event "the escaped tip hides" was not delivered within 1000ms |
+| JOINED | a prevented platform hide is not reopened | Tooltip | 2/56 | Error: Condition "the refused tip opens again" did not hold within 1000ms (waited 1009.5ms) |
+| EXACT | a second platform close is prevented again | Tooltip | 1/56 | Error: Condition "the pair settles" did not hold within 1000ms (waited 1008.8000000119209ms) |
+| JOINED | the arrow keeps its static position | Tooltip | 3/56 | AssertionError: expected [ [ 'top', -58, false, false ], …(3) ] to deeply equal [ [ 'top', +0, true, false ], …(3) ] |
+| JOINED | the arrow is centered on the wrong axis | Tooltip | 2/56 | AssertionError: expected [ [ 'top', -58, true, false ], …(3) ] to deeply equal [ [ 'top', +0, true, false ], …(3) ] |
+| EXACT | the arrow ignores the trigger center | Tooltip | 1/56 | AssertionError: expected [ 32, -85 ] to deeply equal [ +0, +0 ] |
+| JOINED | a moved element is left in the tip on destroy | Tooltip | 4/56 | AssertionError: expected <div class="tooltip-inner">…(1)</div> to be <div id="other"></div> // Object.is equality |
+| EXACT | a replaced element is dropped | Tooltip | 1/56 | AssertionError: expected <div class="tooltip-inner">…(1)</div> to be <div id="shelf"><u></u></div> // Object.is equality |
+| JOINED | a rebuilt show keeps the earlier element | Tooltip | 2/56 | AssertionError: expected <div class="tooltip-inner">…(1)</div> to be <div id="shelf"></div> // Object.is equality |
+| JOINED | the title is not moved | Tooltip | 4/56 | AssertionError: expected [] to deeply equal [ …(4) ] |
+| JOINED | the show wait is dropped | Tooltip | 5/56 | AssertionError: expected [ [ 'shown.vn.tooltip' ] ] to deeply equal [ [ 'finished' ], …(1) ] |
+| JOINED | the hide wait is dropped | Tooltip | 3/56 | AssertionError: expected undefined to be an instance of CSSTransition |
+| JOINED | descendants get no tooltip of their own | Tooltip | 2/56 | Error: Condition "the descendant tip shows" did not hold within 1000ms (waited 1013.6999999880791ms) |
+| EXACT | a failing descendant throws out of the listener | Tooltip | 1/56 | AssertionError: expected [ [ …(1) ], [ …(1) ], [ …(1) ] ] to deeply equal [] |
+| EXACT | a failing descendant is not recorded | Tooltip | 1/56 | AssertionError: expected [ [ <button …(5)></button> ], …(7) ] to deeply equal [] |
+| EXACT | a consumer's descendant tooltip is driven | Tooltip | 1/56 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | the class group is ignored | Tooltip | 1/56 | AssertionError: expected [ 'x-tip', 'bs-tooltip-auto', …(3) ] to deeply equal [ 'x-tip', 'x-auto', 'x-note', …(2) ] |
+| EXACT | the selector group is ignored | Tooltip | 1/56 | AssertionError: expected '' to be 'absolute' // Object.is equality |
+| JOINED | the default offset is zero | Tooltip | 2/56 | AssertionError: expected +0 to be close to 6, received difference is 6, but expected 0.5 |
+| EXACT | the built tip stays attached | helpers | 1/61 | AssertionError: expected <div><div …(2)>…(2)</div></div> to be null |
+| EXACT | a template without an HTML root is accepted | helpers | 1/61 | AssertionError: expected { success: false, …(1) } to match object { error: { …(2) } } |
+| EXACT | an empty slot is kept by the helper | helpers | 1/61 | AssertionError: expected '<p class="a">&lt;b&gt;Text&lt;/b&gt;<…' to be '<p class="a">&lt;b&gt;Text&lt;/b&gt;<…' // Object.is equality |
+| EXACT | a content function is not called | helpers | 1/61 | AssertionError: expected '<p class="a">&lt;b&gt;Text&lt;/b&gt;<…' to be '<p class="a">&lt;b&gt;Text&lt;/b&gt;<…' // Object.is equality |
+| EXACT | an element content is copied, not moved | helpers | 1/61 | AssertionError: expected null to be <b></b> // Object.is equality |
+| JOINED | the writer ignores html | helpers | 2/61 | AssertionError: expected 'Text' to be '<b>Text</b>' // Object.is equality |
+| EXACT | the tooltip event guard reads detail uncontained | validators | 1/28 | Error: Unreadable |
+| JOINED | the tooltip event guard admits a payload | validators | 2/28 | AssertionError: expected true to be false // Object.is equality |
+| JOINED | the sanitize target guard admits any setHTML member | validators | 2/28 | AssertionError: expected true to be false // Object.is equality |
+| EXACT | the sanitize target guard is uncontained | validators | 1/28 | Error: Unreadable |
+| EXACT | a negative delay parses | parsers | 1/24 | AssertionError: expected { show: -1, hide: -1 } to be undefined |
+| EXACT | one delay fills the show wait alone | parsers | 1/24 | AssertionError: expected { show: 100 } to deeply equal { show: 100, hide: 100 } |
+| EXACT | an unknown trigger word parses | parsers | 1/24 | AssertionError: expected { hover: false, focus: false, …(1) } to be undefined |
+| EXACT | the hover word turns on focus | parsers | 1/24 | AssertionError: expected { hover: true, focus: true, …(1) } to deeply equal { hover: false, focus: true, …(1) } |
+| JOINED | a placement string is refused | parsers | 2/24 | AssertionError: expected undefined to be 'auto' // Object.is equality |
+| EXACT | an unknown fallback member is skipped | parsers | 1/24 | AssertionError: expected [ 'top' ] to be undefined |
+| EXACT | a hostile fallback array escapes | parsers | 1/24 | Error: Unreadable |
+| EXACT | the barrel omits the tooltip | index | 1/3 | AssertionError: expected [ 'ALERT_ATTRIBUTES', …(124) ] to strictly equal [ 'ALERT_ATTRIBUTES', …(125) ] |
+digest after: {"src/browser/Tooltip.ts": "554e12fdee6e45c2e365b54e9fcbb7fba57eaee4a9c4989abc0a8
+receipt: restored byte for byte
