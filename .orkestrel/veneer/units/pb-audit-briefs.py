@@ -1,6 +1,6 @@
 # Writes the round-1 audit lane briefs and the Astra launcher for PAGE-FRAME (`pf`) and BCF (`bcf`), derived from
 # cl-audit-briefs.py with every subject field rewritten for the units cut from dc92a09.
-# Usage: python3 pb-audit-briefs.py <unit keys>; the keys are pf, bcf, xo, ct, fr, fo, fu, ff, fp, lc, and pl
+# Usage: python3 pb-audit-briefs.py <unit keys>; the keys are pf, bcf, xo, ct, fr, fo, fu, ff, fp, lc, pl, and fh
 import pathlib, sys
 
 U = pathlib.Path('/home/user/scaffold/.orkestrel/veneer/units')
@@ -126,6 +126,17 @@ UNITS = {
         analyst='claims 2, 3, 4, 5, and 6 (the classification against the profile, the comparison against both builds, the emulation and its control, each proof against its mutation, and the helper)',
         reviewer='claims 3 (the case\'s shape and title), 4 (whether the emulation stands in for the real build as the report says), 6 (the names and placement), and 7 (every guide sentence against what ships, and the writing rule)',
         checker='claims 1, 6, and 8'),
+    'fh': dict(
+        name='FRAME-HELPERS', worktree='/home/user/veneer-fh', base='5afa37b',
+        law=("`/home/user/scaffold/AGENTS.md`; `/home/user/scaffold/.claude/rules/{tests,browser,names,typescript,architecture,patterns,documentation,writing,quality}.md`; "
+             "the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` and its references (the verdict shape)"),
+        family='the brief `b-frame-helpers-brief.md`, the FOCUS-FRAME verdicts `ff-audit-verdict.md` and `ff-audit-2-verdict.md` (R-b and R-c), the FORMS-FRAMES verdicts `fr-audit-verdict.md` and `fr-audit-3-verdict.md` (the carried comment), and `pf-design-verdict.md`',
+        precedent='the base `FrameManager` class in `tests/setupBrowser.ts`, the base focus cases in `tests/app/browser/integration.test.ts`, the base readers in `tests/setup.ts`, and the installed `releasePointer`, `captureFrame`, and `readFrame` functions (`node_modules/@orkestrel/test/dist/src/browser/index.d.ts`)',
+        evidence='`fh.diff`, `fh-status.txt`, `fh-shared.patch`, `b-frame-helpers-report.md`, `fh-instruments/` (`fh-mutations.log.txt`, `fh-mutate.py`, `fh-mutation-runs.sh`, the `fh-mutation-*.log.txt` logs, the `fh-journey-*.log.txt` and `fh-baseline-*.log.txt` logs, `fh-compare.py` with `fh-compare-dark-1280.txt` and `fh-compare-light-390.txt`, `fh-setup-browser.log.txt`, `fh-test-setup.log.txt`, `fh-test-guides.log.txt`, `fh-test-policy.log.txt`, and the format, lint, and check logs), and the frames under `/home/user/veneer-fh/tmp/units/fh-final/<variant>/` (the final frames at `dark-1280`, `light-390`, and `dark-390`) and `/home/user/veneer-fh/tmp/units/fh-baseline/` (the base frames)',
+        subject='the helper\'s shape and names (`lift`, `focus`, their options, and the readers), the Tab drives, the pointer watcher, the outline comparison, the frames, and the guide prose',
+        analyst='claims 2, 3, 4, 5, and 6 (every routed case against the helper, each drive against its mutation, the watcher, the comparison\'s arithmetic, the restoration on every path, and the red-first clip fix)',
+        reviewer='claims 2 (the helper\'s shape and names against the naming law), 3 (open the dropdown and carousel focus frames), 7 (open the frames the report names and rule whether each shows its scenario), and 8',
+        checker='claims 1, 2, and 8'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]
