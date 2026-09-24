@@ -24,7 +24,7 @@ better.
    across every case.
 3. **The region type (R3).** Name the structural box type `computeCroppedEdges` and `computeRingBand` read, and move it
    where both the pure helpers and `readRegion` can import it.
-4. **The drives (R5 and FOCUS-FRAME's observation).** The `dropdown-menu-focus` and `captioned-carousel-focus`
+4. **The drives (R5, FOCUS-FRAME's observation, and the FOCUS-FRAME landing).** The focus-ring link case (the `default-focus-ring-focus` and `focus-ring-roles-focus` scenarios) kept UTIL-FRAMES' drive at the FOCUS-FRAME landing: route it through the helper with the Tab drive, the reach reading, and the crop reading, and add its scenarios to the § Tests list of Tab-driven frames. The `dropdown-menu-focus` and `captioned-carousel-focus`
    scenarios, and UTIL-FRAMES' link focus case (a scripted focus with a key press, which matches `:focus-visible` and
    paints no outline), reach focus by Tab, and their frames show the outline; the pixel guard in the helper holds each.
 5. **The reach key (OVERLAY-FRAMES' observation).** The next control's wrapper keys its width to the `lg` boundary

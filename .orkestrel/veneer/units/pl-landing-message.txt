@@ -1,0 +1,15 @@
+Make the preflight pairing read the same on any Chromium build (PREFLIGHT-HOST)
+
+The Tailwind preflight proof runs once per build row: the host's defaults and a staged stand-in for Chromium 153's
+select and table defaults, placed in a sublayer of the theme layer beneath the whole cascade. It keeps every longhand
+Veneer's elements layer declares, holds a moved form-control height to its content box height, and holds every other
+move to its recorded preflight value, so a user-agent default that already equals the preflight value no longer changes
+the population. A control case proves the staging reaches the page beneath the cascade and the profile. The dimension
+rows share one PreflightDimension type keyed to the form-control tags, and the guide drops the form-control height rows.
+This closes the engine session's standing Chromium 153 preflight row.
+
+Audited over three rounds by analyst on GPT-6 Astra, reviewer on Opus 5.5, and checker on Sonnet
+(scaffold .orkestrel/veneer/units/pl-audit-verdict.md, pl-audit-2-verdict.md, pl-audit-3-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

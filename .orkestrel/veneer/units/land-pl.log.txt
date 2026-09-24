@@ -1,0 +1,18 @@
+=== unit files: tests/service/tailwind/preflight.test.ts tests/setupStyles.test.ts tests/setupStyles.ts
+=== unit/pl d5e28fb
+=== unit/pl with pl-shared-3.patch d10428f
+=== session head 5afa37b
+Auto-merging guides/veneer.md
+Auto-merging tests/setupStyles.test.ts
+Auto-merging tests/setupStyles.ts
+Automatic merge went well; stopped before committing as requested
+Squash commit -- not updating HEAD
+=== squash merge exit=0
+=== landed 2af1547
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 16917ms on 4 files using 4 threads.
+=== oxfmt check exit=0
+=== oxlint exit=0
+=== check exit=0
