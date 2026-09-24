@@ -1,0 +1,75 @@
+import { pressKeys, readStyle, releaseMedia, releasePointer, stageMedia } from '@orkestrel/test/browser'
+import { page } from 'vitest/browser'
+import { afterEach, expect, it } from 'vitest'
+import { scene } from '../../tests/setupBrowser.js'
+
+const FORMS = [
+	['btn', '<button type="button" class="btn btn-outline-secondary">Probe</button>'],
+	['btn dropdown-toggle', '<div class="dropdown"><button type="button" class="btn btn-secondary dropdown-toggle">Probe</button></div>'],
+	['btn-close', '<button type="button" class="btn-close" aria-label="Probe"></button>'],
+	['navbar-toggler', '<nav class="navbar"><button class="navbar-toggler" type="button" aria-label="Probe"><span class="navbar-toggler-icon"></span></button></nav>'],
+	['accordion-button', '<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button">Probe</button></h2></div></div>'],
+	['accordion-button collapsed', '<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button">Probe</button></h2></div></div>'],
+	['carousel-control-prev', '<div class="carousel" style="width:400px;height:200px"><button class="carousel-control-prev" type="button" aria-label="Probe"><span class="carousel-control-prev-icon"></span></button></div>'],
+	['carousel indicator active', '<div class="carousel" style="width:400px;height:200px"><div class="carousel-indicators"><button type="button" data-bs-target="#h" data-bs-slide-to="0" class="active" aria-label="Probe"></button></div></div>'],
+	['carousel indicator resting', '<div class="carousel" style="width:400px;height:200px"><div class="carousel-indicators"><button type="button" data-bs-target="#h" data-bs-slide-to="1" aria-label="Probe"></button></div></div>'],
+	['dropdown-item', '<ul class="dropdown-menu show" style="position:static"><li><button type="button" class="dropdown-item">Probe</button></li></ul>'],
+	['list-group-item-action', '<div class="list-group"><a class="list-group-item" href="#a">A</a><button type="button" class="list-group-item list-group-item-action">Probe</button><a class="list-group-item" href="#b">B</a></div>'],
+	['nav-link', '<nav class="nav"><a class="nav-link" href="#a">A</a><button class="nav-link" type="button">Probe</button></nav>'],
+	['page-link', '<ul class="pagination"><li class="page-item"><a class="page-link" href="#a">A</a></li><li class="page-item"><button type="button" class="page-link">Probe</button></li><li class="page-item"><a class="page-link" href="#b">B</a></li></ul>'],
+	['bare', '<button type="button">Probe</button>'],
+] as const
+
+const REST = [
+	'padding-top',
+	'padding-left',
+	'font-family',
+	'font-size',
+	'font-weight',
+	'line-height',
+	'color',
+	'background-color',
+	'border-top-width',
+	'border-top-left-radius',
+	'box-shadow',
+	'cursor',
+	'transition-property',
+	'transition-duration',
+	'opacity',
+	'pointer-events',
+	'outline-style',
+]
+
+afterEach(async () => {
+	await releasePointer()
+	scene.clear()
+})
+
+it('reads every form', async () => {
+	const out: Record<string, Record<string, string>> = {}
+	for (const [name, markup] of FORMS) {
+		const host = scene.mount(`<div style="font: 20px/30px serif">${markup}</div>`)
+		const button = host.querySelector<HTMLButtonElement>('button:not([aria-label="skip"])')
+		expect(button).not.toBeNull()
+		if (button === null) continue
+		const reading: Record<string, string> = {}
+		for (const property of REST) reading[`rest ${property}`] = readStyle(button, property)
+		await stageMedia({ motion: false })
+		await page.elementLocator(button).hover()
+		reading['hover background-color'] = readStyle(button, 'background-color')
+		await releasePointer()
+		button.focus()
+		await pressKeys('{ArrowRight}')
+		reading['focus-visible matched'] = String(button.matches(':focus-visible'))
+		reading['focus-visible box-shadow'] = readStyle(button, 'box-shadow')
+		reading['focus-visible outline-style'] = readStyle(button, 'outline-style')
+		button.blur()
+		button.disabled = true
+		reading['disabled opacity'] = readStyle(button, 'opacity')
+		reading['disabled pointer-events'] = readStyle(button, 'pointer-events')
+		out[name] = reading
+		await releaseMedia()
+		scene.clear()
+	}
+	throw new Error(`CB-FORMS ${JSON.stringify(out)}`)
+})

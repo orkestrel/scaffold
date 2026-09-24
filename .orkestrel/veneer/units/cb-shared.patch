@@ -1,0 +1,170 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -678,7 +678,7 @@
+ 
+ | File                                         | Role                                                                                                                                                                                                                                               |
+ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `src/styles/elements/_button.scss`           | The bare button and its same-element states in the elements layer.                                                                                                                                                                                 |
++| `src/styles/elements/_button.scss`           | The release's reboot on every button, and the calibrated surface and its states on a button no class claims, in the elements layer.                                                                                                                |
+ | `src/styles/components/_button.scss`         | The Button class vocabulary and state relationships in the components layer.                                                                                                                                                                       |
+ | `src/styles/components/_type.scss`           | The heading, display, lead, small, mark, and initialism classes in the components layer.                                                                                                                                                           |
+ | `src/styles/components/_list.scss`           | The unstyled and inline list classes in the components layer.                                                                                                                                                                                      |
+@@ -806,6 +806,21 @@
+ its position reports as a pair. Nothing here parses a selector, and a construct such as the `:has()`
+ or `:is()` pseudo-class is answered by the engine that ships it.
+ 
++The calibrated button surface and its states reach a `button` element that carries no `class`
++attribute and no `data-bs-target` attribute. Every other button takes the release's reboot alone, at
++the release's values: no margin, the parent's font family, size, and line height, square corners,
++no text transform, and the button appearance. So the `elements` layer paints no surface of its own
++on a component's button form, and a disabled `button.nav-link` element reads the same opacity and
++type as the disabled `a.nav-link` element beside it. A button carrying a class of your own, a
++utility class, or an empty `class` attribute takes that reboot and nothing more from the `elements`
++layer. The `data-bs-target` attribute keeps the release's carousel indicators out as well, because
++the release gives a resting indicator no class, and the attribute sits on the tag itself, so the
++rule still treats the tag by what it carries rather than by where the markup puts it. Add the `btn`
++class to a classed button to paint it with the Button treatment. The elements proof reads a classed
++button, an empty `class` attribute, and a `data-bs-target` button resolving the reboot alone beside
++the bare button's calibrated values; see
++[the bare button proof](../tests/src/styles/elements/button.test.ts).
++
+ The wrapper replaces the plugins, the output directory, the library entry, the build options
+ (keeping the root's build-log handler and dropping the browser externals and output paths), and the
+ test fields it inherits, and it declares the `src:styles` project. The check-only project extends
+@@ -916,6 +931,11 @@
+ file declares, and declaring it ahead of the Tailwind import is what makes Tailwind's own
+ narrower order merge as a no-op.
+ 
++A button styled with utility classes carries a `class` attribute, so it takes the release's reboot
++rather than the calibrated bare surface, as § Styles states. Add the `btn` class where that button
++needs the Button treatment; a utility in the `utilities` layer still overrides the `btn` class
++declaration it shares a property with.
++
+ The exclusion line names the class names Veneer and Tailwind both declare. A shared name leaves
+ the exclusion line only where Veneer declares with `!important` every longhand that Tailwind's
+ rule for that name declares; a name Veneer declares important on some other longhand stays on the
+@@ -5122,10 +5142,6 @@
+ | `reboot`  | `caption`     | `padding-bottom`                   | —                            | `0.5rem`                                                    | —                                                               | dropped   |
+ | `reboot`  | `caption`     | `color`                            | —                            | `var(--bs-secondary-color)`                                 | `var(--vn-text-muted)`                                          | tokenized |
+ | `reboot`  | `th`          | `text-align`                       | —                            | `-webkit-match-parent`                                      | `inherit`                                                       | declared  |
+-| `reboot`  | `button`      | `border-radius`                    | —                            | `0`                                                         | `var(--vn-radius-base)`                                         | tokenized |
+-| `reboot`  | `button`      | `font-family`                      | —                            | `inherit`                                                   | `var(--vn-font-sans)`                                           | tokenized |
+-| `reboot`  | `button`      | `font-size`                        | —                            | `inherit`                                                   | `var(--vn-size-2)`                                              | tokenized |
+-| `reboot`  | `button`      | `line-height`                      | —                            | `inherit`                                                   | `var(--vn-line-body)`                                           | tokenized |
+ | `reboot`  | `legend`      | `margin-bottom`                    | —                            | `0.5rem`                                                    | `var(--vn-space-4)`                                             | tokenized |
+ | `reboot`  | `legend`      | `font-size`                        | —                            | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) * 0.85 + 0.3vw)`                         | tokenized |
+ | `reboot`  | `legend`      | `font-size`                        | `@media (width >= 1200px)`   | `1.5rem`                                                    | `var(--vn-size-6)`                                              | tokenized |
+@@ -5846,20 +5862,13 @@
+ | `reboot`       | `th { border-bottom }`                                        | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                |
+ | `reboot`       | `th { vertical-align }`                                       | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                |
+ | `reboot`       | `th { font-weight }`                                          | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                |
+-| `reboot`       | `button { padding }`                                          | —                                                | declaration | Elements paints a bare control with the calibrated button surface, which the release leaves unpainted.                                                                     |
+-| `reboot`       | `button { font-weight }`                                      | —                                                | declaration | Elements paints a bare control with the calibrated button surface, which the release leaves unpainted.                                                                     |
+-| `reboot`       | `button { color }`                                            | —                                                | declaration | Elements paints a bare control with the calibrated button surface, which the release leaves unpainted.                                                                     |
+-| `reboot`       | `button { background-color }`                                 | —                                                | declaration | Elements paints a bare control with the calibrated button surface, which the release leaves unpainted.                                                                     |
+-| `reboot`       | `button { border }`                                           | —                                                | declaration | Elements paints a bare control with the calibrated button surface, which the release leaves unpainted.                                                                     |
+-| `reboot`       | `button { box-shadow }`                                       | —                                                | declaration | Elements paints a bare control with the calibrated button surface, which the release leaves unpainted.                                                                     |
+-| `reboot`       | `button { cursor }`                                           | —                                                | declaration | Elements paints a bare control with the calibrated button surface, which the release leaves unpainted.                                                                     |
+-| `reboot`       | `button { transition }`                                       | —                                                | declaration | Elements paints a bare control with the calibrated button surface, which the release leaves unpainted.                                                                     |
+-| `reboot`       | `button { transition }`                                       | `@media (prefers-reduced-motion: reduce)`        | declaration | The release declares no transition on a bare `button` element, and the `transition` mixin writes this one with its reduced-motion pair.                                    |
+-| `reboot`       | `button:hover`                                                | —                                                | selector    | Elements repaints a bare control on hover, which the release leaves to its button component.                                                                               |
+-| `reboot`       | `button:active`                                               | —                                                | selector    | Elements repaints a bare control while it is pressed, which the release leaves to its button component.                                                                    |
+-| `reboot`       | `button:focus-visible`                                        | —                                                | selector    | Elements rings a bare control on keyboard focus, which the release leaves to its button component.                                                                         |
+-| `reboot`       | `button:focus-visible`                                        | `@media (forced-colors: active)`                 | selector    | The focus ring is repainted in system colors under forced colors, which the release does not query.                                                                        |
+-| `reboot`       | `button:disabled`                                             | —                                                | selector    | Elements dims a disabled bare control, which the release leaves to its button component.                                                                                   |
++| `reboot`       | `button:not([class], [data-bs-target])`                       | —                                                | selector    | Elements paints a button no class claims with the calibrated button surface, which the release leaves unpainted.                                                           |
++| `reboot`       | `button:not([class], [data-bs-target])`                       | `@media (prefers-reduced-motion: reduce)`        | selector    | The release declares no transition on a button no class claims, and the `transition` mixin writes this one with its reduced-motion pair.                                   |
++| `reboot`       | `button:not([class], [data-bs-target]):hover`                 | —                                                | selector    | Elements repaints a button no class claims on hover, which the release leaves to its button component.                                                                     |
++| `reboot`       | `button:not([class], [data-bs-target]):active`                | —                                                | selector    | Elements repaints a button no class claims while it is pressed, which the release leaves to its button component.                                                          |
++| `reboot`       | `button:not([class], [data-bs-target]):focus-visible`         | —                                                | selector    | Elements rings a button no class claims on keyboard focus, which the release leaves to its button component.                                                               |
++| `reboot`       | `button:not([class], [data-bs-target]):focus-visible`         | `@media (forced-colors: active)`                 | selector    | The focus ring is repainted in system colors under forced colors, which the release does not query.                                                                        |
++| `reboot`       | `button:not([class], [data-bs-target]):disabled`              | —                                                | selector    | Elements dims a disabled button no class claims, which the release leaves to its button component.                                                                         |
+ | `btn`          | `.btn { --bs-btn-focus-shadow-rgb }`                          | —                                                | declaration | The engine binds this state variable once on the base class, where the release binds it on each role class.                                                                |
+ | `btn`          | `.btn { --bs-btn-hover-color }`                               | —                                                | declaration | The engine binds this state variable once on the base class, where the release binds it on each role class.                                                                |
+ | `btn`          | `.btn { --bs-btn-hover-bg }`                                  | —                                                | declaration | The engine binds this state variable once on the base class, where the release binds it on each role class.                                                                |
+@@ -6285,8 +6294,9 @@
+ The font utilities join Type beside the heading classes, whose sizes the size classes share. The
+ showcase's own button drives the controller and announces the selected mode, and its entry
+ constructs a `Delegate` instance beside the showcase. The shell's own stylesheet reaches that button
+-through the `control` class the showcase sets on it, so no rule of the shell's reaches a specimen
+-through the element it happens to be. The regions mount into a `main` element the shell carries no
++through the `data-control` attribute the showcase sets on it, so no rule of the shell's reaches a
++specimen through the element it happens to be. The hook is an attribute rather than a class, so the
++button carries no class and keeps the published bare treatment the shell's border sits on. The regions mount into a `main` element the shell carries no
+ id on: a proof reaches it through the host it mounted the showcase into, and each region through its
+ accessible name. The application barrel is a workspace implementation surface and is outside this
+ guide's published API tables.
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -349,7 +349,7 @@
+ 		const grouped = Map.groupBy(forced, renderRuleKey)
+ 		expect([...grouped.keys()]).toEqual(
+ 			expect.arrayContaining([
+-				'button:focus-visible @media (forced-colors: active)',
++				'button:not([class], [data-bs-target]):focus-visible @media (forced-colors: active)',
+ 				'.btn:focus-visible @media (forced-colors: active)',
+ 				'.form-control:focus @media (forced-colors: active)',
+ 				'.form-select:focus @media (forced-colors: active)',
+@@ -359,7 +359,7 @@
+ 		)
+ 		expect([...grouped].filter(([, blocks]) => blocks.length > 1).map(([key]) => key)).toEqual([])
+ 		for (const key of [
+-			'button:focus-visible @media (forced-colors: active)',
++			'button:not([class], [data-bs-target]):focus-visible @media (forced-colors: active)',
+ 			'.btn:focus-visible @media (forced-colors: active)',
+ 		]) {
+ 			const [block] = requireValue(grouped.get(key), `The expanded compile writes no ${key} block`)
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -98,7 +98,7 @@
+ 		const heading = document.createElement('h1')
+ 		heading.textContent = SHOWCASE_COPY.heading
+ 		this.#button.type = 'button'
+-		this.#button.className = SHOWCASE_CONTROL
++		this.#button.setAttribute(SHOWCASE_CONTROL, '')
+ 		this.#button.textContent = SHOWCASE_COPY.theme
+ 		this.#button.setAttribute('aria-pressed', String(this.#controller.mode === 'dark'))
+ 		this.#button.addEventListener('click', this.#listener)
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -9,8 +9,8 @@
+ 	paragraph: 'Explore the color mode with the Dark mode control.',
+ })
+ 
+-/** Names the class the showcase's color-mode control carries. */
+-export const SHOWCASE_CONTROL = 'control'
++/** Names the attribute the showcase's color-mode control carries. */
++export const SHOWCASE_CONTROL = 'data-control'
+ 
+ /** Holds the Button section's visible copy and accessible name. */
+ export const BUTTON_COPY = Object.freeze({
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -224,8 +224,8 @@
+ 			// the ownership rule and would pass while the published one moved.
+ 			const owned = specimens.filter((element) => !element.matches(BUTTON_SELECTORS.trigger))
+ 			expect(owned).not.toStrictEqual([])
+-			// The shell paints the mode control's affordance through the class the showcase sets on
+-			// that button, and what keeps every specimen out of the header is where this tree puts
++			// The shell paints the mode control's affordance through the attribute the showcase sets
++			// on that button, and what keeps every specimen out of the header is where this tree puts
+ 			// each one: the header holds the control and no other button, and every region and every
+ 			// specimen mounts inside `main`. Each population is read here rather than taken from the
+ 			// collections earlier, so each assertion reports the tree as it stands at the assertion.
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -1388,8 +1388,6 @@
+ 			'The "Close control" specimen renders no close control',
+ 		)
+ 		const name = readName(control)
+-		// The bare button element carries an opacity transition, so each reading follows the
+-		// animation rather than the moment the state flips.
+ 		const rest = readStyle(control, 'opacity')
+ 		// The hover frame is shot on the whole specimen lifted to the document's start, the
+ 		// placement the resting cascade scenarios use, because the section renders near the foot of

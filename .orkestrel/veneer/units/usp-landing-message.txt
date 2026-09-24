@@ -1,0 +1,17 @@
+Ship the spacing and interaction keys with their sections and proofs
+
+The margin and padding keys ship in the utilities layer through the utility mixin at every
+breakpoint infix, each numbered step reading the space token that resolves to the release's length,
+so the density factor moves each step with the components' own space; the zero step and the margin
+entries' auto step stay literal. The user-select key and the release's pointer-events entry ship
+beside them. The Spacing region renders one card per side and per auto margin, the Interaction
+region renders the selection lines and the links a click passes through or reaches, the case tables
+live in the setup file, each named mutation turns its case red, and the guide carries both sections
+and their compatibility rows.
+
+B-UTILITIES wave 3, unit UTIL-SPACING: two rounds on `opus`, the first audited by `analyst` on Astra,
+`reviewer` on Opus 5.5, and `checker`, the second by `analyst` on Astra and `checker`, accepted with
+the census instrument's and the report's defects on the record.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

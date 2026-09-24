@@ -1,0 +1,438 @@
+diff --git a/app/browser/styles/_shell.scss b/app/browser/styles/_shell.scss
+index 09d9b46..3971250 100644
+--- a/app/browser/styles/_shell.scss
++++ b/app/browser/styles/_shell.scss
+@@ -20,9 +20,12 @@
+ 	// published `elements` treatment for a bare button paints no border over a transparent fill, so
+ 	// the control reads as the prose beside it until a pointer rests on it and the state mix — whose
+ 	// mixer retunes with the mode — paints the only mark it ever gets. The border reads the same in
+-	// both modes and takes the shipped border token. The selector is the class the showcase sets on
+-	// that one button, so no specimen is painted here whatever the shell's markup grows into.
+-	.control {
++	// both modes and takes the shipped border token. The selector is the `data-control` attribute
++	// the showcase sets on that one button, so no specimen is painted here whatever the shell's
++	// markup grows into. The hook is an attribute rather than a class because the published
++	// treatment reaches a button no class claims, and a class here would hand the control the
++	// release's reboot alone.
++	[data-control] {
+ 		border: var(--vn-border-width) var(--vn-border-style) var(--vn-border-color);
+ 	}
+ 
+diff --git a/src/styles/elements/_button.scss b/src/styles/elements/_button.scss
+index cb0e657..1b3cac1 100644
+--- a/src/styles/elements/_button.scss
++++ b/src/styles/elements/_button.scss
+@@ -1,18 +1,32 @@
+ @use '../mixins' as *;
+ 
+ @layer elements {
++	// Every button keeps the release's reboot at the release's values, whatever class it carries,
++	// so a component's button form starts where the release starts it and paints as its anchor form
++	// does.
+ 	button {
+-		@include box-reset {
+-			text-transform: none;
+-			-webkit-appearance: button;
+-			padding: var(--vn-space-3) var(--vn-space-6);
+-			font-family: var(--vn-font-sans);
+-			font-size: var(--vn-size-2);
+-			font-weight: var(--vn-weight-body);
+-			line-height: var(--vn-line-body);
+-			color: var(--vn-text-body-base);
+-			background-color: var(--vn-button-transparent);
+-		}
++		margin: 0;
++		font-family: inherit;
++		font-size: inherit;
++		line-height: inherit;
++		border-radius: 0;
++		text-transform: none;
++		-webkit-appearance: button;
++	}
++
++	// The calibrated surface and its states reach a button no class claims. The attribute test keeps
++	// the release's carousel indicators out as well: the release gives a resting indicator no class,
++	// and the attribute sits on the tag itself, so the rule still treats the tag by what it carries
++	// rather than by where the markup puts it.
++	button:not([class], [data-bs-target]) {
++		padding: var(--vn-space-3) var(--vn-space-6);
++		font-family: var(--vn-font-sans);
++		font-size: var(--vn-size-2);
++		font-weight: var(--vn-weight-body);
++		line-height: var(--vn-line-body);
++		color: var(--vn-text-body-base);
++		background-color: var(--vn-button-transparent);
++		border: 0;
+ 		border-radius: var(--vn-radius-base);
+ 		box-shadow: var(--vn-button-shadow);
+ 		cursor: pointer;
+@@ -25,34 +39,35 @@
+ 				opacity var(--vn-motion-feedback) var(--vn-ease-standard)
+ 			)
+ 		);
+-	}
+ 
+-	button:hover {
+-		background-color: color-mix(
+-			in srgb,
+-			var(--vn-state-mixer) var(--vn-state-hover),
+-			var(--vn-button-transparent)
+-		);
+-	}
++		&:hover {
++			background-color: color-mix(
++				in srgb,
++				var(--vn-state-mixer) var(--vn-state-hover),
++				var(--vn-button-transparent)
++			);
++		}
+ 
+-	button:active {
+-		background-color: color-mix(
+-			in srgb,
+-			var(--vn-state-mixer) var(--vn-state-active),
+-			var(--vn-button-transparent)
+-		);
+-	}
++		&:active {
++			background-color: color-mix(
++				in srgb,
++				var(--vn-state-mixer) var(--vn-state-active),
++				var(--vn-button-transparent)
++			);
++		}
+ 
+-	button:focus-visible {
+-		@include focus-ring($highlight: var(--vn-button-highlight), $reset: var(--vn-button-shadow));
+-	}
++		&:focus-visible {
++			@include focus-ring($highlight: var(--vn-button-highlight), $reset: var(--vn-button-shadow));
++		}
+ 
+-	button:disabled {
+-		color: var(--vn-text-body-base);
+-		background-color: var(--vn-button-transparent);
+-		opacity: var(--vn-button-opacity);
+-		pointer-events: none;
++		&:disabled {
++			color: var(--vn-text-body-base);
++			background-color: var(--vn-button-transparent);
++			opacity: var(--vn-button-opacity);
++			pointer-events: none;
++		}
+ 	}
++
+ 	button:focus:not(:focus-visible) {
+ 		outline: 0;
+ 	}
+diff --git a/tests/src/styles/components/carousel.test.ts b/tests/src/styles/components/carousel.test.ts
+index 436ad8f..4f6e46e 100644
+--- a/tests/src/styles/components/carousel.test.ts
++++ b/tests/src/styles/components/carousel.test.ts
+@@ -3,6 +3,7 @@ import { requireValue } from '@orkestrel/test'
+ import {
+ 	hoverAccessible,
+ 	matchesColor,
++	pressKeys,
+ 	readHit,
+ 	readPixels,
+ 	readRootToken,
+@@ -476,6 +477,41 @@ describe('carousel indicators and caption', () => {
+ 		).toBe(true)
+ 	})
+ 
++	// The mutation this catches is an element rule reaching a pip: the release's markup gives the
++	// current pip a class and every other pip none, so a rule selecting a button by its class
++	// attribute alone paints the resting pips and leaves the current one, and the two states part.
++	it('squares every pip and focuses the current and a resting pip alike, with no ring', async () => {
++		const host = scene.mount(
++			'<div class="carousel" style="width: 400px; height: 200px"><div class="carousel-indicators">' +
++				'<button type="button" data-bs-target="#harbor" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>' +
++				'<button type="button" data-bs-target="#harbor" data-bs-slide-to="1" aria-label="Slide 2"></button>' +
++				'</div></div>',
++		)
++		const current = requireValue(
++			host.querySelector<HTMLElement>('[data-bs-target].active'),
++			'No current pip',
++		)
++		const resting = requireValue(
++			host.querySelector<HTMLElement>('[data-bs-target]:not(.active)'),
++			'No resting pip',
++		)
++		const focused: Array<{ readonly outline: string; readonly shadow: string }> = []
++		for (const pip of [current, resting]) {
++			expect(readPixels(pip, 'border-top-left-radius')).toBe(0)
++			pip.focus()
++			await pressKeys('{ArrowRight}')
++			expect(pip.matches(':focus-visible')).toBe(true)
++			focused.push({
++				outline: readStyle(pip, 'outline-style'),
++				shadow: readStyle(pip, 'box-shadow'),
++			})
++			pip.blur()
++		}
++		const [currentRing, restingRing] = focused
++		expect(requireValue(currentRing, 'No current reading').shadow).toBe('none')
++		expect(restingRing).toEqual(currentRing)
++	})
++
+ 	// The mutation this catches is the strip's bottom margin written as the release's literal: the
+ 	// literal ignores the density factor, and the space token rescales with it.
+ 	it('rescales the strip inset with the published density factor', () => {
+diff --git a/tests/src/styles/components/close.test.ts b/tests/src/styles/components/close.test.ts
+index b954e65..e884150 100644
+--- a/tests/src/styles/components/close.test.ts
++++ b/tests/src/styles/components/close.test.ts
+@@ -69,8 +69,6 @@ describe('close control geometry', () => {
+ 		// The class declares the variable on the control itself, so an ancestor cannot reach it and
+ 		// a consumer retunes it through a rule of their own, arriving after the shipped cascade.
+ 		scene.load('.btn-close { --bs-btn-close-color: rgb(10, 20, 30); }')
+-		// The bare button element carries a color transition, so the repaint is read after the
+-		// animation settles rather than at the moment the variable moves.
+ 		await waitForAnimations(control)
+ 		expect(readStyle(control, 'color')).toBe('rgb(10, 20, 30)')
+ 	})
+@@ -108,8 +106,6 @@ describe('close control states', () => {
+ 
+ 	it('moves the opacity through rest, hover, and focus', async () => {
+ 		const control = mountClose()
+-		// The bare button element carries an opacity transition, so each reading is taken after the
+-		// animation settles rather than at the moment the state flips.
+ 		expect(readStyle(control, 'opacity')).toBe('0.5')
+ 		await hoverAccessible('button', 'Dismiss')
+ 		expect(control.matches(':hover')).toBe(true)
+@@ -130,6 +126,14 @@ describe('close control states', () => {
+ 		expect(readStyle(control, 'opacity')).toBe('0.5')
+ 	})
+ 
++	it('declares no transition, as the release declares none, so each state paints the moment it flips', () => {
++		const control = mountClose()
++		// The control carries a class, so the calibrated transition of a button no class claims stays
++		// off it, and the reboot the element keeps declares none.
++		expect(readStyle(control, 'transition-property')).toBe('all')
++		expect(readStyle(control, 'transition-duration')).toBe('0s')
++	})
++
+ 	it('outlines the focused control at the focus width under forced colors, where its shadow ring is not painted', async () => {
+ 		const control = mountClose()
+ 		const host = requireValue(control.parentElement, 'No control host')
+diff --git a/tests/src/styles/components/dropdown.test.ts b/tests/src/styles/components/dropdown.test.ts
+index 9e83461..217dab0 100644
+--- a/tests/src/styles/components/dropdown.test.ts
++++ b/tests/src/styles/components/dropdown.test.ts
+@@ -3,6 +3,7 @@ import { requireValue } from '@orkestrel/test'
+ import {
+ 	holdAccessible,
+ 	matchesColor,
++	pressKeys,
+ 	readPixels,
+ 	readRootToken,
+ 	readStyle,
+@@ -325,6 +326,63 @@ describe('dropdown items', () => {
+ 		}
+ 	})
+ 
++	it('paints each button item as its anchor item, disabled on opacity and type and focused on outline and shadow', async () => {
++		const host = scene.mount(
++			`<ul class="dropdown-menu show" style="position:static">${DROPDOWN_MARKUP}<li><button type="button" class="dropdown-item">Release</button></li></ul>`,
++		)
++		const menu = requireValue(
++			host.querySelector<HTMLElement>('.dropdown-menu'),
++			'No .dropdown-menu',
++		)
++		const marked = requireValue(
++			host.querySelector<HTMLElement>('.dropdown-item.disabled'),
++			'No .dropdown-item.disabled',
++		)
++		const native = requireValue(
++			host.querySelector<HTMLElement>('button.dropdown-item:disabled'),
++			'No button.dropdown-item:disabled',
++		)
++		// The item takes the menu's own text size, so the anchor is pinned to the menu before the
++		// button is held to the anchor: a pair that both took another size would still read equal.
++		expect(readPixels(marked, 'font-size')).toBe(readPixels(menu, 'font-size'))
++		expect(readStyle(marked, 'opacity')).toBe('1')
++		for (const property of [
++			'opacity',
++			'font-family',
++			'font-size',
++			'line-height',
++			'border-top-left-radius',
++			'box-shadow',
++		]) {
++			expect({ property, button: readStyle(native, property) }).toEqual({
++				property,
++				button: readStyle(marked, property),
++			})
++		}
++		const anchor = requireValue(
++			host.querySelector<HTMLElement>('a[href="#track"]'),
++			'No a[href="#track"]',
++		)
++		const button = requireValue(
++			host.querySelector<HTMLElement>('button.dropdown-item:enabled'),
++			'No button.dropdown-item:enabled',
++		)
++		const focused: Array<{ readonly outline: string; readonly shadow: string }> = []
++		for (const item of [anchor, button]) {
++			item.focus()
++			await pressKeys('{ArrowRight}')
++			expect(item.matches(':focus-visible')).toBe(true)
++			focused.push({
++				outline: readStyle(item, 'outline-style'),
++				shadow: readStyle(item, 'box-shadow'),
++			})
++			item.blur()
++		}
++		const [anchorRing, buttonRing] = focused
++		expect(requireValue(anchorRing, 'No anchor reading').shadow).toBe('none')
++		expect(buttonRing).toEqual(anchorRing)
++	})
++
+ 	it('lays out the items, the header, the divider, and the item text from the menu slots', () => {
+ 		const host = scene.mount(
+ 			`<ul class="dropdown-menu show" style="position:static;width:300px">${DROPDOWN_MARKUP}</ul>`,
+diff --git a/tests/src/styles/components/list-group.test.ts b/tests/src/styles/components/list-group.test.ts
+index bd36f02..8e1232e 100644
+--- a/tests/src/styles/components/list-group.test.ts
++++ b/tests/src/styles/components/list-group.test.ts
+@@ -144,7 +144,15 @@ describe('list-group geometry', () => {
+ 			expect(readStyle(item, 'pointer-events')).toBe('none')
+ 			expect(readStyle(item, 'color')).toBe('rgb(1, 2, 3)')
+ 			expect(readStyle(item, 'background-color')).toBe('rgb(4, 5, 6)')
++			expect(readStyle(item, 'opacity')).toBe('1')
+ 		}
++		// The button sits between the ends, where no rule of the group's rounds a corner, so each of
++		// its corners reads the square an item between the ends keeps.
++		for (const corner of ['top-left', 'top-right', 'bottom-right', 'bottom-left'])
++			expect({ corner, radius: readPixels(native, `border-${corner}-radius`) }).toEqual({
++				corner,
++				radius: 0,
++			})
+ 		// The resting action keeps the pointer and the action color, so the two disabled rules are
+ 		// read against an item they must not reach.
+ 		expect(readStyle(resting, 'pointer-events')).toBe('auto')
+diff --git a/tests/src/styles/components/nav.test.ts b/tests/src/styles/components/nav.test.ts
+index 8507bed..a200a5e 100644
+--- a/tests/src/styles/components/nav.test.ts
++++ b/tests/src/styles/components/nav.test.ts
+@@ -188,6 +188,31 @@ describe('nav classes', () => {
+ 		expect(matchesColor(readStyle(reachable, 'color'), muted)).toBe(false)
+ 	})
+ 
++	it('paints the disabled button link as it paints the disabled anchor link, at full opacity and in the parent type', () => {
++		// The wrapper sets type metrics no shipped token resolves to, so a link that inherits them
++		// reads the wrapper, and a link that took a token of its own reads something else.
++		const host = scene.mount(`<div style="font: 20px/30px serif">${NAV_MARKUP}</div>`)
++		const marked = requireValue(host.querySelector('.nav-link.disabled'), 'No disabled anchor')
++		const native = requireValue(host.querySelector('.nav-link:disabled'), 'No disabled button')
++		expect(readStyle(marked, 'opacity')).toBe('1')
++		expect(readPixels(marked, 'font-size')).toBe(20)
++		expect(readPixels(marked, 'line-height')).toBe(30)
++		for (const property of [
++			'opacity',
++			'font-family',
++			'font-size',
++			'font-weight',
++			'line-height',
++			'border-top-left-radius',
++			'box-shadow',
++		]) {
++			expect({ property, button: readStyle(native, property) }).toEqual({
++				property,
++				button: readStyle(marked, property),
++			})
++		}
++	})
++
+ 	it('repaints a hovered link, tab, and underline link from their hover slots', async () => {
+ 		const host = scene.mount(NAV_MARKUP)
+ 		const link = requireValue(host.querySelector('a[href="#one"]'), 'No plain link')
+diff --git a/tests/src/styles/elements/button.test.ts b/tests/src/styles/elements/button.test.ts
+index bf63b1b..1a8383f 100644
+--- a/tests/src/styles/elements/button.test.ts
++++ b/tests/src/styles/elements/button.test.ts
+@@ -64,6 +64,83 @@ describe('bare button', () => {
+ 			expect(readStyle(control, 'cursor')).not.toBe('pointer')
+ 		}
+ 	})
++	it('leaves a classed, an empty-class, and a slide-target button to the reboot alone', async () => {
++		// The wrapper sets type metrics no shipped token resolves to, so an inherited reading names the
++		// reboot's `inherit` value rather than a token that happens to match it.
++		const host = scene.mount(
++			'<div style="font: 20px/30px serif"><button type="button" class="order-action">Hooked control</button><button type="button" class="">Emptied control</button><button type="button" data-bs-target="#harbor">Targeted control</button></div>',
++		)
++		const wrapper = requireValue(host.querySelector('div'), 'No wrapper')
++		const hooked = requireValue(
++			host.querySelector<HTMLButtonElement>('.order-action'),
++			'No hooked button',
++		)
++		const emptied = requireValue(
++			host.querySelector<HTMLButtonElement>('[class=""]'),
++			'No emptied button',
++		)
++		const targeted = requireValue(
++			host.querySelector<HTMLButtonElement>('[data-bs-target]'),
++			'No targeted button',
++		)
++		for (const [name, button] of [
++			['Hooked control', hooked],
++			['Emptied control', emptied],
++			['Targeted control', targeted],
++		] as const) {
++			const reboot = {
++				name,
++				margin: readStyle(button, 'margin'),
++				transform: readStyle(button, 'text-transform'),
++				appearance: readStyle(button, 'appearance'),
++				family: readStyle(button, 'font-family'),
++				size: readPixels(button, 'font-size'),
++				line: readPixels(button, 'line-height'),
++				radius: readPixels(button, 'border-top-left-radius'),
++				shadow: readStyle(button, 'box-shadow'),
++				duration: readStyle(button, 'transition-duration'),
++			}
++			expect(reboot).toEqual({
++				name,
++				margin: '0px',
++				transform: 'none',
++				appearance: 'button',
++				family: readStyle(wrapper, 'font-family'),
++				size: 20,
++				line: 30,
++				radius: 0,
++				shadow: 'none',
++				duration: '0s',
++			})
++			// Each state is read against the resting reading, so a state rule reaching the button
++			// reports as a moved value whatever the user agent paints at rest.
++			const rest = readStyle(button, 'background-color')
++			button.focus()
++			await pressKeys('{ArrowRight}')
++			expect(button.matches(':focus-visible')).toBe(true)
++			expect({ name, focused: readStyle(button, 'box-shadow') }).toEqual({ name, focused: 'none' })
++			button.blur()
++			await hoverAccessible(name)
++			expect(button.matches(':hover')).toBe(true)
++			expect({ name, hovered: readStyle(button, 'background-color') }).toEqual({
++				name,
++				hovered: rest,
++			})
++			await holdAccessible(name)
++			expect(button.matches(':active')).toBe(true)
++			expect({ name, pressed: readStyle(button, 'background-color') }).toEqual({
++				name,
++				pressed: rest,
++			})
++			await releasePointer()
++			button.disabled = true
++			expect({
++				name,
++				opacity: readStyle(button, 'opacity'),
++				pointer: readStyle(button, 'pointer-events'),
++			}).toEqual({ name, opacity: '1', pointer: 'auto' })
++		}
++	})
+ 	it.each(BUTTON_BARE_CASES)(
+ 		'resolves the calibrated geometry and interaction paint in %s mode',
+ 		async (mode, color, hover, active, focus) => {

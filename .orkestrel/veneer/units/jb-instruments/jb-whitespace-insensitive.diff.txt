@@ -1,0 +1,75 @@
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 7247e4a..ebb45b7 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -93,6 +93,7 @@ import {
+ 	CAPTURE_KEYS,
+ 	CAPTURE_SCENARIOS,
+ 	CASCADE_KEYS,
++	CASCADE_KEY_TIMEOUT,
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+ 	DRIVEN_KEYS,
+@@ -634,7 +635,9 @@ describe('journey', () => {
+ 		}
+ 	})
+ 
+-	it('reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark', async () => {
++	it(
++		'reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark',
++		async () => {
+ 			// Each key is addressed by the specimen label its section declared, because one class
+ 			// answers for several specimens: the Layout table alone renders several containers.
+ 			const rendered = new Map<string, string>()
+@@ -722,7 +725,9 @@ describe('journey', () => {
+ 			// with the mode would be the theme reaching a layout rule.
+ 			expect(rendered.get(`${LIGHT}|numbered-columns`)).toBe('flex')
+ 			expect(rendered.get(`${DARK}|numbered-columns`)).toBe('flex')
+-		expect(rendered.get(`${LIGHT}|capped-container`)).toBe(rendered.get(`${DARK}|capped-container`))
++			expect(rendered.get(`${LIGHT}|capped-container`)).toBe(
++				rendered.get(`${DARK}|capped-container`),
++			)
+ 			// Their layout stays fixed across modes, but their inherited text paint earns a dark frame.
+ 			expect(paint.get(`${LIGHT}|capped-container`)).not.toBe(paint.get(`${DARK}|capped-container`))
+ 			expect(paint.get(`${LIGHT}|numbered-columns`)).not.toBe(paint.get(`${DARK}|numbered-columns`))
+@@ -756,7 +761,9 @@ describe('journey', () => {
+ 				),
+ 			).toStrictEqual([])
+ 			JOURNAL.record('read', 'cascade keys', String(rendered.get(`${LIGHT}|role-links`)))
+-	})
++		},
++		CASCADE_KEYS.length * CASCADE_KEY_TIMEOUT,
++	)
+ 
+ 	it('paints a validation focus ring on the passing and the failing text control, in the variant this run renders', async () => {
+ 		await applyTheme(VARIANT)
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 295edaa..65c7e4f 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -52,6 +52,7 @@ describe('shared setup', () => {
+ 				'CAPTURE_KEYS',
+ 				'CAPTURE_SCENARIOS',
+ 				'CASCADE_KEYS',
++				'CASCADE_KEY_TIMEOUT',
+ 				'CONTRAST_BAR',
+ 				'DISABLED_OPACITY',
+ 				'DRIVEN_KEYS',
+diff --git a/tests/setup.ts b/tests/setup.ts
+index a7ee679..8a3d733 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1968,6 +1968,13 @@ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 	}),
+ ])
+ 
++/**
++ * Sets the resting-key journey case's per-key budget from its 1070 ms measured cost per entry in
++ * the {@link CASCADE_KEYS} table at a 3.3 contended load: 3000 ms, which multiplies by that table's
++ * length to give the case's timeout.
++ */
++export const CASCADE_KEY_TIMEOUT = 3000
++
+ /**
+  * Lists every scenario a journey photographs a subject in a state for, each naming the specimen the
+  * state is driven on or read from, in the order the families landed.

@@ -1,0 +1,210 @@
+--- a/tests/app/browser/sections/SpacingSection.test.ts
++++ b/tests/app/browser/sections/SpacingSection.test.ts
+@@ -11,6 +11,13 @@
+ 	VIEWPORT_WIDTHS,
+ } from '../../../setupStyles.js'
+ 
++// The sides the shorthand entry sets, which are every side a card's room is read on, in the
++// shorthand's own order.
++const SIDES = requireValue(
++	SPACING_SIDE_CASES.find(({ suffix }) => suffix === ''),
++	'No shorthand entry',
++).sides
++
+ // The geometry case reads the specimens as the published cascade and the shell lay them out, so
+ // both stylesheets have to be in the document before a box is measured.
+ beforeAll(async () => {
+@@ -103,9 +110,7 @@
+ 					})),
+ 					...SPACING_SIDE_CASES.filter(({ suffix }) => suffix !== '').map(({ suffix, sides }) => ({
+ 						selector: `[data-specimen="Side margins"] .card.m${suffix}-4`,
+-						expected: ['top', 'right', 'bottom', 'left'].map((side) =>
+-							sides.includes(side) ? 24 : 0,
+-						),
++						expected: SIDES.map((side) => (sides.includes(side) ? 24 : 0)),
+ 					})),
+ 				]
+ 				const reading = await visitBreakpoint(width, () => ({
+@@ -177,45 +182,51 @@
+ 				host.querySelector('[data-specimen="Auto margins"]'),
+ 				'No auto margin specimen',
+ 			)
+-			const edges = [
+-				'ms-auto',
+-				'me-auto',
+-				'mx-auto',
+-				'mt-auto',
+-				'mb-auto',
+-				'my-auto',
+-				'm-auto',
+-			].map((name) => {
+-				const card = requireValue(specimen.querySelector(`.${name}`), `No .${name}`)
+-				const box = card.getBoundingClientRect()
+-				const line = requireValue(
+-					card.parentElement,
+-					`No line for .${name}`,
+-				).getBoundingClientRect()
+-				return [
+-					name,
+-					Math.round(box.top - line.top),
+-					Math.round(line.right - box.right),
+-					Math.round(line.bottom - box.bottom),
+-					Math.round(box.left - line.left),
+-				]
+-			})
+-			const [ms, me, mx, mt, mb, my, m] = edges.map(([, ...room]) => room)
+-			// An auto margin takes the room left on its side: the end margin's card holds the start,
+-			// the start margin's card holds the end, and a pair of them shares the room evenly.
+-			expect(ms?.[1]).toBe(0)
+-			expect(ms?.[3]).toBeGreaterThan(0)
+-			expect(me?.[3]).toBe(0)
+-			expect(mx?.[1]).toBe(mx?.[3])
+-			expect(mx?.[1]).toBeGreaterThan(0)
+-			expect(mt?.[2]).toBe(0)
+-			expect(mt?.[0]).toBeGreaterThan(0)
+-			expect(mb?.[0]).toBe(0)
+-			expect(mb?.[2]).toBeGreaterThan(0)
+-			expect(my?.[0]).toBe(my?.[2])
+-			expect(m?.[0]).toBe(m?.[2])
+-			expect(m?.[1]).toBe(m?.[3])
+-			expect(m?.[1]).toBeGreaterThan(0)
++			// Each margin entry writes an auto step, and each auto-margin card's room is read on every
++			// side against the line that holds it, keyed by the card's class. The end margin's card is
++			// also read through the card after it, which the auto margin pushes to the end of the line.
++			const rooms = new Map(
++				SPACING_SIDE_CASES.map(({ suffix }) => {
++					const name = `m${suffix}-auto`
++					const card = requireValue(specimen.querySelector(`.${name}`), `No .${name}`)
++					const box = card.getBoundingClientRect()
++					const line = requireValue(
++						card.parentElement,
++						`No line for .${name}`,
++					).getBoundingClientRect()
++					const next = card.nextElementSibling?.getBoundingClientRect()
++					return [
++						name,
++						{
++							top: Math.round(box.top - line.top),
++							right: Math.round(line.right - box.right),
++							bottom: Math.round(line.bottom - box.bottom),
++							left: Math.round(box.left - line.left),
++							gap: next === undefined ? undefined : Math.round(next.left - box.right),
++							trail: next === undefined ? undefined : Math.round(line.right - next.right),
++						},
++					] as const
++				}),
++			)
++			// An auto margin takes the room left over on its side, and a pair of them shares it evenly.
++			// Each expectation fails where that auto margin is written as zero: the card then sits at
++			// the start of its line, or the line's stretch default fills the line's height.
++			const both = requireValue(rooms.get('m-auto'), 'No .m-auto reading')
++			expect([both.top, both.left]).toEqual([both.bottom, both.right])
++			expect(Math.min(both.top, both.left)).toBeGreaterThan(0)
++			const across = requireValue(rooms.get('mx-auto'), 'No .mx-auto reading')
++			expect(across.left).toBe(across.right)
++			const down = requireValue(rooms.get('my-auto'), 'No .my-auto reading')
++			expect(down.top).toBe(down.bottom)
++			expect(down.top).toBeGreaterThan(0)
++			const top = requireValue(rooms.get('mt-auto'), 'No .mt-auto reading')
++			expect([top.bottom, top.top > 0]).toEqual([0, true])
++			const end = requireValue(rooms.get('me-auto'), 'No .me-auto reading')
++			expect([end.left, end.trail, (end.gap ?? 0) > 0]).toEqual([0, 0, true])
++			const bottom = requireValue(rooms.get('mb-auto'), 'No .mb-auto reading')
++			expect([bottom.top, bottom.bottom > 0]).toEqual([0, true])
++			const start = requireValue(rooms.get('ms-auto'), 'No .ms-auto reading')
++			expect([start.right, start.left > 0]).toEqual([0, true])
+ 		} finally {
+ 			section.destroy()
+ 			host.remove()
+--- a/tests/src/styles/utilities/interaction.test.ts
++++ b/tests/src/styles/utilities/interaction.test.ts
+@@ -179,9 +179,9 @@
+ 			`<div style="${PLACEMENT_BOX}" class="user-select-none pe-none"></div>`,
+ 		)
+ 		const box = requireValue(host.querySelector('.pe-none'), 'No box')
+-		// An unlayered `!important` sorts after every layered one, so the shipped utility keeps its
+-		// value; the same declaration re-opened inside the utilities layer arrives after the shipped
+-		// rule in that layer and wins.
++		// An unlayered `!important` declaration sorts after every layered one, so the shipped utility
++		// keeps its value; the same declaration re-opened inside the utilities layer arrives after the
++		// shipped rule in that layer and wins.
+ 		scene.load('.pe-none { pointer-events: auto !important; user-select: text !important }')
+ 		expect([readStyle(box, 'pointer-events'), readStyle(box, 'user-select')]).toEqual([
+ 			'none',
+--- a/tests/src/styles/utilities/spacing.test.ts
++++ b/tests/src/styles/utilities/spacing.test.ts
+@@ -32,10 +32,10 @@
+ 			// Each box sits alone in a flex container of definite size, so an `auto` margin absorbs the
+ 			// container's free space on its axis rather than resolving to zero, and every other step
+ 			// reads as the length it sets.
+-			const classes = SPACING_PROPERTY_CASES.flatMap(({ initial, auto }) =>
++			const classes = SPACING_PROPERTY_CASES.flatMap(({ prefix, auto }) =>
+ 				SPACING_SIDE_CASES.flatMap(({ suffix }) =>
+ 					[...SPACING_STEP_CASES.map(({ step }) => String(step)), ...(auto ? ['auto'] : [])].map(
+-						(step) => `${initial}${suffix}${infix}-${step}`,
++						(step) => `${prefix}${suffix}${infix}-${step}`,
+ 					),
+ 				),
+ 			)
+@@ -50,18 +50,18 @@
+ 			for (const viewport of readings) {
+ 				const reading = await visitBreakpoint(viewport, () => ({
+ 					width: window.innerWidth,
+-					sides: SPACING_PROPERTY_CASES.flatMap(({ property, initial, auto }) =>
++					sides: SPACING_PROPERTY_CASES.flatMap(({ property, prefix, auto }) =>
+ 						SPACING_SIDE_CASES.flatMap(({ suffix, sides }) =>
+ 							[
+ 								...SPACING_STEP_CASES.map(({ step, pixels }) => [String(step), pixels] as const),
+ 								...(auto ? [['auto', undefined] as const] : []),
+ 							].map(([step, pixels]) => {
+ 								const box = requireValue(
+-									host.querySelector(`.${initial}${suffix}${infix}-${step}`),
+-									`No .${initial}${suffix}${infix}-${step}`,
++									host.querySelector(`.${prefix}${suffix}${infix}-${step}`),
++									`No .${prefix}${suffix}${infix}-${step}`,
+ 								)
+ 								return {
+-									name: `${initial}${suffix}${infix}-${step}`,
++									name: `${prefix}${suffix}${infix}-${step}`,
+ 									read: SIDES.map((side) => readPixels(box, `${property}-${side}`)),
+ 									// An `auto` margin shares its axis's free space with the other `auto`
+ 									// margin on that axis: the 380px left beside the 20px box, and the 190px
+@@ -126,10 +126,10 @@
+ 
+ 	it('reads each step from its space token, so the density factor and a retuned token move every side', () => {
+ 		const host = scene.mount(
+-			SPACING_PROPERTY_CASES.flatMap(({ initial }) =>
++			SPACING_PROPERTY_CASES.flatMap(({ prefix }) =>
+ 				SPACING_SIDE_CASES.flatMap(({ suffix }) =>
+ 					SPACING_STEP_CASES.map(
+-						({ step }) => `<div class="${initial}${suffix}-${String(step)}"></div>`,
++						({ step }) => `<div class="${prefix}${suffix}-${String(step)}"></div>`,
+ 					),
+ 				),
+ 			).join(''),
+@@ -148,10 +148,10 @@
+ 					for (const { token, pixels } of scaled)
+ 						host.style.setProperty(requireValue(token, 'No step token'), `${String(pixels + 1)}px`)
+ 				}
+-				const misses = SPACING_PROPERTY_CASES.flatMap(({ property, initial }) =>
++				const misses = SPACING_PROPERTY_CASES.flatMap(({ property, prefix }) =>
+ 					SPACING_SIDE_CASES.flatMap(({ suffix, sides }) =>
+ 						SPACING_STEP_CASES.flatMap(({ step, pixels, token }) => {
+-							const name = `${initial}${suffix}-${String(step)}`
++							const name = `${prefix}${suffix}-${String(step)}`
+ 							const box = requireValue(host.querySelector(`.${name}`), `No .${name}`)
+ 							const expected =
+ 								token === undefined
+@@ -223,9 +223,9 @@
+ 	it('yields to an important override inside the utilities layer and to no unlayered one', () => {
+ 		const host = scene.mount('<div class="m-3 px-2"></div>')
+ 		const box = requireValue(host.querySelector('.m-3'), 'No box')
+-		// An unlayered `!important` sorts after every layered one, so the shipped utility keeps its
+-		// step; the same declaration re-opened inside the utilities layer arrives after the shipped
+-		// rule in that layer and wins.
++		// An unlayered `!important` declaration sorts after every layered one, so the shipped utility
++		// keeps its step; the same declaration re-opened inside the utilities layer arrives after the
++		// shipped rule in that layer and wins.
+ 		scene.load('.m-3 { margin-top: 9px !important } .px-2 { padding-left: 9px !important }')
+ 		expect([readPixels(box, 'margin-top'), readPixels(box, 'padding-left')]).toEqual([16, 8])
+ 		scene.load(
