@@ -25,6 +25,11 @@ UNITS = {
         focus='claims 1, 2, 3, 5, and 7 (the patch delta against round 1, the pairs\' partial and its order against the release, the components-layer control, the product sentences against the markup, and the moved cases)',
         checker='claims 1, 4, 6, and 8',
         bench='the bench round-tripped at 03:17 (dr-audit returned exit 0 through this queue)'),
+    'cb': dict(name='BARE-BUTTON', worktree='/home/user/veneer-cb', base='a9dff19',
+        evidence='`cb-2.diff`, `cb-2-status.txt`, `cb-shared-2.patch`, `b-cross-cb-report-2.md`, `b-cross-cb-brief-2.md`, `cb-instruments/` (the round-2 records: `cb-mutations-2.log.txt`, `cb-mutate-2.sh`, `cb-mutation-2-token-run.log.txt`, `cb-green-2.log.txt`, `cb-interdiff-2.diff`, `cb-shared-interdiff-2.diff`, `cb-guide-2.py`, and the `cb-gate-2-*` and `cb-scratch-2-*` logs), round 1\'s `cb.diff`, `cb-shared.patch`, and `b-cross-cb-report.md`, and the round-1 verdict `cb-audit-verdict.md` and its lane verdicts; the design verdict `/home/user/scaffold/.orkestrel/veneer/b-cross-cb-design-verdict.md`',
+        focus='claims 1, 2, 3, and 5 (the delta against round 1, the list-group case and its red runs, the token-metric wrapper and its red run, and the coverage matrix against the retained readings)',
+        checker='claims 1, 4, and 6',
+        bench='the bench round-tripped at 04:06 (cb-audit returned exit 0 through this queue)'),
 }
 for key in sys.argv[1:]:
     u = UNITS[key]; claims = f'{key}-audit-2-claims.md'; title = f"Audit round 2 — {u['name']} (`{key}`)"
@@ -32,7 +37,7 @@ for key in sys.argv[1:]:
 
 `analyst` route on GPT-6 Astra (`gpt-6-astra`), `codex exec --sandbox read-only` rooted at `{u['worktree']}`. You are the engine behind the CLI: perform the audit directly and spawn nothing. You hold the **objective** lane over the numbered claims in `/home/user/scaffold/.orkestrel/veneer/units/{claims}`: correctness, constraints, and what the code, the logs, and the contracts permit. The unit was written by `opus` on Opus 5.5, so you are an auditor engine that did not write it; the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, as the round-1 verdict records. Bound: rule within 25 minutes.
 
-Law: {LAW}. Evidence, all read-only, under `/home/user/scaffold/.orkestrel/veneer/units/`: the claims file `{claims}`; {u['evidence']}; the worktree `{u['worktree']}` (the owned files over `2a3f223`; read them, never edit them; `git -C {u['worktree']} show 2a3f223:<path>` reads any base file; the inventory is `tests/fixtures/oracle/inventory.json`; `node_modules/bootstrap/` there is Bootstrap 5.3.8, its source under `scss/` and `js/src/`, and `node_modules/tailwindcss/` the installed Tailwind).
+Law: {LAW}. Evidence, all read-only, under `/home/user/scaffold/.orkestrel/veneer/units/`: the claims file `{claims}`; {u['evidence']}; the worktree `{u['worktree']}` (the owned files over `{u.get('base', '2a3f223')}`; read them, never edit them; `git -C {u['worktree']} show {u.get('base', '2a3f223')}:<path>` reads any base file; the inventory is `tests/fixtures/oracle/inventory.json`; `node_modules/bootstrap/` there is Bootstrap 5.3.8, its source under `scss/` and `js/src/`, and `node_modules/tailwindcss/` the installed Tailwind).
 
 Standing conditions: the sandbox runs no Vitest project and no browser, and denies the network, a loopback listener, and a nested install; `git show`, `git diff`, `git apply --check` against a scratch extract under the system temporary directory, `grep`, `sha256sum`, and `node -e` that writes nothing are allowed; rule every proof claim from the code's assertions and the retained logs, naming for each mutation whether the assertions distinguish it from the passing case, and say which log you read. Never edit the worktree. Never read `.env*`, `.npmrc`, `auth.json`, or any credential file.
 
@@ -52,7 +57,7 @@ Verdicts on {u['checker']} of the claims file by reading alone: the status and d
 
 ## Context
 
-Law: {LAW}. Evidence, all read-only, under `/home/user/scaffold/.orkestrel/veneer/units/`: the claims file `{claims}`; {u['evidence']}; the worktree `{u['worktree']}` (the owned files over `2a3f223`; read them, never edit them). Execution: a native subagent, clean context; perform the assignment directly and spawn nothing; edit nothing; run nothing; use absolute paths.
+Law: {LAW}. Evidence, all read-only, under `/home/user/scaffold/.orkestrel/veneer/units/`: the claims file `{claims}`; {u['evidence']}; the worktree `{u['worktree']}` (the owned files over `{u.get('base', '2a3f223')}`; read them, never edit them). Execution: a native subagent, clean context; perform the assignment directly and spawn nothing; edit nothing; run nothing; use absolute paths.
 
 ## Scope
 

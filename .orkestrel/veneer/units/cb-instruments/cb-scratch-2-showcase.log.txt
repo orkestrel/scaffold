@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/veneer-cb/tmp/probe/cb-copy-2
+
+4:15:09 AM [vite] (client) [optimizer] bundling dependencies...
+····
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  04:15:07
+   Duration  12.33s (transform 0ms, setup 232ms, import 267ms, tests 2.95s, environment 0ms)
+

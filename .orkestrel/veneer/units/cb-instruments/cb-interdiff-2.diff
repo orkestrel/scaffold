@@ -1,0 +1,124 @@
+--- round-1/tests/src/styles/elements/button.test.ts
++++ round-2/tests/src/styles/elements/button.test.ts
+@@ -65,10 +65,11 @@
+ 		}
+ 	})
+ 	it('leaves a classed, an empty-class, and a slide-target button to the reboot alone', async () => {
+-		// The wrapper sets type metrics no shipped token resolves to, so an inherited reading names the
+-		// reboot's `inherit` value rather than a token that happens to match it.
++		// The wrapper's 19px size matches no size token, and its 29px line height matches no line token
++		// at any token size, so an inherited reading names the reboot's `inherit` value rather than a
++		// token that happens to resolve to the same length.
+ 		const host = scene.mount(
+-			'<div style="font: 20px/30px serif"><button type="button" class="order-action">Hooked control</button><button type="button" class="">Emptied control</button><button type="button" data-bs-target="#harbor">Targeted control</button></div>',
++			'<div style="font: 19px/29px serif"><button type="button" class="order-action">Hooked control</button><button type="button" class="">Emptied control</button><button type="button" data-bs-target="#harbor">Targeted control</button></div>',
+ 		)
+ 		const wrapper = requireValue(host.querySelector('div'), 'No wrapper')
+ 		const hooked = requireValue(
+@@ -106,8 +107,8 @@
+ 				transform: 'none',
+ 				appearance: 'button',
+ 				family: readStyle(wrapper, 'font-family'),
+-				size: 20,
+-				line: 30,
++				size: 19,
++				line: 29,
+ 				radius: 0,
+ 				shadow: 'none',
+ 				duration: '0s',
+--- round-1/tests/src/styles/components/nav.test.ts
++++ round-2/tests/src/styles/components/nav.test.ts
+@@ -189,14 +189,15 @@
+ 	})
+ 
+ 	it('paints the disabled button link as it paints the disabled anchor link, at full opacity and in the parent type', () => {
+-		// The wrapper sets type metrics no shipped token resolves to, so a link that inherits them
+-		// reads the wrapper, and a link that took a token of its own reads something else.
+-		const host = scene.mount(`<div style="font: 20px/30px serif">${NAV_MARKUP}</div>`)
++		// The wrapper's 19px size matches no size token, and its 29px line height matches no line token
++		// at any token size, so a link that inherits them reads the wrapper, and a link that took a
++		// token of its own reads something else.
++		const host = scene.mount(`<div style="font: 19px/29px serif">${NAV_MARKUP}</div>`)
+ 		const marked = requireValue(host.querySelector('.nav-link.disabled'), 'No disabled anchor')
+ 		const native = requireValue(host.querySelector('.nav-link:disabled'), 'No disabled button')
+ 		expect(readStyle(marked, 'opacity')).toBe('1')
+-		expect(readPixels(marked, 'font-size')).toBe(20)
+-		expect(readPixels(marked, 'line-height')).toBe(30)
++		expect(readPixels(marked, 'font-size')).toBe(19)
++		expect(readPixels(marked, 'line-height')).toBe(29)
+ 		for (const property of [
+ 			'opacity',
+ 			'font-family',
+--- round-1/tests/src/styles/components/list-group.test.ts
++++ round-2/tests/src/styles/components/list-group.test.ts
+@@ -3,6 +3,7 @@
+ import {
+ 	holdAccessible,
+ 	matchesColor,
++	pressKeys,
+ 	readPixels,
+ 	readStyle,
+ 	readToken,
+@@ -177,6 +178,53 @@
+ 		expect(readStyle(action, 'text-align')).toBe('right')
+ 		expect(readStyle(action, 'color')).toBe('rgb(7, 8, 9)')
+ 	})
++	it('paints each button action as its anchor action, disabled on type and focused on outline and shadow', async () => {
++		// The wrapper's 19px size matches no size token, and its 29px line height matches no line token
++		// at any token size, so an action that inherits them reads the wrapper, and an action that took
++		// a token of its own reads something else.
++		const host = scene.mount(
++			'<div style="font: 19px/29px serif"><div class="list-group"><a class="list-group-item list-group-item-action disabled" href="#one">Oak</a><button type="button" class="list-group-item list-group-item-action" disabled>Ash</button><a class="list-group-item list-group-item-action" href="#two">Elm</a><button type="button" class="list-group-item list-group-item-action">Pine</button></div></div>',
++		)
++		const group = requireValue(host.querySelector<HTMLElement>('.list-group'), 'No group')
++		const marked = requireValue(group.querySelector<HTMLElement>('a.disabled'), 'No flagged item')
++		const native = requireValue(
++			group.querySelector<HTMLElement>('button:disabled'),
++			'No disabled button item',
++		)
++		// The anchor is pinned to the wrapper before the button is held to the anchor: a pair that
++		// both took another size would still read equal.
++		expect(readPixels(marked, 'font-size')).toBe(19)
++		expect(readPixels(marked, 'line-height')).toBe(29)
++		for (const property of ['font-family', 'font-size', 'line-height']) {
++			expect({ property, button: readStyle(native, property) }).toEqual({
++				property,
++				button: readStyle(marked, property),
++			})
++		}
++		const anchor = requireValue(
++			group.querySelector<HTMLElement>('a[href="#two"]'),
++			'No anchor action',
++		)
++		const button = requireValue(
++			group.querySelector<HTMLElement>('button:enabled'),
++			'No enabled button action',
++		)
++		const focused: Array<{ readonly outline: string; readonly shadow: string }> = []
++		for (const action of [anchor, button]) {
++			action.focus()
++			await pressKeys('{ArrowRight}')
++			expect(action.matches(':focus-visible')).toBe(true)
++			focused.push({
++				outline: readStyle(action, 'outline-style'),
++				shadow: readStyle(action, 'box-shadow'),
++			})
++			action.blur()
++		}
++		const [anchorRing, buttonRing] = focused
++		expect(requireValue(anchorRing, 'No anchor reading').shadow).toBe('none')
++		expect(buttonRing).toEqual(anchorRing)
++	})
++
+ 	it.each(LIST_GROUP_ACTION_CASES)(
+ 		'paints a resting action on $state and leaves a selected one alone, on either host',
+ 		async ({ state, color, background }) => {
+@@ -208,8 +256,6 @@
+ 					if (state === 'hover') await page.elementLocator(action).hover()
+ 					if (state === 'focus') action.focus()
+ 					if (state === 'active') await holdAccessible(role, name)
+-					// A button host carries the elements layer's own color transition, so each paint is
+-					// read after the timeline settles rather than while it is still on its way.
+ 					await waitForAnimations(action)
+ 					readings.set(`${name} color`, readStyle(action, 'color'))
+ 					readings.set(`${name} background`, readStyle(action, 'background-color'))
