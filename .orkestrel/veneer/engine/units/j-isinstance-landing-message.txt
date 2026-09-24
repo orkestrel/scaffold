@@ -1,0 +1,12 @@
+Land J-ISINSTANCE: every invoked element guard reads isInstance from contract 0.0.18
+
+With @orkestrel/contract 0.0.18 narrowing isInstance to the constructor's instance type, the
+binder's and the collapse's immediately invoked instanceOf(HTMLElement)(x) guards read
+isInstance(x, HTMLElement) (Button, Collapse, Delegate's conflict check and two routes, parseElement),
+and the two event guards' class half reads isInstance(value, CustomEvent), whose detail narrows to
+unknown; the predicate-passed instanceOf(HTMLElement) sites in filter and find stay, being the
+combinator's purpose. The isButtonEvent remark states the routing as it now is. A builder unit on
+main, audited by the checker and the Orchestrator's gates; browser proofs 204 of 204 on Chromium
+153.0.8010.12. J-ENGINE campaign (D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
