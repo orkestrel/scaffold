@@ -5,7 +5,8 @@
 # the worktree read-only (tracked changes as git diff against 2a3f223, each untracked file as
 # git diff --no-index /dev/null) and says so in the report's retained header. The report's appended
 # copy of the shared patch is dropped when it equals the patch file, and every tmp/units path in the
-# report is rewritten to the retained path it names. Generalizes w2-retain-tp.py.
+# report is rewritten to the retained path it names, an absolute worktree path included. Generalizes
+# w2-retain-tp.py.
 import pathlib, re, shutil, subprocess, sys
 
 unit, wt, name = sys.argv[1], pathlib.Path(sys.argv[2]), sys.argv[3]
@@ -51,5 +52,6 @@ def target(m):
     first = rest.split('/')[0]
     return f'{R}/{first}' if first in TOP else f'{R}/{unit}-instruments/{rest}'
 new = re.sub(r'tmp/units/([A-Za-z0-9_.*/-]+)', target, report)
+new = new.replace(f'{wt}/{R}', f'/home/user/scaffold/{R}').replace(f'{R}/{unit}-instruments/{unit}-report.md', f'{R}/{name}')
 (U / name).write_text(new)
 print(unit, 'captured:', notes or 'none', '| rewritten', len(re.findall(r'tmp/units/', report)), '->', len(re.findall(r'tmp/units/', new)))

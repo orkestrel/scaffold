@@ -48,11 +48,11 @@ The patch carries these changes:
 
 The review evidence sits at the following paths:
 
-- `/home/user/veneer-cl/.orkestrel/veneer/units/cl.diff`
-- `/home/user/veneer-cl/.orkestrel/veneer/units/cl-status.txt`
-- `/home/user/veneer-cl/.orkestrel/veneer/units/cl-shared.patch`
-- `/home/user/veneer-cl/.orkestrel/veneer/units/cl-instruments/cl-mutations.log.txt`
-- `/home/user/veneer-cl/.orkestrel/veneer/units/cl-instruments/cl-report.md`
+- `/home/user/scaffold/.orkestrel/veneer/units/cl.diff`
+- `/home/user/scaffold/.orkestrel/veneer/units/cl-status.txt`
+- `/home/user/scaffold/.orkestrel/veneer/units/cl-shared.patch`
+- `/home/user/scaffold/.orkestrel/veneer/units/cl-instruments/cl-mutations.log.txt`
+- `/home/user/scaffold/.orkestrel/veneer/units/b-cross-cl-report.md`
 
 ## Readers and row types
 
