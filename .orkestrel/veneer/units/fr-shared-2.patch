@@ -1,0 +1,158 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -3126,7 +3126,12 @@
+ control and on a validated one, by its style and width, because a color reading cannot fail under
+ forced colors: the installed color reader resolves each side through a probe whose color forced
+ colors also replace. The capture journey writes a resting element frame of every specimen and a page
+-frame of the text control under keyboard focus.
++frame of the text control under keyboard focus. The small and large steps of the textarea, the file
++control, the color control, and the plaintext form are specimens of their own, so each size rule
++has a resting frame. The file control under the pointer is an element frame of its lifted specimen,
++and the journey reads the button part's computed surface against its resting surface. The plaintext
++form under keyboard focus is an element frame of its lifted specimen, and the journey reads that the
++focused control wears no outline and no ring.
+ 
+ ### Form select classes
+ 
+@@ -3207,7 +3212,9 @@
+ browser reaches the Gecko reset, and the styles setup proof reads its declarations out of the
+ compiled cascade instead, which is evidence of the compiled contract rather than of a rendered
+ result; see [the styles setup proof](../tests/setupStyles.test.ts). The capture journey writes a
+-resting frame of each specimen and a page frame of the plain select under keyboard focus.
++resting frame of each specimen and a page frame of the plain select under keyboard focus. The
++capture journey drives Chromium, so the portfolio carries no frame of the `:-moz-focusring` reset:
++that rule is outside the capture engine's reach, and it is recorded here rather than framed.
+ 
+ ### Form check classes
+ 
+@@ -3278,7 +3285,11 @@
+ proof](../tests/setupStyles.test.ts). The capture journey photographs each specimen at rest as an
+ element frame, the resting checkbox under keyboard focus as a page frame, and a lifted copy of that
+ checkbox marked mixed as an element frame, because the mixed state is a property no attribute
+-declares. No proof prints, so the proof reads the `print-color-adjust` declaration as its resolved
++declares. It photographs the switch under keyboard focus, with its focus knob and its ring, and the
++checkbox and the unchecked radio held under the pointer, each as an element frame of its lifted
++specimen; each held control's dimmed paint is read off the pixel at its centre with the control
++focused and then held. No proof prints, so the proof reads the `print-color-adjust` declaration as
++its resolved
+ value alone.
+ 
+ ### Form range classes
+@@ -3309,8 +3320,9 @@
+ - **The focus ring binds the focus tokens.** The official shadow is a hairline over a quarter-rem
+   ring in the official brand color; Veneer keeps the hairline and reads `--vn-focus-width` and
+   `--vn-focus-color` for the ring, which resolves to a `0.1875rem` ring and is the binding `.btn`
+-  already carries. The hairline paints `--vn-surface-body-base`, the variable the official cascade
+-  compiles to white.
++  already carries. The hairline paints the `--vn-palette-white-base` entry, because the official
++  cascade compiles the Sass `$body-bg` variable into the shadow, and that variable is white in the
++  light and the dark mode, so the hairline stays white on a dark page.
+ - **The thumb transition reads the motion tokens.** The official value is `0.15s ease-in-out`;
+   Veneer writes `var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to `0.15s ease`,
+   and emits the reduced-motion twin through the shared transition mixin, as the `.btn` class does.
+@@ -3332,10 +3344,16 @@
+ request for a slider part with the host's own resolved style rather than the part's, so the thumb's
+ geometry, paint, and transition have no resolved reading. Chromium discards a selector naming a
+ Gecko pseudo-element at parse time, so no reading taken in that browser reaches the Gecko half at
+-all. A pointer hold on a slider part is not reachable through the installed browser exports, and a
+-hold on the control itself moves the value rather than entering the part's `:active` state, so the
+-held thumb has a declaration reading and no drive. The styles setup proof reads the declarations
+-both halves carry out of the compiled cascade; see [the styles setup
++all. The hairline's paint is resolved on a gauge carrying the thumb's own declaration in each color
++mode, and it reads white in the light and the dark mode. A pointer hold through the installed
++`driveHold` function lands on the control's centre, where the thumb of a mid-track value sits, so it
++enters the thumb's `:active` state without moving the value. The capture journey holds the `Range`
++specimen that way on its lifted specimen, reads the pixel at the control's centre with the control
++focused and then held, so the readings differ by the press alone, and writes the `range-active`
++element frame while the hold lasts. A disabled range cannot hold focus in Chromium: the browser
++refuses focus to a disabled control and moves focus off a focused control that becomes disabled, so
++the rule for a range both focused and disabled has no reachable state and no frame. The styles setup
++proof reads the declarations both halves carry out of the compiled cascade; see [the styles setup
+ proof](../tests/setupStyles.test.ts). The page frame the capture journey writes shows the rendered
+ thumb and the rendered track; the ring paints on a part with no resolved reading, so its rendered
+ evidence is open, and its contrast ratio is uncompared for this key because the `readRing` function
+@@ -3410,14 +3428,23 @@
+ `tests/src/styles/components/form-floating.test.ts` file beside the reading it bounds. The installed
+ browser exports offer no way to put a control into the autofilled state, so the autofill rules have
+ no resolved reading, and the proof reads the declarations the cascade authors for them, which is
+-compiled-contract evidence rather than a rendered proof. The class-qualified disabled label rule
++compiled-contract evidence rather than a rendered proof. The same limit keeps the autofilled state
++outside the reach of the Chromium the capture journey drives, so the portfolio records the autofill
++rules here rather than framing them. The class-qualified disabled label rule
+ paints what the bare disabled rule already paints, so it takes the same declaration reading. The
+ `.form-select` rule removes the select's native appearance, so the floating select's
+ `line-height: 1.25` declaration resolves against its type size and the proof reads it resolved. The
+ select's own border, radius, and paint belong to the `.form-select` rule, which ships, so the
+ `form-floating-select` frame shows the floated label over the styled select; the text control's
+ belong to the `.form-control` rule, which Veneer ships, so every floating text-control frame shows
+-the floated label over the styled control.
++the floated label over the styled control. The `Form floating disabled input` and
++`Form floating disabled select` frames show the disabled label without a backdrop, which is the
++textarea's alone. The `Form floating empty textarea` specimen carries its placeholder alone, and
++its focus frame is an element frame of its lifted specimen: keyboard focus floats the label over the
++still empty textarea and paints the backdrop behind it. The `Form floating empty plaintext`
++specimen carries its placeholder alone, and its focus frame is an element frame of its lifted
++specimen: keyboard focus moves its text down to the floated inset, where the filled plaintext
++control already sits, and paints no outline.
+ 
+ ### Input group classes
+ 
+@@ -3498,7 +3525,17 @@
+ specimen and one of the `Input group invalid tooltip` specimen. In each, the validated group's
+ revealed tooltip hangs over the button-led group the specimen renders beneath that validated group.
+ The journey reads that the tooltip ends inside the frame and paints over that group's button,
+-because the tooltip rule writes `z-index: 5` and a grouped button rests at `z-index: 2`.
++because the tooltip rule writes `z-index: 5` and a grouped button rests at `z-index: 2`. The
++`Input group select` and `Input group floating` specimens set a select and a floating wrapper
++between an addon and a button, so the group squares both inline corners of each. Each takes a
++resting frame, in which the floating wrapper's label rests over its empty control, and a focus frame
++of its lifted specimen, in which the focused child lifts to `z-index: 5` over the `z-index: 2` the
++button keeps. The `Input group select large` and `Input group select small` specimens show the room
++a sized group keeps for the select's indicator, and the `Input group toolbar` specimen shows a group
++taking its content's width inside a toolbar. The `Input group buttons` specimen leads its group with
++the `Earlier order` and the `Later order` buttons, and its focus frame is an element frame of its
++lifted specimen: keyboard focus lifts the `Earlier order` button to `z-index: 5`, above the
++`z-index: 2` its neighbour keeps, so its ring paints over that neighbour.
+ 
+ ### Validation classes
+ 
+@@ -3542,6 +3579,16 @@
+ reads a required empty control inside a `.was-validated` form on arrival and again after the control
+ is filled, which is the scoped form the release reaches without a state class.
+ 
++The capture journey writes a resting frame of each validation specimen: the passing and the failing
++text control, select, check, feedback, textarea, color control, inline check, and select showing
++several values, and the scoped form failing and passing. Each check sits in a `.form-check` row, as
++the release's validation markup writes it, so its focus ring clears its label. The validated
++textarea shows its mark at the top of the control, the validated color control shows the width its
++mark adds, and the inline check shows its feedback inside its row. The select showing several values
++carries the state without the mark. The passing and the failing select and check under keyboard
++focus are element frames of their lifted specimens, and the journey reads that every passing host
++rings in one color and every failing host in another.
++
+ ### Fade classes
+ 
+ The transition key ships whole. The fade partial writes the `.fade` rule and its hidden state, each
+@@ -8172,8 +8219,8 @@
+ | `form-range` | `.form-range`                                | `height`             | —                                         | `1.5rem`                                                                                           | `var(--vn-space-12)`                                                                                                                                                                               | tokenized |
+ | `form-range` | `.form-range`                                | `-webkit-appearance` | —                                         | `none`                                                                                             | —                                                                                                                                                                                                  | dropped   |
+ | `form-range` | `.form-range`                                | `-moz-appearance`    | —                                         | `none`                                                                                             | —                                                                                                                                                                                                  | dropped   |
+-| `form-range` | `.form-range:focus::-webkit-slider-thumb`    | `box-shadow`         | —                                         | `0 0 0 1px #fff, 0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                                           | `0 0 0 1px var(--vn-surface-body-base), 0 0 0 var(--vn-focus-width) var(--vn-focus-color)`                                                                                                         | tokenized |
+-| `form-range` | `.form-range:focus::-moz-range-thumb`        | `box-shadow`         | —                                         | `0 0 0 1px #fff, 0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                                           | `0 0 0 1px var(--vn-surface-body-base), 0 0 0 var(--vn-focus-width) var(--vn-focus-color)`                                                                                                         | tokenized |
++| `form-range` | `.form-range:focus::-webkit-slider-thumb`    | `box-shadow`         | —                                         | `0 0 0 1px #fff, 0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                                           | `0 0 0 1px var(--vn-palette-white-base), 0 0 0 var(--vn-focus-width) var(--vn-focus-color)`                                                                                                        | tokenized |
++| `form-range` | `.form-range:focus::-moz-range-thumb`        | `box-shadow`         | —                                         | `0 0 0 1px #fff, 0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                                           | `0 0 0 1px var(--vn-palette-white-base), 0 0 0 var(--vn-focus-width) var(--vn-focus-color)`                                                                                                        | tokenized |
+ | `form-range` | `.form-range::-webkit-slider-thumb`          | `width`              | —                                         | `1rem`                                                                                             | `var(--vn-space-8)`                                                                                                                                                                                | tokenized |
+ | `form-range` | `.form-range::-webkit-slider-thumb`          | `height`             | —                                         | `1rem`                                                                                             | `var(--vn-space-8)`                                                                                                                                                                                | tokenized |
+ | `form-range` | `.form-range::-webkit-slider-thumb`          | `margin-top`         | —                                         | `-0.25rem`                                                                                         | `calc(var(--vn-space-2) * -1)`                                                                                                                                                                     | tokenized |
+@@ -9405,7 +9452,10 @@
+ scenario; see [the capture registry](../tests/setup.ts). A page frame carries a focus state and
+ never a pointer state, because taking the other sections out of the layout can move its subject out
+ from under the pointer, so every pointer state is an element frame of a specimen lifted to the
+-document's start.
++document's start. A press is read off the pixel at the control's centre in screenshots taken with
++the control focused and then held, because a press also focuses the control and the readings
++then differ by the press alone; the range thumb, whose computed style Chromium withholds, has no
++other reading. Each pressed frame is shot while the hold lasts.
+ 
+ The guard's population is the frames on disk under the `tmp/capture/states` directory, discovered
+ from the registry's own expansion and read back whether or not this run wrote a file, so an ordinary

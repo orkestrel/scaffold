@@ -1,5 +1,0 @@
-v2-padding-only
-exit
-1
-['Test Files  1 failed (1)', 'Tests  1 failed | 45 skipped (46)']
-FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:645:2 > journey > reads every resting cascade key the same on its lifted frame as in the showcase, in light and dark

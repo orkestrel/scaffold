@@ -1,9 +1,0 @@
-== navbar-infix-added (2026-09-24T12:14:19+00:00)
-site: tests/app/browser/sections/NavbarSection.test.ts: replaced one "...['', ...BREAKPOINT_INFIXES.map((step) => `-${step}`)]" with "...['', ...[...BREAKPOINT_INFIXES, 'xxxl'].map((step) => `-${step}`)]"
-command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/AccordionSection.test.ts tests/app/browser/sections/DropdownSection.test.ts tests/app/browser/sections/NavSection.test.ts tests/app/browser/sections/NavbarSection.test.ts tests/app/browser/Showcase.test.ts
-exit: 1
-summary: Test Files  1 failed | 4 passed (5)
-summary: Tests  1 failed | 27 passed (28)
-failing: FAIL  |app:browser (chromium)| tests/app/browser/sections/NavbarSection.test.ts:17:2 > NavbarSection > renders every navbar form and every state set in markup through the shared section contract
-whole output: tmp/units/bcf-mutation-4-navbar-infix-added.log.txt
-

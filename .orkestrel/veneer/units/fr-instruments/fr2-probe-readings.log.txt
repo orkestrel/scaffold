@@ -1,0 +1,11 @@
+Round-2 probe readings, transcribed from the probe's stdout. The probe (tmp/probe/fr-states.test.ts through
+tmp/probe/fr-probe.config.ts, the styles config over dist/src/styles/index.css) is deleted.
+
+Plaintext focus, each control reached by Tab from a tabindex=-1 wrapper:
+{"a":{"fv":true,"outline":"none"},"b":{"fv":true,"outline":"auto"},"c":{"same":true,"fv":true,"rest":"16px","focus":"26px","ph":true}}
+a: .form-control-plaintext, readonly, filled. b: a bare readonly input. c: an empty readonly
+.form-control-plaintext inside .form-floating, padding-top at rest and under focus.
+
+Focused and disabled range (centre pixel as r,g,b,a):
+{"rest":"13,110,253,255","focused":"13,110,253,255","after":{"active":false,"focus":false,"disabled":true},"disabledFocused":"70,76,92,255","direct":{"active":false}}
+after: a focused range set to disabled; direct: focus() called on a disabled range.

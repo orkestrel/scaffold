@@ -1,0 +1,59 @@
+
+ RUN  v4.1.11 /home/user/veneer-fu
+
+x····x···············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > exports the token prefix, the capture registry, the case matrices, the walks, and the reduction
+AssertionError: expected [ 'CAPTURE_CONTROLS', …(17) ] to deeply equal [ 'CAPTURE_CONTROLS', …(21) ]
+
+- Expected
++ Received
+
+@@ -5,16 +5,12 @@
+    "CASCADE_KEYS",
+    "CASCADE_KEY_TIMEOUT",
+    "CONTRAST_BAR",
+    "DISABLED_OPACITY",
+    "DRIVEN_KEYS",
+-   "FOCUS_INDICATOR_PROPERTIES",
+    "FOCUS_RING",
+    "FRAME_AREA",
+-   "LINK_PAINT_PROPERTIES",
+-   "LINK_STATE_TARGETS",
+-   "LINK_STEP_PROPERTIES",
+    "SHOWCASE_KEYS",
+    "TOKEN_PREFIX",
+    "UNDER_BAR",
+    "buildStem",
+    "collectTokenNodes",
+
+ ❯ tests/setup.test.ts:53:37
+     51| describe('shared setup', () => {
+     52|  it('exports the token prefix, the capture registry, the case matrices…
+     53|   expect(Object.keys(setup).sort()).toEqual(
+       |                                     ^
+     54|    [
+     55|     'CAPTURE_CONTROLS',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |setup| tests/setup.test.ts > shared setup > names a class selector for driven rows alone, and holds the link and focus property lists apart
+TypeError: Cannot convert undefined or null to object
+ ❯ tests/setup.test.ts:156:26
+    154|   // A target is read inside its row's specimen, so a key naming a sce…
+    155|   // does not carry would drive a link no frame is shot of.
+    156|   const targets = Object.entries(LINK_STATE_TARGETS)
+       |                          ^
+    157|   expect(targets).not.toStrictEqual([])
+    158|   const driven = new Set<string>(DRIVEN_KEYS.map((key) => key.scenario…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 passed (21)
+   Start at  14:17:08
+   Duration  735ms (transform 384ms, setup 315ms, import 109ms, tests 54ms, environment 0ms)
+

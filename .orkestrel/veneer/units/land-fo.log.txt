@@ -1,0 +1,19 @@
+=== unit files: app/browser/constants.ts tests/app/browser/integration.test.ts tests/app/browser/sections/AlertSection.test.ts tests/app/browser/sections/CarouselSection.test.ts tests/app/browser/sections/PopoverSection.test.ts tests/setup.ts
+=== unit/fo 4ceba8f
+=== unit/fo with fo-shared-2.patch e81bc09
+=== session head fc3ddfe
+Auto-merging app/browser/constants.ts
+Auto-merging guides/veneer.md
+Auto-merging tests/app/browser/integration.test.ts
+Auto-merging tests/setup.ts
+Automatic merge went well; stopped before committing as requested
+Squash commit -- not updating HEAD
+=== squash merge exit=0
+=== landed 67ffe33
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 17708ms on 7 files using 4 threads.
+=== oxfmt check exit=0
+=== oxlint exit=0
+=== check exit=0

@@ -1,4 +1,0 @@
-dark-390 exit 1
-light-390 exit 1
-dark-1280 exit 1
-light-1280 exit 1

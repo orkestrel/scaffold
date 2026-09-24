@@ -1,0 +1,96 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -9196,17 +9196,16 @@
+ Visibility entry closes each of them; the Navbar region follows the utility regions. The utility
+ links under § Tests follow the sections that document them: each section's own proof comes first,
+ and the helper and companion proofs that section documents follow it. The Content region carries
+-the text specimens, lists, quotations, code, media,
+-tables, form controls, and interactive tags. Each helper key sits in the region whose subject it
+-belongs to rather than in a region of its own, which is how every other section is grouped: the icon
+-links sit in Links, the aspect-ratio boxes share Media with the image classes and the figure
+-classes, the vertical rule and the gap steps sit in Layout beside the gutters, the stacks sit in
+-Flex beside the flex utilities, the clearfix helper sits in Float beside the float utilities, the
+-stretched link sits in Links beside the icon links, and the list and quotation classes sit in Type.
+-The font utilities join Type beside the heading classes, whose sizes the size classes share. The
+-Flex beside the flex utilities, the truncation helper sits in Text beside the text utilities, the
+-color-and-background pairs sit in Color beside the text colors, and the list and quotation classes
+-sit in Type. The
++the text specimens, lists, quotations, code, media, tables, form controls, and interactive tags.
++Each helper key sits in the region whose subject it belongs to rather than in a region of its own,
++which is how every other section is grouped. In the order the showcase mounts those regions: the
++list and quotation classes sit in Type, and the font utilities join them beside the heading
++classes, whose sizes the size classes share; the aspect-ratio boxes share Media with the image
++classes and the figure classes; the icon links and the stretched link sit in Links beside the link
++utilities; the vertical rule and the gap steps sit in Layout beside the gutters; the clearfix
++helper sits in Float beside the float utilities; the stacks sit in Flex beside the flex utilities;
++the truncation helper sits in Text beside the text utilities; and the color-and-background pairs
++sit in Color beside the text colors. The
+ showcase's own button drives the controller and announces the selected mode, and its entry
+ constructs a `Delegate` instance beside the showcase. The shell's own stylesheet reaches that button
+ through the `data-control` attribute the showcase sets on it, so no rule of the shell's reaches a
+@@ -9221,18 +9220,16 @@
+ clip keeps what such an element overflows inside the frame without making the frame scroll. So a
+ fixed bar holds to the frame's edge, and a backdrop sized to the viewport raises no scrollbar on the
+ frame or on the page. The frame's bounded height holds a default dialog at the 390 viewport and
+-gives a percentage height or offset a definite height to resolve against. Every Position specimen,
+-every Modal specimen, the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes`
+-specimens, the Toast region's `Stacked toasts` and `Centered toast` specimens, and every Overflow
+-specimen render inside an element carrying the shell's `viewport` class; the frame clips what a
+-card under the `visible` value spills and gives the axis cards a bounded height to share. The
+-sticky bars scroll inside an element carrying the shell's `scroller` class within the frame,
+-because the frame clips rather than scrolls; see
++gives a percentage height or offset a definite height to resolve against. In the order the
++showcase mounts their regions, the Toast region's `Stacked toasts` and `Centered toast` specimens,
++every Modal specimen, every Offcanvas specimen, every Overflow specimen, every Position specimen,
++the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes` specimens, and the Navbar
++region's `Navbar with offcanvas` specimen render inside an element carrying the shell's `viewport`
++class; the frame clips what an Overflow card under the `visible` value spills and gives the
++Overflow axis cards a bounded height to share. The sticky bars scroll inside an element carrying
++the shell's `scroller` class within the frame, because the frame clips rather than scrolls; see
+ [position specimens](../tests/app/browser/sections/PositionSection.test.ts), which proves the frame
+ at the 390 and 1280 viewports.
+-every Offcanvas specimen, the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes`
+-specimens, and the Navbar region's `Navbar with offcanvas` specimen render inside an element
+-carrying the shell's `viewport` class. The sticky bars scroll inside an element
+ 
+ The specimen and region names are what the capture registry addresses a frame by: every registered
+ scenario names the specimen or the region that is its subject, and § Tests gives the filename law
+@@ -9256,6 +9253,22 @@
+ and the spinner proof reads their running timelines, so what is declined is the frame rather than
+ the proof; see [cascade spinner classes](../tests/src/styles/components/spinner.test.ts).
+ 
++The capture registry registers no frame for the light and dark role rings. Each one's stem carries
++the `light` or the `dark` word, and the registry refuses a scenario carrying a mode token, because
++the variant names the mode. The Focus ring region renders each role ring as a specimen of its own,
++and the focus ring proof reads every role's ring under focus; see
++[focus ring specimens](../tests/app/browser/sections/FocusRingSection.test.ts) and
++[the focus ring helper and role classes](../tests/src/styles/components/focus-ring.test.ts).
++
++These states lie outside the journey's variants, so the capture registry photographs none of them.
++A class carrying the `xxl` infix resolves at a viewport wider than every registered variant. A
++`.d-print-*` class resolves under the print medium, and every variant renders the screen medium.
++The installed Playwright launches headless Chromium with the `--hide-scrollbars` switch, so an
++overflow specimen's `scroll` and `auto` values photograph without the scrollbar that tells them from
++the `hidden` value. Each utility's cascade proof reads those states on its own elements; see
++[the display utilities](../tests/src/styles/utilities/display.test.ts) and
++[the overflow utilities](../tests/src/styles/utilities/overflow.test.ts).
++
+ The Carousel region renders no lone incoming slide and no swipe class, and the capture registry
+ declines both frames for the reason § Carousel classes states; see
+ [carousel specimens](../tests/app/browser/sections/CarouselSection.test.ts) and
+@@ -9453,7 +9466,6 @@
+ [the quotation classes](../tests/src/styles/components/quote.test.ts),
+ [the image classes](../tests/src/styles/components/image.test.ts),
+ [the button classes](../tests/src/styles/components/button.test.ts),
+-[the link classes](../tests/src/styles/utilities/link.test.ts),
+ [the container classes](../tests/src/styles/components/container.test.ts),
+ [the grid classes](../tests/src/styles/components/grid.test.ts),
+ [the table classes](../tests/src/styles/components/table.test.ts),
+@@ -9511,6 +9523,7 @@
+ [the text truncation helper](../tests/src/styles/components/text-truncation.test.ts),
+ [the color utilities](../tests/src/styles/utilities/color.test.ts),
+ [the color-and-background pairs](../tests/src/styles/utilities/color-bg.test.ts),
++[the link classes](../tests/src/styles/utilities/link.test.ts),
+ [the background utilities](../tests/src/styles/utilities/background.test.ts),
+ [the interaction utilities](../tests/src/styles/utilities/interaction.test.ts),
+ [the visibility utilities](../tests/src/styles/utilities/visibility.test.ts),

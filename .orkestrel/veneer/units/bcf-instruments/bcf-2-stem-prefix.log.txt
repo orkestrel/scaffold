@@ -1,2 +1,0 @@
-search: every registered scenario and every CaptureSubject stem in tests/setup.ts that is a proper prefix of navbar-hanging-menu
-population: 321 scenario lines, 295 subject lines; control: the same search for navbar-expanded-hover finds navbar-expanded 

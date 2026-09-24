@@ -1,0 +1,45 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -3617,8 +3617,8 @@
+ The Collapse region renders the shown and the hidden panel on each axis, each inside a card under
+ its header. It renders no closing panel: a panel carrying the `collapsing` class rests at zero
+ height until an engine writes an inline size on it, and no specimen carries an inline style, so a
+-frame of it would carry nothing. The capture registry declines that frame the way it declines the
+-grow spinners, and the cascade proof reads the class instead.
++frame of it would carry nothing. The capture registry declines that frame, and the cascade proof
++reads the class instead.
+ 
+ The `tests/src/styles/components/collapse.test.ts` proof reads each state in the browser: the
+ written selectors, the hidden and the shown display, the clip under an inline height with a hit test
+@@ -9250,11 +9250,12 @@
+ the document; what it interpolates is proved by the first unit that animates a keyword length.
+ § Tokens gives each token's value and source.
+ 
+-The grow spinners are the specimens the capture registry declines: each one rests at
+-`transform: scale(0)` and `opacity: 0`, so its frame would carry an empty box and no subject, and at
+-the wider variants the declared region clips to no pixel at all. The showcase renders each of them,
+-and the spinner proof reads their running timelines, so what is declined is the frame rather than
+-the proof; see [cascade spinner classes](../tests/src/styles/components/spinner.test.ts).
++The grow spinners take no resting frame: each one rests at `transform: scale(0)` and `opacity: 0`,
++so a resting frame would carry an empty box and no subject, and at the wider variants the declared
++region clips to no pixel at all. The journey holds each spinner's running animation at the keyframe
++that paints its whole disc and photographs the disc there, under the `grown` state, and the spinner
++proof reads their running timelines; see [showcase journeys](../tests/app/browser/integration.test.ts)
++and [cascade spinner classes](../tests/src/styles/components/spinner.test.ts).
+ 
+ The Carousel region renders no lone incoming slide and no swipe class, and the capture registry
+ declines both frames for the reason § Carousel classes states; see
+@@ -9372,6 +9373,13 @@
+ subject the showcase stops rendering reddens rather than photographing something else under the same
+ name; see [showcase journeys](../tests/app/browser/integration.test.ts).
+ 
++A subject whose stem carries a theme word takes no frame of a driven state, because the filename
++law refuses that stem. The `Light`, `Dark`, `Outline light`, and `Outline dark` Button hosts are
++such subjects: the journey drives each of them under the pointer and reads the paint, and no frame
++shows their hover. Their pressed faces are photographed through the `Pressed roles` specimen, whose
++hosts carry the `active` class that selects the declarations a held pointer does: the journey holds
++every role host beyond the filled primary and reads on it the face its pressed twin paints.
++
+ The stem is what lets this portfolio be sorted against a counterpart portfolio by subject rather
+ than by hand. The rule comes from the Bootstrap 5.3.8 portfolio the CL13 round shot of the same
+ markup, whose stems match that registry's specimen names. Nothing here pairs the two directories:

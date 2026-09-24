@@ -1,0 +1,7 @@
+captioned-carousel--light-1280: 1280x640 previous mark 78 over (100, 116, 162), next mark 78 over (100, 116, 162)
+fading-carousel--light-1280: 1280x640 previous mark 121 over (13, 110, 253), next mark 121 over (13, 110, 253)
+inverted-carousel--light-1280: 1280x640 previous mark 125 over (248, 249, 250), next mark 125 over (248, 249, 250)
+captioned-carousel-hover--light-1280: 1280x640 previous mark 140 over (100, 116, 162), next mark 78 over (100, 116, 162)
+captioned-carousel-focus--light-1280: 1280x640 previous mark 140 over (100, 116, 162), next mark 78 over (100, 116, 162)
+fading-carousel-hover--light-1280: 624x312 previous mark 121 over (13, 110, 253), next mark 218 over (13, 110, 253)
+fading-carousel-focus--light-1280: 624x312 previous mark 121 over (13, 110, 253), next mark 218 over (13, 110, 253)

@@ -1,0 +1,2 @@
+Plaintext key reading: base .form-control-plaintext, then its .form-control-sm and .form-control-lg steps, resolved over dist/src/styles/index.css (probe tmp/probe/fr-states.test.ts through tmp/probe/fr-probe.config.ts, deleted)
+{"minHeight":["0px","31px","48px"],"paddingLeft":["0px","0px","0px"]}
