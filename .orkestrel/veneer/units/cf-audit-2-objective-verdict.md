@@ -1,0 +1,48 @@
+1. **CONFIRMED — Scope and delta.** The attack compared the live status, retained status, owned-file contents, round-to-round diffs, and shared-patch destinations. The live status matches [cf-2-status.txt:1](/home/user/scaffold/.orkestrel/veneer/units/cf-2-status.txt:1). The owned files match the retained diff byte-for-byte. Their delta contains only the component title/comment and constant renames. Every shared destination belongs to the [Shared grant:73](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-brief.md:73), with the [Nav grant:42](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-brief-2.md:42) covering the added guide clause. The off-limits patch’s digest matches the report. The Orchestrator’s apply ruling stands.
+
+2. **CONFIRMED — Tab-pane and modal coverage.** The attack compared the [added rows:576](/home/user/scaffold/.orkestrel/veneer/units/cf-shared-2.patch:576) with the installed plugins. Tab adds the active class before its callback adds the shown class at [tab.js:109](/home/user/veneer-cf/node_modules/bootstrap/js/src/tab.js:109). Modal adds and removes the shown class at [modal.js:190](/home/user/veneer-cf/node_modules/bootstrap/js/src/modal.js:190) and [modal.js:138](/home/user/veneer-cf/node_modules/bootstrap/js/src/modal.js:138). The table represents reachable fade endpoints.
+
+   **Mutation:** remove the fade import. The [component assertion:193](/home/user/veneer-cf/tests/src/styles/components/fade.test.ts:193) distinguishes this mutation: hidden opacity becomes the `1` value instead of the `0` value, and transition property becomes the `all` value instead of the `opacity` value. I read those failures for the nav and modal rows in [cf-2-nopartial-fade.log.txt:330](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-2-nopartial-fade.log.txt:330), and the passing control in [cf-2-partial-fade.log.txt:77](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-2-partial-fade.log.txt:77).
+
+   The [binding assertion:498](/home/user/scaffold/.orkestrel/veneer/units/cf-shared-2.patch:498) rejects a class absent from the component and transition vocabularies; removing an entry’s freeze also changes its asserted result. The actual added classes belong to those vocabularies. The retained setup run passes at [cf-2-gate-6.log.txt:32](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-2-gate-6.log.txt:32). The Nav clause, Tests sentence, title, and table documentation agree with this bounded coverage.
+
+3. **BROKEN — The registry paragraph retains an inaccurate generalization.** The paragraph identifies the hidden fade state with “every inactive tab pane” at [cf-shared-2.patch:429](/home/user/scaffold/.orkestrel/veneer/units/cf-shared-2.patch:429). An inactive pane need not carry the fade class. The shipped [Tab panes specimen:2158](/home/user/veneer-cf/app/browser/constants.ts:2158) contains precisely that counterexample. Bootstrap hides such a pane through the display property at [_nav.scss:190](/home/user/veneer-cf/node_modules/bootstrap/scss/_nav.scss:190); it is not the opacity-only state described by the paragraph.
+
+   **Smallest correction:** delete “as on every inactive tab pane.” Keep the explanation tied to the hidden card body.
+
+   The repaired registry policy otherwise holds: the paragraph scopes the wrapper selection to the fade specimen, and its grow-spinner, tooltip, toast, modal-backdrop, and offcanvas-backdrop examples correspond to the exclusions at [setup.ts:521](/home/user/veneer-cf/tests/setup.ts:521), [setup.ts:546](/home/user/veneer-cf/tests/setup.ts:546), and [setup.ts:565](/home/user/veneer-cf/tests/setup.ts:565). This finding does not challenge the reserved-card design or the Orchestrator’s pending capture reading.
+
+4. **CONFIRMED — Naming.** The attack searched the assembled source and guide population for the former constant names and compared every former binding with its replacement. No former-name reference remains in that population. The [declarations:28](/home/user/scaffold/.orkestrel/veneer/units/cf-shared-2.patch:28) export frozen constants, and the [section constructor:18](/home/user/veneer-cf/app/browser/sections/FadeSection.ts:18) consumes them. The inventory key and [ledger row:216](/home/user/scaffold/.orkestrel/veneer/units/cf-shared-2.patch:216) retain the transition name.
+
+   **Mutations:** remove a freeze or omit a renamed public export. The [freeze assertions:42](/home/user/veneer-cf/tests/app/browser/sections/FadeSection.test.ts:42) and [export expectations:321](/home/user/scaffold/.orkestrel/veneer/units/cf-shared-2.patch:321) distinguish those changes. The retained section, showcase, and barrel run passes at [cf-2-gate-9.log.txt:9](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-2-gate-9.log.txt:9). Historical audit records naming the former constants are outside the renamed source population.
+
+5. **CONFIRMED — Failing-first evidence.** The attack compared shipped titles, assertion locations, full failure output, commands, and restoration results. The [instrument:48](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-2-red.sh:48) removes the fade import, builds, runs the proofs, restores the import, and repeats the commands.
+
+   **Mutation:** omit the partial. The fade assertions distinguish missing selectors, declarations, opacity, transition properties, and durations. The failures appear under the shipped titles in [cf-2-nopartial-fade.log.txt:81](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-2-nopartial-fade.log.txt:81). The section’s [state assertion:81](/home/user/veneer-cf/tests/app/browser/sections/FadeSection.test.ts:81) distinguishes hidden opacity; its matching failure appears at [cf-2-nopartial-section.log.txt:10](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-2-nopartial-section.log.txt:10).
+
+   The [mutation record:12](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-mutations-2.log.txt:12) reports exit 1 for the negative runs and exit 0 for the restored runs. The full logs reproduce the report’s result lines, including [the restored section result:8](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-2-partial-section.log.txt:8). These rulings use the retained browser runs, as the brief requires.
+
+6. **BROKEN — Report wording.** The report does not follow every code token with its noun. Examples include the first method token at [report:73](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:73), the first file-pattern token at [report:115](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:115), and directory tokens at [report:213](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:213). Command and result cells also omit the required following nouns at [report:159](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:159).
+
+   **Smallest correction:** attach the appropriate method, pattern, directory, command, or result noun to each token.
+
+   The code and gate clauses hold. An in-memory TypeScript syntax inspection found no added prohibited type, assertion, or nested function; its planted controls were detected. The added-line suppression search was clean. The report’s gate quotations match the individual retained logs and [gate record:1](/home/user/scaffold/.orkestrel/veneer/units/cf-instruments/cf-2-gates.log.txt:1). The temporal-term search found no occurrence of “currently,” “now,” “new,” “latest,” “soon,” “once,” or “since.”
+
+   The report states these counts; repeated occurrences are grouped:
+
+   | Report location | Counts stated |
+   |---|---|
+   | [83, 90](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:83) | One fill; a one-color region |
+   | [123](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:123) | “Both proofs,” naming fade and section |
+   | [129–132](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:129) | 8 failed (8); 1 failed and 2 passed (3); 8 passed (8); 3 passed (3) |
+   | [159](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:159) | 419 files; 4 threads |
+   | [163–169](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:163) | 8 passed (8), repeated for the app run; 287 passed (287); 22 passed (22); 19 passed (19); 109 passed and 1 skipped (110); 1288 passed (1288) |
+   | [183–186](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:183) | Owned additions/deletions: partial 25/0; fade proof 218/0; section 20/0; section proof 111/0 |
+   | [194](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:194) | Shared additions/deletions: 269/29 |
+   | [198–209](/home/user/scaffold/.orkestrel/veneer/units/b-cross-cf-report-2.md:198) | Guide 90/20; setupStyles proof 51/0; setupStyles module 46/0; constants module 31/0; setup module 27/0; conformance proof 12/9; Showcase proof 3/0; index proof 3/0; Showcase module 2/0; integration proof 2/0; app barrel 1/0; styles barrel 1/0 |
+
+**Findings outside the claims:** none substantiated.
+
+**Attacked and held:** The component proof measures class-state CSS properties; it does not claim to drive plugin lifecycles. The modal plugin’s inline display change and Tab’s deactivation sequence therefore do not invalidate its endpoint readings. The section’s contract and destruction cases correctly remain green without the partial because they assert behavior independent of that partial.
+
+VERDICT: FAIL 3, 6; outside the claims: none
