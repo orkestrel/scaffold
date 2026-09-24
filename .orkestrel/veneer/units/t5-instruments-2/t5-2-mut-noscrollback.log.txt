@@ -1,0 +1,51 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·········x···x········---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3201:2 > captureFrame > shoots an element that ends below the declared pane whole, on the document floor
+AssertionError: expected 500 to be 200 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 200[39m
+[31m+ 500[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3223:25
+    3221|   expect(reading.height).toBe(100)
+    3222|   expect(reading.floor).toBe('rgb(0, 128, 0)')
+    3223|   expect(window.scrollY).toBe(200)
+       |                         ^
+    3224|  })
+    3225|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3290:2 > captureFrame > refuses an element that outgrows every pane, and hands the pane and the scroll back
+AssertionError: expected +0 to be 100 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 100[39m
+[31m+ 0[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3313:25
+    3311|   expect(pane.hasAttribute(CAPTURE_PANE)).toBe(false)
+    3312|   expect([window.innerWidth, window.innerHeight]).toStrictEqual(before)
+    3313|   expect(window.scrollY).toBe(100)
+       |                         ^
+    3314|  })
+    3315|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 20 passed | 334 skipped (356)
+   Start at  17:10:27
+   Duration  11.65s (transform 0ms, setup 271ms, import 259ms, tests 6.68s, environment 0ms)
+

@@ -1,0 +1,10 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "The park-point nudge never taken.",
+ "edits": [
+  {
+   "from": "\t\t\tif (top <= 0 && left <= 0 &&",
+   "to": "\t\t\tif (rise === 12345 && top <= 0 && left <= 0 &&"
+  }
+ ]
+}

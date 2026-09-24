@@ -1,0 +1,92 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------········xxx···x·x·········---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane and hands the scroll back
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 0, 255)' // Object.is equality
+
+Expected: [32m"rgb([7m0, 0[27m, 255)"[39m
+Received: [31m"rgb([7m255, 255[27m, 255)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3197:24
+    3195|   // The panel's own color on the bottom row is what separates a shot …
+    3196|   // of the document behind it or of the runner's page.
+    3197|   expect(reading.floor).toBe('rgb(0, 0, 255)')
+       |                        ^
+    3198|   expect(window.scrollY).toBe(400)
+    3199|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3201:2 > captureFrame > shoots an element that ends below the declared pane whole, on the document floor
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 128, 0)' // Object.is equality
+
+Expected: [32m"rgb([7m0, 128, 0[27m)"[39m
+Received: [31m"rgb([7m255, 255, 255[27m)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3224:24
+    3222|   expect(reading.width).toBe(390)
+    3223|   expect(reading.height).toBe(100)
+    3224|   expect(reading.floor).toBe('rgb(0, 128, 0)')
+       |                        ^
+    3225|   expect(window.scrollY).toBe(200)
+    3226|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3228:2 > captureFrame > shoots a viewport-height element below the fold at the declared pane
+AssertionError: expected 'rgb(255, 255, 255)' to be 'rgb(0, 0, 255)' // Object.is equality
+
+Expected: [32m"rgb([7m0, 0[27m, 255)"[39m
+Received: [31m"rgb([7m255, 255[27m, 255)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3247:24
+    3245|   expect(reading.width).toBe(390)
+    3246|   expect(reading.height).toBe(422)
+    3247|   expect(reading.floor).toBe('rgb(0, 0, 255)')
+       |                        ^
+    3248|  })
+    3249|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3324:2 > captureFrame > offsets only the calling tester frame, and hands its style back
+AssertionError: expected 0 to be less than 0
+ ❯ tests/src/browser/helpers.test.ts:3358:60
+    3356|   }
+    3357|   // The calling frame moving is the control that a reading was taken …
+    3358|   expect(Math.min(...readings.map(([calling]) => calling))).toBeLessTh…
+       |                                                            ^
+    3359|   expect(readings.map(([, reading]) => reading).filter((reading) => re…
+    3360|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3389:2 > captureFrame > keeps a flush-left element the scroll brings to the top off the parked pointer
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3410:24
+    3408|   })
+    3409|   await waitForFrame()
+    3410|   expect(entered.count).toBe(0)
+       |                        ^
+    3411|   expect((await readFrame(written)).height).toBe(100)
+    3412|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 21 passed | 334 skipped (360)
+   Start at  17:40:14
+   Duration  21.86s (transform 0ms, setup 291ms, import 341ms, tests 8.14s, environment 0ms)
+

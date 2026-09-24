@@ -1,0 +1,110 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------··············x·xx·x··---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3316:2 > captureFrame > offsets only the calling tester frame, and hands its style back
+AssertionError: expected 'border: none; width: 100%; height: 10…' to be 'border: none; width: 100%; height: 10…' // Object.is equality
+
+Expected: [32m"border: none; width: 100%; height: 100%;;top:-367px !important;left:0px !important;will-change:transform;top:-331px !important;left:0px !important;will-change:transform;top:-331px !important;left:0px !important;will-change:transform;top:-332px !important;left:0px !important;will-change:transform;top:-332px !important;left:0px !important;will-change:transform"[39m
+Received: [31m"border: none; width: 100%; height: 100%;;top:-367px !important;left:0px !important;will-change:transform;top:-331px !important;left:0px !important;will-change:transform;top:-331px !important;left:0px !important;will-change:transform;top:-332px !important;left:0px !important;will-change:transform;top:-332px !important;left:0px !important;will-change:transform[7m;top:-331px !important;left:0px !important;will-change:transform[27m"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3352:38
+    3350|   expect(Math.min(...readings.map(([calling]) => calling))).toBeLessTh…
+    3351|   expect(readings.map(([, reading]) => reading).filter((reading) => re…
+    3352|   expect(frame.getAttribute('style')).toBe(style)
+       |                                      ^
+    3353|  })
+    3354|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3371:2 > captureFrame > keeps the hover a held pointer paints on the element it shoots
+TimeoutError: locator.hover: Timeout 14844ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'Held' })[22m
+[2m    - locator resolved to <button class="held">Held</button>[22m
+[2m  - attempting hover action[22m
+[2m    2 × waiting for element to be visible and stable[22m
+[2m      - element is visible and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying hover action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible and stable[22m
+[2m      - element is visible and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying hover action[22m
+[2m      - waiting 100ms[22m
+[2m    28 × waiting for element to be visible and stable[22m
+[2m       - element is visible and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - element is outside of the viewport[22m
+[2m     - retrying hover action[22m
+[2m       - waiting 500ms[22m
+
+ ❯ hoverAccessible src/browser/helpers.ts:568:17
+    566| export async function hoverAccessible(role: string, name: string): Pro…
+    567| export async function hoverAccessible(first: string, second?: string):…
+    568|  await userEvent.hover(resolveRendered(first, second))
+       |                 ^
+    569| }
+    570|
+ ❯ tests/src/browser/helpers.test.ts:3383:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3394:2 > captureFrame > refuses a document whose height never settles, and hands the pane back anyway
+AssertionError: expected [ 200, 200 ] to strictly equal [ 390, 844 ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   390,[39m
+[32m-   844,[39m
+[31m+   200,[39m
+[31m+   200,[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/helpers.test.ts:3411:50
+    3409|   ).rejects.toThrow(`Capture frame at ${FRAMES}/growing.png never sett…
+    3410|   expect(pane.hasAttribute(CAPTURE_PANE)).toBe(false)
+    3411|   expect([window.innerWidth, window.innerHeight]).toStrictEqual(before)
+       |                                                  ^
+    3412|  })
+    3413| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3432:2 > readFrame > reports no floor for a frame whose bottom row paints more than one color
+AssertionError: expected 'rgb(255, 255, 255)' to be undefined
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+"rgb(255, 255, 255)"
+
+ ❯ tests/src/browser/helpers.test.ts:3446:24
+    3444|   const reading = await readFrame(written)
+    3445|   expect(reading.width).toBe(40)
+    3446|   expect(reading.floor).toBeUndefined()
+       |                        ^
+    3447|  })
+    3448|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 18 passed | 334 skipped (356)
+   Start at  17:12:49
+   Duration  34.05s (transform 0ms, setup 267ms, import 275ms, tests 21.67s, environment 0ms)
+

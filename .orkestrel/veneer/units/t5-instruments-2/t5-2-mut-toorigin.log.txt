@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------···············xx·····---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3355:2 > captureFrame > moves nothing under a parked pointer for an element inside the runner window
+AssertionError: expected 1 to be +0 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 1[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3368:24
+    3366|   await captureFrame({ path: `${FRAMES}/resting.png`, width: 390, heig…
+    3367|   await waitForFrame()
+    3368|   expect(entered.count).toBe(0)
+       |                        ^
+    3369|  })
+    3370|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3371:2 > captureFrame > keeps the hover a held pointer paints on the element it shoots
+AssertionError: expected 'rgb(0, 0, 255)' to be 'rgb(255, 0, 0)' // Object.is equality
+
+Expected: [32m"rgb([7m255[27m, 0, [7m0[27m)"[39m
+Received: [31m"rgb([7m0[27m, 0, [7m255[27m)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3391:43
+    3389|    element: requireValue(container.lastElementChild),
+    3390|   })
+    3391|   expect((await readFrame(written)).floor).toBe('rgb(255, 0, 0)')
+       |                                           ^
+    3392|  })
+    3393|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 20 passed | 334 skipped (356)
+   Start at  17:11:29
+   Duration  17.30s (transform 0ms, setup 261ms, import 259ms, tests 7.00s, environment 0ms)
+

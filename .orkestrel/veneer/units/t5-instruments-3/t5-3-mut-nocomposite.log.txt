@@ -1,0 +1,29 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------········x·················---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3168:2 > captureFrame > shoots a fixed viewport-height panel at the declared pane and hands the scroll back
+AssertionError: expected 'rgb(0, 128, 0)' to be 'rgb(0, 0, 255)' // Object.is equality
+
+Expected: [32m"rgb(0, [7m0, 255[27m)"[39m
+Received: [31m"rgb(0, [7m128, 0[27m)"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3197:24
+    3195|   // The panel's own color on the bottom row is what separates a shot …
+    3196|   // of the document behind it or of the runner's page.
+    3197|   expect(reading.floor).toBe('rgb(0, 0, 255)')
+       |                        ^
+    3198|   expect(window.scrollY).toBe(400)
+    3199|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 passed | 334 skipped (360)
+   Start at  17:40:37
+   Duration  17.46s (transform 0ms, setup 170ms, import 243ms, tests 7.71s, environment 0ms)
+

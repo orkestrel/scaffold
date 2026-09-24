@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+Port 63315 is in use, trying another one...
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------··············x···········---------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3324:2 > captureFrame > offsets only the calling tester frame, and hands its style back
+AssertionError: expected [ -331, -331, -331, -331, -331 ] to strictly equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   -331,[39m
+[31m+   -331,[39m
+[31m+   -331,[39m
+[31m+   -331,[39m
+[31m+   -331,[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/helpers.test.ts:3359:82
+    3357|   // The calling frame moving is the control that a reading was taken …
+    3358|   expect(Math.min(...readings.map(([calling]) => calling))).toBeLessTh…
+    3359|   expect(readings.map(([, reading]) => reading).filter((reading) => re…
+       |                                                                                  ^
+    3360|    [],
+    3361|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 passed | 334 skipped (360)
+   Start at  17:38:55
+   Duration  20.40s (transform 0ms, setup 180ms, import 313ms, tests 8.09s, environment 0ms)
+

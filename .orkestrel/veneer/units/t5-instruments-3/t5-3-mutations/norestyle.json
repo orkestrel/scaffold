@@ -1,0 +1,11 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "The style attribute never restored; run on the scope proof alone so leaked state reaches no later case.",
+ "filter": "offsets only the calling tester frame",
+ "edits": [
+  {
+   "from": "\t\t\t\tif (offset && style === null) frame.removeAttribute('style')\n\t\t\t\telse if (offset && style !== null) frame.setAttribute('style', style)",
+   "to": ""
+  }
+ ]
+}

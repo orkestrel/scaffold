@@ -118,6 +118,12 @@ UNITS = {
         checker='claims 4 and 5',
         lanes='the subjective lane (`reviewer` on Opus 5.5) and the checker (Sonnet) run blind beside you',
         bench='the bench round-tripped at 15:26 (pl-audit-2 returned exit 0)'),
+    'fh': dict(name='FRAME-HELPERS', worktree='/home/user/veneer-fh', base='5afa37b',
+        evidence='`fh-2.diff` and `fh-2-status.txt` (both rounds against `5afa37b`), `fh-shared.patch`, `b-frame-helpers-report-2.md`, `b-frame-helpers-brief-2.md`, `fh-instruments/` (the round-2 records: `fh2-p1.sh`, `fh2-p1-red.log.txt`, `fh2-p1-green.log.txt`, `fh2-gates-2.sh`, the `fh2-*-2.log.txt` gate logs, the first-pass `fh2-*.log.txt` logs, and the `fh2-press-*` logs), round 1\'s `fh.diff` and `b-frame-helpers-report.md`, and the round-1 verdict `fh-audit-verdict.md` and its lane verdicts',
+        focus='claims 1, 2, 3, and 4 (the P1 mutation against every outline-painting case, the factory and its proof, every rename site, and the press case\'s readings)',
+        checker='claims 3, 5, and 6',
+        lanes='the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, by the user\'s instruction to put implementation first, because the round adds no frame and no behavior and its renames take the round-1 subjective verdict\'s own prescriptions, which the checker holds the renames to',
+        bench='the bench round-tripped at 17:44 (t5-audit-3 launched)'),
 }
 N = sys.argv[1]
 for arg in sys.argv[2:]:

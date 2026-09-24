@@ -1,0 +1,16 @@
+
+ RUN  v4.1.11 /home/user/test-tf
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------stdout | tests/src/browser/helpers.test.ts:4735:2 > zzprobe > zzprobe scroll into declared pane
+ZZPROBE 900 50 {"before":[900,1322],"after":[422,844],"scrollY":452,"pane":844,"reading":{"width":390,"height":422,"floor":"rgb(0, 0, 255)"}}
+stdout | tests/src/browser/helpers.test.ts:4735:2 > zzprobe > zzprobe scroll into declared pane
+ZZPROBE 900 30 {"before":[591,844.1875],"after":[591,844.1875],"scrollY":273,"pane":844,"reading":{"width":390,"height":254}}
+stdout | tests/src/browser/helpers.test.ts:4735:2 > zzprobe > zzprobe scroll into declared pane
+ZZPROBE 1000 30 {"before":[727,980.1875],"after":[591,844.1875],"scrollY":373,"pane":844,"reading":{"width":390,"height":254}}
+·
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 349 skipped (350)
+   Start at  16:59:23
+   Duration  8.34s (transform 0ms, setup 221ms, import 260ms, tests 877ms, environment 0ms)
+

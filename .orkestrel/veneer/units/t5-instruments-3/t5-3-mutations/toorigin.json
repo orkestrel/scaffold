@@ -1,0 +1,14 @@
+{
+ "file": "src/browser/helpers.ts",
+ "note": "The element moved to the runner window's origin, with the park-point nudge off.",
+ "edits": [
+  {
+   "from": "\t\t\tlet rise = fits ? Math.max(0, Math.ceil(placed.bottom) - view.innerHeight) : 0\n\t\t\tlet shift = fits ? Math.max(0, Math.ceil(placed.right) - view.innerWidth) : 0",
+   "to": "\t\t\tlet rise = fits ? Math.floor(placed.top) : 0\n\t\t\tlet shift = fits ? Math.floor(placed.left) : 0"
+  },
+  {
+   "from": "\t\t\tif (top <= 0 && left <= 0 &&",
+   "to": "\t\t\tif (rise === 12345 && top <= 0 && left <= 0 &&"
+  }
+ ]
+}
