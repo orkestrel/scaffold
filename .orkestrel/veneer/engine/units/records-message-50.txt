@@ -1,0 +1,18 @@
+Retain J-COLLAPSE round 3 and open its audit round
+
+The resumed collapse writer returned round 3 green (units/j-collapse-report-3.md): the hide's doors
+after the host-and-shown removal refuse a re-added shown token, with a red-first proof over the
+trigger door; the delegate refuses a click whose button host is a panel its collapse trigger names
+when neither engine exists, before either route runs, with a red-first refusal proof and the same-host
+proof retargeted to a consumer's button; the removed-sibling proof binds the prune order through a
+refused call; the guide's nesting sentence names the parent's scope, the token-order departure states
+Bootstrap's verified order, the hand-off and refusal sentences replace the false nested-root rule, and
+the parseElement remark drops its count; the instrument gains four rows and the report copies its
+log. The Orchestrator's run (units/j-collapse-gates-3.log.txt) reads every gate green, 200 of 200
+browser proofs on Chromium 153.0.8010.12, conformance 22 of 22, the tree-wide typecheck green, and
+the four patches applying together. The audit round 3 runs on units/j-collapse-audit-claims-3.md
+(claims 1 to 9, written from the sources) with the analyst on Astra, the reviewer on Opus, and the
+checker on Sonnet; the plan records the round-2 audit's outcome and this dispatch. J-ENGINE campaign
+(D43).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
