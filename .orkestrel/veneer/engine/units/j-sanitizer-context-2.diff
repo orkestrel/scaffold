@@ -1,0 +1,271 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index dcd29e6..4311152 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -123,6 +123,10 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `SANITIZER_ALLOWLIST`                     | const     | Lists the elements and attributes the `ConfigSanitizer` class keeps by default, the platform dictionary built from Bootstrap's default allowlist.                                  |
+ | `SANITIZER_BASELINE`                      | const     | Declares the safety floor the `ConfigSanitizer` class's walk applies whatever its configuration lists.                                                                             |
+ | `SANITIZER_NAMESPACE`                     | const     | Names the namespace a sanitizer configuration's element names designate, the HTML namespace.                                                                                       |
++| `SANITIZER_MATHML_NAMESPACE`              | const     | Names the MathML namespace, in which the `ConfigSanitizer` class's walk reads an `annotation-xml` element as an HTML integration point.                                            |
++| `SANITIZER_SVG_NAMESPACE`                 | const     | Names the SVG namespace, the namespace of the SVG elements the `SANITIZER_BASELINE` floor removes and the `SANITIZER_SVG_INTEGRATIONS` list names.                                 |
++| `SANITIZER_SVG_INTEGRATIONS`              | const     | Lists the local names of the SVG elements the HTML standard makes HTML integration points by their name alone.                                                                     |
++| `SANITIZER_ENCODINGS`                     | const     | Lists the `encoding` attribute values, in ASCII lowercase, that make a MathML `annotation-xml` element an HTML integration point.                                                  |
+ | `isSanitizeTarget`                        | function  | Checks whether a value carries the platform's `setHTML` method, which parses markup through a sanitizer.                                                                           |
+ | `isSanitizerConfig`                       | function  | Checks whether a value is a sanitizer configuration the platform's `setHTML` method accepts, within the fields the engine mirrors.                                                 |
+ | `matchesJavaScriptURL`                    | function  | Checks whether an attribute value is a URL the platform's URL parser reads as a `javascript:` URL.                                                                                 |
+@@ -2678,11 +2682,15 @@ constructs a `ConfigSanitizer` instance over the `SANITIZER_ALLOWLIST` constant.
+ the platform's `setHTML` method where the element has one. Where the element has none, as on
+ Chromium 141, it parses the markup inert, walks the parsed tree against the same dictionary and the
+ `SANITIZER_BASELINE` floor, and moves what survives into the element. It parses in the element's
+-context, as the `setHTML` method does. The HTML standard parses markup written into an HTML
+-integration point, such as an SVG `foreignObject` element or a MathML `annotation-xml` element whose
+-`encoding` is `text/html`, as the body of an HTML element. The walk therefore parses that markup in
+-an HTML `div` element, so the kept elements are HTML elements whether or not the browser reads the
+-element's `encoding` attribute. That dictionary keeps the elements Bootstrap's `DefaultAllowlist`
++context, as the `setHTML` method does, except in an HTML integration point: an SVG element the
++`SANITIZER_SVG_INTEGRATIONS` list names, or a MathML `annotation-xml` element whose `encoding` is a
++value the `SANITIZER_ENCODINGS` list names. There it parses in an HTML `div` element, so the kept
++elements are HTML elements whether or not the browser reads the element's `encoding` attribute. On
++Chromium 153 the `div` builds the tree the `setHTML` method builds for every input measured, a CDATA
++section and a stray `</p>`, `</br>`, or `</annotation-xml>` end tag included. The HTML standard
++differs in one place: it keeps a CDATA section outside every element the markup opens as text,
++where the walk, like Chromium 153's `setHTML` method, reads it as a comment and removes it with its
++text, whatever the configuration lists. That dictionary keeps the elements Bootstrap's `DefaultAllowlist`
+ names, the `a` and `img` elements with their own attributes, the `class`, `dir`, `id`, `lang`, and
+ `role` attributes, and, by name, every attribute
+ WAI-ARIA 1.2 defines and every one the WAI-ARIA 1.3 draft adds, and it keeps no `data-*`
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index 7f5b3a6..b69747d 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -740,6 +740,16 @@ export const SANITIZER_ALLOWLIST: SanitizerConfig = Object.freeze({
+  */
+ export const SANITIZER_NAMESPACE = 'http://www.w3.org/1999/xhtml'
+ 
++/**
++ * Names the MathML namespace, in which the `ConfigSanitizer` class's walk reads an `annotation-xml` element as an HTML integration point.
++ */
++export const SANITIZER_MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML'
++
++/**
++ * Names the SVG namespace, the namespace of the SVG elements the `SANITIZER_BASELINE` floor removes and the `SANITIZER_SVG_INTEGRATIONS` list names.
++ */
++export const SANITIZER_SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
++
+ /**
+  * Declares the safety floor the `ConfigSanitizer` class's walk applies whatever its configuration lists.
+  *
+@@ -758,15 +768,43 @@ export const SANITIZER_BASELINE: SanitizerBaseline = Object.freeze({
+ 		Object.freeze({ name: 'iframe', namespace: SANITIZER_NAMESPACE }),
+ 		Object.freeze({ name: 'object', namespace: SANITIZER_NAMESPACE }),
+ 		Object.freeze({ name: 'script', namespace: SANITIZER_NAMESPACE }),
+-		Object.freeze({ name: 'script', namespace: 'http://www.w3.org/2000/svg' }),
+-		Object.freeze({ name: 'use', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'script', namespace: SANITIZER_SVG_NAMESPACE }),
++		Object.freeze({ name: 'use', namespace: SANITIZER_SVG_NAMESPACE }),
+ 	]),
+ 	handlers: 'on',
+ 	urls: Object.freeze(['action', 'formaction', 'href', 'xlink:href']),
+ 	animations: Object.freeze([
+-		Object.freeze({ name: 'animate', namespace: 'http://www.w3.org/2000/svg' }),
+-		Object.freeze({ name: 'animateMotion', namespace: 'http://www.w3.org/2000/svg' }),
+-		Object.freeze({ name: 'animateTransform', namespace: 'http://www.w3.org/2000/svg' }),
+-		Object.freeze({ name: 'set', namespace: 'http://www.w3.org/2000/svg' }),
++		Object.freeze({ name: 'animate', namespace: SANITIZER_SVG_NAMESPACE }),
++		Object.freeze({ name: 'animateMotion', namespace: SANITIZER_SVG_NAMESPACE }),
++		Object.freeze({ name: 'animateTransform', namespace: SANITIZER_SVG_NAMESPACE }),
++		Object.freeze({ name: 'set', namespace: SANITIZER_SVG_NAMESPACE }),
+ 	]),
+ })
++
++/**
++ * Lists the local names of the SVG elements the HTML standard makes HTML integration points by their name alone.
++ *
++ * @remarks
++ * The names are the `foreignObject`, `desc`, and `title` elements of the `SANITIZER_SVG_NAMESPACE`
++ * namespace, as HTML Standard § 13.2.6 defines an HTML integration point. The `ConfigSanitizer`
++ * class's walk parses markup written into one of them in an HTML `div` element. A MathML
++ * `annotation-xml` element is an HTML integration point only by its `encoding` attribute, which the
++ * `SANITIZER_ENCODINGS` list reads.
++ */
++export const SANITIZER_SVG_INTEGRATIONS: readonly string[] = Object.freeze([
++	'foreignObject',
++	'desc',
++	'title',
++])
++
++/**
++ * Lists the `encoding` attribute values, in ASCII lowercase, that make a MathML `annotation-xml` element an HTML integration point.
++ *
++ * @remarks
++ * The HTML standard compares the value ASCII case-insensitively, so the `ConfigSanitizer` class's
++ * walk lowercases the element's `encoding` attribute in no namespace before it looks the value up.
++ */
++export const SANITIZER_ENCODINGS: readonly string[] = Object.freeze([
++	'text/html',
++	'application/xhtml+xml',
++])
+diff --git a/src/browser/sanitizers/ConfigSanitizer.ts b/src/browser/sanitizers/ConfigSanitizer.ts
+index 35dea04..57aaf31 100644
+--- a/src/browser/sanitizers/ConfigSanitizer.ts
++++ b/src/browser/sanitizers/ConfigSanitizer.ts
+@@ -1,7 +1,14 @@
+ import type { ConfigSanitizerOptions, SanitizerConfig, SanitizerInterface } from '../types.js'
+ import { AppError } from '@src/core'
+ import { isInstance } from '@orkestrel/contract'
+-import { SANITIZER_ALLOWLIST, SANITIZER_NAMESPACE } from '../constants.js'
++import {
++	SANITIZER_ALLOWLIST,
++	SANITIZER_ENCODINGS,
++	SANITIZER_MATHML_NAMESPACE,
++	SANITIZER_NAMESPACE,
++	SANITIZER_SVG_INTEGRATIONS,
++	SANITIZER_SVG_NAMESPACE,
++} from '../constants.js'
+ import {
+ 	collectAttributes,
+ 	collectChildren,
+@@ -25,16 +32,25 @@ import { isSanitizerConfig, isSanitizeTarget } from '../validators.js'
+  * Chromium 141, the markup is parsed through the `innerHTML` property of a shallow copy of the
+  * target, with its attributes, imported into an inert document this window's `document` creates, so
+  * the parse runs in the target's context as the `setHTML` method's does, and no script runs and
+- * nothing loads. The HTML standard parses markup written into an HTML integration point, an SVG
+- * `foreignObject`, `desc`, or `title` element or a MathML `annotation-xml` element whose `encoding`
+- * attribute in no namespace is `text/html` or `application/xhtml+xml` in any ASCII case, as the
+- * body of an HTML element, so the walk parses that markup in an HTML `div` element of the inert
+- * document, and the kept elements are HTML elements whether or not the build reads the target's
+- * `encoding` attribute. A MathML text integration point, such as an `mi` element, keeps its copy as
+- * the context, so an `mglyph` or `malignmark` element written into it stays a MathML element. The
+- * parsed tree is then walked: an element the configuration does not keep is removed with its
+- * content, an attribute it does not keep is removed, a comment is removed, text and processing
+- * instructions stay, and a kept `template` element's content is walked as well. The
++ * nothing loads. Markup written into an HTML integration point, an SVG element the
++ * `SANITIZER_SVG_INTEGRATIONS` list names or a MathML `annotation-xml` element whose `encoding`
++ * attribute in no namespace, lowercased, is in the `SANITIZER_ENCODINGS` list, is parsed in an HTML
++ * `div` element of the inert document instead of the copy. The HTML standard's tree construction
++ * dispatcher (HTML Standard § 13.2.6) sends such a context's start tags to the HTML insertion mode,
++ * so the kept elements are HTML elements whether or not the build reads the target's `encoding`
++ * attribute. On Chromium 153 the `div` builds the tree the copy and the `setHTML` method build for
++ * every input measured, a CDATA section and a stray `</p>`, `</br>`, or `</annotation-xml>` end tag
++ * included. The standard differs in one place: a CDATA section outside every element the markup
++ * opens, which it keeps as text because the context element is foreign (§ 13.2.5.42, the markup
++ * declaration open state), and which the `div` parses as a comment, so the walk removes it with its
++ * text whatever the configuration lists, as Chromium 153's `setHTML` method does. A stray `</p>` or
++ * `</br>` there yields an empty `p` or a `br` element, and any other stray end tag is ignored, under
++ * the standard's foreign-content rules (§ 13.2.6.5) as in the `div`. A MathML text integration
++ * point, such as an `mi` element, keeps its copy as the context, so an `mglyph` or `malignmark`
++ * element written into it stays a MathML element. The parsed tree is then walked: an element the
++ * configuration does not keep is removed with its content, an attribute it does not keep is
++ * removed, a comment is removed, text and processing instructions stay, and a kept `template`
++ * element's content is walked as well. The
+  * `SANITIZER_BASELINE` floor applies whatever the configuration lists, and it removes more than the
+  * platform in the places the `SanitizerBaseline` type names. The survivors move into the element, or
+  * into its content when it is a `template` element, with nothing serialized again. No engine file
+@@ -137,18 +153,17 @@ export class ConfigSanitizer implements SanitizerInterface {
+ 			})
+ 		}
+ 		const inert = implementation.createHTMLDocument('')
+-		// The HTML standard parses an HTML integration point's markup as the body of an HTML element, so
+-		// the walk parses it in an HTML `div` element and relies on no build's reading of a foreign
+-		// context element, which for `annotation-xml` hangs on its `encoding` attribute in no namespace.
++		// An HTML integration point parses its start tags as HTML elements, so the walk parses its markup
++		// in an HTML `div` element and relies on no build's reading of a foreign context element, which
++		// for `annotation-xml` hangs on its `encoding` attribute in no namespace.
+ 		const encoding =
+-			name?.namespace === 'http://www.w3.org/1998/Math/MathML' && name.name === 'annotation-xml'
++			name?.namespace === SANITIZER_MATHML_NAMESPACE && name.name === 'annotation-xml'
+ 				? Element.prototype.getAttributeNS.call(element, null, 'encoding')?.toLowerCase()
+ 				: undefined
+ 		const integration =
+-			encoding === 'text/html' ||
+-			encoding === 'application/xhtml+xml' ||
+-			(name?.namespace === 'http://www.w3.org/2000/svg' &&
+-				['foreignObject', 'desc', 'title'].includes(name.name))
++			(encoding !== undefined && SANITIZER_ENCODINGS.includes(encoding)) ||
++			(name?.namespace === SANITIZER_SVG_NAMESPACE &&
++				SANITIZER_SVG_INTEGRATIONS.includes(name.name))
+ 		const context = integration
+ 			? Document.prototype.createElement.call(inert, 'div')
+ 			: Document.prototype.importNode.call(inert, element, false)
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index a0cad6f..5e4fee1 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -128,7 +128,11 @@ describe('src browser entry', () => {
+ 			'Registry',
+ 			'SANITIZER_ALLOWLIST',
+ 			'SANITIZER_BASELINE',
++			'SANITIZER_ENCODINGS',
++			'SANITIZER_MATHML_NAMESPACE',
+ 			'SANITIZER_NAMESPACE',
++			'SANITIZER_SVG_INTEGRATIONS',
++			'SANITIZER_SVG_NAMESPACE',
+ 			'SCROLL_LOCK_SELECTORS',
+ 			'SCROLL_SPY_ATTRIBUTES',
+ 			'SCROLL_SPY_CLASSES',
+diff --git a/tests/src/browser/sanitizers/ConfigSanitizer.test.ts b/tests/src/browser/sanitizers/ConfigSanitizer.test.ts
+index 30144be..43bafa1 100644
+--- a/tests/src/browser/sanitizers/ConfigSanitizer.test.ts
++++ b/tests/src/browser/sanitizers/ConfigSanitizer.test.ts
+@@ -5,7 +5,11 @@ import {
+ 	matchesBaselineAttribute,
+ 	matchesBaselineElement,
+ 	SANITIZER_ALLOWLIST,
++	SANITIZER_ENCODINGS,
++	SANITIZER_MATHML_NAMESPACE,
+ 	SANITIZER_NAMESPACE,
++	SANITIZER_SVG_INTEGRATIONS,
++	SANITIZER_SVG_NAMESPACE,
+ } from '@src/browser'
+ import { arrayOf, attempt, isFunction, isObject, isString, objectOf } from '@orkestrel/contract'
+ import { createRecorder, requireValue, waitForCondition } from '@orkestrel/test'
+@@ -348,6 +352,49 @@ describe('ConfigSanitizer', () => {
+ 		}
+ 	})
+ 
++	// HTML Standard § 13.2.5.42 keeps a CDATA section as text while the context element is foreign, and
++	// the walk's `div` context turns it into a comment the walk removes; the standard's foreign-content
++	// rules (§ 13.2.6.5) insert `p` for `</p>` and `br` for `</br>` and ignore any other stray end tag,
++	// as the `div` does. The native reading is the same wherever the element carries `setHTML`.
++	it('parses markup written into an HTML integration point in an HTML div, so a CDATA section outside every element is removed with its text and a stray end tag reads as in HTML content, through the host route and the walk', () => {
++		const cases = [
++			{ markup: '<![CDATA[x]]>', expected: '' },
++			{ markup: '<b>y</b><![CDATA[x]]>', expected: '<b>y</b>' },
++			{ markup: '</p>x', expected: '<p></p>x' },
++			{ markup: '</br>x', expected: '<br>x' },
++			{ markup: 'x</annotation-xml>y', expected: 'xy' },
++		]
++		for (const { markup, expected } of cases) {
++			for (const target of [
++				document.createElementNS('http://www.w3.org/1998/Math/MathML', 'annotation-xml'),
++				shadowSetHTML(
++					document.createElementNS('http://www.w3.org/1998/Math/MathML', 'annotation-xml'),
++				),
++				document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject'),
++				shadowSetHTML(document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject')),
++			]) {
++				if (target.localName === 'annotation-xml') target.setAttribute('encoding', 'text/html')
++				new ConfigSanitizer().write(target, markup)
++				expect(target.innerHTML).toBe(expected)
++			}
++		}
++	})
++
++	it('names the namespaces the HTML parser gives MathML and SVG elements, and the HTML integration points the HTML standard defines', () => {
++		const host = build('div')
++		host.setHTMLUnsafe('<math></math><svg></svg>')
++		expect(Array.from(host.children, (child) => child.namespaceURI)).toEqual([
++			SANITIZER_MATHML_NAMESPACE,
++			SANITIZER_SVG_NAMESPACE,
++		])
++		// HTML Standard § 13.2.6, the definition of an HTML integration point, written out here rather
++		// than read from the constants, so an entry missing from either list reddens.
++		expect(SANITIZER_SVG_INTEGRATIONS).toEqual(['foreignObject', 'desc', 'title'])
++		expect(SANITIZER_ENCODINGS).toEqual(['text/html', 'application/xhtml+xml'])
++		expect(Object.isFrozen(SANITIZER_SVG_INTEGRATIONS)).toBe(true)
++		expect(Object.isFrozen(SANITIZER_ENCODINGS)).toBe(true)
++	})
++
+ 	it('refuses a configuration that is not plain data before copying it', () => {
+ 		const configs = [
+ 			Object.create(SANITIZER_ALLOWLIST),

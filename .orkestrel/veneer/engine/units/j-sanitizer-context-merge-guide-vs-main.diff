@@ -1,0 +1,41 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index ee5fa61..7e24333 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -126,6 +126,10 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `SANITIZER_ALLOWLIST`                     | const     | Lists the elements and attributes the `ConfigSanitizer` class keeps by default, the platform dictionary built from Bootstrap's default allowlist.                                            |
+ | `SANITIZER_BASELINE`                      | const     | Declares the safety floor the `ConfigSanitizer` class's walk applies whatever its configuration lists.                                                                                       |
+ | `SANITIZER_NAMESPACE`                     | const     | Names the namespace a sanitizer configuration's element names designate, the HTML namespace.                                                                                                 |
++| `SANITIZER_MATHML_NAMESPACE`              | const     | Names the MathML namespace, in which the `ConfigSanitizer` class's walk reads an `annotation-xml` element as an HTML integration point.                                                      |
++| `SANITIZER_SVG_NAMESPACE`                 | const     | Names the SVG namespace, the namespace of the SVG elements the `SANITIZER_BASELINE` floor removes and the `SANITIZER_SVG_INTEGRATIONS` list names.                                           |
++| `SANITIZER_SVG_INTEGRATIONS`              | const     | Lists the local names of the SVG elements the HTML standard makes HTML integration points by their name alone.                                                                               |
++| `SANITIZER_ENCODINGS`                     | const     | Lists the `encoding` attribute values, in ASCII lowercase, that make a MathML `annotation-xml` element an HTML integration point.                                                            |
+ | `isSanitizeTarget`                        | function  | Checks whether a value carries the platform's `setHTML` method, which parses markup through a sanitizer.                                                                                     |
+ | `isSanitizerConfig`                       | function  | Checks whether a value is a sanitizer configuration the platform's `setHTML` method accepts, within the fields the engine mirrors.                                                           |
+ | `matchesJavaScriptURL`                    | function  | Checks whether an attribute value is a URL the platform's URL parser reads as a `javascript:` URL.                                                                                           |
+@@ -2671,9 +2675,22 @@ The template and every markup string reach the tip through the `sanitizer` optio
+ constructs a `ConfigSanitizer` instance over the `SANITIZER_ALLOWLIST` constant. It writes through
+ the platform's `setHTML` method where the element has one. Where the element has none, as on
+ Chromium 141, it parses the markup inert, walks the parsed tree against the same dictionary and the
+-`SANITIZER_BASELINE` floor, and moves what survives into the element. That dictionary keeps the
+-elements Bootstrap's `DefaultAllowlist` names, the `a` and `img` elements with their own
+-attributes, the `class`, `dir`, `id`, `lang`, and `role` attributes, and, by name, every attribute
++`SANITIZER_BASELINE` floor, and moves what survives into the element. It parses in the element's
++context, as the `setHTML` method does, except in an HTML integration point: an SVG element the
++`SANITIZER_SVG_INTEGRATIONS` list names, or a MathML `annotation-xml` element whose `encoding` is a
++value the `SANITIZER_ENCODINGS` list names. There it parses in an HTML `div` element, so the kept
++elements are HTML elements whether or not the browser reads the element's `encoding` attribute. The
++walk does not build the HTML standard's tree for every input. While no element the markup opened is
++still open, before the first one or after the last one closes, the standard reads a CDATA section
++as text and sends an end tag through its foreign-content rules, which ignore an end tag other than
++`</p>` or `</br>`; start tags and text still parse as HTML. The `div` reads those CDATA sections
++and end tags as HTML body content, where a CDATA section is a comment the walk removes with its
++text whatever the configuration lists, and an end tag takes its effect: in `<p><b>x</p></b>y`, the
++walk keeps `<p><b>x</b></p>y` where the standard reconstructs `b` around `y`. On Chromium 153 the walk and the `setHTML` method build the same tree
++for every input measured: a CDATA section, a stray `</p>`, `</br>`, or `</annotation-xml>` end
++tag, and `<p><b>x</p></b>y`. That dictionary keeps the elements Bootstrap's `DefaultAllowlist`
++names, the `a` and `img` elements with their own attributes, the `class`, `dir`, `id`, `lang`, and
++`role` attributes, and, by name, every attribute
+ WAI-ARIA 1.2 defines and every one the WAI-ARIA 1.3 draft adds, and it keeps no `data-*`
+ attribute. The platform dictionary lists attribute names and carries no pattern, so it cannot
+ express Bootstrap's `aria-*` pattern: an `aria-*` name no WAI-ARIA version defines is dropped,

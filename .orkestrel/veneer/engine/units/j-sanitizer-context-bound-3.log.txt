@@ -1,0 +1,7 @@
+=== round-2 walk (the div), Chromium 153
+annotation-xml <p><b>x</p></b>y | copy=<p><b>x</b></p>y | div=<p><b>x</b></p>y | walk allowlist=<p><b>x</b></p>y | native allowlist=<p><b>x</b></p>y | walk {}=<p><b>x</b></p>y | native {}=<p><b>x</b></p>y
+foreignObject <p><b>x</p></b>y | copy=<p><b>x</b></p>y | div=<p><b>x</b></p>y | walk allowlist=<p><b>x</b></p>y | native allowlist=<p><b>x</b></p>y | walk {}=<p><b>x</b></p>y | native {}=<p><b>x</b></p>y
+=== round-1 walk (the copy), Chromium 153
+annotation-xml <p><b>x</p></b>y | copy=<p><b>x</b></p>y | div=<p><b>x</b></p>y | walk allowlist=<p><b>x</b></p>y | native allowlist=<p><b>x</b></p>y | walk {}=<p><b>x</b></p>y | native {}=<p><b>x</b></p>y
+foreignObject <p><b>x</p></b>y | copy=<p><b>x</b></p>y | div=<p><b>x</b></p>y | walk allowlist=<p><b>x</b></p>y | native allowlist=<p><b>x</b></p>y | walk {}=<p><b>x</b></p>y | native {}=<p><b>x</b></p>y
+=== restored identical=True

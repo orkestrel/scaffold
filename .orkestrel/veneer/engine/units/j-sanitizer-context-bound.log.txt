@@ -1,0 +1,19 @@
+=== round-2 walk (the div), Chromium 153
+annotation-xml <![CDATA[x]]> | copy=<!--[CDATA[x]]--> | div=<!--[CDATA[x]]--> | walk allowlist= | native allowlist= | walk {}= | native {}=
+foreignObject <![CDATA[x]]> | copy=<!--[CDATA[x]]--> | div=<!--[CDATA[x]]--> | walk allowlist= | native allowlist= | walk {}= | native {}=
+annotation-xml </p>x | copy=<p></p>x | div=<p></p>x | walk allowlist=<p></p>x | native allowlist=<p></p>x | walk {}=<p></p>x | native {}=<p></p>x
+foreignObject </p>x | copy=<p></p>x | div=<p></p>x | walk allowlist=<p></p>x | native allowlist=<p></p>x | walk {}=<p></p>x | native {}=<p></p>x
+annotation-xml </br>x | copy=<br>x | div=<br>x | walk allowlist=<br>x | native allowlist=<br>x | walk {}=<br>x | native {}=<br>x
+foreignObject </br>x | copy=<br>x | div=<br>x | walk allowlist=<br>x | native allowlist=<br>x | walk {}=<br>x | native {}=<br>x
+annotation-xml x</annotation-xml>y | copy=xy | div=xy | walk allowlist=xy | native allowlist=xy | walk {}=xy | native {}=xy
+foreignObject x</annotation-xml>y | copy=xy | div=xy | walk allowlist=xy | native allowlist=xy | walk {}=xy | native {}=xy
+=== round-1 walk (the copy), Chromium 153
+annotation-xml <![CDATA[x]]> | copy=<!--[CDATA[x]]--> | div=<!--[CDATA[x]]--> | walk allowlist= | native allowlist= | walk {}= | native {}=
+foreignObject <![CDATA[x]]> | copy=<!--[CDATA[x]]--> | div=<!--[CDATA[x]]--> | walk allowlist= | native allowlist= | walk {}= | native {}=
+annotation-xml </p>x | copy=<p></p>x | div=<p></p>x | walk allowlist=<p></p>x | native allowlist=<p></p>x | walk {}=<p></p>x | native {}=<p></p>x
+foreignObject </p>x | copy=<p></p>x | div=<p></p>x | walk allowlist=<p></p>x | native allowlist=<p></p>x | walk {}=<p></p>x | native {}=<p></p>x
+annotation-xml </br>x | copy=<br>x | div=<br>x | walk allowlist=<br>x | native allowlist=<br>x | walk {}=<br>x | native {}=<br>x
+foreignObject </br>x | copy=<br>x | div=<br>x | walk allowlist=<br>x | native allowlist=<br>x | walk {}=<br>x | native {}=<br>x
+annotation-xml x</annotation-xml>y | copy=xy | div=xy | walk allowlist=xy | native allowlist=xy | walk {}=xy | native {}=xy
+foreignObject x</annotation-xml>y | copy=xy | div=xy | walk allowlist=xy | native allowlist=xy | walk {}=xy | native {}=xy
+=== restored identical=True

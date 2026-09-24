@@ -1,0 +1,6 @@
+Name the sanitizer's MathML and SVG namespaces and integration-point tables as constants, and state the walk's parse against the standard
+
+The MathML and SVG namespace URIs and the tables of SVG integration-point names and `annotation-xml` encodings move from the walk into `constants.ts` beside `SANITIZER_NAMESPACE` (`SANITIZER_MATHML_NAMESPACE`, `SANITIZER_SVG_NAMESPACE`, `SANITIZER_SVG_INTEGRATIONS`, `SANITIZER_ENCODINGS`), the floor's SVG entries read the SVG constant, and each has a guide row. The remarks and the guide state what Chromium 153 measured: the `div` builds the tree the copy and `setHTML` build for every input read, a CDATA section and a stray `</p>`, `</br>`, or `</annotation-xml>` included; and they name the one place the standard differs, a CDATA section outside every element, which the standard keeps as text in a foreign context (§ 13.2.5.42) and the walk removes, as Chromium 153's `setHTML` does. A stray `</p>` or `</br>` reprocesses as HTML under the foreign-content rules (§ 13.2.6.5), as in the `div`. A case pins those inputs on both targets through both routes, and a case holds each constant against the parser's own namespaces and the standard's lists.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K
