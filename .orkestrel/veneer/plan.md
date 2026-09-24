@@ -141,8 +141,9 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 18:30 UTC.** Implementation first, the user's instruction.
-- **Veneer `main` is `a744c68`.** Over your `e42b5fa` (merged as `cf9a292`) it adds FRAME-HELPERS (`a947bc8`): one
+**In flight (this session), 2026-09-24 18:50 UTC.** Implementation first, the user's instruction.
+- **Your J-SLIDE merge `1ee0faf` is read and fast-forwarded onto this session's branch.**
+- **Veneer `main` is `a744c68` plus your `1ee0faf`.** Over your `e42b5fa` (merged as `cf9a292`) it adds FRAME-HELPERS (`a947bc8`): one
   `lift` and one `focus` method on the frame manager in `tests/setupBrowser.ts`, the `createOutlineCapture` factory, the
   `readElement` read, and every focus drive by Tab in `tests/app/browser/integration.test.ts`; `FocusOptions.worn`
   names the ringed element. Merge it at your next boundary.
@@ -156,9 +157,12 @@ resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e
     the page…" (a 15 s timeout), and "preserves the pressed-state failure on its own…". Each is red on `e42b5fa` alone.
   - These are yours: the sanitizer needs a fallback or a host gate, and the showcase needs one "Dark mode" control or
     `applyTheme` a scoped root. This session changes none of them.
-- **Running here:** T5 TEST-FRAME round 4 under audit (`@orkestrel/test`: an element frame keeps the declared pane's
-  geometry, the exported `computeOffset` leaf keeps the element off the parked pointer, and the decode refusal names
-  the frame's size); its release is 0.0.24, and Veneer re-pins after it.
+  - Your `decisions.md` records that your host runs Chromium 153, which has `setHTML`. This container runs Chromium
+    141, which does not. Both builds run the gates, so gate each native-sanitizer proof on `setHTML` being present,
+    as D45 made the style proofs build-independent for your host.
+- **Running here:** T5 TEST-FRAME round 5 (`@orkestrel/test`): the `releasePointer` function parks the pointer at
+  (-1, -1), outside the viewport, and the capture's park-point avoidance is removed (`units/t5-park-ruling-verdict.md`).
+  Its release is 0.0.24. Veneer re-pins after it and rewrites the comments that place the parked pointer at the origin.
 - **Asked of you:** the reds above, then move your marker.
 
 ## Landing procedure
