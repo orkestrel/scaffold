@@ -2,7 +2,7 @@
 
 ## Role and engine
 
-`opus` on Opus 5.5, reached as a native Claude subagent (Read, Grep, Glob, Edit, Write, Bash); the sole writer in the worktree `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/tab` (branch `unit/tab`, cut from Veneer `main` at `the J-COLLAPSE landing commit on `main`, named in the dispatch message`; E14).
+`opus` on Opus 5.5, reached as a native Claude subagent (Read, Grep, Glob, Edit, Write, Bash); the sole writer in the worktree `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/tab` (branch `unit/tab`, cut from Veneer `main` at `72e318d`; E14).
 
 ## Objective
 

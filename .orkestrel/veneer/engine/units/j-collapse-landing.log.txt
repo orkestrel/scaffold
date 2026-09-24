@@ -1,0 +1,394 @@
+# J-COLLAPSE integration and landing logs (2026-09-24): collapse-integrate.sh (the patches, the orphan rewrap, the gates on the round-4 tree; its merge refused by git, exit 2), collapse-land-2.sh (the landing commit and the merge of main), collapse-resolve-guide.py (one conflict block, the Compatibility table), collapse-land-3.sh (the formatter re-pad, the merge commit, the gates), collapse-land-4.sh (the fast-forward)
+=== collapse-integrate
+# J-COLLAPSE integration (2026-09-24)
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+86b3d46 Fold the TOAST landing into the roadmap
+ M guides/veneer.md
+ M src/browser/Collapse.ts
+ M src/browser/Delegate.ts
+ M src/browser/parsers.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Collapse.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/parsers.test.ts
+error: Your local changes to the following files would be overwritten by merge:
+	guides/veneer.md
+Please commit your changes or stash them before you merge.
+Aborting
+Merge with strategy ort failed.
+merge main into unit/collapse exit=2
+eab447e Merge branch 'main' into unit/collapse
+0ad71cd Checkpoint J-COLLAPSE round 1 on its unit branch before merging main
+
+added 192 packages, and audited 193 packages in 4s
+
+42 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm ci exit=0
+apply check exit=0
+apply exit=0
+rewrapped 13 lines into 13 ; shortest line now 89
+orphan fix exit=0
+ M ROADMAP.md
+ M guides/veneer.md
+ M src/browser/Collapse.ts
+ M src/browser/Delegate.ts
+ M src/browser/parsers.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Collapse.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/parsers.test.ts
+--- integration gates (read-only, in the worktree)
+npm notice run @orkestrel/veneer@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 5704ms on 355 files using 16 threads.
+format:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+lint:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+npm notice run @orkestrel/veneer@0.0.1 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+npm notice run @orkestrel/veneer@0.0.1 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:styles
+npm notice run tsc --noEmit -p configs/src/tsconfig.styles.json
+npm notice run @orkestrel/veneer@0.0.1 check:app
+npm notice run npm run check:app:browser
+npm notice run @orkestrel/veneer@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+check exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+···················
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  23:21:41
+   Duration  1.13s (transform 234ms, setup 67ms, import 858ms, tests 52ms, environment 0ms)
+
+test:guides exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  23:21:43
+   Duration  2.28s (transform 111ms, setup 65ms, import 250ms, tests 1.81s, environment 0ms)
+
+test:policy exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+·····································································11:21:53 PM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+ > src/browser/HostSnapshot.ts:163:30
+    161 |  				const key = HostSnapshot.#key(target.category, target.name)
+    162 |  				HostSnapshot.#writeBack(target.element, key, this, () =>
+    163 |  					target.element.classList.toggle(target.name, value !== undefined),
+        |                                ^
+    164 |  				)
+    165 |  			}
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:343:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:316:27
+ > src/browser/HostSnapshot.ts:163:30
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:345:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=abccca47:302:11
+
+11:21:53 PM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at http://localhost:63315/src/browser/HostSnapshot.ts:125:87
+    at #writeBack (http://localhost:63315/src/browser/HostSnapshot.ts:194:3)
+    at HostSnapshot.restore (http://localhost:63315/src/browser/HostSnapshot.ts:125:28)
+    at http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790220113485:476:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=abccca47:302:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=abccca47:1903:26
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=abccca47:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=abccca47:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:308:2 > HostSnapshot > withdraws an overlapping earliest recording when its restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+·······································································································································
+
+ Test Files  10 passed (10)
+      Tests  204 passed (204)
+   Start at  23:21:46
+   Duration  7.60s (transform 0ms, setup 425ms, import 328ms, tests 5.16s, environment 0ms)
+
+test:src:browser exit=0
+ ROADMAP.md                         |   2 +-
+ guides/veneer.md                   | 616 ++++++++++++++++++++-----------------
+ src/browser/Collapse.ts            | 248 ++++++++++-----
+ src/browser/Delegate.ts            |  68 ++--
+ src/browser/parsers.ts             |  20 +-
+ src/browser/types.ts               |  11 +-
+ src/browser/validators.ts          |   5 +-
+ tests/src/browser/Collapse.test.ts | 371 +++++++++++++++++++++-
+ tests/src/browser/Delegate.test.ts | 152 +++++++++
+ tests/src/browser/parsers.test.ts  |  10 +
+ 10 files changed, 1089 insertions(+), 414 deletions(-)
+=== collapse-land-2
+# J-COLLAPSE landing, step 1: the landing commit and the merge of main (2026-09-24)
+ M ROADMAP.md
+ M guides/veneer.md
+ M src/browser/Collapse.ts
+ M src/browser/Delegate.ts
+ M src/browser/parsers.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Collapse.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/parsers.test.ts
+M  ROADMAP.md
+M  guides/veneer.md
+M  src/browser/Collapse.ts
+M  src/browser/Delegate.ts
+M  src/browser/parsers.ts
+M  src/browser/types.ts
+M  src/browser/validators.ts
+M  tests/src/browser/Collapse.test.ts
+M  tests/src/browser/Delegate.test.ts
+M  tests/src/browser/parsers.test.ts
+[unit/collapse a23a03a] Land J-COLLAPSE: the Collapse engine, its delegate route, and the first component on the binder
+ 10 files changed, 1089 insertions(+), 414 deletions(-)
+landing commit exit=0
+a23a03a Land J-COLLAPSE: the Collapse engine, its delegate route, and the first component on the binder
+eab447e Merge branch 'main' into unit/collapse
+0ad71cd Checkpoint J-COLLAPSE round 1 on its unit branch before merging main
+Auto-merging ROADMAP.md
+Auto-merging guides/veneer.md
+CONFLICT (content): Merge conflict in guides/veneer.md
+Automatic merge failed; fix conflicts and then commit the result.
+merge main into unit/collapse exit=1
+conflicts: guides/veneer.md
+=== collapse-land-3
+# J-COLLAPSE landing, step 2: the merge commit and the integration gates (2026-09-24)
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxfmt --config .oxfmtrc.json --write guides/veneer.md
+Finished in 5447ms on 1 files using 16 threads.
+oxfmt write exit=0
+unmerged: 
+[unit/collapse 72e318d] Merge branch 'main' into unit/collapse
+merge commit exit=0
+72e318d Merge branch 'main' into unit/collapse
+a23a03a Land J-COLLAPSE: the Collapse engine, its delegate route, and the first component on the binder
+86b3d46 Fold the TOAST landing into the roadmap
+
+added 215 packages, and audited 216 packages in 4s
+
+42 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm ci exit=0
+--- integration gates (read-only, in the worktree)
+npm notice run @orkestrel/veneer@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 6296ms on 359 files using 16 threads.
+format:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+lint:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+npm notice run @orkestrel/veneer@0.0.1 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+npm notice run @orkestrel/veneer@0.0.1 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:styles
+npm notice run tsc --noEmit -p configs/src/tsconfig.styles.json
+npm notice run @orkestrel/veneer@0.0.1 check:app
+npm notice run npm run check:app:browser
+npm notice run @orkestrel/veneer@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+check exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+···················
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  23:24:01
+   Duration  1.12s (transform 215ms, setup 75ms, import 845ms, tests 51ms, environment 0ms)
+
+test:guides exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  23:24:04
+   Duration  2.26s (transform 110ms, setup 65ms, import 282ms, tests 1.77s, environment 0ms)
+
+test:policy exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+·····································································11:24:14 PM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+ > src/browser/HostSnapshot.ts:163:30
+    161 |  				const key = HostSnapshot.#key(target.category, target.name)
+    162 |  				HostSnapshot.#writeBack(target.element, key, this, () =>
+    163 |  					target.element.classList.toggle(target.name, value !== undefined),
+        |                                ^
+    164 |  				)
+    165 |  			}
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:343:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:316:27
+ > src/browser/HostSnapshot.ts:163:30
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:345:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=95ef4cd3:302:11
+
+11:24:14 PM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at http://localhost:63315/src/browser/HostSnapshot.ts:125:87
+    at #writeBack (http://localhost:63315/src/browser/HostSnapshot.ts:194:3)
+    at HostSnapshot.restore (http://localhost:63315/src/browser/HostSnapshot.ts:125:28)
+    at http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790220254064:476:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=95ef4cd3:302:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=95ef4cd3:1903:26
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=95ef4cd3:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=95ef4cd3:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:308:2 > HostSnapshot > withdraws an overlapping earliest recording when its restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+·······································································································································
+
+ Test Files  10 passed (10)
+      Tests  204 passed (204)
+   Start at  23:24:07
+   Duration  7.64s (transform 0ms, setup 461ms, import 320ms, tests 5.13s, environment 0ms)
+
+test:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  9.78 kB │ gzip: 2.63 kB │ map: 15.17 kB
+
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  9.94 kB │ gzip: 2.70 kB │ map: 15.19 kB
+
+✓ built in 70ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/veneer@0.0.1 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+build:src:core exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:styles
+npm notice run vite build --config configs/src/vite.styles.config.ts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  199.63 kB │ gzip: 25.38 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 712ms
+build:src:styles exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:browser
+npm notice run vite build --config configs/src/vite.browser.config.ts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  52.31 kB │ gzip: 13.36 kB │ map: 92.97 kB
+
+✓ built in 101ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+build:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+······················
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  23:24:23
+   Duration  10.73s (transform 199ms, setup 65ms, import 6.00s, tests 4.51s, environment 0ms)
+
+test:conformance exit=0
+=== collapse-land-4
+# J-COLLAPSE landing, step 3: the fast-forward (2026-09-24)
+Updating 86b3d46..72e318d
+Fast-forward
+ ROADMAP.md                           |    2 +-
+ guides/veneer.md                     |  633 ++++++++++-------
+ src/browser/Collapse.ts              |  426 +++++++++++
+ src/browser/Delegate.ts              |  143 +++-
+ src/browser/constants.ts             |   32 +
+ src/browser/index.ts                 |    2 +
+ src/browser/parsers.ts               |   32 +
+ src/browser/types.ts                 |   11 +-
+ src/browser/validators.ts            |   26 +-
+ tests/src/browser/Collapse.test.ts   | 1283 ++++++++++++++++++++++++++++++++++
+ tests/src/browser/Delegate.test.ts   |  357 +++++++++-
+ tests/src/browser/index.test.ts      |    7 +
+ tests/src/browser/parsers.test.ts    |   45 ++
+ tests/src/browser/validators.test.ts |   38 +
+ 14 files changed, 2767 insertions(+), 270 deletions(-)
+main ff to unit/collapse exit=0
+worktree remove exit=0
+Deleted branch unit/collapse (was 72e318d).
+branch delete exit=0
+72e318d Merge branch 'main' into unit/collapse
+a23a03a Land J-COLLAPSE: the Collapse engine, its delegate route, and the first component on the binder
+86b3d46 Fold the TOAST landing into the roadmap
+fb0516d Ship the toast key with its section, proofs, and guide rows
+217d12b Merge remote-tracking branch 'origin/main' into claude/inspiring-allen-t4qzv1
+## main...origin/main [ahead 4]
+C:/Users/mikes/WebstormProjects/veneer 72e318d [main]

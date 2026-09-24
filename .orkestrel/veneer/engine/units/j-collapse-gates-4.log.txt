@@ -1,0 +1,272 @@
+# J-COLLAPSE round 4 — the Orchestrator's own gate run (2026-09-24)
+eab447e Merge branch 'main' into unit/collapse
+ M guides/veneer.md
+ M src/browser/Collapse.ts
+ M src/browser/Delegate.ts
+ M src/browser/parsers.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Collapse.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/parsers.test.ts
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+check:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings src/browser tests/src/browser
+oxlint exit=0
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run oxfmt --config .oxfmtrc.json --check src/browser tests/src/browser guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 5479ms on 24 files using 16 threads.
+oxfmt exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+·····································································11:07:27 PM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+ > src/browser/HostSnapshot.ts:163:30
+    161 |  				const key = HostSnapshot.#key(target.category, target.name)
+    162 |  				HostSnapshot.#writeBack(target.element, key, this, () =>
+    163 |  					target.element.classList.toggle(target.name, value !== undefined),
+        |                                ^
+    164 |  				)
+    165 |  			}
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:343:11
+ > HTMLElement.attributeChangedCallback tests/src/browser/HostSnapshot.test.ts:316:27
+ > src/browser/HostSnapshot.ts:163:30
+ > #writeBack src/browser/HostSnapshot.ts:248:2
+ > HostSnapshot.restore src/browser/HostSnapshot.ts:162:28
+ > tests/src/browser/HostSnapshot.test.ts:345:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=79df4a6f:302:11
+
+11:07:27 PM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+    at throwUnhandlerError (http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse/node_modules/@vitest/browser/dist/client/error-catcher.js:38:33)
+    at http://localhost:63315/src/browser/HostSnapshot.ts:125:87
+    at #writeBack (http://localhost:63315/src/browser/HostSnapshot.ts:194:3)
+    at HostSnapshot.restore (http://localhost:63315/src/browser/HostSnapshot.ts:125:28)
+    at http://localhost:63315/@fs/C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse/tests/src/browser/HostSnapshot.test.ts?import&browserv=1790219246988:476:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=79df4a6f:302:11
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=79df4a6f:1903:26
+    at http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=79df4a6f:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (http://localhost:63315/node_modules/@vitest/runner/dist/chunk-artifact.js?v=79df4a6f:2323:10)
+stderr | tests/src/browser/HostSnapshot.test.ts:308:2 > HostSnapshot > withdraws an overlapping earliest recording when its restoration throws inside a reaction
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+·······································································································································
+
+ Test Files  10 passed (10)
+      Tests  204 passed (204)
+   Start at  23:07:20
+   Duration  7.50s (transform 0ms, setup 438ms, import 330ms, tests 5.18s, environment 0ms)
+
+test:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+···················
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  23:07:29
+   Duration  1.12s (transform 228ms, setup 66ms, import 858ms, tests 54ms, environment 0ms)
+
+test:guides exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  23:07:31
+   Duration  2.22s (transform 109ms, setup 65ms, import 246ms, tests 1.76s, environment 0ms)
+
+test:policy exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  9.78 kB │ gzip: 2.63 kB │ map: 15.17 kB
+
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  9.94 kB │ gzip: 2.70 kB │ map: 15.19 kB
+
+✓ built in 69ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/veneer@0.0.1 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+build:src:core exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:styles
+npm notice run vite build --config configs/src/vite.styles.config.ts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  197.67 kB │ gzip: 25.05 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 713ms
+build:src:styles exit=0
+npm notice run @orkestrel/veneer@0.0.1 build:src:browser
+npm notice run vite build --config configs/src/vite.browser.config.ts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  52.31 kB │ gzip: 13.36 kB │ map: 92.97 kB
+
+✓ built in 100ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+build:src:browser exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+······················
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  23:07:41
+   Duration  10.63s (transform 203ms, setup 67ms, import 6.03s, tests 4.39s, environment 0ms)
+
+test:conformance exit=0
+--- the brief-4 greps
+old-restoration-grep exit=1 (1 is the pass)
+9
+refused-count listed
+getelement-throws-grep exit=1 (1 is the pass)
+next-change-grep exit=1 (1 is the pass)
+src/browser/Delegate.ts:73: 106
+src/browser/Delegate.ts:74: 164
+src/browser/Collapse.ts:32: 101
+src/browser/Collapse.ts:82: 104
+src/browser/Collapse.ts:83: 261
+src/browser/validators.ts:27: 101
+long-lines listed
+guides/veneer.md:491: own tokens.
+guides/veneer.md:573: already aborted.
+guides/veneer.md:637: Bootstrap.
+guides/veneer.md:731: data API does.
+guides/veneer.md:738:   first change.
+guides/veneer.md:746:   `collapse` class.
+guides/veneer.md:760:   parent.
+guides/veneer.md:788: layer.
+guides/veneer.md:1011: and nothing else.
+guides/veneer.md:1025: layers.
+guides/veneer.md:1035: ```
+guides/veneer.md:1048: ```
+guides/veneer.md:1086: matches.
+guides/veneer.md:1128: it emits.
+guides/veneer.md:1469: specimen.
+guides/veneer.md:1517: records it.
+guides/veneer.md:1549:   the CSSOM.
+guides/veneer.md:1576: classes add theirs.
+guides/veneer.md:1613: it.
+guides/veneer.md:1681:   the border.
+guides/veneer.md:1692: it.
+guides/veneer.md:1709: value alone.
+guides/veneer.md:1729:   partials do.
+guides/veneer.md:1754: departure.
+guides/veneer.md:1783: key's table.
+guides/veneer.md:1884: group's rules.
+guides/veneer.md:1897:   its own key.
+guides/veneer.md:2044: second rule leaves.
+guides/veneer.md:2108: them.
+guides/veneer.md:2149: them.
+guides/veneer.md:2179: dropdown key.
+guides/veneer.md:2202: preference.
+guides/veneer.md:2252: inside that height.
+guides/veneer.md:2257: modes.
+guides/veneer.md:2302: beside it.
+guides/veneer.md:2351: Bootstrap order.
+guides/veneer.md:2377: instead.
+guides/veneer.md:2383: of its own.
+guides/veneer.md:2403: that preference.
+guides/veneer.md:2412:   them fixed.
+guides/veneer.md:2450: size.
+guides/veneer.md:2456: browser.
+guides/veneer.md:2462: classes.
+guides/veneer.md:2511: button.
+guides/veneer.md:2528: stays in flow.
+guides/veneer.md:2543: of its own.
+guides/veneer.md:2549: stays literal.
+guides/veneer.md:2564: tiers.
+guides/veneer.md:2569: without them.
+guides/veneer.md:2605: the outer track.
+guides/veneer.md:2683: recorded value.
+guides/veneer.md:2712: rule reads it.
+guides/veneer.md:2795: around it.
+guides/veneer.md:2813: it.
+guides/veneer.md:2819: markup carries one.
+guides/veneer.md:2844:   ledger file.
+guides/veneer.md:2924: utilities layer.
+guides/veneer.md:2930:   gutters.
+guides/veneer.md:2943: responsive.
+guides/veneer.md:2962: escape.
+guides/veneer.md:3034: position utility.
+guides/veneer.md:3241: names.
+guides/veneer.md:3255: no `Source` column.
+guides/veneer.md:3268: subtree.
+guides/veneer.md:3407: cell.
+guides/veneer.md:3435: gutter tokens.
+guides/veneer.md:3590: release records.
+guides/veneer.md:3665: declaration.
+guides/veneer.md:5457: unchanged.
+guides/veneer.md:5463: function reads.
+guides/veneer.md:5758: from.
+guides/veneer.md:5865: blank.
+guides/veneer.md:5951: moves.
+short-lines listed
+old-term-grep exit=1 (1 is the pass)
+5694:| engine           | plugin         | Collapse: a `[data-bs-toggle="collapse"]` trigger names its panel by `data-bs-target` or `href` attribute; `parent: null` and `toggle: true` defaults; `toggle`, `show`, and `hide` methods; cancelab
+plugin-row-grep exit=0
+--- review evidence
+round-4 diff lines: 1863
+unit diff against main 468a118 lines: 3261
+ M guides/veneer.md
+ M src/browser/Collapse.ts
+ M src/browser/Delegate.ts
+ M src/browser/parsers.ts
+ M src/browser/validators.ts
+ M tests/src/browser/Collapse.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/parsers.test.ts
+--- the patches-2 apply check
+apply-check exit=0
+--- tree-wide typecheck (observation)
+npm notice run @orkestrel/veneer@0.0.1 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+npm notice run @orkestrel/veneer@0.0.1 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+npm notice run @orkestrel/veneer@0.0.1 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/veneer@0.0.1 check:src:styles
+npm notice run tsc --noEmit -p configs/src/tsconfig.styles.json
+npm notice run @orkestrel/veneer@0.0.1 check:app
+npm notice run npm run check:app:browser
+npm notice run @orkestrel/veneer@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+check exit=0
