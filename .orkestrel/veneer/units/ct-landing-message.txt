@@ -1,0 +1,21 @@
+Ship the theme key and the dark roles the release paints (THEME)
+
+- V10: the dark secondary role resolves to the release's #6c757d through the gray-600 token, so its
+  labels, borders, and carets read 4.69 to 1 against the dark canvas; the light slate stays.
+- V12: the link hover moves 65% toward black in light and toward white in dark, the release's
+  direction in each mode, with a step at least the release's.
+- V13: the light and dark roles take the release's gray steps for their emphasis, subtle, and border
+  tiers in each mode, through the $retuned walk; the alerts on those roles read the release's pairs.
+- The theme key ships: a shipped selector row, the #### theme ledger with the four dark component
+  rules measured under it, and the token registry counted as recorded in collectAdditions (X3).
+  The fallback-claim measurement (X12) found no collision, so no guard is added.
+- The Color modes region: a light surface holding a dark island holding a nested light island, each
+  with body text, a button, a select, a switch, a navbar toggler, and an accordion button.
+
+V11 is not in this change: the variants and the bare-button veil share one mixer, and the
+LABEL-CONTRAST design carries the variants' direction. Audit: analyst on Astra, reviewer on Opus,
+checker (ct-audit-verdict.md); the report and test-data findings are carried to THEME round 2 and
+the tokens and mixins prose to LABEL.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
