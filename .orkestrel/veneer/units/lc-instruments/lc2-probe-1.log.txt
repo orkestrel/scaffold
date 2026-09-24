@@ -1,0 +1,33 @@
+# command: npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/lc2-probe.test.ts
+ RUN  v4.1.11 /home/user/veneer-lc2
+2:58:00 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+2:58:01 PM [vite] (client) [optimizer] bundling dependencies...
+x
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/lc2-probe.test.ts:12:1 > probes the cascade, the root attribute, and a stylesheet scheme
+AssertionError: expected [ 'sheets inline inline', …(7) ] to deeply equal []
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- [][39m
+[31m+ [[39m
+[31m+   "sheets inline inline",[39m
+[31m+   "lowered true native false",[39m
+[31m+   "motion-on rest rgb(255, 255, 255)",[39m
+[31m+   "motion-on immediate rgb(255, 255, 255) transition 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",[39m
+[31m+   "motion-on after 400ms rgb(0, 0, 0)",[39m
+[31m+   "motion-off immediate rgb(0, 0, 0)",[39m
+[31m+   "Panel color rgb(255, 255, 255) fill oklch(0.48 0.255 264)",[39m
+[31m+   "Lowered color rgb(0, 0, 0) fill oklch(0.48 0.255 264)",[39m
+[31m+ ][39m
+ ❯ tests/src/styles/lc2-probe.test.ts:34:13
+     32|  const panels = scene.mount('<div class="lc-panel"><button class="btn …
+     33|  for (const b of panels.querySelectorAll('button')) out.push(`${b.text…
+     34|  expect(out).toEqual([])
+       |             ^
+     35| })
+     36|
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  14:57:59
+   Duration  15.82s (transform 0ms, setup 1.24s, import 26ms, tests 876ms, environment 0ms)

@@ -1,0 +1,18 @@
+=== origin/main f22f02c; session head fc72165
+Auto-merging tests/setupBrowser.test.ts
+Auto-merging tests/setupBrowser.ts
+Merge made by the 'ort' strategy.
+ package-lock.json          |  8 +++----
+ package.json               |  2 +-
+ tests/setupBrowser.test.ts | 17 +++++++++------
+ tests/setupBrowser.ts      | 54 ++--------------------------------------------
+ 4 files changed, 17 insertions(+), 64 deletions(-)
+=== merge exit=0
+=== merged 42d51fc
+=== npm ci exit=0
+=== marker 86b6ac8758afcb99572535876c4baf36ceffa701f5b430a81fb976bc6f5c144e
+=== check exit=0
+=== lint:check exit=0
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/setupBrowser.test.ts
+      Tests  75 passed (75)
+=== setupBrowser proof exit=0

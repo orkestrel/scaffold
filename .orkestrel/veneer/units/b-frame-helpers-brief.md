@@ -24,7 +24,7 @@ better.
    across every case.
 3. **The region type (R3).** Name the structural box type `computeCroppedEdges` and `computeRingBand` read, and move it
    where both the pure helpers and `readRegion` can import it.
-4. **The drives (R5 and FOCUS-FRAME's observation).** The `dropdown-menu-focus` and `captioned-carousel-focus`
+4. **The drives (R5, FOCUS-FRAME's observation, and the FOCUS-FRAME landing).** The focus-ring link case (the `default-focus-ring-focus` and `focus-ring-roles-focus` scenarios) kept UTIL-FRAMES' drive at the FOCUS-FRAME landing: route it through the helper with the Tab drive, the reach reading, and the crop reading, and add its scenarios to the § Tests list of Tab-driven frames. The `dropdown-menu-focus` and `captioned-carousel-focus`
    scenarios, and UTIL-FRAMES' link focus case (a scripted focus with a key press, which matches `:focus-visible` and
    paints no outline), reach focus by Tab, and their frames show the outline; the pixel guard in the helper holds each.
 5. **The reach key (OVERLAY-FRAMES' observation).** The next control's wrapper keys its width to the `lg` boundary
@@ -50,7 +50,8 @@ unfiltered capture variants, the whole suite, and `npm run test:service` are the
 
 **Off-limits.** `src/**`, `app/**`, `tests/fixtures/oracle/**`, `configs/**`, the manifests, the vendored
 `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts`, and `ROADMAP.md`. The engine session's
-J-TESTPIN edits `holdOraclePointer` in `tests/setupBrowser.ts`; leave that function as it stands.
+J-TESTPIN (`f22f02c`, merged into the session branch as `42d51fc`) removed `holdOraclePointer` and routes the
+`pointer.hold` oracle row through `driveHold`; leave the oracle rows as they stand.
 
 **Standing conditions.** LABEL writes `tests/setup.ts` (`UNDER_BAR`) and two journey cases (the composed-contrast case
 and the link case) in its own worktree; keep each edit local so the landings merge three-way. The container is loaded;

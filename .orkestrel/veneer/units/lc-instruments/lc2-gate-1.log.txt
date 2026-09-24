@@ -1,0 +1,6 @@
+# command: npx oxfmt --config .oxfmtrc.json --check guides/veneer.md src/styles/_mixins.scss src/styles/_tokens.scss src/styles/components/_button.scss src/styles/components/_validation.scss src/styles/utilities/_color-bg.scss src/styles/utilities/_link.scss tests/setup.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/button.test.ts tests/src/styles/fixtures/contrast.scss tests/src/styles/utilities/link.test.ts 
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 18345ms on 13 files using 4 threads.
+# exit 0

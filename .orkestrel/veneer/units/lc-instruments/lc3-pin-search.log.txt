@@ -1,0 +1,208 @@
+## pre-change dark and light state fills of the filled roles
+# command: grep -rnE '0\.492706|0\.550353|0\.559901|0\.609913|0\.0401998|0\.149268|0\.0224636|0\.133547|0\.763935|0\.790761|0\.786027|0\.810342|0\.97584313|0\.97858823|0\.1147733|0\.1025745' tests/fixtures/oracle tests/app app/browser/constants.ts src guides
+# exit 1 (1 means no match)
+
+## a pinned button or tooltip label read as a color
+# command: grep -rnE '(btn-[a-z]+|-tooltip)[^\n]*(rgb\(255, 255, 255\)|rgb\(0, 0, 0\)|'white'|'black'|#fff\b|#000\b)' tests/fixtures/oracle tests/app app/browser/constants.ts src guides
+guides/veneer.md:6582:| `btn`     | `.btn-primary`                                  | `--bs-btn-color`                 | —         | `#fff`                                                                                                   
+guides/veneer.md:6585:| `btn`     | `.btn-primary`                                  | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6589:| `btn`     | `.btn-primary`                                  | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6593:| `btn`     | `.btn-primary`                                  | `--bs-btn-disabled-color`        | —         | `#fff`                                                                                                   
+guides/veneer.md:6596:| `btn`     | `.btn-secondary`                                | `--bs-btn-color`                 | —         | `#fff`                                                                                                   
+guides/veneer.md:6599:| `btn`     | `.btn-secondary`                                | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6603:| `btn`     | `.btn-secondary`                                | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6607:| `btn`     | `.btn-secondary`                                | `--bs-btn-disabled-color`        | —         | `#fff`                                                                                                   
+guides/veneer.md:6610:| `btn`     | `.btn-success`                                  | `--bs-btn-color`                 | —         | `#fff`                                                                                                   
+guides/veneer.md:6613:| `btn`     | `.btn-success`                                  | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6617:| `btn`     | `.btn-success`                                  | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6621:| `btn`     | `.btn-success`                                  | `--bs-btn-disabled-color`        | —         | `#fff`                                                                                                   
+guides/veneer.md:6624:| `btn`     | `.btn-info`                                     | `--bs-btn-color`                 | —         | `#000`                                                                                                   
+guides/veneer.md:6627:| `btn`     | `.btn-info`                                     | `--bs-btn-hover-color`           | —         | `#000`                                                                                                   
+guides/veneer.md:6631:| `btn`     | `.btn-info`                                     | `--bs-btn-active-color`          | —         | `#000`                                                                                                   
+guides/veneer.md:6635:| `btn`     | `.btn-info`                                     | `--bs-btn-disabled-color`        | —         | `#000`                                                                                                   
+guides/veneer.md:6638:| `btn`     | `.btn-warning`                                  | `--bs-btn-color`                 | —         | `#000`                                                                                                   
+guides/veneer.md:6641:| `btn`     | `.btn-warning`                                  | `--bs-btn-hover-color`           | —         | `#000`                                                                                                   
+guides/veneer.md:6645:| `btn`     | `.btn-warning`                                  | `--bs-btn-active-color`          | —         | `#000`                                                                                                   
+guides/veneer.md:6649:| `btn`     | `.btn-warning`                                  | `--bs-btn-disabled-color`        | —         | `#000`                                                                                                   
+guides/veneer.md:6652:| `btn`     | `.btn-danger`                                   | `--bs-btn-color`                 | —         | `#fff`                                                                                                   
+guides/veneer.md:6655:| `btn`     | `.btn-danger`                                   | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6659:| `btn`     | `.btn-danger`                                   | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6663:| `btn`     | `.btn-danger`                                   | `--bs-btn-disabled-color`        | —         | `#fff`                                                                                                   
+guides/veneer.md:6666:| `btn`     | `.btn-light`                                    | `--bs-btn-color`                 | —         | `#000`                                                                                                   
+guides/veneer.md:6669:| `btn`     | `.btn-light`                                    | `--bs-btn-hover-color`           | —         | `#000`                                                                                                   
+guides/veneer.md:6673:| `btn`     | `.btn-light`                                    | `--bs-btn-active-color`          | —         | `#000`                                                                                                   
+guides/veneer.md:6677:| `btn`     | `.btn-light`                                    | `--bs-btn-disabled-color`        | —         | `#000`                                                                                                   
+guides/veneer.md:6680:| `btn`     | `.btn-dark`                                     | `--bs-btn-color`                 | —         | `#fff`                                                                                                   
+guides/veneer.md:6683:| `btn`     | `.btn-dark`                                     | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6687:| `btn`     | `.btn-dark`                                     | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6691:| `btn`     | `.btn-dark`                                     | `--bs-btn-disabled-color`        | —         | `#fff`                                                                                                   
+guides/veneer.md:6696:| `btn`     | `.btn-outline-primary`                          | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6700:| `btn`     | `.btn-outline-primary`                          | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6710:| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6714:| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6724:| `btn`     | `.btn-outline-success`                          | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6728:| `btn`     | `.btn-outline-success`                          | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6738:| `btn`     | `.btn-outline-info`                             | `--bs-btn-hover-color`           | —         | `#000`                                                                                                   
+guides/veneer.md:6742:| `btn`     | `.btn-outline-info`                             | `--bs-btn-active-color`          | —         | `#000`                                                                                                   
+guides/veneer.md:6752:| `btn`     | `.btn-outline-warning`                          | `--bs-btn-hover-color`           | —         | `#000`                                                                                                   
+guides/veneer.md:6756:| `btn`     | `.btn-outline-warning`                          | `--bs-btn-active-color`          | —         | `#000`                                                                                                   
+guides/veneer.md:6766:| `btn`     | `.btn-outline-danger`                           | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6770:| `btn`     | `.btn-outline-danger`                           | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6780:| `btn`     | `.btn-outline-light`                            | `--bs-btn-hover-color`           | —         | `#000`                                                                                                   
+guides/veneer.md:6784:| `btn`     | `.btn-outline-light`                            | `--bs-btn-active-color`          | —         | `#000`                                                                                                   
+guides/veneer.md:6794:| `btn`     | `.btn-outline-dark`                             | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                   
+guides/veneer.md:6798:| `btn`     | `.btn-outline-dark`                             | `--bs-btn-active-color`          | —         | `#fff`                                                                                                   
+guides/veneer.md:6816:| `btn`     | `.btn-link`                                     | `--bs-btn-box-shadow`            | —         | `0 0 0 #000`                                                                                             
+guides/veneer.md:6850:| `btn-close` | `.btn-close`                    | `--bs-btn-close-color` | —         | `#000`          | `var(--vn-palette-black-base)`                     | tokenized |
+guides/veneer.md:7584:| `invalid-tooltip` | `.invalid-tooltip` | `color`     | —         | `#fff`           | `var(--vn-palette-white-base)`        | tokenized |
+guides/veneer.md:8810:| `valid-tooltip` | `.valid-tooltip` | `color`     | —         | `#fff`           | `var(--vn-palette-white-base)`        | tokenized |
+# exit 0 (1 means no match)
+
+## a text-bg foreground read as a color
+# command: grep -rnE 'text-bg-[a-z]+[^\n]*(rgb\(255, 255, 255\)|rgb\(0, 0, 0\)|'white'|'black'|#fff\b|#000\b|palette-(white|black)-base)' tests/fixtures/oracle tests/app app/browser/constants.ts src guides
+guides/veneer.md:8735:| `text`        | `.text-bg-primary`   | `color`               | —         | `#fff`                     | `light-dark(var(--vn-palette-white-base), var(--vn-palette-black-base))` | tokenized |
+guides/veneer.md:8736:| `text`        | `.text-bg-secondary` | `color`               | —         | `#fff`                     | `var(--vn-palette-white-base)`                                           | tokenized |
+guides/veneer.md:8737:| `text`        | `.text-bg-success`   | `color`               | —         | `#fff`                     | `var(--vn-palette-white-base)`                                           | tokenized |
+guides/veneer.md:8738:| `text`        | `.text-bg-info`      | `color`               | —         | `#000`                     | `var(--vn-palette-white-base)`                                           | tokenized |
+guides/veneer.md:8739:| `text`        | `.text-bg-warning`   | `color`               | —         | `#000`                     | `var(--vn-palette-white-base)`                                           | tokenized |
+guides/veneer.md:8740:| `text`        | `.text-bg-danger`    | `color`               | —         | `#fff`                     | `var(--vn-palette-white-base)`                                           | tokenized |
+guides/veneer.md:8741:| `text`        | `.text-bg-light`     | `color`               | —         | `#000`                     | `var(--vn-palette-black-base)`                                           | tokenized |
+guides/veneer.md:8742:| `text`        | `.text-bg-dark`      | `color`               | —         | `#fff`                     | `var(--vn-palette-white-base)`                                           | tokenized |
+# exit 0 (1 means no match)
+
+## a colored-link hover or focus color
+# command: grep -rnE 'link-[a-z]+:(hover|focus)|RGBA\(10, 88, 202|LINK_PAINT_PROPERTIES' tests/fixtures/oracle tests/app app/browser/constants.ts src guides
+tests/fixtures/oracle/inventory.json:77407:					"selector": ".link-primary:hover",
+tests/fixtures/oracle/inventory.json:77411:							"value": "RGBA(10, 88, 202, var(--bs-link-opacity, 1))"
+tests/fixtures/oracle/inventory.json:77415:							"value": "RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))"
+tests/fixtures/oracle/inventory.json:77419:							"value": "RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))"
+tests/fixtures/oracle/inventory.json:77429:					"selector": ".link-primary:focus",
+tests/fixtures/oracle/inventory.json:77433:							"value": "RGBA(10, 88, 202, var(--bs-link-opacity, 1))"
+tests/fixtures/oracle/inventory.json:77437:							"value": "RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))"
+tests/fixtures/oracle/inventory.json:77441:							"value": "RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))"
+tests/fixtures/oracle/inventory.json:77473:					"selector": ".link-secondary:hover",
+tests/fixtures/oracle/inventory.json:77495:					"selector": ".link-secondary:focus",
+tests/fixtures/oracle/inventory.json:77539:					"selector": ".link-success:hover",
+tests/fixtures/oracle/inventory.json:77561:					"selector": ".link-success:focus",
+tests/fixtures/oracle/inventory.json:77605:					"selector": ".link-info:hover",
+tests/fixtures/oracle/inventory.json:77627:					"selector": ".link-info:focus",
+tests/fixtures/oracle/inventory.json:77671:					"selector": ".link-warning:hover",
+tests/fixtures/oracle/inventory.json:77693:					"selector": ".link-warning:focus",
+tests/fixtures/oracle/inventory.json:77737:					"selector": ".link-danger:hover",
+tests/fixtures/oracle/inventory.json:77759:					"selector": ".link-danger:focus",
+tests/fixtures/oracle/inventory.json:77803:					"selector": ".link-light:hover",
+tests/fixtures/oracle/inventory.json:77825:					"selector": ".link-light:focus",
+tests/fixtures/oracle/inventory.json:77869:					"selector": ".link-dark:hover",
+tests/fixtures/oracle/inventory.json:77891:					"selector": ".link-dark:focus",
+tests/fixtures/oracle/inventory.json:78586:					"selector": ".link-primary:hover",
+tests/fixtures/oracle/inventory.json:78588:					"value": "RGBA(10, 88, 202, var(--bs-link-opacity, 1))"
+tests/fixtures/oracle/inventory.json:78591:					"selector": ".link-primary:hover",
+tests/fixtures/oracle/inventory.json:78593:					"value": "RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))"
+tests/fixtures/oracle/inventory.json:78596:					"selector": ".link-primary:hover",
+tests/fixtures/oracle/inventory.json:78598:					"value": "RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))"
+tests/fixtures/oracle/inventory.json:78601:					"selector": ".link-primary:focus",
+tests/fixtures/oracle/inventory.json:78603:					"value": "RGBA(10, 88, 202, var(--bs-link-opacity, 1))"
+tests/fixtures/oracle/inventory.json:78606:					"selector": ".link-primary:focus",
+tests/fixtures/oracle/inventory.json:78608:					"value": "RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))"
+tests/fixtures/oracle/inventory.json:78611:					"selector": ".link-primary:focus",
+tests/fixtures/oracle/inventory.json:78613:					"value": "RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))"
+tests/fixtures/oracle/inventory.json:78631:					"selector": ".link-secondary:hover",
+tests/fixtures/oracle/inventory.json:78636:					"selector": ".link-secondary:hover",
+tests/fixtures/oracle/inventory.json:78641:					"selector": ".link-secondary:hover",
+tests/fixtures/oracle/inventory.json:78646:					"selector": ".link-secondary:focus",
+tests/fixtures/oracle/inventory.json:78651:					"selector": ".link-secondary:focus",
+tests/fixtures/oracle/inventory.json:78656:					"selector": ".link-secondary:focus",
+tests/fixtures/oracle/inventory.json:78676:					"selector": ".link-success:hover",
+tests/fixtures/oracle/inventory.json:78681:					"selector": ".link-success:hover",
+tests/fixtures/oracle/inventory.json:78686:					"selector": ".link-success:hover",
+tests/fixtures/oracle/inventory.json:78691:					"selector": ".link-success:focus",
+tests/fixtures/oracle/inventory.json:78696:					"selector": ".link-success:focus",
+tests/fixtures/oracle/inventory.json:78701:					"selector": ".link-success:focus",
+tests/fixtures/oracle/inventory.json:78721:					"selector": ".link-info:hover",
+tests/fixtures/oracle/inventory.json:78726:					"selector": ".link-info:hover",
+tests/fixtures/oracle/inventory.json:78731:					"selector": ".link-info:hover",
+tests/fixtures/oracle/inventory.json:78736:					"selector": ".link-info:focus",
+tests/fixtures/oracle/inventory.json:78741:					"selector": ".link-info:focus",
+tests/fixtures/oracle/inventory.json:78746:					"selector": ".link-info:focus",
+tests/fixtures/oracle/inventory.json:78766:					"selector": ".link-warning:hover",
+tests/fixtures/oracle/inventory.json:78771:					"selector": ".link-warning:hover",
+tests/fixtures/oracle/inventory.json:78776:					"selector": ".link-warning:hover",
+tests/fixtures/oracle/inventory.json:78781:					"selector": ".link-warning:focus",
+tests/fixtures/oracle/inventory.json:78786:					"selector": ".link-warning:focus",
+tests/fixtures/oracle/inventory.json:78791:					"selector": ".link-warning:focus",
+tests/fixtures/oracle/inventory.json:78811:					"selector": ".link-danger:hover",
+tests/fixtures/oracle/inventory.json:78816:					"selector": ".link-danger:hover",
+tests/fixtures/oracle/inventory.json:78821:					"selector": ".link-danger:hover",
+tests/fixtures/oracle/inventory.json:78826:					"selector": ".link-danger:focus",
+tests/fixtures/oracle/inventory.json:78831:					"selector": ".link-danger:focus",
+tests/fixtures/oracle/inventory.json:78836:					"selector": ".link-danger:focus",
+tests/fixtures/oracle/inventory.json:78856:					"selector": ".link-light:hover",
+tests/fixtures/oracle/inventory.json:78861:					"selector": ".link-light:hover",
+tests/fixtures/oracle/inventory.json:78866:					"selector": ".link-light:hover",
+tests/fixtures/oracle/inventory.json:78871:					"selector": ".link-light:focus",
+tests/fixtures/oracle/inventory.json:78876:					"selector": ".link-light:focus",
+tests/fixtures/oracle/inventory.json:78881:					"selector": ".link-light:focus",
+tests/fixtures/oracle/inventory.json:78901:					"selector": ".link-dark:hover",
+tests/fixtures/oracle/inventory.json:78906:					"selector": ".link-dark:hover",
+tests/fixtures/oracle/inventory.json:78911:					"selector": ".link-dark:hover",
+tests/fixtures/oracle/inventory.json:78916:					"selector": ".link-dark:focus",
+tests/fixtures/oracle/inventory.json:78921:					"selector": ".link-dark:focus",
+tests/fixtures/oracle/inventory.json:78926:					"selector": ".link-dark:focus",
+tests/fixtures/oracle/inventory.json:79698:					"selector": ".icon-link-hover:hover > .bi",
+tests/fixtures/oracle/inventory.json:79712:					"selector": ".icon-link-hover:focus-visible > .bi",
+tests/fixtures/oracle/inventory.json:79798:					"selector": ".icon-link-hover:hover > .bi",
+tests/fixtures/oracle/inventory.json:79803:					"selector": ".icon-link-hover:focus-visible > .bi",
+tests/app/browser/integration.test.ts:123:	LINK_PAINT_PROPERTIES,
+tests/app/browser/integration.test.ts:2440:		const properties = [...LINK_STEP_PROPERTIES, ...LINK_PAINT_PROPERTIES]
+src/styles/components/_icon-link.scss:25:	.icon-link-hover:hover > .bi,
+src/styles/components/_icon-link.scss:26:	.icon-link-hover:focus-visible > .bi {
+guides/veneer.md:7619:| `link`    | `.link-primary:hover`       | `color`                         | —         | `RGBA(10, 88, 202, var(--bs-link-opacity, 1))`                               | `rgb(from color-mix(in srgb, light-dark(color(s
+guides/veneer.md:7620:| `link`    | `.link-primary:hover`       | `-webkit-text-decoration-color` | —         | `RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))`                     | —                                            
+guides/veneer.md:7621:| `link`    | `.link-primary:hover`       | `text-decoration-color`         | —         | `RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))`                     | `rgb(from color-mix(in srgb, light-dark(color(s
+guides/veneer.md:7622:| `link`    | `.link-primary:focus`       | `color`                         | —         | `RGBA(10, 88, 202, var(--bs-link-opacity, 1))`                               | `rgb(from color-mix(in srgb, light-dark(color(s
+guides/veneer.md:7623:| `link`    | `.link-primary:focus`       | `-webkit-text-decoration-color` | —         | `RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))`                     | —                                            
+guides/veneer.md:7624:| `link`    | `.link-primary:focus`       | `text-decoration-color`         | —         | `RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))`                     | `rgb(from color-mix(in srgb, light-dark(color(s
+guides/veneer.md:7628:| `link`    | `.link-secondary:hover`     | `color`                         | —         | `RGBA(86, 94, 100, var(--bs-link-opacity, 1))`                               | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7629:| `link`    | `.link-secondary:hover`     | `-webkit-text-decoration-color` | —         | `RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1))`                     | —                                            
+guides/veneer.md:7630:| `link`    | `.link-secondary:hover`     | `text-decoration-color`         | —         | `RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1))`                     | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7631:| `link`    | `.link-secondary:focus`     | `color`                         | —         | `RGBA(86, 94, 100, var(--bs-link-opacity, 1))`                               | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7632:| `link`    | `.link-secondary:focus`     | `-webkit-text-decoration-color` | —         | `RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1))`                     | —                                            
+guides/veneer.md:7633:| `link`    | `.link-secondary:focus`     | `text-decoration-color`         | —         | `RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1))`                     | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7637:| `link`    | `.link-success:hover`       | `color`                         | —         | `RGBA(20, 108, 67, var(--bs-link-opacity, 1))`                               | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7638:| `link`    | `.link-success:hover`       | `-webkit-text-decoration-color` | —         | `RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1))`                     | —                                            
+guides/veneer.md:7639:| `link`    | `.link-success:hover`       | `text-decoration-color`         | —         | `RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1))`                     | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7640:| `link`    | `.link-success:focus`       | `color`                         | —         | `RGBA(20, 108, 67, var(--bs-link-opacity, 1))`                               | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7641:| `link`    | `.link-success:focus`       | `-webkit-text-decoration-color` | —         | `RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1))`                     | —                                            
+guides/veneer.md:7642:| `link`    | `.link-success:focus`       | `text-decoration-color`         | —         | `RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1))`                     | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7646:| `link`    | `.link-info:hover`          | `color`                         | —         | `RGBA(61, 213, 243, var(--bs-link-opacity, 1))`                              | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7647:| `link`    | `.link-info:hover`          | `-webkit-text-decoration-color` | —         | `RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1))`                    | —                                            
+guides/veneer.md:7648:| `link`    | `.link-info:hover`          | `text-decoration-color`         | —         | `RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1))`                    | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7649:| `link`    | `.link-info:focus`          | `color`                         | —         | `RGBA(61, 213, 243, var(--bs-link-opacity, 1))`                              | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7650:| `link`    | `.link-info:focus`          | `-webkit-text-decoration-color` | —         | `RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1))`                    | —                                            
+guides/veneer.md:7651:| `link`    | `.link-info:focus`          | `text-decoration-color`         | —         | `RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1))`                    | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7655:| `link`    | `.link-warning:hover`       | `color`                         | —         | `RGBA(255, 205, 57, var(--bs-link-opacity, 1))`                              | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7656:| `link`    | `.link-warning:hover`       | `-webkit-text-decoration-color` | —         | `RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1))`                    | —                                            
+guides/veneer.md:7657:| `link`    | `.link-warning:hover`       | `text-decoration-color`         | —         | `RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1))`                    | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7658:| `link`    | `.link-warning:focus`       | `color`                         | —         | `RGBA(255, 205, 57, var(--bs-link-opacity, 1))`                              | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7659:| `link`    | `.link-warning:focus`       | `-webkit-text-decoration-color` | —         | `RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1))`                    | —                                            
+guides/veneer.md:7660:| `link`    | `.link-warning:focus`       | `text-decoration-color`         | —         | `RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1))`                    | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7664:| `link`    | `.link-danger:hover`        | `color`                         | —         | `RGBA(176, 42, 55, var(--bs-link-opacity, 1))`                               | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7665:| `link`    | `.link-danger:hover`        | `-webkit-text-decoration-color` | —         | `RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1))`                     | —                                            
+guides/veneer.md:7666:| `link`    | `.link-danger:hover`        | `text-decoration-color`         | —         | `RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1))`                     | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7667:| `link`    | `.link-danger:focus`        | `color`                         | —         | `RGBA(176, 42, 55, var(--bs-link-opacity, 1))`                               | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7668:| `link`    | `.link-danger:focus`        | `-webkit-text-decoration-color` | —         | `RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1))`                     | —                                            
+guides/veneer.md:7669:| `link`    | `.link-danger:focus`        | `text-decoration-color`         | —         | `RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1))`                     | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7673:| `link`    | `.link-light:hover`         | `color`                         | —         | `RGBA(249, 250, 251, var(--bs-link-opacity, 1))`                             | `rgb(from color-mix(in srgb, var(--vn-palette-w
+guides/veneer.md:7674:| `link`    | `.link-light:hover`         | `-webkit-text-decoration-color` | —         | `RGBA(249, 250, 251, var(--bs-link-underline-opacity, 1))`                   | —                                            
+guides/veneer.md:7675:| `link`    | `.link-light:hover`         | `text-decoration-color`         | —         | `RGBA(249, 250, 251, var(--bs-link-underline-opacity, 1))`                   | `rgb(from color-mix(in srgb, var(--vn-palette-w
+guides/veneer.md:7676:| `link`    | `.link-light:focus`         | `color`                         | —         | `RGBA(249, 250, 251, var(--bs-link-opacity, 1))`                             | `rgb(from color-mix(in srgb, var(--vn-palette-w
+guides/veneer.md:7677:| `link`    | `.link-light:focus`         | `-webkit-text-decoration-color` | —         | `RGBA(249, 250, 251, var(--bs-link-underline-opacity, 1))`                   | —                                            
+guides/veneer.md:7678:| `link`    | `.link-light:focus`         | `text-decoration-color`         | —         | `RGBA(249, 250, 251, var(--bs-link-underline-opacity, 1))`                   | `rgb(from color-mix(in srgb, var(--vn-palette-w
+guides/veneer.md:7682:| `link`    | `.link-dark:hover`          | `color`                         | —         | `RGBA(26, 30, 33, var(--bs-link-opacity, 1))`                                | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7683:| `link`    | `.link-dark:hover`          | `-webkit-text-decoration-color` | —         | `RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1))`                      | —                                            
+guides/veneer.md:7684:| `link`    | `.link-dark:hover`          | `text-decoration-color`         | —         | `RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1))`                      | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7685:| `link`    | `.link-dark:focus`          | `color`                         | —         | `RGBA(26, 30, 33, var(--bs-link-opacity, 1))`                                | `rgb(from color-mix(in srgb, color(srgb 0.00742
+guides/veneer.md:7686:| `link`    | `.link-dark:focus`          | `-webkit-text-decoration-color` | —         | `RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1))`                      | —                                            
+guides/veneer.md:7687:| `link`    | `.link-dark:focus`          | `text-decoration-color`         | —         | `RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1))`                      | `rgb(from color-mix(in srgb, color(srgb 0.00742
+# exit 0 (1 means no match)
+

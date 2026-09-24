@@ -1,0 +1,33 @@
+=== unit files: app/browser/constants.ts tests/app/browser/integration.test.ts tests/app/browser/sections/ButtonGroupSection.test.ts tests/app/browser/sections/ListGroupSection.test.ts tests/app/browser/sections/PlaceholderSection.test.ts tests/setup.test.ts tests/setup.ts
+=== unit/fp c111229
+=== unit/fp with fp-shared-3.patch 9cb651b
+=== session head 31f1243
+Auto-merging app/browser/constants.ts
+Auto-merging guides/veneer.md
+Auto-merging tests/app/browser/index.test.ts
+Auto-merging tests/app/browser/integration.test.ts
+CONFLICT (content): Merge conflict in tests/app/browser/integration.test.ts
+Auto-merging tests/setup.test.ts
+CONFLICT (content): Merge conflict in tests/setup.test.ts
+Auto-merging tests/setup.ts
+Squash commit -- not updating HEAD
+Automatic merge failed; fix conflicts and then commit the result.
+=== squash merge exit=1
+=== CONFLICTS: tests/app/browser/integration.test.ts tests/setup.test.ts
+=== resolved: the import and export lists take both sides; the exemption list takes EXEMPT_SUBJECTS with UTIL-FRAMES' removal of 'Default focus ring' and its reason applied to the constant
+=== landed fc72165
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 19678ms on 9 files using 4 threads.
+=== oxfmt check exit=0
+=== oxlint exit=0
+=== check exit=0
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts
+      Tests  23 passed (23)
+=== setup proof exit=0
+command: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/ButtonGroupSection.test.ts tests/app/browser/sections/ListGroupSection.test.ts tests/app/browser/sections/PlaceholderSection.test.ts tests/app/browser/index.test.ts
+      Tests  15 passed (15)
+=== sections exit=0
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+=== guides exit=0
