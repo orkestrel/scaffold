@@ -106,6 +106,12 @@ UNITS = {
         checker='claims 3 and 4',
         lanes='the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, by the user\'s instruction to put implementation first, because the round adds one row, deletes one branch, and renames one directory',
         bench='the bench round-tripped at 15:05 (fp-audit-3 returned exit 0)'),
+    'pl': dict(name='PREFLIGHT-HOST', worktree='/home/user/veneer-pl', base='fc3ddfe',
+        evidence='`pl-2.diff` and `pl-2-status.txt` (both rounds against `fc3ddfe`), `pl-shared-2.patch` and `pl-shared.patch`, `b-preflight-host-report-2.md`, `b-preflight-host-brief-2.md`, `pl-instruments/` (the round-2 records: `pl-mutations-2.log.txt`, `pl-mutations-2.sh`, `pl-scratch-2.sh`, `pl-r4-round1-base-defaults.log.txt`, and the `pl-*-2.log.txt` gate logs), round 1\'s `pl.diff` and `b-preflight-host-report.md`, the round-1 verdict `pl-audit-verdict.md` and its lane verdicts, and the patched guide `/home/user/veneer-pl/tmp/probe/pl-guide-patched-2.md`',
+        focus='claims 1, 2, and 3 (the coverage reading against C1 and C2, the dimension key against D1 to D5, and the control against S1 to S3)',
+        checker='claims 2, 4, and 5',
+        lanes='the checker (Sonnet) runs blind beside you; the subjective lane is not run this round, by the user\'s instruction to put implementation first, because the round\'s subjective findings (the names and the titles) take the lanes\' own wording',
+        bench='the bench round-tripped at 15:15 (ff-audit-3 launched)'),
 }
 N = sys.argv[1]
 for arg in sys.argv[2:]:
