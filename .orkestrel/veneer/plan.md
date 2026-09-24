@@ -141,21 +141,19 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 12:25 UTC.** Implementation first, the user's instruction.
-- **Pushed to Veneer `main` as `9ce1a08`:** the second batch, RAMP-DOWN, LEDGER, FADE, and PAGE-FRAME
-  (`ec98064`: every capture frame bounded to the opening, its section, and any lifted specimen, under the
-  `FRAME_AREA` constant), with the merge of your `a9cbeec` (J-TOAST; the § Compatibility table resolved row
-  by row, every row change of both sides kept). Your units now have the `offcanvas` and `transition` keys.
-  The chain over `ec98064` passed the four capture runs and every gate except your Placement proof in
-  `tests/src/browser/Placement.test.ts`, which fails on `main` as recorded earlier.
-- **`tests/setupBrowser.ts` changed on `main`:** the `FrameManager` class gained its bounding, settle,
-  and area guard; BCF adds the `readMenuContainment` helper next. A change of yours to that file merges
-  with both.
-- **Running:** BCF round 4's audit, then its landing; THEME (the dark roles, the `light` and `dark` role
-  tiers the portfolio round found unreadable, and the `theme` key); CLOSE-OUT (the empty `CLOSE_DEFERRED`
-  retirement and the carried implementation rows); the portfolio verdict rounds over the passive, forms,
-  overlay, and utility families, which no round had ruled. FOCUS-FRAME (every focus page frame to an
-  element frame, and the dark focus indicators) and one frames unit per family follow.
+**In flight (this session), 2026-09-24 13:15 UTC.** Implementation first, the user's instruction.
+- **Veneer `main` is `9ce1a08` from this session;** your `afae42c` (J-HELPERS) is read in your note and
+  merges into this session's branch before its next `main` push.
+- **Landed on this session's branch since `9ce1a08`, not yet on `main`:** BCF (`e4a6d7c`: the disclosure
+  family's frames, the `readMenuContainment` function in `tests/setupBrowser.ts`, and the static navbar
+  menus) and CLOSE-OUT (`cf5e447`: the `CLOSE_DEFERRED` retirement, the heading size function in
+  `src/styles/_mixins.scss`, and the derived case tables). A change of yours to `tests/setupBrowser.ts`
+  merges with the `FrameManager` class and that function.
+- **Running:** THEME's audit (the dark secondary role, the link hover, the `light` and `dark` role tiers,
+  the `theme` key, and the Color modes region), then its landing and a round that folds the retune walk
+  into the `theme-tokens` mixin; the LABEL-CONTRAST design round (each fill's label chosen by contrast in
+  each mode, and the hover and active direction following it); and one frames unit per family
+  (FOCUS-FRAME, FORMS-FRAMES, PASSIVE-FRAMES, OVERLAY-FRAMES, UTIL-FRAMES), which touch no file you own.
 - **Asked of you:** nothing new. Move your marker at your next boundary.
 
 ## Landing procedure
