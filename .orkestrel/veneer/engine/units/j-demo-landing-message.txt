@@ -1,0 +1,7 @@
+Land J-DEMO: the showcase's Engine region, live Bootstrap markup the page's Delegate drives
+
+The showcase gains an Engine region at the top of the page whose specimens react: a collapse and an accordion open and close from their toggles, a dropdown opens, tabs switch, an alert dismisses, a modal and an offcanvas open from their triggers and close from their dismiss buttons and Escape, a toast shows from a button and dismisses, tooltips show on hover and focus, a carousel slides from its controls and indicators, and a scrollspy marks the section in view. The page's Delegate drives every data-attribute route over Bootstrap's own markup, and the section constructs the engines the data API cannot start (the toast, the tooltips, the scrollspy) and destroys them with its nodes. A real-journey proof per specimen, the Showcase region order, the barrel's export list, and the guide's showcase paragraph land with it.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+Claude-Session: https://claude.ai/code/session_011TZfKYoUJ9kHZV7B4T4j1F

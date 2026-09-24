@@ -1,0 +1,895 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index c8903a7..8c14d95 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -19,6 +19,7 @@ import { ColorSection } from './sections/ColorSection.js'
+ import { FadeSection } from './sections/FadeSection.js'
+ import { ContentSection } from './sections/ContentSection.js'
+ import { DropdownSection } from './sections/DropdownSection.js'
++import { EngineSection } from './sections/EngineSection.js'
+ import { DisplaySection } from './sections/DisplaySection.js'
+ import { FlexSection } from './sections/FlexSection.js'
+ import { FocusRingSection } from './sections/FocusRingSection.js'
+@@ -120,6 +121,7 @@ export class Showcase implements ShowcaseInterface {
+ 		this.#main.append(region)
+ 		this.#host.append(this.#header, this.#main)
+ 		return [
++			new EngineSection(this.#main),
+ 			new ButtonSection(this.#main),
+ 			new ContentSection(this.#main),
+ 			new TypeSection(this.#main),
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index b94e731..e4e95d4 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -13,6 +13,198 @@ export const SHOWCASE_COPY = Object.freeze({
+ /** Names the attribute the showcase's color-mode control carries. */
+ export const SHOWCASE_CONTROL = 'data-control'
+ 
++/** Holds the Engine section's visible copy and accessible name. */
++export const ENGINE_COPY = Object.freeze({
++	region: 'Engine',
++	paragraph:
++		"Open, close, and switch every specimen in this region. The page's Delegate drives each one through Bootstrap's own data attributes and starts the scrollspy, and the region constructs the toast and the tooltips, which the data API does not start.",
++})
++
++/**
++ * Selects the Engine region's tooltip triggers, the selector Bootstrap's documentation passes as
++ * the `selector` option of the tooltip it constructs over a container.
++ */
++export const ENGINE_TOOLTIP_TRIGGER = '[data-bs-toggle="tooltip"]'
++
++/**
++ * Lists the Engine region's specimens in render order: one live specimen per component the engine
++ * drives.
++ *
++ * @remarks
++ * Each specimen is the markup Bootstrap 5.3's documentation gives for the component, with the
++ * courier copy the other regions use, and each carries Bootstrap's own trigger attributes, so the
++ * page's `Delegate` instance drives it with no code of the showcase's. Every id carries the
++ * `engine-` prefix, so no trigger names an element another region renders, and every control's
++ * accessible name is unique to the showcase apart from the release's `Close` labels.
++ *
++ * The data API starts no toast and no tooltip, so the section constructs them: a toast for the
++ * element carrying the toast's `host` token, shown by the button whose `aria-controls` attribute
++ * names it, and one tooltip over the region whose `descendants` option is the
++ * {@link ENGINE_TOOLTIP_TRIGGER} selector. The delegate constructs the scrollspy from the
++ * `data-bs-spy` attribute when the page constructs it after the showcase.
++ *
++ * The specimens depart from the documented examples where the showcase needs it:
++ *
++ * - The toast's show button names the toast through its `aria-controls` attribute, where the
++ *   documentation wires the button by id in page script, and the toast header carries no image.
++ * - The toast announces itself through the `status` role and the polite live region the
++ *   documentation recommends for a toast that is not urgent.
++ * - The dropdown's entries are buttons, which the documentation also shows, so choosing one
++ *   navigates nowhere.
++ * - The scrollspy's panel is the shell's `scroller` box inside its `viewport` frame, which bounds
++ *   its height, where the documentation writes a `scrollspy-example` class its own site styles.
++ *   Each section is a heading the nav links name, as in the documented list-group example.
++ * - The carousel carries no `data-bs-ride` attribute, so it moves only from its controls, and no
++ *   `slide` class, which no rule of the cascade declares, so its slides change without the motion
++ *   the engine runs for that class.
++ */
++export const ENGINE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Live collapse',
++		markup:
++			'<p class="d-inline-flex gap-1"><button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#engine-collapse" aria-expanded="false" aria-controls="engine-collapse">Track parcel 1044</button></p><div class="collapse" id="engine-collapse"><div class="card card-body">Parcel 1044 left the Harbor Street depot at 09:40 and reaches the north loop before noon.</div></div>',
++	}),
++	Object.freeze({
++		name: 'Live accordion',
++		markup:
++			'<div class="accordion" id="engine-accordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#engine-accordion-hours" aria-expanded="true" aria-controls="engine-accordion-hours">Courier hours</button></h2><div id="engine-accordion-hours" class="accordion-collapse collapse show" data-bs-parent="#engine-accordion"><div class="accordion-body">Couriers collect from the Harbor Street depot between 07:00 and 19:00 on working days.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#engine-accordion-limits" aria-expanded="false" aria-controls="engine-accordion-limits">Parcel limits</button></h2><div id="engine-accordion-limits" class="accordion-collapse collapse" data-bs-parent="#engine-accordion"><div class="accordion-body">A courier carries parcels up to 30 kilograms and 120 centimeters on the longest side.</div></div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Live dropdown',
++		markup:
++			'<div class="dropdown"><button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Choose a route</button><ul class="dropdown-menu"><li><button class="dropdown-item" type="button">North loop</button></li><li><button class="dropdown-item" type="button">South loop</button></li><li><button class="dropdown-item" type="button">Harbor run</button></li></ul></div>',
++	}),
++	Object.freeze({
++		name: 'Live tabs',
++		markup: `<ul class="nav nav-tabs" id="engine-tabs" role="tablist">${[
++			{ id: 'parcels', label: 'Parcels' },
++			{ id: 'couriers', label: 'Couriers' },
++			{ id: 'depots', label: 'Depots' },
++		]
++			.map(
++				({ id, label }, index) =>
++					`<li class="nav-item" role="presentation"><button class="nav-link${index === 0 ? ' active' : ''}" id="engine-tab-${id}" data-bs-toggle="tab" data-bs-target="#engine-pane-${id}" type="button" role="tab" aria-controls="engine-pane-${id}" aria-selected="${index === 0}">${label}</button></li>`,
++			)
++			.join('')}</ul><div class="tab-content" id="engine-tab-content">${[
++			{ id: 'parcels', copy: 'Twelve parcels wait at the Harbor Street depot.' },
++			{
++				id: 'couriers',
++				copy: 'Three couriers cover the north loop, the south loop, and the harbor run.',
++			},
++			{ id: 'depots', copy: 'The Harbor Street depot and the Mill Lane depot share one van.' },
++		]
++			.map(
++				({ id, copy }, index) =>
++					`<div class="tab-pane fade${index === 0 ? ' show active' : ''}" id="engine-pane-${id}" role="tabpanel" aria-labelledby="engine-tab-${id}" tabindex="0">${copy}</div>`,
++			)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Live alert',
++		markup:
++			'<div class="alert alert-warning alert-dismissible fade show" role="alert"><strong>Parcel 1045 is held.</strong> The courier needs a signature at the Harbor Street depot.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>',
++	}),
++	Object.freeze({
++		name: 'Live modal',
++		markup:
++			'<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#engine-modal">Open delivery note</button><div class="modal fade" id="engine-modal" tabindex="-1" aria-labelledby="engine-modal-title" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h1 class="modal-title fs-5" id="engine-modal-title">Delivery note</h1><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body">Leave parcel 1046 with the concierge at 12 Harbor Street.</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="button" class="btn btn-primary">Confirm drop-off</button></div></div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Live offcanvas',
++		markup:
++			'<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#engine-offcanvas" aria-controls="engine-offcanvas">Open courier roster</button><div class="offcanvas offcanvas-start" tabindex="-1" id="engine-offcanvas" aria-labelledby="engine-offcanvas-title"><div class="offcanvas-header"><h5 class="offcanvas-title" id="engine-offcanvas-title">Courier roster</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button></div><div class="offcanvas-body"><p>Three couriers work from the Harbor Street depot.</p><ul><li>Ines covers the north loop.</li><li>Tomas covers the south loop.</li><li>Priya covers the harbor run.</li></ul></div></div>',
++	}),
++	Object.freeze({
++		name: 'Live toast',
++		markup:
++			'<button type="button" class="btn btn-primary" aria-controls="engine-toast">Show toast</button><div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="engine-toast" class="toast" role="status" aria-live="polite" aria-atomic="true"><div class="toast-header"><strong class="me-auto">Harbor Street depot</strong><small>1 minute ago</small><button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button></div><div class="toast-body">Parcel 1047 is out for delivery.</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Live tooltips',
++		markup: `<div class="d-flex flex-wrap gap-2">${[
++			{ placement: 'top', label: 'Depot hours', title: 'Open from 07:00 to 19:00' },
++			{ placement: 'right', label: 'Courier desk', title: 'Signs for every parcel' },
++			{ placement: 'bottom', label: 'Loading bay', title: 'Takes pallets until 18:00' },
++		]
++			.map(
++				({ placement, label, title }) =>
++					`<button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="${placement}" data-bs-title="${title}">${label}</button>`,
++			)
++			.join('')}</div>`,
++	}),
++	Object.freeze({
++		name: 'Live carousel',
++		markup: `<div id="engine-carousel" class="carousel"><div class="carousel-indicators">${[0, 1, 2]
++			.map(
++				(index) =>
++					`<button type="button" data-bs-target="#engine-carousel" data-bs-slide-to="${index}"${index === 0 ? ' class="active" aria-current="true"' : ''} aria-label="Stop ${index + 1}"></button>`,
++			)
++			.join('')}</div><div class="carousel-inner">${[
++			{ fill: '%236474a2', ground: '%23986b5b', alt: 'Harbor Street depot at dawn' },
++			{ fill: '%234b7e7e', ground: '%23787848', alt: 'Mill Lane depot at noon' },
++			{ fill: '%23a06090', ground: '%235a7896', alt: 'North loop at dusk' },
++		]
++			.map(
++				({ fill, ground, alt }, index) =>
++					`<div class="carousel-item${index === 0 ? ' active' : ''}"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'%3E%3Crect width='800' height='400' fill='${fill}'/%3E%3Cpath d='M0 400L260 180L480 320L640 220L800 400Z' fill='${ground}'/%3E%3C/svg%3E" class="d-block w-100" alt="${alt}" width="800" height="400"></div>`,
++			)
++			.join(
++				'',
++			)}</div><button class="carousel-control-prev" type="button" data-bs-target="#engine-carousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous stop</span></button><button class="carousel-control-next" type="button" data-bs-target="#engine-carousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next stop</span></button></div>`,
++	}),
++	Object.freeze({
++		name: 'Live scrollspy',
++		markup: `<div class="row"><div class="col-4"><nav id="engine-spy" class="nav nav-pills flex-column">${[
++			{ id: 'pickup', label: 'Pickup' },
++			{ id: 'transit', label: 'Transit' },
++			{ id: 'delivery', label: 'Delivery' },
++		]
++			.map(({ id, label }) => `<a class="nav-link" href="#engine-spy-${id}">${label}</a>`)
++			.join(
++				'',
++			)}</nav></div><div class="col-8"><div class="viewport"><div class="scroller" data-bs-spy="scroll" data-bs-target="#engine-spy" data-bs-smooth-scroll="true" tabindex="0">${[
++			{
++				id: 'pickup',
++				label: 'Pickup',
++				lines: [
++					'A courier collects each parcel from the sender between 07:00 and 11:00.',
++					'The courier scans the label at the door, so the sender sees the pickup at once.',
++					'A parcel too heavy for one courier waits for the van that runs at noon.',
++					'A sender who misses the morning window books the next day from the tracking page, and the booking holds the same courier where the route allows it.',
++					'Every pickup ends at the depot gate, where the courier hands the cage to the sorting hall and signs the gate log with the time and the parcel count.',
++				],
++			},
++			{
++				id: 'transit',
++				label: 'Transit',
++				lines: [
++					'Every parcel reaches the Harbor Street depot before 13:00 and is sorted by loop.',
++					'The sorting hall reads each label twice, once at the belt and once at the cage.',
++					'A parcel bound for another city leaves on the evening train from Mill Lane.',
++					'A parcel the belt cannot read goes to the hand desk, where a clerk types the label in and returns the parcel to its loop before the next cage closes.',
++					'The last cage of the day closes at 13:30, and a parcel that misses it moves to the first cage of the next morning with its route unchanged.',
++				],
++			},
++			{
++				id: 'delivery',
++				label: 'Delivery',
++				lines: [
++					'The afternoon couriers leave the depot at 14:00 with one cage each.',
++					'A courier who finds nobody home leaves a card and tries again the next morning.',
++					'After the second try, the parcel waits at the depot counter for seven days.',
++					'A recipient can name a neighbor or a safe place on the tracking page, and the courier leaves the parcel there and photographs it at the door.',
++					'Each courier returns to the depot by 19:00 and hands back every card, every photograph, and every parcel that could not be left.',
++				],
++			},
++		]
++			.map(
++				({ id, label, lines }) =>
++					`<h4 id="engine-spy-${id}">${label}</h4>${lines.map((line) => `<p>${line}</p>`).join('')}`,
++			)
++			.join('')}</div></div></div></div>`,
++	}),
++])
++
+ /** Holds the Button section's visible copy and accessible name. */
+ export const BUTTON_COPY = Object.freeze({
+ 	region: 'Buttons',
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index d95b7a3..2cfbb9c 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -2,6 +2,7 @@ export * from './types.js'
+ export * from './constants.js'
+ export * from './helpers.js'
+ export * from './Showcase.js'
++export * from './sections/EngineSection.js'
+ export * from './sections/ButtonSection.js'
+ export * from './sections/CardSection.js'
+ export * from './sections/ContentSection.js'
+diff --git a/app/browser/sections/EngineSection.ts b/app/browser/sections/EngineSection.ts
+new file mode 100644
+index 0000000..5b58f96
+--- /dev/null
++++ b/app/browser/sections/EngineSection.ts
+@@ -0,0 +1,68 @@
++import type { ToastInterface, TooltipInterface } from '@src/browser'
++import { TOAST_CLASSES, Toast, Tooltip } from '@src/browser'
++import { AppError } from '@src/core'
++import { ENGINE_COPY, ENGINE_SPECIMENS, ENGINE_TOOLTIP_TRIGGER } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the live engine specimens into a named region and constructs the engines the data API
++ * does not start.
++ *
++ * @remarks
++ * The page's own `Delegate` instance drives every specimen that carries Bootstrap's trigger
++ * attributes, and it constructs the scrollspy when the page constructs it after the showcase. The
++ * section constructs what no data attribute starts: one tooltip over the region whose descendants
++ * matching the `ENGINE_TOOLTIP_TRIGGER` selector take tooltips of their own, and one toast for each
++ * element carrying the toast's `host` token, which every button whose `aria-controls` attribute
++ * names that toast shows. The delegate's dismiss route hides the toast through the same engine.
++ * Destruction releases the button listeners, destroys the engines in construction order, and then
++ * removes the region.
++ *
++ * @example
++ * ```ts
++ * const section = new EngineSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class EngineSection extends SpecimenSection {
++	readonly #engines: Array<TooltipInterface | ToastInterface> = []
++	readonly #controller = new AbortController()
++
++	/**
++	 * Mounts the Engine region and its specimens, then constructs the tooltip and the toasts.
++	 *
++	 * @param host - The element receiving the section.
++	 * @throws Thrown when the region is not the host's last element after mounting, as an `AppError`
++	 *   carrying the `ENGINE_REGION_MISSING` code.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, ENGINE_COPY, ENGINE_SPECIMENS)
++		// The specimen section appends its region as its last act, so the region is the host's last
++		// element here, and every engine is scoped to it rather than to whatever else the host holds.
++		const region = host.lastElementChild
++		if (!(region instanceof HTMLElement)) {
++			throw new AppError('The Engine region is not mounted', 'ENGINE_REGION_MISSING')
++		}
++		this.#engines.push(new Tooltip(region, { descendants: ENGINE_TOOLTIP_TRIGGER }))
++		for (const element of region.querySelectorAll(`.${CSS.escape(TOAST_CLASSES.host)}`)) {
++			if (!(element instanceof HTMLElement)) continue
++			const toast = new Toast(element)
++			this.#engines.push(toast)
++			if (element.id === '') continue
++			for (const trigger of region.querySelectorAll(
++				`[aria-controls="${CSS.escape(element.id)}"]`,
++			)) {
++				trigger.addEventListener('click', () => void toast.show(), {
++					signal: this.#controller.signal,
++				})
++			}
++		}
++	}
++
++	override destroy(): void {
++		this.#controller.abort()
++		for (const engine of this.#engines) engine.destroy()
++		this.#engines.length = 0
++		super.destroy()
++	}
++}
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 82205d6..acb9a42 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -10331,19 +10331,36 @@ regions mount into a `main` element the shell carries no id on: a proof reaches
+ it mounted the showcase into, and each region through its accessible name. The application barrel
+ is a workspace implementation surface and is outside this guide's published API tables.
+ 
++The Engine region leads the regions, and its specimens react. Each one is Bootstrap 5.3's
++documented markup for a component the engine drives, with the courier copy the other regions use:
++a collapse, an accordion, a dropdown, tabs, a dismissible alert, a modal, an offcanvas panel, a
++toast, tooltips, a carousel, and a scrollspy. Each specimen carries Bootstrap's own data
++attributes, so the `Delegate` instance the entry constructs drives it through the data API with no
++code of the showcase's, and the delegate's construction scan starts the scrollspy, because the entry
++constructs the delegate after the showcase. The data API starts no toast and no tooltip, so the
++`EngineSection` class constructs them: one `Tooltip` instance over the region, whose `descendants`
++option gives each `[data-bs-toggle="tooltip"]` trigger a tooltip of its own, and one `Toast`
++instance over the toast, which the button whose `aria-controls` attribute names the toast shows.
++The delegate's dismiss route hides the toast through that same engine, so no host carries two
++engines. The `ENGINE_SPECIMENS` constant states where each specimen departs from the documented
++markup. The proof mounts the region, constructs a delegate over the same host afterwards, as the
++entry does over the document, and drives every specimen through real input; see
++[engine specimens](../tests/app/browser/sections/EngineSection.test.ts).
++
+ The shell's `viewport` class marks a frame that paints nothing. Layout containment makes the frame
+ the containing block of every fixed and absolute element inside it, and paint containment with a
+ clip keeps what such an element overflows inside the frame without making the frame scroll. So a
+ fixed bar holds to the frame's edge, and a backdrop sized to the viewport raises no scrollbar on the
+ frame or on the page. The frame's bounded height holds a default dialog at the 390 viewport and
+ gives a percentage height or offset a definite height to resolve against. In the order the
+-showcase mounts their regions, the Toast region's `Stacked toasts` and `Centered toast` specimens,
+-every Modal specimen, every Offcanvas specimen, every Overflow specimen, every Position specimen,
+-the Sizing region's `Height steps`, `Maximum sizes`, and `Viewport sizes` specimens, and the Navbar
+-region's `Navbar with offcanvas` specimen render inside an element carrying the shell's `viewport`
+-class; the frame clips what an Overflow card under the `visible` value spills and gives the
+-Overflow axis cards a bounded height to share. The sticky bars scroll inside an element carrying
+-the shell's `scroller` class within the frame, because the frame clips rather than scrolls; see
++showcase mounts their regions, the Engine region's `Live scrollspy` specimen, the Toast region's
++`Stacked toasts` and `Centered toast` specimens, every Modal specimen, every Offcanvas specimen,
++every Overflow specimen, every Position specimen, the Sizing region's `Height steps`,
++`Maximum sizes`, and `Viewport sizes` specimens, and the Navbar region's `Navbar with offcanvas`
++specimen render inside an element carrying the shell's `viewport` class; the frame clips what an
++Overflow card under the `visible` value spills and gives the Overflow axis cards a bounded height to
++share. The scrollspy's panel and the sticky bars scroll inside an element carrying the shell's
++`scroller` class within the frame, because the frame clips rather than scrolls; see
+ [position specimens](../tests/app/browser/sections/PositionSection.test.ts), which proves the frame
+ at the 390 and 1280 viewports.
+ 
+@@ -10455,6 +10472,7 @@ The application proofs drive the shell through its interface; see
+ [content specimens](../tests/app/browser/sections/ContentSection.test.ts),
+ [dropdown specimens](../tests/app/browser/sections/DropdownSection.test.ts),
+ [display specimens](../tests/app/browser/sections/DisplaySection.test.ts),
++[engine specimens](../tests/app/browser/sections/EngineSection.test.ts),
+ [fade specimens](../tests/app/browser/sections/FadeSection.test.ts),
+ [flex specimens](../tests/app/browser/sections/FlexSection.test.ts),
+ [focus ring specimens](../tests/app/browser/sections/FocusRingSection.test.ts),
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index 5084426..503ea4c 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -14,6 +14,7 @@ import {
+ 	COLLAPSE_SPECIMENS,
+ 	CONTENT_SPECIMENS,
+ 	DROPDOWN_SPECIMENS,
++	ENGINE_SPECIMENS,
+ 	DISPLAY_SPECIMENS,
+ 	FADE_SPECIMENS,
+ 	FLEX_SPECIMENS,
+@@ -117,6 +118,7 @@ describe('Showcase', () => {
+ 			)
+ 			expect(regions).toStrictEqual([
+ 				'Showcase',
++				'Engine',
+ 				'Buttons',
+ 				'Content',
+ 				'Type',
+@@ -180,6 +182,7 @@ describe('Showcase', () => {
+ 				),
+ 			).toEqual(
+ 				[
++					...ENGINE_SPECIMENS,
+ 					...CONTENT_SPECIMENS,
+ 					...TYPE_SPECIMENS,
+ 					...MEDIA_SPECIMENS,
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 0e33ff3..82e2eda 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -63,6 +63,10 @@ describe('app browser entry', () => {
+ 			'DROPDOWN_SPECIMENS',
+ 			'DisplaySection',
+ 			'DropdownSection',
++			'ENGINE_COPY',
++			'ENGINE_SPECIMENS',
++			'ENGINE_TOOLTIP_TRIGGER',
++			'EngineSection',
+ 			'FADE_COPY',
+ 			'FADE_SPECIMENS',
+ 			'FLEX_COPY',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 5d0886a..85caf38 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -388,6 +388,7 @@ describe('journey', () => {
+ 
+ 	it('refuses a covered host, then activates it once the cover is out of the way', async () => {
+ 		const host = readButton(mounted.section, 'Toggle')
++		host.scrollIntoView({ block: 'center' })
+ 		const box = host.getBoundingClientRect()
+ 		const cover = mount(
+ 			build('div', {
+diff --git a/tests/app/browser/sections/EngineSection.test.ts b/tests/app/browser/sections/EngineSection.test.ts
+new file mode 100644
+index 0000000..4473194
+--- /dev/null
++++ b/tests/app/browser/sections/EngineSection.test.ts
+@@ -0,0 +1,469 @@
++import type { SectionInterface } from '@app/browser'
++import {
++	ENGINE_COPY,
++	ENGINE_SPECIMENS,
++	ENGINE_TOOLTIP_TRIGGER,
++	EngineSection,
++	SpecimenSection,
++} from '@app/browser'
++import { Delegate, ScrollSpy, Toast, TOAST_CLASSES, Tooltip } from '@src/browser'
++import { requireValue, waitForCondition } from '@orkestrel/test'
++import {
++	build,
++	clickAccessibleWithin,
++	mount,
++	pressKeys,
++	readCascade,
++	readClasses,
++	readStyle,
++	traverseAccessible,
++	waitForAnimations,
++} from '@orkestrel/test/browser'
++import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
++import { userEvent } from 'vitest/browser'
++import { readSpecimen } from '../../../setupBrowser.js'
++
++// Every journey here reads a state the published cascade renders and a transition it declares, so
++// the cascade has to be in the document before a click means what it means on the page.
++beforeAll(async () => {
++	await import('../../../../src/styles/index.scss')
++	await import('../../../../app/browser/styles/index.scss')
++})
++
++// Each case mounts the section and then a delegate over the same host, in the order the page's entry
++// constructs the showcase and then its delegate over the document, so the delegate's construction
++// scan finds the scrollspy host the section rendered.
++describe('EngineSection', () => {
++	let host: HTMLElement
++	let section: SectionInterface
++	let delegate: Delegate
++
++	beforeEach(() => {
++		host = mount(build('div'))
++		section = new EngineSection(host)
++		delegate = new Delegate({ root: host })
++	})
++
++	afterEach(() => {
++		delegate.destroy()
++		section.destroy()
++		host.remove()
++	})
++
++	it('renders every engine specimen, in table order, through the shared section contract', () => {
++		expect(section).toBeInstanceOf(SpecimenSection)
++		expect(section.host).toBe(host)
++		const region = requireValue(host.querySelector('section'), 'No Engine region')
++		expect(region.getAttribute('aria-label')).toBe(ENGINE_COPY.region)
++		expect(region.querySelector('p')?.textContent).toBe(ENGINE_COPY.paragraph)
++		const rendered = [...region.querySelectorAll('[data-specimen]')]
++		expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
++			ENGINE_SPECIMENS.map(({ name }) => name),
++		)
++		expect(rendered.map((element) => element.innerHTML)).toEqual(
++			ENGINE_SPECIMENS.map(({ markup }) => markup),
++		)
++		// A trigger naming an id another region renders would drive that region's element, so every
++		// id the region carries is its own.
++		const ids = [...region.querySelectorAll('[id]')].map((element) => element.id)
++		expect(ids.length).toBeGreaterThan(0)
++		expect(ids.filter((id) => !id.startsWith('engine-'))).toStrictEqual([])
++		expect(region.querySelector('[style]')).toBeNull()
++		expect(Object.isFrozen(ENGINE_COPY)).toBe(true)
++		expect(Object.isFrozen(ENGINE_SPECIMENS)).toBe(true)
++		expect(ENGINE_SPECIMENS.every((entry) => Object.isFrozen(entry))).toBe(true)
++	})
++
++	// The mutation this catches is a specimen carrying a class no loaded rule declares, which renders
++	// as nothing and fails silently. The carousel's `slide` class is such a class: the engine reads it
++	// to decide whether a move animates, and no rule of the cascade declares it.
++	it('carries only class tokens the loaded cascade declares', () => {
++		const region = requireValue(host.querySelector('section'), 'No Engine region')
++		const classes = [...readClasses(region)]
++		expect(classes).toContain('carousel')
++		const declared = readCascade()
++		expect(classes.filter((name) => !declared.has(name))).toStrictEqual([])
++	})
++
++	// Each engine the data API cannot start is the section's, one per host, and the delegate's scan
++	// constructed the scrollspy; nothing else in the region holds an engine before a click.
++	it('constructs the tooltip over the region and the toast over its host, and leaves the scrollspy to the delegate', () => {
++		const region = requireValue(host.querySelector('section'), 'No Engine region')
++		if (!(region instanceof HTMLElement))
++			throw new Error('The Engine region is not an HTML element')
++		expect(Tooltip.find(region)?.host).toBe(region)
++		const toast = requireValue(
++			region.querySelector(`.${TOAST_CLASSES.host}`),
++			'The region renders no toast',
++		)
++		if (!(toast instanceof HTMLElement)) throw new Error('The toast is not an HTML element')
++		expect(Toast.find(toast)?.host).toBe(toast)
++		expect(Toast.find(toast)?.shown).toBe(false)
++		const spy = requireValue(
++			region.querySelector('[data-bs-spy="scroll"]'),
++			'The region renders no scrollspy host',
++		)
++		if (!(spy instanceof HTMLElement)) throw new Error('The scrollspy host is not an HTML element')
++		expect(ScrollSpy.find(spy)?.host).toBe(spy)
++		expect(region.querySelectorAll(ENGINE_TOOLTIP_TRIGGER)).toHaveLength(3)
++	})
++
++	it('opens the collapse panel from its toggle and closes it again', async () => {
++		const specimen = readSpecimen(host, 'Live collapse')
++		const toggle = requireValue(specimen.querySelector('button'), 'No collapse toggle')
++		const panel = requireValue(specimen.querySelector('#engine-collapse'), 'No collapse panel')
++		expect(readStyle(panel, 'display')).toBe('none')
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Track parcel 1044')
++		await waitForCondition('the panel settles shown', () => panel.classList.contains('show'))
++		await waitForAnimations(panel)
++		expect(readStyle(panel, 'display')).toBe('block')
++		expect(toggle.getAttribute('aria-expanded')).toBe('true')
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Track parcel 1044')
++		await waitForCondition(
++			'the panel settles hidden',
++			() => !panel.classList.contains('show') && !panel.classList.contains('collapsing'),
++		)
++		expect(readStyle(panel, 'display')).toBe('none')
++		expect(toggle.getAttribute('aria-expanded')).toBe('false')
++	})
++
++	it('opens the second accordion item and closes the first through the shared parent', async () => {
++		const specimen = readSpecimen(host, 'Live accordion')
++		const first = requireValue(specimen.querySelector('#engine-accordion-hours'), 'No first item')
++		const second = requireValue(
++			specimen.querySelector('#engine-accordion-limits'),
++			'No second item',
++		)
++		expect(first.classList.contains('show')).toBe(true)
++		expect(second.classList.contains('show')).toBe(false)
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Parcel limits')
++		await waitForCondition(
++			'the second item settles shown and the first hidden',
++			() =>
++				second.classList.contains('show') &&
++				!first.classList.contains('show') &&
++				!first.classList.contains('collapsing') &&
++				!second.classList.contains('collapsing'),
++		)
++		expect(readStyle(first, 'display')).toBe('none')
++		expect(readStyle(second, 'display')).toBe('block')
++		const buttons = [...specimen.querySelectorAll('.accordion-button')]
++		expect(buttons.map((button) => button.getAttribute('aria-expanded'))).toStrictEqual([
++			'false',
++			'true',
++		])
++		expect(buttons.map((button) => button.classList.contains('collapsed'))).toStrictEqual([
++			true,
++			false,
++		])
++	})
++
++	it('opens the dropdown menu from its toggle and closes it with Escape', async () => {
++		const specimen = readSpecimen(host, 'Live dropdown')
++		const toggle = requireValue(specimen.querySelector('.dropdown-toggle'), 'No dropdown toggle')
++		const menu = requireValue(specimen.querySelector('.dropdown-menu'), 'No dropdown menu')
++		expect(readStyle(menu, 'display')).toBe('none')
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Choose a route')
++		await waitForCondition('the menu opens', () => menu.classList.contains('show'))
++		expect(toggle.getAttribute('aria-expanded')).toBe('true')
++		expect(readStyle(menu, 'display')).toBe('block')
++		await pressKeys('{Escape}')
++		await waitForCondition('the menu closes', () => !menu.classList.contains('show'))
++		expect(toggle.getAttribute('aria-expanded')).toBe('false')
++		expect(readStyle(menu, 'display')).toBe('none')
++		expect(document.activeElement).toBe(toggle)
++	})
++
++	it('switches to the second tab and shows its pane in place of the first', async () => {
++		const specimen = readSpecimen(host, 'Live tabs')
++		const first = requireValue(specimen.querySelector('#engine-pane-parcels'), 'No first pane')
++		const second = requireValue(specimen.querySelector('#engine-pane-couriers'), 'No second pane')
++		expect(readStyle(second, 'display')).toBe('none')
++		await clickAccessibleWithin(ENGINE_COPY.region, 'tab', 'Couriers')
++		await waitForCondition(
++			'the second pane settles shown',
++			() => second.classList.contains('active') && second.classList.contains('show'),
++		)
++		await waitForAnimations(second)
++		expect(first.classList.contains('active')).toBe(false)
++		expect(readStyle(first, 'display')).toBe('none')
++		expect(readStyle(second, 'display')).toBe('block')
++		expect(
++			[...specimen.querySelectorAll('[role="tab"]')].map((tab) =>
++				tab.getAttribute('aria-selected'),
++			),
++		).toStrictEqual(['false', 'true', 'false'])
++	})
++
++	it('dismisses the alert from its close control and takes it out of the document', async () => {
++		const specimen = readSpecimen(host, 'Live alert')
++		const alert = requireValue(specimen.querySelector('.alert'), 'No alert')
++		const close = requireValue(alert.querySelector('[data-bs-dismiss="alert"]'), 'No close control')
++		await userEvent.click(close)
++		await waitForCondition('the alert leaves the document', () => !alert.isConnected)
++		expect(specimen.querySelector('.alert')).toBeNull()
++	})
++
++	it('opens the modal from its trigger, locks the page, and closes from its button and from Escape', async () => {
++		const specimen = readSpecimen(host, 'Live modal')
++		const modal = requireValue(specimen.querySelector('.modal'), 'No modal')
++		const dialog = requireValue(modal.querySelector('.modal-dialog'), 'No dialog')
++		const trigger = requireValue(specimen.querySelector('[data-bs-toggle="modal"]'), 'No trigger')
++		const close = requireValue(
++			modal.querySelector('.modal-footer [data-bs-dismiss="modal"]'),
++			'No footer close button',
++		)
++		expect(readStyle(modal, 'display')).toBe('none')
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Open delivery note')
++		await waitForCondition('the modal shows', () => modal.classList.contains('show'))
++		await waitForAnimations(dialog)
++		expect(readStyle(modal, 'display')).toBe('block')
++		expect(modal.getAttribute('aria-modal')).toBe('true')
++		expect(modal.hasAttribute('aria-hidden')).toBe(false)
++		expect(document.body.classList.contains('modal-open')).toBe(true)
++		expect(readStyle(document.body, 'overflow')).toBe('hidden')
++		expect(document.querySelector('.modal-backdrop.show')).not.toBeNull()
++		await userEvent.click(close)
++		// The hide writes the modal's display first and releases the page last, after the backdrop's fade,
++		// so the page reads unlocked only when the whole hide has run.
++		await waitForCondition(
++			'the modal hides and releases the page',
++			() =>
++				readStyle(modal, 'display') === 'none' && !document.body.classList.contains('modal-open'),
++		)
++		expect(modal.getAttribute('aria-hidden')).toBe('true')
++		expect(document.body.classList.contains('modal-open')).toBe(false)
++		expect(readStyle(document.body, 'overflow')).not.toBe('hidden')
++		expect(document.querySelector('.modal-backdrop')).toBeNull()
++		expect(document.activeElement).toBe(trigger)
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Open delivery note')
++		await waitForCondition('the modal shows again', () => modal.classList.contains('show'))
++		await waitForAnimations(dialog)
++		expect(document.activeElement).toBe(modal)
++		await pressKeys('{Escape}')
++		await waitForCondition(
++			'Escape hides the modal and releases the page',
++			() =>
++				readStyle(modal, 'display') === 'none' && !document.body.classList.contains('modal-open'),
++		)
++		expect(document.body.classList.contains('modal-open')).toBe(false)
++		expect(document.activeElement).toBe(trigger)
++	})
++
++	it('opens the offcanvas panel from its trigger and closes it from its close control', async () => {
++		const specimen = readSpecimen(host, 'Live offcanvas')
++		const panel = requireValue(specimen.querySelector('.offcanvas'), 'No offcanvas panel')
++		const trigger = requireValue(
++			specimen.querySelector('[data-bs-toggle="offcanvas"]'),
++			'No trigger',
++		)
++		const close = requireValue(
++			panel.querySelector('[data-bs-dismiss="offcanvas"]'),
++			'No close control',
++		)
++		expect(readStyle(panel, 'visibility')).toBe('hidden')
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Open courier roster')
++		await waitForCondition(
++			'the panel settles shown',
++			() => panel.classList.contains('show') && !panel.classList.contains('showing'),
++		)
++		await waitForAnimations(panel)
++		expect(readStyle(panel, 'visibility')).toBe('visible')
++		expect(panel.getAttribute('aria-modal')).toBe('true')
++		await userEvent.click(close)
++		await waitForCondition(
++			'the panel settles hidden',
++			() => !panel.classList.contains('show') && !panel.classList.contains('hiding'),
++		)
++		expect(readStyle(panel, 'visibility')).toBe('hidden')
++		expect(document.activeElement).toBe(trigger)
++	})
++
++	it('shows the toast from its button and hides it from its close control', async () => {
++		const specimen = readSpecimen(host, 'Live toast')
++		const toast = requireValue(specimen.querySelector('.toast'), 'No toast')
++		const close = requireValue(toast.querySelector('[data-bs-dismiss="toast"]'), 'No close control')
++		expect(readStyle(toast, 'display')).toBe('none')
++		if (!(toast instanceof HTMLElement)) throw new Error('The toast is not an HTML element')
++		const engine = requireValue(Toast.find(toast), 'The section constructed no toast')
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Show toast')
++		await waitForCondition(
++			'the toast shows',
++			() => toast.classList.contains('show') && !toast.classList.contains('showing'),
++		)
++		expect(readStyle(toast, 'display')).toBe('block')
++		await userEvent.click(close)
++		await waitForCondition(
++			'the toast hides',
++			() => !toast.classList.contains('show') && !toast.classList.contains('showing'),
++		)
++		expect(readStyle(toast, 'display')).toBe('none')
++		// The delegate's dismiss route hid the toast through the section's engine rather than one of its
++		// own, so the host still carries the engine the section constructed.
++		expect(Toast.find(toast)).toBe(engine)
++	})
++
++	it('shows a tooltip under the pointer and under focus, and takes it away when each leaves', async () => {
++		const specimen = readSpecimen(host, 'Live tooltips')
++		const paragraph = requireValue(host.querySelector('section > p'), 'No lead paragraph')
++		const [top, right, bottom] = [...specimen.querySelectorAll(ENGINE_TOOLTIP_TRIGGER)]
++		const hovered = requireValue(top, 'No top trigger')
++		const focused = requireValue(right, 'No right trigger')
++		const next = requireValue(bottom, 'No bottom trigger')
++		await userEvent.hover(hovered)
++		await waitForCondition('the hovered tip shows', () =>
++			[...document.querySelectorAll('.tooltip.show')].some(
++				(tip) => tip.textContent === 'Open from 07:00 to 19:00',
++			),
++		)
++		const tip = requireValue(document.querySelector('.tooltip.show'), 'No shown tip')
++		expect(tip.getAttribute('role')).toBe('tooltip')
++		expect(hovered.getAttribute('aria-describedby')).toBe(tip.id)
++		await userEvent.hover(paragraph)
++		await waitForCondition('the hovered tip leaves', () => !tip.isConnected)
++		expect(hovered.hasAttribute('aria-describedby')).toBe(false)
++		await traverseAccessible('Courier desk')
++		expect(document.activeElement).toBe(focused)
++		await waitForCondition('the focused tip shows', () =>
++			[...document.querySelectorAll('.tooltip.show')].some(
++				(shown) => shown.textContent === 'Signs for every parcel',
++			),
++		)
++		await pressKeys('{Tab}')
++		expect(document.activeElement).toBe(next)
++		await waitForCondition(
++			'the tip follows focus',
++			() =>
++				[...document.querySelectorAll('.tooltip')].map((shown) => shown.textContent).join() ===
++				'Takes pallets until 18:00',
++		)
++		expect(focused.hasAttribute('aria-describedby')).toBe(false)
++		await pressKeys('{Escape}')
++		await waitForCondition(
++			'Escape takes the focused tip away',
++			() => document.querySelector('.tooltip') === null,
++		)
++	})
++
++	it('slides the carousel from its next control and from an indicator', async () => {
++		const specimen = readSpecimen(host, 'Live carousel')
++		const items = [...specimen.querySelectorAll('.carousel-item')]
++		const indicators = [...specimen.querySelectorAll('[data-bs-slide-to]')]
++		expect(items.map((item) => item.classList.contains('active'))).toStrictEqual([
++			true,
++			false,
++			false,
++		])
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Next stop')
++		await waitForCondition('the second slide settles', () =>
++			items.every(
++				(item, position) =>
++					item.classList.contains('active') === (position === 1) &&
++					!item.classList.contains('carousel-item-next') &&
++					!item.classList.contains('carousel-item-prev'),
++			),
++		)
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Next stop')
++		await waitForCondition('the third slide settles', () =>
++			items.every(
++				(item, position) =>
++					item.classList.contains('active') === (position === 2) &&
++					!item.classList.contains('carousel-item-next') &&
++					!item.classList.contains('carousel-item-prev'),
++			),
++		)
++		expect(indicators.map((indicator) => indicator.hasAttribute('aria-current'))).toStrictEqual([
++			false,
++			false,
++			true,
++		])
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Stop 2')
++		await waitForCondition('the second slide settles again', () =>
++			items.every(
++				(item, position) =>
++					item.classList.contains('active') === (position === 1) &&
++					!item.classList.contains('carousel-item-next') &&
++					!item.classList.contains('carousel-item-prev'),
++			),
++		)
++		expect(indicators.map((indicator) => indicator.classList.contains('active'))).toStrictEqual([
++			false,
++			true,
++			false,
++		])
++	})
++
++	it('marks the link of the section in view as the panel scrolls, from the keyboard and from a link', async () => {
++		const specimen = readSpecimen(host, 'Live scrollspy')
++		const panel = requireValue(specimen.querySelector('[data-bs-spy="scroll"]'), 'No spy panel')
++		const links = [...specimen.querySelectorAll('.nav-link')]
++		expect(panel.scrollHeight).toBeGreaterThan(panel.clientHeight)
++		await waitForCondition(
++			'the first link turns active',
++			() =>
++				links
++					.filter((link) => link.classList.contains('active'))
++					.map((link) => link.textContent)
++					.join() === 'Pickup',
++		)
++		const line = requireValue(panel.querySelector('p'), 'No paragraph in the panel')
++		await userEvent.click(line)
++		expect(document.activeElement).toBe(panel)
++		await pressKeys('{End}')
++		await waitForCondition(
++			'the last link turns active',
++			() =>
++				links
++					.filter((link) => link.classList.contains('active'))
++					.map((link) => link.textContent)
++					.join() === 'Delivery',
++		)
++		expect(panel.scrollTop).toBeGreaterThan(0)
++		const hash = location.hash
++		await clickAccessibleWithin(ENGINE_COPY.region, 'link', 'Transit')
++		await waitForCondition(
++			'the middle link turns active',
++			() =>
++				links
++					.filter((link) => link.classList.contains('active'))
++					.map((link) => link.textContent)
++					.join() === 'Transit',
++		)
++		expect(location.hash).toBe(hash)
++	})
++
++	it('destroys the tooltip, then the toast, then removes the region, and releases every host', async () => {
++		const region = requireValue(host.querySelector('section'), 'No Engine region')
++		if (!(region instanceof HTMLElement))
++			throw new Error('The Engine region is not an HTML element')
++		const toast = requireValue(region.querySelector('.toast'), 'No toast')
++		if (!(toast instanceof HTMLElement)) throw new Error('The toast is not an HTML element')
++		await clickAccessibleWithin(ENGINE_COPY.region, 'button', 'Show toast')
++		await waitForCondition('the toast shows', () => toast.classList.contains('show'))
++		await userEvent.hover(requireValue(region.querySelector(ENGINE_TOOLTIP_TRIGGER), 'No trigger'))
++		await waitForCondition('a tip shows', () => document.querySelector('.tooltip.show') !== null)
++		const tip = requireValue(document.querySelector('.tooltip'), 'No tip')
++		const observer = new MutationObserver(() => {})
++		observer.observe(document.body, { attributes: true, childList: true, subtree: true })
++		section.destroy()
++		const records = observer.takeRecords()
++		observer.disconnect()
++		const removed = records.findIndex((record) => [...record.removedNodes].includes(tip))
++		const restored = records.findIndex(
++			(record) => record.target === toast && record.attributeName === 'class',
++		)
++		const unmounted = records.findIndex((record) => [...record.removedNodes].includes(region))
++		expect(removed).toBeGreaterThanOrEqual(0)
++		expect(restored).toBeGreaterThan(removed)
++		expect(unmounted).toBeGreaterThan(restored)
++		expect(toast.classList.contains('show')).toBe(false)
++		expect(region.isConnected).toBe(false)
++		// Each host is released, so each takes a fresh engine: a section that left its engines alive
++		// would leave the region and the toast owned for the page's whole life.
++		expect(Tooltip.find(region)).toBeUndefined()
++		expect(Toast.find(toast)).toBeUndefined()
++		const reclaimed = [new Tooltip(region), new Toast(toast)]
++		for (const engine of reclaimed) engine.destroy()
++		expect(reclaimed.map((engine) => engine.host)).toStrictEqual([region, toast])
++	})
++})
