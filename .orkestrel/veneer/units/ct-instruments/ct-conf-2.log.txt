@@ -1,0 +1,30 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-ct/tmp/probe/ct-copy
+
+·······x··················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:309:2
+    307|  // partial declares under a dark selector, so a planted value on thos…
+    308|  // departure once the key ships and as nothing while it is withheld, …
+    309|  it('measures the dark component rules under the theme key, and leaves…
+       |  ^
+    310|   const dark = [
+    311|    ['[data-bs-theme=dark] .form-select', '--bs-form-select-bg-img'],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 passed (26)
+   Start at  11:46:10
+   Duration  36.96s (transform 809ms, setup 243ms, import 13.64s, tests 22.92s, environment 0ms)
+

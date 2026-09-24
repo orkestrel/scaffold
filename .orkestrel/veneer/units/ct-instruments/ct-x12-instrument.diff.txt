@@ -1,0 +1,14 @@
+--- tests/setupServer.ts	2026-09-24 11:38:00.501222006 +0000
++++ tmp/probe/ct-setupServer.instrumented.ts	2026-09-24 11:38:07.238469699 +0000
+@@ -2548,6 +2548,11 @@
+ 			]
+ 			for (const block of blocks) {
+ 				const emitted = block.declarations.get(property)
++				if (emitted !== undefined)
++					Reflect.set(globalThis, 'ctFallback', [
++						...(Reflect.get(globalThis, 'ctFallback') ?? []),
++						[component, property, block.selector, block.condition ?? '', emitted, values.join(' / ')],
++					])
+ 				if (emitted === undefined || values.includes(emitted)) continue
+ 				const site = describeSite(block.selector, block.condition, property)
+ 				const holder = claimed.get(site)

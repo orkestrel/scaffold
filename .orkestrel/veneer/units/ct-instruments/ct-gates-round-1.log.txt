@@ -1,0 +1,14 @@
+1	/home/user/veneer-ct	npx oxfmt --config .oxfmtrc.json --check src/styles/_tokens.scss src/styles/_theme.scss tests/src/styles/theme.test.ts tests/src/styles/tokens.test.ts tests/setupServer.ts tests/setupServer.test.ts app/browser/sections/ColorModeSection.ts tests/app/browser/sections/ColorModeSection.test.ts	0	Finished in 93ms on 8 files using 4 threads.
+2	/home/user/veneer-ct	npm run lint:check	0	(no result line; exit only)
+3	tmp/probe/ct-copy	npm run format:check	0	Finished in 16957ms on 463 files using 4 threads.
+4	tmp/probe/ct-copy	npm run lint:check	0	(no result line; exit only)
+5	tmp/probe/ct-copy	npm run check	0	(no result line; exit only)
+6	/home/user/veneer-ct	npm run build:src	0	✓ built in 2.27s
+7	tmp/probe/ct-copy	npm run build:src	0	✓ built in 1.83s
+8	tmp/probe/ct-copy	npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/theme.test.ts tests/src/styles/tokens.test.ts	0	Tests  44 passed (44)
+9	tmp/probe/ct-copy	npm run test:setup	0	Tests  302 passed (302)
+10	tmp/probe/ct-copy	npm run test:conformance	0	Tests  26 passed (26)
+11	tmp/probe/ct-copy	npm run test:guides	0	Tests  19 passed (19)
+12	tmp/probe/ct-copy	npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/sections/ColorModeSection.test.ts tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts	0	Tests  9 passed (9)
+13	tmp/probe/ct-copy	npm run test:policy	0	Tests  109 passed | 1 skipped (110)
+14	tmp/probe/ct-copy	npx vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot	0	Tests  1357 passed (1357)

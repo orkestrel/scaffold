@@ -1,0 +1,39 @@
+import { writeFileSync } from 'node:fs'
+import { expect, it } from 'vitest'
+import {
+	collectLedger,
+	collectShippedComponents,
+	compileExpandedCascade,
+	describeAddition,
+	describeDeparture,
+	readAdditions,
+	readCompatibility,
+	readDepartures,
+	readOracleInventory,
+	scanLedgerDrift,
+} from '../../tests/setupServer.js'
+
+it('dumps the theme ledger', () => {
+	const cascade = compileExpandedCascade()
+	const inventory = readOracleInventory()
+	const shipped = collectShippedComponents(readCompatibility())
+	const measured = collectLedger(cascade, inventory, shipped)
+	const departures = scanLedgerDrift(measured.departures, readDepartures(), describeDeparture)
+	const additions = scanLedgerDrift(measured.additions, readAdditions(), describeAddition)
+	const out = process.env.CT_LEDGER_OUT ?? 'tmp/probe/ct-ledger.json'
+	writeFileSync(
+		out,
+		JSON.stringify(
+			{
+				departures: measured.departures.filter((row) => row.component === 'theme'),
+				unrecordedDepartures: departures.unrecorded,
+				staleDepartures: departures.stale,
+				unrecordedAdditions: additions.unrecorded,
+				staleAdditions: additions.stale,
+			},
+			undefined,
+			'\t',
+		),
+	)
+	expect(shipped).toContain('theme')
+})

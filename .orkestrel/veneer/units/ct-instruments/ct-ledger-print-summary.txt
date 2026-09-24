@@ -1,0 +1,6 @@
+removed guide lines: 304
+command: npm run test:conformance
+exit: 1
+summary: Tests  4 failed | 22 passed (26)
+printed rows: 304
+restored: identical
