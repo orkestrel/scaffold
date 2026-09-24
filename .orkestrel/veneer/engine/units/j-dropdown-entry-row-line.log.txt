@@ -1,8 +1,0 @@
- FAIL  |src:browser (chromium)| tests/src/browser/Delegate.test.ts:1055:2 > Delegate > routes dropdown clicks by a replaced trigger selector alone and constructs each engine with the dropdown group
-AssertionError: expected <button type="button" …(2)></button> to be <button type="button" …(2)></button> // Object.is equality
- ❯ tests/src/browser/Delegate.test.ts:1089:33
-    1087|    new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key…
-    1088|   )
-    1089|   expect(document.activeElement).toBe(root.querySelector('#entry'))
-    1090|   delegate.destroy()
-    1091|   expect(replacement.hasAttribute('class')).toBe(false)

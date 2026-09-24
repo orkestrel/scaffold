@@ -1,7 +1,0 @@
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
- FAIL  |src:browser (chromium)| tests/src/browser/Button.test.ts:361:2 > Button > writes and dispatches the state the host carries when a reaction to its token write toggles again
-AssertionError: expected true to be false // Object.is equality
- FAIL  |src:browser (chromium)| tests/src/browser/ColorMode.test.ts:97:2 > ColorMode > writes the mode the root carries to storage when a reaction to its attribute write applies the other mode
-AssertionError: expected 'dark' to be 'light' // Object.is equality
- Test Files  2 failed | 6 passed (8)
-      Tests  2 failed | 134 passed (136)

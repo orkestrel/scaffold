@@ -1,5 +1,0 @@
---- a/tests/app/browser/sections/ButtonSection.test.ts
-+++ b/tests/app/browser/sections/ButtonSection.test.ts
-@@ -133 +133 @@
--			expect(raised instanceof Error && raised.message).toBe('Button host already has a live owner')
-+			expect(raised instanceof Error && raised.message).toBe('Host already has a live owner')

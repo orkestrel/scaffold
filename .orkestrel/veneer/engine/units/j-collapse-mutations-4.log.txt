@@ -1,2 +1,0 @@
-RED  exit=0 | the collapse route runs after the delegate is destroyed | tests/src/browser/Delegate.test.ts -t "drives no route and no panel after a listener destroys the delegate" | 1 passed | 28 skipped (29)
-RED  exit=1 | the panel loop runs after the delegate is destroyed | tests/src/browser/Delegate.test.ts -t "drives no route and no panel after a listener destroys the delegate" | 1 failed | 28 skipped (29)
