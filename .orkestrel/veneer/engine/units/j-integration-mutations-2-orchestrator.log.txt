@@ -1,0 +1,187 @@
+# The Orchestrator's re-run of the J-INTEGRATION round-2 mutations (2026-09-24, Chromium 153.0.8010.12), worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/integration
+mutations-2 exit=0
+mutations-2b exit=0
+every source restored byte for byte (the Orchestrator's digest)
+--- mutations-2.summary.log.txt
+== m2-modal-reshow-display (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+ FAIL tests/src/browser/Modal.test.ts:1348:2 > Modal > writes nothing more of the returning step after a reaction inside it destroys the modal
+      Tests  2 failed | 41 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-reshow-aria-hidden (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+      Tests  1 failed | 42 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-reshow-aria-modal (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+      Tests  1 failed | 42 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-reshow-role (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+      Tests  1 failed | 42 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-reshow-backdrop (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+      Tests  1 failed | 42 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-reinsert (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+      Tests  1 failed | 42 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-rehide-display (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:979:2 > Modal > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+ FAIL tests/src/browser/Modal.test.ts:1223:2 > Modal > returns the host to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+      Tests  2 failed | 41 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-rehide-aria-hidden (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:979:2 > Modal > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+ FAIL tests/src/browser/Modal.test.ts:1223:2 > Modal > returns the host to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+      Tests  2 failed | 41 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-rehide-aria-modal (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:979:2 > Modal > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+ FAIL tests/src/browser/Modal.test.ts:1223:2 > Modal > returns the host to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+      Tests  2 failed | 41 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-rehide-role (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:979:2 > Modal > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+ FAIL tests/src/browser/Modal.test.ts:1223:2 > Modal > returns the host to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+      Tests  2 failed | 41 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-rehide-backdrop (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:979:2 > Modal > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+ FAIL tests/src/browser/Modal.test.ts:1071:2 > Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+ FAIL tests/src/browser/Modal.test.ts:1223:2 > Modal > returns the host to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+ FAIL tests/src/browser/Modal.test.ts:1348:2 > Modal > writes nothing more of the returning step after a reaction inside it destroys the modal
+ FAIL tests/src/browser/Modal.test.ts:1553:2 > Modal > releases the scroll lock and the open token a show the host took over held at a later show and its hide, the backdrop already gone
+      Tests  5 failed | 38 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-modal-lifetime (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:674:2 > Modal > abandons a show in flight on destruction, resolving false and restoring the host, the body, and the page
+ FAIL tests/src/browser/Modal.test.ts:1348:2 > Modal > writes nothing more of the returning step after a reaction inside it destroys the modal
+      Tests  2 failed | 41 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+== m2-offcanvas-reshow-hiding (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1716:2 > Offcanvas > returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+ FAIL tests/src/browser/Offcanvas.test.ts:2051:2 > Offcanvas > stops a hide whose token removal a reaction answers by adding the shown token back, writing only the hiding token's removal and dispatching no hidden event
+      Tests  3 failed | 46 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-offcanvas-reshow-aria-modal (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:1192:2 > Offcanvas > stops each write sequence at the door after a write whose reaction takes the change over, writing only the return to the state the host chose
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1716:2 > Offcanvas > returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+ FAIL tests/src/browser/Offcanvas.test.ts:2005:2 > Offcanvas > writes nothing more of the returning step after a reaction inside it destroys the panel
+      Tests  4 failed | 45 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-offcanvas-reshow-role (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:1192:2 > Offcanvas > stops each write sequence at the door after a write whose reaction takes the change over, writing only the return to the state the host chose
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1716:2 > Offcanvas > returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+      Tests  3 failed | 46 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-offcanvas-reshow-backdrop (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1716:2 > Offcanvas > returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+      Tests  2 failed | 47 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-offcanvas-reinsert (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1716:2 > Offcanvas > returns the panel and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+      Tests  2 failed | 47 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-offcanvas-rehide-showing (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1658:2 > Offcanvas > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+ FAIL tests/src/browser/Offcanvas.test.ts:1870:2 > Offcanvas > returns the panel to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+      Tests  3 failed | 46 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-offcanvas-rehide-aria-modal (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:1192:2 > Offcanvas > stops each write sequence at the door after a write whose reaction takes the change over, writing only the return to the state the host chose
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1658:2 > Offcanvas > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+ FAIL tests/src/browser/Offcanvas.test.ts:1870:2 > Offcanvas > returns the panel to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+      Tests  4 failed | 45 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-offcanvas-rehide-role (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:1192:2 > Offcanvas > stops each write sequence at the door after a write whose reaction takes the change over, writing only the return to the state the host chose
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1658:2 > Offcanvas > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+ FAIL tests/src/browser/Offcanvas.test.ts:1870:2 > Offcanvas > returns the panel to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+      Tests  4 failed | 45 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-offcanvas-rehide-backdrop (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:1192:2 > Offcanvas > stops each write sequence at the door after a write whose reaction takes the change over, writing only the return to the state the host chose
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1658:2 > Offcanvas > stops a show whose shown-token write a reaction answers by removing the token, writing only the return to the hidden state and dispatching no shown event, and releases what it held at a hide after the token returns
+ FAIL tests/src/browser/Offcanvas.test.ts:1870:2 > Offcanvas > returns the panel to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+      Tests  4 failed | 45 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-offcanvas-lifetime (tests/src/browser/Offcanvas.test.ts)
+before: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+ FAIL tests/src/browser/Offcanvas.test.ts:767:2 > Offcanvas > abandons a show in flight on destruction, resolving false and restoring the host, the body, and the page
+ FAIL tests/src/browser/Offcanvas.test.ts:1115:2 > Offcanvas > stops each write sequence at the door after a write whose reaction destroys the panel, writing and dispatching nothing more
+ FAIL tests/src/browser/Offcanvas.test.ts:1285:2 > Offcanvas > writes only the return to the state the host chose after a reaction to a backdrop write stops the change, and completes a change whose reaction only calls the opposite method
+ FAIL tests/src/browser/Offcanvas.test.ts:1417:2 > Offcanvas > writes nothing after a destruction during the slide-out, resolving the hide false
+ FAIL tests/src/browser/Offcanvas.test.ts:2005:2 > Offcanvas > writes nothing more of the returning step after a reaction inside it destroys the panel
+      Tests  5 failed | 44 passed (49)
+run exit: 1
+after: 64cd5e42a5fb929ecc787a557c65da4821cfc198b106ef135cda4a619fd83418 *src/browser/Offcanvas.ts
+== m2-backdrop-identity (tests/src/browser/Backdrop.test.ts)
+before: f332c33165428cf188a705d9ff2e2cb1ac7f0dc2a6cc5937a2688968454a104e *src/browser/Backdrop.ts
+ FAIL tests/src/browser/Backdrop.test.ts:175:2 > Backdrop > writes no shown token after a reaction inside its insertion starts later calls, resolving false
+      Tests  1 failed | 9 passed (10)
+run exit: 1
+after: f332c33165428cf188a705d9ff2e2cb1ac7f0dc2a6cc5937a2688968454a104e *src/browser/Backdrop.ts
+done
+--- mutations-2b.summary.log.txt
+== m2-modal-lifetime (tests/src/browser/Modal.test.ts)
+before: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+ FAIL tests/src/browser/Modal.test.ts:674:2 > Modal > abandons a show in flight on destruction, resolving false and restoring the host, the body, and the page
+ FAIL tests/src/browser/Modal.test.ts:1348:2 > Modal > writes nothing more of the returning step after a reaction inside it destroys the modal
+      Tests  2 failed | 41 passed (43)
+run exit: 1
+after: 49d548dc4117423e31f409da031ab2ae117908fce57ed3b42ff435ad32c98b29 *src/browser/Modal.ts
+done

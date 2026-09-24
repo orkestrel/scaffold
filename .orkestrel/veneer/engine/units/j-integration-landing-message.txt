@@ -1,0 +1,10 @@
+Return a modal or offcanvas change the host takes over to the state it chose, and prove the modal under its shipped styles
+
+A hide the host takes over now returns everything that hide wrote to the shown state (E22): the host's display, its `aria-hidden`, `aria-modal`, and `role`, the offcanvas `hiding` token, and the backdrop, re-inserted when the hide had already removed it. A show the host takes over returns its writes to the hidden state and removes the backdrop it inserted. The returning step reads only the engine's lifetime before each write, so a reaction that destroys the engine inside it leaves the snapshot's restoration alone. The scroll lock and the isolation keep their held-until-released rule. Before this, a stopped hide could leave a shown backdrop over a host already made invisible, or a shown host with no backdrop.
+
+The backdrop's insertion, the offcanvas show's backdrop insertion, and the modal hide's backdrop removal each read their door after the write, and `Backdrop.show` moves nothing when its parent already holds the element. The Modal proofs load the shipped `modal`, `fade`, and token partials instead of a test-local sheet, and a Delegate case proves the per-click mark keeps one entry per route. `HostSnapshot`'s private shapes stay repeated: the one declaration form the tools accept would publish them.
+
+Every case read red before its fix, each rollback write and door has a mutation that reddens it, and the Orchestrator re-ran them with its own digests.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K
