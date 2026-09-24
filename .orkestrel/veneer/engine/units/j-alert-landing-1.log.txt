@@ -1,0 +1,35 @@
+# J-ALERT landing, step 1: the patches, the landing commit, and the merge of main (2026-09-24)
+no patches directory; the report's patches are applied by hand before this step or none exist
+ M guides/veneer.md
+ A src/browser/Alert.ts
+ M src/browser/Delegate.ts
+ M src/browser/constants.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ A tests/src/browser/Alert.test.ts
+ M tests/src/browser/Delegate.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/validators.test.ts
+[unit/alert f2a8c84] Land J-ALERT: the Alert engine and the delegate's dismiss route
+ 11 files changed, 1601 insertions(+), 60 deletions(-)
+ create mode 100644 src/browser/Alert.ts
+ create mode 100644 tests/src/browser/Alert.test.ts
+landing commit exit=0
+f2a8c84 Land J-ALERT: the Alert engine and the delegate's dismiss route
+e24e2c3 Select the rows whose Proof cell is a dash in the setup proof, now that a plugin row names its proof file
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+88cb691 Merge Veneer main into the styles session branch
+Auto-merging guides/veneer.md
+CONFLICT (content): Merge conflict in guides/veneer.md
+Auto-merging src/browser/Delegate.ts
+CONFLICT (content): Merge conflict in src/browser/Delegate.ts
+Auto-merging src/browser/validators.ts
+Automatic merge failed; fix conflicts and then commit the result.
+merge main into unit/alert exit=1
+conflicts: guides/veneer.md
+src/browser/Delegate.ts
