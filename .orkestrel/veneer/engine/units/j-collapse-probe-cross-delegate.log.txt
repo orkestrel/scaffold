@@ -1,0 +1,28 @@
+# The Orchestrator's probe of referral R1 (a same-host click across two delegates) on the J-COLLAPSE round-3 source (2026-09-24, Chromium 153.0.8010.12; worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse; the probe file is retained beside this log and was removed from the worktree after the run)
+eab447e Merge branch 'main' into unit/collapse
+npm notice run @orkestrel/veneer@0.0.1 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/j-collapse-probe-cross-delegate.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/collapse
+
+10:49:53 PM [vite] [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+stdout | tests/src/browser/j-collapse-probe-cross-delegate.test.ts:14:2 > probe R1: a same-host click across two delegates > records which engines two delegates construct on one element
+probe R1 (panel click) events: [["toggle.vn.button"]]
+stdout | tests/src/browser/j-collapse-probe-cross-delegate.test.ts:14:2 > probe R1: a same-host click across two delegates > records which engines two delegates construct on one element
+probe R1 (panel click) Button.find: true Collapse.find: false
+stdout | tests/src/browser/j-collapse-probe-cross-delegate.test.ts:14:2 > probe R1: a same-host click across two delegates > records which engines two delegates construct on one element
+probe R1 (panel click) panel tokens: ["collapse","active"] aria-pressed: true
+stdout | tests/src/browser/j-collapse-probe-cross-delegate.test.ts:14:2 > probe R1: a same-host click across two delegates > records which engines two delegates construct on one element
+probe R1 (trigger click) events: [["show.vn.collapse"],["shown.vn.collapse"]]
+stdout | tests/src/browser/j-collapse-probe-cross-delegate.test.ts:14:2 > probe R1: a same-host click across two delegates > records which engines two delegates construct on one element
+probe R1 (trigger click) Button.find: true Collapse.find: true
+stdout | tests/src/browser/j-collapse-probe-cross-delegate.test.ts:14:2 > probe R1: a same-host click across two delegates > records which engines two delegates construct on one element
+probe R1 (trigger click) panel tokens: ["active","collapse","show"]
+·
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  22:49:53
+   Duration  1.41s (transform 0ms, setup 197ms, import 11ms, tests 115ms, environment 0ms)
+
+probe exit=0
