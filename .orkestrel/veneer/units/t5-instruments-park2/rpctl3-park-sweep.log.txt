@@ -1,7 +1,0 @@
-park (-1, -1) exit=1 primary-parked capturing 0,0
-park (-1000, -1000) exit=1 primary-parked capturing 0,0
-park (801, -1) exit=1 primary-parked capturing 0,0
-park (-1, 514) exit=1 primary-parked capturing 0,0
-park (801, 514) exit=1 primary-parked capturing 0,0
-park (5000, 5000) exit=1 primary-parked capturing 0,0
-restored ok

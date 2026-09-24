@@ -30,18 +30,18 @@ them; this unit closes L1 to L5.
 
 | Gate | Command | Exit | Log |
 | --- | --- | --- | --- |
-| Format | `npm run format:check` | 0 | `tmp/units/apt-4-format.log.txt` |
-| Lint | `npm run lint:check` | 0 | `tmp/units/apt-4-lint.log.txt` |
-| Typecheck | `npm run check` | 0 | `tmp/units/apt-4-check.log.txt` |
-| Guides test | `npm run test:guides` | 0 | `tmp/units/apt-4-test-guides.log.txt` |
-| Styles build | `npm run build:src:styles` | 0 | `tmp/units/apt-4-build-styles.log.txt` |
+| Format | `npm run format:check` | 0 | `/home/user/scaffold/.orkestrel/veneer/units/apt-instruments-4/apt-4-format.log.txt` |
+| Lint | `npm run lint:check` | 0 | `/home/user/scaffold/.orkestrel/veneer/units/apt-instruments-4/apt-4-lint.log.txt` |
+| Typecheck | `npm run check` | 0 | `/home/user/scaffold/.orkestrel/veneer/units/apt-instruments-4/apt-4-check.log.txt` |
+| Guides test | `npm run test:guides` | 0 | `/home/user/scaffold/.orkestrel/veneer/units/apt-instruments-4/apt-4-test-guides.log.txt` |
+| Styles build | `npm run build:src:styles` | 0 | `/home/user/scaffold/.orkestrel/veneer/units/apt-instruments-4/apt-4-build-styles.log.txt` |
 | CSS parity | `cmp dist/src/styles/index.css tmp/units/apt-3-index.css` | 0 | (ran inline; recorded here) |
 
 ## Diff scope
 
-`tmp/units/apt-4.diff` (`git diff 712ae72` over the three owned files) touches only
+`/home/user/scaffold/.orkestrel/veneer/units/apt-4.diff` (`git diff 712ae72` over the three owned files) touches only
 `guides/veneer.md`, `src/styles/utilities/_font.scss`, and `tests/setupStyles.ts`. Compared
 section-by-section against the round-3 combined diffs (`apt-3.diff` and `apt-shared-3.patch`), the
 delta from round 3 is exactly the L1, L2, and L3 edits above — no other line in any of the three
-files changed. `tmp/units/apt-4-status.txt` (`git status --short`) is unchanged in shape from
+files changed. `/home/user/scaffold/.orkestrel/veneer/units/apt-4-status.txt` (`git status --short`) is unchanged in shape from
 round 3: the same files show modified, nothing new is untracked.

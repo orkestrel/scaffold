@@ -1,10 +1,10 @@
 # Unit AP-COLOR round 4 report
 
-`opus` on Opus 5.5, native, in `/home/user/veneer-apc` (uncommitted over `712ae72`). Brief: `tmp/units/apc-brief-4.md`. Status: done, no stop. The only change is the two test titles below; no assertion changed, and every gate the brief names exits 0.
+`opus` on Opus 5.5, native, in `/home/user/veneer-apc` (uncommitted over `712ae72`). Brief: `/home/user/scaffold/.orkestrel/veneer/units/ap-color-brief-4.md`. Status: done, no stop. The only change is the two test titles below; no assertion changed, and every gate the brief names exits 0.
 
 ## The two changes
 
-Both changes are in `tests/src/styles/utilities/color.test.ts`. This is the complete difference from the round-3 file, which I saved as `tmp/units/apc-4-round3-color.test.ts.txt` before editing (`tmp/units/apc-4-round3-delta.txt`):
+Both changes are in `tests/src/styles/utilities/color.test.ts`. This is the complete difference from the round-3 file, which I saved as `/home/user/scaffold/.orkestrel/veneer/units/apc-instruments-4/apc-4-round3-color.test.ts.txt` before editing (`/home/user/scaffold/.orkestrel/veneer/units/apc-instruments-4/apc-4-round3-delta.txt`):
 
 ```text
 247c247
@@ -20,23 +20,23 @@ Both changes are in `tests/src/styles/utilities/color.test.ts`. This is the comp
 - **K1:** the fill-and-body case now names its emphasis class.
 - **K2:** the emphasis-opacity case now names its scope outside the neutral roles.
 
-Every other file's diff against `712ae72` equals its round-3 diff in `apc-3.diff` and `apc-shared.patch` (`tmp/units/apc-4-round3-check.txt`: `True`). Round 4 therefore changes those two title lines and nothing else.
+Every other file's diff against `712ae72` equals its round-3 diff in `apc-3.diff` and `/home/user/scaffold/.orkestrel/veneer/units/apc-shared-3.patch` (`/home/user/scaffold/.orkestrel/veneer/units/apc-instruments-4/apc-4-round3-check.txt`: `True`). Round 4 therefore changes those two title lines and nothing else.
 
 ## Gate table
 
-The chain is `tmp/units/apc-4-final.sh`, run with `CAPTURE` unset.
+The chain is `/home/user/scaffold/.orkestrel/veneer/units/apc-instruments-4/apc-4-final.sh`, run with `CAPTURE` unset.
 
 | Gate | Result | Log |
 | --- | --- | --- |
-| `npm run format:check` | exit 0 | `tmp/units/apc-4-final-format-check.log.txt` |
-| `npm run lint:check` | exit 0 | `tmp/units/apc-4-final-lint-check.log.txt` |
-| `npm run check` | exit 0 | `tmp/units/apc-4-final-check.log.txt` |
-| `npm run test:src:styles` | exit 0; 1456 passed, 115 files | `tmp/units/apc-4-final-test-src-styles.log.txt` |
+| `npm run format:check` | exit 0 | `/home/user/scaffold/.orkestrel/veneer/units/apc-instruments-4/apc-4-final-format-check.log.txt` |
+| `npm run lint:check` | exit 0 | `/home/user/scaffold/.orkestrel/veneer/units/apc-instruments-4/apc-4-final-lint-check.log.txt` |
+| `npm run check` | exit 0 | `/home/user/scaffold/.orkestrel/veneer/units/apc-instruments-4/apc-4-final-check.log.txt` |
+| `npm run test:src:styles` | exit 0; 1456 passed, 115 files | `/home/user/scaffold/.orkestrel/veneer/units/apc-instruments-4/apc-4-final-test-src-styles.log.txt` |
 
 ## Artifacts
 
-- `/home/user/veneer-apc/tmp/units/apc-4.diff`: `git diff 712ae72 -- tests/src/styles/utilities/color.test.ts`, the one owned file.
-- `/home/user/veneer-apc/tmp/units/apc-4-status.txt`: `git status --short`. It lists the same files as round 3.
+- `/home/user/scaffold/.orkestrel/veneer/units/apc-4.diff`: `git diff 712ae72 -- tests/src/styles/utilities/color.test.ts`, the one owned file.
+- `/home/user/scaffold/.orkestrel/veneer/units/apc-4-status.txt`: `git status --short`. It lists the same files as round 3.
 
 ## Deviation state
 

@@ -1,5 +1,0 @@
-apply exit=0 test=0.0.23 dist park-outside=0
-journey:light-390 exit=1 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯ AssertionError: expected true to be false // Object.is equality 
-journey:dark-1280 exit=1 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯ AssertionError: expected true to be false // Object.is equality 
-active pre-bundle park-at-origin=1 park-outside=0
-=== done
