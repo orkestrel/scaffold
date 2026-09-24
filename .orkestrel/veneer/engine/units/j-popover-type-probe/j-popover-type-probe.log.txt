@@ -1,6 +1,0 @@
-# J-POPOVER claim 9 — the Orchestrator's type probe (2026-09-24), run from the popover worktree root
-npx tsc -p tmp/j-popover/orchestrator-type-probe/tsconfig.admitted.json -> exit 0
-npx tsc -p tmp/j-popover/orchestrator-type-probe/tsconfig.refused.json -> exit 2
-tmp/j-popover/orchestrator-type-probe/refused.ts(4,44): error TS2353: Object literal may only specify known properties, and 'content' does not exist in type 'TooltipOptions'.
-tmp/j-popover/orchestrator-type-probe/refused.ts(5,41): error TS2561: Object literal may only specify known properties, but 'titel' does not exist in type 'TooltipOptions'. Did you mean to write 'title'?
-The first run read exit 0 for both: the root tsconfig's exclude dropped the tmp/ probe files (--listFilesOnly listed neither); each probe tsconfig now sets exclude []. The prove MCP server failed to connect this session (CONNECTION_CLOSED), so tsc ran directly.
