@@ -1,0 +1,54 @@
+=== ut landing at 04:33:11 over 42fd88e
+=== applied /home/user/scaffold/.orkestrel/veneer/units/ut-shared-2.patch
+## app/browser/Showcase.ts
+concatenated: ours=2 base=0 theirs=1 -> 3
+concatenated: ours=8 base=0 theirs=2 -> 10
+## app/browser/constants.ts
+concatenated: ours=386 base=0 theirs=119 -> 505
+## app/browser/index.ts
+concatenated: ours=8 base=0 theirs=2 -> 10
+## guides/veneer.md
+table: ours=116 base=100 theirs=104 -> 120
+base-union: ours=1 base=1 theirs=1 -> 2
+base-union: ours=1 base=1 theirs=1 -> 2
+base-union: ours=28 base=9 theirs=17 -> 37
+concatenated: ours=318 base=0 theirs=122 -> 440
+table: ours=244 base=210 theirs=213 -> 247
+base-union: ours=3 base=1 theirs=3 -> 6
+concatenated: ours=2 base=0 theirs=1 -> 3
+base-union: ours=12 base=1 theirs=5 -> 16
+## src/styles/index.scss
+concatenated: ours=1 base=0 theirs=1 -> 2
+concatenated: ours=2 base=0 theirs=2 -> 4
+## tests/app/browser/Showcase.test.ts
+concatenated: ours=8 base=0 theirs=2 -> 10
+concatenated: ours=8 base=0 theirs=2 -> 10
+## tests/app/browser/index.test.ts
+concatenated: ours=4 base=0 theirs=2 -> 6
+concatenated: ours=2 base=0 theirs=1 -> 3
+## tests/app/browser/integration.test.ts
+concatenated: ours=10 base=0 theirs=2 -> 12
+## tests/conformance.test.ts
+concatenated: ours=2 base=0 theirs=2 -> 4
+concatenated: ours=14 base=0 theirs=11 -> 25
+concatenated: ours=1 base=0 theirs=3 -> 4
+concatenated: ours=1 base=0 theirs=2 -> 3
+## tests/fixtures/tailwind/consumer.css
+base-union: ours=1 base=1 theirs=1 -> 2
+## tests/fixtures/tailwind/markup.html
+concatenated: ours=37 base=0 theirs=7 -> 44
+## tests/fixtures/tailwind/preflight.css
+base-union: ours=1 base=1 theirs=1 -> 2
+## tests/setup.css
+base-union: ours=1 base=1 theirs=1 -> 2
+## tests/setup.ts
+concatenated: ours=49 base=0 theirs=13 -> 62
+concatenated: ours=288 base=0 theirs=78 -> 366
+## tests/setupServer.test.ts
+concatenated: ours=2 base=0 theirs=2 -> 4
+=== continued: 966f5ff
+=== land-unit exit=0
+=== oxfmt exit=0
+ M guides/veneer.md
+=== oxlint exit=0
+=== check exit=0
