@@ -6,7 +6,7 @@
 
 ## Objective
 
-Exit-code truth for the gate chain on Veneer `main` at `CAROUSEL_HEAD` (the J-CAROUSEL landing: `60ea4a0` and its merge commit), in the checkout `C:/Users/mikes/WebstormProjects/veneer`.
+Exit-code truth for the gate chain on Veneer `main` at `2cc0887` (the J-CAROUSEL landing: `60ea4a0` and its merge commit), in the checkout `C:/Users/mikes/WebstormProjects/veneer`.
 
 ## Context
 
