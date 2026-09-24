@@ -1,0 +1,17 @@
+--- tmp/probe/rd-mixins-good.scss	2026-09-24 04:37:12.273456239 +0000
++++ src/styles/_mixins.scss	2026-09-24 04:37:12.285752750 +0000
+@@ -198,12 +198,8 @@
+ // class and its narrowed siblings therefore writes their rule set once.
+ @mixin breakpoint-each-down {
+ 	@each $name, $boundary in breakpoints() {
+-		@if $boundary == 0 {
+-			@content ('', $boundary);
+-		} @else {
+-			@include breakpoint-down($name) {
+-				@content ('-#{$name}', $boundary);
+-			}
++		@include breakpoint-down($name) {
++			@content ('-#{$name}', $boundary);
+ 		}
+ 	}
+ }
