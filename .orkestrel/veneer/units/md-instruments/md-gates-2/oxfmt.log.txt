@@ -1,5 +1,0 @@
-$ npx oxfmt --config .oxfmtrc.json --check app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/sections/ModalSection.ts guides/veneer.md src/styles/_mixins.scss src/styles/components/_modal.scss src/styles/index.scss tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts tests/app/browser/integration.test.ts tests/app/browser/sections/ModalSection.test.ts tests/conformance.test.ts tests/setup.ts tests/setupServer.test.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/modal.test.ts tests/src/styles/fixtures/mixins.scss tests/src/styles/mixins.test.ts
-Checking formatting...
-
-All matched files use the correct format.
-Finished in 8780ms on 20 files using 4 threads.

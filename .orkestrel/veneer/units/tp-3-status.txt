@@ -1,8 +1,0 @@
-?? app/browser/sections/PopoverSection.ts
-?? app/browser/sections/TooltipSection.ts
-?? src/styles/components/_popover.scss
-?? src/styles/components/_tooltip.scss
-?? tests/app/browser/sections/PopoverSection.test.ts
-?? tests/app/browser/sections/TooltipSection.test.ts
-?? tests/src/styles/components/popover.test.ts
-?? tests/src/styles/components/tooltip.test.ts

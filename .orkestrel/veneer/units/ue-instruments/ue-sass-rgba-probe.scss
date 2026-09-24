@@ -1,7 +1,0 @@
-@use 'sass:map';
-$c: ();
-@each $role in primary, dark {
-  $c: map.set($c, $role, rgba(var(--bs-#{$role}-rgb), var(--bs-focus-ring-opacity)));
-}
-@each $k, $v in $c { .x-#{$k} { --a: #{$v}; } }
-.o { opacity: 0.25; }

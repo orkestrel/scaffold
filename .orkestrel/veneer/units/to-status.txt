@@ -1,4 +1,0 @@
-?? app/browser/sections/ToastSection.ts
-?? src/styles/components/_toast.scss
-?? tests/app/browser/sections/ToastSection.test.ts
-?? tests/src/styles/components/toast.test.ts

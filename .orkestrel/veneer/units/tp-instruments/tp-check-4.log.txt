@@ -1,3 +1,0 @@
-apply-check exit 0
-apply exit 0
-byte-compare exit 0

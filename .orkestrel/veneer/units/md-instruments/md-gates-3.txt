@@ -1,8 +1,0 @@
-oxfmt | $ npx oxfmt --config .oxfmtrc.json --check guides/veneer.md tests/setupStyles.ts tests/setupStyles.test.ts | exit=0 | All matched files use the correct format. 
-oxlint | $ npx oxlint --config .oxlintrc.json --deny-warnings tests/setupStyles.ts tests/setupStyles.test.ts | exit=0 | 
-build | $ npm run build:src | exit=0 | 
-check | $ npm run check | exit=0 | 
-setup | $ npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupStyles.test.ts | exit=0 |  Tests 126 passed (126) 
-guides | $ npm run test:guides | exit=0 |  Tests  19 passed (19) 
-policy | $ npm run test:policy | exit=0 |  Tests 109 passed | 1 skipped (110) 
-conformance | $ npm run test:conformance | exit=0 |  Tests 22 passed (22) 

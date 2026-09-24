@@ -1,8 +1,0 @@
---- a/src/styles/index.scss
-+++ b/src/styles/index.scss
-@@ -86,4 +86,5 @@
- @use 'utilities/sizing';
- @use 'utilities/flex';
- @use 'utilities/gap';
-+@use 'utilities/font';
- @use 'utilities/visibility';
