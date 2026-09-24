@@ -1,0 +1,60 @@
+original src/browser/sanitizers/ConfigSanitizer.ts sha256=e53ada2e98cd0b3f3928c01c2cd123a091425f2c1c236d42c323ae18d1258f5d
+
+=== unsubstituted: survived; vitest exit 0; restored identical=True
+expected: not visible on Chromium 153, which reads the context element's encoding attribute; the Chromium 141 re-read discriminates (its b1d314d log is this row red)
+Tests  70 passed (70)
+
+=== any-encoding: red; vitest exit 1; restored identical=True
+expected: parses markup written into an annotation-xml element whose encoding attribute in no namespace names no HTML type as MathML
+Tests  1 failed | 69 passed (70)
+  failed: |src:browser (chromium)| tests/src/browser/sanitizers/ConfigSanitizer.test.ts:292:2 > ConfigSanitizer > parses markup written into an annotation-xml element whose encoding attribute in no namespace names no HTML type as MathML, through the host route and the walk
+
+=== namespace-blind: red; vitest exit 1; restored identical=True
+expected: parses markup written into an annotation-xml element whose encoding attribute in no namespace names no HTML type as MathML (its namespaced encoding variant)
+Tests  1 failed | 69 passed (70)
+  failed: |src:browser (chromium)| tests/src/browser/sanitizers/ConfigSanitizer.test.ts:292:2 > ConfigSanitizer > parses markup written into an annotation-xml element whose encoding attribute in no namespace names no HTML type as MathML, through the host route and the walk
+
+=== trimmed: red; vitest exit 1; restored identical=True
+expected: parses markup written into an annotation-xml element whose encoding attribute in no namespace names no HTML type as MathML (its spaced encoding variant)
+Tests  1 failed | 69 passed (70)
+  failed: |src:browser (chromium)| tests/src/browser/sanitizers/ConfigSanitizer.test.ts:292:2 > ConfigSanitizer > parses markup written into an annotation-xml element whose encoding attribute in no namespace names no HTML type as MathML, through the host route and the walk
+
+=== case-exact: survived; vitest exit 0; restored identical=True
+expected: not visible on Chromium 153; the Chromium 141 re-read of the TEXT/HTML encoding discriminates
+Tests  70 passed (70)
+
+=== xhtml-dropped: survived; vitest exit 0; restored identical=True
+expected: not visible on Chromium 153; the Chromium 141 re-read of the application/xhtml+xml encoding discriminates
+Tests  70 passed (70)
+
+=== svg-dropped: survived; vitest exit 0; restored identical=True
+expected: not visible on Chromium 153, which parses an SVG context as the div does; the Chromium 141 re-read discriminates only if that build mishandles an SVG context
+Tests  70 passed (70)
+
+=== text-points-added: red; vitest exit 1; restored identical=True
+expected: parses markup written into a MathML text integration point as HTML except an mglyph or malignmark element, which stays MathML, through the host route and the walk
+Tests  1 failed | 69 passed (70)
+  failed: |src:browser (chromium)| tests/src/browser/sanitizers/ConfigSanitizer.test.ts:330:2 > ConfigSanitizer > parses markup written into a MathML text integration point as HTML except an mglyph or malignmark element, which stays MathML, through the host route and the walk
+
+=== template-context: red; vitest exit 1; restored identical=True
+expected: the annotation-xml HTML encoding case and the SVG foreignObject, desc, or title case (a template context keeps the table parts the allowlist then removes with their text)
+Tests  2 failed | 68 passed (70)
+  failed: |src:browser (chromium)| tests/src/browser/sanitizers/ConfigSanitizer.test.ts:271:2 > ConfigSanitizer > parses markup written into an annotation-xml element whose encoding names HTML in any ASCII case as the body of an HTML element, through the host route and the walk
+  failed: |src:browser (chromium)| tests/src/browser/sanitizers/ConfigSanitizer.test.ts:316:2 > ConfigSanitizer > parses markup written into an SVG foreignObject, desc, or title element as the body of an HTML element, through the host route and the walk
+
+=== control-order: survived; vitest exit 0; restored identical=True
+expected: control: must survive
+Tests  70 passed (70)
+
+=== summary
+unsubstituted	survived	Tests  70 passed (70)	restored=True
+any-encoding	red	Tests  1 failed | 69 passed (70)	restored=True
+namespace-blind	red	Tests  1 failed | 69 passed (70)	restored=True
+trimmed	red	Tests  1 failed | 69 passed (70)	restored=True
+case-exact	survived	Tests  70 passed (70)	restored=True
+xhtml-dropped	survived	Tests  70 passed (70)	restored=True
+svg-dropped	survived	Tests  70 passed (70)	restored=True
+text-points-added	red	Tests  1 failed | 69 passed (70)	restored=True
+template-context	red	Tests  2 failed | 68 passed (70)	restored=True
+control-order	survived	Tests  70 passed (70)	restored=True
+final src/browser/sanitizers/ConfigSanitizer.ts identical=True
