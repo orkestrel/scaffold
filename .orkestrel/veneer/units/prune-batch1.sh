@@ -8,7 +8,7 @@ files=$(ls -d to[-.]* ue[-.]* ufl[-.]* md[-.]* tp[-.]* uf[-.]* to-instruments ue
   b-utilities-uf-* b-utilities-ufl-* land-to.log.txt land-ue.log.txt land-ufl.log.txt land-md.log.txt \
   land-tp.log.txt land-uf.log.txt land-check-to.log.txt land-check-ue.log.txt land-check-ufl.log.txt \
   land-check-md.log.txt land-check-tp.log.txt land-check-uf.log.txt batch1-land-verify.sh \
-  batch1-capture-rerun.sh batch1-gates.sh resting-key-measure.sh 2>/dev/null | sort -u)
+  batch1-capture-rerun.sh batch1-gates.sh batch1-merge-gates.sh batch1-fold.py prune-batch1.sh resting-key-measure.sh 2>/dev/null | sort -u)
 case "$1" in
   list) echo "$files";;
   remove) git rm -rq --ignore-unmatch $files && echo "removed $(echo "$files" | wc -l) paths";;

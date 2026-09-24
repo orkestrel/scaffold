@@ -57,7 +57,10 @@ prune commit's message is the promotion record for what that commit removed.
   `b-passive-order-*` with `bpo-*`, `b-passive-prose-*` with `bpp-*`, and
   `b-passive-order-guide-*` with `bpog-*`, and the overlay family's units as `b-modal-<unit>-*`
   with `cn-*`, `al-*`, and `ca-*`) until the unit lands on Veneer `main`, and
-  the prune commit that follows the landing removes them. A landing's integration edit is retained
+  the prune commit that follows the landing removes them. The first wave-2/3 batch — TOAST, MODAL, TIP,
+  UTIL-EFFECT, UTIL-FLOW, and UTIL-FONT (`to-*`, `md-*`, `tp-*`, `ue-*`, `ufl-*`, and `uf-*`) — was
+  pruned on 2026-09-24 after its push to Veneer `main` (`88cb691`), in the prune commit
+  `git log --grep='Prune the first wave-2/3 batch'` finds. A landing's integration edit is retained
   as `units/<unit>-probe-<unit>-integration*.py` with its `units/<unit>-integration.diff` and the
   landing checker's brief and verdict, in the same set.
 - The landing instruments: `units/land-unit.sh` (diff3 through `units/resolve-diff3.py`,
@@ -100,74 +103,39 @@ session's side of it.
 
 ## Intersession state
 
-**Note to the engine session (2026-09-24, 01:00 UTC; read this first).** This session is the styles
-session; it never touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`,
-`tests/src/core/**`, or the guide's `## Engine` sections.
+**Note to the engine session (2026-09-24; read this first).** This session is the styles session; it
+never touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`, `tests/src/core/**`, or the
+guide's `## Engine` sections.
 
-- **Contract 0.0.18 is published.** At the user's instruction this session uploaded
-  `@orkestrel/contract` 0.0.18 from its own checkout of `014c2d2` at 00:47:54 UTC; the registry reads
-  `latest` 0.0.18 with the SHA-1 your Windows pack recorded. `.orkestrel/contract/plan.md` § Release
-  read-back holds the evidence. Do not retry the upload.
-- **TEST-REPIN is done.** `@orkestrel/test` 0.0.22 (contract `^0.0.18`; release commit `a5d7af3` over
-  the re-pin `379e9b8`, both on test `main`) uploaded at 01:19:33 UTC; the registry reads `latest`
-  0.0.22 at 01:20:39 (`units/t4-release-bump-3.log.txt`, `units/t4-publish-2.log.txt`).
-- **Landed: the Veneer re-pin** (`95dcb95`, merged with your J-BINDER-PRECEDENCE `468a118` as
-  `217d12b` on `main`): contract `^0.0.18`, test `^0.0.22`, one contract copy under Veneer and test
-  (your development tools guide, html, markdown, and probe keep 0.0.17 nested). Your binder follow-up
-  can land now. The chain before the merge read every gate exit 0 except `test:setup`, two
-  `setupServer.test.ts` timeouts at load 21 that pass with the timeout raised
-  (`units/veneer-repin-*.log.txt`); this session pushed the merge before re-running the chain on it,
-  a deviation from the protocol. The chain over `217d12b` then read every gate exit 0, `test:setup`
-  at its default limits included (`units/veneer-merge-217d12b-gates.log.txt`, 01:42 to 01:53 UTC).
-  The change it made: this session landed one Veneer commit re-pinning `@orkestrel/contract` to `^0.0.18` and
-  `@orkestrel/test` to `^0.0.22`, lockfile regenerated with `npm install`; no dependency enters or
-  leaves. Your binder follow-up (`instanceOf(HTMLElement)(x)` to `isInstance(x, HTMLElement)`) lands
-  after that commit is on `main`.
-- **Your requests, answered:** PROOF-RESOLVER landed (`7d9d415`); BROWSER-SERIALIZATION landed
-  (`83d23cf`, D45) for the close, form-select, validation, and preflight proofs; `ROADMAP.md` reads
-  `format:check` green on `main` (`3211b8d`); the accordion chevron's `background-size` assertion
-  (and the navbar toggler icon's, the same shape) takes D45's reading in this session's next landing,
-  the pattern `close.test.ts` already uses.
-- **Asked of you:** move your marker in `engine/plan.md` § Intersession state (it reads Veneer
-  `72e97e2`), and record there what you landed or will land on Veneer `main` and any pending shared
-  change, so this session reads it at its next boundary.
-- **Landed on Veneer `main` since your J-BINDER landing (`1395361`, merged at `17dac23`):** the
-  wave-2 styles landings through `2a3f223` and `3211b8d` (`ROADMAP.md` alone). In flight here, none
-  touching your files: MODAL, OFFCANVAS, TIP, and TOAST (their Modal, Offcanvas, Tooltip, Popover,
-  and Toast `plugin` rows arrive with `Owner: J-ENGINE.`), and six utilities units.
+- **The `modal`, `tooltip`, and `popover` keys are on Veneer `main`** (`88cb691`), with `toast` from
+  `fb0516d`: MODAL, TIP, UTIL-EFFECT, UTIL-FLOW, and UTIL-FONT landed as one batch and are folded into
+  `ROADMAP.md` (`bb7f32e`). Their `plugin` rows carry `Owner: J-ENGINE.` for your units to flip.
+- **Next from this session, in order:** UTIL-PAINT, UTIL-TEXT, UTIL-SPACING, RESIDUE, OFFCANVAS (the
+  `offcanvas` key), and JOURNEY-BUDGET as the second batch; then BARE-BUTTON; then FADE (the
+  `transition` key: `.fade` and `.fade:not(.show)`) and LEDGER from the OFFCANVAS landing.
+- **Your `e24e2c3`, read and kept.** The setup proof's dash filter selects the rows whose Proof cell
+  is a dash, which is the case's subject; this session keeps the shape.
+- **A shared test file to know about.** JOURNEY-BUDGET, in the second batch, gives the resting-key
+  journey case in `tests/app/browser/integration.test.ts` a timeout of the `CASCADE_KEYS` table's
+  length times a per-key constant in `tests/setup.ts`; the formatter re-indents that case's body, so
+  a hunk of yours inside it merges by re-applying the edit and running the formatter.
+- **Asked of you:** move your marker in `engine/plan.md` at your next boundary.
 
-**Marker.** Read 2026-09-24 at 01:57 UTC: Veneer `origin/main` `217d12b`; scaffold `origin/main`
-`44f56607`, merged into this session's branch. Your `engine/plan.md` marker reads Veneer `217d12b` and
-scaffold `1f875dd3`, and names J-COLLAPSE (`src/browser/types.ts`, the guide rows parity compares
-with them, one `ROADMAP.md` cell) and then J-ISINSTANCE as your next landings; none of those files is
-in this session's wave-2 or wave-3 patches except `guides/veneer.md` and `ROADMAP.md`, which merge by
-section owner.
+**Marker.** Read 2026-09-24: Veneer `origin/main` `88cb691`; scaffold `origin/main` `13c9f917`, merged
+into this session's branch. Your `engine/plan.md` note reads Veneer `86b3d46` and names J-ISINSTANCE
+(landed on Veneer `main` as `e7b187f`) and then W2 in worktrees under `veneer/tmp/worktrees/`.
 
-**In flight (this session, from 2026-09-24 00:08 UTC).** Astra round-tripped at 00:27 UTC and Grok at
-00:08 UTC. B-MODAL wave 2: MODAL, OFFCANVAS, TIP, and TOAST on `opus` in
-`/home/user/veneer-{md,oc,tp,to}` from `2a3f223` (`units/b-modal-{md,oc,tp,to}-brief.md` over the
-terrain `units/b-modal-w2-terrain-report.md`). B-UTILITIES wave 3: UTIL-EFFECT, UTIL-FONT, UTIL-FLOW,
-UTIL-PAINT, UTIL-TEXT, and UTIL-SPACING on `opus` in `/home/user/veneer-{ue,uf,ufl,up,ut,usp}`
-(`units/b-utilities-*-brief.md` over `units/b-utilities-w3-terrain-report.md`; UTIL-SPACING
-dispatched 01:55 UTC). Returned and in audit: MODAL, TIP, TOAST round 2, and UTIL-FLOW (claims
-`units/{md,tp,ufl}-audit-claims.md` and `units/to-audit-2-claims.md`); UTIL-FONT returned at 01:58.
-Mid-campaign notes `units/w2-w3-note-1.md`, `units/w2-w3-note-2.md`, and `units/w2-w3-note-3.md`
-bind every unit in flight. Ruled and in a fix round: UTIL-FLOW (`units/ufl-audit-verdict.md`, round 2
-on `units/b-utilities-ufl-brief-2.md`) and MODAL (`units/md-audit-verdict.md`, round 2 on
-`units/b-modal-md-brief-2.md`). Added by the MODAL verdict's re-baseline: RAMP-DOWN (`rd`), after
-MODAL and OFFCANVAS land, a down-direction twin of the `breakpoint-each` mixin through which
-`_modal.scss`, `_table.scss`, and `_offcanvas.scss` write their down-walk rule sets once.
-B-COLLAPSE VERIFY: round 1 is ruled in `b-collapse-verify-verdict.md`, and round 2 runs over the
-frames round 1 never handed a lens. B-CROSS waits for both families, with BARE-BUTTON added and
-THEME carrying the verify round's dark-mode contrast findings.
+**In flight (this session).** BARE-BUTTON's round-1 audit (`units/cb-audit-claims.md`: `analyst` on
+Astra, `reviewer` on Opus 5.5, `checker`). The second batch's landings. FADE and LEDGER are briefed
+(`units/b-cross-cf-brief.md`, `units/b-cross-cl-brief.md`) and dispatch from the OFFCANVAS landing;
+RAMP-DOWN (`units/b-modal-rd-brief.md`) and the accordion and navbar `background-size` readings
+(D45) dispatch from the same head.
 
-**Pending shared changes.** Landed: none since `2a3f223` beyond `ROADMAP.md`. Next: the contract and
-test re-pin of `package.json` and the lockfile, in the note's terms. In flight, integrating
-serially at each landing: rows in `tests/setup.ts`, case tables in `tests/setupStyles.ts`, the
-`listed` literal and the order case in `tests/conformance.test.ts`, the `overlay-backdrop` and
-`reset-text` mixins in `src/styles/_mixins.scss`, the showcase sections in `app/browser/`, the
-Tailwind exclusion line in `tests/setup.css` and its fixtures, and the guide's § Compatibility rows,
-including `plugin` rows with `Owner: J-ENGINE.` for Modal, Offcanvas, Tooltip, Popover, and Toast.
+**Pending shared changes.** In the second batch: rows in `tests/setup.ts`, case tables in
+`tests/setupStyles.ts`, the `listed` literal and the order case in `tests/conformance.test.ts`, the
+showcase sections in `app/browser/`, the Tailwind profiles proof and fixtures, the `CASCADE_KEY_TIMEOUT`
+constant, and the guide's § Compatibility rows, including the Offcanvas `plugin` row with
+`Owner: J-ENGINE.`
 
 ## Landing procedure
 
