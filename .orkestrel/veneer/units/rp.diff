@@ -1,0 +1,134 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 144ab45..3ea051e 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -10587,8 +10587,8 @@ The journey lifts the specimen of a driven frame through the frame manager's `li
+ moves it into a wrapper at the document's start, padded unless the `padded` option is `false`; the
+ `toggle-pressed` frame is shot where the Buttons section renders its host. The journey shoots every
+ focus frame through the frame manager's `focus` method; see
+-[the frame manager](../tests/setupBrowser.ts). The `focus` method parks the pointer on the wrapper's
+-padding and records every element of the specimen the pointer enters until the frame is shot,
++[the frame manager](../tests/setupBrowser.ts). The `focus` method parks the pointer outside the page
++and records every element of the specimen the pointer enters until the frame is shot,
+ reaches the focused element with Tab from the wrapper, reads how far the ring reaches past its
+ element from the computed shadow and outline, and holds that ring and the scenario's declared region
+ inside the frame. Tab is the drive because, after a pointer press, a scripted focus leaves the
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 911cde3..b32621a 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -718,10 +718,10 @@ describe('journey', () => {
+ 				// switch clicks the mode control and leaves the pointer where that control sat, and the
+ 				// staging a shot takes moves the tester under a pointer that does not move with it, so a
+ 				// lifted copy lands under the pointer and one of its links paints its hover in a frame
+-				// named for rest. The release parks the pointer at the page's origin, and each copy is
+-				// lifted below the wrapper's top padding, which is deeper than the widest negative gutter
+-				// a specimen's first row pulls up by, so the parked pointer rests on the wrapper rather
+-				// than on anything the frame shows.
++				// named for rest. The release parks the pointer outside the page, and each copy is
++				// lifted below the wrapper's top padding: the padding is deeper than the widest negative
++				// gutter a specimen's first row pulls up by, so no row starts above the document and the
++				// parked pointer, outside the page, rests over none of them.
+ 				await releasePointer()
+ 				for (const key of CASCADE_KEYS) {
+ 					const specimen = readSpecimen(mounted.host, key.subject)
+@@ -869,6 +869,49 @@ describe('journey', () => {
+ 		CASCADE_KEYS.length * CASCADE_KEY_TIMEOUT,
+ 	)
+ 
++	it("takes no mouseover event from the parked pointer, on a lifted copy whose first element touches the page's origin", async () => {
++		// The "Primary" button is its own element with nothing rendered before it, so an unpadded
++		// lift of its copy places that copy's own box, with no wrapper padding and no sibling ahead
++		// of it, at the document's very start: the copy's first element touches the page's origin,
++		// the point the release parks the pointer outside of.
++		const specimen = readButton(mounted.section, 'Primary')
++		const clone = specimen.cloneNode(true)
++		if (!(clone instanceof HTMLElement)) {
++			throw new Error('The cloned "Primary" button is not an element')
++		}
++		const entered = new Set<string>()
++		await FRAMES.lift(
++			clone,
++			async (wrapper) => {
++				const watch = new AbortController()
++				try {
++					document.addEventListener(
++						'mouseover',
++						(event) => {
++							if (event.target instanceof Node && wrapper.contains(event.target)) {
++								entered.add('primary-parked')
++							}
++						},
++						{ capture: true, signal: watch.signal },
++					)
++					await releasePointer()
++					const box = clone.getBoundingClientRect()
++					expect(box.top).toBe(0)
++					expect(box.left).toBe(0)
++					await FRAMES.place('primary-parked', clone, wrapper)
++				} finally {
++					watch.abort()
++				}
++				expect([...entered]).toStrictEqual([])
++				expect(clone.matches(':hover')).toBe(false)
++				expect(
++					[...clone.querySelectorAll('*')].filter((element) => element.matches(':hover')),
++				).toStrictEqual([])
++			},
++			{ padded: false },
++		)
++	})
++
+ 	it('paints a validation focus ring on the passing and the failing text control, in the variant this run renders', async () => {
+ 		await applyTheme(VARIANT)
+ 		// The resting paint of every validation specimen is already a cascade scenario, so the focus
+diff --git a/tests/setup.ts b/tests/setup.ts
+index a066c2b..51d1c10 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -454,6 +454,10 @@ export type CaptureSubject =
+  * before the shot and reads it back after. The `grown` state is a drive as well: a grow spinner's
+  * disc paints only part way through its running animation, so a journey holds that animation at the
+  * keyframe the partial writes the whole disc at before the shot and reads the disc back after.
++ * `parked` is a reading as well: it names a specimen read with the pointer parked outside the
++ * page, on a lifted copy whose first element touches the document's origin, so the reading is the
++ * proof that a pointer parked off the page enters no element of a copy resting where the pointer
++ * would otherwise land.
+  */
+ export type CaptureState =
+ 	| 'active'
+@@ -462,6 +466,7 @@ export type CaptureState =
+ 	| 'grown'
+ 	| 'hover'
+ 	| 'indeterminate'
++	| 'parked'
+ 	| 'pressed'
+ 	| 'rest'
+ 
+@@ -2768,6 +2773,7 @@ export const DRIVEN_KEYS: readonly CaptureKey[] = Object.freeze([
+ 	Object.freeze({ scenario: 'primary-focus', subject: 'Primary' }),
+ 	Object.freeze({ scenario: 'primary-hover', subject: 'Primary' }),
+ 	Object.freeze({ scenario: 'primary-active', subject: 'Primary' }),
++	Object.freeze({ scenario: 'primary-parked', subject: 'Primary' }),
+ 	Object.freeze({ scenario: 'toggle-pressed', subject: 'Toggle' }),
+ 	Object.freeze({ scenario: 'secondary-hover', subject: 'Secondary' }),
+ 	Object.freeze({ scenario: 'tertiary-hover', subject: 'Tertiary' }),
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 418d92c..268443b 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -989,10 +989,10 @@ export class FrameManager {
+ 	 *   writes no file, and when the placement is refused.
+ 	 *
+ 	 * @remarks
+-	 * The pointer is parked at the page's origin, on the wrapper's padding, and every element of the
+-	 * specimen it enters until the frame is shot is recorded, because a pointer a dark run's mode
+-	 * switch leaves over a lifted specimen paints a hover face in a frame named for focus. Reduced
+-	 * motion is staged across the drive and the shots, so no frame lands inside a transition.
++	 * The pointer is parked outside the page, and every element of the specimen it enters until the
++	 * frame is shot is recorded, because a pointer a dark run's mode switch leaves over a lifted
++	 * specimen paints a hover face in a frame named for focus. Reduced motion is staged across the
++	 * drive and the shots, so no frame lands inside a transition.
+ 	 *
+ 	 * Tab reaches the target because, after a pointer press, a scripted focus leaves the
+ 	 * `:focus-visible` pseudo-class unmatched, and a key press after it matches the pseudo-class and
