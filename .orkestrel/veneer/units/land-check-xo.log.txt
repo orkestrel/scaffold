@@ -1588,3 +1588,5 @@ Module "url" has been externalized for browser compatibility. Cannot access "url
    Duration  47.78s (transform 0ms, setup 6.65s, import 9.55s, tests 6.48s, environment 0ms)
 
 === test:app exit=0 (12:50:02)
+
+=== re-run alone (Orchestrator, rule 10): npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupServer.test.ts -t "records and reads official control state" -> Test Files 1 passed (1), Tests 1 passed | 110 skipped (111), load 6.99 to 7.14; the timeout above was contention from six units in flight
