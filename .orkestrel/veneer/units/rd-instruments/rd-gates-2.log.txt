@@ -1,0 +1,8 @@
+[format] npm run format:check -> exit 0
+[lint] npm run lint:check -> exit 0
+[check] npm run check -> exit 0
+[build] npm run build:src -> exit 0
+[cmp] cmp tmp/units/rd-base.css dist/src/styles/index.css -> exit 0
+[styles] npm run test:src:styles -- tests/src/styles/mixins.test.ts tests/src/styles/components/modal.test.ts tests/src/styles/components/table.test.ts tests/src/styles/components/offcanvas.test.ts -> exit 0
+[conformance] npm run test:conformance -> exit 0
+[guides] npm run test:guides -> exit 0

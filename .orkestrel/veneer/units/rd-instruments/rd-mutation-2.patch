@@ -1,0 +1,11 @@
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -202,7 +202,7 @@
+ 		@if $boundary == 0 {
+ 			@content ('', $boundary);
+ 		} @else {
+-			@include breakpoint-down($name) {
++			@include breakpoint-up($name) {
+ 				@content ('-#{$name}', $boundary);
+ 			}
+ 		}
