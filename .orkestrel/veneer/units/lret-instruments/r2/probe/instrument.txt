@@ -1,0 +1,4 @@
+substitute 1821 compute 3323 items 1965 same 563
+substitute 31 compute 83 items 5 same 0
+substitute 269 compute 323 items 350 same 302
+substitute 20 compute 92 items 46 same 10

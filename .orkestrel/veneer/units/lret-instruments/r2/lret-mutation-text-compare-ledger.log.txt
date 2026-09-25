@@ -1,0 +1,1139 @@
+command: npx vitest run --config vite.config.ts --no-cache --project conformance tests/conformance.test.ts -t "names a retuned value retuned" --reporter=verbose
+mutation=text-compare-ledger files=tests/setupServer.ts
+load 6.01 4.82 7.25 2/159 4180
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index bd0bb59..5c8fe8b 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -42,6 +42,7 @@ import {
+ 	readTableCells,
+ 	selectSubsectionTables,
+ 	selectTableColumns,
++	splitTopLevelList,
+ 	VENEER_GUIDE_PATH,
+ 	walkSelector,
+ } from './setupStyles.js'
+@@ -212,29 +213,52 @@ export interface ValuePair {
+  * Carries the value each side of one pair resolves to in Chromium.
+  *
+  * @remarks
+- * Each value is written in the form the {@link normalizeResolvedColors} helper returns, so two
+- * values are the same resolved value exactly where their text is equal. A custom property that
+- * resolves to the guaranteed-invalid value, or to nothing, reads as the empty string.
++ * The resolver computes both sides in every setting the {@link RESOLVER_SETTINGS} constant maps,
++ * and this carries the two values of the first setting the sides compute apart in, or the `base`
++ * setting's two values where they compute alike in every one. Each value is written in the form
++ * the {@link normalizeResolvedColors} helper returns, so the two sides compute alike in every
++ * setting exactly where the two texts are equal. A custom property that resolves to the
++ * guaranteed-invalid value, or to nothing, reads as the empty string.
+  */
+ export interface Resolution {
+ 	readonly recorded: string
+ 	readonly emitted: string
+ }
+ 
++/**
++ * Describes one setting of the context the {@link ValueResolver} class computes a pair in.
++ *
++ * @remarks
++ * The `host` member holds the styles of the element both sides compute inside, which is the parent
++ * a value inherits from and the containing block a percentage reads. The `root` member holds the
++ * root element's font size, which a `rem` length reads, and the `viewport` member holds the
++ * page's width and height in CSS pixels, which a viewport length reads.
++ */
++export interface ResolverSetting {
++	readonly host: Readonly<Record<string, string>>
++	readonly root: string
++	readonly viewport: readonly [width: number, height: number]
++}
++
+ /**
+  * Describes one element the {@link ValueResolver} class builds for one compound of a site's
+  * selector.
+  *
+  * @remarks
+- * The `tag` member is the compound's type selector, and `div` where it names none. The `sibling`
+- * member is true where a `+` or a `~` combinator joins the compound to the one before it, so the
+- * element sits beside that one rather than inside it; false otherwise.
++ * The `tag` member is the compound's type selector, or the type selector of the `:is()` or
++ * `:where()` alternative the element is built from, and `div` where neither names one. The
++ * `attributes` member carries each attribute selector as the equality it narrows to, and an id
++ * selector as the `id` attribute it tests. The `compound` member is the part of the compound the
++ * element must match, as the {@link extractMatchedCompound} helper writes it. The `nested` member
++ * is true where the element sits inside the one before it, and for the first element, which sits
++ * inside the page's body; false where a `+` or a `~` combinator places it beside the one before it.
+  */
+ export interface ContextElement {
+ 	readonly tag: string
+ 	readonly classes: readonly string[]
+ 	readonly attributes: ReadonlyArray<readonly [name: string, value: string]>
+-	readonly sibling: boolean
++	readonly compound: string
++	readonly nested: boolean
+ }
+ 
+ /** Carries every departure the resolver classifies, and every difference it could not decide. */
+@@ -484,15 +508,16 @@ export const BOOTSTRAP_VERSION = '5.3.8'
+ export const ORACLE_TIMEOUT = 10_100
+ 
+ /**
+- * Sets the ledger's resolution budget from its 4850 ms contended run: twice that duration plus
++ * Sets the ledger's resolution budget from its 9950 ms contended run: twice that duration plus
+  * 5000 ms.
+  *
+  * @remarks
+  * The run launches the two resolvers the conformance ledger gate uses, classifies every measured
+- * value difference and both repainted ledgers, and resolves every canonical declaration, on
+- * Chromium 141 with four such runs sharing the host.
++ * value difference and both repainted ledgers in every setting the {@link RESOLVER_SETTINGS}
++ * constant maps, resolves every canonical declaration, and scans the witnesses, on Chromium 141
++ * with four such runs sharing a host whose load average read between 11 and 14.
+  */
+-export const LEDGER_TIMEOUT = 14_700
++export const LEDGER_TIMEOUT = 24_900
+ 
+ /**
+  * Pins the installed Bootstrap LTR stylesheet's SHA-256 digest.
+@@ -779,22 +804,22 @@ export const PROBE_PREFIX = '--vn-probe'
+  * initial value, and sets both probes to the value it reads. A value the syntax parses computes the
+  * same on both, and a value it refuses falls back to each probe's own initial value, so the two
+  * readings differ exactly where the syntax refuses the value. The resolver reads a pair through the
+- * first syntax both of its values parse, so a length ahead of a number reads `0` against `0px` as
+- * one length.
++ * first syntax both of its values parse, so `0` against `0px` passes the number list, which refuses
++ * a length, and reads as one length.
++ *
++ * Each syntax types a value no other entry computes the same way, and a syntax another entry
++ * subsumes is left out: a length, a percentage, or a mix of both computes the same inside the
++ * `<length-percentage>+` list as alone, a number the same inside the `<number>#` list, and an
++ * identifier the same under the `font-family` property the {@link PROBE_PROPERTIES} constant
++ * lists.
+  */
+ export const PROBE_SYNTAXES: Readonly<Record<string, readonly [initial: string, control: string]>> =
+ 	Object.freeze({
+-		'<length>': Object.freeze(['0px', '1px'] as const),
+-		'<number>': Object.freeze(['0', '1'] as const),
+-		'<percentage>': Object.freeze(['0%', '1%'] as const),
+-		'<length-percentage>': Object.freeze(['0px', '1px'] as const),
++		'<number>#': Object.freeze(['0', '1'] as const),
++		'<length-percentage>+': Object.freeze(['0px', '1px'] as const),
+ 		'<time>': Object.freeze(['0s', '1s'] as const),
+ 		'<angle>': Object.freeze(['0deg', '1deg'] as const),
+ 		'<color>': Object.freeze(['rgb(0, 0, 0)', 'rgb(0, 0, 1)'] as const),
+-		'<number>#': Object.freeze(['0', '1'] as const),
+-		'<length>+': Object.freeze(['0px', '1px'] as const),
+-		'<length-percentage>+': Object.freeze(['0px', '1px'] as const),
+-		'<custom-ident>': Object.freeze(['a', 'b'] as const),
+ 	})
+ 
+ /**
+@@ -816,6 +841,111 @@ export const PROBE_PROPERTIES: readonly string[] = Object.freeze([
+ 	'transition-timing-function',
+ ])
+ 
++/**
++ * Maps each setting of the context the {@link ValueResolver} class computes a pair in onto the
++ * host styles, the root font size, and the viewport it sets.
++ *
++ * @remarks
++ * The `base` setting is the context every other one departs from, and each other setting changes
++ * one context a term can read and nothing else: the `font` setting the font size an `em`, an `ex`,
++ * a `ch`, an `lh`, and a percentage of a font property read; the `block` setting the containing
++ * block every other percentage reads; the `color` setting the color a `currentColor` reads; the
++ * `direction` setting the direction a `match-parent` value and a logical keyword read; the `root`
++ * setting the root font size a `rem` length reads; and the `viewport` setting the page size a
++ * viewport length reads. The resolver also sets the parent's value of the property a pair
++ * computes, through the {@link PARENT_VALUES} constant.
++ */
++export const RESOLVER_SETTINGS: Readonly<Record<string, ResolverSetting>> = Object.freeze({
++	base: Object.freeze({
++		host: Object.freeze({ 'font-size': '16px', width: '1000px', height: '600px' }),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	font: Object.freeze({
++		host: Object.freeze({ 'font-size': '20px', width: '1000px', height: '600px' }),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	block: Object.freeze({
++		host: Object.freeze({ 'font-size': '16px', width: '400px', height: '300px' }),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	color: Object.freeze({
++		host: Object.freeze({
++			'font-size': '16px',
++			width: '1000px',
++			height: '600px',
++			color: 'rgb(1, 2, 3)',
++		}),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	direction: Object.freeze({
++		host: Object.freeze({
++			'font-size': '16px',
++			width: '1000px',
++			height: '600px',
++			direction: 'rtl',
++		}),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	root: Object.freeze({
++		host: Object.freeze({ 'font-size': '16px', width: '1000px', height: '600px' }),
++		root: '20px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	viewport: Object.freeze({
++		host: Object.freeze({ 'font-size': '16px', width: '1000px', height: '600px' }),
++		root: '16px',
++		viewport: Object.freeze([800, 600] as const),
++	}),
++})
++
++/**
++ * Lists the values the {@link ValueResolver} class tries, in order, as the parent's value of the
++ * regular property a pair computes.
++ *
++ * @remarks
++ * A value that inherits reads its parent's value of its own property, so the resolver computes each
++ * regular property a second time in the `base` setting under a host that sets that property to the
++ * first of these values Chromium parses for it and computes apart from the `base` host's own
++ * value. Where none of them does, the resolver cannot vary that context, and a pair whose sides
++ * differ and either of which is `inherit`, `unset`, `revert`, or `revert-layer` is undecided.
++ */
++export const PARENT_VALUES: readonly string[] = Object.freeze([
++	'1px',
++	'2',
++	'rgb(1, 2, 3)',
++	'right',
++	'serif',
++	'bold',
++	'italic',
++	'none',
++	'hidden',
++	'nowrap',
++	'uppercase',
++	'underline',
++	'pointer',
++])
++
++/**
++ * Lists the functions whose value reads a context the {@link ValueResolver} class cannot set.
++ *
++ * @remarks
++ * An `attr()` reads the element's own attributes, a `counter()` and a `counters()` read the
++ * document's counters, and an `env()` reads the user agent's environment, and no setting of the
++ * {@link RESOLVER_SETTINGS} constant varies any of those. A pair whose sides differ and either of
++ * which calls one of these is undecided.
++ */
++export const UNVARIED_FUNCTIONS: readonly string[] = Object.freeze([
++	'attr',
++	'counter',
++	'counters',
++	'env',
++])
++
+ /**
+  * Reads whether written text names a departure this ledger records.
+  * @param text - The guide cell's text.
+@@ -2110,7 +2240,7 @@ export function classifyDeparture(
+ ): Departure | undefined {
+ 	if (emitted === undefined) return 'dropped'
+ 	if (resolution === undefined) return undefined
+-	if (resolution.recorded !== resolution.emitted) return 'retuned'
++	if (recorded !== emitted) return 'retuned'
+ 	const read = /^var\((--[\w-]+)\)$/u.exec(recorded ?? '')?.[1]
+ 	if (read !== undefined && emitted.startsWith(`var(${read},`)) return 'fallback'
+ 	const known = collectValueNames(recorded ?? '')
+@@ -3473,12 +3603,71 @@ export function collectLedger(
+ 	}
+ }
+ 
++/**
++ * Extracts the part of one compound selector an element built for it must match.
++ *
++ * @param compound - One compound of a complex selector.
++ * @returns The compound with every pseudo-element and every pseudo-class left out except an
++ *   `:is()` or a `:where()`, whose alternatives are written the same way and joined by `, `, or
++ *   `*` where nothing is left.
++ *
++ * @remarks
++ * A pseudo-class names a state the element is in, a position among its siblings, or a relative it
++ * has, and a pseudo-element names a box the element generates, and the {@link ValueResolver} class
++ * reads the variables an element carries rather than any of those. An `:is()` or a `:where()`
++ * argument is part of the selector the element matches through, so it stays, and the element must
++ * match one of its alternatives. A colon inside a string or an attribute value is text rather than
++ * a pseudo.
++ *
++ * @example
++ * ```ts
++ * extractMatchedCompound(':where(button.page-link):focus-visible') // ':where(button.page-link)'
++ * ```
++ */
++export function extractMatchedCompound(compound: string): string {
++	const steps = walkSelector(compound)
++	let matched = ''
++	let index = 0
++	while (index < steps.length) {
++		const step = steps[index]
++		if (step === undefined) break
++		if (step.char !== ':' || step.literal || step.depth !== 0) {
++			matched += step.char
++			index += 1
++			continue
++		}
++		const element = steps[index + 1]?.char === ':'
++		const name = readIdentifier(steps, index + (element ? 2 : 1))
++		const end = name?.end ?? index + (element ? 2 : 1)
++		if (steps[end]?.char !== '(' || steps[end]?.literal === true) {
++			index = end
++			continue
++		}
++		const closer = steps.find(
++			(candidate) =>
++				candidate.index > end &&
++				candidate.char === ')' &&
++				!candidate.literal &&
++				candidate.depth === step.depth,
++		)
++		const after = closer === undefined ? steps.length : closer.index + 1
++		const keyword = name?.text.toLowerCase()
++		if (!element && (keyword === 'is' || keyword === 'where'))
++			matched += `:${keyword}(${splitTopLevelList(compound.slice(end + 1, after - 1))
++				.map((alternative) => extractMatchedCompound(alternative))
++				.join(', ')})`
++		index = after
++	}
++	return matched === '' ? '*' : matched
++}
++
+ /**
+  * Collects the elements that stand for one site's selector, one per compound.
+  *
+  * @param selector - The site's selector, normalized.
+  * @returns One element per compound the {@link splitTopLevelCompounds} helper reads, in written
+- *   order, each carrying the compound's tag, its own classes, and its attributes.
++ *   order, each carrying the compound's tag, its own classes, its attributes, and the part of the
++ *   compound it must match.
+  * @throws When a compound carries an attribute selector this reader does not parse, or a form the
+  *   {@link readCompoundTag} helper does not read, so a site the resolver cannot build reddens
+  *   instead of resolving on the wrong elements.
+@@ -3487,9 +3676,14 @@ export function collectLedger(
+  * A variable reaches an element by inheritance, so the {@link ValueResolver} class nests each
+  * element inside the one before it and reads the last. A `+` or a `~` combinator joins a sibling
+  * rather than an ancestor, so that element sits beside the one before it and inherits nothing from
+- * it. A pseudo-class and a pseudo-element are left out, because the resolver reads the variables
+- * the element carries and not the state it is in. An attribute selector's operator is read as the
+- * equality it narrows to, because the value it names satisfies every one of them.
++ * it. An id selector is read as the `id` attribute it tests, and an attribute selector's operator
++ * as the equality it narrows to, because the value it names satisfies every one of them. An
++ * `:is()` or a `:where()` argument adds the tag, classes, and attributes of its first alternative
++ * that is one compound, so `:where(button.page-link)` builds a `button` carrying the `page-link`
++ * class. Every other pseudo-class and every pseudo-element is left out, because the resolver reads
++ * the variables the element carries and not the state it is in. The resolver checks each element
++ * against its `compound` member in Chromium, and a pair whose elements do not all match is
++ * undecided.
+  *
+  * @example
+  * ```ts
+@@ -3505,44 +3699,90 @@ export function collectContextElements(selector: string): readonly ContextElemen
+ 		if (start < 0) throw new Error(`Context element reader reads no compound: ${compound}`)
+ 		const joint = selector.slice(cursor, start)
+ 		cursor = start + compound.length
++		const parts = [compound]
++		const classes: string[] = []
+ 		const attributes: Array<readonly [string, string]> = []
+-		let open: number | undefined
+-		for (const step of walkSelector(compound)) {
+-			if (step.literal || step.depth !== 0) continue
+-			if (step.char === '[') open = step.index
+-			if (step.char !== ']' || open === undefined) continue
+-			const body = compound.slice(open + 1, step.index)
+-			const match =
+-				/^\s*([-\w]+)\s*(?:[~|^$*]?=\s*(?:"([^"]*)"|'([^']*)'|([^\s"']+))(?:\s+[is])?\s*)?$/iu.exec(
+-					body,
+-				)
+-			if (match === null)
+-				throw new Error(`Context element reader reads no attribute selector: [${body}]`)
+-			attributes.push([match[1] ?? '', match[2] ?? match[3] ?? match[4] ?? ''])
+-			open = undefined
++		let tag: string | undefined
++		for (const part of parts) {
++			tag ??= readCompoundTag(part)
++			classes.push(...collectSelectorClasses(part))
++			const steps = walkSelector(part)
++			let open: number | undefined
++			for (const step of steps) {
++				if (step.literal || step.depth !== 0) continue
++				if (step.char === '#') {
++					const id = readIdentifier(steps, step.index + 1)
++					if (id !== undefined) attributes.push(['id', id.text])
++				}
++				if (step.char === ':') {
++					const name = readIdentifier(steps, step.index + 1)
++					const keyword = name?.text.toLowerCase()
++					if (
++						name !== undefined &&
++						steps[name.end]?.char === '(' &&
++						(keyword === 'is' || keyword === 'where')
++					) {
++						const closer = steps.find(
++							(candidate) =>
++								candidate.index > name.end &&
++								candidate.char === ')' &&
++								!candidate.literal &&
++								candidate.depth === 0,
++						)
++						const chosen = splitTopLevelList(
++							part.slice(name.end + 1, closer?.index ?? part.length),
++						).find((alternative) => splitTopLevelCompounds(alternative).length === 1)
++						if (chosen !== undefined) parts.push(chosen)
++					}
++				}
++				if (step.char === '[') open = step.index
++				if (step.char !== ']' || open === undefined) continue
++				const body = part.slice(open + 1, step.index)
++				const match =
++					/^\s*([-\w]+)\s*(?:[~|^$*]?=\s*(?:"([^"]*)"|'([^']*)'|([^\s"']+))(?:\s+[is])?\s*)?$/iu.exec(
++						body,
++					)
++				if (match === null)
++					throw new Error(`Context element reader reads no attribute selector: [${body}]`)
++				attributes.push([match[1] ?? '', match[2] ?? match[3] ?? match[4] ?? ''])
++				open = undefined
++			}
+ 		}
+ 		elements.push({
+-			tag: readCompoundTag(compound) ?? 'div',
+-			classes: collectSelectorClasses(compound),
++			tag: tag ?? 'div',
++			classes,
+ 			attributes,
+-			sibling: elements.length > 0 && /[+~]/u.test(joint),
++			compound: extractMatchedCompound(compound),
++			nested: elements.length === 0 || !/[+~]/u.test(joint),
+ 		})
+ 	}
+ 	return elements
+ }
+ 
+ /**
+- * Answers whether a site's selector places it in the dark mode.
++ * Infers the mode a site's selector places its target element in.
+  * @param selector - The site's selector, normalized.
+- * @returns True where the innermost compound carrying the `data-bs-theme` attribute sets it to
+- *   `dark`; false otherwise, the light mode being the document's own.
++ * @returns The value of the `data-bs-theme` attribute on the innermost of the target and its
++ *   ancestors that the selector gives one, or undefined where none of them carries it.
++ *
++ * @remarks
++ * A mode reaches an element by inheritance, so only the target and the elements the
++ * {@link collectContextElements} helper nests it inside decide it. An element a `+` or a `~`
++ * combinator places beside the next one is that element's sibling, and its mode reaches neither
++ * that element nor the target, so `[data-bs-theme=dark] + .btn` sits in no mode scope.
++ *
++ * @example
++ * ```ts
++ * inferScopeMode('[data-bs-theme=dark] .btn') // 'dark'
++ * ```
+  */
+-export function matchesDarkScope(selector: string): boolean {
+-	const scope = collectContextElements(selector)
++export function inferScopeMode(selector: string): string | undefined {
++	const elements = collectContextElements(selector)
++	return elements
++		.filter((_element, index) => index === elements.length - 1 || elements[index + 1]?.nested)
+ 		.flatMap((element) => element.attributes)
+ 		.filter(([name]) => name === 'data-bs-theme')
+-		.at(-1)
+-	return scope?.[1] === 'dark'
++		.at(-1)?.[1]
+ }
+ 
+ /**
+@@ -3552,7 +3792,7 @@ export function matchesDarkScope(selector: string): boolean {
+  * @param value - A computed value as Chromium serializes it.
+  * @returns The value with every `rgb()`, `rgba()`, and `color(srgb …)` color written as `rgb()`, or
+  *   as `rgba()` where it is not opaque, over channels and an alpha each rounded to the nearest of
+- *   256 steps, and every other text unchanged.
++ *   256 steps, and every other text unchanged, every string and every `url()` included.
+  *
+  * @remarks
+  * Chromium serializes a legacy color as `rgb()` over 8-bit channels and alpha, and a mixed or
+@@ -3565,7 +3805,9 @@ export function matchesDarkScope(selector: string): boolean {
+  * gradient and every mix over premultiplied channels, so the release's `rgba(255, 255, 255, 0)`
+  * gradient stop and a `transparent` one paint the same gradient. An alpha is written the way
+  * Chromium writes a legacy one: to two places where those round back to the same step, and to three
+- * otherwise. A color in any other space is left as Chromium writes it.
++ * otherwise. A color in any other space is left as Chromium writes it, and so is text inside a
++ * quoted string or a `url()`, which a `content` value displays or a resource address names rather
++ * than paints.
+  *
+  * @example
+  * ```ts
+@@ -3574,9 +3816,9 @@ export function matchesDarkScope(selector: string): boolean {
+  */
+ export function normalizeResolvedColors(value: string): string {
+ 	return value.replaceAll(
+-		/rgba?\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+)(?:, ([\d.]+))?\)|color\(srgb ([-+\d.e]+) ([-+\d.e]+) ([-+\d.e]+)(?: \/ ([-+\d.e]+))?\)/gu,
++		/"(?:[^"\\]|\\.)*"?|'(?:[^'\\]|\\.)*'?|url\((?:[^)"'\\]|\\.|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)?|rgba?\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+)(?:, ([\d.]+))?\)|color\(srgb ([-+\d.e]+) ([-+\d.e]+) ([-+\d.e]+)(?: \/ ([-+\d.e]+))?\)/giu,
+ 		(
+-			_match: string,
++			match: string,
+ 			red: string | undefined,
+ 			green: string | undefined,
+ 			blue: string | undefined,
+@@ -3586,6 +3828,7 @@ export function normalizeResolvedColors(value: string): string {
+ 			z: string | undefined,
+ 			alpha: string | undefined,
+ 		) => {
++			if (red === undefined && x === undefined) return match
+ 			const scale = red === undefined ? 255 : 1
+ 			const channels = (red === undefined ? [x, y, z] : [red, green, blue]).map((channel) =>
+ 				String(Math.round(Number(channel) * scale) + 0),
+@@ -3611,12 +3854,22 @@ export function normalizeResolvedColors(value: string): string {
+  * Each side's values are read first in its own page, on elements the
+  * {@link collectContextElements} helper builds from the site's selector, so every variable a value
+  * reads takes the value that stylesheet gives it at that site, and a custom property takes its
+- * declared value there, `inherit` included. A regular property's value that reads a variable the
+- * stylesheet never gives computes as `unset`, the way Chromium treats a declaration invalid at
+- * computed-value time. Both substituted values then compute on twin elements of the neutral page,
+- * under the color scheme of the site's mode, at a 16px font size and a 1000px width, so a relative
+- * length, a percentage, and a `light-dark()` pair read one context on both sides and neither
+- * stylesheet's element styles take part. Each stylesheet's factors stay at the values it
++ * declared value there, `inherit` included. Each element must match the part of its compound the
++ * `compound` member names, and a pair whose elements do not all match is undecided. A regular
++ * property's value that reads a variable the stylesheet never gives computes as `unset`, the way
++ * Chromium treats a declaration invalid at computed-value time.
++ *
++ * Both substituted values then compute on twin elements of the neutral page, under the color
++ * scheme of the mode the {@link inferScopeMode} helper infers, so neither stylesheet's element
++ * styles take part. The twins compute in every setting the {@link RESOLVER_SETTINGS} constant
++ * maps, each of which varies one context a term can read, and a regular property computes once
++ * more under a parent that sets the property itself to the first of the {@link PARENT_VALUES}
++ * constant's values that changes it. Two sides compute alike only where they compute alike in
++ * every one of those readings. A pair whose sides differ is undecided where either side calls a
++ * function the {@link UNVARIED_FUNCTIONS} constant names, and where a regular property's side is
++ * `inherit`, `unset`, `revert`, or `revert-layer` and no parent value changes the property. Two
++ * sides that write the same text once substituted compute alike in every setting, so the resolver
++ * reads such a pair in the `base` setting alone. Each stylesheet's factors stay at the values it
+  * declares.
+  *
+  * A regular property computes as itself, from the last value each side writes that Chromium
+@@ -3631,7 +3884,8 @@ export function normalizeResolvedColors(value: string): string {
+  * property's values on one side, where no syntax and no property parses both values of a custom
+  * property, or where Chromium serializes the computed value as empty. The resolver keeps every
+  * answer for the pair it read, so a comparison repeated over the same pairs reads each one once.
+- * Every `resolve` call rebuilds the pages' elements, so await each call before making the next.
++ * Every `resolve` call rebuilds the pages' elements and sets the neutral page's viewport, so await
++ * each call before making the next.
+  */
+ export class ValueResolver {
+ 	readonly #browser: Browser
+@@ -3673,71 +3927,207 @@ export class ValueResolver {
+ 				this.#resolved.set(key, undefined)
+ 			else pending.set(key, pair)
+ 		}
+-		const batch = [...pending.values()]
+-		if (batch.length > 0) {
+-			const contexts = batch.map((pair) => collectContextElements(pair.selector))
+-			const [recorded, emitted] = await Promise.all([
+-				this.#substitute(
+-					this.#recorded,
+-					batch,
+-					contexts,
+-					batch.map((pair) => pair.recorded),
+-				),
+-				this.#substitute(
+-					this.#emitted,
+-					batch,
+-					contexts,
+-					batch.map((pair) => pair.emitted),
+-				),
+-			])
++		const batch = [...pending.entries()]
++		if (batch.length === 0) return keys.map((key) => this.#resolved.get(key))
++		const contexts = batch.map(([, pair]) => collectContextElements(pair.selector))
++		const [recorded, emitted] = await Promise.all([
++			this.#substitute(
++				this.#recorded,
++				batch.map(([, pair]) => pair),
++				contexts,
++				batch.map(([, pair]) => pair.recorded),
++			),
++			this.#substitute(
++				this.#emitted,
++				batch.map(([, pair]) => pair),
++				contexts,
++				batch.map(([, pair]) => pair.emitted),
++			),
++		])
++		const built = batch.flatMap(([key, pair], index) => {
++			const left = recorded[index]
++			const right = emitted[index]
++			if (left === undefined || right === undefined) {
++				this.#resolved.set(key, undefined)
++				return []
++			}
++			return [
++				{
++					key,
++					property: pair.property,
++					dark: inferScopeMode(pair.selector) === 'dark',
++					recorded: left,
++					emitted: right,
++				},
++			]
++		})
++		const readings = await this.#compute(built)
++		for (const [index, item] of built.entries()) {
++			const read = readings[index]
++			const normalized = read?.map(
++				([left, right]) => [normalizeResolvedColors(left), normalizeResolvedColors(right)] as const,
++			)
++			const decided = normalized?.find(([left, right]) => left !== right) ?? normalized?.[0]
++			this.#resolved.set(
++				item.key,
++				decided === undefined ? undefined : { recorded: decided[0], emitted: decided[1] },
++			)
++		}
++		return keys.map((key) => this.#resolved.get(key))
++	}
++
++	/** Closes the browser, and every page with it. */
++	async destroy(): Promise<void> {
++		await this.#browser.close()
++	}
++
++	// Computes each substituted pair on the neutral page in every setting, one pass per root font
++	// size and viewport, and returns each pair's readings in setting order with the parent reading
++	// last, or undefined for a pair no reading decides.
++	async #compute(
++		items: ReadonlyArray<{
++			readonly property: string
++			readonly dark: boolean
++			readonly recorded: readonly string[]
++			readonly emitted: readonly string[]
++		}>,
++	): Promise<ReadonlyArray<ReadonlyArray<readonly [string, string]> | undefined>> {
++		const passes = new Map<string, ResolverSetting[]>()
++		for (const setting of Object.values(RESOLVER_SETTINGS)) {
++			const key = JSON.stringify([setting.root, setting.viewport])
++			passes.set(key, [...(passes.get(key) ?? []), setting])
++		}
++		const settings: Array<ReadonlyArray<readonly [string, string]> | undefined> = items.map(
++			() => [],
++		)
++		const parents: Array<readonly [string, string] | undefined> = items.map(() => undefined)
++		for (const [pass, group] of [...passes.values()].entries()) {
++			const [first] = group
++			if (first === undefined) continue
++			await this.#neutral.setViewportSize({ width: first.viewport[0], height: first.viewport[1] })
+ 			const computed = await this.#neutral.evaluate(
+-				({ items, prefix, count, properties }) => {
++				({ batch, hosts, root, parent, prefix, count, properties, candidates, unvaried }) => {
++					document.documentElement.style.setProperty('font-size', root)
+ 					document.body.replaceChildren()
+-					const hosts = ['light', 'dark'].map((scheme) => {
+-						const host = document.createElement('div')
+-						host.style.setProperty('color-scheme', scheme)
+-						host.style.setProperty('font-size', '16px')
+-						host.style.setProperty('width', '1000px')
+-						document.body.append(host)
+-						return host
+-					})
+ 					const probes = Array.from(
+ 						{ length: count },
+ 						(_probe, index) => `${prefix}-${String(index)}`,
+ 					)
+-					const chosen = items.map((item) =>
++					const calls = new RegExp(`(?<![-\\w])(?:${unvaried.join('|')})\\(`, 'iu')
++					const inheriting = /^(?:inherit|unset|revert|revert-layer)$/iu
++					const scopes = hosts.map((styles) =>
++						['light', 'dark'].map((scheme) => {
++							const host = document.createElement('div')
++							host.style.setProperty('color-scheme', scheme)
++							for (const [name, value] of Object.entries(styles))
++								host.style.setProperty(name, value)
++							document.body.append(host)
++							return host
++						}),
++					)
++					const chosen = batch.map((item) =>
+ 						[item.recorded, item.emitted].map((values) =>
+ 							item.property.startsWith('--')
+ 								? values.at(-1)
+ 								: values.findLast((value) => CSS.supports(item.property, value)),
+ 						),
+ 					)
+-					const twins = items.map((item, index) =>
+-						(chosen[index] ?? []).map((value) => {
+-							const element = document.createElement('div')
+-							const host = item.dark ? hosts[1] : hosts[0]
+-							host?.append(element)
+-							if (value === undefined || value === '') return element
+-							if (!item.property.startsWith('--')) {
+-								element.style.setProperty(item.property, value)
+-								return element
+-							}
+-							for (const probe of probes) {
+-								element.style.setProperty(probe, value)
+-								element.style.setProperty(`${probe}-control`, value)
+-							}
+-							for (const name of properties)
+-								if (CSS.supports(name, value)) element.style.setProperty(name, value)
+-							return element
++					// Each regular property's parent value is the first candidate Chromium parses for it and
++					// computes apart from the base host's own value, tried on children of that host.
++					const regular = [
++						...new Set(batch.map((item) => item.property).filter((name) => !name.startsWith('--'))),
++					]
++					const base = scopes[0]?.[0] ?? document.body
++					const trials = (parent ? regular : []).map((name) =>
++						candidates
++							.filter((candidate) => CSS.supports(name, candidate))
++							.map((candidate) => {
++								const element = document.createElement('div')
++								element.style.setProperty(name, candidate)
++								base.append(element)
++								return [candidate, element] as const
++							}),
++					)
++					const alternates = new Map(
++						regular.map((name, index) => {
++							const own = getComputedStyle(base).getPropertyValue(name)
++							return [
++								name,
++								(trials[index] ?? []).find(
++									([, element]) => getComputedStyle(element).getPropertyValue(name) !== own,
++								)?.[0],
++							] as const
+ 						}),
+ 					)
+-					return items.map((item, index) => {
+-						const [first, second] = chosen[index] ?? []
+-						if (first === undefined || second === undefined) return undefined
++					for (const [, element] of trials.flat()) element.remove()
++					const inheritors = new Map(
++						[...alternates.entries()].flatMap(([name, alternate]) =>
++							alternate === undefined
++								? []
++								: ['light', 'dark'].map((scheme) => {
++										const host = document.createElement('div')
++										host.style.setProperty('color-scheme', scheme)
++										for (const [style, value] of Object.entries(hosts[0] ?? {}))
++											host.style.setProperty(style, value)
++										host.style.setProperty(name, alternate)
++										document.body.append(host)
++										return [`${name} ${scheme}`, host] as const
++									}),
++						),
++					)
++					// A pair whose sides write the same text computes alike in every setting, so it is read in
++					// the first pass's first setting alone.
++					const twins = batch.map((item, index) =>
++						(chosen[index]?.[0] === chosen[index]?.[1]
++							? parent
++								? [scopes[0]?.[item.dark ? 1 : 0]]
++								: []
++							: [
++									...scopes.map((pair) => (item.dark ? pair[1] : pair[0])),
++									parent
++										? inheritors.get(`${item.property} ${item.dark ? 'dark' : 'light'}`)
++										: undefined,
++								]
++						).map((host) =>
++							host === undefined
++								? undefined
++								: (chosen[index] ?? []).map((value) => {
++										const element = document.createElement('div')
++										host.append(element)
++										if (value === undefined || value === '') return element
++										if (!item.property.startsWith('--')) {
++											element.style.setProperty(item.property, value)
++											return element
++										}
++										for (const probe of probes) {
++											element.style.setProperty(probe, value)
++											element.style.setProperty(`${probe}-control`, value)
++										}
++										for (const name of properties)
++											if (CSS.supports(name, value)) element.style.setProperty(name, value)
++										return element
++									}),
++						),
++					)
++					return batch.map((item, index) => {
++						const [left, right] = chosen[index] ?? []
++						if (left === undefined || right === undefined) return undefined
+ 						const custom = item.property.startsWith('--')
+-						if (custom && (first === '' || second === ''))
+-							return { recorded: first, emitted: second }
+-						const styles = (twins[index] ?? []).map((element) => getComputedStyle(element))
++						if (custom && (left === '' || right === ''))
++							return { settings: hosts.map(() => [left, right] as const), parent: undefined }
++						const differ = left !== right
++						if (!differ && !parent) return { settings: [], parent: undefined }
++						if (differ && (calls.test(left) || calls.test(right))) return undefined
++						if (
++							parent &&
++							!custom &&
++							differ &&
++							alternates.get(item.property) === undefined &&
++							(inheriting.test(left.trim()) || inheriting.test(right.trim()))
++						)
++							return undefined
++						const groups = twins[index] ?? []
++						const styles = (groups[0] ?? []).map((element) => getComputedStyle(element))
+ 						const name = !custom
+ 							? item.property
+ 							: (probes.find((probe) =>
+@@ -3747,55 +4137,59 @@ export class ValueResolver {
+ 									),
+ 								) ??
+ 								properties.find(
+-									(candidate) => CSS.supports(candidate, first) && CSS.supports(candidate, second),
++									(candidate) => CSS.supports(candidate, left) && CSS.supports(candidate, right),
+ 								))
+ 						if (name === undefined) return undefined
+-						const [left, right] = styles.map((style) => style.getPropertyValue(name).trim())
+-						if (left === undefined || right === undefined || left === '' || right === '')
+-							return undefined
+-						return { recorded: left, emitted: right }
++						const readings = groups.map((twin) =>
++							twin?.map((element) => getComputedStyle(element).getPropertyValue(name).trim()),
++						)
++						const pairs = readings.flatMap((reading) =>
++							reading === undefined ? [] : [[reading[0] ?? '', reading[1] ?? ''] as const],
++						)
++						if (pairs.some(([one, other]) => one === '' || other === '')) return undefined
++						return {
++							settings: pairs.slice(0, hosts.length),
++							parent: pairs[hosts.length],
++						}
+ 					})
+ 				},
+ 				{
+-					items: batch.map((pair, index) => ({
+-						property: pair.property,
+-						dark: matchesDarkScope(pair.selector),
+-						recorded: recorded[index] ?? [],
+-						emitted: emitted[index] ?? [],
+-					})),
++					batch: items,
++					hosts: group.map((setting) => setting.host),
++					root: first.root,
++					parent: pass === 0,
+ 					prefix: PROBE_PREFIX,
+ 					count: Object.keys(PROBE_SYNTAXES).length,
+ 					properties: PROBE_PROPERTIES,
++					candidates: PARENT_VALUES,
++					unvaried: UNVARIED_FUNCTIONS,
+ 				},
+ 			)
+-			for (const [index, key] of [...pending.keys()].entries()) {
+-				const resolution = computed[index]
+-				this.#resolved.set(
+-					key,
+-					resolution === undefined
++			for (const [index, result] of computed.entries()) {
++				const earlier = settings[index]
++				settings[index] =
++					earlier === undefined || result === undefined
+ 						? undefined
+-						: {
+-								recorded: normalizeResolvedColors(resolution.recorded),
+-								emitted: normalizeResolvedColors(resolution.emitted),
+-							},
+-				)
++						: [...earlier, ...result.settings]
++				if (result?.parent !== undefined) parents[index] = result.parent
+ 			}
+ 		}
+-		return keys.map((key) => this.#resolved.get(key))
+-	}
+-
+-	/** Closes the browser, and every page with it. */
+-	async destroy(): Promise<void> {
+-		await this.#browser.close()
++		return settings.map((readings, index) => {
++			const parent = parents[index]
++			return readings === undefined
++				? undefined
++				: [...readings, ...(parent === undefined ? [] : [parent])]
++		})
+ 	}
+ 
+-	// Reads each side's values in its own page, with every variable substituted at the site.
++	// Reads each side's values in its own page, with every variable substituted at the site, or
++	// undefined for a pair whose elements do not all match their compounds.
+ 	async #substitute(
+ 		page: Page,
+ 		pairs: readonly ValuePair[],
+ 		contexts: ReadonlyArray<readonly ContextElement[]>,
+ 		sides: ReadonlyArray<readonly string[]>,
+-	): Promise<ReadonlyArray<readonly string[]>> {
++	): Promise<ReadonlyArray<readonly string[] | undefined>> {
+ 		const items = pairs.flatMap((pair, index) =>
+ 			(sides[index] ?? []).map((value) => ({
+ 				elements: contexts[index] ?? [],
+@@ -3808,24 +4202,31 @@ export class ValueResolver {
+ 				document.body.replaceChildren()
+ 				const subjects = batch.map((item) => {
+ 					let subject: HTMLElement = document.body
++					let matched = true
+ 					for (const described of item.elements) {
+ 						const element = document.createElement(described.tag)
+ 						for (const name of described.classes) element.classList.add(name)
+ 						for (const [name, value] of described.attributes) element.setAttribute(name, value)
+-						const host = described.sibling ? (subject.parentElement ?? document.body) : subject
++						const host = described.nested ? subject : (subject.parentElement ?? document.body)
+ 						host.append(element)
++						try {
++							matched &&= element.matches(described.compound)
++						} catch {
++							matched = false
++						}
+ 						subject = element
+ 					}
+-					if (item.value.trim() !== '')
++					if (matched && item.value.trim() !== '')
+ 						subject.style.setProperty(
+ 							item.property.startsWith('--') ? item.property : raw,
+ 							item.value,
+ 						)
+-					return subject
++					return matched ? subject : undefined
+ 				})
+ 				return batch.map((item, index) => {
+ 					const subject = subjects[index]
+-					if (subject === undefined || item.value.trim() === '') return item.value.trim()
++					if (subject === undefined) return undefined
++					if (item.value.trim() === '') return item.value.trim()
+ 					const style = getComputedStyle(subject)
+ 					if (item.property.startsWith('--')) return style.getPropertyValue(item.property).trim()
+ 					if (!/var\(/iu.test(item.value)) return item.value
+@@ -3839,7 +4240,9 @@ export class ValueResolver {
+ 		return sides.map((values) => {
+ 			const slice = read.slice(offset, offset + values.length)
+ 			offset += values.length
+-			return slice
++			return slice.every((value) => value !== undefined)
++				? slice.flatMap((value) => (value === undefined ? [] : [value]))
++				: undefined
+ 		})
+ 	}
+ }
+@@ -3961,9 +4364,10 @@ export async function classifyValueGaps(
+  * @param resolver - A resolver whose two sides read one stylesheet, the built cascade, so a cell
+  *   and a declaration read the same variables.
+  * @returns One line per mapped token the `:root` selector does not declare, as its token, the
+- *   `:root` site, and its light cell; then one line per token and site whose declaration resolves
+- *   apart from its cell, as its token, selector, condition, cell, declaration, and both resolved
+- *   values, and one per pair the resolver cannot decide, ending in `undecided`, in reference order.
++ *   `:root` site, and its light cell; then one line per token, site, and mode whose declaration
++ *   resolves apart from its cell, as its token, selector, condition, cell, declaration, and both
++ *   resolved values, and one per pair the resolver cannot decide, ending in `undecided`, in
++ *   reference order. A resolved value that is empty is written as the {@link EMPTY_CELL} constant.
+  *
+  * @remarks
+  * A token resolves in each mode at that mode's scope. The light reading takes the
+@@ -3971,9 +4375,13 @@ export async function classifyValueGaps(
+  * rule's otherwise. The dark reading takes the `[data-bs-theme=dark]` rule's declaration, or the
+  * `:root` rule's where the dark scope declares none, and resolves it inside the dark scope, so a
+  * token every mode shares still reads the dark scope's variables. Every other site that declares a
+- * canonical token, under any selector or condition, compares against the cell of the mode its
+- * selector sits in, so a token a component rule redeclares is measured rather than left outside
+- * both ledgers. A token the registry names and the map does not carries no cell and is not read.
++ * canonical token, under any selector or condition, is measured rather than left outside both
++ * ledgers. A site inside a mode scope, as the {@link inferScopeMode} helper infers it, compares
++ * against that mode's cell. A site outside every mode scope applies in both modes, so it compares
++ * against the light cell where it stands and against the dark cell inside the dark scope, where its
++ * selector is written after `[data-bs-theme=dark]`. Where both sides resolve to nothing, as an
++ * `inherit` and an `initial` both do, the declaration and its cell compare as the text they write.
++ * A token the registry names and the map does not carries no cell and is not read.
+  */
+ export async function scanCanonicalValues(
+ 	blocks: readonly CascadeBlock[],
+@@ -4020,13 +4428,17 @@ export async function scanCanonicalValues(
+ 			const value = block.declarations.get(row.token)
+ 			if (value === undefined || (block.condition === undefined && scopes.includes(block.selector)))
+ 				continue
+-			sites.push([
+-				row.token,
+-				block.selector,
+-				block.condition,
+-				matchesDarkScope(block.selector) ? row.dark : row.light,
+-				value,
+-			])
++			const mode = inferScopeMode(block.selector)
++			if (mode !== 'dark')
++				sites.push([row.token, block.selector, block.condition, row.light, value])
++			if (mode === 'dark' || mode === undefined)
++				sites.push([
++					row.token,
++					mode === 'dark' ? block.selector : `[data-bs-theme=dark] ${block.selector}`,
++					block.condition,
++					row.dark,
++					value,
++				])
+ 		}
+ 		for (const site of sites) checks.set(JSON.stringify(site), site)
+ 	}
+@@ -4043,8 +4455,17 @@ export async function scanCanonicalValues(
+ 		const resolution = resolutions[index]
+ 		const cells = [token, selector, condition ?? ABSENT_CELL, stated, value]
+ 		if (resolution === undefined) lines.push([...cells, 'undecided'].join(' | '))
+-		else if (resolution.recorded !== resolution.emitted)
+-			lines.push([...cells, resolution.recorded, resolution.emitted].join(' | '))
++		else if (
++			resolution.recorded !== resolution.emitted ||
++			(resolution.recorded === '' && stated.trim() !== value.trim())
++		)
++			lines.push(
++				[
++					...cells,
++					describeValueCell(resolution.recorded),
++					describeValueCell(resolution.emitted),
++				].join(' | '),
++			)
+ 	}
+ 	return lines
+ }
+@@ -4054,29 +4475,56 @@ export async function scanCanonicalValues(
+  *
+  * @param departures - The classified departures.
+  * @param references - The reference map's rows, as the `collectReferenceRows` helper reads them.
++ * @param resolver - A resolver whose recorded side reads the release's stylesheet and whose
++ *   emitted side reads the built cascade, as the {@link classifyValueGaps} helper takes it.
+  * @returns Each token whose reference row's `Source` cell names `bootstrap` and that no departure
+  *   row witnesses, once each, in reference order.
+  *
+  * @remarks
+  * A witness is a row whose emitted value reads the token, as the {@link collectValueNames} helper
+- * reads names, and whose member is neither `retuned` nor `dropped`, so the value reading the token
+- * resolves to the release's own at a site the release writes. A `bootstrap` cell states that the
+- * token keeps the release's value, and a witness is the ledger's measurement of that statement: a
+- * token retuned away from the release leaves every row reading it `retuned`, and this scan names
+- * it, even where a row reads it beside a token the release never writes.
++ * reads names, whose member is neither `retuned` nor `dropped`, and whose release value the token's
++ * own value resolves alike to at the row's site, the token read as `var()` alone in the row's
++ * property. A `bootstrap` cell states that the token keeps the release's value, and a witness is
++ * the ledger's measurement of that statement. A token retuned away from the release leaves every
++ * row reading it `retuned`, and a row that reaches the release value through arithmetic on the
++ * token, or beside a token the release never writes, resolves alike while the token alone does
++ * not, so this scan names the token in both cases.
+  */
+-export function scanWitnesses(
++export async function scanWitnesses(
+ 	departures: readonly DepartureRow[],
+ 	references: readonly ReferenceRow[],
+-): readonly string[] {
++	resolver: ValueResolver,
++): Promise<readonly string[]> {
++	const tokens = [
++		...new Set(references.filter((row) => row.source === 'bootstrap').map((row) => row.token)),
++	]
++	const candidates = departures
++		.filter(
++			(row) =>
++				row.departure !== 'retuned' && row.departure !== 'dropped' && row.recorded !== undefined,
++		)
++		.flatMap((row) =>
++			collectValueNames(row.emitted ?? '')
++				.filter((name) => tokens.includes(name))
++				.map((token) => ({ token, row })),
++		)
++	const resolutions = await resolver.resolve(
++		candidates.map(({ token, row }) => ({
++			selector: row.selector,
++			property: row.property,
++			recorded: [row.recorded ?? ''],
++			emitted: [`var(${token})`],
++		})),
++	)
+ 	const witnessed = new Set(
+-		departures
+-			.filter((row) => row.departure !== 'retuned' && row.departure !== 'dropped')
+-			.flatMap((row) => collectValueNames(row.emitted ?? '')),
++		candidates
++			.filter((_candidate, index) => {
++				const resolution = resolutions[index]
++				return resolution !== undefined && resolution.recorded === resolution.emitted
++			})
++			.map(({ token }) => token),
+ 	)
+-	return [
+-		...new Set(references.filter((row) => row.source === 'bootstrap').map((row) => row.token)),
+-	].filter((token) => !witnessed.has(token))
++	return tokens.filter((token) => !witnessed.has(token))
+ }
+ 
+ /**
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > installs the exact Bootstrap release this package tracks
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > pins the installed CSS and bundled JavaScript bytes
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted container navigation selector even when its fluid shell ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted link hover selector even when its resting twin ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted dark component rule the theme key records even when its component ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector, custom property, and recorded animation in the built cascade
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > ships exactly the component keys the pinned official inventory records
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > decides every measured value difference by the value each side resolves to in Chromium
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > decides every repainted value difference, with the theme key shipped and withheld
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+ × |conformance| tests/conformance.test.ts > cascade ledger > names a retuned value retuned and a routed release value tokenized, whatever the token source 5ms
+   → expected [ …(2235) ] to include 'accordion | .accordion | --bs-accordi…'
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > resolves every canonical token at every site that declares it to its reference map cell, in each mode
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > witnesses every bootstrap-sourced token with a departure row whose release value the token itself resolves to
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > attributes every emitted rule to a shipped component
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > places by measurement every emitted rule but the ones a recorded selector row owns
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > defers no name the built cascade ships
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > selects in the elements layer exactly the tags the partial table names
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > compares each declaration's priority on both sheets at its selector, property, and condition
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads every forms partial in the release order, validation last
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads the passive block and the helpers in the release order, after every forms partial, each important helper ahead of the utilities
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > declares no forbidden runtime dependency or peer
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > imports no forbidden runtime package from source, application, or tests
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps relative module imports inside the workspace
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps every published entry closure inside source
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names a retuned value retuned and a routed release value tokenized, whatever the token source
+AssertionError: expected [ …(2235) ] to include 'accordion | .accordion | --bs-accordi…'
+ ❯ tests/conformance.test.ts:302:19
+    300|   )
+    301|   expect(members).toContain('btn | .btn | --bs-btn-font-size | retuned…
+    302|   expect(members).toContain('accordion | .accordion | --bs-accordion-b…
+       |                   ^
+    303|   expect(members).toContain('theme | :root | --bs-primary | retuned')
+    304|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 33 skipped (34)
+   Start at  09:08:35
+   Duration  36.30s (transform 602ms, setup 158ms, import 31.14s, tests 4.80s, environment 0ms)
+
+exit=1
+restored tests/setupServer.ts byte-identical
+--- git diff --stat after restore
+ tests/setupServer.ts | 792 ++++++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 620 insertions(+), 172 deletions(-)

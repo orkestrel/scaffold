@@ -1,0 +1,281 @@
+command: npx vitest run --config vite.config.ts --no-cache --project conformance tests/conformance.test.ts -t "names no addition the compiled cascade no longer emits" --reporter=verbose
+mutation=addition-stale files=guides/veneer.md
+load 5.31 4.64 6.25 2/197 11190
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 867808c..101bbf0 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -7040,7 +7040,7 @@ multipliers, and the tier table gives each tier's expression in the row. The tab
+ The tables that follow state the value the cascade declares for each token. The ledger gate in the
+ `tests/conformance.test.ts` proof resolves every stated value against every declaration of its
+ token in Chromium, through the `scanCanonicalValues` function: at each mode's scope, and at every
+-other selector and condition that declares the token. Every value cell states a value: one code span for each token the row's first cell names,
++other selector and condition that declares the token, in each mode that site applies in. Every value cell states a value: one code span for each token the row's first cell names,
+ `` `light`, dark `dark` `` where a table's single value column carries the light and the dark
+ reading together, or `the same expression` where the dark scope repeats the light cell. The
+ `collectReferenceRows` reader in the `tests/setupStyles.ts` module refuses a cell written in any
+@@ -7054,8 +7054,11 @@ names.
+ 
+ A stated value and a declaration compare as the values Chromium computes for them, through the same
+ resolver the § Departures rows take their members from, so `150ms` and `0.15s` compare equal, `15%`
+-and `15.0%` compare equal, and `16%` does not. A color compares at the 8-bit precision of a legacy
+-color, whichever notation writes it.
++and `15.0%` compare equal, and `16%` does not. An `rgb()`, `rgba()`, or `color(srgb …)` color
++compares at the 8-bit precision of a legacy color, so `rgba(0, 0, 0, 0.175)` and the same black
++mixed to 17.5% compare equal. A color in any other space, such as `oklch()` or
++`color(display-p3 …)`, compares as Chromium writes it. A stated value and a declaration that both
++resolve to nothing, as an `inherit` and an `initial` do, compare as the text they write.
+ 
+ #### Factors
+ 
+@@ -7265,7 +7268,7 @@ cell.
+ | `--vn-shadow-1`                           | `0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.05), 0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.1875rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.09)`                                         | `elements` — the elevation table's hint pair        | `--bs-box-shadow-sm`                                                   |
+ | `--vn-shadow-2`                           | `0 calc(0.125rem * var(--vn-factor-elevation)) calc(0.25rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.06), 0 calc(0.5rem * var(--vn-factor-elevation)) calc(1rem * var(--vn-factor-elevation)) calc(-0.25rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.12)`       | `elements` — the elevation table's popover pair     | `--bs-box-shadow`                                                      |
+ | `--vn-shadow-3`                           | `0 calc(0.25rem * var(--vn-factor-elevation)) calc(0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.07), 0 calc(1.5rem * var(--vn-factor-elevation)) calc(2.75rem * var(--vn-factor-elevation)) calc(-0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.22)`       | `elements` — the elevation table's dialog pair      | `--bs-box-shadow-lg`                                                   |
+-| `--vn-shadow-inset`                       | `inset 0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075)`                                                                                                                                                                       | `bootstrap` — no Elements specimen renders an inset | `--bs-box-shadow-inset`                                                |
++| `--vn-shadow-inset`                       | `inset 0 calc(1px * var(--vn-factor-elevation)) calc(2px * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075)`                                                                                                                                                                                  | `bootstrap` — no Elements specimen renders an inset | `--bs-box-shadow-inset`                                                |
+ 
+ Each space step is its own number times `0.125rem`, so at the default density factor the scale runs
+ 2 px at `--vn-space-1`, 4 to 16 px across `--vn-space-2` through `--vn-space-8`, 24 px at
+@@ -7545,22 +7548,37 @@ record a difference in notation whose computed value matches, such as `transpare
+ `rgba(0, 0, 0, 0)` or `0.875em` against `87.5%`. The member each row takes comes from the value
+ each side resolves to in Chromium instead, which the `ValueResolver` class reads. It resolves the
+ release's value against the release's stylesheet and Veneer's value against the built cascade, each
+-on elements built from the row's selector, so every variable a value reads takes the value its own
+-stylesheet gives it there. It then computes both on twin elements of one neutral page, in the row's
+-mode and at the default factors, so a relative length reads the same context on both sides. Where
+-the release writes the property more than once at the row's site, the release value is the last
+-declaration Chromium parses, as it is for the `-webkit-sticky` fallback the release writes ahead of
+-`sticky`. A custom property computes through the first typed probe both of its values parse: a
+-registered syntax such as `<length>` or `<color>`, and after every syntax, a standard property such
+-as `box-shadow` or `font-family`. The gate names every row the resolver cannot decide and expects
+-none, so no row takes the member its text alone would name.
++on elements built from the row's selector, one per compound and each matching its compound, so every
++variable a value reads takes the value its own stylesheet gives it there. It then computes both on
++twin elements of one neutral page, in the row's mode, which the target element and its ancestors
++decide, and at the default factors. The twins compute under every setting the `RESOLVER_SETTINGS`
++constant maps: the `base` setting, and one setting each that changes the `font` size, the
++containing `block`, the `color`, the `direction`, the `root` font size, or the `viewport`. A regular
++property also computes under a parent that sets the property itself, so an `inherit` reads a
++second parent value. Two sides resolve to the same value only where they compute alike under every
++setting, because a reader's page can run in any of those contexts. The `.col-form-label`
++`font-size` row is `retuned` because the release's `inherit` follows its parent and Veneer's token
++does not. The `display` and `legend` `font-size` rows are `retuned` because the release fixes each
++viewport share while Veneer's share scales with its rem token, so the two agree only at a 16px root
++font size. A pair whose value reads a context no setting varies, such as an `env()` value, is
++undecided. Where the release writes the property more than once at the row's site, the release
++value is the last declaration Chromium parses, as it is for the `-webkit-sticky` fallback the
++release writes ahead of `sticky`, and for the `pre` and `kbd` `font-size` rows, whose `1em` the
++release's second rule replaces with `0.875em`. A custom property computes through the first typed
++probe both of its values parse: a registered syntax such as `<length-percentage>+` or `<color>`,
++and after every syntax, a standard property such as `box-shadow` or `font-family`. The gate names
++every row the resolver cannot decide and expects none, so no row takes the member its text alone
++would name.
+ 
+ A `—` cell in the `Condition` column records a declaration under no at-rule, and a `—` cell in
+ either value column records a side that writes no declaration there at all. An `(empty)` cell
+ records a side that writes the declaration with nothing after the colon, which leaves the property
+ without a value while the declaration itself stands. The `Departure` cell names why the two values
+ differ. A `retuned` row resolves to a value other than the release's, whatever its text reads, and
+-a `dropped` row writes no declaration at all. Every other row resolves to the release value in
++a `dropped` row writes no declaration at all. `retuned` compares computed values, not rendered
++pixels: the `reboot` `th` `text-align` row is `retuned` because the release's `-webkit-match-parent`
++computes to `left` and Veneer's `inherit` to `start`, which align a header alike wherever the
++header's direction matches its row's. Every other row resolves to the release value in
+ different text, and its member names what the text does: a `tokenized` row routes the release value
+ through a Veneer token, an `aliased` row reads another compatibility variable in its place, a
+ `fallback` row keeps the release value behind a `var()` fallback, and a `restated` row writes the
+@@ -7569,9 +7587,10 @@ is `(empty)` is `retuned` rather than `dropped`: the cascade writes the declarat
+ differs.
+ 
+ A token the § Reference map sources from `bootstrap` states that it keeps the release's own value,
+-and these rows hold that statement: the `scanWitnesses` function names each such token no row reads
+-at the release value, which is a row reading it that is neither `retuned` nor `dropped`, and the
+-gate expects none.
++and these rows hold that statement: the `scanWitnesses` function names each such token no row
++witnesses, and the gate expects none. A witness is a row that reads the token, that is neither
++`retuned` nor `dropped`, and whose release value the token alone resolves to at the row's site, so a
++row that reaches the release value through arithmetic on the token witnesses nothing.
+ 
+ #### `accordion`
+ 
+@@ -7956,7 +7975,7 @@ gate expects none.
+ | --------- | -------------------- | ---------------- | --------- | ----------------------------------------- | -------------------------------------------------- | --------- |
+ | `col`     | `.col-form-label`    | `padding-top`    | —         | `calc(0.375rem + var(--bs-border-width))` | `calc(var(--vn-space-3) + var(--bs-border-width))` | tokenized |
+ | `col`     | `.col-form-label`    | `padding-bottom` | —         | `calc(0.375rem + var(--bs-border-width))` | `calc(var(--vn-space-3) + var(--bs-border-width))` | tokenized |
+-| `col`     | `.col-form-label`    | `font-size`      | —         | `inherit`                                 | `var(--vn-size-3)`                                 | tokenized |
++| `col`     | `.col-form-label`    | `font-size`      | —         | `inherit`                                 | `var(--vn-size-3)`                                 | retuned   |
+ | `col`     | `.col-form-label`    | `line-height`    | —         | `1.5`                                     | `var(--vn-line-body)`                              | tokenized |
+ | `col`     | `.col-form-label-lg` | `padding-top`    | —         | `calc(0.5rem + var(--bs-border-width))`   | `calc(var(--vn-space-4) + var(--bs-border-width))` | tokenized |
+ | `col`     | `.col-form-label-lg` | `padding-bottom` | —         | `calc(0.5rem + var(--bs-border-width))`   | `calc(var(--vn-space-4) + var(--bs-border-width))` | tokenized |
+@@ -8086,22 +8105,22 @@ gate expects none.
+ | Component | Selector     | Property      | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                              | Departure |
+ | --------- | ------------ | ------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------- | --------- |
+ | `display` | `.display-1` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-1` | `font-size`   | —                          | `calc(1.625rem + 4.5vw)` | `calc(var(--vn-display-1) - max(var(--vn-display-1) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-1` | `font-size`   | —                          | `calc(1.625rem + 4.5vw)` | `calc(var(--vn-display-1) - max(var(--vn-display-1) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-1` | `font-size`   | `@media (width >= 1200px)` | `5rem`                   | `var(--vn-display-1)`                                                                               | tokenized |
+ | `display` | `.display-2` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-2` | `font-size`   | —                          | `calc(1.575rem + 3.9vw)` | `calc(var(--vn-display-2) - max(var(--vn-display-2) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-2` | `font-size`   | —                          | `calc(1.575rem + 3.9vw)` | `calc(var(--vn-display-2) - max(var(--vn-display-2) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-2` | `font-size`   | `@media (width >= 1200px)` | `4.5rem`                 | `var(--vn-display-2)`                                                                               | tokenized |
+ | `display` | `.display-3` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-3` | `font-size`   | —                          | `calc(1.525rem + 3.3vw)` | `calc(var(--vn-display-3) - max(var(--vn-display-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-3` | `font-size`   | —                          | `calc(1.525rem + 3.3vw)` | `calc(var(--vn-display-3) - max(var(--vn-display-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-3` | `font-size`   | `@media (width >= 1200px)` | `4rem`                   | `var(--vn-display-3)`                                                                               | tokenized |
+ | `display` | `.display-4` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-4` | `font-size`   | —                          | `calc(1.475rem + 2.7vw)` | `calc(var(--vn-display-4) - max(var(--vn-display-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-4` | `font-size`   | —                          | `calc(1.475rem + 2.7vw)` | `calc(var(--vn-display-4) - max(var(--vn-display-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-4` | `font-size`   | `@media (width >= 1200px)` | `3.5rem`                 | `var(--vn-display-4)`                                                                               | tokenized |
+ | `display` | `.display-5` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-5` | `font-size`   | —                          | `calc(1.425rem + 2.1vw)` | `calc(var(--vn-display-5) - max(var(--vn-display-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-5` | `font-size`   | —                          | `calc(1.425rem + 2.1vw)` | `calc(var(--vn-display-5) - max(var(--vn-display-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-5` | `font-size`   | `@media (width >= 1200px)` | `3rem`                   | `var(--vn-display-5)`                                                                               | tokenized |
+ | `display` | `.display-6` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-6` | `font-size`   | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-display-6) - max(var(--vn-display-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-6` | `font-size`   | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-display-6) - max(var(--vn-display-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-6` | `font-size`   | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-display-6)`                                                                               | tokenized |
+ 
+ #### `dropdown`
+@@ -9622,7 +9641,7 @@ gate expects none.
+ | `reboot`  | `button`      | `font-size`                        | —                          | `inherit`                                                   | `var(--vn-size-2)`                                                                            | retuned   |
+ | `reboot`  | `button`      | `line-height`                      | —                          | `inherit`                                                   | `var(--vn-line-body)`                                                                         | retuned   |
+ | `reboot`  | `legend`      | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
+-| `reboot`  | `legend`      | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `legend`      | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `reboot`  | `legend`      | `font-size`                        | `@media (width >= 1200px)` | `1.5rem`                                                    | `var(--vn-size-6)`                                                                            | tokenized |
+ 
+ #### `row`
+@@ -10249,6 +10268,7 @@ leaving both ledgers unread.
+ | `reboot`       | `h6 { font-size }`                                                                        | `@media (width >= 1200px)`                       | declaration | `var(--vn-size-3)`                                                                                                                                                                                                                                                                                                     | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.                                                        |
+ | `reboot`       | `a:hover { color }`                                                                       | —                                                | declaration | `rgb(from var(--vn-link-hover-base) r g b/var(--bs-link-opacity, 1))`                                                                                                                                                                                                                                                  | Elements repaints a link on hover from its own hover token.                                                                                                                                                                     |
+ | `reboot`       | `ul { list-style-type }`                                                                  | —                                                | declaration | `disc`                                                                                                                                                                                                                                                                                                                 | Elements names the marker each list writes rather than inheriting the user agent default.                                                                                                                                       |
++| `reboot` | `ul { audit-stale }` | — | declaration | `1px` | A planted row no declaration carries. |
+ | `reboot`       | `ol { list-style-type }`                                                                  | —                                                | declaration | `decimal`                                                                                                                                                                                                                                                                                                              | Elements names the marker each list writes rather than inheriting the user agent default.                                                                                                                                       |
+ | `reboot`       | `dl { display }`                                                                          | —                                                | declaration | `grid`                                                                                                                                                                                                                                                                                                                 | Elements lays a description list out as a two-column grid, which the release leaves as flow content.                                                                                                                            |
+ | `reboot`       | `dl { grid-template-columns }`                                                            | —                                                | declaration | `1fr 2fr`                                                                                                                                                                                                                                                                                                              | Elements lays a description list out as a two-column grid, which the release leaves as flow content.                                                                                                                            |
+@@ -10588,17 +10608,18 @@ leaving both ledgers unread.
+ 
+ ### Outside the ledger
+ 
+-The ledger measures the shipped components' own vocabulary, and its gate holds each canonical
+-token's value. Role coverage, names this release declares nowhere, and the Elements behaviors this
+-package does not copy sit outside that measurement, and are recorded here instead.
++The ledger measures the shipped components' own vocabulary. This section records what sits outside
++its rows, in this order: the canonical token values its gate holds without a row, role coverage,
++names this release declares nowhere, and the Elements behaviors this package does not copy.
+ 
+ Canonical token values sit inside the gate and outside the rows. The release records no `--vn-*`
+ name, so no row is keyed by one: the `#### theme` table in § Departures compares each `--bs-*` alias
+ the theme scopes declare with the release's value, and names an alias reading a canonical token
+ `tokenized` where the token resolves to the release's value and `retuned` where it resolves to
+ another. The `scanCanonicalValues` function resolves every declaration of a `--vn-*` token, under
+-any selector or condition, against its § Reference map cell, so a token a component rule redeclares
+-reddens the gate rather than sitting outside both tables. § Reference map records each `--vn-*`
++any selector or condition, against its § Reference map cell in each mode the declaration applies
++in, and compares the text a declaration and its cell write where both resolve to nothing, so a
++token a component rule redeclares reddens the gate rather than sitting outside both tables. § Reference map records each `--vn-*`
+ value beside the Bootstrap name it answers to, and the `collectAdditions` function treats every name
+ the `TOKEN_NAMES` registry carries as recorded there rather than as an addition. `--vn-font-sans` drops the `"Noto Sans"`, `"Liberation Sans"`, and
+ `"Noto Color Emoji"` families the release lists, because no Elements specimen renders any of them.
+@@ -11404,9 +11425,10 @@ moves.
+ The conformance proofs pin the official release and its artifact digests, reject runtime boundary
+ escapes, check shipped CSS vocabulary and recorded animations, ship every component key the pinned
+ inventory records, hold the departure and addition ledgers and their values against the built
+-cascade, name each departure's member from the value each side resolves to in Chromium, resolve
+-every declaration of a canonical token against its reference map cell, witness every
+-`bootstrap`-sourced token with a row at the release value, attribute every emitted rule to a shipped component and every rule but the row-owned ones
++cascade, name each departure's member from the value each side resolves to in Chromium under every
++setting of its context, decide every departure and every repainted difference, resolve every
++declaration of a canonical token against its reference map cell in each mode it applies in, witness
++every `bootstrap`-sourced token with a row whose release value the token itself resolves to, attribute every emitted rule to a shipped component and every rule but the row-owned ones
+ by measurement, compare each declaration's priority
+ at its media condition, hold the media condition and keyframes tables against the built cascade and
+ the release, compare each live Button step with its fixture, and cross-check the compatibility rows;
+@@ -11414,8 +11436,11 @@ see [Bootstrap conformance](../tests/conformance.test.ts).
+ The helper proofs read compatibility, media condition, keyframes, supported host, receipt,
+ departure, and addition tables, the running host, built CSS, and the pinned inventory, read the
+ classes inside `:is()` and `:where()` arguments, name a planted addition value, unattributed rule,
+-and inventory key, resolve planted value pairs in Chromium to classify each by its resolved value,
+-and name a pair no probe decides, a doubled canonical token, and an unwitnessed `bootstrap` token,
++and inventory key, resolve planted value pairs in Chromium to classify each by its resolved value
++under every setting of the context its terms read, build an element matching each compound of a
++selector, read the mode from a target's ancestors, keep a string's color text, and name a pair no
++probe decides, a pair whose context no setting varies, a doubled canonical token, a canonical
++declaration apart from its cell in one mode, and an unwitnessed `bootstrap` token,
+ and verify the service readiness and its stage; see
+ [the Node-only readers and recorder](../tests/setupServer.test.ts) and
+ [the service readiness and stage](../tests/setupService.test.ts).
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > installs the exact Bootstrap release this package tracks
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > pins the installed CSS and bundled JavaScript bytes
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted container navigation selector even when its fluid shell ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted link hover selector even when its resting twin ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted dark component rule the theme key records even when its component ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector, custom property, and recorded animation in the built cascade
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > ships exactly the component keys the pinned official inventory records
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > decides every measured value difference by the value each side resolves to in Chromium
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > decides every repainted value difference, with the theme key shipped and withheld
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names a retuned value retuned and a routed release value tokenized, whatever the token source
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > resolves every canonical token at every site that declares it to its reference map cell, in each mode
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > witnesses every bootstrap-sourced token with a departure row whose release value the token itself resolves to
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+ × |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits 9ms
+   → expected [ Array(1) ] to deeply equal []
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > attributes every emitted rule to a shipped component
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > places by measurement every emitted rule but the ones a recorded selector row owns
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > defers no name the built cascade ships
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > selects in the elements layer exactly the tags the partial table names
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > compares each declaration's priority on both sheets at its selector, property, and condition
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads every forms partial in the release order, validation last
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads the passive block and the helpers in the release order, after every forms partial, each important helper ahead of the utilities
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > declares no forbidden runtime dependency or peer
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > imports no forbidden runtime package from source, application, or tests
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps relative module imports inside the workspace
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps every published entry closure inside source
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "reboot | ul { audit-stale } | — | declaration | 1px",
++ ]
+
+ ❯ tests/conformance.test.ts:345:27
+    343|
+    344|  it('names no addition the compiled cascade no longer emits', () => {
+    345|   expect(additions.stale).toEqual([])
+       |                           ^
+    346|  })
+    347|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 33 skipped (34)
+   Start at  09:15:43
+   Duration  38.13s (transform 569ms, setup 141ms, import 31.92s, tests 5.88s, environment 0ms)
+
+exit=1
+restored guides/veneer.md byte-identical
+--- git diff --stat after restore
+ guides/veneer.md | 94 +++++++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 59 insertions(+), 35 deletions(-)

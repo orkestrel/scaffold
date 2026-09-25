@@ -1,0 +1,8 @@
+command: npm run lint:check
+load 3.02 3.87 5.49 2/317 20591
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+exit=0
+load after 2.94 3.84 5.47 1/313 20631

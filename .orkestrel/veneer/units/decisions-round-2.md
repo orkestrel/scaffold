@@ -579,7 +579,8 @@ D47a says the rule suppresses a fully clipped dropdown menu only where the engin
 does not". The `V.focus` row reads Chromium 141 suppressing a clipped menu the engine opened with no pointer press
 (`native141/j-native-probe-3-141.log.txt`), and J-PLACEMENT-141's diagnosis finds the unanchored menu only after a
 trusted pointer press on the toggle (`engine/units/j-placement-141-diagnosis-verdict.md`). So Chromium 141 leaves a
-fully clipped menu painted only when a pointer press opened it, until J-PLACEMENT-141-FIX lands
+fully clipped menu painted only when the engine showed it after a trusted pointer press on its toggle, until
+J-PLACEMENT-141-FIX lands
 (`anchor-audit-2-verdict.md`).
 
 ## D48 — Elements' motion opens as E-ID-MOTION (the Orchestrator, 2026-09-25)

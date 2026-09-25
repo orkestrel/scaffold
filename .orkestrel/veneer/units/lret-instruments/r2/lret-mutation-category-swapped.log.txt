@@ -1,0 +1,1479 @@
+command: npx vitest run --config vite.config.ts --no-cache --project conformance tests/conformance.test.ts -t "reports an unrecorded literal declaration" --reporter=verbose
+mutation=category-swapped files=tests/setupServer.ts
+load 4.97 4.82 6.95 6/169 6248
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index bd0bb59..b2b1d37 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -42,6 +42,7 @@ import {
+ 	readTableCells,
+ 	selectSubsectionTables,
+ 	selectTableColumns,
++	splitTopLevelList,
+ 	VENEER_GUIDE_PATH,
+ 	walkSelector,
+ } from './setupStyles.js'
+@@ -212,29 +213,52 @@ export interface ValuePair {
+  * Carries the value each side of one pair resolves to in Chromium.
+  *
+  * @remarks
+- * Each value is written in the form the {@link normalizeResolvedColors} helper returns, so two
+- * values are the same resolved value exactly where their text is equal. A custom property that
+- * resolves to the guaranteed-invalid value, or to nothing, reads as the empty string.
++ * The resolver computes both sides in every setting the {@link RESOLVER_SETTINGS} constant maps,
++ * and this carries the two values of the first setting the sides compute apart in, or the `base`
++ * setting's two values where they compute alike in every one. Each value is written in the form
++ * the {@link normalizeResolvedColors} helper returns, so the two sides compute alike in every
++ * setting exactly where the two texts are equal. A custom property that resolves to the
++ * guaranteed-invalid value, or to nothing, reads as the empty string.
+  */
+ export interface Resolution {
+ 	readonly recorded: string
+ 	readonly emitted: string
+ }
+ 
++/**
++ * Describes one setting of the context the {@link ValueResolver} class computes a pair in.
++ *
++ * @remarks
++ * The `host` member holds the styles of the element both sides compute inside, which is the parent
++ * a value inherits from and the containing block a percentage reads. The `root` member holds the
++ * root element's font size, which a `rem` length reads, and the `viewport` member holds the
++ * page's width and height in CSS pixels, which a viewport length reads.
++ */
++export interface ResolverSetting {
++	readonly host: Readonly<Record<string, string>>
++	readonly root: string
++	readonly viewport: readonly [width: number, height: number]
++}
++
+ /**
+  * Describes one element the {@link ValueResolver} class builds for one compound of a site's
+  * selector.
+  *
+  * @remarks
+- * The `tag` member is the compound's type selector, and `div` where it names none. The `sibling`
+- * member is true where a `+` or a `~` combinator joins the compound to the one before it, so the
+- * element sits beside that one rather than inside it; false otherwise.
++ * The `tag` member is the compound's type selector, or the type selector of the `:is()` or
++ * `:where()` alternative the element is built from, and `div` where neither names one. The
++ * `attributes` member carries each attribute selector as the equality it narrows to, and an id
++ * selector as the `id` attribute it tests. The `compound` member is the part of the compound the
++ * element must match, as the {@link extractMatchedCompound} helper writes it. The `nested` member
++ * is true where the element sits inside the one before it, and for the first element, which sits
++ * inside the page's body; false where a `+` or a `~` combinator places it beside the one before it.
+  */
+ export interface ContextElement {
+ 	readonly tag: string
+ 	readonly classes: readonly string[]
+ 	readonly attributes: ReadonlyArray<readonly [name: string, value: string]>
+-	readonly sibling: boolean
++	readonly compound: string
++	readonly nested: boolean
+ }
+ 
+ /** Carries every departure the resolver classifies, and every difference it could not decide. */
+@@ -484,15 +508,16 @@ export const BOOTSTRAP_VERSION = '5.3.8'
+ export const ORACLE_TIMEOUT = 10_100
+ 
+ /**
+- * Sets the ledger's resolution budget from its 4850 ms contended run: twice that duration plus
++ * Sets the ledger's resolution budget from its 9950 ms contended run: twice that duration plus
+  * 5000 ms.
+  *
+  * @remarks
+  * The run launches the two resolvers the conformance ledger gate uses, classifies every measured
+- * value difference and both repainted ledgers, and resolves every canonical declaration, on
+- * Chromium 141 with four such runs sharing the host.
++ * value difference and both repainted ledgers in every setting the {@link RESOLVER_SETTINGS}
++ * constant maps, resolves every canonical declaration, and scans the witnesses, on Chromium 141
++ * with four such runs sharing a host whose load average read between 11 and 14.
+  */
+-export const LEDGER_TIMEOUT = 14_700
++export const LEDGER_TIMEOUT = 24_900
+ 
+ /**
+  * Pins the installed Bootstrap LTR stylesheet's SHA-256 digest.
+@@ -779,22 +804,22 @@ export const PROBE_PREFIX = '--vn-probe'
+  * initial value, and sets both probes to the value it reads. A value the syntax parses computes the
+  * same on both, and a value it refuses falls back to each probe's own initial value, so the two
+  * readings differ exactly where the syntax refuses the value. The resolver reads a pair through the
+- * first syntax both of its values parse, so a length ahead of a number reads `0` against `0px` as
+- * one length.
++ * first syntax both of its values parse, so `0` against `0px` passes the number list, which refuses
++ * a length, and reads as one length.
++ *
++ * Each syntax types a value no other entry computes the same way, and a syntax another entry
++ * subsumes is left out: a length, a percentage, or a mix of both computes the same inside the
++ * `<length-percentage>+` list as alone, a number the same inside the `<number>#` list, and an
++ * identifier the same under the `font-family` property the {@link PROBE_PROPERTIES} constant
++ * lists.
+  */
+ export const PROBE_SYNTAXES: Readonly<Record<string, readonly [initial: string, control: string]>> =
+ 	Object.freeze({
+-		'<length>': Object.freeze(['0px', '1px'] as const),
+-		'<number>': Object.freeze(['0', '1'] as const),
+-		'<percentage>': Object.freeze(['0%', '1%'] as const),
+-		'<length-percentage>': Object.freeze(['0px', '1px'] as const),
++		'<number>#': Object.freeze(['0', '1'] as const),
++		'<length-percentage>+': Object.freeze(['0px', '1px'] as const),
+ 		'<time>': Object.freeze(['0s', '1s'] as const),
+ 		'<angle>': Object.freeze(['0deg', '1deg'] as const),
+ 		'<color>': Object.freeze(['rgb(0, 0, 0)', 'rgb(0, 0, 1)'] as const),
+-		'<number>#': Object.freeze(['0', '1'] as const),
+-		'<length>+': Object.freeze(['0px', '1px'] as const),
+-		'<length-percentage>+': Object.freeze(['0px', '1px'] as const),
+-		'<custom-ident>': Object.freeze(['a', 'b'] as const),
+ 	})
+ 
+ /**
+@@ -816,6 +841,111 @@ export const PROBE_PROPERTIES: readonly string[] = Object.freeze([
+ 	'transition-timing-function',
+ ])
+ 
++/**
++ * Maps each setting of the context the {@link ValueResolver} class computes a pair in onto the
++ * host styles, the root font size, and the viewport it sets.
++ *
++ * @remarks
++ * The `base` setting is the context every other one departs from, and each other setting changes
++ * one context a term can read and nothing else: the `font` setting the font size an `em`, an `ex`,
++ * a `ch`, an `lh`, and a percentage of a font property read; the `block` setting the containing
++ * block every other percentage reads; the `color` setting the color a `currentColor` reads; the
++ * `direction` setting the direction a `match-parent` value and a logical keyword read; the `root`
++ * setting the root font size a `rem` length reads; and the `viewport` setting the page size a
++ * viewport length reads. The resolver also sets the parent's value of the property a pair
++ * computes, through the {@link PARENT_VALUES} constant.
++ */
++export const RESOLVER_SETTINGS: Readonly<Record<string, ResolverSetting>> = Object.freeze({
++	base: Object.freeze({
++		host: Object.freeze({ 'font-size': '16px', width: '1000px', height: '600px' }),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	font: Object.freeze({
++		host: Object.freeze({ 'font-size': '20px', width: '1000px', height: '600px' }),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	block: Object.freeze({
++		host: Object.freeze({ 'font-size': '16px', width: '400px', height: '300px' }),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	color: Object.freeze({
++		host: Object.freeze({
++			'font-size': '16px',
++			width: '1000px',
++			height: '600px',
++			color: 'rgb(1, 2, 3)',
++		}),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	direction: Object.freeze({
++		host: Object.freeze({
++			'font-size': '16px',
++			width: '1000px',
++			height: '600px',
++			direction: 'rtl',
++		}),
++		root: '16px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	root: Object.freeze({
++		host: Object.freeze({ 'font-size': '16px', width: '1000px', height: '600px' }),
++		root: '20px',
++		viewport: Object.freeze([1280, 720] as const),
++	}),
++	viewport: Object.freeze({
++		host: Object.freeze({ 'font-size': '16px', width: '1000px', height: '600px' }),
++		root: '16px',
++		viewport: Object.freeze([800, 600] as const),
++	}),
++})
++
++/**
++ * Lists the values the {@link ValueResolver} class tries, in order, as the parent's value of the
++ * regular property a pair computes.
++ *
++ * @remarks
++ * A value that inherits reads its parent's value of its own property, so the resolver computes each
++ * regular property a second time in the `base` setting under a host that sets that property to the
++ * first of these values Chromium parses for it and computes apart from the `base` host's own
++ * value. Where none of them does, the resolver cannot vary that context, and a pair whose sides
++ * differ and either of which is `inherit`, `unset`, `revert`, or `revert-layer` is undecided.
++ */
++export const PARENT_VALUES: readonly string[] = Object.freeze([
++	'1px',
++	'2',
++	'rgb(1, 2, 3)',
++	'right',
++	'serif',
++	'bold',
++	'italic',
++	'none',
++	'hidden',
++	'nowrap',
++	'uppercase',
++	'underline',
++	'pointer',
++])
++
++/**
++ * Lists the functions whose value reads a context the {@link ValueResolver} class cannot set.
++ *
++ * @remarks
++ * An `attr()` reads the element's own attributes, a `counter()` and a `counters()` read the
++ * document's counters, and an `env()` reads the user agent's environment, and no setting of the
++ * {@link RESOLVER_SETTINGS} constant varies any of those. A pair whose sides differ and either of
++ * which calls one of these is undecided.
++ */
++export const UNVARIED_FUNCTIONS: readonly string[] = Object.freeze([
++	'attr',
++	'counter',
++	'counters',
++	'env',
++])
++
+ /**
+  * Reads whether written text names a departure this ledger records.
+  * @param text - The guide cell's text.
+@@ -3280,8 +3410,8 @@ export function collectAdditions(
+ 				condition,
+ 				category:
+ 					property.startsWith('--') && !vocabulary.properties.includes(property)
+-						? 'property'
+-						: 'declaration',
++						? 'declaration'
++						: 'property',
+ 				emitted,
+ 			})
+ 		}
+@@ -3473,12 +3603,71 @@ export function collectLedger(
+ 	}
+ }
+ 
++/**
++ * Extracts the part of one compound selector an element built for it must match.
++ *
++ * @param compound - One compound of a complex selector.
++ * @returns The compound with every pseudo-element and every pseudo-class left out except an
++ *   `:is()` or a `:where()`, whose alternatives are written the same way and joined by `, `, or
++ *   `*` where nothing is left.
++ *
++ * @remarks
++ * A pseudo-class names a state the element is in, a position among its siblings, or a relative it
++ * has, and a pseudo-element names a box the element generates, and the {@link ValueResolver} class
++ * reads the variables an element carries rather than any of those. An `:is()` or a `:where()`
++ * argument is part of the selector the element matches through, so it stays, and the element must
++ * match one of its alternatives. A colon inside a string or an attribute value is text rather than
++ * a pseudo.
++ *
++ * @example
++ * ```ts
++ * extractMatchedCompound(':where(button.page-link):focus-visible') // ':where(button.page-link)'
++ * ```
++ */
++export function extractMatchedCompound(compound: string): string {
++	const steps = walkSelector(compound)
++	let matched = ''
++	let index = 0
++	while (index < steps.length) {
++		const step = steps[index]
++		if (step === undefined) break
++		if (step.char !== ':' || step.literal || step.depth !== 0) {
++			matched += step.char
++			index += 1
++			continue
++		}
++		const element = steps[index + 1]?.char === ':'
++		const name = readIdentifier(steps, index + (element ? 2 : 1))
++		const end = name?.end ?? index + (element ? 2 : 1)
++		if (steps[end]?.char !== '(' || steps[end]?.literal === true) {
++			index = end
++			continue
++		}
++		const closer = steps.find(
++			(candidate) =>
++				candidate.index > end &&
++				candidate.char === ')' &&
++				!candidate.literal &&
++				candidate.depth === step.depth,
++		)
++		const after = closer === undefined ? steps.length : closer.index + 1
++		const keyword = name?.text.toLowerCase()
++		if (!element && (keyword === 'is' || keyword === 'where'))
++			matched += `:${keyword}(${splitTopLevelList(compound.slice(end + 1, after - 1))
++				.map((alternative) => extractMatchedCompound(alternative))
++				.join(', ')})`
++		index = after
++	}
++	return matched === '' ? '*' : matched
++}
++
+ /**
+  * Collects the elements that stand for one site's selector, one per compound.
+  *
+  * @param selector - The site's selector, normalized.
+  * @returns One element per compound the {@link splitTopLevelCompounds} helper reads, in written
+- *   order, each carrying the compound's tag, its own classes, and its attributes.
++ *   order, each carrying the compound's tag, its own classes, its attributes, and the part of the
++ *   compound it must match.
+  * @throws When a compound carries an attribute selector this reader does not parse, or a form the
+  *   {@link readCompoundTag} helper does not read, so a site the resolver cannot build reddens
+  *   instead of resolving on the wrong elements.
+@@ -3487,9 +3676,14 @@ export function collectLedger(
+  * A variable reaches an element by inheritance, so the {@link ValueResolver} class nests each
+  * element inside the one before it and reads the last. A `+` or a `~` combinator joins a sibling
+  * rather than an ancestor, so that element sits beside the one before it and inherits nothing from
+- * it. A pseudo-class and a pseudo-element are left out, because the resolver reads the variables
+- * the element carries and not the state it is in. An attribute selector's operator is read as the
+- * equality it narrows to, because the value it names satisfies every one of them.
++ * it. An id selector is read as the `id` attribute it tests, and an attribute selector's operator
++ * as the equality it narrows to, because the value it names satisfies every one of them. An
++ * `:is()` or a `:where()` argument adds the tag, classes, and attributes of its first alternative
++ * that is one compound, so `:where(button.page-link)` builds a `button` carrying the `page-link`
++ * class. Every other pseudo-class and every pseudo-element is left out, because the resolver reads
++ * the variables the element carries and not the state it is in. The resolver checks each element
++ * against its `compound` member in Chromium, and a pair whose elements do not all match is
++ * undecided.
+  *
+  * @example
+  * ```ts
+@@ -3505,44 +3699,90 @@ export function collectContextElements(selector: string): readonly ContextElemen
+ 		if (start < 0) throw new Error(`Context element reader reads no compound: ${compound}`)
+ 		const joint = selector.slice(cursor, start)
+ 		cursor = start + compound.length
++		const parts = [compound]
++		const classes: string[] = []
+ 		const attributes: Array<readonly [string, string]> = []
+-		let open: number | undefined
+-		for (const step of walkSelector(compound)) {
+-			if (step.literal || step.depth !== 0) continue
+-			if (step.char === '[') open = step.index
+-			if (step.char !== ']' || open === undefined) continue
+-			const body = compound.slice(open + 1, step.index)
+-			const match =
+-				/^\s*([-\w]+)\s*(?:[~|^$*]?=\s*(?:"([^"]*)"|'([^']*)'|([^\s"']+))(?:\s+[is])?\s*)?$/iu.exec(
+-					body,
+-				)
+-			if (match === null)
+-				throw new Error(`Context element reader reads no attribute selector: [${body}]`)
+-			attributes.push([match[1] ?? '', match[2] ?? match[3] ?? match[4] ?? ''])
+-			open = undefined
++		let tag: string | undefined
++		for (const part of parts) {
++			tag ??= readCompoundTag(part)
++			classes.push(...collectSelectorClasses(part))
++			const steps = walkSelector(part)
++			let open: number | undefined
++			for (const step of steps) {
++				if (step.literal || step.depth !== 0) continue
++				if (step.char === '#') {
++					const id = readIdentifier(steps, step.index + 1)
++					if (id !== undefined) attributes.push(['id', id.text])
++				}
++				if (step.char === ':') {
++					const name = readIdentifier(steps, step.index + 1)
++					const keyword = name?.text.toLowerCase()
++					if (
++						name !== undefined &&
++						steps[name.end]?.char === '(' &&
++						(keyword === 'is' || keyword === 'where')
++					) {
++						const closer = steps.find(
++							(candidate) =>
++								candidate.index > name.end &&
++								candidate.char === ')' &&
++								!candidate.literal &&
++								candidate.depth === 0,
++						)
++						const chosen = splitTopLevelList(
++							part.slice(name.end + 1, closer?.index ?? part.length),
++						).find((alternative) => splitTopLevelCompounds(alternative).length === 1)
++						if (chosen !== undefined) parts.push(chosen)
++					}
++				}
++				if (step.char === '[') open = step.index
++				if (step.char !== ']' || open === undefined) continue
++				const body = part.slice(open + 1, step.index)
++				const match =
++					/^\s*([-\w]+)\s*(?:[~|^$*]?=\s*(?:"([^"]*)"|'([^']*)'|([^\s"']+))(?:\s+[is])?\s*)?$/iu.exec(
++						body,
++					)
++				if (match === null)
++					throw new Error(`Context element reader reads no attribute selector: [${body}]`)
++				attributes.push([match[1] ?? '', match[2] ?? match[3] ?? match[4] ?? ''])
++				open = undefined
++			}
+ 		}
+ 		elements.push({
+-			tag: readCompoundTag(compound) ?? 'div',
+-			classes: collectSelectorClasses(compound),
++			tag: tag ?? 'div',
++			classes,
+ 			attributes,
+-			sibling: elements.length > 0 && /[+~]/u.test(joint),
++			compound: extractMatchedCompound(compound),
++			nested: elements.length === 0 || !/[+~]/u.test(joint),
+ 		})
+ 	}
+ 	return elements
+ }
+ 
+ /**
+- * Answers whether a site's selector places it in the dark mode.
++ * Infers the mode a site's selector places its target element in.
+  * @param selector - The site's selector, normalized.
+- * @returns True where the innermost compound carrying the `data-bs-theme` attribute sets it to
+- *   `dark`; false otherwise, the light mode being the document's own.
++ * @returns The value of the `data-bs-theme` attribute on the innermost of the target and its
++ *   ancestors that the selector gives one, or undefined where none of them carries it.
++ *
++ * @remarks
++ * A mode reaches an element by inheritance, so only the target and the elements the
++ * {@link collectContextElements} helper nests it inside decide it. An element a `+` or a `~`
++ * combinator places beside the next one is that element's sibling, and its mode reaches neither
++ * that element nor the target, so `[data-bs-theme=dark] + .btn` sits in no mode scope.
++ *
++ * @example
++ * ```ts
++ * inferScopeMode('[data-bs-theme=dark] .btn') // 'dark'
++ * ```
+  */
+-export function matchesDarkScope(selector: string): boolean {
+-	const scope = collectContextElements(selector)
++export function inferScopeMode(selector: string): string | undefined {
++	const elements = collectContextElements(selector)
++	return elements
++		.filter((_element, index) => index === elements.length - 1 || elements[index + 1]?.nested)
+ 		.flatMap((element) => element.attributes)
+ 		.filter(([name]) => name === 'data-bs-theme')
+-		.at(-1)
+-	return scope?.[1] === 'dark'
++		.at(-1)?.[1]
+ }
+ 
+ /**
+@@ -3552,7 +3792,7 @@ export function matchesDarkScope(selector: string): boolean {
+  * @param value - A computed value as Chromium serializes it.
+  * @returns The value with every `rgb()`, `rgba()`, and `color(srgb …)` color written as `rgb()`, or
+  *   as `rgba()` where it is not opaque, over channels and an alpha each rounded to the nearest of
+- *   256 steps, and every other text unchanged.
++ *   256 steps, and every other text unchanged, every string and every `url()` included.
+  *
+  * @remarks
+  * Chromium serializes a legacy color as `rgb()` over 8-bit channels and alpha, and a mixed or
+@@ -3565,7 +3805,9 @@ export function matchesDarkScope(selector: string): boolean {
+  * gradient and every mix over premultiplied channels, so the release's `rgba(255, 255, 255, 0)`
+  * gradient stop and a `transparent` one paint the same gradient. An alpha is written the way
+  * Chromium writes a legacy one: to two places where those round back to the same step, and to three
+- * otherwise. A color in any other space is left as Chromium writes it.
++ * otherwise. A color in any other space is left as Chromium writes it, and so is text inside a
++ * quoted string or a `url()`, which a `content` value displays or a resource address names rather
++ * than paints.
+  *
+  * @example
+  * ```ts
+@@ -3574,9 +3816,9 @@ export function matchesDarkScope(selector: string): boolean {
+  */
+ export function normalizeResolvedColors(value: string): string {
+ 	return value.replaceAll(
+-		/rgba?\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+)(?:, ([\d.]+))?\)|color\(srgb ([-+\d.e]+) ([-+\d.e]+) ([-+\d.e]+)(?: \/ ([-+\d.e]+))?\)/gu,
++		/"(?:[^"\\]|\\.)*"?|'(?:[^'\\]|\\.)*'?|url\((?:[^)"'\\]|\\.|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')*\)?|rgba?\((-?[\d.]+), (-?[\d.]+), (-?[\d.]+)(?:, ([\d.]+))?\)|color\(srgb ([-+\d.e]+) ([-+\d.e]+) ([-+\d.e]+)(?: \/ ([-+\d.e]+))?\)/giu,
+ 		(
+-			_match: string,
++			match: string,
+ 			red: string | undefined,
+ 			green: string | undefined,
+ 			blue: string | undefined,
+@@ -3586,6 +3828,7 @@ export function normalizeResolvedColors(value: string): string {
+ 			z: string | undefined,
+ 			alpha: string | undefined,
+ 		) => {
++			if (red === undefined && x === undefined) return match
+ 			const scale = red === undefined ? 255 : 1
+ 			const channels = (red === undefined ? [x, y, z] : [red, green, blue]).map((channel) =>
+ 				String(Math.round(Number(channel) * scale) + 0),
+@@ -3611,12 +3854,22 @@ export function normalizeResolvedColors(value: string): string {
+  * Each side's values are read first in its own page, on elements the
+  * {@link collectContextElements} helper builds from the site's selector, so every variable a value
+  * reads takes the value that stylesheet gives it at that site, and a custom property takes its
+- * declared value there, `inherit` included. A regular property's value that reads a variable the
+- * stylesheet never gives computes as `unset`, the way Chromium treats a declaration invalid at
+- * computed-value time. Both substituted values then compute on twin elements of the neutral page,
+- * under the color scheme of the site's mode, at a 16px font size and a 1000px width, so a relative
+- * length, a percentage, and a `light-dark()` pair read one context on both sides and neither
+- * stylesheet's element styles take part. Each stylesheet's factors stay at the values it
++ * declared value there, `inherit` included. Each element must match the part of its compound the
++ * `compound` member names, and a pair whose elements do not all match is undecided. A regular
++ * property's value that reads a variable the stylesheet never gives computes as `unset`, the way
++ * Chromium treats a declaration invalid at computed-value time.
++ *
++ * Both substituted values then compute on twin elements of the neutral page, under the color
++ * scheme of the mode the {@link inferScopeMode} helper infers, so neither stylesheet's element
++ * styles take part. The twins compute in every setting the {@link RESOLVER_SETTINGS} constant
++ * maps, each of which varies one context a term can read, and a regular property computes once
++ * more under a parent that sets the property itself to the first of the {@link PARENT_VALUES}
++ * constant's values that changes it. Two sides compute alike only where they compute alike in
++ * every one of those readings. A pair whose sides differ is undecided where either side calls a
++ * function the {@link UNVARIED_FUNCTIONS} constant names, and where a regular property's side is
++ * `inherit`, `unset`, `revert`, or `revert-layer` and no parent value changes the property. Two
++ * sides that write the same text once substituted compute alike in every setting, so the resolver
++ * reads such a pair in the `base` setting alone. Each stylesheet's factors stay at the values it
+  * declares.
+  *
+  * A regular property computes as itself, from the last value each side writes that Chromium
+@@ -3631,7 +3884,8 @@ export function normalizeResolvedColors(value: string): string {
+  * property's values on one side, where no syntax and no property parses both values of a custom
+  * property, or where Chromium serializes the computed value as empty. The resolver keeps every
+  * answer for the pair it read, so a comparison repeated over the same pairs reads each one once.
+- * Every `resolve` call rebuilds the pages' elements, so await each call before making the next.
++ * Every `resolve` call rebuilds the pages' elements and sets the neutral page's viewport, so await
++ * each call before making the next.
+  */
+ export class ValueResolver {
+ 	readonly #browser: Browser
+@@ -3673,71 +3927,207 @@ export class ValueResolver {
+ 				this.#resolved.set(key, undefined)
+ 			else pending.set(key, pair)
+ 		}
+-		const batch = [...pending.values()]
+-		if (batch.length > 0) {
+-			const contexts = batch.map((pair) => collectContextElements(pair.selector))
+-			const [recorded, emitted] = await Promise.all([
+-				this.#substitute(
+-					this.#recorded,
+-					batch,
+-					contexts,
+-					batch.map((pair) => pair.recorded),
+-				),
+-				this.#substitute(
+-					this.#emitted,
+-					batch,
+-					contexts,
+-					batch.map((pair) => pair.emitted),
+-				),
+-			])
++		const batch = [...pending.entries()]
++		if (batch.length === 0) return keys.map((key) => this.#resolved.get(key))
++		const contexts = batch.map(([, pair]) => collectContextElements(pair.selector))
++		const [recorded, emitted] = await Promise.all([
++			this.#substitute(
++				this.#recorded,
++				batch.map(([, pair]) => pair),
++				contexts,
++				batch.map(([, pair]) => pair.recorded),
++			),
++			this.#substitute(
++				this.#emitted,
++				batch.map(([, pair]) => pair),
++				contexts,
++				batch.map(([, pair]) => pair.emitted),
++			),
++		])
++		const built = batch.flatMap(([key, pair], index) => {
++			const left = recorded[index]
++			const right = emitted[index]
++			if (left === undefined || right === undefined) {
++				this.#resolved.set(key, undefined)
++				return []
++			}
++			return [
++				{
++					key,
++					property: pair.property,
++					dark: inferScopeMode(pair.selector) === 'dark',
++					recorded: left,
++					emitted: right,
++				},
++			]
++		})
++		const readings = await this.#compute(built)
++		for (const [index, item] of built.entries()) {
++			const read = readings[index]
++			const normalized = read?.map(
++				([left, right]) => [normalizeResolvedColors(left), normalizeResolvedColors(right)] as const,
++			)
++			const decided = normalized?.find(([left, right]) => left !== right) ?? normalized?.[0]
++			this.#resolved.set(
++				item.key,
++				decided === undefined ? undefined : { recorded: decided[0], emitted: decided[1] },
++			)
++		}
++		return keys.map((key) => this.#resolved.get(key))
++	}
++
++	/** Closes the browser, and every page with it. */
++	async destroy(): Promise<void> {
++		await this.#browser.close()
++	}
++
++	// Computes each substituted pair on the neutral page in every setting, one pass per root font
++	// size and viewport, and returns each pair's readings in setting order with the parent reading
++	// last, or undefined for a pair no reading decides.
++	async #compute(
++		items: ReadonlyArray<{
++			readonly property: string
++			readonly dark: boolean
++			readonly recorded: readonly string[]
++			readonly emitted: readonly string[]
++		}>,
++	): Promise<ReadonlyArray<ReadonlyArray<readonly [string, string]> | undefined>> {
++		const passes = new Map<string, ResolverSetting[]>()
++		for (const setting of Object.values(RESOLVER_SETTINGS)) {
++			const key = JSON.stringify([setting.root, setting.viewport])
++			passes.set(key, [...(passes.get(key) ?? []), setting])
++		}
++		const settings: Array<ReadonlyArray<readonly [string, string]> | undefined> = items.map(
++			() => [],
++		)
++		const parents: Array<readonly [string, string] | undefined> = items.map(() => undefined)
++		for (const [pass, group] of [...passes.values()].entries()) {
++			const [first] = group
++			if (first === undefined) continue
++			await this.#neutral.setViewportSize({ width: first.viewport[0], height: first.viewport[1] })
+ 			const computed = await this.#neutral.evaluate(
+-				({ items, prefix, count, properties }) => {
++				({ batch, hosts, root, parent, prefix, count, properties, candidates, unvaried }) => {
++					document.documentElement.style.setProperty('font-size', root)
+ 					document.body.replaceChildren()
+-					const hosts = ['light', 'dark'].map((scheme) => {
+-						const host = document.createElement('div')
+-						host.style.setProperty('color-scheme', scheme)
+-						host.style.setProperty('font-size', '16px')
+-						host.style.setProperty('width', '1000px')
+-						document.body.append(host)
+-						return host
+-					})
+ 					const probes = Array.from(
+ 						{ length: count },
+ 						(_probe, index) => `${prefix}-${String(index)}`,
+ 					)
+-					const chosen = items.map((item) =>
++					const calls = new RegExp(`(?<![-\\w])(?:${unvaried.join('|')})\\(`, 'iu')
++					const inheriting = /^(?:inherit|unset|revert|revert-layer)$/iu
++					const scopes = hosts.map((styles) =>
++						['light', 'dark'].map((scheme) => {
++							const host = document.createElement('div')
++							host.style.setProperty('color-scheme', scheme)
++							for (const [name, value] of Object.entries(styles))
++								host.style.setProperty(name, value)
++							document.body.append(host)
++							return host
++						}),
++					)
++					const chosen = batch.map((item) =>
+ 						[item.recorded, item.emitted].map((values) =>
+ 							item.property.startsWith('--')
+ 								? values.at(-1)
+ 								: values.findLast((value) => CSS.supports(item.property, value)),
+ 						),
+ 					)
+-					const twins = items.map((item, index) =>
+-						(chosen[index] ?? []).map((value) => {
+-							const element = document.createElement('div')
+-							const host = item.dark ? hosts[1] : hosts[0]
+-							host?.append(element)
+-							if (value === undefined || value === '') return element
+-							if (!item.property.startsWith('--')) {
+-								element.style.setProperty(item.property, value)
+-								return element
+-							}
+-							for (const probe of probes) {
+-								element.style.setProperty(probe, value)
+-								element.style.setProperty(`${probe}-control`, value)
+-							}
+-							for (const name of properties)
+-								if (CSS.supports(name, value)) element.style.setProperty(name, value)
+-							return element
++					// Each regular property's parent value is the first candidate Chromium parses for it and
++					// computes apart from the base host's own value, tried on children of that host.
++					const regular = [
++						...new Set(batch.map((item) => item.property).filter((name) => !name.startsWith('--'))),
++					]
++					const base = scopes[0]?.[0] ?? document.body
++					const trials = (parent ? regular : []).map((name) =>
++						candidates
++							.filter((candidate) => CSS.supports(name, candidate))
++							.map((candidate) => {
++								const element = document.createElement('div')
++								element.style.setProperty(name, candidate)
++								base.append(element)
++								return [candidate, element] as const
++							}),
++					)
++					const alternates = new Map(
++						regular.map((name, index) => {
++							const own = getComputedStyle(base).getPropertyValue(name)
++							return [
++								name,
++								(trials[index] ?? []).find(
++									([, element]) => getComputedStyle(element).getPropertyValue(name) !== own,
++								)?.[0],
++							] as const
+ 						}),
+ 					)
+-					return items.map((item, index) => {
+-						const [first, second] = chosen[index] ?? []
+-						if (first === undefined || second === undefined) return undefined
++					for (const [, element] of trials.flat()) element.remove()
++					const inheritors = new Map(
++						[...alternates.entries()].flatMap(([name, alternate]) =>
++							alternate === undefined
++								? []
++								: ['light', 'dark'].map((scheme) => {
++										const host = document.createElement('div')
++										host.style.setProperty('color-scheme', scheme)
++										for (const [style, value] of Object.entries(hosts[0] ?? {}))
++											host.style.setProperty(style, value)
++										host.style.setProperty(name, alternate)
++										document.body.append(host)
++										return [`${name} ${scheme}`, host] as const
++									}),
++						),
++					)
++					// A pair whose sides write the same text computes alike in every setting, so it is read in
++					// the first pass's first setting alone.
++					const twins = batch.map((item, index) =>
++						(chosen[index]?.[0] === chosen[index]?.[1]
++							? parent
++								? [scopes[0]?.[item.dark ? 1 : 0]]
++								: []
++							: [
++									...scopes.map((pair) => (item.dark ? pair[1] : pair[0])),
++									parent
++										? inheritors.get(`${item.property} ${item.dark ? 'dark' : 'light'}`)
++										: undefined,
++								]
++						).map((host) =>
++							host === undefined
++								? undefined
++								: (chosen[index] ?? []).map((value) => {
++										const element = document.createElement('div')
++										host.append(element)
++										if (value === undefined || value === '') return element
++										if (!item.property.startsWith('--')) {
++											element.style.setProperty(item.property, value)
++											return element
++										}
++										for (const probe of probes) {
++											element.style.setProperty(probe, value)
++											element.style.setProperty(`${probe}-control`, value)
++										}
++										for (const name of properties)
++											if (CSS.supports(name, value)) element.style.setProperty(name, value)
++										return element
++									}),
++						),
++					)
++					return batch.map((item, index) => {
++						const [left, right] = chosen[index] ?? []
++						if (left === undefined || right === undefined) return undefined
+ 						const custom = item.property.startsWith('--')
+-						if (custom && (first === '' || second === ''))
+-							return { recorded: first, emitted: second }
+-						const styles = (twins[index] ?? []).map((element) => getComputedStyle(element))
++						if (custom && (left === '' || right === ''))
++							return { settings: hosts.map(() => [left, right] as const), parent: undefined }
++						const differ = left !== right
++						if (!differ && !parent) return { settings: [], parent: undefined }
++						if (differ && (calls.test(left) || calls.test(right))) return undefined
++						if (
++							parent &&
++							!custom &&
++							differ &&
++							alternates.get(item.property) === undefined &&
++							(inheriting.test(left.trim()) || inheriting.test(right.trim()))
++						)
++							return undefined
++						const groups = twins[index] ?? []
++						const styles = (groups[0] ?? []).map((element) => getComputedStyle(element))
+ 						const name = !custom
+ 							? item.property
+ 							: (probes.find((probe) =>
+@@ -3747,55 +4137,59 @@ export class ValueResolver {
+ 									),
+ 								) ??
+ 								properties.find(
+-									(candidate) => CSS.supports(candidate, first) && CSS.supports(candidate, second),
++									(candidate) => CSS.supports(candidate, left) && CSS.supports(candidate, right),
+ 								))
+ 						if (name === undefined) return undefined
+-						const [left, right] = styles.map((style) => style.getPropertyValue(name).trim())
+-						if (left === undefined || right === undefined || left === '' || right === '')
+-							return undefined
+-						return { recorded: left, emitted: right }
++						const readings = groups.map((twin) =>
++							twin?.map((element) => getComputedStyle(element).getPropertyValue(name).trim()),
++						)
++						const pairs = readings.flatMap((reading) =>
++							reading === undefined ? [] : [[reading[0] ?? '', reading[1] ?? ''] as const],
++						)
++						if (pairs.some(([one, other]) => one === '' || other === '')) return undefined
++						return {
++							settings: pairs.slice(0, hosts.length),
++							parent: pairs[hosts.length],
++						}
+ 					})
+ 				},
+ 				{
+-					items: batch.map((pair, index) => ({
+-						property: pair.property,
+-						dark: matchesDarkScope(pair.selector),
+-						recorded: recorded[index] ?? [],
+-						emitted: emitted[index] ?? [],
+-					})),
++					batch: items,
++					hosts: group.map((setting) => setting.host),
++					root: first.root,
++					parent: pass === 0,
+ 					prefix: PROBE_PREFIX,
+ 					count: Object.keys(PROBE_SYNTAXES).length,
+ 					properties: PROBE_PROPERTIES,
++					candidates: PARENT_VALUES,
++					unvaried: UNVARIED_FUNCTIONS,
+ 				},
+ 			)
+-			for (const [index, key] of [...pending.keys()].entries()) {
+-				const resolution = computed[index]
+-				this.#resolved.set(
+-					key,
+-					resolution === undefined
++			for (const [index, result] of computed.entries()) {
++				const earlier = settings[index]
++				settings[index] =
++					earlier === undefined || result === undefined
+ 						? undefined
+-						: {
+-								recorded: normalizeResolvedColors(resolution.recorded),
+-								emitted: normalizeResolvedColors(resolution.emitted),
+-							},
+-				)
++						: [...earlier, ...result.settings]
++				if (result?.parent !== undefined) parents[index] = result.parent
+ 			}
+ 		}
+-		return keys.map((key) => this.#resolved.get(key))
+-	}
+-
+-	/** Closes the browser, and every page with it. */
+-	async destroy(): Promise<void> {
+-		await this.#browser.close()
++		return settings.map((readings, index) => {
++			const parent = parents[index]
++			return readings === undefined
++				? undefined
++				: [...readings, ...(parent === undefined ? [] : [parent])]
++		})
+ 	}
+ 
+-	// Reads each side's values in its own page, with every variable substituted at the site.
++	// Reads each side's values in its own page, with every variable substituted at the site, or
++	// undefined for a pair whose elements do not all match their compounds.
+ 	async #substitute(
+ 		page: Page,
+ 		pairs: readonly ValuePair[],
+ 		contexts: ReadonlyArray<readonly ContextElement[]>,
+ 		sides: ReadonlyArray<readonly string[]>,
+-	): Promise<ReadonlyArray<readonly string[]>> {
++	): Promise<ReadonlyArray<readonly string[] | undefined>> {
+ 		const items = pairs.flatMap((pair, index) =>
+ 			(sides[index] ?? []).map((value) => ({
+ 				elements: contexts[index] ?? [],
+@@ -3808,24 +4202,31 @@ export class ValueResolver {
+ 				document.body.replaceChildren()
+ 				const subjects = batch.map((item) => {
+ 					let subject: HTMLElement = document.body
++					let matched = true
+ 					for (const described of item.elements) {
+ 						const element = document.createElement(described.tag)
+ 						for (const name of described.classes) element.classList.add(name)
+ 						for (const [name, value] of described.attributes) element.setAttribute(name, value)
+-						const host = described.sibling ? (subject.parentElement ?? document.body) : subject
++						const host = described.nested ? subject : (subject.parentElement ?? document.body)
+ 						host.append(element)
++						try {
++							matched &&= element.matches(described.compound)
++						} catch {
++							matched = false
++						}
+ 						subject = element
+ 					}
+-					if (item.value.trim() !== '')
++					if (matched && item.value.trim() !== '')
+ 						subject.style.setProperty(
+ 							item.property.startsWith('--') ? item.property : raw,
+ 							item.value,
+ 						)
+-					return subject
++					return matched ? subject : undefined
+ 				})
+ 				return batch.map((item, index) => {
+ 					const subject = subjects[index]
+-					if (subject === undefined || item.value.trim() === '') return item.value.trim()
++					if (subject === undefined) return undefined
++					if (item.value.trim() === '') return item.value.trim()
+ 					const style = getComputedStyle(subject)
+ 					if (item.property.startsWith('--')) return style.getPropertyValue(item.property).trim()
+ 					if (!/var\(/iu.test(item.value)) return item.value
+@@ -3839,7 +4240,9 @@ export class ValueResolver {
+ 		return sides.map((values) => {
+ 			const slice = read.slice(offset, offset + values.length)
+ 			offset += values.length
+-			return slice
++			return slice.every((value) => value !== undefined)
++				? slice.flatMap((value) => (value === undefined ? [] : [value]))
++				: undefined
+ 		})
+ 	}
+ }
+@@ -3961,9 +4364,10 @@ export async function classifyValueGaps(
+  * @param resolver - A resolver whose two sides read one stylesheet, the built cascade, so a cell
+  *   and a declaration read the same variables.
+  * @returns One line per mapped token the `:root` selector does not declare, as its token, the
+- *   `:root` site, and its light cell; then one line per token and site whose declaration resolves
+- *   apart from its cell, as its token, selector, condition, cell, declaration, and both resolved
+- *   values, and one per pair the resolver cannot decide, ending in `undecided`, in reference order.
++ *   `:root` site, and its light cell; then one line per token, site, and mode whose declaration
++ *   resolves apart from its cell, as its token, selector, condition, cell, declaration, and both
++ *   resolved values, and one per pair the resolver cannot decide, ending in `undecided`, in
++ *   reference order. A resolved value that is empty is written as the {@link EMPTY_CELL} constant.
+  *
+  * @remarks
+  * A token resolves in each mode at that mode's scope. The light reading takes the
+@@ -3971,9 +4375,13 @@ export async function classifyValueGaps(
+  * rule's otherwise. The dark reading takes the `[data-bs-theme=dark]` rule's declaration, or the
+  * `:root` rule's where the dark scope declares none, and resolves it inside the dark scope, so a
+  * token every mode shares still reads the dark scope's variables. Every other site that declares a
+- * canonical token, under any selector or condition, compares against the cell of the mode its
+- * selector sits in, so a token a component rule redeclares is measured rather than left outside
+- * both ledgers. A token the registry names and the map does not carries no cell and is not read.
++ * canonical token, under any selector or condition, is measured rather than left outside both
++ * ledgers. A site inside a mode scope, as the {@link inferScopeMode} helper infers it, compares
++ * against that mode's cell. A site outside every mode scope applies in both modes, so it compares
++ * against the light cell where it stands and against the dark cell inside the dark scope, where its
++ * selector is written after `[data-bs-theme=dark]`. Where both sides resolve to nothing, as an
++ * `inherit` and an `initial` both do, the declaration and its cell compare as the text they write.
++ * A token the registry names and the map does not carries no cell and is not read.
+  */
+ export async function scanCanonicalValues(
+ 	blocks: readonly CascadeBlock[],
+@@ -4020,13 +4428,17 @@ export async function scanCanonicalValues(
+ 			const value = block.declarations.get(row.token)
+ 			if (value === undefined || (block.condition === undefined && scopes.includes(block.selector)))
+ 				continue
+-			sites.push([
+-				row.token,
+-				block.selector,
+-				block.condition,
+-				matchesDarkScope(block.selector) ? row.dark : row.light,
+-				value,
+-			])
++			const mode = inferScopeMode(block.selector)
++			if (mode !== 'dark')
++				sites.push([row.token, block.selector, block.condition, row.light, value])
++			if (mode === 'dark' || mode === undefined)
++				sites.push([
++					row.token,
++					mode === 'dark' ? block.selector : `[data-bs-theme=dark] ${block.selector}`,
++					block.condition,
++					row.dark,
++					value,
++				])
+ 		}
+ 		for (const site of sites) checks.set(JSON.stringify(site), site)
+ 	}
+@@ -4043,8 +4455,17 @@ export async function scanCanonicalValues(
+ 		const resolution = resolutions[index]
+ 		const cells = [token, selector, condition ?? ABSENT_CELL, stated, value]
+ 		if (resolution === undefined) lines.push([...cells, 'undecided'].join(' | '))
+-		else if (resolution.recorded !== resolution.emitted)
+-			lines.push([...cells, resolution.recorded, resolution.emitted].join(' | '))
++		else if (
++			resolution.recorded !== resolution.emitted ||
++			(resolution.recorded === '' && stated.trim() !== value.trim())
++		)
++			lines.push(
++				[
++					...cells,
++					describeValueCell(resolution.recorded),
++					describeValueCell(resolution.emitted),
++				].join(' | '),
++			)
+ 	}
+ 	return lines
+ }
+@@ -4054,29 +4475,56 @@ export async function scanCanonicalValues(
+  *
+  * @param departures - The classified departures.
+  * @param references - The reference map's rows, as the `collectReferenceRows` helper reads them.
++ * @param resolver - A resolver whose recorded side reads the release's stylesheet and whose
++ *   emitted side reads the built cascade, as the {@link classifyValueGaps} helper takes it.
+  * @returns Each token whose reference row's `Source` cell names `bootstrap` and that no departure
+  *   row witnesses, once each, in reference order.
+  *
+  * @remarks
+  * A witness is a row whose emitted value reads the token, as the {@link collectValueNames} helper
+- * reads names, and whose member is neither `retuned` nor `dropped`, so the value reading the token
+- * resolves to the release's own at a site the release writes. A `bootstrap` cell states that the
+- * token keeps the release's value, and a witness is the ledger's measurement of that statement: a
+- * token retuned away from the release leaves every row reading it `retuned`, and this scan names
+- * it, even where a row reads it beside a token the release never writes.
++ * reads names, whose member is neither `retuned` nor `dropped`, and whose release value the token's
++ * own value resolves alike to at the row's site, the token read as `var()` alone in the row's
++ * property. A `bootstrap` cell states that the token keeps the release's value, and a witness is
++ * the ledger's measurement of that statement. A token retuned away from the release leaves every
++ * row reading it `retuned`, and a row that reaches the release value through arithmetic on the
++ * token, or beside a token the release never writes, resolves alike while the token alone does
++ * not, so this scan names the token in both cases.
+  */
+-export function scanWitnesses(
++export async function scanWitnesses(
+ 	departures: readonly DepartureRow[],
+ 	references: readonly ReferenceRow[],
+-): readonly string[] {
++	resolver: ValueResolver,
++): Promise<readonly string[]> {
++	const tokens = [
++		...new Set(references.filter((row) => row.source === 'bootstrap').map((row) => row.token)),
++	]
++	const candidates = departures
++		.filter(
++			(row) =>
++				row.departure !== 'retuned' && row.departure !== 'dropped' && row.recorded !== undefined,
++		)
++		.flatMap((row) =>
++			collectValueNames(row.emitted ?? '')
++				.filter((name) => tokens.includes(name))
++				.map((token) => ({ token, row })),
++		)
++	const resolutions = await resolver.resolve(
++		candidates.map(({ token, row }) => ({
++			selector: row.selector,
++			property: row.property,
++			recorded: [row.recorded ?? ''],
++			emitted: [`var(${token})`],
++		})),
++	)
+ 	const witnessed = new Set(
+-		departures
+-			.filter((row) => row.departure !== 'retuned' && row.departure !== 'dropped')
+-			.flatMap((row) => collectValueNames(row.emitted ?? '')),
++		candidates
++			.filter((_candidate, index) => {
++				const resolution = resolutions[index]
++				return resolution !== undefined && resolution.recorded === resolution.emitted
++			})
++			.map(({ token }) => token),
+ 	)
+-	return [
+-		...new Set(references.filter((row) => row.source === 'bootstrap').map((row) => row.token)),
+-	].filter((token) => !witnessed.has(token))
++	return tokens.filter((token) => !witnessed.has(token))
+ }
+ 
+ /**
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > installs the exact Bootstrap release this package tracks
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > pins the installed CSS and bundled JavaScript bytes
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted container navigation selector even when its fluid shell ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted link hover selector even when its resting twin ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted dark component rule the theme key records even when its component ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector, custom property, and recorded animation in the built cascade
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > ships exactly the component keys the pinned official inventory records
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > decides every measured value difference by the value each side resolves to in Chromium
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > decides every repainted value difference, with the theme key shipped and withheld
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names a retuned value retuned and a routed release value tokenized, whatever the token source
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > resolves every canonical token at every site that declares it to its reference map cell, in each mode
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > witnesses every bootstrap-sourced token with a departure row whose release value the token itself resolves to
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits
+ × |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition 9ms
+   → expected [ …(330) ] to deeply equal [ Array(1) ]
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > attributes every emitted rule to a shipped component
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > places by measurement every emitted rule but the ones a recorded selector row owns
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > defers no name the built cascade ships
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > selects in the elements layer exactly the tags the partial table names
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > compares each declaration's priority on both sheets at its selector, property, and condition
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads every forms partial in the release order, validation last
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads the passive block and the helpers in the release order, after every forms partial, each important helper ahead of the utilities
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > declares no forbidden runtime dependency or peer
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > imports no forbidden runtime package from source, application, or tests
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps relative module imports inside the workspace
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps every published entry closure inside source
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(330) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+-   "form-control | .form-control { letter-spacing } | — | declaration | 0.01em",
++   "theme | :root { color-scheme } | — | property | light",
++   "theme | [data-bs-theme=light] { color-scheme } | — | property | light",
++   "theme | [data-bs-theme=dark] { --bs-primary } | — | declaration | var(--vn-color-primary-base)",
++   "theme | [data-bs-theme=dark] { --bs-primary-rgb } | — | declaration | var(--vn-color-primary-rgb)",
++   "theme | [data-bs-theme=dark] { --bs-secondary } | — | declaration | var(--vn-color-secondary-base)",
++   "theme | [data-bs-theme=dark] { --bs-secondary-rgb } | — | declaration | var(--vn-color-secondary-rgb)",
++   "theme | [data-bs-theme=dark] { --bs-focus-ring-color } | — | declaration | var(--vn-focus-color)",
++   "reboot | :root { scroll-behavior } | @media (prefers-reduced-motion: no-preference) | property | smooth",
++   "reboot | html { interpolate-size } | — | property | allow-keywords",
++   "reboot | html { text-size-adjust } | — | property | 100%",
++   "reboot | h5 { font-size } | @media (width >= 1200px) | property | var(--vn-size-4)",
++   "reboot | h6 { font-size } | @media (width >= 1200px) | property | var(--vn-size-3)",
++   "reboot | a:hover { color } | — | property | rgb(from var(--vn-link-hover-base) r g b/var(--bs-link-opacity, 1))",
++   "reboot | ul { list-style-type } | — | property | disc",
++   "reboot | ol { list-style-type } | — | property | decimal",
++   "reboot | dl { display } | — | property | grid",
++   "reboot | dl { grid-template-columns } | — | property | 1fr 2fr",
++   "reboot | dt { grid-column } | — | property | 1",
++   "reboot | dt { padding-right } | — | property | var(--vn-space-8)",
++   "reboot | dd { grid-column } | — | property | 2",
++   "reboot | dd { color } | — | property | var(--vn-text-muted)",
++   "reboot | blockquote { padding-left } | — | property | var(--vn-space-8)",
++   "reboot | blockquote { border-left } | — | property | var(--vn-space-2) solid currentColor",
++   "reboot | blockquote { font-style } | — | property | italic",
++   "reboot | address { color } | — | property | var(--vn-text-muted)",
++   "reboot | code { padding } | — | property | 0.125em 0.25em",
++   "reboot | code { background-color } | — | property | var(--vn-surface-code)",
++   "reboot | code { border-radius } | — | property | var(--vn-radius-small)",
++   "reboot | code { overflow-wrap } | — | property | break-word",
++   "reboot | kbd { border } | — | property | var(--bs-border-width) solid color-mix(in oklab, var(--vn-text-code) 22%, transparent)",
++   "reboot | pre { padding } | — | property | var(--vn-space-7) var(--vn-space-8)",
++   "reboot | pre { color } | — | property | var(--vn-text-code)",
++   "reboot | pre { line-height } | — | property | var(--vn-line-code)",
++   "reboot | pre { background-color } | — | property | var(--vn-surface-raised)",
++   "reboot | pre { border } | — | property | var(--bs-border-width) solid var(--vn-border-color)",
++   "reboot | pre { border-radius } | — | property | var(--vn-radius-base)",
++   "reboot | samp { padding } | — | property | 0.125em 0.25em",
++   "reboot | samp { color } | — | property | var(--vn-text-code)",
++   "reboot | samp { background-color } | — | property | var(--vn-surface-raised)",
++   "reboot | samp { border-radius } | — | property | var(--vn-radius-small)",
++   "reboot | var { font-family } | — | property | ui-monospace, var(--vn-font-mono-short)",
++   "reboot | var { font-size } | — | property | 95%",
++   "reboot | var { font-style } | — | property | italic",
++   "reboot | var { padding-left } | — | property | 0.25em",
++   "reboot | var { padding-right } | — | property | 0.25em",
++   "reboot | var { color } | — | property | var(--vn-text-code)",
++   "reboot | var { background-color } | — | property | var(--vn-surface-raised)",
++   "reboot | var { border-radius } | — | property | var(--vn-radius-small)",
++   "reboot | figcaption { margin-top } | — | property | var(--vn-space-4)",
++   "reboot | figcaption { font-size } | — | property | 0.875em",
++   "reboot | figcaption { line-height } | — | property | 1.4",
++   "reboot | figcaption { color } | — | property | var(--vn-text-muted)",
++   "reboot | img { display } | — | property | block",
++   "reboot | img { max-width } | — | property | 100%",
++   "reboot | img { height } | — | property | auto",
++   "reboot | caption { padding } | — | property | var(--vn-space-4) var(--vn-space-6)",
++   "reboot | caption { font-size } | — | property | 0.875em",
++   "reboot | colgroup { border-color } | — | property | inherit",
++   "reboot | colgroup { border-style } | — | property | solid",
++   "reboot | colgroup { border-width } | — | property | 0",
++   "reboot | td { padding } | — | property | var(--vn-space-4) var(--vn-space-6)",
++   "reboot | td { border-bottom } | — | property | var(--bs-border-width) var(--vn-border-style) var(--vn-border-color)",
++   "reboot | td { vertical-align } | — | property | middle",
++   "reboot | td { text-align } | — | property | inherit",
++   "reboot | th { padding } | — | property | var(--vn-space-4) var(--vn-space-6)",
++   "reboot | th { border-bottom } | — | property | var(--bs-border-width) var(--vn-border-style) var(--vn-border-color)",
++   "reboot | th { vertical-align } | — | property | middle",
++   "reboot | th { font-weight } | — | property | var(--vn-weight-heading)",
++   "reboot | button { padding } | — | property | var(--vn-space-3) var(--vn-space-6)",
++   "reboot | button { font-weight } | — | property | var(--vn-weight-body)",
++   "reboot | button { color } | — | property | var(--vn-text-body-base)",
++   "reboot | button { background-color } | — | property | var(--vn-button-transparent)",
++   "reboot | button { border } | — | property | 0",
++   "reboot | button { box-shadow } | — | property | var(--vn-button-shadow)",
++   "reboot | button { transition } | — | property | color var(--vn-motion-feedback) var(--vn-ease-standard), background-color var(--vn-motion-feedback) var(--vn-ease-standard), border-color var(--vn-motion-feedback) var(--vn-ease-standard), box-shadow var(--vn-motion-feedback) var(--vn-ease-standard), opacity var(--vn-motion-feedback) var(--vn-ease-standard)",
++   "reboot | button { transition } | @media (prefers-reduced-motion: reduce) | property | none",
++   "reboot | button:hover { background-color } | — | property | color-mix(in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-button-transparent))",
++   "reboot | button:active { background-color } | — | property | color-mix(in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-button-transparent))",
++   "reboot | button:focus-visible { outline } | — | property | none",
++   "reboot | button:focus-visible { box-shadow } | — | property | 0 0 0 var(--vn-focus-width) var(--vn-focus-color)",
++   "reboot | button:focus-visible { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "reboot | button:focus-visible { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "reboot | button:disabled { color } | — | property | var(--vn-text-body-base)",
++   "reboot | button:disabled { background-color } | — | property | var(--vn-button-transparent)",
++   "reboot | button:disabled { opacity } | — | property | var(--vn-button-opacity)",
++   "reboot | button:disabled { pointer-events } | — | property | none",
++   "btn | .btn { --bs-btn-focus-shadow-rgb } | — | property | var(--vn-color-primary-rgb)",
++   "btn | .btn { --bs-btn-hover-color } | — | property | var(--vn-text-body-base)",
++   "btn | .btn { --bs-btn-hover-bg } | — | property | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-hover), var(--vn-button-transparent) )",
++   "btn | .btn { --bs-btn-active-color } | — | property | var(--vn-text-body-base)",
++   "btn | .btn { --bs-btn-active-bg } | — | property | color-mix( in srgb, var(--vn-state-mixer) var(--vn-state-active), var(--vn-button-transparent) )",
++   "btn | .btn { --bs-btn-active-border-color } | — | property | var(--vn-button-transparent)",
++   "btn | .btn { --bs-btn-active-shadow } | — | property | var(--vn-button-shadow)",
++   "btn | .btn { --bs-btn-disabled-color } | — | property | var(--vn-text-body-base)",
++   "btn | .btn { --bs-btn-disabled-bg } | — | property | var(--vn-button-transparent)",
++   "btn | .btn { --bs-btn-disabled-border-color } | — | property | var(--vn-button-transparent)",
++   "btn | .btn { box-shadow } | — | property | var(--bs-btn-box-shadow)",
++   "btn | .btn-check:checked + .btn { box-shadow } | — | property | var(--bs-btn-active-shadow)",
++   "btn | :not(.btn-check) + .btn:active { box-shadow } | — | property | var(--bs-btn-active-shadow)",
++   "btn | .btn:first-child:active { box-shadow } | — | property | var(--bs-btn-active-shadow)",
++   "btn | .btn.active { box-shadow } | — | property | var(--bs-btn-active-shadow)",
++   "btn | .btn.show { box-shadow } | — | property | var(--bs-btn-active-shadow)",
++   "btn | .btn-check:checked + .btn:focus-visible { outline } | — | property | none",
++   "btn | :not(.btn-check) + .btn:active:focus-visible { outline } | — | property | none",
++   "btn | .btn:first-child:active:focus-visible { outline } | — | property | none",
++   "btn | .btn.active:focus-visible { outline } | — | property | none",
++   "btn | .btn.show:focus-visible { outline } | — | property | none",
++   "btn | .btn-check:checked:focus-visible + .btn { outline } | — | property | none",
++   "btn | .btn:focus-visible { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "btn | .btn:focus-visible { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "btn | .btn-check:focus-visible + .btn { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "btn | .btn-check:focus-visible + .btn { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "btn | .btn-check:checked + .btn:focus-visible { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "btn | .btn-check:checked + .btn:focus-visible { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "btn | :not(.btn-check) + .btn:active:focus-visible { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "btn | :not(.btn-check) + .btn:active:focus-visible { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "btn | .btn:first-child:active:focus-visible { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "btn | .btn:first-child:active:focus-visible { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "btn | .btn.active:focus-visible { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "btn | .btn.active:focus-visible { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "btn | .btn.show:focus-visible { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "btn | .btn.show:focus-visible { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "btn | .btn-check:checked:focus-visible + .btn { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "btn | .btn-check:checked:focus-visible + .btn { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "btn | .btn:disabled { box-shadow } | — | property | var(--bs-btn-box-shadow)",
++   "btn | .btn.disabled { box-shadow } | — | property | var(--bs-btn-box-shadow)",
++   "btn | fieldset:disabled .btn { box-shadow } | — | property | var(--bs-btn-box-shadow)",
++   "btn | a.btn[aria-disabled=true] { color } | — | property | var(--bs-btn-disabled-color)",
++   "btn | a.btn[aria-disabled=true] { background-color } | — | property | var(--bs-btn-disabled-bg)",
++   "btn | a.btn[aria-disabled=true] { border-color } | — | property | var(--bs-btn-disabled-border-color)",
++   "btn | a.btn[aria-disabled=true] { box-shadow } | — | property | var(--bs-btn-box-shadow)",
++   "btn | a.btn[aria-disabled=true] { opacity } | — | property | var(--bs-btn-disabled-opacity)",
++   "btn | a.btn[aria-disabled=true] { pointer-events } | — | property | none",
++   "btn | .btn-check[disabled] + .btn { color } | — | property | var(--bs-btn-disabled-color)",
++   "btn | .btn-check[disabled] + .btn { background-color } | — | property | var(--bs-btn-disabled-bg)",
++   "btn | .btn-check[disabled] + .btn { border-color } | — | property | var(--bs-btn-disabled-border-color)",
++   "btn | .btn-check[disabled] + .btn { box-shadow } | — | property | var(--bs-btn-box-shadow)",
++   "btn | .btn-check:disabled + .btn { color } | — | property | var(--bs-btn-disabled-color)",
++   "btn | .btn-check:disabled + .btn { background-color } | — | property | var(--bs-btn-disabled-bg)",
++   "btn | .btn-check:disabled + .btn { border-color } | — | property | var(--bs-btn-disabled-border-color)",
++   "btn | .btn-check:disabled + .btn { box-shadow } | — | property | var(--bs-btn-box-shadow)",
++   "btn | .btn-tertiary { --bs-btn-color } | — | property | var(--vn-palette-white-base)",
++   "btn | .btn-tertiary { --bs-btn-bg } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-tertiary { --bs-btn-border-color } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-tertiary { --bs-btn-hover-color } | — | property | var(--vn-palette-white-base)",
++   "btn | .btn-tertiary { --bs-btn-hover-bg } | — | property | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-hover), var(--vn-color-tertiary-base) )",
++   "btn | .btn-tertiary { --bs-btn-hover-border-color } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-tertiary { --bs-btn-active-color } | — | property | var(--vn-palette-white-base)",
++   "btn | .btn-tertiary { --bs-btn-active-bg } | — | property | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-tertiary-base) )",
++   "btn | .btn-tertiary { --bs-btn-active-border-color } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-tertiary { --bs-btn-disabled-color } | — | property | var(--vn-palette-white-base)",
++   "btn | .btn-tertiary { --bs-btn-disabled-bg } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-tertiary { --bs-btn-disabled-border-color } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-outline-tertiary { --bs-btn-color } | — | property | var(--vn-color-tertiary-emphasis)",
++   "btn | .btn-outline-tertiary { --bs-btn-border-color } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-outline-tertiary { --bs-btn-hover-color } | — | property | var(--vn-palette-white-base)",
++   "btn | .btn-outline-tertiary { --bs-btn-hover-bg } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-outline-tertiary { --bs-btn-hover-border-color } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-outline-tertiary { --bs-btn-active-color } | — | property | var(--vn-palette-white-base)",
++   "btn | .btn-outline-tertiary { --bs-btn-active-bg } | — | property | color-mix( in srgb, color(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-active), var(--vn-color-tertiary-base) )",
++   "btn | .btn-outline-tertiary { --bs-btn-active-border-color } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-outline-tertiary { --bs-btn-disabled-color } | — | property | var(--vn-color-tertiary-emphasis)",
++   "btn | .btn-outline-tertiary { --bs-btn-disabled-border-color } | — | property | var(--vn-color-tertiary-base)",
++   "btn | .btn-link { --bs-btn-hover-bg } | — | property | var(--vn-button-transparent)",
++   "btn | .btn-link { --bs-btn-active-bg } | — | property | var(--vn-button-transparent)",
++   "btn | .btn-link:hover { text-decoration } | — | property | var(--vn-link-decoration)",
++   "btn | .btn-link:focus-visible { outline } | — | property | none",
++   "btn | .btn-link:focus-visible { box-shadow } | — | property | var(--bs-btn-focus-box-shadow)",
++   "btn | .btn-link:focus-visible { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-button-highlight)",
++   "btn | .btn-link:focus-visible { box-shadow } | @media (forced-colors: active) | property | var(--vn-button-shadow)",
++   "btn | .btn { --bs-btn-color } | @media (forced-colors: active) | property | var(--vn-button-text)",
++   "btn | .btn { --bs-btn-bg } | @media (forced-colors: active) | property | var(--vn-button-face)",
++   "btn | .btn { --bs-btn-border-color } | @media (forced-colors: active) | property | var(--vn-button-text)",
++   "btn | .btn { --bs-btn-hover-color } | @media (forced-colors: active) | property | var(--vn-button-face)",
++   "btn | .btn { --bs-btn-hover-bg } | @media (forced-colors: active) | property | var(--vn-button-highlight)",
++   "btn | .btn { --bs-btn-hover-border-color } | @media (forced-colors: active) | property | var(--vn-button-highlight)",
++   "btn | .btn { --bs-btn-active-color } | @media (forced-colors: active) | property | var(--vn-button-face)",
++   "btn | .btn { --bs-btn-active-bg } | @media (forced-colors: active) | property | var(--vn-button-highlight)",
++   "btn | .btn { --bs-btn-active-border-color } | @media (forced-colors: active) | property | var(--vn-button-highlight)",
++   "btn | .btn { --bs-btn-disabled-color } | @media (forced-colors: active) | property | var(--vn-button-disabled)",
++   "btn | .btn { --bs-btn-disabled-bg } | @media (forced-colors: active) | property | var(--vn-button-face)",
++   "btn | .btn { --bs-btn-disabled-border-color } | @media (forced-colors: active) | property | var(--vn-button-disabled)",
++   "h5 | .h5 { font-size } | @media (width >= 1200px) | property | var(--vn-size-4)",
++   "h6 | .h6 { font-size } | @media (width >= 1200px) | property | var(--vn-size-3)",
++   "blockquote | .blockquote { padding-left } | — | property | 0",
++   "blockquote | .blockquote { border-left } | — | property | 0",
++   "blockquote | .blockquote { font-style } | — | property | normal",
++   "figure | .figure-caption { margin-top } | — | property | 0",
++   "table | .table > :not(caption) > * > * { border-color } | — | property | inherit",
++   "table | .table > :not(caption) > * > * { vertical-align } | — | property | inherit",
++   "table | .caption-bottom { caption-side } | — | property | bottom",
++   "form-control | .form-control:focus { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "form-select | .form-select:focus { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "form-check | .form-check-input:focus { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "form-range | .form-range:focus { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "dropdown | :where(button.dropdown-item) { padding } | — | property | revert",
++   "dropdown | :where(button.dropdown-item) { font-family } | — | property | inherit",
++   "dropdown | :where(button.dropdown-item) { font-size } | — | property | inherit",
++   "dropdown | :where(button.dropdown-item) { font-weight } | — | property | revert",
++   "dropdown | :where(button.dropdown-item) { line-height } | — | property | inherit",
++   "dropdown | :where(button.dropdown-item) { color } | — | property | revert",
++   "dropdown | :where(button.dropdown-item) { background-color } | — | property | revert",
++   "dropdown | :where(button.dropdown-item) { border } | — | property | revert",
++   "dropdown | :where(button.dropdown-item) { border-radius } | — | property | 0",
++   "dropdown | :where(button.dropdown-item) { outline } | — | property | revert",
++   "dropdown | :where(button.dropdown-item) { box-shadow } | — | property | revert",
++   "dropdown | :where(button.dropdown-item) { opacity } | — | property | revert",
++   "dropdown | :where(button.dropdown-item) { pointer-events } | — | property | revert",
++   "dropdown | :where(button.dropdown-item) { transition } | — | property | revert",
++   "nav | :where(button.nav-link) { padding } | — | property | revert",
++   "nav | :where(button.nav-link) { font-family } | — | property | inherit",
++   "nav | :where(button.nav-link) { font-size } | — | property | inherit",
++   "nav | :where(button.nav-link) { font-weight } | — | property | revert",
++   "nav | :where(button.nav-link) { line-height } | — | property | inherit",
++   "nav | :where(button.nav-link) { color } | — | property | revert",
++   "nav | :where(button.nav-link) { background-color } | — | property | revert",
++   "nav | :where(button.nav-link) { border } | — | property | revert",
++   "nav | :where(button.nav-link) { border-radius } | — | property | 0",
++   "nav | :where(button.nav-link) { outline } | — | property | revert",
++   "nav | :where(button.nav-link) { box-shadow } | — | property | revert",
++   "nav | :where(button.nav-link) { opacity } | — | property | revert",
++   "nav | :where(button.nav-link) { pointer-events } | — | property | revert",
++   "nav | :where(button.nav-link) { transition } | — | property | revert",
++   "nav | .nav-link:focus-visible { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "navbar | :where(button.navbar-toggler) { padding } | — | property | revert",
++   "navbar | :where(button.navbar-toggler) { font-family } | — | property | inherit",
++   "navbar | :where(button.navbar-toggler) { font-size } | — | property | inherit",
++   "navbar | :where(button.navbar-toggler) { font-weight } | — | property | revert",
++   "navbar | :where(button.navbar-toggler) { line-height } | — | property | inherit",
++   "navbar | :where(button.navbar-toggler) { color } | — | property | revert",
++   "navbar | :where(button.navbar-toggler) { background-color } | — | property | revert",
++   "navbar | :where(button.navbar-toggler) { border } | — | property | revert",
++   "navbar | :where(button.navbar-toggler) { border-radius } | — | property | 0",
++   "navbar | :where(button.navbar-toggler) { outline } | — | property | revert",
++   "navbar | :where(button.navbar-toggler) { box-shadow } | — | property | revert",
++   "navbar | :where(button.navbar-toggler) { opacity } | — | property | revert",
++   "navbar | :where(button.navbar-toggler) { pointer-events } | — | property | revert",
++   "navbar | :where(button.navbar-toggler) { transition } | — | property | revert",
++   "navbar | .navbar-toggler:focus { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "accordion | :where(button.accordion-button) { padding } | — | property | revert",
++   "accordion | :where(button.accordion-button) { font-family } | — | property | inherit",
++   "accordion | :where(button.accordion-button) { font-size } | — | property | inherit",
++   "accordion | :where(button.accordion-button) { font-weight } | — | property | revert",
++   "accordion | :where(button.accordion-button) { line-height } | — | property | inherit",
++   "accordion | :where(button.accordion-button) { color } | — | property | revert",
++   "accordion | :where(button.accordion-button) { background-color } | — | property | revert",
++   "accordion | :where(button.accordion-button) { border } | — | property | revert",
++   "accordion | :where(button.accordion-button) { border-radius } | — | property | 0",
++   "accordion | :where(button.accordion-button) { outline } | — | property | revert",
++   "accordion | :where(button.accordion-button) { box-shadow } | — | property | revert",
++   "accordion | :where(button.accordion-button) { opacity } | — | property | revert",
++   "accordion | :where(button.accordion-button) { pointer-events } | — | property | revert",
++   "accordion | :where(button.accordion-button) { transition } | — | property | revert",
++   "accordion | .accordion-button:focus { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "pagination | :where(button.page-link) { padding } | — | property | revert",
++   "pagination | :where(button.page-link) { font-family } | — | property | inherit",
++   "pagination | :where(button.page-link) { font-size } | — | property | inherit",
++   "pagination | :where(button.page-link) { font-weight } | — | property | revert",
++   "pagination | :where(button.page-link) { line-height } | — | property | inherit",
++   "pagination | :where(button.page-link) { color } | — | property | revert",
++   "pagination | :where(button.page-link) { background-color } | — | property | revert",
++   "pagination | :where(button.page-link) { border } | — | property | revert",
++   "pagination | :where(button.page-link) { border-radius } | — | property | 0",
++   "pagination | :where(button.page-link) { outline } | — | property | revert",
++   "pagination | :where(button.page-link) { box-shadow } | — | property | revert",
++   "pagination | :where(button.page-link) { opacity } | — | property | revert",
++   "pagination | :where(button.page-link) { pointer-events } | — | property | revert",
++   "pagination | :where(button.page-link) { transition } | — | property | revert",
++   "pagination | .page-link:focus { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "list-group | :where(button.list-group-item) { padding } | — | property | revert",
++   "list-group | :where(button.list-group-item) { font-family } | — | property | inherit",
++   "list-group | :where(button.list-group-item) { font-size } | — | property | inherit",
++   "list-group | :where(button.list-group-item) { font-weight } | — | property | revert",
++   "list-group | :where(button.list-group-item) { line-height } | — | property | inherit",
++   "list-group | :where(button.list-group-item) { color } | — | property | revert",
++   "list-group | :where(button.list-group-item) { background-color } | — | property | revert",
++   "list-group | :where(button.list-group-item) { border } | — | property | revert",
++   "list-group | :where(button.list-group-item) { border-radius } | — | property | 0",
++   "list-group | :where(button.list-group-item) { outline } | — | property | revert",
++   "list-group | :where(button.list-group-item) { box-shadow } | — | property | revert",
++   "list-group | :where(button.list-group-item) { opacity } | — | property | revert",
++   "list-group | :where(button.list-group-item) { pointer-events } | — | property | revert",
++   "list-group | :where(button.list-group-item) { transition } | — | property | revert",
++   "btn-close | :where(button.btn-close) { padding } | — | property | revert",
++   "btn-close | :where(button.btn-close) { font-family } | — | property | inherit",
++   "btn-close | :where(button.btn-close) { font-size } | — | property | inherit",
++   "btn-close | :where(button.btn-close) { font-weight } | — | property | revert",
++   "btn-close | :where(button.btn-close) { line-height } | — | property | inherit",
++   "btn-close | :where(button.btn-close) { color } | — | property | revert",
++   "btn-close | :where(button.btn-close) { background-color } | — | property | revert",
++   "btn-close | :where(button.btn-close) { border } | — | property | revert",
++   "btn-close | :where(button.btn-close) { border-radius } | — | property | 0",
++   "btn-close | :where(button.btn-close) { outline } | — | property | revert",
++   "btn-close | :where(button.btn-close) { box-shadow } | — | property | revert",
++   "btn-close | :where(button.btn-close) { opacity } | — | property | revert",
++   "btn-close | :where(button.btn-close) { pointer-events } | — | property | revert",
++   "btn-close | :where(button.btn-close) { transition } | — | property | revert",
++   "btn-close | .btn-close:focus { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { padding } | — | property | revert",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { font-family } | — | property | inherit",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { font-size } | — | property | inherit",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { font-weight } | — | property | revert",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { line-height } | — | property | inherit",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { color } | — | property | revert",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { background-color } | — | property | revert",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { border } | — | property | revert",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { border-radius } | — | property | 0",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { outline } | — | property | revert",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { box-shadow } | — | property | revert",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { opacity } | — | property | revert",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { pointer-events } | — | property | revert",
++   "carousel | :where(button.carousel-control-prev, button.carousel-control-next) { transition } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { padding } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { font-family } | — | property | inherit",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { font-size } | — | property | inherit",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { font-weight } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { line-height } | — | property | inherit",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { color } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { background-color } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { border } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { border-radius } | — | property | 0",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { outline } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { box-shadow } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { opacity } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { pointer-events } | — | property | revert",
++   "carousel | :where(.carousel-indicators [data-bs-target]) { transition } | — | property | revert",
++   "focus-ring | .focus-ring:focus { outline } | @media (forced-colors: active) | property | var(--vn-focus-width) solid var(--vn-focus-highlight)",
++   "fs | .fs-5 { font-size } | @media (width >= 1200px) | property | var(--vn-size-4)",
++   "fs | .fs-6 { font-size } | @media (width >= 1200px) | property | var(--vn-size-3)",
++   "form-control | .form-control { letter-spacing } | — | property | 0.01em",
+  ]
+
+ ❯ tests/conformance.test.ts:353:30
+    351|   // browser case reads only the properties a row values. This ledger …
+    352|   // it, and the unmodified cascade is the control that reports nothin…
+    353|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    354|    'form-control | .form-control { letter-spacing } | — | declaration …
+    355|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 33 skipped (34)
+   Start at  09:10:31
+   Duration  35.30s (transform 661ms, setup 167ms, import 30.55s, tests 4.41s, environment 0ms)
+
+exit=1
+restored tests/setupServer.ts byte-identical
+--- git diff --stat after restore
+ tests/setupServer.ts | 792 ++++++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 620 insertions(+), 172 deletions(-)
