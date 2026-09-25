@@ -313,6 +313,9 @@ edits, formatter and build races, cache phantoms, and validation cross-talk.
     remove a file it did not create, and a cleanup keyed to a caller-supplied path list is how. The
     same directory is where dispatched units build their instruments, so removing it destroys a live
     lane's work.
+12. A unit never writes into the Orchestrator's scratchpad. Name the unit's own checkout `tmp/` in
+    its brief as the home of its backups, probes, logs, and scripts, because units sharing one
+    scratch path overwrite each other's backups and a restore then reads another unit's bytes.
 
 ## Execution loop
 

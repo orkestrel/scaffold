@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/scaffold
+
+··············································································································
+
+ Test Files  1 passed (1)
+      Tests  110 passed (110)
+   Start at  05:05:26
+   Duration  3.96s (transform 692ms, setup 528ms, import 584ms, tests 2.59s, environment 0ms)
+
+policy exit=0
