@@ -1,0 +1,379 @@
+# J-RELEASE-CORE round 3 replay (2026-09-25) at 8b4e9d6 End a joined class's membership through its own drain, not an event (J-RELEASE-CORE round 3)
+Lifetime whole-file exit=0       Tests  27 passed (27)
+HostSnapshot whole-file exit=0       Tests  55 passed (55)
+helpers whole-file exit=0       Tests  105 passed (105)
+Button whole-file exit=0       Tests  55 passed (55)
+index whole-file exit=0       Tests  3 passed (3)
+test:policy exit=0
+test:guides exit=0
+test:setup:browser exit=0
+mutate-3 exit=0
+## base-d702bb8 — Lifetime.ts and Button.ts at d702bb8 under round 2's tests
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=6 of 27; files failed=3; AssertionError=6
+  × returns false for a record it holds already after destruction began, keeping the first release for the drain
+    AssertionError: AssertionError: expected [ [ true ] ] to deeply equal [ [ false ] ]
+  × ends the owner's holding of a resource destroyed on its own, so the owner neither releases nor destroys it again
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × ends the owner's holding of a lifetime joined as its own class when that lifetime is destroyed
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × rethrows a joined child's release error from the child's own destruction and ends the owner's holding
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × leaves the owner no holding of a child whose lifetime ended before it joined
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × leaves no holding behind across repeated joins of resources destroyed on their own
+    AssertionError: AssertionError: expected [ true, true, true ] to deeply equal [ false, false, false ]
+- tests/src/browser/Button.test.ts: exit 1; failed=3 of 55; files failed=2; AssertionError=3
+  × joins the lifetime that owns its signal before it reads a hook, so a destruction a hook starts restores the host before it returns
+    AssertionError: AssertionError: expected [ [ 'true', true ] ] to deeply equal [ [ null, false ] ]
+  × leaves its owner no holding when a hook destroys it during its construction
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × leaves its owner no holding across repeated construction and destruction
+    AssertionError: AssertionError: expected [ true, true, true ] to deeply equal [ false, false, false ]
+
+## hold-held-after-destroy — Lifetime.hold returns true for a held record after destruction began
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=1 of 27; files failed=2; AssertionError=1
+  × returns false for a record it holds already after destruction began, keeping the first release for the drain
+    AssertionError: AssertionError: expected [ [ true ] ] to deeply equal [ [ false ] ]
+- tests/src/browser/Button.test.ts: exit 0; failed=0 of 55; files failed=0; 
+
+
+## join-ending-omitted — Lifetime.join without the ending its resource's own lifetime holds (successor of join-no-child-release)
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=5 of 27; files failed=2; AssertionError=5
+  × ends the owner's holding of a resource destroyed on its own, so the owner neither releases nor destroys it again
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × ends the owner's holding of a lifetime joined as its own class when that lifetime is destroyed
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × rethrows a joined child's release error from the child's own destruction and ends the owner's holding
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × leaves the owner no holding of a child whose lifetime ended before it joined
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × leaves no holding behind across repeated joins of resources destroyed on their own
+    AssertionError: AssertionError: expected [ true, true, true ] to deeply equal [ false, false, false ]
+- tests/src/browser/Button.test.ts: exit 1; failed=3 of 55; files failed=2; AssertionError=3
+  × leaves its owner no holding when a hook destroys it during its construction
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × leaves its owner no holding when a hook read throws during its construction
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × leaves its owner no holding across repeated construction and destruction
+    AssertionError: AssertionError: expected [ true, true, true ] to deeply equal [ false, false, false ]
+
+## button-join-after-hooks — Button joins after its hooks
+- tests/src/browser/Button.test.ts: exit 1; failed=2 of 55; files failed=2; AssertionError=2
+  × joins the lifetime that owns its signal before it reads a hook, so a destruction a hook starts restores the host before it returns
+    AssertionError: AssertionError: expected [ [ 'true', true ] ] to deeply equal [ [ null, false ] ]
+  × returns from an owner's destroy a reaction to the button's restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+
+## drain-nested — Lifetime.destroy drains on a nested call
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=5 of 27; files failed=3; AssertionError=5
+  × drains on a destroy a release calls, running the running release again, and returns with every holding given back
+    AssertionError: AssertionError: expected [ [ 'second' ], …(2) ] to deeply equal [ [ 'second' ], [ 'second' ], …(2) ]
+  × drains on a destroy an abort listener calls before the first release runs
+    AssertionError: AssertionError: expected [ [ 'listener returned' ], …(1) ] to deeply equal [ [ 'released' ], …(1) ]
+  × keeps a record held after destruction began pending while its release runs, so a nested destroy runs it again
+    AssertionError: AssertionError: expected [ [ 'release' ] ] to deeply equal [ [ 'release' ], [ 'release' ] ]
+  × reaches a joined resource from a destroy nested in a newer release of the owner
+    AssertionError: AssertionError: expected [ [ 'nested returned' ], [ 'joined' ] ] to deeply equal [ [ 'joined' ], [ 'nested returned' ] ]
+  × reaches the child from an owner destruction nested in the child's drain, before the child's last holding
+    AssertionError: AssertionError: expected [ [ 'child released' ], …(2) ] to deeply equal [ [ 'child released' ], …(3) ]
+- tests/src/browser/Button.test.ts: exit 1; failed=2 of 55; files failed=2; AssertionError=2
+  × returns from a destroy a reaction to its restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+  × returns from an owner's destroy a reaction to the button's restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+
+## same-entry — Lifetime.#give ends only the same entry
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=1 of 27; files failed=2; AssertionError=1
+  × ends a holding only while the lifetime still holds that same entry
+    AssertionError: AssertionError: expected [] to deeply equal [ [ {} ] ]
+
+## newest-first — Lifetime.destroy drains newest first
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=7 of 27; files failed=3; AssertionError=7
+  × aborts its signal once, before the first release, and gives every holding back newest first
+    AssertionError: AssertionError: expected [ [ 'first', true ], …(2) ] to deeply equal [ [ 'third', true ], …(2) ]
+  × drains on a destroy a release calls, running the running release again, and returns with every holding given back
+    AssertionError: AssertionError: expected [ [ 'first' ], [ 'second' ], …(2) ] to deeply equal [ [ 'second' ], [ 'second' ], …(2) ]
+  × gives every other holding back past a throwing release, ends that holding, and rethrows the first error
+    AssertionError: AssertionError: expected [Function] to throw error including 'newer' but got 'older'
+  × destroys a joined resource in the drain, in its place among the holdings, never at the abort
+    AssertionError: AssertionError: expected [ [ 'aborted' ], [ 'oldest' ], …(2) ] to deeply equal [ [ 'aborted' ], [ 'newest' ], …(2) ]
+  × rethrows a joined child's release error from the owner's destruction after every other holding is given back
+    AssertionError: AssertionError: expected [ [ 'owner' ], [ 'child' ] ] to deeply equal [ [ 'child' ], [ 'owner' ] ]
+  × reaches the child from an owner destruction nested in the child's drain, before the child's last holding
+    AssertionError: AssertionError: expected [ [ 'child released' ], …(2) ] to deeply equal [ [ 'child released' ], …(3) ]
+  × destroys a joined resource from the owner drain, whose own lifetime ending ends the holding inside that release
+    AssertionError: AssertionError: expected [ [ 'oldest' ], [ 'destroy' ], …(2) ] to deeply equal [ [ 'newest' ], [ 'destroy' ], …(2) ]
+
+## hold-after-destroy — Lifetime.hold runs the release at once after destruction began
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=5 of 27; files failed=3; AssertionError=5
+  × runs the release at once and returns false for a record held after destruction began
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × keeps a record held after destruction began pending while its release runs, so a nested destroy runs it again
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × returns false for a record it holds already after destruction began, keeping the first release for the drain
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × destroys a resource at once when the lifetime that owns the signal has begun its destruction
+    AssertionError: AssertionError: expected +0 to be 1 // Object.is equality
+  × leaves the owner no holding of a child whose lifetime ended before it joined
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+- tests/src/browser/Button.test.ts: exit 1; failed=1 of 55; files failed=2; AssertionError=1
+  × joins the lifetime that owns its signal, whose destruction restores the host, and is destroyed at construction after that destruction began
+    AssertionError: AssertionError: expected Button{} to be undefined
+
+## drain-past-throw — Lifetime.destroy continues past a throwing release
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=3 of 27; files failed=3; AssertionError=3
+  × gives every other holding back past a throwing release, ends that holding, and rethrows the first error
+    AssertionError: AssertionError: expected [ [ 'newest' ] ] to deeply equal [ [ 'newest' ], [ 'oldest' ] ]
+  × rethrows a joined child's release error from the owner's destruction after every other holding is given back
+    AssertionError: AssertionError: expected [] to deeply equal [ [ 'child' ], [ 'owner' ] ]
+  × rethrows a joined child's release error from the child's own destruction and ends the owner's holding
+    AssertionError: AssertionError: expected [] to deeply equal [ [ 'child' ] ]
+
+## first-error — Lifetime.destroy rethrows the first error
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=1 of 27; files failed=2; AssertionError=1
+  × gives every other holding back past a throwing release, ends that holding, and rethrows the first error
+    AssertionError: AssertionError: expected [Function] to throw error including 'newer' but got 'older'
+
+## join-ledger-3 — Lifetime.join holds the resource in the owning lifetime (successor of join-ledger)
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=4 of 27; files failed=2; AssertionError=4
+  × destroys a joined resource in the drain, in its place among the holdings, never at the abort
+    AssertionError: AssertionError: expected [ [ 'joined' ], [ 'aborted' ], …(2) ] to deeply equal [ [ 'aborted' ], [ 'newest' ], …(2) ]
+  × rethrows a joined child's release error from the owner's destruction after every other holding is given back
+    AssertionError: AssertionError: expected [Function] to throw an error
+  × reaches the child from an owner destruction nested in the child's drain, before the child's last holding
+    AssertionError: AssertionError: expected [ [ 'child released' ], …(2) ] to deeply equal [ [ 'child released' ], …(3) ]
+  × destroys a joined resource from the owner drain, whose own lifetime ending ends the holding inside that release
+    AssertionError: AssertionError: expected [ [ 'destroy' ], [ 'released' ], …(2) ] to deeply equal [ [ 'newest' ], [ 'destroy' ], …(2) ]
+
+## join-unlisten — Lifetime.join removes a foreign listener at the resource's destruction
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=1 of 27; files failed=2; AssertionError=1
+  × removes its listener from a signal no lifetime owns when the resource lifetime is destroyed first
+    AssertionError: AssertionError: expected 1 to be +0 // Object.is equality
+
+## write-no-record — HostSnapshot.write creates no record for a write that changes nothing
+- tests/src/browser/HostSnapshot.test.ts: exit 1; failed=1 of 55; files failed=2; AssertionError=1
+  × records nothing at a write that changes nothing, so an edit you make after it survives the restoration
+    AssertionError: AssertionError: expected 'false' to be 'true' // Object.is equality
+
+## write-join — HostSnapshot.write joins a live record at a write that changes nothing
+- tests/src/browser/HostSnapshot.test.ts: exit 1; failed=3 of 55; files failed=2; AssertionError=3
+  × joins a live holder's record at a write that changes nothing, so only the last holder writes the earliest value back, in either order
+    AssertionError: AssertionError: expected null to be 'true' // Object.is equality
+  × joins the record a restoration has still to write back at a write that changes nothing, which the restoration then leaves
+    AssertionError: AssertionError: expected null to be 'open' // Object.is equality
+  × shares one record across spellings of an attribute name, so only the last holder writes it back
+    AssertionError: AssertionError: expected null to be 'open' // Object.is equality
+- tests/src/browser/Button.test.ts: exit 1; failed=1 of 55; files failed=2; AssertionError=1
+  × hands the originals to an engine constructed at the token write of its restoration
+    AssertionError: AssertionError: expected null to be 'true' // Object.is equality
+
+## write-change — HostSnapshot.write saves before a write that changes the target
+- tests/src/browser/HostSnapshot.test.ts: exit 1; failed=9 of 55; files failed=2; AssertionError=9
+  × removes the class attribute the first save found absent when a restoration a button write starts restores the last token
+    AssertionError: AssertionError: expected [] to deeply equal [ [ 'collapsed' ] ]
+  × removes the class attribute of a trigger a button and a collapse share when the button restoration destroys the collapse
+    AssertionError: AssertionError: expected Collapse{} to be undefined
+  × leaves the class attribute of a trigger a button restoration empties while a collapse on the same trigger stays live, and the collapse destruction removes it
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × saves a target at a write that changes it, writes the value, and writes back the value the host carried
+    AssertionError: AssertionError: expected null to be 'false' // Object.is equality
+  × counts a changed priority as a change, and writes the property and its priority back
+    AssertionError: AssertionError: expected 'important' to be '' // Object.is equality
+  × joins a live holder's record at a write that changes nothing, so only the last holder writes the earliest value back, in either order
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × creates no record at a write that changes nothing while no snapshot holds the target
+    AssertionError: AssertionError: expected 'false' to be 'true' // Object.is equality
+  × joins the record a restoration has still to write back at a write that changes nothing, which the restoration then leaves
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × shares one record across spellings of an attribute name, so only the last holder writes it back
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+
+## priority — matchesHostValue compares the priority
+- tests/src/browser/helpers.test.ts: exit 1; failed=4 of 105; files failed=4; AssertionError=4
+  × reports an attribute, a token, and a property that already read the value, and each that does not
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × compares a property priority, so a value written with another priority is a change
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × records a write of the value an inline property holds when the property carries a priority
+    AssertionError: AssertionError: expected [] to deeply equal [ { target: { …(3) }, …(2) } ]
+  × writes an inline property back with its recorded priority, and skips it once it holds that value and priority
+    AssertionError: AssertionError: expected [ [ '12px', 'important' ], …(1) ] to deeply equal [ [ '12px', 'important' ], …(1) ]
+- tests/src/browser/HostSnapshot.test.ts: exit 1; failed=1 of 55; files failed=2; AssertionError=1
+  × counts a changed priority as a change, and writes the property and its priority back
+    AssertionError: AssertionError: expected '' to be 'important' // Object.is equality
+
+## claim-before-drain — Button.destroy releases the claim before the drain
+- tests/src/browser/Button.test.ts: exit 1; failed=3 of 55; files failed=2; AssertionError=3
+  × releases its host before restoring it, so an engine constructed at the restoration last write keeps its state
+    AssertionError: AssertionError: expected [ [ …(1) ] ] to deeply equal []
+  × hands the originals to an engine constructed at the token write of its restoration
+    AssertionError: AssertionError: expected [ [ …(1) ] ] to deeply equal []
+  × stops a toggle whose own token write destroys the button, writing and dispatching nothing more
+    AssertionError: AssertionError: expected [ [ …(1) ] ] to deeply equal []
+
+## button-latch — Button.destroy opens with no whole-method latch
+- tests/src/browser/Button.test.ts: exit 1; failed=2 of 55; files failed=2; AssertionError=2
+  × returns from a destroy a reaction to its restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+  × returns from an owner's destroy a reaction to the button's restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+
+## button-construction-save — Button construction saves nothing
+- tests/src/browser/Button.test.ts: exit 1; failed=1 of 55; files failed=2; AssertionError=1
+  × writes nothing back at destruction when it never wrote the host, keeping the values you set
+    AssertionError: AssertionError: expected null to be 'mixed' // Object.is equality
+
+## button-snapshot-held — Button holds its snapshot in its lifetime
+- tests/src/browser/Button.test.ts: exit 1; failed=39 of 55; files failed=2; AssertionError=39
+  × writes, tests, and restores only the pressed token its classes group names
+    AssertionError: AssertionError: expected [ 'active', 'is-pressed' ] to deeply equal [ 'active' ]
+  × destroys the button when its signal aborts, and at construction when it arrived aborted
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × releases its host before restoring it, so an engine constructed at the restoration last write keeps its state
+    AssertionError: AssertionError: expected +0 to be 1 // Object.is equality
+  × hands the originals to an engine constructed at the token write of its restoration
+    AssertionError: AssertionError: expected +0 to be 1 // Object.is equality
+  × stops a toggle whose own token write destroys the button, writing and dispatching nothing more
+    AssertionError: AssertionError: expected +0 to be 2 // Object.is equality
+  × dispatches nothing when a reaction to its aria-pressed write destroys the button
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × releases hooks and leaves later toggles inert while reading the live host
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores active membership and the exact original attribute while preserving consumer edits
+    AssertionError: AssertionError: expected [ 'consumer' ] to deeply equal [ 'active', 'consumer' ]
+  × restores original membership and attribute presence for class=undefined and aria-pressed=undefined
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class=undefined and aria-pressed='true'
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class=undefined and aria-pressed='false'
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class=undefined and aria-pressed='mixed'
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class='active btn' and aria-pressed=undefined
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × restores original membership and attribute presence for class='active btn' and aria-pressed='true'
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × restores original membership and attribute presence for class='active btn' and aria-pressed='false'
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × restores original membership and attribute presence for class='active btn' and aria-pressed='mixed'
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × restores original membership and attribute presence for class=' active  btn ' and aria-pressed=undefined
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × restores original membership and attribute presence for class=' active  btn ' and aria-pressed='true'
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × restores original membership and attribute presence for class=' active  btn ' and aria-pressed='false'
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × restores original membership and attribute presence for class=' active  btn ' and aria-pressed='mixed'
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × restores original membership and attribute presence for class='btn' and aria-pressed=undefined
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class='btn' and aria-pressed='true'
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class='btn' and aria-pressed='false'
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class='btn' and aria-pressed='mixed'
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class='' and aria-pressed=undefined
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class='' and aria-pressed='true'
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class='' and aria-pressed='false'
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × restores original membership and attribute presence for class='' and aria-pressed='mixed'
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × keeps consumer class tokens on a host constructed without a class attribute
+    AssertionError: AssertionError: expected [ 'active', 'consumer', 'retained' ] to deeply equal [ 'consumer', 'retained' ]
+  × restores absent and empty attributes distinctly on detached hosts
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × refuses invalid hosts and concurrent ownership then permits reconstruction
+    AssertionError: AssertionError: expected false to be true // Object.is equality
+  × preserves destruction performed by a listener during a toggle and returns the state the host carries
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × returns from a destroy a reaction to its restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [] to deeply equal [ [ false, null ] ]
+  × joins the lifetime that owns its signal, whose destruction restores the host, and is destroyed at construction after that destruction began
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × joins the lifetime that owns its signal before it reads a hook, so a destruction a hook starts restores the host before it returns
+    AssertionError: AssertionError: expected [ [ 'true', true ] ] to deeply equal [ [ null, false ] ]
+  × returns from an owner's destroy a reaction to the button's restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [] to deeply equal [ [ false, null ] ]
+  × leaves its owner no holding when a hook destroys it during its construction
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × leaves its owner no holding when a hook read throws during its construction
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × leaves its owner no holding across repeated construction and destruction
+    AssertionError: AssertionError: expected 'true' to be 'mixed' // Object.is equality
+
+## base-03526bc — Lifetime.ts at 03526bc, the abort listener, under round 3 tests
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=5 of 27; files failed=2; AssertionError=5
+  × ends the owner's holding of a resource destroyed on its own, so the owner neither releases nor destroys it again
+    AssertionError: AssertionError: expected [ [ 'destroy' ], [ 'destroy' ], …(1) ] to deeply equal [ [ 'destroy' ], [ 'released' ] ]
+  × rethrows a joined child's release error from the owner's destruction after every other holding is given back
+    AssertionError: AssertionError: expected [Function] to throw an error
+  × rethrows a joined child's release error from the child's own destruction and ends the owner's holding
+    AssertionError: AssertionError: expected [Function] to throw an error
+  × leaves the owner no holding of a child whose lifetime ended before it joined
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × destroys a joined resource from the owner drain, whose own lifetime ending ends the holding inside that release
+    AssertionError: AssertionError: expected [ [ 'newest' ], [ 'destroy' ], …(3) ] to deeply equal [ [ 'newest' ], [ 'destroy' ], …(2) ]
+- tests/src/browser/Button.test.ts: exit 0; failed=0 of 55; files failed=0; 
+
+
+## ending-newest — Button holds the ending newest: it joins after it holds its snapshot, so its lifetime's drain runs the ending first
+- tests/src/browser/Button.test.ts: exit 1; failed=1 of 55; files failed=2; AssertionError=1
+  × returns from an owner's destroy a reaction to the button's restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+
+## ending-at-abort — Lifetime.join runs the ending at the abort of the resource's lifetime, before every holding, as a newest holding would
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=2 of 27; files failed=2; AssertionError=2
+  × leaves the owner no holding of a child whose lifetime ended before it joined
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+  × reaches the child from an owner destruction nested in the child's drain, before the child's last holding
+    AssertionError: AssertionError: expected [ [ 'child released' ], …(2) ] to deeply equal [ [ 'child released' ], …(3) ]
+- tests/src/browser/Button.test.ts: exit 1; failed=1 of 55; files failed=2; AssertionError=1
+  × returns from an owner's destroy a reaction to the button's restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [ [ false, 'true' ] ] to deeply equal [ [ false, null ] ]
+
+## ending-releases — Lifetime's ending runs the holding's release
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=6 of 27; files failed=2; AssertionError=1 RangeError=5
+  × ends the owner's holding of a resource destroyed on its own, so the owner neither releases nor destroys it again
+    AssertionError: AssertionError: expected [Function] to not throw an error but 'RangeError: Maximum call stack size e…' was thrown
+  × ends the owner's holding of a lifetime joined as its own class when that lifetime is destroyed
+    RangeError: RangeError: Maximum call stack size exceeded
+  × leaves the owner no holding of a child whose lifetime ended before it joined
+    RangeError: RangeError: Maximum call stack size exceeded
+  × reaches the child from an owner destruction nested in the child's drain, before the child's last holding
+    RangeError: RangeError: Maximum call stack size exceeded
+  × leaves no holding behind across repeated joins of resources destroyed on their own
+    RangeError: RangeError: Maximum call stack size exceeded
+  × destroys a joined resource from the owner drain, whose own lifetime ending ends the holding inside that release
+    RangeError: RangeError: Maximum call stack size exceeded
+- tests/src/browser/Button.test.ts: exit 1; failed=6 of 55; files failed=2; RangeError=4 AssertionError=2
+  × joins the lifetime that owns its signal, whose destruction restores the host, and is destroyed at construction after that destruction began
+    RangeError: RangeError: Maximum call stack size exceeded
+  × joins the lifetime that owns its signal before it reads a hook, so a destruction a hook starts restores the host before it returns
+    RangeError: RangeError: Maximum call stack size exceeded
+  × returns from an owner's destroy a reaction to the button's restoration calls only after the host is restored
+    AssertionError: AssertionError: expected [] to deeply equal [ [ false, null ] ]
+  × leaves its owner no holding when a hook destroys it during its construction
+    RangeError: RangeError: Maximum call stack size exceeded
+  × leaves its owner no holding when a hook read throws during its construction
+    AssertionError: AssertionError: expected { success: false, …(1) } to match object { success: false, …(1) }
+  × leaves its owner no holding across repeated construction and destruction
+    RangeError: RangeError: Maximum call stack size exceeded
+
+## ending-releases-once — Lifetime's ending ends the holding and then runs its release once, which cannot recurse
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=2 of 27; files failed=2; AssertionError=2
+  × ends the owner's holding of a resource destroyed on its own, so the owner neither releases nor destroys it again
+    AssertionError: AssertionError: expected [ [ 'destroy' ], [ 'released' ], …(1) ] to deeply equal [ [ 'destroy' ], [ 'released' ] ]
+  × destroys a joined resource from the owner drain, whose own lifetime ending ends the holding inside that release
+    AssertionError: AssertionError: expected [ [ 'newest' ], [ 'destroy' ], …(3) ] to deeply equal [ [ 'newest' ], [ 'destroy' ], …(2) ]
+- tests/src/browser/Button.test.ts: exit 0; failed=0 of 55; files failed=0; 
+
+
+## ended-enrolled — Lifetime.join holds no ending in a resource lifetime that has ended, so the owner keeps the resource
+- tests/src/browser/Lifetime.test.ts: exit 1; failed=1 of 27; files failed=2; AssertionError=1
+  × leaves the owner no holding of a child whose lifetime ended before it joined
+    AssertionError: AssertionError: expected true to be false // Object.is equality
+
+--- the tree after the replay
