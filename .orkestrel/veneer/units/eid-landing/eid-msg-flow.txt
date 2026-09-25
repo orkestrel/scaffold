@@ -1,0 +1,14 @@
+Restore Bootstrap's reboot margins on the headings, paragraphs, addresses, and lists
+
+E-ID-FLOW (E-IDENTITY, the user's ruling of 2026-09-24). The headings and the .h1 to .h6 classes write margin-top 0 and
+margin-bottom var(--vn-space-4); p, ol, and ul write margin-top 0 and margin-bottom var(--vn-space-8); address writes
+margin-bottom var(--vn-space-8). At the default density these resolve to Bootstrap's 0.5rem and 1rem, and they scale
+with the density factor; the ledger rows read tokenized. Every documented component margin under this cascade equals
+Bootstrap's. An inner list keeps the list's 1rem bottom margin, because the release's nested-list rule stays Excluded
+under the tenets, and the .mb-0 class removes it; the guide and a proof say so.
+
+Audited in two rounds by the analyst on GPT-6 Astra, the reviewer on Opus 5.5, and the checker on Sonnet; written by
+opus on Opus 5.5, with the verbatim prose on builder on Sonnet. Records: .orkestrel/veneer/units/e-id-prose-verdict.md and flow-audit-2-verdict.md in the scaffold repository.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

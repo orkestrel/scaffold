@@ -1,0 +1,13 @@
+Give each code-family tag its own treatment wherever it sits, and give var the chip corner
+
+E-ID-CODE (E-IDENTITY, Addendum 2). The contextual rules pre code, a > code, and kbd kbd do not ship, so code keeps its
+chip inside a block and a link, and a nested key keeps its keycap; their Excluded rows carry the tenet in the Deferred
+selectors lead, cited once by its ROADMAP.md title. pre and kbd read Bootstrap's border-width hook. samp and var wear
+the chip corner through the code-surface mixin, as Elements gives them. The Content section's linked code, code block,
+and key combination specimens are read rendered, each red when a contextual rule returns.
+
+Audited in four rounds by the analyst on GPT-6 Astra, the reviewer on Opus 5.5, and the checker on Sonnet; written by
+opus on Opus 5.5, with the verbatim prose on builder on Sonnet. Records: .orkestrel/veneer/units/e-id-prose-verdict.md and eic-audit-4-verdict.md in the scaffold repository.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
