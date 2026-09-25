@@ -1,0 +1,71 @@
+plant state-mixer: src/styles/components/_button.scss
+old: '--bs-btn-hover-bg: color-mix(\n\t\t\tin srgb,\n\t\t\tvar(--vn-state-mixer) var(--vn-state-hover),'
+new: '--bs-btn-hover-bg: color-mix(\n\t\t\tin srgb,\n\t\t\tcolor(srgb 0.00742457 0.0232852 0.0925134) var(--vn-state-hover),'
+occurrences: 1 (expected 1)
+
+$ git diff --stat -- src/styles/components/_button.scss
+ src/styles/components/_button.scss | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+exit=0
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.89 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 2.00s
+exit=0
+
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/tokens.test.ts -t 'overrides the state mixer'
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+Port 63315 is in use, trying another one...
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (43 tests | 1 failed | 42 skipped) 395ms
+     × retints the hover fill of a button inside an ancestor that overrides the state mixer, and leaves a hovered twin on the rest mixer 393ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:891:2 > ancestor token overrides > retints the hover fill of a button inside an ancestor that overrides the state mixer, and leaves a hovered twin on the rest mixer
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/tokens.test.ts:911:85
+    909|   await hoverAccessible('button', 'Inside button')
+    910|   expect(inside.matches(':hover')).toBe(true)
+    911|   expect(matchesColor(readStyle(inside, 'background-color'), 'rgb(255 …
+       |                                                                                     ^
+    912|  })
+    913|  it('fades a disabled button inside an ancestor that overrides the but…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 42 skipped (43)
+   Start at  04:21:14
+   Duration  17.11s (transform 0ms, setup 3.16s, import 227ms, tests 395ms, environment 0ms)
+
+exit=1
+
+$ cmp /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/plant-backup/state-mixer.scss src/styles/components/_button.scss && echo restored-byte-identical
+restored-byte-identical
+exit=0
+
+$ git diff --stat -- src/styles; echo "diffstat-lines=$(git diff --stat -- src/styles | wc -l)"
+diffstat-lines=0
+exit=0
+

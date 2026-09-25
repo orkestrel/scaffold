@@ -1,0 +1,74 @@
+plant ease-standard: src/styles/components/_button.scss
+old: 'var(--vn-ease-standard)'
+new: 'ease'
+occurrences: 5 (expected 5)
+
+$ git diff --stat -- src/styles/components/_button.scss
+ src/styles/components/_button.scss | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+exit=0
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.78 kB │ gzip: 34.31 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 6.83s
+[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 6.7s of this 6.7s build (99%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:css transform (99%, 6.7s, 1 call)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+exit=0
+
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/tokens.test.ts -t 'overrides the standard easing'
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (43 tests | 1 failed | 42 skipped) 103ms
+     × retimes the transitions of a button inside an ancestor that overrides the standard easing, and leaves a twin on the rest easing 101ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:937:2 > ancestor token overrides > retimes the transitions of a button inside an ancestor that overrides the standard easing, and leaves a twin on the rest easing
+AssertionError: expected 'ease, ease, ease, ease, ease' to be 'linear, linear, linear, linear, linear' // Object.is equality
+
+Expected: [32m"linear, linear, linear, linear, linear"[39m
+Received: [31m"ease, ease, ease, ease, ease"[39m
+
+ ❯ tests/src/styles/tokens.test.ts:947:58
+    945|   const twin = requireValue(host.querySelector('#twin'), 'No twin butt…
+    946|   expect(readStyle(twin, 'transition-timing-function')).toBe('ease, ea…
+    947|   expect(readStyle(inside, 'transition-timing-function')).toBe(
+       |                                                          ^
+    948|    'linear, linear, linear, linear, linear',
+    949|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 42 skipped (43)
+   Start at  04:22:53
+   Duration  15.08s (transform 0ms, setup 3.97s, import 404ms, tests 103ms, environment 0ms)
+
+exit=1
+
+$ cmp /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/plant-backup/ease-standard.scss src/styles/components/_button.scss && echo restored-byte-identical
+restored-byte-identical
+exit=0
+
+$ git diff --stat -- src/styles; echo "diffstat-lines=$(git diff --stat -- src/styles | wc -l)"
+diffstat-lines=0
+exit=0
+

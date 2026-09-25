@@ -1,0 +1,70 @@
+plant form-invalid-border: src/styles/_mixins.scss
+old: '--bs-form-invalid-border-color: var(--vn-form-invalid);'
+new: '--bs-form-invalid-border-color: oklab(0.4159 0.131299 0.0563228);'
+occurrences: 1 (expected 1)
+
+$ git diff --stat -- src/styles/_mixins.scss
+ src/styles/_mixins.scss | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+exit=0
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.89 kB │ gzip: 34.31 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.94s
+exit=0
+
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/tokens.test.ts -t 'overrides the invalid color'
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (43 tests | 1 failed | 42 skipped) 41ms
+     × recolors the border and the feedback of an invalid control inside a mode scope that overrides the invalid color, and leaves a twin on the rest color 39ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:809:2 > ancestor token overrides > recolors the border and the feedback of an invalid control inside a mode scope that overrides the invalid color, and leaves a twin on the rest color
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/styles/tokens.test.ts:831:89
+    829|    true,
+    830|   )
+    831|   expect(matchesColor(readStyle(insideControl, 'border-top-color'), 'r…
+       |                                                                                         ^
+    832|    true,
+    833|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 42 skipped (43)
+   Start at  04:20:13
+   Duration  8.98s (transform 0ms, setup 1.31s, import 143ms, tests 41ms, environment 0ms)
+
+exit=1
+
+$ cmp /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/plant-backup/form-invalid-border.scss src/styles/_mixins.scss && echo restored-byte-identical
+restored-byte-identical
+exit=0
+
+$ git diff --stat -- src/styles; echo "diffstat-lines=$(git diff --stat -- src/styles | wc -l)"
+diffstat-lines=0
+exit=0
+
