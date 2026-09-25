@@ -1,0 +1,1476 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 67d1afb..4fad046 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -364,10 +364,11 @@ The interface exposes the following lifecycle operations.
+ 
+ #### `HostSnapshotInterface`
+ 
+-| Method    | Summary                                                                                                                                                                                          |
+-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `save`    | Records the target's value the first time the target is saved. While a restoration has the target still to write back, the value that restoration recorded is recorded instead of the element's. |
+-| `restore` | Writes every recorded value back, class tokens first and attributes last, and forgets the records.                                                                                               |
++| Method    | Summary                                                                                                                                                              |
++| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `save`    | Joins the target's record, reading the element's value only when no snapshot holds the target and no restoration has it still to write back.                         |
++| `restore` | Writes back every target this snapshot is the last to hold, class tokens first and attributes last, and leaves every other target to the snapshots still holding it. |
++| `clear`   | Relinquishes every target this snapshot holds and every target its restorations have still to write back, writing nothing.                                           |
+ 
+ #### `IsolationInterface`
+ 
+@@ -915,39 +916,48 @@ reaction to the restoration sends finds no destroyed engine and can claim the ho
+ destroys itself when the `signal` you pass it aborts, and at construction when that signal has
+ already aborted.
+ 
+-Each engine keeps one `HostSnapshot` instance. It records every attribute, class token, and inline
+-property the engine writes before the first write, and destruction writes each recorded value back:
+-a value recorded as absent is removed. Every snapshot that saves a class token on an element shares
+-one record of whether the element carried a `class` attribute, and every snapshot that saves an
+-inline property shares one such record of its `style` attribute. The record is read at the first of
+-those saves while no snapshot holds it, and forgotten after the last snapshot holding it restores,
+-so a later save reads the element again. Restoration writes class tokens first, then removes a
+-`class` attribute recorded as absent that the tokens left empty, then writes inline properties,
+-removes a `style` attribute recorded as absent that the properties left empty, and writes
+-attributes last. Every restoration whose record reads the attribute absent removes it when its own
+-token or property writes leave it empty. No complete set of restorations, in any order and
+-overlapping or one after another, by engines of any class, and no partial one, such as a button
+-destroyed while a collapse on the same trigger stays live, leaves the attribute present and empty
+-unless a write throws. The snapshot owns what its restoration publishes: the targets it has still to
+-write back, each withdrawn as soon as it is written back. A snapshot saved for one of those targets,
+-by an engine of any class and from any caller, the restoring snapshot included, records the value
+-the restoration recorded rather than the half-restored host, and the restoration leaves that target
+-to it; a target already written back is read from the host. An engine constructed in reaction to
+-any restoration write therefore records none of the destroyed engine's writes: it takes each value
+-the restoration has still to write back and reads each target already written back from the host,
+-edits you made included, and no later write of the destroyed engine overwrites it.
+-Where two restorations overlap on a target neither has yet written back, the restoration holding
+-the earliest recording of that target writes it back, a taken value keeping the order of the
+-recording it came from, because the earliest recording holds the value the target carried before
+-either engine wrote it. A restoration that publishes a target another restoration already wrote
+-back writes its own recorded value. A reaction to one of the restoration's own writes can run a
+-destruction that restores the same snapshot again, as a dropdown destroyed by a reaction to its
+-placement's restoration does. That nested restore writes back every target the interrupted
+-restoration still owns, so nothing the snapshot recorded is left to write when the destruction
+-returns, and the interrupted restoration then writes nothing more. A restoration whose write
+-throws withdraws every target it has not written back, those of a restoration it interrupted and a
+-target whose earliest recording it held included, so no restoration writes that target back. State
+-the snapshot never recorded keeps every edit you made.
++Each engine keeps one `HostSnapshot` instance, and it saves every attribute, class token, and inline
++property the engine writes before the first write. Every snapshot that saves one attribute, class
++token, or inline property of one element shares one record of it, whatever engine class each
++snapshot belongs to. The first save made while no snapshot holds the target and no restoration has
++it still to write back reads the host, and every later save joins that record without reading, so
++the record keeps the value the target carried before any engine wrote it. Destruction relinquishes
++every target the engine's snapshot holds. A target another live engine still holds is left as the
++live engines wrote it, and the last engine holding a target writes the record's value back at its
++destruction: a value the record reads as absent is removed. The host returns to its own values after
++the last engine holding them is destroyed, in whatever order the engines are destroyed, as a list
++whose tabs are destroyed one by one does. An engine whose lifetime ends without a restoration, such
++as an alert whose close completed, clears its snapshot with the `clear` method, which relinquishes
++its targets without writing, so it never keeps a record from its last holder.
++
++Every snapshot that saves a class token on an element also shares one presence record of whether
++the element carried a `class` attribute, and every snapshot that saves an inline property shares one
++of its `style` attribute. The presence record is read at the first of those saves while no snapshot
++holds it, and forgotten after the last snapshot holding it restores, so a later save reads the
++element again. Restoration writes class tokens first, then removes a `class` attribute the presence
++record reads as absent when the list is empty, then writes inline properties, removes a `style`
++attribute the presence record reads as absent when the inline style is empty, and writes
++attributes last. Every restoration holding a presence record that reads the attribute absent judges
++that removal after its own writes, whether or not it held any target last. No complete set of
++restorations, in any order and overlapping or one after another, by engines of any class, and no
++partial one, such as a button destroyed while a collapse on the same trigger stays live, leaves the
++attribute present and empty unless a write throws or a `clear` call ends the restoration.
++
++A restoration owns each target it holds last until it writes that target back. A snapshot saved for
++one of those targets, by an engine of any class and from any caller, the restoring snapshot
++included, joins its record rather than reading the half-restored host, and the restoration leaves
++that target to it; a target already written back is read from the host. An engine constructed in
++reaction to any restoration write therefore records none of the destroyed engine's writes: it joins
++each record the restoration has still to write back and reads each target already written back from
++the host, edits you made included, and no later write of the destroyed engine overwrites it. A
++reaction to one of the restoration's own writes can run a destruction that restores the same
++snapshot again, as a dropdown destroyed by a reaction to its placement's restoration does. That
++nested restore writes back every target the interrupted restoration still owns, so nothing the
++snapshot held last is left to write when the destruction returns, and the interrupted restoration
++then writes nothing more. A restoration whose write throws withdraws every target it has not
++written back, those of a restoration of the same snapshot it interrupted included, so no restoration
++writes that target back, and every other snapshot keeps its holdings. State no snapshot saved keeps
++every edit you made.
+ 
+ Two doors let other code run inside an engine's write sequence: a custom element's reaction runs
+ inside each attribute, class, style, or child-list write, and a synchronous listener runs inside
+@@ -1137,8 +1147,10 @@ The `close` method resolves `false` when a close is in flight, a listener preven
+ 
+ A completed close ends the alert's lifetime, as Bootstrap's `dispose` call after `closed` does: the
+ alert releases its hooks and its claim, so the static `find` method returns undefined for the host,
+-a later `close` call resolves `false`, and a later `destroy` call writes nothing. The removed alert
+-keeps the state the close left it in, and you can construct a fresh alert on it. The `destroy`
++a later `close` call resolves `false`, and a later `destroy` call writes nothing. The alert also
++clears its snapshot, so it keeps no record of the `shown` token. The removed alert keeps the state
++the close left it in, and you can construct a fresh alert on it: the fresh alert's snapshot reads
++the host as the close left it, and its destruction writes that value back. The `destroy`
+ method called before the close completes restores the `shown` token and leaves the alert where it
+ is: destruction never removes the alert, and never inserts it again.
+ 
+@@ -1319,16 +1331,16 @@ call dispatches its completed events once. A listener that shows the control aga
+ `true`, and the call whose event it heard resolves `false`. A list whose markup marks two controls
+ with the `active` token never swaps, because the second one fails the read after the first one's
+ removal. Destruction aborts the wait, so a call awaiting the fade resolves `false` and dispatches no
+-completed event, and restoration writes back every value the tab wrote: the roles and states it
+-wrote at construction, and the tokens and states of the control, its pane, the sibling it
+-deactivated, that sibling's pane, and each dropdown. Each tab records a value when it first writes
+-it, so a value another tab of the same list wrote reads to it as the markup's own. A delegate
+-destroys the tabs it acquired in the reverse of their acquisition, which restores a list when each
+-tab's first swap saved the list's own values. A tab acquired by a click on a control that was
+-already active saves no swap tokens at that click, though its construction still records the initial
+-attributes it writes; when another tab of the list swaps before it and it saves the list only at its
+-own later swap, destruction leaves the list with the values the other tab wrote, because no two
+-tabs share the recording of one target.
++completed event, and restoration writes back every value the tab wrote that no live engine still
++holds: the roles and states it wrote at construction, and the tokens and states of the control, its
++pane, the sibling it deactivated, that sibling's pane, and each dropdown. The tabs of one list share
++one record of each of those targets, as § Ownership and restoration states. Each tab joins the record
++of every initial role and state its list's plan names, whether it writes the value or finds it
++already written, and each swap joins the records of the targets it writes. A tab destroyed while
++another tab of its list lives leaves the list as the live tab shows it, and the last tab of the list
++to be destroyed writes the list's markup values back, in whatever order the tabs are destroyed and
++whichever tab swapped first, a tab acquired by a click on a control that was already active
++included.
+ 
+ The delegate's `tab` option carries the tab's groups. A click inside a control the resolved
+ `trigger` selector matches prevents the click's default action when the control is an anchor or an
+@@ -1375,8 +1387,9 @@ The tab departs from Bootstrap's in these ways:
+   answers on a control the `trigger` selector matches; focus moves from that control rather than
+   from the key's target. Bootstrap listens on each control that has an instance.
+ - Wire events carry the `.vn.` namespace, and the other control travels in `detail.relatedTarget`.
+-- Destruction restores every value the tab wrote. Bootstrap's `dispose` method removes its instance
+-  data and event handlers and restores nothing.
++- Destruction restores every value the tab wrote that no live engine still holds, and the last tab
++  of a list restores the list's markup. Bootstrap's `dispose` method removes its instance data and
++  event handlers and restores nothing.
+ - The delegate leaves a control outside its root alone. Bootstrap's data API listens on the
+   document, so it reaches every control.
+ 
+@@ -1899,12 +1912,12 @@ resolves `false`. Destruction aborts the wait, so a slide awaiting the transitio
+ and dispatches no completed event, and a `slide` call waiting on it resolves `false` as well.
+ Restoration writes back each item's tokens and each indicator's `active` token and `aria-current`
+ value first, and the swipe then writes back the host's `pointer` token from its own snapshot, so a
+-carousel a reaction to that token constructs finds the items restored. The `pointer` token is a
+-second snapshot over the host: a carousel constructed while the items are restored that writes its
+-own `pointer` token before the swipe's restoration runs has that token written back over. Where the
+-markup carries no `pointer` token, the destroyed carousel's swipe recorded it absent, the
+-constructed carousel's swipe records it present, and the first swipe's restoration then removes it,
+-so the live carousel is left without its `pointer` token.
++carousel a reaction to that token constructs finds the items restored. Every swipe on the host
++shares one record of the `pointer` token, as § Ownership and restoration states: a carousel
++constructed while the items are restored joins the destroyed carousel's record, so the destroyed
++swipe's restoration leaves the token to the live carousel, and the last swipe on the host to be
++destroyed writes the markup's value back. A swipe you construct on a carousel's host shares that
++record the same way.
+ 
+ The delegate's `carousel` option carries the carousel's groups. A click inside a slide control, an
+ element carrying the resolved `step` or `index` attribute, slides the carousel the control's target
+@@ -2833,8 +2846,11 @@ The placement reads the same door after the promotion: when a listener to the pl
+ positions nothing, and the show resolves `false` with the tip where the listener put it. When a
+ listener refuses the tip's promotion, the show removes the tip it built and resolves `false`.
+ Destruction clears the timer, abandons a wait in flight, restores the placement, removes the tip
+-with no event unless other code moved it, and restores the trigger's `title`, `aria-label`, and
+-`aria-describedby` attributes. An aborted `signal` destroys the tooltip, and so does one that aborts
++with no event unless other code moved it, takes the tip's id out of `aria-describedby`, and restores
++the trigger's `title`, `aria-label`, and `aria-describedby` attributes. A popover on the same trigger
++shares the record of `aria-describedby`, as § Ownership and restoration states, so a tooltip
++destroyed while that popover lives leaves the attribute naming the popover's tip and no removed tip,
++and the last of the two to be destroyed writes the markup's value back. An aborted `signal` destroys the tooltip, and so does one that aborts
+ while construction runs. A `destroy` call made from a custom element's reaction to one of the
+ restoration's own attribute writes completes the restoration before it returns: it writes back
+ every target the interrupted restoration still owns, so no write of the destroyed tooltip lands
+diff --git a/src/browser/Alert.ts b/src/browser/Alert.ts
+index 50d5cb4..d9438c4 100644
+--- a/src/browser/Alert.ts
++++ b/src/browser/Alert.ts
+@@ -26,7 +26,8 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * `close` event, removes the `shown` token, and, when the host carries the `fade` token, waits for
+  * its running animations to settle; it then removes the host from the document, dispatches `closed`
+  * on the removed host, and releases its hooks and its claim as Bootstrap's `dispose` after `closed`
+- * does, keeping the host as the close left it. A close is in flight from its dispatch of `close`,
++ * does, keeping the host as the close left it and clearing its snapshot without a write, so an
++ * engine that saves the `shown` token later reads the host. A close is in flight from its dispatch of `close`,
+  * so a close a listener or a reaction starts inside that dispatch resolves `false` and dispatches
+  * nothing. After each write, dispatch, and await, a close reads its lifetime and the host again:
+  * from the removal of the `shown` token on, the host must lack it, and after the removal of the
+@@ -136,6 +137,9 @@ export class Alert implements AlertInterface {
+ 			if (!this.#apply(() => host.remove()) || host.isConnected) return false
+ 			emitEvent(host, ALERT_EVENTS.closed, null, false)
+ 			if (this.#controller.signal.aborted) return false
++			// The lifetime ends here without a restoration, so the snapshot gives up its holding of the
++			// `shown` token, and an engine that saves the token later reads the host.
++			this.#snapshot.clear()
+ 			this.#release()
+ 			return true
+ 		} finally {
+diff --git a/src/browser/HostSnapshot.ts b/src/browser/HostSnapshot.ts
+index 48ad335..4ac86bd 100644
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -4,45 +4,46 @@ import type { HostSnapshotCategory, HostSnapshotInterface, HostSnapshotTarget }
+  * Records host state before an engine first writes it, and writes that state back on restore.
+  *
+  * @remarks
+- * A recording holds an attribute's value, whether a class token is present, or an inline property's
+- * value and priority, and treats absence as a value of its own. Restoring forgets the records
+- * first, then writes class tokens, removes the `class` attribute when the presence record reads it
+- * absent and the tokens left the list empty, writes inline properties, removes the `style`
+- * attribute when the presence record reads it absent and the properties left the inline style
+- * empty, and writes attributes last, whatever order the targets were saved in.
++ * A record holds an attribute's value, whether a class token is present, or an inline property's
++ * value and priority, and treats absence as a value of its own. Every snapshot that saves one
++ * attribute, class token, or inline property of one element shares one record of it: the first save
++ * made while no snapshot holds the target and no restoration has it still to write back reads the
++ * element, and every later save joins the record. A restoration relinquishes every target its
++ * snapshot holds before its first write, writes nothing for a target another snapshot still holds,
++ * and writes back each target it held last from the record, so the value the target carried before
++ * any holder wrote it returns when the last holder restores, whatever order the holders restore in.
++ * A restoration writes class tokens, removes the `class` attribute when the presence record reads it
++ * absent and the list is empty, writes inline properties, removes the `style` attribute when the
++ * presence record reads it absent and the inline style is empty, and writes attributes last,
++ * whatever order the targets were saved in.
+  *
+  * Every snapshot that saves a class token on an element shares one presence record for the
+  * element's `class` attribute, and every snapshot that saves an inline property shares one for its
+- * `style` attribute. The first of those saves while no snapshot holds the record reads whether the
+- * element carries the attribute, each later save joins that reading, and the record is forgotten
+- * after the last snapshot holding it restores, so a later save reads the element again. Every
+- * restoration whose record reads the attribute absent removes it when its own writes leave the list
+- * or the inline style empty, including when a save during the restoration takes the snapshot's
+- * holding back for its next restoration. No complete set of restorations, in any order and
+- * overlapping or one after another, and no partial one leaves the attribute present and empty
+- * unless a write throws.
++ * `style` attribute. The first of those saves while no snapshot holds the presence record reads
++ * whether the element carries the attribute, each later save joins that reading, and the presence
++ * record is forgotten after the last snapshot holding it restores, so a later save reads the element
++ * again. Every restoration holding a presence record that reads the attribute absent removes it when
++ * the list or the inline style is empty after its own writes, whether or not it held any target
++ * last, including when a save during the restoration takes the snapshot's holding back for its next
++ * restoration. No complete set of restorations, in any order and overlapping or one after another,
++ * and no partial one leaves the attribute present and empty unless a write throws or a `clear` call
++ * ends the restoration.
+  *
+- * The snapshot owns what its restoration publishes: the targets it has still to write back, with
+- * the values it recorded, per element, each withdrawn as soon as it is written back. A snapshot
+- * saved for a published target, by any engine of any class and by the restoring snapshot itself,
+- * records the published value instead of the half-restored element and takes the target over, and
+- * the restoration then leaves that target alone. Where two restorations overlap on a target
+- * neither has yet written back, the restoration holding the earliest recording of that target
+- * writes it back, a taken value keeping the order of the recording it came from, because the
+- * earliest recording holds the value the target carried before either engine wrote it. A
+- * restoration that publishes a target another restoration already wrote back writes its own
+- * recorded value.
++ * A restoration owns each target it holds last until it writes that target back. A snapshot saved
++ * for such a target, by any engine of any class and by the restoring snapshot itself, joins the
++ * record instead of reading the half-restored element, and the restoration then leaves that target
++ * to it.
+  *
+  * A restoration runs synchronously, so only a synchronous reaction to one of its writes, such as a
+- * custom element's attribute reaction, can save or restore during it; an observer delivery is a
+- * microtask and runs after it. A restore that such a reaction calls on the same snapshot, as an
++ * custom element's attribute reaction, can save, restore, or clear during it; an observer delivery
++ * is a microtask and runs after it. A restore that such a reaction calls on the same snapshot, as an
+  * engine's `destroy` does, writes back every target the interrupted restoration still owns and
+- * finishes its token and property writes, so when it returns nothing the snapshot recorded is left
+- * to write; the target whose write the reaction runs inside is already written, and the
+- * interrupted restoration, resuming, finds every target written back and writes nothing more.
+- * A restoration whose write throws withdraws every target it has not written back, those of a
+- * restoration it interrupted and a target whose earliest recording it held included, so no
+- * restoration writes that target back.
++ * finishes its token and property writes, so when it returns nothing the snapshot held last is left
++ * to write; the target whose write the reaction runs inside is already written, and the interrupted
++ * restoration, resuming, finds every target written back and writes nothing more. A restoration
++ * whose write throws withdraws every target it has not written back, those of a restoration of the
++ * same snapshot it interrupted included, so no restoration writes that target back, and every other
++ * snapshot keeps its holdings.
+  *
+  * @example
+  * ```ts
+@@ -53,21 +54,20 @@ import type { HostSnapshotCategory, HostSnapshotInterface, HostSnapshotTarget }
+  * ```
+  */
+ export class HostSnapshot implements HostSnapshotInterface {
+-	static #order = 0
+-	// The targets each restoration in progress has still to write back, per element and target key,
+-	// with the snapshot that owns each one, its value, its first-save stamp, and whether its write
+-	// has started: the mark is set before the write runs, and the entry stays published while it
+-	// runs, so a save a reaction makes inside the write still takes it, and a restoration that
+-	// reaction runs skips it.
+-	static readonly #pending = new WeakMap<
++	// The record of every saved target, per element and target key: the value and priority the first
++	// save read, the snapshots that hold it, and, once its last holder's restoration has it still to
++	// write back, the snapshot that owns that write and whether the write has started. The mark is set
++	// before the write runs, and the record stays owned while it runs, so a save a reaction makes
++	// inside the write still joins it, and a restoration that reaction runs skips it.
++	static readonly #records = new WeakMap<
+ 		HTMLElement,
+ 		Map<
+ 			string,
+ 			{
+-				readonly owner: HostSnapshot
+ 				readonly value: string | undefined
+ 				readonly priority: string
+-				readonly stamp: number
++				readonly holders: ReadonlySet<HostSnapshot>
++				readonly owner: HostSnapshot | undefined
+ 				readonly written: boolean
+ 			}
+ 		>
+@@ -82,14 +82,10 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			{ readonly present: boolean; readonly holders: ReadonlySet<HostSnapshot> }
+ 		>
+ 	>()
+-	#records: ReadonlyArray<{
+-		readonly target: HostSnapshotTarget
+-		readonly value: string | undefined
+-		readonly priority: string
+-		readonly stamp: number
+-	}> = []
+-	// Every target this snapshot's restorations in progress published, which a restoration nested in
+-	// one of them writes back as well.
++	// The targets this snapshot holds, in save order.
++	#targets: readonly HostSnapshotTarget[] = []
++	// Every target this snapshot's restorations in progress own, which a restoration nested in one of
++	// them writes back as well.
+ 	#published: readonly HostSnapshotTarget[] = []
+ 	// The presence records this snapshot holds: those its saves joined since its last restoration
+ 	// began, and those a restoration in progress leaves after its token or property writes.
+@@ -102,18 +98,27 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 
+ 	save(target: HostSnapshotTarget): void {
+ 		const { category, element, name } = target
+-		const recorded = this.#records.some(
+-			(record) =>
+-				record.target.category === category &&
+-				record.target.element === element &&
+-				record.target.name === name,
++		const held = this.#targets.some(
++			(saved) => saved.category === category && saved.element === element && saved.name === name,
+ 		)
+-		if (recorded) return
+-		const taken = HostSnapshot.#take(element, HostSnapshot.#key(category, name))
+-		const stamp = HostSnapshot.#order++
+-		let value = taken?.value
+-		let priority = taken?.priority ?? ''
+-		if (taken === undefined) {
++		if (held) return
++		const key = HostSnapshot.#key(category, name)
++		const records =
++			HostSnapshot.#records.get(element) ??
++			new Map<
++				string,
++				{
++					readonly value: string | undefined
++					readonly priority: string
++					readonly holders: ReadonlySet<HostSnapshot>
++					readonly owner: HostSnapshot | undefined
++					readonly written: boolean
++				}
++			>()
++		const record = records.get(key)
++		let value = record?.value
++		let priority = record?.priority ?? ''
++		if (record === undefined) {
+ 			switch (category) {
+ 				case 'attribute':
+ 					value = element.getAttribute(name) ?? undefined
+@@ -127,30 +132,32 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 					break
+ 			}
+ 		}
++		// Joining a record a restoration owns takes the target over: the record has a holder again, so
++		// that restoration no longer owns its write.
++		records.set(key, {
++			value,
++			priority,
++			holders: new Set([...(record?.holders ?? []), this]),
++			owner: undefined,
++			written: false,
++		})
++		HostSnapshot.#records.set(element, records)
+ 		if (category === 'token') this.#join(element, 'class')
+ 		if (category === 'property') this.#join(element, 'style')
+-		this.#records = [
+-			...this.#records,
+-			{ target: { category, element, name }, value, priority, stamp: taken?.stamp ?? stamp },
+-		]
++		this.#targets = [...this.#targets, { category, element, name }]
+ 	}
+ 
+ 	restore(): void {
+-		const records = this.#records
+-		this.#records = []
+-		for (const { target, value, priority, stamp } of records) {
+-			const key = HostSnapshot.#key(target.category, target.name)
+-			HostSnapshot.#publish(target.element, key, this, value, priority, stamp)
+-		}
++		const owned = this.#relinquish(true)
+ 		// A reaction to one of these writes can call restore on this snapshot again. That nested
+-		// restoration walks every target an interrupted one published and leaves every record it
+-		// holds, so this call, resuming, finds each withdrawn or left and skips it.
+-		this.#published = [...this.#published, ...records.map((record) => record.target)]
++		// restoration walks every target an interrupted one owns and leaves every presence record it
++		// holds, so this call, resuming, finds each written or left and skips it.
++		this.#published = [...this.#published, ...owned]
+ 		this.#leaving = [...this.#leaving, ...this.#joined]
+ 		this.#joined = []
+ 		const targets = this.#published
+-		// The records this call holds when its writes begin. A save a reaction makes during those writes
+-		// can take one back, and the call still removes the attribute its own writes left empty.
++		// The presence records this call holds when its writes begin. A save a reaction makes during
++		// those writes can take one back, and the call still removes the attribute left empty.
+ 		const held = this.#leaving
+ 		try {
+ 			for (const target of targets) {
+@@ -193,6 +200,45 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		}
+ 	}
+ 
++	clear(): void {
++		this.#relinquish(false)
++		for (const { category, element, name } of this.#published) {
++			HostSnapshot.#withdraw(element, HostSnapshot.#key(category, name), this)
++		}
++		this.#published = []
++		// Leaving every presence record without reading it judges no removal, so a restoration this
++		// clear interrupts finds none left to judge.
++		this.#leaving = [...this.#leaving, ...this.#joined]
++		this.#joined = []
++		for (const { element, attribute } of this.#leaving) this.#leave(element, attribute)
++	}
++
++	// Relinquishes every target this snapshot holds. A record another snapshot still holds keeps its
++	// value and its other holders; a record this snapshot held last passes to its restoration when
++	// `restoring` is true, and is forgotten when it is false. Returns the targets whose records pass
++	// to the restoration.
++	#relinquish(restoring: boolean): readonly HostSnapshotTarget[] {
++		const targets = this.#targets
++		this.#targets = []
++		const owned: HostSnapshotTarget[] = []
++		for (const target of targets) {
++			const key = HostSnapshot.#key(target.category, target.name)
++			const records = HostSnapshot.#records.get(target.element)
++			const record = records?.get(key)
++			if (records === undefined || record === undefined) continue
++			const holders = new Set([...record.holders].filter((holder) => holder !== this))
++			if (holders.size > 0) records.set(key, { ...record, holders })
++			else if (restoring) {
++				records.set(key, { ...record, holders, owner: this, written: false })
++				owned.push(target)
++			} else {
++				records.delete(key)
++				if (records.size === 0) HostSnapshot.#records.delete(target.element)
++			}
++		}
++		return owned
++	}
++
+ 	// Joins the element's presence record for the attribute a token or a property lives in, reading
+ 	// whether the element carries the attribute when no snapshot holds the record. A save made while
+ 	// a restoration of this snapshot has still to leave the record takes that holding back, and the
+@@ -228,8 +274,8 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 
+ 	// Leaves a presence record a restoration of this snapshot still holds, forgetting the record after
+ 	// its last holder leaves. Returns true when the record reads the attribute absent, so the caller
+-	// removes an attribute its own writes left empty; false when the snapshot does not hold it or
+-	// the record reads the attribute present.
++	// removes an attribute left empty; false when the snapshot does not hold it or the record reads
++	// the attribute present.
+ 	#leave(element: HTMLElement, attribute: 'class' | 'style'): boolean {
+ 		const leaving = this.#leaving.some(
+ 			(presence) => presence.element === element && presence.attribute === attribute,
+@@ -262,48 +308,14 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		return HostSnapshot.#presence.get(element)?.get(attribute)?.present === false
+ 	}
+ 
+-	// Names a target inside an element's published set.
++	// Names a target inside an element's records.
+ 	static #key(category: HostSnapshotCategory, name: string): string {
+ 		return `${category}:${name}`
+ 	}
+ 
+-	// Where two restorations overlap on a target neither has yet written back, the restoration
+-	// holding the earliest recording of that target writes it back, a taken value keeping the order
+-	// of the recording it came from, because the earliest recording holds the value the target
+-	// carried before either engine wrote it. A restoration that publishes a target another
+-	// restoration already wrote back writes its own recorded value.
+-	// A restoration whose write throws withdraws every target it has not written back, those of a
+-	// restoration it interrupted and a target whose earliest recording it held included, so no
+-	// restoration writes that target back.
+-	static #publish(
+-		element: HTMLElement,
+-		key: string,
+-		owner: HostSnapshot,
+-		value: string | undefined,
+-		priority: string,
+-		stamp: number,
+-	): void {
+-		const pending =
+-			HostSnapshot.#pending.get(element) ??
+-			new Map<
+-				string,
+-				{
+-					readonly owner: HostSnapshot
+-					readonly value: string | undefined
+-					readonly priority: string
+-					readonly stamp: number
+-					readonly written: boolean
+-				}
+-			>()
+-		const entry = pending.get(key)
+-		if (entry === undefined || stamp < entry.stamp)
+-			pending.set(key, { owner, value, priority, stamp, written: false })
+-		HostSnapshot.#pending.set(element, pending)
+-	}
+-
+ 	// Runs one write back of a target the snapshot owns and no restoration has started writing, with
+-	// the value it published, then withdraws the target. A restoration a reaction runs inside the
+-	// write finds the target written and leaves it.
++	// the record's value, then withdraws the target. A restoration a reaction runs inside the write
++	// finds the target written and leaves it.
+ 	static #writeBack(
+ 		target: HostSnapshotTarget,
+ 		owner: HostSnapshot,
+@@ -311,38 +323,22 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	): void {
+ 		const { element } = target
+ 		const key = HostSnapshot.#key(target.category, target.name)
+-		const pending = HostSnapshot.#pending.get(element)
+-		const entry = pending?.get(key)
+-		if (pending === undefined || entry === undefined || entry.owner !== owner || entry.written) {
++		const records = HostSnapshot.#records.get(element)
++		const record = records?.get(key)
++		if (records === undefined || record === undefined || record.owner !== owner || record.written) {
+ 			return
+ 		}
+-		pending.set(key, { ...entry, written: true })
+-		write(entry.value, entry.priority)
++		records.set(key, { ...record, written: true })
++		write(record.value, record.priority)
+ 		HostSnapshot.#withdraw(element, key, owner)
+ 	}
+ 
+-	// Takes over a published target, returning the value its restoration recorded, or undefined when
+-	// no restoration has that target still to write back. Withdrawing the entry is what makes the
+-	// restoration skip the target and lets a later save read the element; a snapshot saving while
+-	// it restores takes back its own entry the same way.
+-	static #take(
+-		element: HTMLElement,
+-		key: string,
+-	):
+-		| { readonly value: string | undefined; readonly priority: string; readonly stamp: number }
+-		| undefined {
+-		const pending = HostSnapshot.#pending.get(element)
+-		const entry = pending?.get(key)
+-		if (entry === undefined) return undefined
+-		HostSnapshot.#withdraw(element, key, entry.owner)
+-		return entry
+-	}
+-
+-	// Withdraws one target while the snapshot still owns it, and forgets an element with none left.
++	// Withdraws one target while the snapshot still owns its write, and forgets an element with no
++	// record left. A record a save joined since has a holder and no owner, so it stays.
+ 	static #withdraw(element: HTMLElement, key: string, owner: HostSnapshot): void {
+-		const pending = HostSnapshot.#pending.get(element)
+-		if (pending?.get(key)?.owner !== owner) return
+-		pending.delete(key)
+-		if (pending.size === 0) HostSnapshot.#pending.delete(element)
++		const records = HostSnapshot.#records.get(element)
++		if (records?.get(key)?.owner !== owner) return
++		records.delete(key)
++		if (records.size === 0) HostSnapshot.#records.delete(element)
+ 	}
+ }
+diff --git a/src/browser/Tab.ts b/src/browser/Tab.ts
+index 7964b9f..fe9edba 100644
+--- a/src/browser/Tab.ts
++++ b/src/browser/Tab.ts
+@@ -46,8 +46,12 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * carry that token, from the write of the host's `active` token the host must carry it, and from
+  * each write to the pane the pane must carry every token written so far. A call that finds the tab
+  * destroyed, a later call started, or the list, the host, or the pane otherwise stops, writing and
+- * dispatching nothing more, and resolves `false`. Destruction restores every value the tab wrote.
+- * An aborted `signal` destroys the tab. The keyboard is the delegate's: the tab listens for no key.
++ * dispatching nothing more, and resolves `false`. Destruction restores every value the tab wrote
++ * that no live engine still holds. Each tab joins the record of every initial role and state its
++ * list's plan names, whether it writes the value or finds it already written, and the last engine
++ * holding a record writes its value back, so the list returns to its markup after its last tab is
++ * destroyed. An aborted `signal` destroys the tab. The keyboard is the delegate's: the tab listens
++ * for no key.
+  *
+  * @example
+  * ```ts
+@@ -105,8 +109,8 @@ export class Tab implements TabInterface {
+ 		)
+ 		this.#host = host
+ 		this.#pane = readTarget(host, this.#attributes)
+-		// The initial writes are read before the claim, so a pane selector that throws leaves the host unclaimed.
+-		const writes = this.#planInitial()
++		// The list's plan is read before the claim, so a pane selector that throws leaves the host unclaimed.
++		const plan = this.#planInitial()
+ 		Tab.#registry.claim(host, this)
+ 		bindEventMap(host, TAB_EVENTS, isRelatedEvent, options?.on, this.#controller.signal)
+ 		const signal = options?.signal
+@@ -116,7 +120,7 @@ export class Tab implements TabInterface {
+ 				once: true,
+ 				signal: this.#controller.signal,
+ 			})
+-			this.#writeInitial(writes)
++			this.#writeInitial(plan)
+ 		}
+ 	}
+ 
+@@ -283,50 +287,64 @@ export class Tab implements TabInterface {
+ 		}
+ 	}
+ 
+-	// Lists the initial roles and states the markup does not already carry; the first write planned
+-	// for an attribute wins, as Bootstrap's `_setAttributeIfNotExists` leaves the first value in place.
++	// Lists every initial role and state the list's plan names, each with the value the attribute
++	// takes: the value Bootstrap writes, or, for an attribute it sets only when absent, the value the
++	// element already carries. The first entry planned for an attribute wins, as Bootstrap's
++	// `_setAttributeIfNotExists` leaves the first value in place.
+ 	#planInitial(): readonly TabInitialWrite[] {
+ 		const list = readClosest(this.#host, this.#selectors.list)
+ 		if (list === undefined) return []
+ 		const planned: TabInitialWrite[] = []
+-		if (this.#absent(planned, list, 'role')) {
+-			planned.push({ element: list, name: 'role', value: 'tablist' })
++		if (this.#unplanned(planned, list, 'role')) {
++			planned.push({ element: list, name: 'role', value: list.getAttribute('role') ?? 'tablist' })
+ 		}
+ 		for (const control of readControls(list, this.#selectors)) {
+ 			const active = control.classList.contains(this.#classes.active)
+ 			planned.push({ element: control, name: 'aria-selected', value: String(active) })
+ 			const wrapper = this.#wrapper(control)
+-			if (wrapper !== control && this.#absent(planned, wrapper, 'role')) {
+-				planned.push({ element: wrapper, name: 'role', value: 'presentation' })
++			if (wrapper !== control && this.#unplanned(planned, wrapper, 'role')) {
++				const value = wrapper.getAttribute('role') ?? 'presentation'
++				planned.push({ element: wrapper, name: 'role', value })
+ 			}
+ 			if (!active) planned.push({ element: control, name: 'tabindex', value: '-1' })
+-			if (this.#absent(planned, control, 'role')) {
+-				planned.push({ element: control, name: 'role', value: 'tab' })
++			if (this.#unplanned(planned, control, 'role')) {
++				planned.push({
++					element: control,
++					name: 'role',
++					value: control.getAttribute('role') ?? 'tab',
++				})
+ 			}
+ 			const pane = readTarget(control, this.#attributes)
+ 			if (pane === undefined) continue
+-			if (this.#absent(planned, pane, 'role')) {
+-				planned.push({ element: pane, name: 'role', value: 'tabpanel' })
++			if (this.#unplanned(planned, pane, 'role')) {
++				planned.push({
++					element: pane,
++					name: 'role',
++					value: pane.getAttribute('role') ?? 'tabpanel',
++				})
+ 			}
+-			if (control.id !== '' && this.#absent(planned, pane, 'aria-labelledby')) {
+-				planned.push({ element: pane, name: 'aria-labelledby', value: control.id })
++			if (control.id !== '' && this.#unplanned(planned, pane, 'aria-labelledby')) {
++				const value = pane.getAttribute('aria-labelledby') ?? control.id
++				planned.push({ element: pane, name: 'aria-labelledby', value })
+ 			}
+ 		}
+-		return planned.filter(({ element, name, value }) => element.getAttribute(name) !== value)
++		return planned
+ 	}
+ 
+-	// Reports whether an element carries no attribute of the name and no earlier initial write plans one.
+-	#absent(planned: readonly TabInitialWrite[], element: HTMLElement, name: string): boolean {
+-		return (
+-			!element.hasAttribute(name) &&
+-			!planned.some((write) => write.element === element && write.name === name)
+-		)
++	// Reports whether no earlier entry of the plan names the element's attribute.
++	#unplanned(planned: readonly TabInitialWrite[], element: HTMLElement, name: string): boolean {
++		return !planned.some((write) => write.element === element && write.name === name)
+ 	}
+ 
+-	// Saves every initial write's attribute before the first one, then writes each, stopping when a
+-	// reaction to a write destroys the tab.
+-	#writeInitial(writes: readonly TabInitialWrite[]): void {
+-		for (const { element, name } of writes) {
++	// Joins the record of every attribute the plan names before the first write, whether the tab
++	// writes it or finds it already written, so a sibling tab's restoration leaves the list's roles
++	// and states to this tab while it lives. It then writes each entry the element does not already
++	// carry, stopping when a reaction to a write destroys the tab.
++	#writeInitial(planned: readonly TabInitialWrite[]): void {
++		const writes = planned.filter(
++			({ element, name, value }) => element.getAttribute(name) !== value,
++		)
++		for (const { element, name } of planned) {
+ 			this.#snapshot.save({ category: 'attribute', element, name })
+ 		}
+ 		for (const { element, name, value } of writes) {
+diff --git a/src/browser/Tooltip.ts b/src/browser/Tooltip.ts
+index 97883b6..d636496 100644
+--- a/src/browser/Tooltip.ts
++++ b/src/browser/Tooltip.ts
+@@ -79,8 +79,8 @@ import { isAttributeName, isBareEvent, isClassToken, isSelector } from './valida
+  * its own tooltip on its first interaction, driven by this one's listeners and destroyed with it; a
+  * descendant's tooltip a consumer constructed is left to its own listeners, and a descendant whose
+  * tooltip refuses construction is driven no further. Destruction clears the timer, removes the tip
+- * without an event unless other code moved it, returns each element content still in its slot, and
+- * restores the trigger.
++ * without an event unless other code moved it, takes the tip's id out of `aria-describedby`,
++ * returns each element content still in its slot, and restores the trigger.
+  *
+  * A call runs each write, dispatch, element move, and sanitizer call of its change as one step.
+  * After every step, every content function, and every await, it reads that the tooltip is live and
+@@ -174,6 +174,10 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 	// The tip, and the container it went into, from the show that builds it until it is removed.
+ 	#tip: HTMLElement | undefined
+ 	#container: HTMLElement | undefined
++	// The id of the tip the trigger's `aria-describedby` attribute names for this tooltip, from its
++	// addition until its removal. A tip's discard forgets the tip before it takes the id out, so
++	// destruction reads this to take out an id a discard left behind.
++	#linked: string | undefined
+ 	// The shown tip the tooltip promoted again after a listener prevented the hide the platform's close
+ 	// started; that tip's next platform close hides it whatever a listener does.
+ 	#promoted: HTMLElement | undefined
+@@ -492,6 +496,11 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 		}
+ 		this.#disarm()
+ 		this.#discard(false)
++		// The discard of a destroyed tooltip leaves its tip's id in `aria-describedby`, and a restoration
++		// that is not the last holder of that attribute writes nothing, so the id is taken out here,
++		// before the restoration, while another engine's tip stays named.
++		const linked = this.#linked
++		if (linked !== undefined) this.#link(linked, false)
+ 		this.#release(() => false)
+ 		this.#snapshot.restore()
+ 	}
+@@ -734,10 +743,12 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 	}
+ 
+ 	// Adds an id to the trigger's `aria-describedby` list, or takes it out and removes an emptied
+-	// attribute, recording the attribute before its first write so destruction restores it.
++	// attribute, joining the attribute's record before its first write so destruction restores it. The id
++	// is marked linked before the write, so a destroy a reaction to the write runs takes it out.
+ 	#link(id: string, present: boolean): void {
+ 		const name = 'aria-describedby'
+ 		const host = this.#host
++		this.#linked = present ? id : undefined
+ 		const value = host.getAttribute(name)
+ 		if (!present && value === null) return
+ 		const ids = (value ?? '').split(/\s+/).filter((token) => token !== '' && token !== id)
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 22d995e..694fb9e 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -342,11 +342,18 @@ export interface HostSnapshotTarget {
+ /** Records host state before an engine writes it and writes that state back on restore. */
+ export interface HostSnapshotInterface {
+ 	/**
+-	 * Records the target's value the first time the target is saved. While a restoration has the target still to write back, the value that restoration recorded is recorded instead of the element's.
++	 * Joins the target's record, reading the element's value only when no snapshot holds the target and no restoration has it still to write back.
+ 	 *
+ 	 * @param target - The attribute, class token, or inline property about to be written.
+ 	 * @remarks
+-	 * A later save of the same target keeps the first recording.
++	 * Every snapshot that saves one attribute, class token, or inline property of one element shares
++	 * one record of it. The first save made while no snapshot holds the target and no restoration has
++	 * it still to write back reads the element's value, and every later save joins that record
++	 * without reading, so the record keeps the value the target carried before any holder wrote it. A
++	 * save made while a restoration has the target still to write back, this snapshot's own included,
++	 * joins that record rather than reading the half-restored element, and the restoration leaves the
++	 * target to the saving snapshot. A later save of a target the snapshot already holds changes
++	 * nothing.
+ 	 * @example
+ 	 * ```ts
+ 	 * snapshot.save({ category: 'attribute', element: host, name: 'aria-expanded' })
+@@ -354,44 +361,57 @@ export interface HostSnapshotInterface {
+ 	 */
+ 	save(target: HostSnapshotTarget): void
+ 	/**
+-	 * Writes every recorded value back, class tokens first and attributes last, and forgets the records.
++	 * Writes back every target this snapshot is the last to hold, class tokens first and attributes last, and leaves every other target to the snapshots still holding it.
+ 	 *
+ 	 * @remarks
+-	 * An attribute or a property recorded as absent is removed, and a class token recorded as absent
+-	 * is taken off the list. State the snapshot never recorded keeps every consumer edit. Every
+-	 * snapshot that saves a class token on an element shares one record of whether the element
+-	 * carried a `class` attribute, and every snapshot that saves an inline property shares one such
+-	 * record of its `style` attribute. The record is read at the first of those saves while no
+-	 * snapshot holds it, and forgotten after the last snapshot holding it restores, so a later save
+-	 * reads the element again. The writes run in a fixed order: class tokens, then the removal of a
+-	 * `class` attribute recorded as absent that the tokens left empty, then inline properties, then
+-	 * the removal of a `style` attribute recorded as absent that the properties left empty, and
+-	 * attributes last. Every restoration whose record reads the attribute absent removes it when its
+-	 * own token or property writes leave it empty. No complete set of restorations, in any order and
+-	 * overlapping or one after another, by engines of any class, and no partial one leaves the
+-	 * attribute present and empty unless a write throws. The snapshot owns what its restoration
+-	 * publishes: the targets it has still to write back, each withdrawn as soon as it is written
+-	 * back. A snapshot saved for one of those targets while the restoration runs, this snapshot
+-	 * included, records the value the restoration recorded rather than the half-restored element, and
+-	 * the restoration then leaves that target to it.
+-	 * Where two restorations overlap on a target neither has yet written back, the restoration
+-	 * holding the earliest recording of that target writes it back, a taken value keeping the order
+-	 * of the recording it came from, because the earliest recording holds the value the target
+-	 * carried before either engine wrote it. A restoration that publishes a target another
+-	 * restoration already wrote back writes its own recorded value.
+-	 * A restore that a reaction to one of the restoration's writes calls on the same snapshot, as an
+-	 * engine's `destroy` does, writes back every target the interrupted restoration still owns, so
+-	 * nothing the snapshot recorded is left to write when that call returns, and the interrupted
+-	 * restoration then writes nothing more.
+-	 * A restoration whose write throws withdraws every target it has not written back, those of a
+-	 * restoration it interrupted and a target whose earliest recording it held included, so no
+-	 * restoration writes that target back.
++	 * The restoration relinquishes every target the snapshot holds before its first write. A target
++	 * another snapshot still holds is left as the live engines wrote it, and its last holder's
++	 * restoration writes the record's value back. A target this snapshot holds last is written back
++	 * from its record: an attribute or a property the record reads as absent is removed, and a class
++	 * token the record reads as absent is taken off the list. State no snapshot saved keeps every
++	 * consumer edit. Every snapshot that saves a class token on an element shares one presence record
++	 * of whether the element carried a `class` attribute, and every snapshot that saves an inline
++	 * property shares one of its `style` attribute. The presence record is read at the first of those
++	 * saves while no snapshot holds it, and forgotten after the last snapshot holding it restores, so a
++	 * later save reads the element again. The writes run in a fixed order: class tokens, then the
++	 * removal of a `class` attribute the presence record reads as absent when the list is empty, then
++	 * inline properties, then the removal of a `style` attribute the presence record reads as absent
++	 * when the inline style is empty, and attributes last. Every restoration holding a presence record
++	 * that reads the attribute absent judges that removal after its own writes, whether or not it
++	 * holds any target last, so a restoration that leaves a live holder removes an attribute left
++	 * empty. No complete set of restorations, in any order and overlapping or one after another, by
++	 * engines of any class, and no partial one leaves the attribute present and empty unless a write
++	 * throws or a `clear` call ends the restoration. A target the restoration has still to write back
++	 * is owned by it until written. A snapshot saved for such a target while the restoration runs
++	 * joins its record, and the restoration then leaves that target to it. A restore that a reaction
++	 * to one of the restoration's writes calls on the same snapshot, as an engine's `destroy` does,
++	 * writes back every target the interrupted restoration still owns, so nothing the snapshot holds
++	 * last is left to write when that call returns, and the interrupted restoration then writes
++	 * nothing more. A restoration whose write throws withdraws every target it has not written back,
++	 * those of a restoration of the same snapshot it interrupted included, so no restoration writes
++	 * that target back, and every other snapshot keeps its holdings.
+ 	 * @example
+ 	 * ```ts
+ 	 * snapshot.restore()
+ 	 * ```
+ 	 */
+ 	restore(): void
++	/**
++	 * Relinquishes every target this snapshot holds and every target its restorations have still to write back, writing nothing.
++	 *
++	 * @remarks
++	 * A record another snapshot still holds keeps its value, and that snapshot's restoration writes it
++	 * back. A record the clear leaves with no holder is forgotten, so a later save reads the element
++	 * again. The snapshot leaves its presence records without judging a removal, so a restoration a
++	 * reaction interrupts with a clear writes nothing more. A clear of a snapshot that holds nothing
++	 * does nothing. An engine calls it where its lifetime ends without restoring, as an alert's
++	 * completed close does.
++	 * @example
++	 * ```ts
++	 * snapshot.clear()
++	 * ```
++	 */
++	clear(): void
+ }
+ 
+ /** Configures where focus returns when an isolation ends, the elements it spares, and the lifetime that ends it. */
+diff --git a/tests/src/browser/Alert.test.ts b/tests/src/browser/Alert.test.ts
+index a5fb01e..ea79278 100644
+--- a/tests/src/browser/Alert.test.ts
++++ b/tests/src/browser/Alert.test.ts
+@@ -222,6 +222,28 @@ describe('Alert', () => {
+ 		expect(host.isConnected).toBe(false)
+ 	})
+ 
++	it('holds no record of the shown token after a completed close, so a fresh alert on the reused host restores the token its destruction finds recorded', async () => {
++		scene.load(alertCascade)
++		scene.load(fade)
++		const root = scene.mount('<div class="alert show">Saved</div>')
++		const host = requireValue(root.querySelector<HTMLElement>('.alert'), 'No alert')
++		const alert = new Alert(host)
++		onTestFinished(() => alert.destroy())
++		expect(await alert.close()).toBe(true)
++		expect(Array.from(host.classList)).toEqual(['alert'])
++		host.classList.add('fade', 'show')
++		root.append(host)
++		const fresh = new Alert(host)
++		onTestFinished(() => fresh.destroy())
++		const closing = fresh.close()
++		expect(host.classList.contains('show')).toBe(false)
++		expect(host.getAnimations()).toHaveLength(1)
++		fresh.destroy()
++		expect(await closing).toBe(false)
++		expect(Array.from(host.classList)).toEqual(['alert', 'fade', 'show'])
++		expect(host.parentElement).toBe(root)
++	})
++
+ 	it('abandons the fade on destruction, resolving false with no closed event, restoring the shown token, and keeping the host in the document', async () => {
+ 		scene.load(alertCascade)
+ 		scene.load(fade)
+diff --git a/tests/src/browser/Carousel.test.ts b/tests/src/browser/Carousel.test.ts
+index 807aa36..d124836 100644
+--- a/tests/src/browser/Carousel.test.ts
++++ b/tests/src/browser/Carousel.test.ts
+@@ -1182,6 +1182,46 @@ describe('Carousel', () => {
+ 		expect(Array.from(three?.classList ?? [])).toEqual(['carousel-item'])
+ 	})
+ 
++	it('keeps the pointer token of a touch replacement a reaction to an item restoration constructs, and removes it after the replacement is destroyed', async () => {
++		const name = 'vn-carousel-replaced-in-item-restoration'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const root = scene.mount('<div class="carousel"></div>')
++		const host = requireValue(root.querySelector<HTMLElement>('.carousel'), 'No carousel')
++		const first = document.createElement(name)
++		first.className = 'carousel-item active'
++		const second = document.createElement('div')
++		second.className = 'carousel-item'
++		host.append(first, second)
++		const carousel = new Carousel(host)
++		onTestFinished(() => carousel.destroy())
++		expect(host.classList.contains('pointer-event')).toBe(true)
++		expect(await carousel.next()).toBe(true)
++		const replacements = createRecorder<readonly [CarouselInterface]>()
++		reactions.set(first, () => {
++			reactions.delete(first)
++			replacements.handler(new Carousel(host))
++		})
++		carousel.destroy()
++		expect(replacements.count).toBe(1)
++		const replacement = requireValue(replacements.calls[0]?.[0], 'No replacement')
++		onTestFinished(() => replacement.destroy())
++		expect(Carousel.find(host)).toBe(replacement)
++		expect(host.classList.contains('pointer-event')).toBe(true)
++		replacement.destroy()
++		expect(Array.from(host.classList)).toEqual(['carousel'])
++		expect(Array.from(first.classList)).toEqual(['carousel-item', 'active'])
++		expect(Array.from(second.classList)).toEqual(['carousel-item'])
++	})
++
+ 	it('defers its restart by the touch delay and the interval after a touch or a pen lifts, while a mouse release or pause off defers nothing', async () => {
+ 		const root = scene.mount(`
+ 			<div id="gallery" class="carousel">
+diff --git a/tests/src/browser/Delegate.test.ts b/tests/src/browser/Delegate.test.ts
+index 200bf9e..3177ccc 100644
+--- a/tests/src/browser/Delegate.test.ts
++++ b/tests/src/browser/Delegate.test.ts
+@@ -1870,6 +1870,32 @@ describe('Delegate', () => {
+ 		expect(root.innerHTML).toBe(markup)
+ 	})
+ 
++	it('restores a list to its markup when the first click lands on the control the markup marks active', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		onTestFinished(() => scene.clear())
++		const markup = root.innerHTML
++		const home = requireValue(root.querySelector<HTMLElement>('#home-tab'), 'No home control')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No profile')
++		const delegate = new Delegate({ root })
++		onTestFinished(() => delegate.destroy())
++		home.click()
++		await waitForCondition('the home control is acquired', () => Tab.find(home) !== undefined)
++		profile.click()
++		await waitForCondition('the profile control activates', () =>
++			profile.classList.contains('active'),
++		)
++		home.click()
++		await waitForCondition('the home control activates', () => home.classList.contains('active'))
++		delegate.destroy()
++		expect(root.innerHTML).toBe(markup)
++	})
++
+ 	it('restores a removed list whose controls it drove through several tabs at the observer delivery after the removal', async () => {
+ 		const root = scene.mount(`
+ 			<div id="tabs">
+diff --git a/tests/src/browser/HostSnapshot.test.ts b/tests/src/browser/HostSnapshot.test.ts
+index ed6d977..8760b2c 100644
+--- a/tests/src/browser/HostSnapshot.test.ts
++++ b/tests/src/browser/HostSnapshot.test.ts
+@@ -308,7 +308,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.getAttribute('aria-expanded')).toBe('true')
+ 	})
+ 
+-	it('withdraws an overlapping earliest recording when its restoration throws inside a reaction', () => {
++	it('withdraws a shared target when the last holder restoration throws inside a reaction', () => {
+ 		const name = 'vn-probe-snapshot-throwing-overlap'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -356,7 +356,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.style.getPropertyValue('height')).toBe('30px')
+ 	})
+ 
+-	it('restores an overlapping target neither restoration has written back from its earliest recording, whichever restoration starts first', () => {
++	it('writes an overlapping target back from its first save value at the last holder restoration, whichever restoration starts first', () => {
+ 		const name = 'vn-probe-snapshot-overlap'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -408,7 +408,7 @@ describe('HostSnapshot', () => {
+ 			readings.handler(reversed.getAttribute('data-state'))
+ 		})
+ 		earlier.restore()
+-		expect(readings.calls).toEqual([['original'], ['started']])
++		expect(readings.calls).toEqual([['original'], ['original']])
+ 		expect(reversed.getAttribute('data-state')).toBe('original')
+ 		reversed.setAttribute('data-state', 'live')
+ 		later.save({ category: 'attribute', element: reversed, name: 'data-state' })
+@@ -417,7 +417,7 @@ describe('HostSnapshot', () => {
+ 		expect(reversed.getAttribute('data-state')).toBe('live')
+ 	})
+ 
+-	it('preserves the save order of a value taken from a pending restoration', () => {
++	it('writes the first save value back after three overlapping holders, one saved inside another restoration, have all restored', () => {
+ 		const name = 'vn-probe-snapshot-stamp'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -455,7 +455,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.getAttribute('data-state')).toBe('original')
+ 	})
+ 
+-	it('writes its own recorded value when another restoration has already written the target back', () => {
++	it('leaves a shared target to the holder a reaction restores, which writes the first save value back', () => {
+ 		const name = 'vn-probe-snapshot-written-overlap'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -484,8 +484,8 @@ describe('HostSnapshot', () => {
+ 			later.restore()
+ 		})
+ 		earlier.restore()
+-		expect(readings.calls).toEqual([['original']])
+-		expect(host.getAttribute('data-state')).toBe('earlier')
++		expect(readings.calls).toEqual([['later']])
++		expect(host.getAttribute('data-state')).toBe('original')
+ 		expect(host.hasAttribute('data-other')).toBe(false)
+ 	})
+ 
+@@ -521,7 +521,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.hasAttribute('aria-pressed')).toBe(false)
+ 	})
+ 
+-	it('removes the class attribute the first save found absent when the overlapping restoration empties the list after the nested one returns', () => {
++	it('removes the class attribute the first save found absent when a nested restoration that holds a shared token last empties the list', () => {
+ 		const name = 'vn-probe-snapshot-late-empty'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -549,7 +549,7 @@ describe('HostSnapshot', () => {
+ 			readings.handler(host.getAttribute('class'))
+ 		})
+ 		later.restore()
+-		expect(readings.calls).toEqual([['show']])
++		expect(readings.calls).toEqual([[null]])
+ 		expect(host.classList.length).toBe(0)
+ 		expect(host.hasAttribute('class')).toBe(false)
+ 	})
+@@ -982,6 +982,200 @@ describe('HostSnapshot', () => {
+ 		expect(host.hasAttribute('style')).toBe(false)
+ 	})
+ 
++	it('writes a target two snapshots share back only at the last holder restoration, from the first save value, in either order', () => {
++		for (const ordered of [true, false]) {
++			const host = build('div', { attributes: { 'data-state': 'original' } })
++			host.style.setProperty('height', '10px', 'important')
++			const first = new HostSnapshot()
++			first.save({ category: 'attribute', element: host, name: 'data-state' })
++			first.save({ category: 'token', element: host, name: 'show' })
++			first.save({ category: 'property', element: host, name: 'height' })
++			host.setAttribute('data-state', 'first')
++			host.classList.add('show')
++			host.style.setProperty('height', '20px')
++			const second = new HostSnapshot()
++			second.save({ category: 'attribute', element: host, name: 'data-state' })
++			second.save({ category: 'token', element: host, name: 'show' })
++			second.save({ category: 'property', element: host, name: 'height' })
++			host.setAttribute('data-state', 'second')
++			host.style.setProperty('height', '30px')
++			const [earlier, later] = ordered ? [first, second] : [second, first]
++			earlier.restore()
++			expect(host.getAttribute('data-state')).toBe('second')
++			expect(host.classList.contains('show')).toBe(true)
++			expect(host.style.getPropertyValue('height')).toBe('30px')
++			expect(host.style.getPropertyPriority('height')).toBe('')
++			later.restore()
++			expect(host.getAttribute('data-state')).toBe('original')
++			expect(host.hasAttribute('class')).toBe(false)
++			expect(host.style.getPropertyValue('height')).toBe('10px')
++			expect(host.style.getPropertyPriority('height')).toBe('important')
++		}
++	})
++
++	it('keeps the value a live holder wrote when a save during another holder restoration joins the target, and writes the first save value after the last holder restores', () => {
++		const name = 'vn-probe-snapshot-joined-during'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		host.setAttribute('data-state', 'original')
++		const first = new HostSnapshot()
++		first.save({ category: 'token', element: host, name: 'show' })
++		first.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.classList.add('show')
++		host.setAttribute('data-state', 'first')
++		const second = new HostSnapshot()
++		second.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'second')
++		const joined = new HostSnapshot()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			joined.save({ category: 'attribute', element: host, name: 'data-state' })
++			host.setAttribute('data-state', 'joined')
++		})
++		first.restore()
++		expect(host.getAttribute('data-state')).toBe('joined')
++		second.restore()
++		expect(host.getAttribute('data-state')).toBe('joined')
++		joined.restore()
++		expect(host.getAttribute('data-state')).toBe('original')
++	})
++
++	it('writes back only the targets it holds last when a reaction to one of its writes restores the same snapshot again', () => {
++		const name = 'vn-probe-snapshot-nested-shared'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		host.setAttribute('data-state', 'original')
++		const snapshot = new HostSnapshot()
++		snapshot.save({ category: 'token', element: host, name: 'show' })
++		snapshot.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.classList.add('show')
++		host.setAttribute('data-state', 'first')
++		const live = new HostSnapshot()
++		live.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'live')
++		const readings = createRecorder<readonly [string | null]>()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			snapshot.restore()
++			readings.handler(host.getAttribute('data-state'))
++		})
++		snapshot.restore()
++		expect(readings.calls).toEqual([['live']])
++		expect(host.hasAttribute('class')).toBe(false)
++		expect(host.getAttribute('data-state')).toBe('live')
++		live.restore()
++		expect(host.getAttribute('data-state')).toBe('original')
++	})
++
++	it('withdraws only its own targets when a write throws while another snapshot holds a target it saved', () => {
++		const host = build('div', { attributes: { 'data-state': 'original' } })
++		const failing = new HostSnapshot()
++		failing.save({ category: 'token', element: host, name: '' })
++		failing.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'failing')
++		const live = new HostSnapshot()
++		live.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'live')
++		expect(attempt(() => failing.restore())).toMatchObject({ success: false })
++		expect(host.getAttribute('data-state')).toBe('live')
++		live.restore()
++		expect(host.getAttribute('data-state')).toBe('original')
++	})
++
++	it('relinquishes its holdings on clear without writing, so the last remaining holder writes the first save value back', () => {
++		const host = build('div', { attributes: { 'data-state': 'original' } })
++		const cleared = new HostSnapshot()
++		cleared.save({ category: 'attribute', element: host, name: 'data-state' })
++		cleared.save({ category: 'token', element: host, name: 'show' })
++		host.setAttribute('data-state', 'cleared')
++		host.classList.add('show')
++		const live = new HostSnapshot()
++		live.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'live')
++		const observer = new MutationObserver(() => {})
++		onTestFinished(() => observer.disconnect())
++		observer.observe(host, { attributes: true })
++		cleared.clear()
++		cleared.clear()
++		expect(observer.takeRecords()).toEqual([])
++		expect(host.getAttribute('data-state')).toBe('live')
++		expect(host.getAttribute('class')).toBe('show')
++		live.restore()
++		expect(host.getAttribute('data-state')).toBe('original')
++		expect(host.getAttribute('class')).toBe('show')
++		cleared.restore()
++		expect(host.getAttribute('class')).toBe('show')
++	})
++
++	it('forgets a record a final clear leaves, so a later save reads the element', () => {
++		const host = build('div', { attributes: { 'data-state': 'original' } })
++		const cleared = new HostSnapshot()
++		cleared.save({ category: 'attribute', element: host, name: 'data-state' })
++		cleared.save({ category: 'token', element: host, name: 'show' })
++		host.setAttribute('data-state', 'cleared')
++		host.classList.add('show')
++		cleared.clear()
++		const later = new HostSnapshot()
++		later.save({ category: 'attribute', element: host, name: 'data-state' })
++		later.save({ category: 'token', element: host, name: 'show' })
++		host.setAttribute('data-state', 'later')
++		host.classList.remove('show')
++		later.restore()
++		expect(host.getAttribute('data-state')).toBe('cleared')
++		expect(host.getAttribute('class')).toBe('show')
++	})
++
++	it('writes nothing more, removing no emptied class attribute, for an interrupted restoration a reaction to one of its writes clears', () => {
++		const name = 'vn-probe-snapshot-cleared-during'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		host.setAttribute('data-state', 'original')
++		const snapshot = new HostSnapshot()
++		snapshot.save({ category: 'token', element: host, name: 'show' })
++		snapshot.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.classList.add('show')
++		host.setAttribute('data-state', 'changed')
++		reactions.set(host, () => {
++			reactions.delete(host)
++			snapshot.clear()
++		})
++		snapshot.restore()
++		expect(host.getAttribute('class')).toBe('')
++		expect(host.getAttribute('data-state')).toBe('changed')
++		const later = new HostSnapshot()
++		later.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'later')
++		later.restore()
++		expect(host.getAttribute('data-state')).toBe('changed')
++	})
++
+ 	it('keeps the first recording of a target saved twice', () => {
+ 		const host = build('button', { attributes: { 'aria-pressed': 'mixed' } })
+ 		const snapshot = new HostSnapshot()
+diff --git a/tests/src/browser/Popover.test.ts b/tests/src/browser/Popover.test.ts
+index 5749e18..8237dac 100644
+--- a/tests/src/browser/Popover.test.ts
++++ b/tests/src/browser/Popover.test.ts
+@@ -424,4 +424,33 @@ describe('Popover', () => {
+ 			'absolute',
+ 		)
+ 	})
++
++	it('names only live tips in aria-describedby after it is destroyed while a tooltip on the same trigger lives', async () => {
++		for (const first of [true, false]) {
++			const root = scene.mount(
++				'<button type="button" id="trigger" aria-describedby="help" data-bs-title="Head" data-bs-content="Body">Save</button><p id="help">Help</p>',
++			)
++			const markup = root.innerHTML
++			const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++			const tooltip = new Tooltip(host, { animated: false })
++			onTestFinished(() => tooltip.destroy())
++			const popover = new Popover(host, { animated: false })
++			onTestFinished(() => popover.destroy())
++			const engines = first ? [popover, tooltip] : [tooltip, popover]
++			for (const engine of engines) expect(await engine.show()).toBe(true)
++			const ids = (host.getAttribute('aria-describedby') ?? '').split(' ')
++			const tooltipTip = requireValue(
++				ids.find((id) => id.startsWith('vn-tooltip-')),
++				'No tooltip tip',
++			)
++			expect(ids).toHaveLength(3)
++			popover.destroy()
++			expect(host.getAttribute('aria-describedby')).toBe(`help ${tooltipTip}`)
++			expect(document.getElementById(tooltipTip)?.isConnected).toBe(true)
++			expect(tooltip.shown).toBe(true)
++			tooltip.destroy()
++			expect(root.innerHTML).toBe(markup)
++			scene.clear()
++		}
++	})
+ })
+diff --git a/tests/src/browser/Swipe.test.ts b/tests/src/browser/Swipe.test.ts
+index ee529fa..ae98253 100644
+--- a/tests/src/browser/Swipe.test.ts
++++ b/tests/src/browser/Swipe.test.ts
+@@ -1,5 +1,5 @@
+ import type { SwipeDirection } from '@src/browser'
+-import { Swipe, SWIPE_CLASSES, SWIPE_DEFAULTS } from '@src/browser'
++import { Carousel, Swipe, SWIPE_CLASSES, SWIPE_DEFAULTS } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+ import { createRecorder, requireValue } from '@orkestrel/test'
+ import { createPointerEvent } from '@orkestrel/test/browser'
+@@ -121,6 +121,28 @@ describe('Swipe', () => {
+ 		expect(bare.hasAttribute('class')).toBe(false)
+ 	})
+ 
++	it('keeps the pointer token while a carousel or a swipe on the same host lives, and removes it after the last is destroyed, in either order', () => {
++		for (const ordered of [true, false]) {
++			const root = scene.mount(`
++				<div class="carousel">
++					<div class="carousel-item active">One</div>
++					<div class="carousel-item">Two</div>
++				</div>`)
++			const host = requireValue(root.querySelector<HTMLElement>('.carousel'), 'No carousel')
++			const directions = createRecorder<readonly [SwipeDirection]>()
++			const carousel = new Carousel(host)
++			onTestFinished(() => carousel.destroy())
++			const swipe = new Swipe(host, { handler: directions.handler })
++			onTestFinished(() => swipe.destroy())
++			const [earlier, later] = ordered ? [carousel, swipe] : [swipe, carousel]
++			earlier.destroy()
++			expect(Array.from(host.classList)).toEqual(['carousel', 'pointer-event'])
++			later.destroy()
++			expect(Array.from(host.classList)).toEqual(['carousel'])
++			scene.clear()
++		}
++	})
++
+ 	it('writes the replacing token, measures the replacing threshold, and refuses an invalid host, token, or threshold', () => {
+ 		const root = scene.mount('<div id="track"></div>')
+ 		const host = requireValue(root.querySelector<HTMLElement>('#track'), 'No host')
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index fdd28fe..393d799 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -1421,4 +1421,59 @@ describe('Tab', () => {
+ 			'show',
+ 		])
+ 	})
++
++	it('keeps the roles and states of a live sibling tab when another tab of its list is destroyed, and restores the markup after the last', () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const markup = root.innerHTML
++		const list = requireValue(root.querySelector<HTMLElement>('ul'), 'No list')
++		const [home, profile] = Array.from(list.querySelectorAll('button'))
++		const profilePane = requireValue(root.querySelector('#profile'), 'No profile pane')
++		const first = new Tab(requireValue(home, 'No home control'))
++		onTestFinished(() => first.destroy())
++		const second = new Tab(requireValue(profile, 'No profile control'))
++		onTestFinished(() => second.destroy())
++		first.destroy()
++		expect(list.getAttribute('role')).toBe('tablist')
++		expect(home?.getAttribute('role')).toBe('tab')
++		expect(home?.getAttribute('aria-selected')).toBe('true')
++		expect(profile?.getAttribute('role')).toBe('tab')
++		expect(profile?.getAttribute('aria-selected')).toBe('false')
++		expect(profile?.getAttribute('tabindex')).toBe('-1')
++		expect(profilePane.getAttribute('role')).toBe('tabpanel')
++		expect(profilePane.getAttribute('aria-labelledby')).toBe('profile-tab')
++		second.destroy()
++		expect(root.innerHTML).toBe(markup)
++	})
++
++	it('restores the markup after a tab refused on its active control swaps back after a sibling, in either destruction order', async () => {
++		for (const ordered of [true, false]) {
++			const root = scene.mount(`
++				<div class="nav">
++					<button type="button" class="active" data-bs-toggle="tab">A</button>
++					<button type="button" data-bs-toggle="tab">B</button>
++				</div>`)
++			const markup = root.innerHTML
++			const [a, b] = Array.from(root.querySelectorAll('button'))
++			const first = new Tab(requireValue(a, 'No first control'))
++			onTestFinished(() => first.destroy())
++			const second = new Tab(requireValue(b, 'No second control'))
++			onTestFinished(() => second.destroy())
++			expect(await first.show()).toBe(false)
++			expect(await second.show()).toBe(true)
++			expect(await first.show()).toBe(true)
++			const [earlier, later] = ordered ? [second, first] : [first, second]
++			earlier.destroy()
++			expect(a?.getAttribute('class')).toBe('active')
++			expect(b?.hasAttribute('class')).toBe(false)
++			later.destroy()
++			expect(root.innerHTML).toBe(markup)
++			scene.clear()
++		}
++	})
+ })
+diff --git a/tests/src/browser/Tooltip.test.ts b/tests/src/browser/Tooltip.test.ts
+index 38b4d19..6bc10f8 100644
+--- a/tests/src/browser/Tooltip.test.ts
++++ b/tests/src/browser/Tooltip.test.ts
+@@ -1,6 +1,7 @@
+ import type { SanitizerInterface } from '@src/browser'
+ import {
+ 	MODAL_EVENTS,
++	Popover,
+ 	Tooltip,
+ 	TOOLTIP_ATTRIBUTES,
+ 	TOOLTIP_CLASSES,
+@@ -2316,6 +2317,40 @@ describe('Tooltip', () => {
+ 		expect(readings.calls).toEqual([['Saves', false, false]])
+ 	})
+ 
++	it('names only live tips in aria-describedby after it is destroyed while a popover on the same trigger lives, and restores its title and label', async () => {
++		for (const first of [true, false]) {
++			const root = scene.mount(
++				'<button type="button" id="trigger" aria-describedby="help" title="Saves the draft" data-bs-content="Body"></button><p id="help">Help</p>',
++			)
++			const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++			const tooltip = new Tooltip(host, { animated: false })
++			onTestFinished(() => tooltip.destroy())
++			expect(host.getAttribute('aria-label')).toBe('Saves the draft')
++			expect(host.hasAttribute('title')).toBe(false)
++			const popover = new Popover(host, { animated: false })
++			onTestFinished(() => popover.destroy())
++			const engines = first ? [tooltip, popover] : [popover, tooltip]
++			for (const engine of engines) expect(await engine.show()).toBe(true)
++			const ids = (host.getAttribute('aria-describedby') ?? '').split(' ')
++			const popoverTip = requireValue(
++				ids.find((id) => id.startsWith('vn-popover-')),
++				'No popover tip',
++			)
++			expect(ids).toHaveLength(3)
++			tooltip.destroy()
++			expect(host.getAttribute('aria-describedby')).toBe(`help ${popoverTip}`)
++			expect(document.getElementById(popoverTip)?.isConnected).toBe(true)
++			expect(host.getAttribute('title')).toBe('Saves the draft')
++			expect(host.hasAttribute('aria-label')).toBe(false)
++			expect(popover.shown).toBe(true)
++			popover.destroy()
++			expect(host.getAttribute('aria-describedby')).toBe('help')
++			expect(host.getAttribute('title')).toBe('Saves the draft')
++			expect(host.hasAttribute('aria-label')).toBe(false)
++			scene.clear()
++		}
++	})
++
+ 	it('abandons a show in flight on destruction, dispatching no shown event, and releases its hooks and claim', async () => {
+ 		scene.load(tooltipCascade)
+ 		scene.load(FADE)

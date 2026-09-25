@@ -1,8 +1,0 @@
-import { parseNumber } from '@orkestrel/contract'
-import type { ParserMap } from '../../../src/browser/types.ts'
-
-type Options = { readonly delay: number; readonly title?: string }
-
-const parsers: ParserMap<Options> = { delay: parseNumber }
-
-export { parsers }
