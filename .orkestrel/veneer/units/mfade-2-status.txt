@@ -1,0 +1,6 @@
+## unit/mfade
+ M guides/veneer.md
+ M src/styles/components/_fade.scss
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+ M tests/src/styles/components/fade.test.ts

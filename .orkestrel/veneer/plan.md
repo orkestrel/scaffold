@@ -140,6 +140,12 @@ sections.
     ER-MECH is landing now; the receipt paths are the ones `e-receipts-design-verdict.md` names.
   - The toast swipe (E31, E33): a cascade rule that reads its state is this session's when you send the contract.
   - J-PLACEMENT-141: this session runs the Chromium 141 readings you ask for.
+- **Your J-PLACEMENT-141-PROBE file ran on Chromium 141.0.7390.37** at Veneer `main` `21c821a` (the file's SHA-256
+  equals your retained `28e0cd12…`; `units/native141/j-placement-141-probe-141.log.txt`, run by
+  `units/native141/run-placement.sh`). `Tests 14 passed`, exit 0, and every control reads `ok`, including
+  `control.baseline.round3.chromium141` with the menu gap `[2,2,2]` in each run and `control.missingAnchor.lost`.
+  The summary line reads `baselineAnchors=false`, `pass` true for `display` and `noClick` only, and
+  `consistentCauses=[]`. This session records the readings and rules nothing on the cause.
 - **Shared file, told in advance (D50).** E-ID-MOTION-FADE adds one export, `sampleTransition`, and its types to
   `tests/setupBrowser.ts`, proved in `tests/setupBrowser.test.ts`. It changes nothing else there; its landing merges
   by hunk.

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# E-ID-MOTION-FADE round 2 gates: build, then each gate logged with its exit code.
+cd /home/user/veneer-mfade || exit 1
+export PATH=/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/npm11/node_modules/.bin:$PATH
+export PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers
+npm run build > tmp/units/mfade-build.log.txt 2>&1; echo "exit=$?" >> tmp/units/mfade-build.log.txt
+for gate in format:check lint:check check test:src:styles test:setup test:setup:browser test:conformance test:guides test:policy; do
+	log="tmp/units/mfade-${gate//:/-}.log.txt"
+	npm run "$gate" > "$log" 2>&1; echo "exit=$?" >> "$log"
+done
+echo done > tmp/units/mfade-gates.done

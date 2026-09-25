@@ -1,0 +1,409 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3afa3ac..df93427 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -4496,9 +4496,12 @@ The hidden state writes the `opacity: 0` declaration, and no other, on an elemen
+ flow, its pointer target, and its place in the accessible tree. Adding the `show` class returns the
+ element to the opacity its own rules give it: no rule writes an opacity for the shown state.
+ 
+-The `.fade` rule transitions the opacity linearly over the `--vn-motion-feedback` token, which
+-resolves to the release's `0.15s` value, so the `--vn-factor-motion` factor rescales it. The
+-transition is written through the `transition` mixin, so the reduced-motion rule the release
++The `.fade` rule transitions the opacity over the `--vn-motion-feedback` token on the
++`--vn-ease-out` token. The duration resolves to the release's `0.15s` value, so the
++`--vn-factor-motion` factor rescales it, and at a factor of `0` the browser runs no transition. The
++easing resolves to the `ease-out` curve Elements fades opacity on, in place of the release's
++`linear` keyword, so the opacity changes fastest as the fade begins and settles into its end value.
++The transition is written through the `transition` mixin, so the reduced-motion rule the release
+ records beside it is emitted with it, and the duration resolves to the `0s` value under that
+ preference. The hidden state carries no transition of its own.
+ 
+@@ -4511,9 +4514,11 @@ No rule here paints a color, so every state resolves the same in either color mo
+ 
+ These are the key's recorded departures.
+ 
+-- **The duration reads the motion token.** The release writes the `opacity 0.15s linear` value;
+-  Veneer writes the `opacity var(--vn-motion-feedback) linear` value, which resolves to the same
+-  value and rescales with the `--vn-factor-motion` factor.
++- **The duration reads the motion token, and the easing reads Elements' ease-out.** The release
++  writes the `opacity 0.15s linear` value; Veneer writes the
++  `opacity var(--vn-motion-feedback) var(--vn-ease-out)` value, which resolves to
++  `opacity 0.15s ease-out`, rescales with the `--vn-factor-motion` factor, and decelerates into the
++  end value where the release's fade runs at one rate.
+ 
+ The Fade region renders a shown and a hidden card body, each under its card's header. The card
+ reserves the body's box, so the hidden frame is the card with its header over an empty body. The
+@@ -4523,7 +4528,10 @@ accessible tree.
+ The `tests/src/styles/components/fade.test.ts` proof reads each state in the browser: the written
+ selectors and declarations, the hidden and the shown opacity with the box and the pointer target a
+ hidden element keeps, the transition at rest, under the staged preference, and under a doubled
+-motion factor, the collapsing rule's transition on an element carrying the fade and collapsing
++motion factor, the running transition the browser starts as the `show` class leaves and returns,
++with its duration, its `ease-out` easing, and its midpoint frame, the doubled duration it runs at a
++doubled factor and the transition it does not start at a zero factor or under the staged
++preference, the collapsing rule's transition on an element carrying the fade and collapsing
+ classes, the fade on the alert, toast, tooltip, popover, tab pane, and modal, and every state inside
+ a dark island.
+ 
+@@ -9700,9 +9708,9 @@ declaration.
+ 
+ #### `transition`
+ 
+-| Component    | Selector | Property     | Condition | Bootstrap 5.3.8        | Veneer                                     | Departure |
+-| ------------ | -------- | ------------ | --------- | ---------------------- | ------------------------------------------ | --------- |
+-| `transition` | `.fade`  | `transition` | —         | `opacity 0.15s linear` | `opacity var(--vn-motion-feedback) linear` | tokenized |
++| Component    | Selector | Property     | Condition | Bootstrap 5.3.8        | Veneer                                                 | Departure |
++| ------------ | -------- | ------------ | --------- | ---------------------- | ------------------------------------------------------ | --------- |
++| `transition` | `.fade`  | `transition` | —         | `opacity 0.15s linear` | `opacity var(--vn-motion-feedback) var(--vn-ease-out)` | tokenized |
+ 
+ #### `valid-feedback`
+ 
+diff --git a/src/styles/components/_fade.scss b/src/styles/components/_fade.scss
+index 831b36f..5a1621d 100644
+--- a/src/styles/components/_fade.scss
++++ b/src/styles/components/_fade.scss
+@@ -10,13 +10,15 @@
+ 	// rules they compound.
+ 	//
+ 	// The duration reads the `--vn-motion-feedback` token, which resolves to the release's `0.15s`
+-	// value, so the motion factor rescales it. The `transition` mixin emits the reduced-motion twin
++	// value, so the motion factor rescales it. The easing reads the `--vn-ease-out` token in place of
++	// the release's `linear` keyword, because Elements fades opacity on the `ease-out` curve; the
++	// guide records the change as a departure. The `transition` mixin emits the reduced-motion twin
+ 	// the release records beside the transition. The barrel loads this partial ahead of the collapse
+ 	// partial, the order in which the release's `transitions` partial writes the fade rules and the
+ 	// collapse rules, so on an element carrying the `fade` class and the `collapsing` class the
+ 	// `.collapsing` rule's transition wins the tie at equal specificity.
+ 	.fade {
+-		@include transition(opacity var(--vn-motion-feedback) linear);
++		@include transition(opacity var(--vn-motion-feedback) var(--vn-ease-out));
+ 	}
+ 
+ 	.fade:not(.show) {
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 16d3c4b..87a76e9 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -19,6 +19,7 @@ import {
+ 	readName,
+ 	readRules,
+ 	readStates,
++	readStyle,
+ 	releasePointer,
+ 	render,
+ 	resolveAccessible,
+@@ -76,6 +77,7 @@ import {
+ 	readSubject,
+ 	requireMatch,
+ 	SAMPLE_MESSAGES,
++	sampleTransition,
+ 	SPECIMEN_ATTRIBUTE,
+ 	scene,
+ 	visitBreakpoint,
+@@ -932,6 +934,7 @@ describe('browser setup', () => {
+ 				'recordPlacements',
+ 				'recordState',
+ 				'requireMatch',
++				'sampleTransition',
+ 				'scanPositionalPairs',
+ 				'scene',
+ 				'shadowSetHTML',
+@@ -1905,3 +1908,63 @@ describe('component mounts', () => {
+ 		expect(start.isConnected).toBe(false)
+ 	})
+ })
++
++describe('sampleTransition', () => {
++	// The fixture runs two transitions with known timing on one element: a delayed linear opacity
++	// fade, whose midpoint is exactly halfway between its endpoints only when the delay is added, and
++	// an eased width change beside it, so a reader that took the first animation rather than the
++	// named property, or dropped the delay, reports a different reading here.
++	const cascade =
++		'.vn-probe-sample { width: 10px; transition: opacity 200ms linear 100ms, width 400ms ease-in; } .vn-probe-sample.moved { opacity: 0; width: 50px; }'
++
++	it("reads the named property's running transition, its timing, and its computed start and midpoint, and leaves it paused there", () => {
++		scene.load(cascade)
++		const element = requireValue(
++			scene.mount('<div class="vn-probe-sample">Buoy</div>').firstElementChild,
++			'No sampled element',
++		)
++		expect([readStyle(element, 'opacity'), readStyle(element, 'width')]).toEqual(['1', '10px'])
++		element.classList.add('moved')
++		const fading = requireValue(sampleTransition(element, 'opacity'), 'No opacity transition')
++		const widening = requireValue(sampleTransition(element, 'width'), 'No width transition')
++		expect(element.getAnimations()).toHaveLength(2)
++		expect(element.getAnimations()).toContain(fading.transition)
++		expect(element.getAnimations()).toContain(widening.transition)
++		expect([fading.transition.transitionProperty, widening.transition.transitionProperty]).toEqual([
++			'opacity',
++			'width',
++		])
++		expect([fading.duration, fading.easing, fading.start, fading.midpoint]).toEqual([
++			200,
++			'linear',
++			'1',
++			'0.5',
++		])
++		expect([widening.duration, widening.easing, widening.start]).toEqual([400, 'ease-in', '10px'])
++		// The ease-in curve trails the linear one at its midpoint, so the width sits strictly between
++		// its endpoints and short of the linear halfway value of 30px.
++		const width = Number.parseFloat(widening.midpoint)
++		expect(width).toBeGreaterThan(10)
++		expect(width).toBeLessThan(30)
++		expect([fading.transition.playState, fading.transition.currentTime]).toEqual(['paused', 200])
++		expect(readStyle(element, 'opacity')).toBe('0.5')
++		expect(sampleTransition(element, 'color')).toBeUndefined()
++	})
++
++	it('reads no transition on the same change once the transition is removed', () => {
++		scene.load(cascade)
++		const element = requireValue(
++			scene.mount('<div class="vn-probe-sample" style="transition: none">Buoy</div>')
++				.firstElementChild,
++			'No control element',
++		)
++		expect([readStyle(element, 'opacity'), readStyle(element, 'width')]).toEqual(['1', '10px'])
++		element.classList.add('moved')
++		expect([sampleTransition(element, 'opacity'), sampleTransition(element, 'width')]).toEqual([
++			undefined,
++			undefined,
++		])
++		expect(element.getAnimations()).toEqual([])
++		expect([readStyle(element, 'opacity'), readStyle(element, 'width')]).toEqual(['0', '50px'])
++	})
++})
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index bd8f1c7..4439b88 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1842,6 +1842,82 @@ export function readParentOffset(element: Element): number {
+ 	)
+ }
+ 
++/**
++ * Holds what the browser runs for one property's transition on one element, read with the
++ * transition paused.
++ */
++export interface TransitionSample {
++	/** Holds the running transition, left paused at its midpoint. */
++	readonly transition: CSSTransition
++	/** Holds the active duration in milliseconds, as the transition's own timing reports it. */
++	readonly duration: number
++	/** Holds the timing function the transition's own timing reports, such as `ease-out`. */
++	readonly easing: string
++	/** Holds the property's computed value at the transition's `currentTime` of `0`. */
++	readonly start: string
++	/** Holds the property's computed value halfway through the active duration, after any delay. */
++	readonly midpoint: string
++}
++
++/**
++ * Samples the transition the browser runs on one property of one element.
++ *
++ * @param element - The element whose own animations to read, after the style change that starts
++ *   the transition.
++ * @param property - The transitioned property, as the `transitionProperty` member of a
++ *   `CSSTransition` names it, such as `opacity`.
++ * @returns The running transition with its duration, its easing, and the computed value at its
++ *   start and at its midpoint, or `undefined` when no transition on that property runs.
++ * @throws Thrown when the transition carries no effect, or reports no numeric duration or no
++ *   easing.
++ *
++ * @remarks
++ * The reading comes from the Web Animations model the browser runs, not from the declared or
++ * computed `transition` longhands: the transition is found in the `getAnimations` method's list,
++ * its duration and easing come from its effect's `getTiming` method, and the computed values are
++ * taken after pausing it and seeking its `currentTime`. So a zero duration, a reduced-motion rule,
++ * or a style change the browser did not animate reads as `undefined` rather than as a declared
++ * value nothing runs.
++ *
++ * The midpoint is the delay plus half the duration, so a delayed transition is read halfway
++ * through its active phase. The transition stays paused at that midpoint, so a caller's further
++ * readings see the same frame. Call the `finish` or `cancel` method on the returned transition to
++ * release it.
++ *
++ * Read the element's style once before the change, such as through the `readStyle` function, so
++ * the browser has a resting value to start the transition from.
++ *
++ * @example
++ * ```ts
++ * readStyle(element, 'opacity')
++ * element.classList.remove('show')
++ * sampleTransition(element, 'opacity')?.easing // 'ease-out'
++ * ```
++ */
++export function sampleTransition(element: Element, property: string): TransitionSample | undefined {
++	const transition = element
++		.getAnimations()
++		.find(
++			(animation): animation is CSSTransition =>
++				animation instanceof CSSTransition && animation.transitionProperty === property,
++		)
++	if (transition === undefined) return undefined
++	const timing = requireValue(
++		transition.effect,
++		`The ${property} transition carries no effect`,
++	).getTiming()
++	const duration = timing.duration
++	if (typeof duration !== 'number')
++		throw new Error(`The ${property} transition reports no numeric duration`)
++	const easing = requireValue(timing.easing, `The ${property} transition reports no easing`)
++	transition.pause()
++	transition.currentTime = 0
++	const start = readStyle(element, property)
++	transition.currentTime = (timing.delay ?? 0) + duration / 2
++	const midpoint = readStyle(element, property)
++	return { transition, duration, easing, start, midpoint }
++}
++
+ /**
+  * Reads the stylesheet the shipped cascade was loaded into.
+  *
+diff --git a/tests/src/styles/components/fade.test.ts b/tests/src/styles/components/fade.test.ts
+index 61ae12c..e7aa897 100644
+--- a/tests/src/styles/components/fade.test.ts
++++ b/tests/src/styles/components/fade.test.ts
+@@ -2,7 +2,12 @@ import { TOKEN_NAMES } from '@src/core'
+ import { requireValue } from '@orkestrel/test'
+ import { readHit, readStyle, releaseMedia, stageMedia } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
++import {
++	collectLayer,
++	collectMediaConditions,
++	sampleTransition,
++	scene,
++} from '../../../setupBrowser.js'
+ import {
+ 	FADE_COMPONENT_CASES,
+ 	FADE_SELECTORS,
+@@ -69,7 +74,7 @@ describe('fade classes', () => {
+ 			),
+ 		).toEqual([
+ 			[
+-				[undefined, 'opacity var(--vn-motion-feedback) linear', ''],
++				[undefined, 'opacity var(--vn-motion-feedback) var(--vn-ease-out)', ''],
+ 				[REDUCED_MOTION, 'none', ''],
+ 			],
+ 			[[undefined, '', '0']],
+@@ -100,10 +105,11 @@ describe('fade classes', () => {
+ 		expect(readHit(faded)).toBe(faded)
+ 	})
+ 
+-	// The mutation this catches is the reduced-motion twin dropped: the resting and the staged
+-	// readings are taken on the same elements, so a transition that keeps its duration under the
+-	// preference reports here. The hidden state carries no motion and no condition of its own.
+-	it('transitions the opacity linearly over the feedback duration and collapses the transition under the reduced-motion preference', async () => {
++	// The mutations this catches are the reduced-motion twin dropped and the easing written as the
++	// release's `linear` keyword: the resting and the staged readings are taken on the same elements,
++	// so a transition that keeps its duration under the preference reports here. The hidden state
++	// carries no motion and no condition of its own.
++	it('transitions the opacity on the ease-out curve over the feedback duration and collapses the transition under the reduced-motion preference', async () => {
+ 		const host = scene.mount(
+ 			'<div class="fade">Pier notice</div><div class="fade show">Pier notice</div>',
+ 		)
+@@ -124,8 +130,8 @@ describe('fade classes', () => {
+ 		}
+ 		expect(readings).toEqual([
+ 			[
+-				['opacity', '0.15s', '0s', 'linear'],
+-				['opacity', '0.15s', '0s', 'linear'],
++				['opacity', '0.15s', '0s', 'ease-out'],
++				['opacity', '0.15s', '0s', 'ease-out'],
+ 			],
+ 			[
+ 				['none', '0s', '0s', 'ease'],
+@@ -147,6 +153,84 @@ describe('fade classes', () => {
+ 		expect(readStyle(element, 'transition-duration')).toBe('0.3s')
+ 	})
+ 
++	// The mutation this catches is the easing written as the release's `linear` keyword, read where
++	// the browser runs it rather than where the rule declares it: the transition's own timing reports
++	// the curve, and the frame halfway through sits past the linear halfway value in the direction
++	// of travel, which only a decelerating curve produces. The duration is compared with the
++	// feedback token resolved on a specimen, a second reading that could disagree with it.
++	it('runs the opacity transition over the feedback duration on the ease-out curve as the show class leaves and returns', () => {
++		const specimen = requireValue(
++			scene.mount(`<div style="transition-duration: var(${TOKEN_NAMES.motion.feedback})"></div>`)
++				.firstElementChild,
++			'No motion specimen',
++		)
++		const feedback = Number.parseFloat(readStyle(specimen, 'transition-duration')) * 1000
++		const element = requireValue(
++			scene.mount('<div class="fade show">Harbor notice</div>').firstElementChild,
++			'No fading element',
++		)
++		expect(readStyle(element, 'opacity')).toBe('1')
++		element.classList.remove('show')
++		const hiding = requireValue(sampleTransition(element, 'opacity'), 'No hiding transition')
++		expect(element.getAnimations()).toHaveLength(1)
++		expect(element.getAnimations()).toContain(hiding.transition)
++		expect([hiding.duration, hiding.easing, hiding.start]).toEqual([feedback, 'ease-out', '1'])
++		const hidden = Number.parseFloat(hiding.midpoint)
++		expect(hidden).toBeGreaterThan(0)
++		expect(hidden).toBeLessThan(0.5)
++		hiding.transition.finish()
++		expect(readStyle(element, 'opacity')).toBe('0')
++		element.classList.add('show')
++		const showing = requireValue(sampleTransition(element, 'opacity'), 'No showing transition')
++		expect(element.getAnimations()).toHaveLength(1)
++		expect(element.getAnimations()).toContain(showing.transition)
++		expect([showing.duration, showing.easing, showing.start]).toEqual([feedback, 'ease-out', '0'])
++		const shown = Number.parseFloat(showing.midpoint)
++		expect(shown).toBeGreaterThan(0.5)
++		expect(shown).toBeLessThan(1)
++	})
++
++	// The mutations this catches are the duration written as a literal and the reduced-motion twin
++	// dropped, read on the running transition: a doubled factor doubles the duration the browser
++	// runs, a zero factor starts no transition because the browser starts none at a zero duration,
++	// and the reduced-motion preference starts none either. Each hidden element is read at rest
++	// after the change, so a change that landed with nothing running reads as the hidden opacity.
++	it('doubles the running duration at a doubled motion factor, and runs no transition at a zero factor or under the reduced-motion preference', async () => {
++		const readings: Array<readonly [number | undefined, string]> = []
++		for (const factor of ['1', '2', '0']) {
++			document.documentElement.style.setProperty(TOKEN_NAMES.factor.motion, factor)
++			const element = requireValue(
++				scene.mount('<div class="fade show">Quay notice</div>').firstElementChild,
++				'No fading element',
++			)
++			readStyle(element, 'opacity')
++			element.classList.remove('show')
++			const sample = sampleTransition(element, 'opacity')
++			sample?.transition.finish()
++			readings.push([sample?.duration, readStyle(element, 'opacity')])
++			scene.clear()
++		}
++		document.documentElement.style.removeProperty(TOKEN_NAMES.factor.motion)
++		await stageMedia({ motion: false })
++		const element = requireValue(
++			scene.mount('<div class="fade show">Quay notice</div>').firstElementChild,
++			'No fading element',
++		)
++		readStyle(element, 'opacity')
++		element.classList.remove('show')
++		readings.push([sampleTransition(element, 'opacity')?.duration, readStyle(element, 'opacity')])
++		expect(element.getAnimations()).toEqual([])
++		const [resting, ...rest] = readings
++		const base = requireValue(resting?.[0], 'No transition at the resting factor')
++		expect(resting).toEqual([base, '0'])
++		expect(base).toBeGreaterThan(0)
++		expect(rest).toEqual([
++			[base * 2, '0'],
++			[undefined, '0'],
++			[undefined, '0'],
++		])
++	})
++
+ 	// The mutation this catches is the partial loaded after the collapse partial. The `.fade` rule
+ 	// and the `.collapsing` rule each write a transition at one specificity, so the later rule wins
+ 	// on an element carrying the `fade` class and the `collapsing` class. The release loads the fade
+@@ -164,7 +248,7 @@ describe('fade classes', () => {
+ 			]),
+ 		).toEqual([
+ 			['height', '0.35s', 'ease'],
+-			['opacity', '0.15s', 'linear'],
++			['opacity', '0.15s', 'ease-out'],
+ 		])
+ 	})
+ 
