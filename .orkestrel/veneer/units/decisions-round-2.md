@@ -581,3 +581,14 @@ by its landing. They may, for every file. E-RECEIPTS (ER-MECH) changes `tests/se
 `tests/setupServer.test.ts`, and E-ID-BUTTON-CASCADE changes `tests/conformance.test.ts`; whichever landing comes second
 merges the other's hunks by hunk and names the merge in its landing log. Button's recording and `button.json` stay
 byte-identical, as E28 rules.
+
+## D50 — The shared motion reader lives in the browser setup module (the Orchestrator, 2026-09-25)
+
+E-ID-MOTION-FADE stopped before editing (`units/e-id-motion-fade-report.md`): the `setup` project runs
+`tests/setupStyles.test.ts` in Node, so no transition runs there, and the `tests/setupStyles.ts` header states the module
+reads no document. `sampleTransition` therefore lives in `tests/setupBrowser.ts` and is proved in
+`tests/setupBrowser.test.ts`, which the `setup:browser` project runs on Chromium. This amends the reader's placement in
+`e-id-motion-design-verdict.md` § Proof and § Units. `tests/setupBrowser.ts` is shared with the engine session: the
+addition is one export and its types, and the landing merges by hunk. The unit's reading also fixes the zero-factor
+case: at `--vn-factor-motion: 0` Chromium starts no transition, so a proof asserts that none runs rather than a zero
+duration.
