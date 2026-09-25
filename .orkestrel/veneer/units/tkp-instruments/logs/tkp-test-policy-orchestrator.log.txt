@@ -1,0 +1,18 @@
+command: npm run test:policy (in /home/user/veneer-tkp)
+loadavg before: 7.35 16.00 16.86 12/359 4622; nproc 4
+
+> @orkestrel/veneer@0.0.1 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  04:44:21
+   Duration  5.63s (transform 835ms, setup 530ms, import 750ms, tests 4.10s, environment 0ms)
+
+exit=0
+loadavg after: 8.54 15.97 16.84 11/493 5104

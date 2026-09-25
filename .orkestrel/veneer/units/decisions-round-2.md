@@ -592,3 +592,15 @@ reads no document. `sampleTransition` therefore lives in `tests/setupBrowser.ts`
 addition is one export and its types, and the landing merges by hunk. The unit's reading also fixes the zero-factor
 case: at `--vn-factor-motion: 0` Chromium starts no transition, so a proof asserts that none runs rather than a zero
 duration.
+
+## D51 — A token override reaches its aliases from the scopes that declare them (the Orchestrator, 2026-09-25)
+
+TOKEN-PROOFS measured, and its audit's lanes confirmed from source, that the `theme-tokens` mixin declares every
+derived tier and `--bs-*` alias at `:root` and at each `[data-bs-theme]` scope, where each resolves over the canonical
+token and is inherited as a value. An override of a canonical token therefore moves a derived tier or alias only where
+it is declared on `:root` or on a `[data-bs-theme]` element; declared on any other element, it moves only the rules that
+read the token themselves. A rule that reads a `--bs-*` alias, as the validation rules do, also follows that alias set
+on any element. The contract is that placement rule, stated in § Customization and pinned by a control case, rather than a re-declaration of every alias on
+every consumer. Re-declaring would repeat the theme scope's declarations across the component partials and add a second
+home for each alias, and no tenet asks for it: the tenet asks that tokens be a supported, tested contract, and a stated
+placement rule with its control case is one.
