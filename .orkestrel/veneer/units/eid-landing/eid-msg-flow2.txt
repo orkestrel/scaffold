@@ -1,0 +1,23 @@
+Give dl, pre, hr, and figure Bootstrap's reboot margins, and retire the box-reset mixin (E-ID-FLOW-2)
+
+The user's ruling of 2026-09-24 restores Bootstrap 5.3.8's reboot margins on content the release documents. E-ID-FLOW
+restored the headings, p, address, ol, and ul; this unit restores the rest. dl and pre write margin-top: 0 and
+margin-bottom: var(--vn-space-8), hr writes margin: var(--vn-space-8) 0 with color: inherit and border: 0, and figure
+writes margin: 0 0 var(--vn-space-8), each in the release's longhand or shorthand form. At the default density each
+resolves to the release's 1rem, and each scales with the density factor.
+
+A density proof per tag reads the release margins and the doubled margins at density 2; a literal 1rem and a zero
+margin each kill it with an assertion failure. The .figure pattern now starts the next block 16px after the caption,
+where Bootstrap places it; before, the paragraph sat on the caption's line because the inline-block figure kept its
+zero margin outside the box. The attributed quotation keeps its placement, because the footer's end margin collapses
+with the figure's.
+
+hr no longer calls box-reset, which left _fieldset.scss its only caller, so the mixin folds into that rule; the
+compiled fieldset rule is unchanged. The guide's reboot ledger rows read tokenized or are struck, and the FLOW_MARGIN
+doc names the tags it covers.
+
+Written by opus on Opus 5.5 (round 1) and builder on Sonnet (rounds 2 and 3); audited by analyst on GPT-6 Astra,
+reviewer on Opus 5.5, and checker on Sonnet (scaffold .orkestrel/veneer/units/flow2-audit-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
