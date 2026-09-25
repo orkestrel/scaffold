@@ -1,0 +1,18 @@
+Read an outline or border width that paints no line at zero in the form reading (REBOOT-153)
+
+The engine session's Chromium 153 host read the four button-reboot cases red: the
+release's pressed-state map carried outline-width alone, a width whose outline style
+paints nothing. readFormDifferences now passes each reading through
+normalizeLineWidths, which reads an outline or border width whose line style is none
+or hidden at 0px, so a build difference in how such a width computes never reads as
+a difference between the forms. LINE_STYLES maps each width longhand to the style
+that decides it. On Chromium 141 the normalization leaves every reading unchanged
+(the Orchestrator's probe across every consumer); the engine session re-reads the
+four cases on Chromium 153.
+
+Written by builder on Sonnet over two rounds from the Orchestrator's Items; audited
+by analyst on GPT-6 Astra and checker on Sonnet (scaffold
+.orkestrel/veneer/units/reboot-153-audit-verdict.md and reboot-153-audit-2-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
