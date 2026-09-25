@@ -1,0 +1,212 @@
+
+ RUN  v4.1.11 /home/user/veneer-mfade
+
+Port 63315 is in use, trying another one...
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:20:14 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ✓ |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:33:2 > fade classes > writes the recorded fade selectors and no other components-layer selector whose classes are the fade and show classes alone 147ms
+ × |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:58:2 > fade classes > declares the transition over the motion token, no transition under the reduced-motion condition, and the hidden opacity 209ms
+   → expected [ …(2) ] to deeply equal [ …(2) ]
+ ✓ |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:88:2 > fade classes > hides an element carrying the fade class until the show class joins it, and keeps the hidden box and hit target 41ms
+ × |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:112:2 > fade classes > transitions the opacity on the ease-out curve over the feedback duration and collapses the transition under the reduced-motion preference 90ms
+   → expected [ [ …(2) ], [ …(2) ] ] to deeply equal [ [ …(2) ], [ …(2) ] ]
+ ✓ |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:148:2 > fade classes > rescales the transition with the published motion factor 37ms
+ × |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:161:2 > fade classes > runs the opacity transition over the feedback duration on the ease-out curve as the show class leaves and returns 12ms
+   → expected [ 150, 'linear', '1' ] to deeply equal [ 150, 'ease-out', '1' ]
+ ✓ |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:198:2 > fade classes > doubles the running duration at a doubled motion factor, and runs no transition at a zero factor or under the reduced-motion preference 54ms
+ × |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:239:2 > fade classes > yields the transition to the collapsing rule on an element carrying the fade and collapsing classes 23ms
+   → expected [ [ 'height', '0.35s', 'ease' ], …(1) ] to deeply equal [ [ 'height', '0.35s', 'ease' ], …(1) ]
+ ✓ |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:259:2 > fade classes > fades the alert, toast, tooltip, popover, tab pane, and modal, and leaves each shown component its own opacity 24ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:285:2 > fade classes > resolves every state the same inside a dark island as inside a light one 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:58:2 > fade classes > declares the transition over the motion token, no transition under the reduced-motion condition, and the hidden opacity
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,10 +1,10 @@[39m
+[2m  [[22m
+[2m    [[22m
+[2m      [[22m
+[2m        undefined,[22m
+[32m-       "opacity var(--vn-motion-feedback) var(--vn-ease-out)",[39m
+[31m+       "opacity var(--vn-motion-feedback) linear",[39m
+[2m        "",[22m
+[2m      ],[22m
+[2m      [[22m
+[2m        "(prefers-reduced-motion: reduce)",[22m
+[2m        "none",[22m
+
+ ❯ tests/src/styles/components/fade.test.ts:75:4
+     73|      ]),
+     74|    ),
+     75|   ).toEqual([
+       |    ^
+     76|    [
+     77|     [undefined, 'opacity var(--vn-motion-feedback) var(--vn-ease-out)'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:112:2 > fade classes > transitions the opacity on the ease-out curve over the feedback duration and collapses the transition under the reduced-motion preference
+AssertionError: expected [ [ …(2) ], [ …(2) ] ] to deeply equal [ [ …(2) ], [ …(2) ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -2,17 +2,17 @@[39m
+[2m    [[22m
+[2m      [[22m
+[2m        "opacity",[22m
+[2m        "0.15s",[22m
+[2m        "0s",[22m
+[32m-       "ease-out",[39m
+[31m+       "linear",[39m
+[2m      ],[22m
+[2m      [[22m
+[2m        "opacity",[22m
+[2m        "0.15s",[22m
+[2m        "0s",[22m
+[32m-       "ease-out",[39m
+[31m+       "linear",[39m
+[2m      ],[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      [[22m
+[2m        "none",[22m
+
+ ❯ tests/src/styles/components/fade.test.ts:131:19
+    129|    )
+    130|   }
+    131|   expect(readings).toEqual([
+       |                   ^
+    132|    [
+    133|     ['opacity', '0.15s', '0s', 'ease-out'],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:161:2 > fade classes > runs the opacity transition over the feedback duration on the ease-out curve as the show class leaves and returns
+AssertionError: expected [ 150, 'linear', '1' ] to deeply equal [ 150, 'ease-out', '1' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    150,[22m
+[32m-   "ease-out",[39m
+[31m+   "linear",[39m
+[2m    "1",[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/fade.test.ts:177:57
+    175|   expect(element.getAnimations()).toHaveLength(1)
+    176|   expect(element.getAnimations()).toContain(hiding.transition)
+    177|   expect([hiding.duration, hiding.easing, hiding.start]).toEqual([feed…
+       |                                                         ^
+    178|   const hidden = Number.parseFloat(hiding.midpoint)
+    179|   expect(hidden).toBeGreaterThan(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/fade.test.ts:239:2 > fade classes > yields the transition to the collapsing rule on an element carrying the fade and collapsing classes
+AssertionError: expected [ [ 'height', '0.35s', 'ease' ], …(1) ] to deeply equal [ [ 'height', '0.35s', 'ease' ], …(1) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -5,8 +5,8 @@[39m
+[2m      "ease",[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      "opacity",[22m
+[2m      "0.15s",[22m
+[32m-     "ease-out",[39m
+[31m+     "linear",[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/fade.test.ts:249:4
+    247|     readStyle(element, 'transition-timing-function'),
+    248|    ]),
+    249|   ).toEqual([
+       |    ^
+    250|    ['height', '0.35s', 'ease'],
+    251|    ['opacity', '0.15s', 'ease-out'],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 6 passed (10)
+   Start at  04:20:08
+   Duration  7.12s (transform 0ms, setup 1.62s, import 61ms, tests 650ms, environment 0ms)
+

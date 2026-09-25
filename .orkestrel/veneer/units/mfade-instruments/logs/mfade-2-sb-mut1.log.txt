@@ -1,0 +1,197 @@
+
+ RUN  v4.1.11 /home/user/veneer-mfade
+
+Port 63315 is in use, trying another one...
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+stderr | unknown test
+Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+4:19:05 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:103:2 > breakpoint viewport restoration > reads every breakpoint boundary and restores after successful readings
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:121:2 > breakpoint viewport restoration > restores after synchronous and asynchronous failures and nested viewport changes
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:142:2 > breakpoint viewport restoration > keeps the reading failure when the restore is refused, and carries the refusal as its cause
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:177:2 > breakpoint viewport restoration > leaves the following case at the original viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:193:2 > frame lifts and focus frames > lifts a specimen into a padded wrapper at the document start, hands the wrapper to the action, and puts the specimen back
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:218:2 > frame lifts and focus frames > puts the specimen back when the action throws, removes a detached copy, bounds a reachable wrapper to the runner window, and leaves an unpadded one unpadded
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:247:2 > frame lifts and focus frames > reaches a ring with Tab from the wrapper, and reads its reach and the focus it held at the shot
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:266:2 > frame lifts and focus frames > lists every edge of a frame that holds none of the ring past its element
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:280:2 > frame lifts and focus frames > reads the pixels two frames differ by inside a region, and refuses a region the frames clip apart
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:306:2 > frame lifts and focus frames > creates an enabled painted and suppressed portfolio pair under one directory
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:329:2 > frame lifts and focus frames > reads an outline from the strip it changes between a painted and a suppressed frame
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:345:2 > frame lifts and focus frames > reads no change from an outline that paints nothing, and refuses an outline with no portfolios to read it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:377:2 > menu containment > reads each shown menu against the specimen holding it, at the width it visits, and restores the viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:397:2 > browser setup > records event delivery on attached and detached hosts until abort
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:436:2 > browser setup > distinguishes retained blank and painted PNG frames by the pixels of a declared region
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:441:2 > browser setup > reads only the declared region, reporting a painted frame with a uniform band as uniform
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:454:2 > browser setup > separates a region painting the frame floor from one painting another color
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:484:2 > browser setup > refuses a floor naming no color the parser reads
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:496:2 > browser setup > clips a region reaching past the frame, and refuses one that clips to nothing
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:520:2 > browser setup > refuses undecodable frame bytes
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:530:2 > browser setup > reads a subject box in the coordinates of the frame it is photographed inside
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:552:2 > browser setup > resolves a capture subject through a specimen label, a region name, or a rendered host
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:570:2 > browser setup > describes a control-rooted subject through a scope that encloses it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:595:2 > browser setup > records a subject presenting no role and no control as each of those readings
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:606:2 > browser setup > refuses a subject with no parent to be read through
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:615:2 > browser setup > resolves an element answering to two declarations as the one subject it is
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:624:2 > browser setup > records every placed scenario, and writes no placement while the portfolio is disabled
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:656:2 > browser setup > shoots a page frame over the header and the one main child holding its subject
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:711:2 > browser setup > shoots an element frame of a lifted specimen with no main child laid out, so a viewport-height panel reads at the viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:739:2 > browser setup > reads a viewport-height region at the pane the shot is taken at, where the kept section outgrows the viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:767:2 > browser setup > places a frame at the frame area and refuses one device-pixel row over it, naming the scenario
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:792:2 > browser setup > leaves every main child hidden or laid out as it found it, after a placement and after a refused one
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:813:2 > browser setup > refuses a placement whose document grows with every pane it is staged at
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:826:2 > browser setup > re-reads a document that fits the viewport after staging the pane again, and refuses one whose height changed
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:853:2 > browser setup > reads signed painted offsets from the parent independently of its viewport position
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:870:2 > browser setup > refuses a painted offset when the element has no parent
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:873:2 > browser setup > exports the showcase mount, the component mounts, the case matrices, the oracle drive, the recorders, the cascade readers, and the position scan
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:945:2 > browser setup > collects every rendered button that paints, and leaves out each dimmed host
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:979:2 > browser setup > lists the ordinary steps of the recording in its order, over rendered specimens
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:996:2 > browser setup > reports the step names the recording excludes, and reports none while it carries none
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1001:2 > browser setup > drives every recorded step against a rendered section and reduces each reading
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1024:2 > browser setup > isolates the oracle drive from a duplicate Toggle in another mounted section
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1070:2 > browser setup > preserves the pressed-state failure when pointer release also rejects
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1106:2 > browser setup > preserves the pressed-state failure on its own when the pointer release succeeds
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1149:2 > browser setup > refuses a hold on a host scrolling cannot bring into the viewport
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1168:2 > browser setup > sets one drive beside the recording, and reports an absent step rather than passing over it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1199:2 > browser setup > records no target for an action that adds no listener
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1203:2 > browser setup > records the document target an action adds a listener to
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1213:2 > browser setup > records the receiver of each call to a prototype method, still calls it, and restores it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1233:2 > browser setup > mounts real content and cleans it up repeatedly
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1248:2 > browser setup > exposes the Button region and the delegated activation the showcase entry constructs
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1266:2 > browser setup > records nothing for an action that neither clicks nor mutates the host
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1284:2 > browser setup > records the ordered mutations, the prevented click, and the focus one activation leaves
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1300:2 > browser setup > reads a button the acting resolvers refuse, and refuses a name no button carries
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1324:2 > browser setup > bounds the search by the button class rather than by the elements a root holds
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1342:2 > browser setup > refuses a name two buttons in one root announce, and answers for each root on its own
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1362:2 > browser setup > reads one labelled specimen, and refuses an absent label and a duplicated one
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1389:2 > browser setup > records a refusal the action raised rather than letting it end the drive
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1405:2 > browser setup > names the focused control rather than the page when focus rests somewhere else
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1417:2 > browser setup > drives dark and light variants and leaves the requested mode applied on repetition
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1438:2 > browser setup > attaches a node the case can address, and takes it out again on request
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1449:2 > browser setup > renders every page its markup declares, under the classes and attributes it was asked for
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1474:2 > browser setup > takes out every node one case added, in one call
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1483:2 > browser setup > takes out a recorded container, and leaves one the installed render attached
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1495:2 > browser setup > puts a loaded sheet in the head and takes it out, where an installed mount leaves it in the body
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1509:2 > browser setup > selects the sheet carrying the theme layer, where the installed rule walk names no sheet
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1526:2 > browser setup > walks the document by default, selecting the published cascade over a sheet a case fixtured
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1547:2 > browser setup > reports no sheet where no named sheet declares a theme layer, and refuses a layer read there
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1561:2 > browser setup > reports a grouping rule before the rules it holds, where the installed walk reports by level
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1591:2 > browser setup > reads every rule of the named layer block, and reports nothing for a layer the cascade never fills
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1602:2 > browser setup > reports the gate around a selector, where the installed rule walk reports the gate and the gated rule apart
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1630:2 > browser setup > unions the custom properties a split scope declares, where the installed rule lookup reads one rule
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1646:2 > browser setup > refuses a theme layer carrying a foreign token, wherever it sits among the named sheets
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1673:2 > browser setup > reads layer order by first declaration, where a block list reports the filled layers alone
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1700:2 > browser setup > reads every declared custom property, where the scope reading answers for one selector
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1716:2 > browser setup > walks every named sheet and skips one whose rules the document refuses
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1747:2 > browser setup > reads one named layer out of the sheets it is given, where the cascade reading resolves one first
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1777:2 > requireMatch > returns the one candidate a lookup matched
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1782:2 > requireMatch > refuses a lookup that matched nothing with the absent message
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1788:2 > requireMatch > refuses a lookup that matched several candidates, and names their count
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1797:2 > requireMatch > refuses a lone candidate that is not an HTML element with the foreign message
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1805:2 > requireMatch > refuses several candidates as a duplicate before it checks the first as an HTML element
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1816:2 > scanPositionalPairs > excludes a nesting the content model mandates, and reports it when nothing mandates it
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1833:2 > scanPositionalPairs > reads a rule that joins a tag to itself
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1846:2 > component mounts > mounts a badge inside a host at the size the caller names
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1861:2 > component mounts > mounts a trail carrying the items the caller supplies, in the mode it names
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1884:2 > component mounts > mounts a close control carrying the classes the caller names beyond the shipped one
+ ↓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1898:2 > component mounts > mounts a focused start control, so a traversal reaches the first control mounted after it
+ × |setup:browser (chromium)| tests/setupBrowser.test.ts:1919:2 > sampleTransition > reads the named property's running transition, its timing, and its computed start and midpoint, and leaves it paused there 22ms
+   → expected [ 200, 'linear', '1', '1' ] to deeply equal [ 200, 'linear', '1', '0.5' ]
+ ✓ |setup:browser (chromium)| tests/setupBrowser.test.ts:1953:2 > sampleTransition > reads no transition on the same change once the transition is removed 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1919:2 > sampleTransition > reads the named property's running transition, its timing, and its computed start and midpoint, and leaves it paused there
+AssertionError: expected [ 200, 'linear', '1', '1' ] to deeply equal [ 200, 'linear', '1', '0.5' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    200,[22m
+[2m    "linear",[22m
+[2m    "1",[22m
+[32m-   "0.5",[39m
+[31m+   "1",[39m
+[2m  ][22m
+
+ ❯ tests/setupBrowser.test.ts:1936:74
+    1934|    'width',
+    1935|   ])
+    1936|   expect([fading.duration, fading.easing, fading.start, fading.midpoin…
+       |                                                                          ^
+    1937|    200,
+    1938|    'linear',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 88 skipped (90)
+   Start at  04:18:52
+   Duration  13.51s (transform 0ms, setup 554ms, import 1.41s, tests 24ms, environment 0ms)
+
