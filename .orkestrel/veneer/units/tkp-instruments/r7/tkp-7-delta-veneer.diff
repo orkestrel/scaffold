@@ -1,0 +1,27 @@
+--- tmp/units/tkp-7-veneer.md.bak	2026-09-25 06:23:12.185094578 +0000
++++ guides/veneer.md	2026-09-25 06:23:18.732925554 +0000
+@@ -7364,11 +7364,11 @@
+ rule declares it, from the values that element holds, declared there or inherited, and a descendant
+ inherits the resolved value. An override therefore reaches every declaration that reads the token on
+ its own element or inside it, and no declaration on an element above it; an element inside it that
+-declares the token again gives its own subtree that value. The placement decides what follows:
++declares the token again, such as a `[data-bs-theme]` element whose mode scope declares it, gives
++its own subtree that value. The placement decides what follows:
+ 
+ - An override on the root element, in a `:root` rule or any rule that matches the root, reaches
+-  every rule, tier, and alias that reads the token, except inside a `[data-bs-theme]` element below
+-  the root whose mode scope declares that token again.
++  every rule, tier, and alias that reads the token.
+ - An override on a `[data-bs-theme]` element below the root reaches the tiers and aliases its mode
+   scope derives from the token and every rule inside it that reads the token. The aliases only the
+   `:root` selector declares keep their value.
+@@ -7377,8 +7377,7 @@
+   button opacity, the heading weight, and the standard easing. The tiers and aliases the `:root`
+   selector and the mode scopes declare above it keep their value.
+ - An override of a `--bs-*` alias works the same way: the validation rules follow an override of
+-  their aliases on an ancestor, except inside a `[data-bs-theme]` element whose mode scope declares
+-  those aliases again.
++  their aliases on an ancestor.
+ 
+ The `tests/src/styles/tokens.test.ts` proof reads each placement against a shipped consumer or
+ alias. A component rule that paints the release's fixed blue reads `--vn-palette-blue`, or keeps the

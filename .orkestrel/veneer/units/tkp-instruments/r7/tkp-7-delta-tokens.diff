@@ -1,0 +1,43 @@
+--- tmp/units/tkp-7-tokens.test.ts.bak	2026-09-25 06:23:12.195170474 +0000
++++ tests/src/styles/tokens.test.ts	2026-09-25 06:23:36.172925155 +0000
+@@ -686,8 +686,8 @@
+ // so a consumer that stops reading the token fails on the overridden reading while the twin's rest
+ // reading has already held. The placement cases read where an override reaches: a `--bs-form-*`
+ // alias follows its canonical token from a mode scope and not from a plain ancestor, and a rule
+-// reading that alias follows it from an ancestor, except inside a mode scope that declares it
+-// again. The scope case reads the published `--bs-*` aliases themselves, under a mode scope and
++// reading that alias follows it from an ancestor, except inside a mode scope below that ancestor
++// that declares it again. The scope case reads the published `--bs-*` aliases themselves, under a mode scope and
+ // under the document element. Every hover and press is read with motion reduced, so no reading
+ // lands partway through a transition.
+ describe('ancestor token overrides', () => {
+@@ -954,10 +954,10 @@
+ 	})
+ 	// A mode scope re-declares the aliases whose value follows the mode, and a second `:root` block
+ 	// declares the fixed ones once, so a mode-scope override reaches the mode aliases and not the
+-	// root-only ones. A document-element override reaches both, except inside a mode scope that
+-	// re-declares the token itself, and a root-only alias follows it where the document element
+-	// carries a mode, because the alias resolves on that same element.
+-	it('moves a mode-scope alias and holds the root-only aliases under a mode scope that overrides their tokens, moves all of them from the document element outside a mode scope that re-declares the token, and moves a root-only alias from a document element that carries a mode', () => {
++	// root-only ones. A document-element override reaches both whether or not the document element
++	// carries a mode, because the override wins over that element's own mode scope, and a mode scope
++	// below it that re-declares the token keeps its own value.
++	it('moves a mode-scope alias and holds the root-only aliases under a mode scope that overrides their tokens, moves all of them from the document element outside a mode scope that re-declares the token, and moves a mode alias and a root-only alias from a document element that carries a mode', () => {
+ 		const override = [
+ 			`${TOKEN_NAMES.color.primary.base}: rgb(4, 5, 6)`,
+ 			`${TOKEN_NAMES.color.success.base}: rgb(1, 2, 3)`,
+@@ -999,9 +999,14 @@
+ 			expect(readToken(outside, '--bs-border-radius')).toBe(radius)
+ 			document.documentElement.style.setProperty(TOKEN_NAMES.radius.base, '20px')
+ 			expect(readToken(outside, '--bs-border-radius')).toBe('20px')
++			expect(readToken(outside, '--bs-primary')).toBe(primary)
++			document.documentElement.style.setProperty(TOKEN_NAMES.color.primary.base, 'rgb(4, 5, 6)')
++			expect(readToken(outside, '--bs-primary')).toBe('rgb(4, 5, 6)')
++			expect(readToken(held, '--bs-primary')).toBe(primary)
+ 		} finally {
+ 			document.documentElement.removeAttribute('data-bs-theme')
+ 			document.documentElement.style.removeProperty(TOKEN_NAMES.radius.base)
++			document.documentElement.style.removeProperty(TOKEN_NAMES.color.primary.base)
+ 		}
+ 	})
+ 	it('deepens the hover fill of a button inside an ancestor that overrides the hover mix, and leaves a hovered twin on the rest mix', async () => {
