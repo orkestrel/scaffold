@@ -562,6 +562,17 @@ addition row, with a style proof of the computed value on each overlay, and J-AN
 proves the behaviour. The unit is E-ID-ANCHOR. The same run reads `calc-size()` green on Chromium 141 with the
 horizontal departure Chromium 153 shows, and the anchored arrow centred on its own tip, as on Chromium 153.
 
+## D47a — D47 amended: one anchored-visibility rule per partial (the Orchestrator, 2026-09-25)
+
+The ledger attributes a rule to one component key, so the combined
+`:where(.dropdown-menu, .tooltip, .popover):popover-open` rule D47 names records under `dropdown` alone
+(`anchor-instruments/anchor-attribution-probe.log.txt`). Each of the dropdown, tooltip, and popover partials therefore
+writes its own `:where(.<class>):popover-open { position-visibility: anchors-visible }` rule through the
+`anchor-visibility` mixin in `src/styles/_mixins.scss`, and each rule has its own addition row under its own key
+(`anchor-audit-verdict.md`, claim 2). The rule states a computed value on both builds. It suppresses a fully clipped
+tooltip and popover on both builds, and a fully clipped dropdown menu only where the engine anchors the menu, which
+Chromium 141 does not until J-PLACEMENT-141-FIX lands; ANCHOR-PAINT updates the guide's sentence then.
+
 ## D48 — Elements' motion opens as E-ID-MOTION (the Orchestrator, 2026-09-25)
 
 The user's ruling recorded as the engine session's E26 (2026-09-24) gives this session the motion values of the
