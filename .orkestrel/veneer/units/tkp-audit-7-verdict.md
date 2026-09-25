@@ -25,7 +25,7 @@ Orchestrator wrote and a truth sweep, and neither asks a design question.
   - The § Styles › § Border utilities paragraph says "a retuned width token widens every default border". The `--bs-border-width`
     alias is declared at the `:root` selector alone, so the token retuned below the root moves no border.
 - **The Orchestrator's reading.** `tkp-instruments/r9/tkp-9-reach-probe.mjs` runs each case in Chromium 141 over the
-  worktree's built cascade (`tkp-9-reach-probe.log.txt`, 2026-09-25 about 07:10 UTC): the token set below the root
+  worktree's built cascade (`tkp-9-reach-probe.log.txt`, 2026-09-25 about 07:07 UTC): the token set below the root
   leaves `.border` at `1px`, the alias set below the root draws `4px`, and the token set on the root draws `4px`; a
   light island inside a dark ancestor that sets `--bs-border-radius: 20px` reads `20px`, while the root reads
   `calc(.375rem * 1)`; the root's stripe set to `17%` leaves an island at `5%`. The built cascade declares
