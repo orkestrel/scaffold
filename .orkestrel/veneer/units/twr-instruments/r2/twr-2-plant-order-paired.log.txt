@@ -1,0 +1,361 @@
+plant=order-paired
++ python3 tmp/units/twr-2-plant.py order-paired
+planted order-paired
++ diff -u (planted files against their backups)
+--- tmp/units/twr-2-plant-backup/guide.md	2026-09-25 05:55:35.831206595 +0000
++++ guides/veneer.md	2026-09-25 05:58:50.424959137 +0000
+@@ -3390,7 +3390,6 @@
+ under Veneer's element treatment rather than over it.
+ 
+ ```css
+-@layer theme, reset, base, elements, components, utilities;
+ @import 'tailwindcss';
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+--- tmp/units/twr-2-plant-backup/consumer-preflight.css	2026-09-25 05:55:35.833907084 +0000
++++ tests/fixtures/tailwind/consumer-preflight.css	2026-09-25 05:58:50.428959137 +0000
+@@ -1,4 +1,3 @@
+-@layer theme, reset, base, elements, components, utilities;
+ @import 'tailwindcss';
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
++ npm run test:service
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+·········xxx············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > resolves the cascade import, scans the markup line, declares the order the cascade puts the document in, and fills the base layer with Tailwind's reset
+AssertionError: expected [ 'properties', 'theme', 'base', …(4) ] to deeply equal [ Array(7) ]
+
+- Expected
++ Received
+
+  [
+    "properties",
+    "theme",
+-   "reset",
+    "base",
+-   "elements",
+    "components",
+    "utilities",
++   "reset",
++   "elements",
+  ]
+
+ ❯ tests/service/tailwind/consumer.test.ts:375:26
+    373|   // The recipe's order line is the one the cascade's own layers follo…
+    374|   // narrower order merges into it and its generated properties layer …
+    375|   expect(compiled.order).toEqual(['properties', ...cascade.order])
+       |                          ^
+    376|   // The cascade import resolved: Veneer's token namespace is in the `…
+    377|   // component rules are in the `components` block.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > keeps every longhand a component rule declares where the cascade alone resolves it, and moves each floor class when the order line is dropped
+AssertionError: expected [ …(240) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   ".btn color: rgb(255, 255, 255) became oklch(0.208 0.042 265.755)",
++   ".btn background-color: oklch(0.48 0.255 264) became rgba(0, 0, 0, 0)",
++   ".btn border-top-color: oklch(0.48 0.255 264) became oklch(0.208 0.042 265.755)",
++   ".btn border-top-style: solid became none",
++   ".btn border-top-width: 1px became 0px",
++   ".btn border-right-color: oklch(0.48 0.255 264) became oklch(0.208 0.042 265.755)",
++   ".btn border-right-style: solid became none",
++   ".btn border-right-width: 1px became 0px",
++   ".btn border-bottom-color: oklch(0.48 0.255 264) became oklch(0.208 0.042 265.755)",
++   ".btn border-bottom-style: solid became none",
++   ".btn border-bottom-width: 1px became 0px",
++   ".btn border-left-color: oklch(0.48 0.255 264) became oklch(0.208 0.042 265.755)",
++   ".btn border-left-style: solid became none",
++   ".btn border-left-width: 1px became 0px",
++   ".btn text-decoration-color: rgb(255, 255, 255) became oklch(0.208 0.042 265.755)",
++   ".table > :not(caption) > * > * vertical-align: bottom became middle",
++   ".table > :not(caption) > * > * padding-right: 8px became 12px",
++   ".table > :not(caption) > * > * padding-left: 8px became 12px",
++   ".table > :not(caption) > * > * vertical-align: bottom became middle",
++   ".table > :not(caption) > * > * padding-right: 8px became 12px",
++   ".table > :not(caption) > * > * padding-left: 8px became 12px",
++   ".table > :not(caption) > * > * vertical-align: top became middle",
++   ".table > :not(caption) > * > * padding-right: 8px became 12px",
++   ".table > :not(caption) > * > * padding-left: 8px became 12px",
++   ".table > :not(caption) > * > * vertical-align: top became middle",
++   ".table > :not(caption) > * > * padding-right: 8px became 12px",
++   ".table > :not(caption) > * > * padding-left: 8px became 12px",
++   ".form-control font-size: 16px became 14px",
++   ".form-control line-height: 24px became 21px",
++   ".form-control font-size: 16px became 14px",
++   ".form-control line-height: 24px became 21px",
++   ".form-control width: 1239px became 1238px",
++   ".form-control font-size: 16px became 14px",
++   ".form-control line-height: 24px became 21px",
++   "textarea.form-control min-height: 38px became 35px",
++   ".form-select font-size: 16px became 14px",
++   ".form-select line-height: 24px became 21px",
++   ".form-check .form-check-input margin-left: -21px became 0px",
++   ".form-check-input margin-top: 3.5px became 0px",
++   ".input-group > .form-control, .input-group > .form-select, .input-group > .form-floating width: 1239px became 1238px",
++   ".input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) margin-left: -1px became 0px",
++   ".dropdown-menu padding-left: 0px became 32px",
++   ".dropdown-menu margin-bottom: 0px became 16px",
++   ".dropdown-menu list-style-type: none became disc",
++   ":where(button.dropdown-item) padding-top: 4px became 6px",
++   ":where(button.dropdown-item) padding-right: 16px became 12px",
++   ":where(button.dropdown-item) padding-bottom: 4px became 6px",
++   ":where(button.dropdown-item) padding-left: 16px became 12px",
++   ":where(button.dropdown-item) font-size: 16px became 14px",
++   ":where(button.dropdown-item) line-height: 24px became 21px",
++   ":where(button.dropdown-item) border-top-left-radius: 0px became 6px",
++   ":where(button.dropdown-item) border-top-right-radius: 0px became 6px",
++   ":where(button.dropdown-item) border-bottom-right-radius: 0px became 6px",
++   ":where(button.dropdown-item) border-bottom-left-radius: 0px became 6px",
++   ":where(button.dropdown-item) transition-property: all became color, background-color, border-color, box-shadow, opacity",
++   ":where(button.dropdown-item) transition-duration: 0s became 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",
++   ":where(button.dropdown-item) transition-timing-function: ease became ease, ease, ease, ease, ease",
++   ":where(button.dropdown-item) transition-delay: 0s became 0s, 0s, 0s, 0s, 0s",
++   ":where(button.dropdown-item) transition-behavior: normal became normal, normal, normal, normal, normal",
++   ".dropdown-item padding-top: 4px became 6px",
++   ".dropdown-item padding-right: 16px became 12px",
++   ".dropdown-item padding-bottom: 4px became 6px",
++   ".dropdown-item padding-left: 16px became 12px",
++   ".dropdown-item border-top-left-radius: 0px became 6px",
++   ".dropdown-item border-top-right-radius: 0px became 6px",
++   ".dropdown-item border-bottom-right-radius: 0px became 6px",
++   ".dropdown-item border-bottom-left-radius: 0px became 6px",
++   ".nav margin-bottom: 0px became 16px",
++   ".nav padding-left: 0px became 32px",
++   ".nav list-style-type: none became disc",
++   ".nav-link color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link border-top-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link border-right-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link border-bottom-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link border-left-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link text-decoration-line: none became underline",
++   ".nav-link text-decoration-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link border-top-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link border-right-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link border-bottom-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link border-left-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".nav-link text-decoration-line: none became underline",
++   ".nav-link text-decoration-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ":where(button.navbar-toggler) padding-top: 0px became 6px",
++   ":where(button.navbar-toggler) padding-right: 0px became 12px",
++   ":where(button.navbar-toggler) padding-bottom: 0px became 6px",
++   ":where(button.navbar-toggler) padding-left: 0px became 12px",
++   ":where(button.navbar-toggler) line-height: 14px became 21px",
++   ":where(button.navbar-toggler) border-top-left-radius: 0px became 6px",
++   ":where(button.navbar-toggler) border-top-right-radius: 0px became 6px",
++   ":where(button.navbar-toggler) border-bottom-right-radius: 0px became 6px",
++   ":where(button.navbar-toggler) border-bottom-left-radius: 0px became 6px",
++   ":where(button.navbar-toggler) transition-property: all became color, background-color, border-color, box-shadow, opacity",
++   ":where(button.navbar-toggler) transition-duration: 0s became 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",
++   ":where(button.navbar-toggler) transition-timing-function: ease became ease, ease, ease, ease, ease",
++   ":where(button.navbar-toggler) transition-delay: 0s became 0s, 0s, 0s, 0s, 0s",
++   ":where(button.navbar-toggler) transition-behavior: normal became normal, normal, normal, normal, normal",
++   ".navbar-toggler padding-top: 0px became 6px",
++   ".navbar-toggler padding-right: 0px became 12px",
++   ".navbar-toggler padding-bottom: 0px became 6px",
++   ".navbar-toggler padding-left: 0px became 12px",
++   ".navbar-toggler border-top-left-radius: 0px became 6px",
++   ".navbar-toggler border-top-right-radius: 0px became 6px",
++   ".navbar-toggler border-bottom-right-radius: 0px became 6px",
++   ".navbar-toggler border-bottom-left-radius: 0px became 6px",
++   ".navbar-toggler transition-property: all became color, background-color, border-color, box-shadow, opacity",
++   ".navbar-toggler transition-duration: 0s became 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",
++   ".navbar-toggler transition-timing-function: ease became ease, ease, ease, ease, ease",
++   ".navbar-toggler transition-delay: 0s became 0s, 0s, 0s, 0s, 0s",
++   ".navbar-toggler transition-behavior: normal became normal, normal, normal, normal, normal",
++   ".navbar-toggler line-height: 14px became 21px",
++   ".navbar-toggler transition-behavior: normal became normal, normal, normal, normal, normal",
++   ".navbar-toggler transition-duration: 0s became 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",
++   ".navbar-toggler transition-timing-function: ease became ease, ease, ease, ease, ease",
++   ".navbar-toggler transition-delay: 0s became 0s, 0s, 0s, 0s, 0s",
++   ".navbar-toggler transition-property: all became color, background-color, border-color, box-shadow, opacity",
++   ":where(button.accordion-button) padding-top: 0px became 6px",
++   ":where(button.accordion-button) padding-right: 0px became 12px",
++   ":where(button.accordion-button) padding-bottom: 0px became 6px",
++   ":where(button.accordion-button) padding-left: 0px became 12px",
++   ":where(button.accordion-button) font-size: 16px became 14px",
++   ":where(button.accordion-button) line-height: 19.2px became 21px",
++   ":where(button.accordion-button) border-top-left-radius: 0px became 6px",
++   ":where(button.accordion-button) border-top-right-radius: 0px became 6px",
++   ":where(button.accordion-button) border-bottom-right-radius: 0px became 6px",
++   ":where(button.accordion-button) border-bottom-left-radius: 0px became 6px",
++   ":where(button.accordion-button) transition-property: all became color, background-color, border-color, box-shadow, opacity",
++   ":where(button.accordion-button) transition-duration: 0s became 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",
++   ":where(button.accordion-button) transition-timing-function: ease became ease, ease, ease, ease, ease",
++   ":where(button.accordion-button) transition-delay: 0s became 0s, 0s, 0s, 0s, 0s",
++   ":where(button.accordion-button) transition-behavior: normal became normal, normal, normal, normal, normal",
++   ".accordion-button padding-top: 0px became 6px",
++   ".accordion-button padding-right: 0px became 12px",
++   ".accordion-button padding-bottom: 0px became 6px",
++   ".accordion-button padding-left: 0px became 12px",
++   ".accordion-button font-size: 16px became 14px",
++   ".accordion-button transition-property: all became color, background-color, border-color, box-shadow, opacity",
++   ".accordion-button transition-duration: 0s became 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",
++   ".accordion-button transition-timing-function: ease became ease, ease, ease, ease, ease",
++   ".accordion-button transition-delay: 0s became 0s, 0s, 0s, 0s, 0s",
++   ".accordion-button transition-behavior: normal became normal, normal, normal, normal, normal",
++   ".accordion-button border-top-left-radius: 0px became 6px",
++   ".accordion-button border-top-right-radius: 0px became 6px",
++   ".accordion-button border-bottom-right-radius: 0px became 6px",
++   ".accordion-button border-bottom-left-radius: 0px became 6px",
++   ".accordion-button transition-behavior: normal became normal, normal, normal, normal, normal",
++   ".accordion-button transition-duration: 0s became 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",
++   ".accordion-button transition-timing-function: ease became ease, ease, ease, ease, ease",
++   ".accordion-button transition-delay: 0s became 0s, 0s, 0s, 0s, 0s",
++   ".accordion-button transition-property: all became color, background-color, border-color, box-shadow, opacity",
++   ".accordion-header margin-bottom: 0px became 8px",
++   ".pagination padding-left: 0px became 32px",
++   ".pagination list-style-type: none became disc",
++   ".page-link color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".page-link text-decoration-line: none became underline",
++   ".page-link text-decoration-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".page-link color: rgb(255, 255, 255) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".page-link text-decoration-line: none became underline",
++   ".page-link text-decoration-color: rgb(255, 255, 255) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".page-link color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".page-link text-decoration-line: none became underline",
++   ".page-link text-decoration-color: oklab(0.3984 -0.019591 -0.190088) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".page-link.active, .active > .page-link color: rgb(255, 255, 255) became color(srgb 0.0510206 0.212902 0.672726)",
++   ":where(button.list-group-item) padding-top: 8px became 6px",
++   ":where(button.list-group-item) padding-right: 16px became 12px",
++   ":where(button.list-group-item) padding-bottom: 8px became 6px",
++   ":where(button.list-group-item) padding-left: 16px became 12px",
++   ":where(button.list-group-item) color: color(srgb 0.0571957 0.0900803 0.168835 / 0.75) became oklch(0.208 0.042 265.755)",
++   ":where(button.list-group-item) background-color: rgb(255, 255, 255) became rgba(0, 0, 0, 0)",
++   ":where(button.list-group-item) border-top-color: oklch(0.869 0.022 252.894) became oklch(0.208 0.042 265.755)",
++   ":where(button.list-group-item) border-top-style: solid became none",
++   ":where(button.list-group-item) border-top-width: 1px became 0px",
++   ":where(button.list-group-item) border-right-color: oklch(0.869 0.022 252.894) became oklch(0.208 0.042 265.755)",
++   ":where(button.list-group-item) border-right-style: solid became none",
++   ":where(button.list-group-item) border-right-width: 1px became 0px",
++   ":where(button.list-group-item) border-bottom-color: oklch(0.869 0.022 252.894) became oklch(0.208 0.042 265.755)",
++   ":where(button.list-group-item) border-bottom-style: solid became none",
++   ":where(button.list-group-item) border-bottom-width: 1px became 0px",
++   ":where(button.list-group-item) border-left-color: oklch(0.869 0.022 252.894) became oklch(0.208 0.042 265.755)",
++   ":where(button.list-group-item) border-left-style: solid became none",
++   ":where(button.list-group-item) border-left-width: 1px became 0px",
++   ":where(button.list-group-item) outline-color: color(srgb 0.0571957 0.0900803 0.168835 / 0.75) became oklch(0.208 0.042 265.755)",
++   ":where(button.list-group-item) border-bottom-right-radius: 0px became 6px",
++   ":where(button.list-group-item) border-bottom-left-radius: 0px became 6px",
++   ":where(button.list-group-item) transition-property: all became color, background-color, border-color, box-shadow, opacity",
++   ":where(button.list-group-item) transition-duration: 0s became 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",
++   ":where(button.list-group-item) transition-timing-function: ease became ease, ease, ease, ease, ease",
++   ":where(button.list-group-item) transition-delay: 0s became 0s, 0s, 0s, 0s, 0s",
++   ":where(button.list-group-item) transition-behavior: normal became normal, normal, normal, normal, normal",
++   ".list-group-item padding-top: 8px became 6px",
++   ".list-group-item padding-right: 16px became 12px",
++   ".list-group-item padding-bottom: 8px became 6px",
++   ".list-group-item padding-left: 16px became 12px",
++   ".list-group-item color: color(srgb 0.0571957 0.0900803 0.168835 / 0.75) became oklch(0.208 0.042 265.755)",
++   ".list-group-item background-color: rgb(255, 255, 255) became rgba(0, 0, 0, 0)",
++   ".list-group-item border-top-color: oklch(0.869 0.022 252.894) became oklch(0.208 0.042 265.755)",
++   ".list-group-item border-top-style: solid became none",
++   ".list-group-item border-top-width: 1px became 0px",
++   ".list-group-item border-right-color: oklch(0.869 0.022 252.894) became oklch(0.208 0.042 265.755)",
++   ".list-group-item border-right-style: solid became none",
++   ".list-group-item border-right-width: 1px became 0px",
++   ".list-group-item border-bottom-color: oklch(0.869 0.022 252.894) became oklch(0.208 0.042 265.755)",
++   ".list-group-item border-bottom-style: solid became none",
++   ".list-group-item border-bottom-width: 1px became 0px",
++   ".list-group-item border-left-color: oklch(0.869 0.022 252.894) became oklch(0.208 0.042 265.755)",
++   ".list-group-item border-left-style: solid became none",
++   ".list-group-item border-left-width: 1px became 0px",
++   ".list-group-item text-decoration-color: color(srgb 0.0571957 0.0900803 0.168835 / 0.75) became oklch(0.208 0.042 265.755)",
++   ".list-group-item color: color(srgb 0.0571957 0.0900803 0.168835 / 0.75) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".list-group-item text-decoration-line: none became underline",
++   ".list-group-item text-decoration-color: color(srgb 0.0571957 0.0900803 0.168835 / 0.75) became color(srgb 0.0510206 0.212902 0.672726)",
++   ".list-group-item-action color: color(srgb 0.0571957 0.0900803 0.168835 / 0.75) became oklch(0.208 0.042 265.755)",
++   ".list-group-item-action color: color(srgb 0.0571957 0.0900803 0.168835 / 0.75) became color(srgb 0.0510206 0.212902 0.672726)",
++   ":where(button.btn-close) padding-top: 3.5px became 6px",
++   ":where(button.btn-close) padding-right: 3.5px became 12px",
++   ":where(button.btn-close) padding-bottom: 3.5px became 6px",
++   ":where(button.btn-close) padding-left: 3.5px became 12px",
++   ":where(button.btn-close) color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ":where(button.btn-close) border-top-color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ":where(button.btn-close) border-right-color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ":where(button.btn-close) border-bottom-color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ":where(button.btn-close) border-left-color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ":where(button.btn-close) outline-color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ":where(button.btn-close) transition-property: all became color, background-color, border-color, box-shadow, opacity",
++   ":where(button.btn-close) transition-duration: 0s became 0.15s, 0.15s, 0.15s, 0.15s, 0.15s",
++   ":where(button.btn-close) transition-timing-function: ease became ease, ease, ease, ease, ease",
++   ":where(button.btn-close) transition-delay: 0s became 0s, 0s, 0s, 0s, 0s",
++   ":where(button.btn-close) transition-behavior: normal became normal, normal, normal, normal, normal",
++   ".btn-close box-sizing: content-box became border-box",
++   ".btn-close width: 14px became 24px",
++   ".btn-close color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ".btn-close border-top-color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ".btn-close border-right-color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ".btn-close border-bottom-color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ".btn-close border-left-color: rgb(0, 0, 0) became oklch(0.208 0.042 265.755)",
++   ".btn-close padding-top: 3.5px became 6px",
++   ".btn-close padding-right: 3.5px became 12px",
++   ".btn-close padding-bottom: 3.5px became 6px",
++   ".btn-close padding-left: 3.5px became 12px",
++ ]
+
+ ❯ tests/service/tailwind/consumer.test.ts:477:19
+    475|      ),
+    476|     ).toEqual([])
+    477|     expect(moved).toEqual([])
+       |                   ^
+    478|     // The same reading sees every floor class move on the control pag…
+    479|     // holds is one this reading could have refused.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > leaves every shared name resolving, on the recipe alone, what the cascade resolves over Tailwind's reset
+AssertionError: expected [ …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "container block-size: 920.75px became 918.75px",
++   "container height: 920.75px became 918.75px",
++   "container perspective-origin: 570px 460.375px became 570px 459.375px",
++   "container transform-origin: 570px 460.375px became 570px 459.375px",
++ ]
+
+ ❯ tests/service/tailwind/consumer.test.ts:508:53
+    506|   for (const name of shared) paired.push(...(await served.read(`[class…
+    507|   expect(paired).toHaveLength(standalone.length)
+    508|   expect(collectMovedLonghands(standalone, paired)).toEqual([])
+       |                                                     ^
+    509|  })
+    510| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  3 failed | 21 passed (24)
+   Start at  05:58:56
+   Duration  129.03s (transform 3.75s, setup 22.07s, import 8.72s, tests 95.91s, environment 20ms)
+
+exit=1
+elapsed=136s
++ cat /proc/loadavg
+21.22 18.82 13.68 11/710 28044
++ restore
+restored guide byte-identical
+restored preflight fixture byte-identical
+restored consumer fixture byte-identical
+git diff --stat unchanged from before the plant
+git status unchanged from before the plant

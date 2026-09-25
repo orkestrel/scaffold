@@ -1,0 +1,1185 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index aff38e3..9ff85e2 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -3264,10 +3264,10 @@ The following files carry the axis.
+ | `configs/src/tsconfig.styles.json`            | The check-only TypeScript project.                                                                                                                                                                                                                                                                 |
+ | `tests/setupStyles.ts`                        | The cascade readers, the normalizer, the guide table and fence readers, the case tables, and the retained value lists.                                                                                                                                                                             |
+ | `tests/setupServer.ts`                        | The Node-only readers: the installed and built cascades and the guide text, the compiled-stylesheet reader, the shared-name readings, the guide's compatibility, deferral, departure, addition, media condition, and keyframes tables, the cascade comparisons, and the elements-layer tag reader. |
+-| `tests/setupService.ts`                       | The service setup: the readiness that verifies the compiler, the built cascade, the pinned Chromium, and the candidate list; the paths of the Tailwind profiles and fixtures; the profile compiler; and the stage that reads what a page resolves.                                                 |
++| `tests/setupService.ts`                       | The service setup: the readiness that verifies the compiler, the built cascade, the pinned Chromium, and the candidate list; the paths of the Tailwind profiles and fixtures and the floors and budgets of their proofs; the profile compiler; and the stage that reads what a page resolves.      |
+ | `tests/src/styles/`                           | The browser proofs of the shipped cascade.                                                                                                                                                                                                                                                         |
+ | `tests/setup.css`                             | The `tailwind` profile the service proofs compile, and the home of the exclusion line.                                                                                                                                                                                                             |
+-| `tests/fixtures/tailwind/`                    | The `preflight` profile, the unexcluded instrument, the executed consumer profile, and the markup that profile scans.                                                                                                                                                                              |
++| `tests/fixtures/tailwind/`                    | The `preflight` profile, the unexcluded instrument, the executed consumer profile of each recipe, the markup those profiles scan, and the component markup the `preflight` recipe is read over.                                                                                                    |
+ | `tests/service/tailwind/`                     | The Node proofs of the Tailwind profiles, the consumer pairing, and the preflight pairing, run in the `service` project.                                                                                                                                                                           |
+ | `src/styles/elements/_button.scss`            | The release's reboot, and the calibrated surface and its states, on every button, in the elements layer.                                                                                                                                                                                           |
+ 
+@@ -3335,11 +3335,11 @@ their build compiles. Veneer supports Tailwind 4.3.
+ 
+ The following table names each profile, what its entry declares, and where the pairing is proved.
+ 
+-| Profile      | Entry                                                                       | Layers Tailwind fills in a consumer build | Tailwind parts                                          | Proof                                                                                                                                      |
+-| ------------ | --------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `standalone` | The cascade alone.                                                          | None.                                     | None.                                                   | [layer order and position independence](../tests/src/styles/index.test.ts)                                                                 |
+-| `tailwind`   | The order line, the composable imports, the cascade, then the source rules. | `theme` and `utilities`.                  | `tailwindcss/theme.css` and `tailwindcss/utilities.css` | [stylesheet profiles](../tests/service/tailwind/profiles.test.ts) and [the consumer pairing](../tests/service/tailwind/consumer.test.ts)   |
+-| `preflight`  | The order line, the bare import, the cascade, then the source rules.        | `theme`, `base`, and `utilities`.         | `tailwindcss`                                           | [stylesheet profiles](../tests/service/tailwind/profiles.test.ts) and [the preflight pairing](../tests/service/tailwind/preflight.test.ts) |
++| Profile      | Entry                                                                       | Layers Tailwind fills in a consumer build | Tailwind parts                                          | Proof                                                                                                                                                                                                           |
++| ------------ | --------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `standalone` | The cascade alone.                                                          | None.                                     | None.                                                   | [layer order and position independence](../tests/src/styles/index.test.ts)                                                                                                                                      |
++| `tailwind`   | The order line, the composable imports, the cascade, then the source rules. | `theme` and `utilities`.                  | `tailwindcss/theme.css` and `tailwindcss/utilities.css` | [stylesheet profiles](../tests/service/tailwind/profiles.test.ts) and [the consumer pairing](../tests/service/tailwind/consumer.test.ts)                                                                        |
++| `preflight`  | The order line, the bare import, the cascade, then the source rules.        | `theme`, `base`, and `utilities`.         | `tailwindcss`                                           | [stylesheet profiles](../tests/service/tailwind/profiles.test.ts), [the consumer pairing](../tests/service/tailwind/consumer.test.ts), and [the preflight pairing](../tests/service/tailwind/preflight.test.ts) |
+ 
+ Under the composable imports, Tailwind fills a layer only for the utilities it generates from the
+ markup your `@source` rule names: the `utilities` layer carries those rules and the `theme` layer
+@@ -3398,22 +3398,43 @@ under Veneer's element treatment rather than over it.
+ @source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none border-1 border-2 border-3 border-4 border-5 text-wrap text-nowrap mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");
+ ```
+ 
+-The workspace compiles the `tailwind` recipe as written. The `tests/fixtures/tailwind/consumer.css`
+-fixture is that fence with one line changed — its `@source './markup.html';` line names the markup
++The workspace compiles each recipe as written. The `tests/fixtures/tailwind/consumer.css` fixture is
++the `tailwind` fence and the `tests/fixtures/tailwind/consumer-preflight.css` fixture is the
++`preflight` fence, each with one line changed — its `@source './markup.html';` line names the markup
+ fixture beside it in place of your own directory — and the consumer pairing holds every other line
+-of the file equal to the fence, so a recipe edited here and not there reddens rather than shipping a
+-recipe nothing compiled; see [the consumer pairing](../tests/service/tailwind/consumer.test.ts). The
+-workspace compiles the recipe with the installed PostCSS plugin in Node, from the fixture's own
++of each file equal to its fence, so a recipe edited here and not there reddens rather than shipping
++a recipe nothing compiled; see [the consumer pairing](../tests/service/tailwind/consumer.test.ts).
++The workspace compiles each recipe with the installed PostCSS plugin in Node, from the fixture's own
+ path, so the `@orkestrel/veneer/styles` specifier resolves through the manifest's `exports` entry
+-the way a consumer's install resolves it, and no alias, wrapper, or bundler stands in. The same
+-proof reads the sheet that recipe compiles to: the sheet carries Veneer's token namespace and its
+-component rules; the markup's `px-8` utility is generated, so the `@source` line reached the
+-scanner; every element carrying a shared class name resolves exactly what the shipped cascade alone
+-resolves for it; and the `px-8` utility moves the button's padding off the `.btn` declaration, which
+-is the override a consumer pairs Tailwind for. The `tests/fixtures/tailwind/unexcluded.css` fixture
+-is the negative control: with the exclusion line dropped, the same reading moves the
+-`grid-column-start` property of the `.col-1` element from `auto` to `1`, which is what shows the
+-equality can see a Tailwind rule winning.
++the way a consumer's install resolves it, and no alias, wrapper, or bundler stands in. The compile
++roots the plugin's automatic source detection at an empty directory, so the markup line is the one
++way the markup fixture reaches the scanner, and a class written only in the workspace's own text is
++never generated. The same proof reads the sheet the `tailwind` recipe compiles to: the sheet carries
++Veneer's token namespace and its component rules; the markup's `px-8` utility is generated, a
++reading a recipe without its markup line fails; every element carrying a shared class name resolves
++exactly what the shipped cascade alone resolves for it; and the `px-8` utility moves the button's
++padding off the `.btn` declaration, which is the override a consumer pairs Tailwind for. The
++`tests/fixtures/tailwind/unexcluded.css` fixture is the negative control: with the exclusion line
++dropped, the same reading moves the `grid-column-start` property of the `.col-1` element from `auto`
++to `1`, which is what shows the equality can see a Tailwind rule winning.
++
++The consumer pairing reads the `preflight` recipe on a page that links the sheet the recipe compiles
++to and nothing else, which is the page a consumer following it serves, so the recipe's own order
++line is the one that places the page's layers. The compiled sheet declares the order the cascade
++declares, behind Tailwind's generated `properties` layer, carries Veneer's token namespace and
++component rules, generates the markup's `px-8` utility through the markup line, and fills the `base`
++layer with Tailwind's reset rules, which the cascade leaves empty. The consumer pairing mounts the
++`tests/fixtures/tailwind/components.html` fixture, which carries the `.btn`, `.form-control`,
++`.form-select`, `.form-check-input`, `.btn-close`, `.nav-link`, `.page-link`, and `.table` classes,
++each a class whose rules write a longhand the reset also writes, among other component classes and
++the wrappers they sit in. Every element a component rule matches at rest resolves, on every longhand
++that rule declares, what the cascade alone resolves for it. The same compiled sheet with its order
++line removed is the negative control: the page then takes Tailwind's own order first and places
++Veneer's `reset` and `elements` layers after `utilities`, and the same reading moves each of those
++classes. Every element carrying a shared class name in the markup fixture resolves, under the
++recipe, what the cascade resolves with the recipe's reset and theme beneath it, so the exclusion
++line and Veneer's importance hold under this profile too. What the reset moves on a property Veneer
++leaves alone is the preflight pairing's reading, later in this section.
+ 
+ The order line never changes between profiles. It is the line the `src/styles/_tokens.scss`
+ file declares, and declaring it ahead of the Tailwind import is what makes Tailwind's own
+@@ -3437,10 +3458,10 @@ element in its markup fixture as visible, which is what the shipped cascade alon
+ 
+ The `tests/setup.css` file is where the workspace writes that line. The profiles proof reads it from
+ that file rather than repeating it, and holds every written copy equal to it — the recipes in this
+-section and the `tests/fixtures/tailwind/preflight.css` and `tests/fixtures/tailwind/consumer.css`
+-files; see [stylesheet profiles](../tests/service/tailwind/profiles.test.ts). So a release that
+-ships another shared class name extends the line, and every copy left behind reddens until it
+-matches.
++section and the `tests/fixtures/tailwind/preflight.css`, `tests/fixtures/tailwind/consumer.css`, and
++`tests/fixtures/tailwind/consumer-preflight.css` files; see [stylesheet
++profiles](../tests/service/tailwind/profiles.test.ts). So a release that ships another shared class
++name extends the line, and every copy left behind reddens until it matches.
+ 
+ Nothing writes the shared set down either; see [the consumer
+ pairing](../tests/service/tailwind/consumer.test.ts). That proof derives it per run as the class
+@@ -3474,32 +3495,22 @@ declare the `float` longhand at the logical `inline-start` and `inline-end` valu
+ declares the same longhand with the `!important` flag at the physical `left` and `right` values, so
+ a paired build floats each box to the physical side the release names. Tailwind's `overflow-*` rules
+ declare the `overflow` shorthand, which Chromium expands to the `overflow-x` and `overflow-y`
+-longhands, and Veneer declares the same shorthand with the `!important` flag. The proof asserts that
+-the `gap-3` name is in the branch and reads what the rule claims: with the exclusion line dropped
+-and Tailwind's own rule on the page, every element carrying a name in the branch resolves, for every
+-property that rule declares, what it resolves under the cascade alone. Each element is read on the
+-longhands its own name's rule declares, because a longhand another name declares can move for a
+-reason outside the equality: the gap rows sit inside the `.container` element, whose width moves
+-when the line is dropped, and the width steps declare the `width` longhand. A planted rule drives
+-the partial-importance case: it declares `!important` on the `grid-column-start` longhand alone,
+-leaving the `grid-column-end` longhand that Tailwind's `col-1` rule also declares normal, and the
+-equality still holds with the `col-1` class on the line.
+-cover it. The `bg-black`, `bg-white`, `bg-transparent`, `border-black`, `border-white`, and
+-`rounded` classes are shipped names off the line: Tailwind's rule for each declares the background
+-color, the border color, or the corner radii that Veneer declares with the `!important` flag. So are
+-the `border` and `border-0` classes: Tailwind's rule for each declares the border style and width
+-longhands, and Veneer's `border` shorthand sets both with the `!important` flag. The `border-1` to
+-`border-5` widths stay on the line: Tailwind's rule for each declares the border style longhands
+-beside the widths, and Veneer's important declaration is on the widths alone. The proof asserts that
+-cover it. The `text-start`, `text-end`, and `text-center` alignments and the `text-black` and
+-`text-white` colors are shipped names off the line: Tailwind's rule for each declares the
+-`text-align` or the `color` longhand, which Veneer declares with the `!important` flag, so the
+-`text-start` class resolves Veneer's physical `left` value rather than Tailwind's logical `start`
+-value. The `text-wrap` and `text-nowrap` classes stay on the line: Tailwind's rule for each declares
+-the `text-wrap` shorthand, which Chromium expands to the `text-wrap-mode` and `text-wrap-style`
+-longhands, and Veneer's important `white-space` shorthand expands to the `white-space-collapse` and
+-`text-wrap-mode` longhands, which leave the `text-wrap-style` longhand uncovered. The proof asserts
+-that the `gap-3` name is in the branch and reads what the rule claims:
++longhands, and Veneer declares the same shorthand with the `!important` flag. The `bg-black`,
++`bg-white`, `bg-transparent`, `border-black`, `border-white`, and `rounded` classes are shipped
++names off the line: Tailwind's rule for each declares the background color, the border color, or the
++corner radii that Veneer declares with the `!important` flag. So are the `border` and `border-0`
++classes: Tailwind's rule for each declares the border style and width longhands, and Veneer's
++`border` shorthand sets both with the `!important` flag. The `border-1` to `border-5` widths stay on
++the line: Tailwind's rule for each declares the border style longhands beside the widths, and
++Veneer's important declaration is on the widths alone, which does not cover them. The `text-start`,
++`text-end`, and `text-center` alignments and the `text-black` and `text-white` colors are shipped
++names off the line: Tailwind's rule for each declares the `text-align` or the `color` longhand,
++which Veneer declares with the `!important` flag, so the `text-start` class resolves Veneer's
++physical `left` value rather than Tailwind's logical `start` value. The `text-wrap` and
++`text-nowrap` classes stay on the line: Tailwind's rule for each declares the `text-wrap` shorthand,
++which Chromium expands to the `text-wrap-mode` and `text-wrap-style` longhands, and Veneer's
++important `white-space` shorthand expands to the `white-space-collapse` and `text-wrap-mode`
++longhands, which leave the `text-wrap-style` longhand uncovered.
+ 
+ The margin and padding steps split the same way the offsets do. The `m-*`, `mt-*`, `mb-*`, `p-*`,
+ `pt-*`, and `pb-*` names are shipped names off the line: Tailwind's rule for each declares the
+@@ -3510,6 +3521,17 @@ Tailwind's rule for each declares logical longhands, such as the `margin-inline-
+ do not cover them. The `pe-none`, `pe-auto`, and `user-select-*` names are not shared, because
+ Tailwind writes those as the `pointer-events-none`, `pointer-events-auto`, and `select-*` utilities.
+ 
++The consumer pairing asserts that the `gap-3` name is in the importance branch and reads what the
++rule for leaving the exclusion line claims: with the exclusion line dropped and Tailwind's own rule
++on the page, every element carrying a name in the importance branch resolves, for every property
++Tailwind's rule for that name declares, what it resolves under the cascade alone. Each element is
++read on the longhands its own name's rule declares, because a longhand another name declares can
++move for a reason outside the equality: the gap rows sit inside the `.container` element, whose
++width moves when the line is dropped, and the width steps declare the `width` longhand. A planted
++rule drives the partial-importance case: it declares `!important` on the `grid-column-start`
++longhand alone, leaving the `grid-column-end` longhand that Tailwind's `col-1` rule also declares
++normal, and the equality still holds with the `col-1` class on the line.
++
+ The workspace executes the profiles from `tests/setup.css` for the `tailwind` profile and
+ `tests/fixtures/tailwind/preflight.css` for the `preflight` profile. Those profiles scan a
+ candidate list derived from the built cascade rather than your markup, so every utility an executed
+@@ -11034,12 +11056,13 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.
+ The Tailwind proofs run in the `service` project: they compile each profile through the installed
+-PostCSS plugin in Node and drive the pinned Chromium over the built cascade; see
++PostCSS plugin in Node, scanning only the files the profile's own `@source` rules name, and drive
++the pinned Chromium over the built cascade; see
+ [stylesheet profiles](../tests/service/tailwind/profiles.test.ts),
+ [the consumer pairing](../tests/service/tailwind/consumer.test.ts), and
+ [the preflight pairing](../tests/service/tailwind/preflight.test.ts). § Tailwind names the profiles, the
+-recipe each one carries, the shared class names that recipe withholds, and every property preflight
+-moves.
++recipe each one carries, the shared class names that recipe withholds, the component classes the
++`preflight` recipe leaves where the cascade puts them, and every property preflight moves.
+ 
+ The conformance proofs pin the official release and its artifact digests, reject runtime boundary
+ escapes, check shipped CSS vocabulary and recorded animations, compare each declaration's priority
+diff --git a/tests/service/tailwind/consumer.test.ts b/tests/service/tailwind/consumer.test.ts
+index d46c4fd..d655d2f 100644
+--- a/tests/service/tailwind/consumer.test.ts
++++ b/tests/service/tailwind/consumer.test.ts
+@@ -1,11 +1,16 @@
+ import { requireValue } from '@orkestrel/test'
++import { createScratch } from '@orkestrel/test/server'
+ import { readFileSync } from 'node:fs'
++import { parse } from 'postcss'
+ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+ import { TOKEN_PREFIX } from '../../setup.js'
+ import {
++	CASCADE_PATH,
+ 	collectImportantNames,
+ 	collectInlineSources,
++	collectMovedLonghands,
+ 	collectRuleLonghands,
++	collectSelectorClasses,
+ 	collectSharedNames,
+ 	readBuiltCascade,
+ 	readVeneerGuide,
+@@ -13,8 +18,11 @@ import {
+ } from '../../setupServer.js'
+ import {
+ 	CANDIDATE_FLOOR,
++	COMPONENT_FLOOR,
++	COMPONENT_TIMEOUT,
+ 	compileProfile,
+ 	STAGE_TIMEOUT,
++	StageManager,
+ 	stage,
+ 	TAILWIND_PATHS,
+ } from '../../setupService.js'
+@@ -31,11 +39,14 @@ const SHIPPED_SOURCE = "@source './src';"
+ 
+ // The recipe's cascade import resolves through the manifest's `./styles` subpath, the way a
+ // consumer's install resolves it, so the compiled consumer profile carries the built cascade
+-// inline. Each profile compiles once for the file, from its own path.
+-const consumerSource = readFileSync(TAILWIND_PATHS.consumer, 'utf8')
++// inline. Each profile compiles once for the file, from its own path, and scans only the files its
++// own `@source` rules name, so the markup line is the one way the fixture markup reaches it.
++const consumerSource = readFileSync(TAILWIND_PATHS.consumer.tailwind, 'utf8')
+ const consumerMarkup = readFileSync(TAILWIND_PATHS.markup, 'utf8')
+-const consumerProfile = await compileProfile(TAILWIND_PATHS.consumer)
++const consumerProfile = await compileProfile(TAILWIND_PATHS.consumer.tailwind)
+ const instrumentProfile = await compileProfile(TAILWIND_PATHS.instrument)
++const preflightSource = readFileSync(TAILWIND_PATHS.consumer.preflight, 'utf8')
++const preflightProfile = await compileProfile(TAILWIND_PATHS.consumer.preflight)
+ const cascade = new SheetReader(readBuiltCascade())
+ 
+ // The instrument is the profile without its exclusion line, so what it emits is what Tailwind
+@@ -59,38 +70,44 @@ afterAll(async () => {
+ })
+ 
+ describe('the consumer pairing', () => {
+-	it('executes the recipe the guide ships, apart from the markup line each one names', () => {
+-		// The guide writes both recipes as `css` fences, and the composable imports are what tells
+-		// them apart: the `preflight` recipe takes the bare import instead. Reading the fences
++	it('executes each recipe the guide ships, apart from the markup line each one names', () => {
++		// The guide writes each recipe as a `css` fence carrying the markup line a consumer changes,
++		// the `tailwind` recipe first and the `preflight` recipe after it. Reading the fences
+ 		// through the Markdown parser rather than splitting the document on its fence marks is what
+ 		// keeps prose naming the same directive outside the comparison.
+ 		const recipes = collectFencedBlocks(readVeneerGuide(), 'css').filter((block) =>
+-			block.includes("@import 'tailwindcss/theme.css'"),
++			block.split('\n').includes(SHIPPED_SOURCE),
+ 		)
+-		expect(recipes).toHaveLength(1)
+-		const recipe = requireValue(recipes[0], 'The guide writes no tailwind recipe')
+-		expect(recipe.split('\n').filter((line) => line.startsWith("@source '"))).toEqual([
+-			SHIPPED_SOURCE,
+-		])
+-		expect(consumerSource.split('\n').filter((line) => line.startsWith("@source '"))).toEqual([
+-			EXECUTED_SOURCE,
+-		])
++		const executed = [consumerSource, preflightSource]
++		expect(recipes).toHaveLength(executed.length)
++		for (const recipe of recipes)
++			expect(recipe.split('\n').filter((line) => line.startsWith("@source '"))).toEqual([
++				SHIPPED_SOURCE,
++			])
++		for (const source of executed)
++			expect(source.split('\n').filter((line) => line.startsWith("@source '"))).toEqual([
++				EXECUTED_SOURCE,
++			])
+ 		// Every other line is the shipped text, so a recipe edited in the guide and not in the file
+ 		// the project compiles reddens here rather than shipping an untried recipe.
+ 		expect(
+-			consumerSource
+-				.trimEnd()
+-				.split('\n')
+-				.filter((line) => line !== EXECUTED_SOURCE),
++			executed.map((source) =>
++				source
++					.trimEnd()
++					.split('\n')
++					.filter((line) => line !== EXECUTED_SOURCE),
++			),
+ 		).toEqual(
+-			recipe
+-				.trimEnd()
+-				.split('\n')
+-				.filter((line) => line !== SHIPPED_SOURCE),
++			recipes.map((recipe) =>
++				recipe
++					.trimEnd()
++					.split('\n')
++					.filter((line) => line !== SHIPPED_SOURCE),
++			),
+ 		)
+ 	})
+ 
+-	it('resolves the cascade import, and declares the order the cascade puts the document in', () => {
++	it('resolves the cascade import, scans the markup line, and declares the order the cascade puts the document in', () => {
+ 		// A page linking the shipped cascade alone is placed in the cascade's own layer order, so
+ 		// that is the reading the compiled profile is held against.
+ 		const placed = cascade.order
+@@ -111,8 +128,9 @@ describe('the consumer pairing', () => {
+ 			layer.name === 'components' ? layer.selectors : [],
+ 		)
+ 		expect(components).toContain('.btn')
+-		// The markup the `@source` line names was scanned: the control utility the fixture's button
+-		// carries is generated, and it is a name the cascade declares no rule for.
++		// The markup line was scanned: the compile reads no file the recipe's own `@source` rules do
++		// not name, and the control utility the fixture's button carries is generated, a name the
++		// cascade declares no rule for, so a recipe without the line reddens here.
+ 		const utilities = consumer.layers.flatMap((layer) =>
+ 			layer.name === 'utilities' ? layer.selectors : [],
+ 		)
+@@ -163,16 +181,7 @@ describe('the consumer pairing', () => {
+ 		const paired: Array<ReadonlyMap<string, string>> = []
+ 		for (const name of shared) paired.push(...(await stage.read(`[class~="${name}"]`)))
+ 		expect(paired).toHaveLength(standalone.length)
+-		expect(
+-			standalone.flatMap(([name, snapshot], index) => {
+-				const after = requireValue(paired[index], 'The paired snapshot was never taken')
+-				return Array.from(snapshot).flatMap(([property, value]) =>
+-					after.get(property) === value
+-						? []
+-						: [`${name} ${property}: ${value} became ${String(after.get(property))}`],
+-				)
+-			}),
+-		).toEqual([])
++		expect(collectMovedLonghands(standalone, paired)).toEqual([])
+ 	})
+ 
+ 	it('keeps an important shared declaration whatever the recipe withholds', async () => {
+@@ -212,16 +221,7 @@ describe('the consumer pairing', () => {
+ 		for (const name of branch)
+ 			paired.push(...(await stage.read(`[class~="${name}"]`, longhands.get(name) ?? [])))
+ 		expect(paired).toHaveLength(standalone.length)
+-		expect(
+-			standalone.flatMap(([name, snapshot], index) => {
+-				const after = requireValue(paired[index], 'The paired snapshot was never taken')
+-				return Array.from(snapshot).flatMap(([property, value]) =>
+-					after.get(property) === value
+-						? []
+-						: [`${name} ${property}: ${value} became ${String(after.get(property))}`],
+-				)
+-			}),
+-		).toEqual([])
++		expect(collectMovedLonghands(standalone, paired)).toEqual([])
+ 	})
+ 
+ 	it('keeps a shared name on the line while its importance covers only some of the longhands Tailwind declares', async () => {
+@@ -254,13 +254,9 @@ describe('the consumer pairing', () => {
+ 		await stage.load(instrumentProfile)
+ 		const [paired] = await stage.read('.col-1')
+ 		const after = requireValue(paired, 'The fixture mounts no col-1')
+-		expect(
+-			Array.from(column).flatMap(([property, value]) =>
+-				after.get(property) === value
+-					? []
+-					: [`${property}: ${value} became ${String(after.get(property))}`],
+-			),
+-		).toContain('grid-column-start: auto became 1')
++		expect(collectMovedLonghands([['col-1', column]], [after])).toContain(
++			'col-1 grid-column-start: auto became 1',
++		)
+ 	})
+ 
+ 	it('overrides a component declaration with a utility Tailwind alone generates', async () => {
+@@ -333,3 +329,183 @@ describe('the consumer pairing', () => {
+ 		})
+ 	})
+ })
++
++describe('the preflight recipe', () => {
++	// A consumer following the `preflight` recipe links the stylesheet it compiles to and nothing
++	// else, so the page these proofs read the recipe on links the compiled recipe as its cascade.
++	// That page's layer order is the one the recipe's own order line places, which a sheet loaded
++	// after the linked cascade could never move.
++	const scratch = createScratch()
++	const served = new StageManager(scratch.path)
++	// The blocks the compiled recipe and the built cascade each open at their top level, as the
++	// text a page would load, beside the layer name each one opens.
++	const [compiledBlocks = [], cascadeBlocks = []] = [preflightProfile, readBuiltCascade()].map(
++		(css) =>
++			parse(css).nodes.flatMap((node) =>
++				node.type === 'atrule' && node.name === 'layer' && node.nodes !== undefined
++					? [{ name: node.params.trim(), text: String(node) }]
++					: [],
++			),
++	)
++	// Tailwind's reset is the recipe's `base` layer, and the tokens it reads are in the recipe's
++	// `theme` layer; the built cascade opens no `base` block of its own.
++	const reset = compiledBlocks
++		.filter((block) => block.name === 'theme' || block.name === 'base')
++		.map((block) => block.text)
++		.join('\n')
++
++	beforeAll(async () => {
++		scratch.write(CASCADE_PATH, preflightProfile)
++		await served.open()
++	}, STAGE_TIMEOUT)
++
++	afterEach(async () => {
++		await served.clear()
++	})
++
++	afterAll(async () => {
++		await served.destroy()
++		scratch.destroy()
++	})
++
++	it("resolves the cascade import, scans the markup line, declares the order the cascade puts the document in, and fills the base layer with Tailwind's reset", () => {
++		const compiled = new SheetReader(preflightProfile)
++		// The recipe's order line is the one the cascade's own layers follow, so Tailwind's
++		// narrower order merges into it and its generated properties layer is the one name ahead.
++		expect(compiled.order).toEqual(['properties', ...cascade.order])
++		// The cascade import resolved: Veneer's token namespace is in the `theme` block, and the
++		// component rules are in the `components` block.
++		expect(
++			compiled.declarations.some(
++				(declaration) =>
++					declaration.layer === 'theme' && declaration.property.startsWith(TOKEN_PREFIX),
++			),
++		).toBe(true)
++		expect(
++			compiled.layers.flatMap((layer) => (layer.name === 'components' ? layer.selectors : [])),
++		).toContain('.btn')
++		// The bare import reached the reset: the `base` block carries Tailwind's rules, because the
++		// cascade opens no such block, and a block opened with nothing in it is not a reset.
++		expect(cascadeBlocks.filter((block) => block.name === 'base')).toEqual([])
++		expect(
++			compiledBlocks
++				.filter((block) => block.name === 'base')
++				.flatMap((block) => new SheetReader(block.text).selectors),
++		).not.toEqual([])
++		// The markup line was scanned: the compile reads no file the recipe's own `@source` rules do
++		// not name, and the fixture button's control utility is generated, so a recipe without the
++		// line reddens here.
++		expect(
++			compiled.layers.flatMap((layer) => (layer.name === 'utilities' ? layer.selectors : [])),
++		).toContain('.px-8')
++	})
++
++	it(
++		'keeps every longhand a component rule declares where the cascade alone resolves it, and moves each floor class when the order line is dropped',
++		async () => {
++			// The longhands Tailwind's reset writes and the ones each component rule writes, as Chromium
++			// expands them, so a shorthand counts as the longhands it sets.
++			const written = (
++				await stage.expand(
++					compiledBlocks
++						.filter((block) => block.name === 'base')
++						.map((block) => block.text)
++						.join('\n'),
++				)
++			).flatMap((rule) => rule.properties.filter((property) => !property.startsWith('--')))
++			const rules = (
++				await stage.expand(
++					cascadeBlocks
++						.filter((block) => block.name === 'components')
++						.map((block) => block.text)
++						.join('\n'),
++				)
++			).map((rule) => ({
++				...rule,
++				properties: rule.properties.filter((property) => !property.startsWith('--')),
++			}))
++			// Every floor class is one whose rules write a longhand the reset also writes, so the floor
++			// is drawn from the population the recipe could move.
++			const declared = collectRuleLonghands(rules, COMPONENT_FLOOR)
++			expect(
++				COMPONENT_FLOOR.filter(
++					(name) => !(declared.get(name) ?? []).some((property) => written.includes(property)),
++				),
++			).toEqual([])
++			// The control is the same compiled bytes without the recipe's order line: the page then
++			// takes Tailwind's own order first and places Veneer's `reset` and `elements` layers after
++			// `utilities`, which is the page a consumer who dropped the line would get.
++			const [order] = preflightSource.split('\n')
++			const unordered = preflightProfile.replace(`${String(order)}\n`, '')
++			expect(new SheetReader(unordered).order.slice(-2)).toEqual(['reset', 'elements'])
++			const controlScratch = createScratch()
++			const control = new StageManager(controlScratch.path)
++			controlScratch.write(CASCADE_PATH, unordered)
++			try {
++				await control.open()
++				const markup = readFileSync(TAILWIND_PATHS.components, 'utf8')
++				for (const page of [stage, served, control]) await page.mount(markup)
++				// Each rule is read on every element it matches at rest, on the page carrying the cascade
++				// alone and on each recipe page, and compared on the longhands that rule declares. A rule
++				// for a state or a pseudo-element matches no element at rest and reads nothing.
++				const reached: string[] = []
++				const moved: string[] = []
++				const displaced: string[] = []
++				for (const rule of rules) {
++					const query = `#stage :is(${rule.selector})`
++					const standalone = await stage.read(query, rule.properties)
++					if (standalone.length === 0) continue
++					const paired = await served.read(query, rule.properties)
++					const dropped = await control.read(query, rule.properties)
++					expect(`${rule.selector} | ${String(paired.length)} | ${String(dropped.length)}`).toBe(
++						`${rule.selector} | ${String(standalone.length)} | ${String(standalone.length)}`,
++					)
++					const names = collectSelectorClasses(rule.selector)
++					for (const name of names)
++						for (const property of rule.properties) reached.push(`${name} | ${property}`)
++					const labelled = standalone.map((snapshot) => [rule.selector, snapshot] as const)
++					moved.push(...collectMovedLonghands(labelled, paired))
++					if (collectMovedLonghands(labelled, dropped).length > 0) displaced.push(...names)
++				}
++				// Each floor class was read on a longhand the reset also writes, so the equality covers
++				// what the recipe could have moved rather than an empty population.
++				expect(
++					COMPONENT_FLOOR.filter(
++						(name) => !written.some((property) => reached.includes(`${name} | ${property}`)),
++					),
++				).toEqual([])
++				expect(moved).toEqual([])
++				// The same reading sees every floor class move on the control page, so an equality that
++				// holds is one this reading could have refused.
++				expect(COMPONENT_FLOOR.filter((name) => !displaced.includes(name))).toEqual([])
++			} finally {
++				await control.destroy()
++				controlScratch.destroy()
++			}
++		},
++		COMPONENT_TIMEOUT,
++	)
++
++	it("leaves every shared name resolving, on the recipe alone, what the cascade resolves over Tailwind's reset", async () => {
++		for (const name of CANDIDATE_FLOOR) expect(shared).toContain(name)
++		// The reset moves properties Veneer leaves alone, which the preflight pairing records, so
++		// the reading this equality is held against is the cascade with the recipe's reset and
++		// the tokens it reads loaded beneath it. What remains between the baseline page and the
++		// recipe page is Tailwind's generated utilities, which is what the exclusion line and
++		// Veneer's importance govern.
++		await stage.mount(consumerMarkup)
++		await stage.load(reset)
++		const standalone: Array<readonly [string, ReadonlyMap<string, string>]> = []
++		for (const name of shared) {
++			for (const snapshot of await stage.read(`[class~="${name}"]`)) {
++				standalone.push([name, snapshot])
++			}
++		}
++		expect(standalone).not.toEqual([])
++		await served.mount(consumerMarkup)
++		const paired: Array<ReadonlyMap<string, string>> = []
++		for (const name of shared) paired.push(...(await served.read(`[class~="${name}"]`)))
++		expect(paired).toHaveLength(standalone.length)
++		expect(collectMovedLonghands(standalone, paired)).toEqual([])
++	})
++})
+diff --git a/tests/service/tailwind/preflight.test.ts b/tests/service/tailwind/preflight.test.ts
+index 0026467..e36a94a 100644
+--- a/tests/service/tailwind/preflight.test.ts
++++ b/tests/service/tailwind/preflight.test.ts
+@@ -1,8 +1,19 @@
+ import type { LonghandRule } from '../../setupServer.js'
+ import { requireValue } from '@orkestrel/test'
+ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+-import { readBuiltCascade, readVeneerGuide, SheetReader } from '../../setupServer.js'
+-import { compileProfile, STAGE_TIMEOUT, stage, TAILWIND_PATHS } from '../../setupService.js'
++import {
++	collectMovedLonghands,
++	readBuiltCascade,
++	readVeneerGuide,
++	SheetReader,
++} from '../../setupServer.js'
++import {
++	compileProfile,
++	OVERLAP_FLOOR,
++	STAGE_TIMEOUT,
++	stage,
++	TAILWIND_PATHS,
++} from '../../setupService.js'
+ import {
+ 	collectTypeSelectors,
+ 	computeContentExtent,
+@@ -13,11 +24,6 @@ import {
+ 	readPreflightDepartures,
+ } from '../../setupStyles.js'
+ 
+-// The tags the overlap has to reach before a reading taken over it means anything. Each one is a
+-// tag Tailwind's reset and Veneer's elements layer both treat, so a derivation that found nothing
+-// cannot pass the case that uses it.
+-const FLOOR_TAGS = ['a', 'button', 'h1', 'hr', 'img', 'input', 'table', 'textarea']
+-
+ // The profile compiles once for the file, from its own path, through the installed plugin.
+ const preflightProfile = await compileProfile(TAILWIND_PATHS.preflight)
+ const reset = new SheetReader(preflightProfile).layers.filter((layer) => layer.name === 'base')
+@@ -88,7 +94,7 @@ afterAll(async () => {
+ 
+ describe('the preflight pairing', () => {
+ 	it('derives the overlapping tags and the properties the reset declares', async () => {
+-		for (const tag of FLOOR_TAGS) expect(overlap).toContain(tag)
++		for (const tag of OVERLAP_FLOOR) expect(overlap).toContain(tag)
+ 		// The property set is what the comparison walks, so the reset's universal rule contributes
+ 		// its properties to every element's reading rather than to the elements it names. Chromium
+ 		// expands the whole profile, so `border: 0 solid` is read as every side's width, style, and
+@@ -175,21 +181,20 @@ describe('the preflight pairing', () => {
+ 			]
+ 			const reached = [...new Set([...lower, ...declared])]
+ 			const restated = `${tag} { ${reached.map((property) => `${property}: initial`).join('; ')} }`
+-			const [held] = await stage.read(tag, reached)
++			const [reading] = await stage.read(tag, reached)
++			const held = requireValue(reading, `The fixture rendered no ${tag}`)
+ 			await stage.load(`@layer ${String(layer)} { ${restated} }`)
+-			const [staged] = await stage.read(tag, reached)
++			const staged = await stage.read(tag, reached)
+ 			await stage.load(`@layer control { ${restated} }`)
+ 			const [above] = await stage.read(tag, reached)
+-			const moved = reached.filter((property) => above?.get(property) !== held?.get(property))
++			const moved = reached.filter((property) => above?.get(property) !== held.get(property))
+ 			expect(`${tag} | ${String(moved.some((property) => lower.includes(property)))}`).toBe(
+ 				`${tag} | true`,
+ 			)
+ 			expect(`${tag} | ${String(moved.some((property) => declared.includes(property)))}`).toBe(
+ 				`${tag} | true`,
+ 			)
+-			expect(reached.filter((property) => staged?.get(property) !== held?.get(property))).toEqual(
+-				[],
+-			)
++			expect(collectMovedLonghands([[tag, held]], staged)).toEqual([])
+ 		}
+ 		// The profile's reset beats the staged defaults, the way it beats the user-agent origin.
+ 		await stage.clear()
+@@ -203,7 +208,7 @@ describe('the preflight pairing', () => {
+ 	it.each(PREFLIGHT_BUILDS)(
+ 		'keeps every longhand the elements layer declares, holds each moved form-control height to its content box height, and every other move to its recorded preflight value, under %s',
+ 		async (_build, defaults) => {
+-			for (const tag of FLOOR_TAGS) expect(overlap).toContain(tag)
++			for (const tag of OVERLAP_FLOOR) expect(overlap).toContain(tag)
+ 			const measured: string[] = []
+ 			const kept: string[] = []
+ 			const sized: string[] = []
+diff --git a/tests/service/tailwind/profiles.test.ts b/tests/service/tailwind/profiles.test.ts
+index 6b985ea..86a65c4 100644
+--- a/tests/service/tailwind/profiles.test.ts
++++ b/tests/service/tailwind/profiles.test.ts
+@@ -182,10 +182,10 @@ describe('stylesheet profiles', () => {
+ 	})
+ 
+ 	it('holds every written copy of the exclusion line equal to the profile that declares it', () => {
+-		// The guide's recipes and the preflight fixture each repeat the list, so the claim that the
+-		// profile is its one home is only true if something holds the copies to it. This is that
+-		// something: a release that extends the line and leaves a copy behind reddens here rather
+-		// than shipping two lists that disagree.
++		// The guide's recipes, the preflight profile, and each recipe the workspace executes repeat
++		// the list, so the claim that the profile is its one home is only true if something holds
++		// the copies to it. This is that something: a release that extends the line and leaves a
++		// copy behind reddens here rather than shipping two lists that disagree.
+ 		const [exclusion] = collectInlineSources(tailwindSource).filter((source) => source.excluded)
+ 		const declared = requireValue(
+ 			exclusion,
+@@ -197,11 +197,12 @@ describe('stylesheet profiles', () => {
+ 		// — which is the reader working.
+ 		const fences = collectFencedBlocks(readVeneerGuide(), 'css')
+ 		expect(fences).not.toEqual([])
+-		const consumer = readFileSync(TAILWIND_PATHS.consumer, 'utf8')
+ 		const copies = [
+ 			...collectInlineSources(fences.join('\n')),
+ 			...collectInlineSources(preflightSource),
+-			...collectInlineSources(consumer),
++			...Object.values(TAILWIND_PATHS.consumer).flatMap((path) =>
++				collectInlineSources(readFileSync(path, 'utf8')),
++			),
+ 		]
+ 		expect(copies).not.toEqual([])
+ 		for (const copy of copies) {
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index dafd6e0..867ec6d 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -61,6 +61,7 @@ import {
+ 	collectLedger,
+ 	collectMandatedRelatives,
+ 	collectMediaFeatures,
++	collectMovedLonghands,
+ 	indexRecordingKeys,
+ 	collectRuleLonghands,
+ 	collectSelectorClasses,
+@@ -536,6 +537,7 @@ describe('server setup', () => {
+ 			'collectLedger',
+ 			'collectMandatedRelatives',
+ 			'collectMediaFeatures',
++			'collectMovedLonghands',
+ 			'collectRuleLonghands',
+ 			'collectSelectorClasses',
+ 			'collectSharedNames',
+@@ -3298,6 +3300,85 @@ describe('collectImportantNames', () => {
+ 	})
+ })
+ 
++describe('collectMovedLonghands', () => {
++	it('reports nothing for readings that resolve every longhand alike', () => {
++		const standalone: ReadonlyArray<readonly [string, ReadonlyMap<string, string>]> = [
++			[
++				'col-1',
++				new Map([
++					['grid-column-start', 'auto'],
++					['grid-column-end', 'auto'],
++				]),
++			],
++			['table', new Map([['color', 'rgb(33, 37, 41)']])],
++		]
++		// The paired readings are separate maps carrying the same values, in another key order, so a
++		// comparison by identity or by position would report them.
++		expect(
++			collectMovedLonghands(standalone, [
++				new Map([
++					['grid-column-end', 'auto'],
++					['grid-column-start', 'auto'],
++				]),
++				new Map([['color', 'rgb(33, 37, 41)']]),
++			]),
++		).toEqual([])
++		expect(collectMovedLonghands([], [])).toEqual([])
++	})
++
++	it('reports each longhand whose value changed, labelled with its reading, in reading order', () => {
++		expect(
++			collectMovedLonghands(
++				[
++					[
++						'col-1',
++						new Map([
++							['grid-column-start', 'auto'],
++							['grid-column-end', 'auto'],
++						]),
++					],
++					['table', new Map([['color', 'rgb(33, 37, 41)']])],
++					['col-1', new Map([['grid-column-start', 'auto']])],
++				],
++				[
++					new Map([
++						['grid-column-start', '1'],
++						['grid-column-end', 'auto'],
++					]),
++					new Map([['color', 'rgb(0, 0, 0)']]),
++					new Map([['grid-column-start', 'auto']]),
++				],
++			),
++		).toEqual([
++			'col-1 grid-column-start: auto became 1',
++			'table color: rgb(33, 37, 41) became rgb(0, 0, 0)',
++		])
++	})
++
++	it('reports a longhand the paired reading lacks, and every longhand of a reading with no pair', () => {
++		// A paired reading taken on fewer properties, or never taken, is a move of each longhand it
++		// does not resolve rather than a silent pass.
++		expect(
++			collectMovedLonghands(
++				[
++					[
++						'btn',
++						new Map([
++							['padding-left', '12px'],
++							['color', 'rgb(255, 255, 255)'],
++						]),
++					],
++					['nav-link', new Map([['text-decoration-line', 'none']])],
++				],
++				[new Map([['padding-left', '12px']])],
++			),
++		).toEqual([
++			'btn color: rgb(255, 255, 255) became undefined',
++			'nav-link text-decoration-line: none became undefined',
++		])
++	})
++})
++
+ describe('collectInlineSources', () => {
+ 	it('reads the source directives a stylesheet declares, apart from what a compiler does with them', () => {
+ 		const source = [
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 2d443f5..ac753f6 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -2606,6 +2606,46 @@ export function collectImportantNames(
+ 	return names
+ }
+ 
++/**
++ * Collects the longhands whose resolved value moved between a standalone and a paired reading of
++ * the same elements.
++ *
++ * @param standalone - The standalone readings, each labelled, such as a class name and the computed
++ *   snapshot of one element carrying it under the cascade alone.
++ * @param paired - The paired readings, in the order of `standalone`, such as the same elements read
++ *   after a compiled profile arrived.
++ * @returns One line per moved longhand, in reading order and then in the order each standalone
++ *   reading enumerates its properties, written as `label property: value became after`. An empty
++ *   list means every longhand of every standalone reading resolved alike.
++ *
++ * @remarks
++ * The walk runs over the standalone reading's properties, so a longhand the paired reading lacks is
++ * a move to `undefined`, and a standalone reading with no paired reading at its index reports every
++ * longhand it holds. A paired reading taken on fewer properties, or never taken, therefore reports
++ * rather than passing unread. Each pair is compared by the value its map holds for a property,
++ * never by key order.
++ *
++ * @example
++ * ```ts
++ * collectMovedLonghands([['col-1', new Map([['grid-column-start', 'auto']])]], [new Map([['grid-column-start', '1']])])
++ * // ['col-1 grid-column-start: auto became 1']
++ * ```
++ */
++export function collectMovedLonghands(
++	standalone: ReadonlyArray<readonly [string, ReadonlyMap<string, string>]>,
++	paired: ReadonlyArray<ReadonlyMap<string, string>>,
++): readonly string[] {
++	const moved: string[] = []
++	for (const [index, [label, snapshot]] of standalone.entries()) {
++		const after = paired[index]
++		for (const [property, value] of snapshot) {
++			const settled = after?.get(property)
++			if (settled !== value) moved.push(`${label} ${property}: ${value} became ${String(settled)}`)
++		}
++	}
++	return moved
++}
++
+ /** Carries one `@source inline(…)` directive a stylesheet's own bytes declare. */
+ export interface InlineSource {
+ 	readonly excluded: boolean
+diff --git a/tests/setupService.test.ts b/tests/setupService.test.ts
+index fac3847..19f22c4 100644
+--- a/tests/setupService.test.ts
++++ b/tests/setupService.test.ts
+@@ -12,8 +12,10 @@ import * as setup from './setupService.js'
+ import {
+ 	CANDIDATE_FLOOR,
+ 	CANDIDATES_PATH,
++	COMPONENT_FLOOR,
+ 	compileProfile,
+ 	importCompiler,
++	OVERLAP_FLOOR,
+ 	PASSING_READINESS,
+ 	READINESS_INPUT,
+ 	resolveBrowserTarget,
+@@ -26,10 +28,13 @@ import {
+ } from './setupService.js'
+ 
+ describe('service setup', () => {
+-	it('exports the readiness verdict and its gathering, the compiler loader, the profile compile, the Tailwind paths, and the stage', () => {
++	it('exports the readiness verdict and its gathering, the compiler loader, the profile compile, the Tailwind paths and floors, the proof budgets, and the stage', () => {
+ 		expect(Object.keys(setup).sort()).toEqual([
+ 			'CANDIDATES_PATH',
+ 			'CANDIDATE_FLOOR',
++			'COMPONENT_FLOOR',
++			'COMPONENT_TIMEOUT',
++			'OVERLAP_FLOOR',
+ 			'PASSING_READINESS',
+ 			'READINESS_INPUT',
+ 			'STAGE_TIMEOUT',
+@@ -44,8 +49,11 @@ describe('service setup', () => {
+ 		])
+ 		expect(stage).toBeInstanceOf(StageManager)
+ 		expect(Object.isFrozen(CANDIDATE_FLOOR)).toBe(true)
++		expect(Object.isFrozen(COMPONENT_FLOOR)).toBe(true)
++		expect(Object.isFrozen(OVERLAP_FLOOR)).toBe(true)
+ 		expect(Object.isFrozen(PASSING_READINESS)).toBe(true)
+ 		expect(Object.isFrozen(TAILWIND_PATHS)).toBe(true)
++		expect(Object.isFrozen(TAILWIND_PATHS.consumer)).toBe(true)
+ 	})
+ })
+ 
+@@ -113,23 +121,29 @@ describe('CANDIDATE_FLOOR', () => {
+ 
+ describe('TAILWIND_PATHS', () => {
+ 	it('locates each Tailwind profile and fixture the service proofs read, as a file under the workspace root', () => {
+-		// Each key names the file a proof means by it, so a path pointed at the wrong file reddens
++		// Each key names the file a proof means by it, and the `consumer` group keys each recipe the
++		// workspace executes by the profile it carries, so a path pointed at the wrong file reddens
+ 		// here even while that file exists. The proofs pass these paths to the compiler as the
+ 		// compile's `from`, which is why each one is absolute rather than relative to the root.
++		const located = Object.entries(TAILWIND_PATHS).flatMap(([name, value]) =>
++			typeof value === 'string'
++				? [{ name, path: value }]
++				: Object.entries(value).map(([profile, path]) => ({ name: `${name}.${profile}`, path })),
++		)
+ 		expect(
+-			Object.entries(TAILWIND_PATHS)
+-				.map(([name, path]) => `${name} ${relative(WORKSPACE_ROOT, path).replaceAll('\\', '/')}`)
++			located
++				.map(({ name, path }) => `${name} ${relative(WORKSPACE_ROOT, path).replaceAll('\\', '/')}`)
+ 				.sort(),
+ 		).toEqual([
+-			'consumer tests/fixtures/tailwind/consumer.css',
++			'components tests/fixtures/tailwind/components.html',
++			'consumer.preflight tests/fixtures/tailwind/consumer-preflight.css',
++			'consumer.tailwind tests/fixtures/tailwind/consumer.css',
+ 			'instrument tests/fixtures/tailwind/unexcluded.css',
+ 			'markup tests/fixtures/tailwind/markup.html',
+ 			'preflight tests/fixtures/tailwind/preflight.css',
+ 			'tailwind tests/setup.css',
+ 		])
+-		const missing = Object.values(TAILWIND_PATHS).filter(
+-			(path) => !isAbsolute(path) || !existsSync(path),
+-		)
++		const missing = located.filter(({ path }) => !isAbsolute(path) || !existsSync(path))
+ 		expect(missing).toEqual([])
+ 	})
+ })
+@@ -289,6 +303,26 @@ describe('compileProfile', () => {
+ 		}
+ 	})
+ 
++	it("scans only the markup the profile's own source rules name, and nothing the working directory carries", async () => {
++		// The profile leaves automatic source detection on, which the plugin roots at the working
++		// directory unless told otherwise, and this workspace's own text carries many candidate
++		// names. So the same bytes compiled through the plugin's default emit names the markup never
++		// wrote, which is what makes the compile holding to the markup a reading that could fail.
++		const scratch = createScratch()
++		try {
++			const path = scratch.write('profile.css', "@tailwind utilities;\n@source './markup.html';\n")
++			scratch.write('markup.html', '<div class="flex">Row</div>\n')
++			expect(new SheetReader(await compileProfile(path)).names).toEqual(['flex'])
++			const plugin = await importCompiler()
++			const detected = await postcss([plugin()]).process(readFileSync(path, 'utf8'), {
++				from: path,
++			})
++			expect(new SheetReader(detected.css).names.filter((name) => name !== 'flex')).not.toEqual([])
++		} finally {
++			scratch.destroy()
++		}
++	})
++
+ 	it('refuses a profile whose import resolves to nothing', async () => {
+ 		const scratch = createScratch()
+ 		try {
+diff --git a/tests/setupService.ts b/tests/setupService.ts
+index 7a49b49..0a93b90 100644
+--- a/tests/setupService.ts
++++ b/tests/setupService.ts
+@@ -1,7 +1,8 @@
+ // Service setup: the readiness the `service` project hard-requires before any of its proofs runs,
+-// the paths of the Tailwind profiles and fixtures those proofs compile and read, and the stage
+-// those proofs read Chromium's answers through. The service here is the installed
+-// Tailwind compiler, driven for real against the built cascade and the browser the stage launches.
++// the paths of the Tailwind profiles and fixtures those proofs compile and read, the floors their
++// derivations are held to, their budgets, and the stage those proofs read Chromium's answers
++// through. The service here is the installed Tailwind compiler, driven for real against the built
++// cascade and the browser the stage launches.
+ // Readiness checks that the compiler compiles, that the built cascade is present and not empty,
+ // that the browser is there to launch, and that the cascade declares the candidate floor. It
+ // refuses loudly, naming the cause and, where a command restores it, that command, rather than
+@@ -12,7 +13,7 @@
+ import type { TeardownInterface } from '@orkestrel/test'
+ import type { PlaywrightProviderOptions } from '@vitest/browser-playwright'
+ import type { Browser, ElementHandle, Page } from 'playwright'
+-import type { PluginCreator } from 'postcss'
++import type tailwindcss from '@tailwindcss/postcss'
+ import type { LonghandRule } from './setupServer.js'
+ import { createTeardown, requireValue } from '@orkestrel/test'
+ import { createScratch } from '@orkestrel/test/server'
+@@ -53,7 +54,7 @@ export interface Readiness {
+  */
+ export interface ReadinessOptions {
+ 	readonly root?: string
+-	readonly compiler?: () => Promise<PluginCreator<never>>
++	readonly compiler?: () => Promise<typeof tailwindcss>
+ }
+ 
+ /** Locates the candidate list under a workspace root, the path the `@source` rule in `tests/setup.css` names. */
+@@ -65,18 +66,25 @@ export const CANDIDATES_PATH = 'tmp/tailwind/candidates.txt'
+  *
+  * @remarks
+  * The `tailwind` key is the `tests/setup.css` file, the `tailwind` profile and the home of the
+- * exclusion line. The `preflight` key is the `preflight` profile, the `consumer` key the guide's
+- * `tailwind` recipe as the workspace executes it, the `instrument` key the `tailwind` profile
+- * without its exclusion line, and the `markup` key the markup the consumer profile scans, each
+- * under the `tests/fixtures/tailwind/` directory. Each path is absolute
+- * because {@link compileProfile} passes it to the compiler as the compile's `from`.
++ * exclusion line. Every other path is under the `tests/fixtures/tailwind/` directory. The
++ * `preflight` key is the `preflight` profile, and the `instrument` key the `tailwind` profile
++ * without its exclusion line. The `consumer` group holds each recipe the guide ships as the
++ * workspace executes it, keyed by the profile the recipe carries: its `tailwind` key is the
++ * `consumer.css` file and its `preflight` key the `consumer-preflight.css` file. The `markup` key
++ * is the markup those recipes scan, and the `components` key the component markup the `preflight`
++ * recipe is read over. Each path is absolute because {@link compileProfile} passes it to the
++ * compiler as the compile's `from`.
+  */
+ export const TAILWIND_PATHS = Object.freeze({
+ 	tailwind: resolve(WORKSPACE_ROOT, 'tests/setup.css'),
+ 	preflight: resolve(WORKSPACE_ROOT, 'tests/fixtures/tailwind/preflight.css'),
+-	consumer: resolve(WORKSPACE_ROOT, 'tests/fixtures/tailwind/consumer.css'),
+ 	instrument: resolve(WORKSPACE_ROOT, 'tests/fixtures/tailwind/unexcluded.css'),
++	consumer: Object.freeze({
++		tailwind: resolve(WORKSPACE_ROOT, 'tests/fixtures/tailwind/consumer.css'),
++		preflight: resolve(WORKSPACE_ROOT, 'tests/fixtures/tailwind/consumer-preflight.css'),
++	}),
+ 	markup: resolve(WORKSPACE_ROOT, 'tests/fixtures/tailwind/markup.html'),
++	components: resolve(WORKSPACE_ROOT, 'tests/fixtures/tailwind/components.html'),
+ })
+ 
+ /**
+@@ -106,6 +114,47 @@ export const CANDIDATE_FLOOR: readonly string[] = Object.freeze([
+ 	'caption-bottom',
+ ])
+ 
++/**
++ * Lists the component classes the `preflight` recipe has to leave where the cascade puts them
++ * before a reading over the rest of the component rules means anything.
++ *
++ * @remarks
++ * The rules of each one write a longhand Tailwind's reset also writes, which the consumer pairing
++ * derives from the compiled recipe and the built cascade rather than assumes, and the
++ * `tests/fixtures/tailwind/components.html` fixture carries each one. A reading that reached none
++ * of them would compare nothing the recipe could move and pass for that reason alone.
++ */
++export const COMPONENT_FLOOR: readonly string[] = Object.freeze([
++	'btn',
++	'form-control',
++	'form-select',
++	'form-check-input',
++	'btn-close',
++	'nav-link',
++	'page-link',
++	'table',
++])
++
++/**
++ * Lists the tags the preflight pairing's overlap has to reach before a reading taken over it means
++ * anything.
++ *
++ * @remarks
++ * Each one is a tag Tailwind's reset and Veneer's `elements` layer both treat, so a derivation of
++ * the overlap that found nothing fails the cases that read it rather than passing over an empty
++ * population.
++ */
++export const OVERLAP_FLOOR: readonly string[] = Object.freeze([
++	'a',
++	'button',
++	'h1',
++	'hr',
++	'img',
++	'input',
++	'table',
++	'textarea',
++])
++
+ /**
+  * Supplies readiness evidence every gate passes, for a proof to vary one field at a time.
+  *
+@@ -124,6 +173,18 @@ export const PASSING_READINESS: Readiness = Object.freeze({
+ /** Sets the stage lifecycle budget from its 3528 ms contended run: twice that duration plus 5000 ms. */
+ export const STAGE_TIMEOUT = 12_056
+ 
++/**
++ * Sets the budget of the preflight recipe's component case from its 9074 ms contended run: twice
++ * that duration plus 5000 ms.
++ *
++ * @remarks
++ * The case launches a Chromium browser of its own for the control page, and reads every component
++ * rule on the page carrying the cascade alone, the page serving the recipe, and the control page,
++ * so it carries a budget of its own rather than the project's default. The run it is sized from was
++ * a full `npm run test:service` at a load average of 20.50 on 4 CPUs.
++ */
++export const COMPONENT_TIMEOUT = 23_148
++
+ /**
+  * Scans gathered readiness evidence for the first gate it fails.
+  *
+@@ -215,7 +276,7 @@ export function resolveBrowserTarget(
+  * const tailwindcss = await importCompiler()
+  * ```
+  */
+-export async function importCompiler(): Promise<PluginCreator<never>> {
++export async function importCompiler(): Promise<typeof tailwindcss> {
+ 	const module = await import('@tailwindcss/postcss')
+ 	return module.default
+ }
+@@ -283,6 +344,12 @@ export async function verifyReadiness(options: ReadinessOptions = {}): Promise<v
+  * the profile resolves against the directory the profile sits in, the way a consumer's build
+  * resolves the recipe it copied. No bundler or alias stands between the profile and the compiler.
+  *
++ * The plugin roots its automatic source detection at the working directory unless it is given a
++ * base, and an import that writes no `source(…)` argument leaves that detection on, as each recipe
++ * the guide ships does. The compile gives the plugin an empty scratch directory it owns and
++ * removes, so the compiler scans exactly the files the profile's own `@source` rules name and never
++ * the workspace's text. A profile that writes `source(none)` compiles the same either way.
++ *
+  * @example
+  * ```ts
+  * await compileProfile(TAILWIND_PATHS.tailwind)
+@@ -290,8 +357,16 @@ export async function verifyReadiness(options: ReadinessOptions = {}): Promise<v
+  */
+ export async function compileProfile(path: string): Promise<string> {
+ 	const plugin = await importCompiler()
+-	const result = await postcss([plugin()]).process(readFileSync(path, 'utf8'), { from: path })
+-	return result.css
++	const scratch = createScratch()
++	try {
++		const result = await postcss([plugin({ base: scratch.path })]).process(
++			readFileSync(path, 'utf8'),
++			{ from: path },
++		)
++		return result.css
++	} finally {
++		scratch.destroy()
++	}
+ }
+ 
+ /**
+diff --git a/tests/fixtures/tailwind/components.html b/tests/fixtures/tailwind/components.html
+new file mode 100644
+index 0000000..da2ceb6
+--- /dev/null
++++ b/tests/fixtures/tailwind/components.html
+@@ -0,0 +1,56 @@
++<button type="button" class="btn btn-primary">Save changes</button>
++<form>
++	<label class="form-label" for="components-email">Email address</label>
++	<input type="email" class="form-control" id="components-email" placeholder="name@example.com" />
++	<textarea class="form-control" aria-label="Message"></textarea>
++	<select class="form-select" aria-label="Plan">
++		<option>Starter</option>
++		<option>Team</option>
++	</select>
++	<div class="form-check">
++		<input type="checkbox" class="form-check-input" id="components-remember" />
++		<label class="form-check-label" for="components-remember">Remember me</label>
++	</div>
++	<input type="range" class="form-range" aria-label="Volume" />
++</form>
++<button type="button" class="btn-close" aria-label="Close"></button>
++<ul class="nav">
++	<li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Home</a></li>
++	<li class="nav-item"><a class="nav-link" href="#">Profile</a></li>
++</ul>
++<ul class="pagination">
++	<li class="page-item"><a class="page-link" href="#">Previous</a></li>
++	<li class="page-item active"><a class="page-link" href="#">One</a></li>
++	<li class="page-item"><a class="page-link" href="#">Next</a></li>
++</ul>
++<table class="table">
++	<thead>
++		<tr>
++			<th scope="col">Name</th>
++			<th scope="col">Role</th>
++		</tr>
++	</thead>
++	<tbody>
++		<tr>
++			<td>Ada</td>
++			<td>Engineer</td>
++		</tr>
++	</tbody>
++</table>
++<div class="list-group">
++	<button type="button" class="list-group-item list-group-item-action">Inbox</button>
++	<a class="list-group-item list-group-item-action" href="#">Archive</a>
++</div>
++<ul class="dropdown-menu">
++	<li><button type="button" class="dropdown-item">Rename</button></li>
++</ul>
++<h2 class="accordion-header">
++	<button type="button" class="accordion-button">Details</button>
++</h2>
++<button type="button" class="navbar-toggler" aria-label="Menu">
++	<span class="navbar-toggler-icon"></span>
++</button>
++<div class="input-group">
++	<span class="input-group-text">@</span>
++	<input type="text" class="form-control" aria-label="Username" />
++</div>
+diff --git a/tests/fixtures/tailwind/consumer-preflight.css b/tests/fixtures/tailwind/consumer-preflight.css
+new file mode 100644
+index 0000000..14e83ea
+--- /dev/null
++++ b/tests/fixtures/tailwind/consumer-preflight.css
+@@ -0,0 +1,6 @@
++@layer theme, reset, base, elements, components, utilities;
++@import 'tailwindcss';
++@import '@orkestrel/veneer/styles';
++/* Your own markup directory. */
++@source './markup.html';
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none border-1 border-2 border-3 border-4 border-5 text-wrap text-nowrap mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");

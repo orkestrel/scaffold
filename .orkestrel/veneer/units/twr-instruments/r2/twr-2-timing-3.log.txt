@@ -1,0 +1,53 @@
++ cat /proc/loadavg
+20.50 18.74 13.71 8/710 28095
++ npm run test:service -- --reporter=verbose
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service --reporter=verbose
+
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > executes each recipe the guide ships, apart from the markup line each one names 2516ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > resolves the cascade import, scans the markup line, and declares the order the cascade puts the document in 982ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > derives the shared class names, and mounts an element for every one of them 11353ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > leaves every shared name resolving to the declaration the cascade ships 19127ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > keeps an important shared declaration whatever the recipe withholds 8976ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > keeps a shared name on the line while its importance covers only some of the longhands Tailwind declares 8506ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > moves a shared name when the exclusion line is dropped 276ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > overrides a component declaration with a utility Tailwind alone generates 234ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > keeps the button surface on a button carrying a utility alone, and lets the utility win the padding it declares 968ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > resolves the cascade import, scans the markup line, declares the order the cascade puts the document in, and fills the base layer with Tailwind's reset 675ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > keeps every longhand a component rule declares where the cascade alone resolves it, and moves each floor class when the order line is dropped 9074ms
+· ✓ |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > leaves every shared name resolving, on the recipe alone, what the cascade resolves over Tailwind's reset 22703ms
+· ✓ |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > declares the one order line in every profile, and leaves the document order unmoved 1191ms
+· ✓ |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > fills Tailwind reset only under the preflight profile 17ms
+· ✓ |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > composes the theme and utilities imports, proved by a candidate the cascade never ships 71ms
+· ✓ |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > places the generated properties layer before the order line, leaving the named layers in order 175ms
+· ✓ |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > withholds every shared class name the exclusion line names, and emits exactly the shared names off it 317ms
+· ✓ |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > holds every written copy of the exclusion line equal to the profile that declares it 1659ms
+· ✓ |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > declares the Tailwind parts each profile is named for, and repeats them in the instrument 1ms
+· ✓ |service| tests/service/tailwind/profiles.test.ts > stylesheet profiles > fills the preflight theme block with no token in Veneer's namespace 240ms
+· ✓ |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > derives the overlapping tags and the properties the reset declares 397ms
+· ✓ |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > places the staged Chromium 153 defaults beneath the whole cascade and the profile 5908ms
+· ✓ |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every longhand the elements layer declares, holds each moved form-control height to its content box height, and every other move to its recorded preflight value, under the host defaults 5319ms
+· ✓ |service| tests/service/tailwind/preflight.test.ts > the preflight pairing > keeps every longhand the elements layer declares, holds each moved form-control height to its content box height, and every other move to its recorded preflight value, under staged Chromium 153 defaults 3980ms
+
+
+ Test Files  3 passed (3)
+      Tests  24 passed (24)
+   Start at  06:01:22
+   Duration  144.33s (transform 4.27s, setup 20.18s, import 10.67s, tests 110.99s, environment 0ms)
+
+
+ Test Files  3 passed (3)
+      Tests  24 passed (24)
+   Start at  06:01:22
+   Duration  144.33s (transform 4.27s, setup 20.18s, import 10.67s, tests 110.99s, environment 0ms)
+
+exit=0
++ cat /proc/loadavg
+22.02 19.95 14.91 17/843 29549

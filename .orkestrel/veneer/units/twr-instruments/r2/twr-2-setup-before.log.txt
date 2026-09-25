@@ -1,0 +1,300 @@
++ npx vitest run --config vite.config.ts --no-cache --project setup tests/setupServer.test.ts tests/setupService.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+ ❯ |setup| tests/setupService.test.ts (25 tests | 3 failed) 2904ms
+     × exports the readiness verdict and its gathering, the compiler loader, the profile compile, the Tailwind paths and floors, the proof budgets, and the stage 18ms
+     × locates each Tailwind profile and fixture the service proofs read, as a file under the workspace root 11ms
+     × scans only the markup the profile's own source rules name, and nothing the working directory carries 406ms
+ ❯ |setup| tests/setupServer.test.ts (125 tests | 4 failed) 20288ms
+     × declares the identity constants, the specifier walk, the guide and ledger readers, the stylesheet reader, and the helpers the conformance proof measures with 40ms
+     × reports nothing for readings that resolve every longhand alike 1ms
+     × reports each longhand whose value changed, labelled with its reading, in reading order 0ms
+     × reports a longhand the paired reading lacks, and every longhand of a reading with no pair 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > declares the identity constants, the specifier walk, the guide and ledger readers, the stylesheet reader, and the helpers the conformance proof measures with
+AssertionError: expected [ 'ABSENT_CELL', …(100) ] to deeply equal [ 'ABSENT_CELL', …(101) ]
+
+- Expected
++ Received
+
+@@ -35,11 +35,10 @@
+    "collectInlineSources",
+    "collectKeyframeNames",
+    "collectLedger",
+    "collectMandatedRelatives",
+    "collectMediaFeatures",
+-   "collectMovedLonghands",
+    "collectRuleLonghands",
+    "collectSelectorClasses",
+    "collectSharedNames",
+    "collectShippedComponents",
+    "collectValueGaps",
+
+ ❯ tests/setupServer.test.ts:501:37
+    499| describe('server setup', () => {
+    500|  it('declares the identity constants, the specifier walk, the guide an…
+    501|   expect(Object.keys(setup).sort()).toEqual([
+       |                                     ^
+    502|    'ABSENT_CELL',
+    503|    'BOOTSTRAP_BUNDLE_DIGEST',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > collectMovedLonghands > reports nothing for readings that resolve every longhand alike
+TypeError: collectMovedLonghands is not a function
+ ❯ tests/setupServer.test.ts:3312:4
+    3310|   // comparison by identity or by position would report them.
+    3311|   expect(
+    3312|    collectMovedLonghands(standalone, [
+       |    ^
+    3313|     new Map([['grid-column-end', 'auto'], ['grid-column-start', 'auto'…
+    3314|     new Map([['color', 'rgb(33, 37, 41)']]),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > collectMovedLonghands > reports each longhand whose value changed, labelled with its reading, in reading order
+TypeError: collectMovedLonghands is not a function
+ ❯ tests/setupServer.test.ts:3322:4
+    3320|  it('reports each longhand whose value changed, labelled with its read…
+    3321|   expect(
+    3322|    collectMovedLonghands(
+       |    ^
+    3323|     [
+    3324|      ['col-1', new Map([['grid-column-start', 'auto'], ['grid-column-e…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > collectMovedLonghands > reports a longhand the paired reading lacks, and every longhand of a reading with no pair
+TypeError: collectMovedLonghands is not a function
+ ❯ tests/setupServer.test.ts:3344:4
+    3342|   // does not resolve rather than a silent pass.
+    3343|   expect(
+    3344|    collectMovedLonghands(
+       |    ^
+    3345|     [
+    3346|      ['btn', new Map([['padding-left', '12px'], ['color', 'rgb(255, 25…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |setup| tests/setupService.test.ts > service setup > exports the readiness verdict and its gathering, the compiler loader, the profile compile, the Tailwind paths and floors, the proof budgets, and the stage
+AssertionError: expected [ 'CANDIDATES_PATH', …(12) ] to deeply equal [ 'CANDIDATES_PATH', …(15) ]
+
+- Expected
++ Received
+
+@@ -1,11 +1,8 @@
+  [
+    "CANDIDATES_PATH",
+    "CANDIDATE_FLOOR",
+-   "COMPONENT_FLOOR",
+-   "COMPONENT_TIMEOUT",
+-   "OVERLAP_FLOOR",
+    "PASSING_READINESS",
+    "READINESS_INPUT",
+    "STAGE_TIMEOUT",
+    "StageManager",
+    "TAILWIND_PATHS",
+
+ ❯ tests/setupService.test.ts:32:37
+     30| describe('service setup', () => {
+     31|  it('exports the readiness verdict and its gathering, the compiler loa…
+     32|   expect(Object.keys(setup).sort()).toEqual([
+       |                                     ^
+     33|    'CANDIDATES_PATH',
+     34|    'CANDIDATE_FLOOR',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |setup| tests/setupService.test.ts > TAILWIND_PATHS > locates each Tailwind profile and fixture the service proofs read, as a file under the workspace root
+AssertionError: expected [ …(5) ] to deeply equal [ …(7) ]
+
+- Expected
++ Received
+
+  [
+-   "components tests/fixtures/tailwind/components.html",
+-   "consumer.preflight tests/fixtures/tailwind/consumer-preflight.css",
+-   "consumer.tailwind tests/fixtures/tailwind/consumer.css",
++   "consumer tests/fixtures/tailwind/consumer.css",
+    "instrument tests/fixtures/tailwind/unexcluded.css",
+    "markup tests/fixtures/tailwind/markup.html",
+    "preflight tests/fixtures/tailwind/preflight.css",
+    "tailwind tests/setup.css",
+  ]
+
+ ❯ tests/setupService.test.ts:137:5
+    135|     .map(({ name, path }) => `${name} ${relative(WORKSPACE_ROOT, path)…
+    136|     .sort(),
+    137|   ).toEqual([
+       |     ^
+    138|    'components tests/fixtures/tailwind/components.html',
+    139|    'consumer.preflight tests/fixtures/tailwind/consumer-preflight.css',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |setup| tests/setupService.test.ts > compileProfile > scans only the markup the profile's own source rules name, and nothing the working directory carries
+AssertionError: expected [ 'pointer-events-auto', …(135) ] to deeply equal [ 'flex' ]
+
+- Expected
++ Received
+
+  [
++   "pointer-events-auto",
++   "pointer-events-none",
++   "collapse",
++   "invisible",
++   "visible",
++   "absolute",
++   "fixed",
++   "relative",
++   "static",
++   "sticky",
++   "isolate",
++   "z-0",
++   "z-1",
++   "z-2",
++   "z-3",
++   "order-0",
++   "order-1",
++   "order-2",
++   "order-3",
++   "order-4",
++   "order-5",
++   "order-first",
++   "order-last",
++   "col-1",
++   "col-2",
++   "col-3",
++   "col-4",
++   "col-5",
++   "col-6",
++   "col-7",
++   "col-8",
++   "col-9",
++   "col-10",
++   "col-11",
++   "col-12",
++   "col-auto",
++   "float-end",
++   "float-none",
++   "float-start",
++   "container",
++   "m-auto",
++   "mx-auto",
++   "my-auto",
++   "ms-auto",
++   "me-auto",
++   "mt-auto",
++   "mb-auto",
++   "block",
++   "contents",
+    "flex",
++   "grid",
++   "hidden",
++   "inline",
++   "inline-block",
++   "inline-flex",
++   "inline-grid",
++   "list-item",
++   "table",
++   "table-cell",
++   "table-row",
++   "h-auto",
++   "w-1/2",
++   "w-auto",
++   "flex-shrink",
++   "flex-shrink-0",
++   "flex-shrink-1",
++   "shrink",
++   "shrink-0",
++   "shrink-1",
++   "flex-grow",
++   "flex-grow-0",
++   "flex-grow-1",
++   "grow",
++   "grow-0",
++   "grow-1",
++   "caption-bottom",
++   "caption-top",
++   "border-collapse",
++   "transform",
++   "resize",
++   "flex-row",
++   "flex-row-reverse",
++   "flex-nowrap",
++   "flex-wrap",
++   "flex-wrap-reverse",
++   "truncate",
++   "overflow-auto",
++   "overflow-hidden",
++   "overflow-scroll",
++   "overflow-visible",
++   "overflow-x-auto",
++   "overflow-x-hidden",
++   "overflow-x-scroll",
++   "overflow-x-visible",
++   "overflow-y-auto",
++   "overflow-y-hidden",
++   "overflow-y-scroll",
++   "overflow-y-visible",
++   "border",
++   "border-0",
++   "border-1",
++   "border-2",
++   "border-3",
++   "border-4",
++   "border-5",
++   "bg-transparent",
++   "text-center",
++   "text-end",
++   "text-start",
++   "align-baseline",
++   "align-bottom",
++   "align-middle",
++   "align-text-bottom",
++   "align-text-top",
++   "align-top",
++   "text-nowrap",
++   "text-wrap",
++   "break-all",
++   "capitalize",
++   "lowercase",
++   "uppercase",
++   "italic",
++   "line-through",
++   "overline",
++   "underline",
++   "opacity-0",
++   "opacity-25",
++   "opacity-50",
++   "opacity-75",
++   "opacity-100",
++   "shadow-none",
++   "ring",
++   "outline",
++   "sepia-390",
++   "filter",
++   "transition",
+  ]
+
+ ❯ tests/setupService.test.ts:315:62
+    313|    const path = scratch.write('profile.css', "@tailwind utilities;\n@s…
+    314|    scratch.write('markup.html', '<div class="flex">Row</div>\n')
+    315|    expect(new SheetReader(await compileProfile(path)).names).toEqual([…
+       |                                                              ^
+    316|    const plugin = await importCompiler()
+    317|    const detected = await postcss([plugin()]).process(readFileSync(pat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 143 passed (150)
+   Start at  05:37:34
+   Duration  24.37s (transform 3.04s, setup 931ms, import 7.60s, tests 23.19s, environment 0ms)
+
+exit=1
+7.75 3.64 3.34 5/440 4350

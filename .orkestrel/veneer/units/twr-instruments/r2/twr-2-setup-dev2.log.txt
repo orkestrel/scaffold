@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+ ❯ |setup| tests/setupServer.test.ts (125 tests | 1 failed | 12 skipped) 45500ms
+     × records and reads official control state and rejects contradicted or absent obligation steps 10108ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions
+Error: Hook timed out in 10100ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/setupServer.test.ts:741:3
+    739|  describe('oracle action bindings and exclusions', () => {
+    740|   let fixture: OracleFixture
+    741|   beforeAll(async () => {
+       |   ^
+    742|    fixture = await recordButtonOracle()
+    743|   }, ORACLE_TIMEOUT)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > records and reads official control state and rejects contradicted or absent obligation steps
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupServer.test.ts:690:2
+    688|  })
+    689|
+    690|  it(
+       |  ^
+    691|   'records and reads official control state and rejects contradicted o…
+    692|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 137 passed | 12 skipped (150)
+   Start at  05:54:28
+   Duration  58.98s (transform 6.99s, setup 1.56s, import 26.11s, tests 54.82s, environment 0ms)
+

@@ -1,0 +1,8 @@
++ ./node_modules/.bin/oxfmt --config .oxfmtrc.json --check tests/service/tailwind/consumer.test.ts tests/service/tailwind/profiles.test.ts tests/service/tailwind/preflight.test.ts tests/setupService.ts tests/setupService.test.ts tests/setupServer.ts tests/setupServer.test.ts tests/fixtures/tailwind/components.html tests/fixtures/tailwind/consumer-preflight.css guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 16621ms on 10 files using 4 threads.
+exit=0
++ cat /proc/loadavg
+7.46 15.58 13.89 3/235 30971

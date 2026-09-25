@@ -1,0 +1,73 @@
+plant=markup
++ python3 tmp/units/twr-2-plant.py markup
+planted markup
++ diff -u (planted files against their backups)
+--- tmp/units/twr-2-plant-backup/consumer-preflight.css	2026-09-25 05:55:35.833907084 +0000
++++ tests/fixtures/tailwind/consumer-preflight.css	2026-09-25 05:55:36.033740156 +0000
+@@ -2,5 +2,4 @@
+ @import 'tailwindcss';
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+-@source './markup.html';
+ @source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none border-1 border-2 border-3 border-4 border-5 text-wrap text-nowrap mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");
++ npm run test:service
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+x········x··············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the consumer pairing > executes each recipe the guide ships, apart from the markup line each one names
+AssertionError: expected [] to deeply equal [ '@source \'./markup.html\';' ]
+
+- Expected
++ Received
+
+- [
+-   "@source './markup.html';",
+- ]
++ []
+
+ ❯ tests/service/tailwind/consumer.test.ts:88:78
+     86|    ])
+     87|   for (const source of executed)
+     88|    expect(source.split('\n').filter((line) => line.startsWith("@source…
+       |                                                                              ^
+     89|     EXECUTED_SOURCE,
+     90|    ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > resolves the cascade import, scans the markup line, declares the order the cascade puts the document in, and fills the base layer with Tailwind's reset
+AssertionError: expected [ '.text-bg-primary', …(1429) ] to include '.px-8'
+ ❯ tests/service/tailwind/consumer.test.ts:400:5
+    398|   expect(
+    399|    compiled.layers.flatMap((layer) => (layer.name === 'utilities' ? la…
+    400|   ).toContain('.px-8')
+       |     ^
+    401|  })
+    402|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 22 passed (24)
+   Start at  05:55:38
+   Duration  80.02s (transform 1.82s, setup 13.58s, import 3.86s, tests 60.77s, environment 0ms)
+
+exit=1
+elapsed=82s
++ cat /proc/loadavg
+17.32 16.63 11.66 12/688 26111
++ restore
+restored guide byte-identical
+restored preflight fixture byte-identical
+restored consumer fixture byte-identical
+git diff --stat unchanged from before the plant
+git status unchanged from before the plant

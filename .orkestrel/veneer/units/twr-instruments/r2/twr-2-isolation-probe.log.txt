@@ -1,0 +1,18 @@
+consumer.css cwd with-line ms 1017 utilities 1477 px-8 true sepia-390 true ring true
+consumer.css cwd without-line ms 756 utilities 1477 px-8 true sepia-390 true ring true
+consumer.css empty with-line ms 300 utilities 1426 px-8 true sepia-390 false ring false
+consumer.css empty without-line ms 289 utilities 1424 px-8 false sepia-390 false ring false
+  isolated not in cwd: []
+  cwd not in isolated (first 40): [".absolute",".block",".blur",".border-collapse",".break-all",".capitalize",".contents",".ease-in-out",".ease-out",".filter",".fixed",".flex",".flex-grow",".flex-shrink",".font-bold",".grid",".grow",".grow-0",".grow-1",".inline",".inline-block",".inline-flex",".inline-grid",".isolate",".italic",".line-through",".list-item",".lowercase",".outline",".overline",".pointer-events-auto",".pointer-events-none",".relative",".resize",".ring",".sepia-390",".shrink",".shrink-0",".shrink-1",".size-1"]
+  isolated with the line, not without it: [".hidden",".px-8"]
+  cwd with the line, not without it: []
+consumer-preflight.css cwd with-line ms 467 utilities 1477 px-8 true sepia-390 true ring true
+consumer-preflight.css cwd without-line ms 316 utilities 1477 px-8 true sepia-390 true ring true
+consumer-preflight.css empty with-line ms 148 utilities 1426 px-8 true sepia-390 false ring false
+consumer-preflight.css empty without-line ms 203 utilities 1424 px-8 false sepia-390 false ring false
+  isolated not in cwd: []
+  cwd not in isolated (first 40): [".absolute",".block",".blur",".border-collapse",".break-all",".capitalize",".contents",".ease-in-out",".ease-out",".filter",".fixed",".flex",".flex-grow",".flex-shrink",".font-bold",".grid",".grow",".grow-0",".grow-1",".inline",".inline-block",".inline-flex",".inline-grid",".isolate",".italic",".line-through",".list-item",".lowercase",".outline",".overline",".pointer-events-auto",".pointer-events-none",".relative",".resize",".ring",".sepia-390",".shrink",".shrink-0",".shrink-1",".size-1"]
+  isolated with the line, not without it: [".hidden",".px-8"]
+  cwd with the line, not without it: []
+exit=0
+1.30 0.86 2.66 4/300 32435

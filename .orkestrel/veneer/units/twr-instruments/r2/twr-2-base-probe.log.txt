@@ -1,0 +1,12 @@
++ npx vitest run --config tmp/units/probe/vitest.config.ts --no-cache --root .
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  06:09:51
+   Duration  1.95s (transform 777ms, setup 0ms, import 1.76s, tests 7ms, environment 0ms)
+
+exit=0
+3.34 8.55 11.35 8/256 3229
