@@ -1,0 +1,50 @@
+import { writeFileSync } from 'node:fs'
+import { it } from 'vitest'
+import type { Addition } from '../../tests/setupServer.js'
+import {
+	attributeSelector,
+	collectLedger,
+	collectShippedComponents,
+	compileExpandedCascade,
+	describeAddition,
+	indexRecordingKeys,
+	readCompatibility,
+	readOracleInventory,
+	scanLedgerDrift,
+} from '../../tests/setupServer.js'
+
+// Bootstraps the ownership rows the unattributed rules need, prints the gate's own drift over the
+// guide as the collector measures it, and the attribution of each rule's unwrapped selector.
+const OWNED: readonly (readonly [string, string, string])[] = [
+	['table', '.caption-bottom', '.caption-bottom'],
+	['dropdown', ':where(button.dropdown-item)', '.dropdown-item'],
+	['nav', ':where(button.nav-link)', '.nav-link'],
+	['navbar', ':where(button.navbar-toggler)', '.navbar-toggler'],
+	['accordion', ':where(button.accordion-button)', '.accordion-button'],
+	['pagination', ':where(button.page-link)', '.page-link'],
+	['list-group', ':where(button.list-group-item)', '.list-group-item'],
+	['btn-close', ':where(button.btn-close)', '.btn-close'],
+	['carousel', ':where(button.carousel-control-prev, button.carousel-control-next)', '.carousel-control-prev'],
+	['carousel', ':where(.carousel-indicators [data-bs-target])', '.carousel-indicators [data-bs-target]'],
+]
+
+it('prints the rows', async () => {
+	const { readAdditions } = await import('../../tests/setupServer.js')
+	const inventory = readOracleInventory()
+	const shipped = collectShippedComponents(readCompatibility())
+	const recording = indexRecordingKeys(inventory)
+	for (const [owner, , bare] of OWNED)
+		console.log('OWNER', owner, bare, attributeSelector(bare, 'components', recording, shipped))
+	const recorded = readAdditions(process.env.LAD_GUIDE)
+	const owners: Addition[] = [
+		...recorded,
+		...OWNED.map(([component, name]) => ({ component, name, condition: undefined, category: 'selector' as const, emitted: undefined })),
+	]
+	const measured = collectLedger(compileExpandedCascade(), inventory, shipped, owners)
+	const drift = scanLedgerDrift(measured.additions, recorded, describeAddition)
+	writeFileSync(
+		'tmp/probe/lad-rows.json',
+		JSON.stringify({ measured: measured.additions, unattributed: measured.unattributed, drift, recorded }, undefined, '\t'),
+	)
+	console.log('UNATTRIBUTED', JSON.stringify(measured.unattributed), 'MEASURED', measured.additions.length, 'UNRECORDED', drift.unrecorded.length, 'STALE', drift.stale.length)
+})

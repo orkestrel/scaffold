@@ -1,0 +1,59 @@
+# Writes the Additions table rows from the measured additions the ledger collector returns, carrying
+# each recorded reason over: an unchanged row keeps its own, a row whose name or value the change
+# rewrote takes the reason of the recorded row at the same site, and a declaration under an added
+# selector takes its selector row's reason.
+import json, sys
+d = json.load(open('/home/user/veneer-lad/tmp/probe/lad-rows.json'))
+measured, recorded = d['measured'], d['recorded']
+# The reader flattens a cell's code spans, so each reason is taken from the guide's own text.
+guide = open('/home/user/veneer-lad/guides/veneer.md').read().split('\n')
+a, b = guide.index('### Additions'), guide.index('### Outside the ledger')
+raw = [l.split('|')[1:-1] for l in guide[a:b] if l.startswith('| `')]
+def unquote(c):
+    c = c.strip()
+    return c[1:-1] if c.startswith('`') and c.endswith('`') else c
+text = {}
+for cells in raw:
+    comp, name, condition, category = (unquote(c) for c in cells[:4])
+    text[(comp, name, None if condition == '—' else condition, category)] = cells[5].strip()
+recorded = [{**r, 'reason': text[(r['component'], r['name'], r.get('condition'), r['category'])]} for r in recorded]
+ABSENT = '—'
+def cell(value):
+    if value is None: return ABSENT
+    if value == '': return '(empty)'
+    assert '`' not in value and '|' not in value, value
+    return f'`{value}`'
+def cond(c): return ABSENT if c is None else f'`{c}`'
+def line(r): return (r['component'], r['name'], r.get('condition'), r['category'], r.get('emitted'))
+exact = {line(r): r['reason'] for r in recorded}
+site = {(r['component'], r['name'], r.get('condition'), r['category']): r['reason'] for r in recorded}
+bare = {}
+for r in recorded:
+    if r['category'] == 'property': bare[(r['component'], r['name'], r.get('condition'))] = r['reason']
+selectors = {(r['component'], r['name'], r.get('condition')): r['reason'] for r in recorded if r['category'] == 'selector'}
+used = set()
+out = []
+for r in measured:
+    k = line(r)
+    s = (r['component'], r['name'], r.get('condition'), r['category'])
+    reason = None
+    if k in exact: reason = exact[k]; used.add(('exact', k))
+    elif s in site: reason = site[s]; used.add(('site', s))
+    else:
+        name = r['name']
+        selector, _, prop = name.partition(' { ')
+        prop = prop.rstrip(' }')
+        if r['category'] == 'property' and (r['component'], prop, r.get('condition')) in bare:
+            reason = bare[(r['component'], prop, r.get('condition'))]; used.add(('bare', (r['component'], prop, r.get('condition'))))
+        elif (r['component'], selector, r.get('condition')) in selectors:
+            reason = selectors[(r['component'], selector, r.get('condition'))]
+    if reason is None: sys.exit(f'no reason for {k}')
+    out.append(f"| `{r['component']}` | `{r['name']}` | {cond(r.get('condition'))} | {r['category']} | {cell(r.get('emitted'))} | {reason} |")
+# Every recorded row must be carried by some measured row.
+for r in recorded:
+    k = line(r); s = (r['component'], r['name'], r.get('condition'), r['category'])
+    b = (r['component'], r['name'], r.get('condition'))
+    if ('exact', k) not in used and ('site', s) not in used and ('bare', b) not in used:
+        print('UNCARRIED', k, file=sys.stderr)
+open('/home/user/veneer-lad/tmp/probe/lad-table.md', 'w').write('\n'.join(out) + '\n')
+print(len(out), file=sys.stderr)

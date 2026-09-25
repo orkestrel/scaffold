@@ -1,0 +1,9 @@
+Restore verification against HEAD, taken after the plants ran (2026-09-25T04:51:10Z)
+$ cmp tmp/units/sts-head-_form-range.scss.txt src/styles/components/_form-range.scss
+exit=0
+$ cmp tmp/units/sts-head-_button.scss.txt src/styles/components/_button.scss
+exit=0
+$ git diff --stat -- src
+exit=0
+$ git status --short -- src
+exit=0

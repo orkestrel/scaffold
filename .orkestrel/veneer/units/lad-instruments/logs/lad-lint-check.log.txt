@@ -1,0 +1,6 @@
+load=8.57 14.55 16.29 5/357 6129
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+exit=0

@@ -1,0 +1,146 @@
+plant=unattributed file=src/styles/components/_table.scss
+diff --git a/src/styles/components/_table.scss b/src/styles/components/_table.scss
+index 4778322..d9d6177 100644
+--- a/src/styles/components/_table.scss
++++ b/src/styles/components/_table.scss
+@@ -137,3 +137,5 @@
+ 		}
+ 	}
+ }
++
++@layer components { .audit-unrecorded { color: red } }
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+·······x···xxxx·········x···
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:139:2
+    137|  })
+    138|
+    139|  it(
+       |  ^
+    140|   'records official Button behavior and matches each named fixture ste…
+    141|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "reboot | blockquote { border-left } | — | declaration | 97px solid currentColor",
++ ]
+
+ ❯ tests/conformance.test.ts:217:32
+    215|
+    216|  it('records every emitted name the official inventory lacks', () => {
+    217|   expect(additions.unrecorded).toEqual([])
+       |                                ^
+    218|  })
+    219|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "reboot | blockquote { border-left } | — | declaration | var(--vn-space-2) solid currentColor",
++ ]
+
+ ❯ tests/conformance.test.ts:221:27
+    219|
+    220|  it('names no addition the compiled cascade no longer emits', () => {
+    221|   expect(additions.stale).toEqual([])
+       |                           ^
+    222|  })
+    223|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "reboot | blockquote { border-left } | — | declaration | 97px solid currentColor",
+    "form-control | .form-control { letter-spacing } | — | declaration | 0.01em",
+  ]
+
+ ❯ tests/conformance.test.ts:229:30
+    227|   // browser case reads only the properties a row values. This ledger …
+    228|   // it, and the unmodified cascade is the control that reports nothin…
+    229|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    230|    'form-control | .form-control { letter-spacing } | — | declaration …
+    231|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > attributes every emitted rule to a shipped component
+AssertionError: expected [ …(2) ] to deeply equal [ 'components | .audit-orphan | —' ]
+
+- Expected
++ Received
+
+  [
++   "components | .audit-unrecorded | —",
+    "components | .audit-orphan | —",
+  ]
+
+ ❯ tests/conformance.test.ts:238:30
+    236|   // A rule no shipped key claims leaves both ledgers, so this list is…
+    237|   // it; the planted rule is the control that must be named.
+    238|   expect(plant.unattributed).toEqual(['components | .audit-orphan | —'…
+       |                              ^
+    239|   expect(measured.unattributed).toEqual([])
+    240|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > imports no forbidden runtime package from source, application, or tests
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:675:2
+    673|  })
+    674|
+    675|  it('imports no forbidden runtime package from source, application, or…
+       |  ^
+    676|   const files = readInventory(WORKSPACE_ROOT, ['src', 'app', 'tests'])
+    677|   for (const [path, source] of Object.entries(files)) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 22 passed (28)
+   Start at  04:39:36
+   Duration  123.49s (transform 4.10s, setup 764ms, import 71.65s, tests 50.26s, environment 0ms)
+
+exit=1
+restored: git diff --stat -- src
+ src/styles/components/_table.scss    | 2 ++
+ src/styles/elements/_blockquote.scss | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+cmp: /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/plant-backup: Is a directory
+cmp=
+note: the scripted restore failed (backup path was another unit's directory); both partials were restored from the byte-identical backups after both plants ran, checked equal to HEAD with cmp, and git diff --stat -- src then printed nothing. The unattributed plant in this run ran with the blockquote plant still applied.

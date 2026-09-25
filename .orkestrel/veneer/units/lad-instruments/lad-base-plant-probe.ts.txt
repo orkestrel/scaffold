@@ -1,0 +1,19 @@
+import { it } from 'vitest'
+import * as base from '../lad-base-setupServer.js'
+import * as head from '../../tests/setupServer.js'
+
+// Re-takes the brief's blockquote reading at the base collector, and the same plant at the head
+// collector as the control that must report it.
+it('reads the blockquote plant at the base and the head', () => {
+	const cascade = base.compileExpandedCascade()
+	const text = 'border-left: var(--vn-space-2) solid currentColor'
+	console.log('OCCURRENCES', cascade.split(text).length - 1)
+	const planted = cascade.replace(text, 'border-left: 97px solid currentColor')
+	const inventory = base.readOracleInventory()
+	const shipped = base.collectShippedComponents(base.readCompatibility())
+	const before = base.scanLedgerDrift(base.collectLedger(planted, inventory, shipped).additions, base.readAdditions(`${process.cwd()}/tmp/lad-base-guide.md`), base.describeAddition)
+	console.log('BASE', JSON.stringify(before))
+	const recorded = head.readAdditions()
+	const after = head.scanLedgerDrift(head.collectLedger(planted, inventory, shipped, recorded).additions, recorded, head.describeAddition)
+	console.log('HEAD', JSON.stringify(after))
+}, 120000)

@@ -1,0 +1,123 @@
+diff --git a/src/styles/components/_form-range.scss b/src/styles/components/_form-range.scss
+index cce8193..4596118 100644
+--- a/src/styles/components/_form-range.scss
++++ b/src/styles/components/_form-range.scss
+@@ -58,13 +58,10 @@ $engines: (
+ 			background-color: var(--vn-palette-blue);
+ 			border: 0;
+ 			border-radius: var(--vn-radius-xlarge);
+-			@include transition(
+-				(
+-					background-color var(--vn-motion-feedback) var(--vn-ease-standard),
+-					border-color var(--vn-motion-feedback) var(--vn-ease-standard),
+-					box-shadow var(--vn-motion-feedback) var(--vn-ease-standard)
+-				)
+-			);
++			transition:
++				background-color var(--vn-motion-feedback) var(--vn-ease-standard),
++				border-color var(--vn-motion-feedback) var(--vn-ease-standard),
++				box-shadow var(--vn-motion-feedback) var(--vn-ease-standard);
+ 		}
+ 
+ 		// The held thumb lightens to three tenths of the blue palette entry over the white one,
+plant motion-twin in src/styles/components/_form-range.scss
+--- replaced
+			@include transition(
+				(
+					background-color var(--vn-motion-feedback) var(--vn-ease-standard),
+					border-color var(--vn-motion-feedback) var(--vn-ease-standard),
+					box-shadow var(--vn-motion-feedback) var(--vn-ease-standard)
+				)
+			);
+
++++ with
+			transition:
+				background-color var(--vn-motion-feedback) var(--vn-ease-standard),
+				border-color var(--vn-motion-feedback) var(--vn-ease-standard),
+				box-shadow var(--vn-motion-feedback) var(--vn-ease-standard);
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.69 kB │ gzip: 34.28 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.98s
+exit=0
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/components/form-range.test.ts -t runs the thumb fill transition with motion allowed and lands each fill at once under reduced motion
+
+ RUN  v4.1.11 /home/user/veneer-sts
+
+ ❯ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts (10 tests | 1 failed | 9 skipped) 1537ms
+     × runs the thumb fill transition with motion allowed and lands each fill at once under reduced motion 1535ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:303:2 > form range classes > runs the thumb fill transition with motion allowed and lands each fill at once under reduced motion
+AssertionError: expected { ends: 1, started: 1, …(4) } to deeply equal { ends: 1, started: 1, …(4) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "collapsed": 0,[39m
+[31m+   "collapsed": 1,[39m
+[2m    "ends": 1,[22m
+[2m    "moving": [[22m
+[2m      1,[22m
+[2m      1,[22m
+[2m      1,[22m
+[2m    ],[22m
+[2m    "returned": 0,[22m
+[32m-   "settled": 0,[39m
+[31m+   "settled": 1,[39m
+[2m    "started": 1,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/form-range.test.ts:358:5
+    356|    collapsed: await measureDifference(collapsed, held, centre),
+    357|    returned: await measureDifference(returned, rest, centre),
+    358|   }).toEqual({ ends: 1, started: 1, moving: [1, 1, 1], settled: 0, col…
+       |     ^
+    359|   // The rendered reading covers the thumb's fill alone. The gated rul…
+    360|   // cannot show: that the preference is the thumb's only media gate, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 skipped (10)
+   Start at  04:43:10
+   Duration  15.33s (transform 0ms, setup 1.64s, import 93ms, tests 1.54s, environment 0ms)
+
+exit=1
+restored byte-identical: True
+git status after restore: ""
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.87 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 3.29s
+[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 3.2s of this 3.3s build (98%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:css transform (97%, 3.2s, 1 call)
+Additional hook time came from hooks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+exit=0

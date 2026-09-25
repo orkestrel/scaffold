@@ -1,0 +1,19 @@
+
+> @orkestrel/veneer@0.0.1 test:probe
+> vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe tmp/probe/lad-base-plant.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+stdout | tmp/probe/lad-base-plant.test.ts > reads the blockquote plant at the base and the head
+OCCURRENCES 1
+BASE {"unrecorded":[],"stale":[]}
+HEAD {"unrecorded":["reboot | blockquote { border-left } | — | declaration | 97px solid currentColor"],"stale":["reboot | blockquote { border-left } | — | declaration | var(--vn-space-2) solid currentColor"]}
+
+ ✓ |probe| tmp/probe/lad-base-plant.test.ts > reads the blockquote plant at the base and the head 11073ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  04:48:07
+   Duration  13.12s (transform 802ms, setup 282ms, import 1.54s, tests 11.07s, environment 0ms)
+

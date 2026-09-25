@@ -1,0 +1,27 @@
+import { it } from 'vitest'
+import {
+	attributeSelector,
+	collectShippedComponents,
+	compileExpandedCascade,
+	indexRecordingKeys,
+	readCascadeBlocks,
+	readCompatibility,
+	readOracleInventory,
+	scanLedgerDrift,
+} from '../../tests/setupServer.js'
+
+it('measures the base', () => {
+	const inventory = readOracleInventory()
+	const shipped = collectShippedComponents(readCompatibility())
+	const blocks = readCascadeBlocks(compileExpandedCascade())
+	const recording = indexRecordingKeys(inventory)
+	const lost = new Set<string>()
+	for (const block of blocks) {
+		const component = attributeSelector(block.selector, block.layer, recording, shipped)
+		if (component === undefined || inventory.components[component] === undefined)
+			lost.add(`${block.layer ?? '—'} | ${block.selector} | ${block.condition ?? '—'} | ${component ?? '(none)'}`)
+	}
+	console.log('UNATTRIBUTED', JSON.stringify([...lost]))
+	const keys = Object.keys(inventory.components).sort()
+	console.log('INVENTORY', JSON.stringify(scanLedgerDrift(keys, shipped, (key) => key)))
+})

@@ -1,0 +1,101 @@
+diff --git a/src/styles/components/_button.scss b/src/styles/components/_button.scss
+index 1b31112..79e7c6e 100644
+--- a/src/styles/components/_button.scss
++++ b/src/styles/components/_button.scss
+@@ -120,7 +120,6 @@ $sizes: (
+ 		background-color: var(--bs-btn-disabled-bg);
+ 		border-color: var(--bs-btn-disabled-border-color);
+ 		box-shadow: var(--bs-btn-box-shadow);
+-		opacity: var(--bs-btn-disabled-opacity);
+ 		pointer-events: none;
+ 	}
+ 
+plant button-opacity in src/styles/components/_button.scss
+--- replaced
+		opacity: var(--bs-btn-disabled-opacity);
+
++++ with
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.83 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 4.76s
+[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 4.6s of this 4.8s build (96%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:css transform (94%, 4.5s, 1 call)
+Additional hook time came from hooks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+exit=0
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/components/button.test.ts -t dims a disabled link button and its anchor twin to the secondary text and lets the pointer through
+
+ RUN  v4.1.11 /home/user/veneer-sts
+
+ ❯ |[object Object] (chromium)| tests/src/styles/components/button.test.ts (88 tests | 1 failed | 87 skipped) 59ms
+     × dims a disabled link button and its anchor twin to the secondary text and lets the pointer through 57ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/button.test.ts:382:2 > button classes > dims a disabled link button and its anchor twin to the secondary text and lets the pointer through
+AssertionError: expected [ { secondary: false, …(3) }, …(2) ] to deeply equal [ { secondary: false, …(3) }, …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -55,10 +55,10 @@[39m
+[2m        </a>[22m
+[2m        <span[22m
+[2m          style="color: var(--vn-text-secondary)"[22m
+[2m        />[22m
+[2m      </div>,[22m
+[32m-     "opacity": "0.65",[39m
+[31m+     "opacity": "1",[39m
+[2m      "pointer": "none",[22m
+[2m      "secondary": true,[22m
+[2m    },[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/button.test.ts:400:4
+    398|     hit: readHit(control),
+    399|    })),
+    400|   ).toEqual([
+       |    ^
+    401|    { secondary: false, opacity: '1', pointer: 'auto', hit: enabled },
+    402|    { secondary: true, opacity: dimmed, pointer: 'none', hit: wrapper },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 87 skipped (88)
+   Start at  04:43:39
+   Duration  10.87s (transform 0ms, setup 1.91s, import 98ms, tests 59ms, environment 0ms)
+
+exit=1
+restored byte-identical: True
+git status after restore: ""
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.87 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 2.88s
+exit=0

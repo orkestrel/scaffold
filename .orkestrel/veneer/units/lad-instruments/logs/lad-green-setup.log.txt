@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+ ❯ |setup| tests/setupServer.test.ts (116 tests | 2 failed | 12 skipped) 47152ms
+     × records and reads official control state and rejects contradicted or absent obligation steps 10102ms
+     × compiles the authored styles entry with every value as the source writes it 5197ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions
+Error: Hook timed out in 10100ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/setupServer.test.ts:728:3
+    726|  describe('oracle action bindings and exclusions', () => {
+    727|   let fixture: OracleFixture
+    728|   beforeAll(async () => {
+       |   ^
+    729|    fixture = await recordButtonOracle()
+    730|   }, ORACLE_TIMEOUT)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > records and reads official control state and rejects contradicted or absent obligation steps
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupServer.test.ts:677:2
+    675|  })
+    676|
+    677|  it(
+       |  ^
+    678|   'records and reads official control state and rejects contradicted o…
+    679|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > compiles the authored styles entry with every value as the source writes it
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupServer.test.ts:2923:2
+    2921|  })
+    2922|
+    2923|  it('compiles the authored styles entry with every value as the source…
+       |  ^
+    2924|   const cascade = compileExpandedCascade()
+    2925|   expect(cascade).toContain('@layer elements')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 102 passed | 12 skipped (116)
+   Start at  04:34:19
+   Duration  55.16s (transform 2.62s, setup 680ms, import 6.42s, tests 47.15s, environment 0ms)
+
+exit=1

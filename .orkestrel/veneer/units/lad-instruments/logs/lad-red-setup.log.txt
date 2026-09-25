@@ -1,0 +1,68 @@
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+ ❯ |setup| tests/setupServer.test.ts (116 tests | 2 failed) 13713ms
+     × reports an addition whose recorded value differs from the emitted one, both unrecorded and stale 6ms
+     × names each emitted rule no shipped component measures, and measures one its recorded selector row owns 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reports an addition whose recorded value differs from the emitted one, both unrecorded and stale
+AssertionError: expected { …(2) } to deeply equal { unrecorded: [ …(2) ], …(1) }
+
+- Expected
++ Received
+
+  {
+    "stale": [
+-     "btn | .btn { letter-spacing } | — | declaration | 2px",
+-     "btn | .btn-tertiary { --vn-btn-tertiary-face } | — | property | —",
++     "btn | .btn-tertiary { color } | — | declaration",
++     "btn | .btn-tertiary { --vn-btn-tertiary-face } | — | property",
+    ],
+    "unrecorded": [
+-     "btn | .btn { letter-spacing } | — | declaration | 1px",
+-     "btn | .btn-tertiary { --vn-btn-tertiary-face } | — | property | (empty)",
++     "btn | --vn-btn-tertiary-face | — | property",
+    ],
+  }
+
+ ❯ tests/setupServer.test.ts:2438:5
+    2436|     describeAddition,
+    2437|    ),
+    2438|   ).toEqual({
+       |     ^
+    2439|    unrecorded: [
+    2440|     'btn | .btn { letter-spacing } | — | declaration | 1px',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > names each emitted rule no shipped component measures, and measures one its recorded selector row owns
+AssertionError: expected undefined to deeply equal [ …(2) ]
+
+- Expected:
+[
+  "components | .audit-unrecorded | —",
+  "components | .audit-unrecorded | @media print",
+]
+
++ Received:
+undefined
+
+ ❯ tests/setupServer.test.ts:2460:81
+    2458|    emitted: undefined,
+    2459|   }
+    2460|   expect(collectLedger(cascade, LEDGER_INVENTORY, LEDGER_SHIPPED).unat…
+       |                                                                                 ^
+    2461|    'components | .audit-unrecorded | —',
+    2462|    'components | .audit-unrecorded | @media print',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 114 passed (116)
+   Start at  04:16:36
+   Duration  16.07s (transform 1.02s, setup 288ms, import 1.88s, tests 13.71s, environment 0ms)
+
+exit=1

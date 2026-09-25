@@ -1,0 +1,28 @@
+--- a/guides/veneer.md	2026-09-25 04:47:24.714327815 +0000
++++ b/guides/veneer.md	2026-09-25 04:47:24.753057161 +0000
+@@ -10434,8 +10434,8 @@
+ ### Outside the ledger
+ 
+ The ledger measures the shipped components' own vocabulary. Canonical token values, role coverage,
+-names this release declares nowhere, the button reboot rules, and the Elements behaviors this
+-package does not copy sit outside that measurement, and are recorded here instead.
++names this release declares nowhere, and the Elements behaviors this package does not copy sit
++outside that measurement, and are recorded here instead.
+ 
+ Canonical token values are the first. The release records no `--vn-*` name, so the ledger compares
+ no canonical value: the `#### theme` table in § Departures compares each `--bs-*` alias the theme
+@@ -10462,14 +10462,6 @@
+ never writes reaches neither table here nor § Deferred selectors, whose rows must sit in the pinned
+ inventory the `scanCompatibilityPresence` function reads.
+ 
+-The button reboot rules come after those names. Each class the release builds on a button writes
+-the reboot on a `:where()` selector, such as `:where(button.nav-link)`, and the
+-`collectSelectorClasses` function reads no class inside a functional argument, so no shipped
+-component claims the rule and the ledger measures none of them. The `tests/src/styles/mixins.test.ts`
+-proof holds each rule's longhands equal to the longhands the button surface writes, and
+-[the button proof](../tests/src/styles/elements/button.test.ts) reads a `button.nav-link` element at
+-the release's corner, type, and shadow.
+-
+ The Elements behaviors this package does not copy close the list. Elements' disclosure interpolates
+ its content height when the engine reports `prefers-reduced-motion: reduce`; the `transition` mixin
+ emits the reduced-motion pair for every transition it writes, and the

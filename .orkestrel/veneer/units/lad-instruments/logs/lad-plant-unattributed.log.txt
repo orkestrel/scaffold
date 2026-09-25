@@ -1,0 +1,52 @@
+plant=unattributed file=src/styles/components/_table.scss
+diff --git a/src/styles/components/_table.scss b/src/styles/components/_table.scss
+index 4778322..d9d6177 100644
+--- a/src/styles/components/_table.scss
++++ b/src/styles/components/_table.scss
+@@ -137,3 +137,5 @@
+ 		}
+ 	}
+ }
++
++@layer components { .audit-unrecorded { color: red } }
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+··············x·············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > attributes every emitted rule to a shipped component
+AssertionError: expected [ …(2) ] to deeply equal [ 'components | .audit-orphan | —' ]
+
+- Expected
++ Received
+
+  [
++   "components | .audit-unrecorded | —",
+    "components | .audit-orphan | —",
+  ]
+
+ ❯ tests/conformance.test.ts:238:30
+    236|   // A rule no shipped key claims leaves both ledgers, so this list is…
+    237|   // it; the planted rule is the control that must be named.
+    238|   expect(plant.unattributed).toEqual(['components | .audit-orphan | —'…
+       |                              ^
+    239|   expect(measured.unattributed).toEqual([])
+    240|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 27 passed (28)
+   Start at  04:43:20
+   Duration  40.97s (transform 635ms, setup 202ms, import 26.43s, tests 14.13s, environment 0ms)
+
+exit=1
+restored: git diff --stat -- src
+cmp=identical

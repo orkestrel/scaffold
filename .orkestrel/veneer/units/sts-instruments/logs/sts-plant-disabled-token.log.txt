@@ -1,0 +1,91 @@
+diff --git a/src/styles/components/_form-range.scss b/src/styles/components/_form-range.scss
+index cce8193..d1a83fe 100644
+--- a/src/styles/components/_form-range.scss
++++ b/src/styles/components/_form-range.scss
+@@ -91,7 +91,7 @@ $engines: (
+ 		// The disabled paint follows the focus and active rules at equal specificity, so a control
+ 		// that is both focused and disabled reads this one.
+ 		.form-range:disabled#{$thumb} {
+-			background-color: var(--bs-secondary-color);
++			background-color: var(--bs-tertiary-color);
+ 		}
+ 	}
+ }
+plant disabled-token in src/styles/components/_form-range.scss
+--- replaced
+.form-range:disabled#{$thumb} {
+			background-color: var(--bs-secondary-color);
++++ with
+.form-range:disabled#{$thumb} {
+			background-color: var(--bs-tertiary-color);
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.87 kB │ gzip: 34.30 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 2.23s
+exit=0
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/components/form-range.test.ts -t lets the pointer through the disabled host and paints its thumb with the secondary text color
+
+ RUN  v4.1.11 /home/user/veneer-sts
+
+ ❯ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts (10 tests | 1 failed | 9 skipped) 599ms
+     × lets the pointer through the disabled host and paints its thumb with the secondary text color 598ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:224:2 > form range classes > lets the pointer through the disabled host and paints its thumb with the secondary text color
+AssertionError: expected [ +0, 1, 1 ] to deeply equal [ +0, +0, 1 ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    0,[22m
+[32m-   0,[39m
+[31m+   1,[39m
+[2m    1,[22m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/form-range.test.ts:260:5
+    258|    await measureDifference(dimmed, painted, centre),
+    259|    await measureDifference(enabled, painted, centre),
+    260|   ]).toEqual([0, 0, 1])
+       |     ^
+    261|  })
+    262|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 skipped (10)
+   Start at  04:42:52
+   Duration  9.57s (transform 0ms, setup 1.40s, import 51ms, tests 599ms, environment 0ms)
+
+exit=1
+restored byte-identical: True
+git status after restore: ""
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.87 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 2.11s
+exit=0
