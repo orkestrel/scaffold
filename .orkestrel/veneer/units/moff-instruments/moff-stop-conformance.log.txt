@@ -1,0 +1,176 @@
+$ npm run test:conformance
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-moff
+
+························xx·x·x············x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(11) ], [ …(6) ] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "offcanvas | .offcanvas | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-xxl | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-xl | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-lg | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-md | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-sm | --bs-offcanvas-transition",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "offcanvas | .offcanvas | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-xxl | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-xl | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-lg | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-md | --bs-offcanvas-transition",
++     "offcanvas | .offcanvas-sm | --bs-offcanvas-transition",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:257:20
+    255|   // The component-owned dark images are a second record of the same r…
+    256|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    257|   expect(darkened).toEqual([
+       |                    ^
+    258|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    259|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ …(6) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "offcanvas | .offcanvas | --bs-offcanvas-transition | — | transform 0.3s ease-in-out | transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out) | tokenized",
++   "offcanvas | .offcanvas-xxl | --bs-offcanvas-transition | — | transform 0.3s ease-in-out | transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out) | tokenized",
++   "offcanvas | .offcanvas-xl | --bs-offcanvas-transition | — | transform 0.3s ease-in-out | transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out) | tokenized",
++   "offcanvas | .offcanvas-lg | --bs-offcanvas-transition | — | transform 0.3s ease-in-out | transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out) | tokenized",
++   "offcanvas | .offcanvas-md | --bs-offcanvas-transition | — | transform 0.3s ease-in-out | transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out) | tokenized",
++   "offcanvas | .offcanvas-sm | --bs-offcanvas-transition | — | transform 0.3s ease-in-out | transform var(--vn-motion-panel) var(--vn-ease-panel), opacity var(--vn-motion-panel) var(--vn-ease-out) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:265:33
+    263|
+    264|  it('records every measured value difference in the guide ledger', () …
+    265|   expect(departures.unrecorded).toEqual([])
+       |                                 ^
+    266|  })
+    267|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+AssertionError: expected [ …(18) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "offcanvas | .offcanvas-sm { opacity } | @media (width < 576px) | declaration | 0",
++   "offcanvas | .offcanvas-sm.showing { opacity } | @media (width < 576px) | declaration | 1",
++   "offcanvas | .offcanvas-sm.show:not(.hiding) { opacity } | @media (width < 576px) | declaration | 1",
++   "offcanvas | .offcanvas-md { opacity } | @media (width < 768px) | declaration | 0",
++   "offcanvas | .offcanvas-md.showing { opacity } | @media (width < 768px) | declaration | 1",
++   "offcanvas | .offcanvas-md.show:not(.hiding) { opacity } | @media (width < 768px) | declaration | 1",
++   "offcanvas | .offcanvas-lg { opacity } | @media (width < 992px) | declaration | 0",
++   "offcanvas | .offcanvas-lg.showing { opacity } | @media (width < 992px) | declaration | 1",
++   "offcanvas | .offcanvas-lg.show:not(.hiding) { opacity } | @media (width < 992px) | declaration | 1",
++   "offcanvas | .offcanvas-xl { opacity } | @media (width < 1200px) | declaration | 0",
++   "offcanvas | .offcanvas-xl.showing { opacity } | @media (width < 1200px) | declaration | 1",
++   "offcanvas | .offcanvas-xl.show:not(.hiding) { opacity } | @media (width < 1200px) | declaration | 1",
++   "offcanvas | .offcanvas-xxl { opacity } | @media (width < 1400px) | declaration | 0",
++   "offcanvas | .offcanvas-xxl.showing { opacity } | @media (width < 1400px) | declaration | 1",
++   "offcanvas | .offcanvas-xxl.show:not(.hiding) { opacity } | @media (width < 1400px) | declaration | 1",
++   "offcanvas | .offcanvas { opacity } | — | declaration | 0",
++   "offcanvas | .offcanvas.showing { opacity } | — | declaration | 1",
++   "offcanvas | .offcanvas.show:not(.hiding) { opacity } | — | declaration | 1",
++ ]
+
+ ❯ tests/conformance.test.ts:273:32
+    271|
+    272|  it('records every emitted name the official inventory lacks', () => {
+    273|   expect(additions.unrecorded).toEqual([])
+       |                                ^
+    274|  })
+    275|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+AssertionError: expected [ …(19) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "offcanvas | .offcanvas-sm { opacity } | @media (width < 576px) | declaration | 0",
++   "offcanvas | .offcanvas-sm.showing { opacity } | @media (width < 576px) | declaration | 1",
++   "offcanvas | .offcanvas-sm.show:not(.hiding) { opacity } | @media (width < 576px) | declaration | 1",
++   "offcanvas | .offcanvas-md { opacity } | @media (width < 768px) | declaration | 0",
++   "offcanvas | .offcanvas-md.showing { opacity } | @media (width < 768px) | declaration | 1",
++   "offcanvas | .offcanvas-md.show:not(.hiding) { opacity } | @media (width < 768px) | declaration | 1",
++   "offcanvas | .offcanvas-lg { opacity } | @media (width < 992px) | declaration | 0",
++   "offcanvas | .offcanvas-lg.showing { opacity } | @media (width < 992px) | declaration | 1",
++   "offcanvas | .offcanvas-lg.show:not(.hiding) { opacity } | @media (width < 992px) | declaration | 1",
++   "offcanvas | .offcanvas-xl { opacity } | @media (width < 1200px) | declaration | 0",
++   "offcanvas | .offcanvas-xl.showing { opacity } | @media (width < 1200px) | declaration | 1",
++   "offcanvas | .offcanvas-xl.show:not(.hiding) { opacity } | @media (width < 1200px) | declaration | 1",
++   "offcanvas | .offcanvas-xxl { opacity } | @media (width < 1400px) | declaration | 0",
++   "offcanvas | .offcanvas-xxl.showing { opacity } | @media (width < 1400px) | declaration | 1",
++   "offcanvas | .offcanvas-xxl.show:not(.hiding) { opacity } | @media (width < 1400px) | declaration | 1",
++   "offcanvas | .offcanvas { opacity } | — | declaration | 0",
++   "offcanvas | .offcanvas.showing { opacity } | — | declaration | 1",
++   "offcanvas | .offcanvas.show:not(.hiding) { opacity } | — | declaration | 1",
+    "form-control | .form-control { letter-spacing } | — | declaration | 0.01em",
+  ]
+
+ ❯ tests/conformance.test.ts:285:30
+    283|   // browser case reads only the properties a row values. This ledger …
+    284|   // it, and the unmodified cascade is the control that reports nothin…
+    285|   expect(planted.unrecorded).toEqual([
+       |                              ^
+    286|    'form-control | .form-control { letter-spacing } | — | declaration …
+    287|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+Error: ENOENT: no such file or directory, open '/home/user/veneer-moff/dist/src/core/index.js'
+ ❯ scanForbiddenBuild tests/setupServer.ts:2320:16
+    2318|  signatures: readonly string[],
+    2319| ): string | undefined {
+    2320|  const built = readFileSync(path, 'utf8')
+       |                ^
+    2321|  return (
+    2322|   scanForbiddenSource(built, names) ??
+ ❯ tests/conformance.test.ts:769:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 40 passed (45)
+   Start at  09:20:12
+   Duration  119.00s (transform 777ms, setup 178ms, import 22.41s, tests 96.24s, environment 0ms)
+
+exit=1
+5.05 4.23 5.53 3/262 22362

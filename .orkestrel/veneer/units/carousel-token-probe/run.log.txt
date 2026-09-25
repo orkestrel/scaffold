@@ -1,0 +1,46 @@
+== control (unmodified)
+
+ RUN  v4.1.11 /home/user/veneer-probe
+
+
+ Test Files  1 passed (1)
+      Tests  73 passed (73)
+   Start at  09:39:10
+   Duration  29.68s (transform 0ms, setup 501ms, import 471ms, tests 22.08s, environment 0ms)
+
+control exit=0
+42:		@include transition(transform var(--vn-motion-slide) var(--vn-ease-panel));
+== planted (token read, token undeclared in the test cascade)
+     × reads the shipped carousel declarations the motion proofs run under: an item declares a positive duration in either variant 5ms
+     × slides to the following item through its order and direction tokens under the shipped cascade, moving the indicator between slide and slid 12ms
+     × dispatches slid after every motion the slide starts on the outgoing and the incoming items finishes 2ms
+     × dispatches slid after the outgoing item motion when it outlasts the incoming item motion 1ms
+     × dispatches slid after the incoming item motion when it outlasts the outgoing item motion 1ms
+     × dispatches slid after every motion the slide starts under the fade variant finishes 3ms
+     × dispatches slid under the fade variant after the outgoing item motion when it outlasts the incoming item motion 1ms
+     × dispatches slid under the fade variant after the incoming item motion when it outlasts the outgoing item motion 1ms
+     × arms no timer after an animated slide during which the pointer entered the host 165ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:86:2 > Carousel > reads the shipped carousel declarations the motion proofs run under: an item declares a positive duration in either variant
+AssertionError: expected 0 to be greater than 0
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:110:2 > Carousel > slides to the following item through its order and direction tokens under the shipped cascade, moving the indicator between slide and slid
+AssertionError: expected [] to not deeply equal []
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:341:2 > Carousel > dispatches slid after every motion the slide starts on the outgoing and the incoming items finishes
+AssertionError: expected [] to not deeply equal []
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:382:2 > Carousel > dispatches slid after the outgoing item motion when it outlasts the incoming item motion
+AssertionError: expected 0 to be greater than 0
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:431:2 > Carousel > dispatches slid after the incoming item motion when it outlasts the outgoing item motion
+AssertionError: expected 0 to be greater than 0
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:480:2 > Carousel > dispatches slid after every motion the slide starts under the fade variant finishes
+AssertionError: expected [] to not deeply equal []
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:524:2 > Carousel > dispatches slid under the fade variant after the outgoing item motion when it outlasts the incoming item motion
+AssertionError: expected 0 to be greater than 0
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:573:2 > Carousel > dispatches slid under the fade variant after the incoming item motion when it outlasts the outgoing item motion
+AssertionError: expected 0 to be greater than 0
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1103:2 > Carousel > arms no timer after an animated slide during which the pointer entered the host
+AssertionError: expected 0 to be greater than 0
+      Tests  9 failed | 64 passed (73)
+planted exit=1
+restore before=d37aca34bcaa96a3ba5d1e8d6646e26f33173d8ad907d643674464c3f821eb6b after=d37aca34bcaa96a3ba5d1e8d6646e26f33173d8ad907d643674464c3f821eb6b
+restored-identical
+4.60 3.71 4.03 5/464 18050

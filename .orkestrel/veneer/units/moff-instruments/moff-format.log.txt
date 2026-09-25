@@ -1,0 +1,7 @@
+$ ./node_modules/.bin/oxfmt --config .oxfmtrc.json --check src/styles/components/_offcanvas.scss src/styles/components/_navbar.scss tests/src/styles/components/offcanvas.test.ts tests/src/styles/components/navbar.test.ts guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 31235ms on 5 files using 4 threads.
+exit=0
+7.84 5.71 4.74 1/432 22103

@@ -1,0 +1,15 @@
+Emit anchored visibility on the open promoted overlays (E-ID-ANCHOR)
+
+The anchor-visibility mixin writes position-visibility: anchors-visible on
+the open popover state of one class, and the dropdown, tooltip, and
+popover partials each include it once in the components layer (D47,
+D47a). The open overlay computes that value on Chromium 141 and 153 alike;
+neither paints an open overlay whose trigger a scroll container clips
+entirely, except Chromium 141 when the engine showed a menu after a
+trusted pointer press on its toggle, which the engine leaves unanchored
+there (D47b). The guide states each and records the additions. Four
+rounds (anchor-audit-verdict.md to anchor-audit-4-verdict.md, PASS on
+round 4).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

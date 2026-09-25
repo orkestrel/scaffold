@@ -1,0 +1,13 @@
++ Received
+
+- {}
++ {
++   "d": 150,
++   "e": "ease",
++   "midpoint": "matrix(0.813432, -0.58166, 0.58166, 0.813432, 0, 0)",
++   "start": "matrix(-1, 0, 0, -1, 0, 0)",
++ }
+
+ ❯ tests/src/styles/components/accordion.test.ts:689:68
+    687|   t.currentTime = Number(timing.duration) / 2
+    688|   const midpoint = readStyle(button, 'transform', pseudo)

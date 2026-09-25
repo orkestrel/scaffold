@@ -1,0 +1,256 @@
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/components/offcanvas.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-moff
+
+Port 63315 is in use, trying another one...
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+9:18:10 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts (40 tests | 10 failed) 2798ms
+     × slides the 'start' panel in from its edge on the panel curve and fades it in on the ease-out curve over the panel duration as the showing class joins, and back out as the hiding class joins 17ms
+     × slides the 'end' panel in from its edge on the panel curve and fades it in on the ease-out curve over the panel duration as the showing class joins, and back out as the hiding class joins 20ms
+     × slides the 'top' panel in from its edge on the panel curve and fades it in on the ease-out curve over the panel duration as the showing class joins, and back out as the hiding class joins 14ms
+     × slides the 'bottom' panel in from its edge on the panel curve and fades it in on the ease-out curve over the panel duration as the showing class joins, and back out as the hiding class joins 33ms
+     × lays a shown and a resting panel into the 'xs' expanded bar and leaves them fixed below the boundary 46ms
+     × lays a shown and a resting panel into the 'sm' expanded bar and leaves them fixed below the boundary 83ms
+     × lays a shown and a resting panel into the 'md' expanded bar and leaves them fixed below the boundary 87ms
+     × lays a shown and a resting panel into the 'lg' expanded bar and leaves them fixed below the boundary 80ms
+     × lays a shown and a resting panel into the 'xl' expanded bar and leaves them fixed below the boundary 83ms
+     × lays a shown and a resting panel into the 'xxl' expanded bar and leaves them fixed below the boundary 84ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:537:2 > offcanvas motion > slides the 'start' panel in from its edge on the panel curve and fades it in on the ease-out curve over the panel duration as the showing class joins, and back out as the hiding class joins
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:537:2 > offcanvas motion > slides the 'end' panel in from its edge on the panel curve and fades it in on the ease-out curve over the panel duration as the showing class joins, and back out as the hiding class joins
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:537:2 > offcanvas motion > slides the 'top' panel in from its edge on the panel curve and fades it in on the ease-out curve over the panel duration as the showing class joins, and back out as the hiding class joins
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:537:2 > offcanvas motion > slides the 'bottom' panel in from its edge on the panel curve and fades it in on the ease-out curve over the panel duration as the showing class joins, and back out as the hiding class joins
+AssertionError: expected [ 250, …(2) ] to deeply equal [ 250, …(2) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    250,[22m
+[2m    "cubic-bezier(0.32, 0.72, 0, 1)",[22m
+[32m-   "none",[39m
+[31m+   "matrix(1, 0, 0, 1, 0, 0)",[39m
+[2m  ][22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:585:61
+    583|    const leaving = requireValue(exit, 'No leaving slide')
+    584|    const vanishing = requireValue(disappearance, 'No leaving fade')
+    585|    expect([leaving.duration, leaving.easing, leaving.start]).toEqual([…
+       |                                                             ^
+    586|    expect([vanishing.duration, vanishing.easing, vanishing.start]).toE…
+    587|    const hidden = Number.parseFloat(vanishing.midpoint)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:715:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xs' expanded bar and leaves them fixed below the boundary
+AssertionError: expected { viewport: 375, …(9) } to deeply equal { viewport: 375, …(9) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -10,11 +10,11 @@[39m
+[2m    "position": "static",[22m
+[2m    "resting": [[22m
+[2m      "visible",[22m
+[2m      0,[22m
+[2m      0,[22m
+[32m-     "1",[39m
+[31m+     "0",[39m
+[2m    ],[22m
+[2m    "transition": "none",[22m
+[2m    "viewport": 375,[22m
+[2m    "width": 600,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:744:20
+    742|      ],
+    743|     }))
+    744|     expect(reading).toEqual(
+       |                    ^
+    745|      viewport >= boundary
+    746|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:715:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'sm' expanded bar and leaves them fixed below the boundary
+AssertionError: expected { viewport: 576, …(9) } to deeply equal { viewport: 576, …(9) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -10,11 +10,11 @@[39m
+[2m    "position": "static",[22m
+[2m    "resting": [[22m
+[2m      "visible",[22m
+[2m      0,[22m
+[2m      0,[22m
+[32m-     "1",[39m
+[31m+     "0",[39m
+[2m    ],[22m
+[2m    "transition": "none",[22m
+[2m    "viewport": 576,[22m
+[2m    "width": 600,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:744:20
+    742|      ],
+    743|     }))
+    744|     expect(reading).toEqual(
+       |                    ^
+    745|      viewport >= boundary
+    746|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:715:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'md' expanded bar and leaves them fixed below the boundary
+AssertionError: expected { viewport: 768, …(9) } to deeply equal { viewport: 768, …(9) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -10,11 +10,11 @@[39m
+[2m    "position": "static",[22m
+[2m    "resting": [[22m
+[2m      "visible",[22m
+[2m      0,[22m
+[2m      0,[22m
+[32m-     "1",[39m
+[31m+     "0",[39m
+[2m    ],[22m
+[2m    "transition": "none",[22m
+[2m    "viewport": 768,[22m
+[2m    "width": 600,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:744:20
+    742|      ],
+    743|     }))
+    744|     expect(reading).toEqual(
+       |                    ^
+    745|      viewport >= boundary
+    746|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:715:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'lg' expanded bar and leaves them fixed below the boundary
+AssertionError: expected { viewport: 992, …(9) } to deeply equal { viewport: 992, …(9) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -10,11 +10,11 @@[39m
+[2m    "position": "static",[22m
+[2m    "resting": [[22m
+[2m      "visible",[22m
+[2m      0,[22m
+[2m      0,[22m
+[32m-     "1",[39m
+[31m+     "0",[39m
+[2m    ],[22m
+[2m    "transition": "none",[22m
+[2m    "viewport": 992,[22m
+[2m    "width": 600,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:744:20
+    742|      ],
+    743|     }))
+    744|     expect(reading).toEqual(
+       |                    ^
+    745|      viewport >= boundary
+    746|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:715:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xl' expanded bar and leaves them fixed below the boundary
+AssertionError: expected { viewport: 1200, …(9) } to deeply equal { viewport: 1200, …(9) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -10,11 +10,11 @@[39m
+[2m    "position": "static",[22m
+[2m    "resting": [[22m
+[2m      "visible",[22m
+[2m      0,[22m
+[2m      0,[22m
+[32m-     "1",[39m
+[31m+     "0",[39m
+[2m    ],[22m
+[2m    "transition": "none",[22m
+[2m    "viewport": 1200,[22m
+[2m    "width": 600,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:744:20
+    742|      ],
+    743|     }))
+    744|     expect(reading).toEqual(
+       |                    ^
+    745|      viewport >= boundary
+    746|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/offcanvas.test.ts:715:2 > offcanvas in an expanded navbar > lays a shown and a resting panel into the 'xxl' expanded bar and leaves them fixed below the boundary
+AssertionError: expected { viewport: 1400, …(9) } to deeply equal { viewport: 1400, …(9) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -10,11 +10,11 @@[39m
+[2m    "position": "static",[22m
+[2m    "resting": [[22m
+[2m      "visible",[22m
+[2m      0,[22m
+[2m      0,[22m
+[32m-     "1",[39m
+[31m+     "0",[39m
+[2m    ],[22m
+[2m    "transition": "none",[22m
+[2m    "viewport": 1400,[22m
+[2m    "width": 600,[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/offcanvas.test.ts:744:20
+    742|      ],
+    743|     }))
+    744|     expect(reading).toEqual(
+       |                    ^
+    745|      viewport >= boundary
+    746|       ? {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 30 passed (40)
+   Start at  09:17:59
+   Duration  14.30s (transform 0ms, setup 1.57s, import 69ms, tests 2.80s, environment 0ms)
+
+exit=1
+5.95 5.25 6.24 7/309 15557

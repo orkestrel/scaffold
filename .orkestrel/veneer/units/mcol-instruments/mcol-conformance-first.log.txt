@@ -1,0 +1,75 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-mcol
+
+························xx···················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(8) ], [ …(3) ] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "accordion | .accordion | --bs-accordion-btn-icon-transition",
++     "collapsing | .collapsing | transition",
++     "collapsing | .collapsing.collapse-horizontal | transition",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "accordion | .accordion | --bs-accordion-btn-icon-transition",
++     "collapsing | .collapsing | transition",
++     "collapsing | .collapsing.collapse-horizontal | transition",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:257:20
+    255|   // The component-owned dark images are a second record of the same r…
+    256|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    257|   expect(darkened).toEqual([
+       |                    ^
+    258|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    259|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "accordion | .accordion | --bs-accordion-btn-icon-transition | — | transform 0.2s ease-in-out | transform var(--vn-motion-feedback) var(--vn-ease-standard) | tokenized",
++   "collapsing | .collapsing | transition | — | height 0.35s ease | height var(--vn-motion-panel) var(--vn-ease-panel) | tokenized",
++   "collapsing | .collapsing.collapse-horizontal | transition | — | width 0.35s ease | width var(--vn-motion-panel) var(--vn-ease-panel) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:265:33
+    263|
+    264|  it('records every measured value difference in the guide ledger', () …
+    265|   expect(departures.unrecorded).toEqual([])
+       |                                 ^
+    266|  })
+    267|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 43 passed (45)
+   Start at  09:23:47
+   Duration  116.83s (transform 896ms, setup 133ms, import 21.55s, tests 94.98s, environment 0ms)
+

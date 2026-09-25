@@ -1,0 +1,10 @@
+ROW <custom-ident> SERIF => "SERIF"
+ROW <custom-ident> serif => "serif"
+ROW <custom-ident> Monospace => "Monospace"
+ROW <custom-ident> monospace => "monospace"
+ROW font-family SERIF => "serif"
+ROW font-family serif => "serif"
+ROW control <custom-ident> alpha => "alpha"
+ROW control <custom-ident> beta => "beta"
+BUILD 141.0.7390.37
+exit=0
