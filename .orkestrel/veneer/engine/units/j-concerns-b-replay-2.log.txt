@@ -1,0 +1,13 @@
+# J-CONCERNS-B round 2 replay (2026-09-25) at 26ee551 Record every mutation during a prevented popover show and hide, and assert none was taken (J-CONCERNS-B round 2)
+unmutated exit=0       Tests  20 passed (20) assertion=0
+apply show exit=0
+show exit=1 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 19 passed (20) assertion=1
+     × writes nothing and dispatches no inserted or shown event when a listener prevents the show event, and shows once the listener leaves 4ms
+reverse show exit=0
+apply hide exit=0
+hide exit=1 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 19 passed (20) assertion=1
+     × keeps the tip shown, open, and unchanged, dispatching no hidden event, when a listener prevents the hide event a hide call starts 187ms
+reverse hide exit=0
+Tooltip.ts at HEAD: unchanged

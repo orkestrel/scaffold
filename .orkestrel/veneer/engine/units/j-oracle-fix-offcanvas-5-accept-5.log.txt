@@ -1,0 +1,50 @@
+npm run check exit 0
+npm run lint:check exit 0
+npm run format:check exit 0
+npm run test:policy exit 0
+npm run test:guides exit 0
+npm run test:setup:browser exit 0
+tmp/j-oracle-fix-offcanvas/accept-5-test-policy.log.txt: Test Files  1 passed (1)
+tmp/j-oracle-fix-offcanvas/accept-5-test-policy.log.txt:      Tests  109 passed | 1 skipped (110)
+tmp/j-oracle-fix-offcanvas/accept-5-test-setup-browser.log.txt: Test Files  1 passed (1)
+tmp/j-oracle-fix-offcanvas/accept-5-test-setup-browser.log.txt:      Tests  93 passed (93)
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m26 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 05:06:36
+[2m   Duration [22m 4.52s[2m (transform 661ms, setup 119ms, import 2.68s, tests 1.53s, environment 0ms)[22m
+
+helpers.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  98 passed (98)
+Offcanvas.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  70 passed (70)
+Isolation.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+Modal.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  61 passed (61)
+index.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+census exit 0
+compare exit 0
+departures round 3 66 round 5 66
+only round 3: []
+only round 5: []
+facets round 5: ['attribute']
+focus departures round 5: []
+offcanvas bootstrap steps 18 changed steps: []
+offcanvas veneer steps 18 changed steps: []
+modal bootstrap steps 22 changed steps: []
+modal veneer steps 22 changed steps: []
+departures.json byte-identical
+offcanvas.bootstrap.json byte-identical
+offcanvas.veneer.json byte-identical
+modal.bootstrap.json byte-identical
+modal.veneer.json byte-identical
+findings.json without timings identical {'modal.steps': 'every non-refused step changes state', 'modal.departures': 48, 'offcanvas.steps': 'every non-refused step changes state', 'offcanvas.departures': 18}
+npm run test:app exit 0 (observation)
+ Test Files  61 passed (61)
+      Tests  223 passed (223)

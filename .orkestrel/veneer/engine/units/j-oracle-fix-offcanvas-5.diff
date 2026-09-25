@@ -1,0 +1,950 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3316d33..d1ccecd 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -87,7 +87,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `readClosest`                             | function  | Returns the closest element a selector matches from an element, the element itself included, when that element is an HTML element and the optional root contains it.                          |
+ | `readSiblings`                            | function  | Returns the siblings on one side of an element that a selector matches, nearest first.                                                                                                        |
+ | `readOutermost`                           | function  | Returns the HTML elements inside a root that a selector matches and that sit inside no other match within the root.                                                                           |
+-| `readFocusedElement`                      | function  | Returns the deepest focused element under a document or a shadow root, reading down through each open shadow root.                                                                            |
++| `holdsFocus`                              | function  | Checks whether an element is the focused element of its own root, the document or the shadow root that holds it.                                                                              |
+ | `matchesDisabled`                         | function  | Checks whether an element carries a disabled token, matches the platform's `:disabled` state, or carries a `disabled` attribute whose value is not `false`.                                   |
+ | `readScrollbarWidth`                      | function  | Returns the width of the vertical scrollbar a document's view shows, as Bootstrap's `ScrollBarHelper` measures it.                                                                            |
+ | `isClassToken`                            | function  | Checks whether a value is one class token a class list accepts.                                                                                                                               |
+@@ -387,6 +387,15 @@ The interface exposes the following lifecycle operations.
+ 
+ #### `IsolationInterface`
+ 
++The `trigger` property carries the element destruction returns focus to: the `trigger` option, or
++else the HTML element the document reported as focused at construction. When focus sat inside a
++shadow root, that element is the root's host, not the element inside it. An offcanvas panel's
++backdrop press reads the property: the press cancels its default action exactly when its hide
++released the isolation and the `holdsFocus` function then reads the trigger as focused. Under
++reduced motion a later focus move a `hidden.vn.offcanvas` listener makes is undone by a default
++action the press kept, and a fallback host holds focus while any element of its shadow tree does;
++§ Offcanvas states both limits. The following table lists the interface's methods.
++
+ | Method    | Summary                                                                                                                                |
+ | --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+ | `destroy` | Releases every inert claim the isolation holds, restoring each value no live isolation still claims, and returns focus to the trigger. |
+@@ -2611,20 +2620,29 @@ isolation claims the backdrop as not inert, even beside another shown panel whos
+ it inert, so a press beside the panel lands on the backdrop itself. The listener ends when the hide
+ or destruction removes the backdrop. A press on any other element, a container of the backdrop
+ included, counts for nothing. A press that hides the panel releases the isolation inside its
+-`mousedown` listener, and the isolation moves focus to the trigger when the platform lets it. The
++`mousedown` listener, and the isolation moves focus to its trigger when the platform lets it. The
+ press's default action runs after the listener and would move focus on to the body. So a press
+-whose hide moved focus cancels that default action, and focus stays on the trigger through the
+-`hidden.vn.offcanvas` event and after the press, with motion and under reduced motion. A trigger
+-inside the panel keeps focus only until the panel's computed `visibility` turns `hidden`, because
+-the platform moves focus off an element that can no longer take it. The panel compares the deepest
+-focused element before and after the hide, through the `readFocusedElement` function. The read
+-starts at the panel's root, the document or the shadow root that holds the panel, and follows each
+-open shadow root down, so a move at any depth of open shadow roots counts. Two moves escape the
+-read and keep the default action: a move inside a closed shadow root below the panel's root, which
+-exposes no focused element, and, for a panel inside a shadow root, a move between two elements
+-outside that root. Every other press on the backdrop keeps its default action, which moves focus to
+-the body: a hide a listener prevents, a hide whose trigger the platform cannot focus, a press while
+-the panel slides out, and a press on a static backdrop.
++cancels that default action exactly when its hide released the isolation and the isolation's
++trigger then holds focus, which the `holdsFocus` function reads from the trigger's own root: the
++document, or the shadow root that holds the trigger, open or closed, whatever roots lie between the
++trigger and the panel. Focus then stays on the trigger through the `hidden.vn.offcanvas` event and
++after the press, with motion and under reduced motion. A trigger inside the panel keeps focus only
++until the panel's computed `visibility` turns `hidden`, because the platform moves focus off an
++element that can no longer take it. Every other press on the backdrop keeps its default action,
++which moves focus off the trigger, to the body when no focusable element contains the backdrop: a
++hide a listener prevents, a hide after which the trigger does not hold focus, such as a trigger the
++platform cannot focus or one a hide listener's focus move leaves behind, a press while the panel
++slides out, and a press on a static backdrop.
++
++The press rule has two limits. The press reads focus once, when its hide returns. Under reduced
++motion the hide completes in the microtasks after the listener, before the default action runs, so
++a focus move a `hidden.vn.offcanvas` listener makes there is undone by a default action the press
++kept. With motion, the `hidden.vn.offcanvas` event follows the default action. When `show` receives
++no trigger, the isolation falls back to the element the document reports as focused. When focus
++sits inside a shadow root, that element is the root's host, not the element inside it. The host
++holds focus while any element of its shadow tree does, the panel inside it included, so the press
++cancels its default action and focus stays inside the host until the panel's visibility turns
++`hidden`, then moves to the body. This fallback is the isolation's limit, not the press's.
+ 
+ A window resize hides a shown panel whose computed `position` is no longer `fixed`, subject to the
+ prevention of its `hide.vn.offcanvas` event. A responsive panel, one carrying a class such as
+@@ -2799,11 +2817,14 @@ ways:
+   the slide in runs as well.
+ - Hiding calls no `blur` on the panel, where Bootstrap's `hide` method does. A panel that isolates
+   moves focus to the trigger instead, as it releases the isolation. A backdrop press whose hide
+-  moves focus to the trigger therefore cancels its own `mousedown` default action, so focus stays
+-  there. The press reads the deepest focused element down through each open shadow root, so a move
+-  at any depth of open shadow roots counts. Bootstrap lets that default action move focus to the
+-  body, and its data API then returns focus to the trigger that opened the panel, at
+-  `hidden.bs.offcanvas`.
++  released the isolation, and after which the trigger holds focus as its own root reads it,
++  therefore cancels its own `mousedown` default action, so focus stays there, whatever shadow roots
++  hold the trigger. Bootstrap lets that default action move focus to the body, and its data API
++  then returns focus to the trigger that opened the panel, at `hidden.bs.offcanvas`. Under reduced
++  motion, a focus move a `hidden.vn.offcanvas` listener makes is undone by a default action the
++  press kept. A panel shown without a trigger while focus sat inside a shadow root returns focus to
++  that root's host, not the element inside it, and the press keeps focus inside that host until the
++  panel's visibility turns `hidden`. § Offcanvas states both limits.
+ - The engine adopts no `.offcanvas.show` markup at the window's `load` event, where Bootstrap's data
+   API calls `show` on each such panel. You construct the engine over shown markup instead, and its
+   `shown` property reads the token, so its `hide` method hides the panel.
+diff --git a/src/browser/Isolation.ts b/src/browser/Isolation.ts
+index 454023b..8bfc202 100644
+--- a/src/browser/Isolation.ts
++++ b/src/browser/Isolation.ts
+@@ -122,6 +122,10 @@ export class Isolation implements IsolationInterface {
+ 		return this.#host
+ 	}
+ 
++	get trigger(): HTMLElement | undefined {
++		return this.#trigger
++	}
++
+ 	destroy(): void {
+ 		if (this.#controller.signal.aborted) return
+ 		this.#controller.abort()
+diff --git a/src/browser/Offcanvas.ts b/src/browser/Offcanvas.ts
+index 2ccee29..bf01f6f 100644
+--- a/src/browser/Offcanvas.ts
++++ b/src/browser/Offcanvas.ts
+@@ -20,7 +20,7 @@ import {
+ import {
+ 	bindEventMap,
+ 	emitEvent,
+-	readFocusedElement,
++	holdsFocus,
+ 	readTag,
+ 	reflow,
+ 	resolveOptions,
+@@ -59,16 +59,19 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * Escape on the host hides the panel when `dismiss.escape` is `true`, and a press on the backdrop
+  * hides it when `dismiss.backdrop` is `true`; otherwise each dispatches `prevent.vn.offcanvas` while
+  * the panel is shown. The panel listens for a press on the backdrop element it creates, and the
+- * isolation spares that element, so a press beside the panel lands on it. A press whose hide moves
+- * focus, by releasing the isolation, cancels the press's `mousedown` default action, so focus stays
+- * on the trigger rather than moving on to the body; every other press keeps its default action. The
+- * panel compares the deepest focused element before and after the hide, read from its root, the
+- * document or the shadow root that holds it, down through each open shadow root, so a move at any
+- * depth of open shadow roots counts. Two moves escape the read and keep the default action: a move
+- * inside a closed shadow root below the panel's root, which exposes no focused element, and, for a
+- * panel inside a shadow root, a move between two elements outside that root. A window resize hides
+- * a shown panel whose computed `position` is no longer `fixed`; a resize during a show is applied
+- * after the show dispatches its completed event.
++ * isolation spares that element, so a press beside the panel lands on it. A press cancels its
++ * `mousedown` default action exactly when its hide released the isolation and the isolation's
++ * trigger then holds focus, read from the trigger's own root, the document or a shadow root of any
++ * mode, so focus stays on the trigger rather than moving on to the body; every other press keeps
++ * its default action. The press reads focus once, when its hide returns: under reduced motion the
++ * hide completes before the default action runs, so a focus move a `hidden.vn.offcanvas` listener
++ * makes is undone by a default action the press kept. When `show` receives no trigger, the
++ * isolation falls back to the element the document reports as focused, which is a shadow root's
++ * host, not the element inside it, when focus sits inside that shadow root; that host holds focus
++ * while any element of its shadow tree does, the panel inside it included, so the press keeps focus
++ * inside the host until the panel's visibility turns hidden. A window resize hides a shown panel
++ * whose computed `position` is no longer `fixed`; a resize during a show is applied after the show
++ * dispatches its completed event.
+  *
+  * A call carries the change identity it sets when its change starts. After each write, dispatch,
+  * and await, it reads whether the panel is live and whether a later `show` or `hide` call has
+@@ -566,27 +569,30 @@ export class Offcanvas implements OffcanvasInterface {
+ 	}
+ 
+ 	// Hides the panel on a press on its backdrop, or refuses the hide through the `prevent` event when
+-	// the backdrop does not dismiss it. The hide releases the isolation inside this listener, which
+-	// moves focus to the trigger when the platform lets it, and the press's default action runs after
+-	// the listener and would move focus on to the body. Bootstrap's data API returns focus after that
+-	// default action, at the panel's `hidden` event. So a press whose hide moved focus cancels its
+-	// default action and focus stays where the hide put it; every other press keeps its default
+-	// action, as Bootstrap's does. The press compares the deepest focused element, read down from the
+-	// panel's root through each open shadow root, because a root retargets an element focused inside a
+-	// shadow root below it to that root's host and so reads no move between two elements there. The
+-	// read starts at the panel's root rather than the document, because a closed shadow root that
+-	// holds the panel exposes nothing to the document. A move inside a closed shadow root below the
+-	// panel's root, or between two elements outside the panel's shadow root, escapes the read.
++	// the backdrop does not dismiss it. The hide's first write clears the isolation field and releases
++	// the isolation inside this listener, and the isolation returns focus to its trigger when the
++	// platform lets it. The press's default action runs after the listener and would move focus on to
++	// the body; Bootstrap's data API returns focus to the trigger after it, at the panel's `hidden`
++	// event. So the press cancels its default action exactly when its hide released the isolation and
++	// the isolation's trigger then holds focus, read from the trigger's own root, the document or a
++	// shadow root of any mode, whatever roots lie between the trigger and the panel. Every other press
++	// keeps its default action, as Bootstrap's does. The press reads focus once, when the hide
++	// returns: under reduced motion the hide completes in the microtasks after this listener, so a
++	// focus move a `hidden` listener makes there is undone by a default action the press kept. A
++	// trigger the isolation fell back to is a shadow root's host, not the element inside it, when
++	// focus sat inside that shadow root at construction, and that host reads as holding focus while
++	// any element of its shadow tree does, the panel inside it included; that is the isolation's
++	// limit.
+ 	#press(event: MouseEvent): void {
+ 		if (!this.#options.dismiss.backdrop) {
+ 			this.#prevent()
+ 			return
+ 		}
+-		const root = this.#host.getRootNode()
+-		const scope = isInstance(root, ShadowRoot) ? root : this.#host.ownerDocument
+-		const focused = readFocusedElement(scope)
++		const isolation = this.#isolation
++		const trigger = isolation?.trigger
+ 		void this.hide()
+-		if (readFocusedElement(scope) !== focused) event.preventDefault()
++		const released = isolation !== undefined && this.#isolation !== isolation
++		if (released && trigger !== undefined && holdsFocus(trigger)) event.preventDefault()
+ 	}
+ 
+ 	// Dispatches the `prevent` event for a refused dismissal of the live, shown panel.
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 21dd0fe..0eb56f4 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -456,31 +456,27 @@ export function readOutermost(root: ParentNode, selector: string): readonly HTML
+ }
+ 
+ /**
+- * Returns the deepest focused element under a document or a shadow root, reading down through each open shadow root.
++ * Checks whether an element is the focused element of its own root, the document or the shadow root that holds it.
+  *
+- * @param root - The document or shadow root whose focused element is read.
+- * @returns The focused element the read ends at; undefined when nothing under the root has focus,
+- *   which the root reports as a `null` active element.
++ * @param element - The element to read, such as the trigger an isolation returns focus to.
++ * @returns True if the element's root reports it as its `activeElement`; false otherwise, and
++ *   always for an element outside a document or a shadow root, such as a removed one.
+  * @remarks
+- * The read starts at the root's `activeElement` and, while that element carries an open shadow root
+- * whose `activeElement` is set, moves to it. The platform retargets focus inside a shadow root to
+- * the root's host for every reader outside it, so a read of one root alone misses a focus move
+- * between two elements of a shadow root below it. A closed shadow root exposes no `shadowRoot`
+- * member, so the read ends at its host. A document reports its body as active when nothing else
+- * has focus, so the read under a document returns the body then.
++ * The read asks the element's own root, which `getRootNode` returns whatever the mode of the
++ * shadow root that holds it, so it reads an element inside a closed shadow root through a reference
++ * to that element. A root retargets an element focused inside a shadow root below it to that root's
++ * host, so a shadow host reads as holding focus while any element of its shadow tree holds focus.
++ * A shadow root is read as the current realm's `ShadowRoot`.
+  * @example
+  * ```ts
+- * const focused = readFocusedElement(document)
++ * trigger.focus()
++ * holdsFocus(trigger) // true
+  * ```
+  */
+-export function readFocusedElement(root: DocumentOrShadowRoot): Element | undefined {
+-	let focused = root.activeElement ?? undefined
+-	let inner = focused?.shadowRoot?.activeElement ?? undefined
+-	while (inner !== undefined) {
+-		focused = inner
+-		inner = inner.shadowRoot?.activeElement ?? undefined
+-	}
+-	return focused
++export function holdsFocus(element: Element): boolean {
++	const root = element.getRootNode()
++	const scope = isInstance(root, ShadowRoot) ? root : element.ownerDocument
++	return root === scope && scope.activeElement === element
+ }
+ 
+ /**
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index dff8bf1..d5c74f1 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -481,6 +481,8 @@ export interface IsolationOptions {
+ export interface IsolationInterface {
+ 	/** Carries the element that keeps focus. */
+ 	readonly host: HTMLElement
++	/** Carries the element destruction returns focus to: the `trigger` option, or else the HTML element the document reported as focused at construction, which is a shadow root's host, not the element inside it, when focus sits inside that shadow root; undefined when neither exists. */
++	readonly trigger: HTMLElement | undefined
+ 	/**
+ 	 * Releases every inert claim the isolation holds, restoring each value no live isolation still claims, and returns focus to the trigger.
+ 	 *
+diff --git a/tests/src/browser/Isolation.test.ts b/tests/src/browser/Isolation.test.ts
+index 6f24f4b..5fa4e21 100644
+--- a/tests/src/browser/Isolation.test.ts
++++ b/tests/src/browser/Isolation.test.ts
+@@ -145,6 +145,37 @@ describe('Isolation', () => {
+ 		expect(document.activeElement).toBe(host)
+ 	})
+ 
++	// Each isolation is constructed while another element holds focus than the one it reports, so a
++	// getter that reads focus at the time of the read, rather than the element construction recorded,
++	// breaks the case.
++	it("carries the trigger its options name, or else the element focused at construction, which is a shadow root's host when focus sits inside that root", () => {
++		const root = scene.mount(markup)
++		const host = requireValue(root.querySelector<HTMLElement>('#host'), 'No host')
++		const before = requireValue(root.querySelector<HTMLElement>('#before'), 'No before button')
++		const sibling = requireValue(root.querySelector<HTMLElement>('#sibling'), 'No sibling')
++		before.focus()
++		const named = new Isolation(host, { trigger: sibling })
++		onTestFinished(() => named.destroy())
++		expect([document.activeElement, named.trigger]).toEqual([before, sibling])
++		named.destroy()
++		expect([named.trigger, document.activeElement]).toEqual([sibling, sibling])
++		before.focus()
++		const fallback = new Isolation(host)
++		onTestFinished(() => fallback.destroy())
++		host.focus()
++		expect([document.activeElement, fallback.trigger]).toEqual([host, before])
++		fallback.destroy()
++		expect([fallback.trigger, document.activeElement]).toEqual([before, before])
++		const shadowHost = scene.mount('')
++		const shadowed = document.createElement('button')
++		shadowHost.attachShadow({ mode: 'open' }).append(shadowed)
++		shadowed.focus()
++		const active = document.activeElement
++		const retargeted = new Isolation(host)
++		onTestFinished(() => retargeted.destroy())
++		expect([active, retargeted.trigger]).toEqual([shadowHost, shadowHost])
++	})
++
+ 	it('hands each element to the newest live claim, so isolations nested either way end in any order and restore the originals', () => {
+ 		const root = scene.mount(`
+ 			<button type="button" id="page">Page</button>
+diff --git a/tests/src/browser/Offcanvas.test.ts b/tests/src/browser/Offcanvas.test.ts
+index 12e4f86..3a4b0e6 100644
+--- a/tests/src/browser/Offcanvas.test.ts
++++ b/tests/src/browser/Offcanvas.test.ts
+@@ -722,14 +722,15 @@ describe('Offcanvas', () => {
+ 		expect(readings).toEqual(expected)
+ 	})
+ 
+-	// The panel carries a shadow root of its own that holds the trigger and the button focus sits on.
+-	// The document reads the panel as its active element before and after the isolation returns
+-	// focus, so the case reads focus from the document and from the panel's shadow root. The trigger
+-	// sits inside the panel, so the platform moves focus off it when the panel's computed visibility
+-	// turns hidden: the case reads that visibility when the trigger loses focus, and reads focus after
+-	// the press only with motion, because under reduced motion the hide completes inside the press and
+-	// the panel is hidden before the press returns.
+-	it("cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion", async () => {
++	// The panel carries a shadow root of its own, open or closed, that holds the trigger and the button
++	// focus sits on. The document reads the panel as its active element before and after the isolation
++	// returns focus, so the case reads focus from the document and from the panel's shadow root, which
++	// it keeps a reference to when the root is closed. The trigger sits inside the panel, so the
++	// platform moves focus off it when the panel's computed visibility turns hidden: the case reads
++	// that visibility when the trigger loses focus, and reads focus after the press only with motion,
++	// because under reduced motion the hide completes inside the press and the panel is hidden before
++	// the press returns.
++	it("cancels a trusted backdrop press's default action and leaves focus on a trigger in a shadow root the panel carries, open or closed, until the panel's visibility turns hidden, at the hidden event and after the press, with motion and under reduced motion", async () => {
+ 		scene.load(cascade)
+ 		const readings: unknown[] = []
+ 		const expected: unknown[] = []
+@@ -738,84 +739,98 @@ describe('Offcanvas', () => {
+ 				await stageMedia({ motion: false })
+ 				onTestFinished(() => releaseMedia())
+ 			}
+-			const root = scene.mount(markup)
+-			const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+-			const shadow = host.attachShadow({ mode: 'open' })
+-			shadow.innerHTML =
+-				'<button type="button">Return</button><button type="button">Inside</button>'
+-			const [first, second] = shadow.querySelectorAll<HTMLElement>('button')
+-			const trigger = requireValue(first, 'No trigger')
+-			const inside = requireValue(second, 'No inside button')
+-			const hidden = createRecorder<readonly [Element | null, Element | null]>()
+-			const offcanvas = new Offcanvas(host, {
+-				on: { hidden: () => hidden.handler(document.activeElement, shadow.activeElement) },
+-			})
+-			onTestFinished(() => offcanvas.destroy())
+-			expect(await offcanvas.show(trigger)).toBe(true)
+-			inside.focus()
+-			const before = [document.activeElement, shadow.activeElement]
+-			const backdrop = requireValue(
+-				root.querySelector<HTMLElement>('.offcanvas-backdrop'),
+-				'No backdrop',
+-			)
+-			// The window's `mousedown` listener runs after the backdrop's, so it reads whether the press
+-			// cancelled its default action.
+-			const prevented = createRecorder<readonly [boolean]>()
+-			const lost = createRecorder<readonly [string]>()
+-			const controller = new AbortController()
+-			onTestFinished(() => controller.abort())
+-			window.addEventListener('mousedown', (event) => prevented.handler(event.defaultPrevented), {
+-				signal: controller.signal,
+-			})
+-			trigger.addEventListener('focusout', () => lost.handler(getComputedStyle(host).visibility), {
+-				signal: controller.signal,
+-			})
+-			await userEvent.click(backdrop, { position: { x: beside.x, y: 200 } })
+-			const pressed = [document.activeElement, shadow.activeElement]
+-			await waitForCondition('the hide completes', () => hidden.count > 0)
+-			await waitForCondition('the trigger loses focus', () => lost.count > 0)
+-			readings.push({
+-				motion,
+-				before,
+-				prevented: prevented.calls,
+-				shown: offcanvas.shown,
+-				hidden: hidden.calls,
+-				pressed: motion ? pressed : undefined,
+-				lost: lost.calls,
+-			})
+-			expected.push({
+-				motion,
+-				before: [host, inside],
+-				prevented: [[true]],
+-				shown: false,
+-				hidden: [[host, trigger]],
+-				pressed: motion ? [host, trigger] : undefined,
+-				lost: [['hidden']],
+-			})
+-			controller.abort()
+-			offcanvas.destroy()
+-			root.remove()
++			for (const mode of ['open', 'closed'] as const) {
++				const root = scene.mount(markup)
++				const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
++				const shadow = host.attachShadow({ mode })
++				shadow.innerHTML =
++					'<button type="button">Return</button><button type="button">Inside</button>'
++				const [first, second] = shadow.querySelectorAll<HTMLElement>('button')
++				const trigger = requireValue(first, 'No trigger')
++				const inside = requireValue(second, 'No inside button')
++				const hidden = createRecorder<readonly [Element | null, Element | null]>()
++				const offcanvas = new Offcanvas(host, {
++					on: { hidden: () => hidden.handler(document.activeElement, shadow.activeElement) },
++				})
++				onTestFinished(() => offcanvas.destroy())
++				expect(await offcanvas.show(trigger)).toBe(true)
++				inside.focus()
++				const before = [document.activeElement, shadow.activeElement]
++				const backdrop = requireValue(
++					root.querySelector<HTMLElement>('.offcanvas-backdrop'),
++					'No backdrop',
++				)
++				// The window's `mousedown` listener runs after the backdrop's, so it reads whether the
++				// press cancelled its default action.
++				const prevented = createRecorder<readonly [boolean]>()
++				const lost = createRecorder<readonly [string]>()
++				const controller = new AbortController()
++				onTestFinished(() => controller.abort())
++				window.addEventListener('mousedown', (event) => prevented.handler(event.defaultPrevented), {
++					signal: controller.signal,
++				})
++				trigger.addEventListener(
++					'focusout',
++					() => lost.handler(getComputedStyle(host).visibility),
++					{
++						signal: controller.signal,
++					},
++				)
++				await userEvent.click(backdrop, { position: { x: beside.x, y: 200 } })
++				const pressed = [document.activeElement, shadow.activeElement]
++				await waitForCondition('the hide completes', () => hidden.count > 0)
++				await waitForCondition('the trigger loses focus', () => lost.count > 0)
++				readings.push({
++					motion,
++					mode,
++					before,
++					prevented: prevented.calls,
++					shown: offcanvas.shown,
++					hidden: hidden.calls,
++					pressed: motion ? pressed : undefined,
++					lost: lost.calls,
++				})
++				expected.push({
++					motion,
++					mode,
++					before: [host, inside],
++					prevented: [[true]],
++					shown: false,
++					hidden: [[host, trigger]],
++					pressed: motion ? [host, trigger] : undefined,
++					lost: [['hidden']],
++				})
++				controller.abort()
++				offcanvas.destroy()
++				root.remove()
++			}
+ 		}
+ 		expect(readings).toEqual(expected)
+ 	})
+-
+-	// A press whose hide moves no focus, or that starts no hide, keeps its default action, which moves
+-	// focus to the body, as Bootstrap's press does: a hide a listener prevents, a hide whose trigger
+-	// the platform cannot focus, a press while the panel slides out, and a static backdrop's refusal.
+-	// The slide out is lengthened on the panel alone so the press lands while the backdrop is still in
+-	// the page.
+-	it("keeps the press's default action, which moves focus to the body, when the hide moves no focus: a prevented hide, a trigger that takes no focus, a press during the slide out, and a static backdrop", async () => {
++	// A press whose hide releases no isolation, or after whose hide the trigger does not hold focus,
++	// keeps its default action, which moves focus to the body, as Bootstrap's press does: a hide a
++	// listener prevents, a hide whose trigger the platform cannot focus, a hide whose listener moves
++	// focus into the panel after the trigger was removed, a press while the panel slides out, and a
++	// static backdrop's refusal. The slide out is lengthened on the panel alone so the press lands
++	// while the backdrop is still in the page.
++	it("keeps the press's default action, which moves focus to the body, when the hide releases no isolation or leaves the trigger without focus: a prevented hide, a trigger that takes no focus, a listener that moves focus after the trigger is removed, a press during the slide out, and a static backdrop", async () => {
+ 		scene.load(cascade)
+-		for (const row of ['prevented', 'unfocusable', 'sliding', 'static'] as const) {
++		for (const row of ['prevented', 'unfocusable', 'redirected', 'sliding', 'static'] as const) {
+ 			const root = scene.mount(markup)
+ 			const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+ 			const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
++			const inside = requireValue(root.querySelector<HTMLElement>('#inside'), 'No inside button')
+ 			const prevented = createRecorder<readonly [string]>()
++			const moved = createRecorder<readonly [Element | null]>()
+ 			const offcanvas = new Offcanvas(host, {
+ 				dismiss: { backdrop: row !== 'static' },
+ 				on: {
+ 					hide: (event) => {
+ 						if (row === 'prevented') event.preventDefault()
++						if (row === 'redirected') {
++							inside.focus()
++							moved.handler(document.activeElement)
++						}
+ 					},
+ 					prevent: (event) => prevented.handler(event.type),
+ 				},
+@@ -827,7 +842,7 @@ describe('Offcanvas', () => {
+ 				root.querySelector<HTMLElement>('.offcanvas-backdrop'),
+ 				'No backdrop',
+ 			)
+-			if (row === 'unfocusable') opener.remove()
++			if (row === 'unfocusable' || row === 'redirected') opener.remove()
+ 			if (row === 'sliding') {
+ 				host.style.setProperty('transition-duration', '2s')
+ 				void offcanvas.hide()
+@@ -837,12 +852,14 @@ describe('Offcanvas', () => {
+ 			expect({
+ 				row,
+ 				before,
++				moved: moved.calls,
+ 				focus: document.activeElement,
+ 				shown: offcanvas.shown,
+ 				prevented: prevented.count,
+ 			}).toEqual({
+ 				row,
+ 				before: row === 'sliding' ? opener : host,
++				moved: row === 'redirected' ? [[inside]] : [],
+ 				focus: document.body,
+ 				shown: row === 'prevented' || row === 'static',
+ 				prevented: row === 'static' ? 1 : 0,
+@@ -852,6 +869,262 @@ describe('Offcanvas', () => {
+ 		}
+ 	})
+ 
++	// The panel sits in an open shadow root and the trigger in the light tree, which the isolation
++	// leaves interactive because it stops at the shadow boundary, so a hide listener can focus the
++	// trigger. The listener then prevents the hide, which releases no isolation, so the press keeps
++	// its default action and focus ends on the body, as Bootstrap's press does. The shadow root's host
++	// takes no focus, so the default action finds no focusable element around the backdrop.
++	it("keeps the press's default action, which moves focus to the body, when a hide listener focuses the trigger and prevents the hide", async () => {
++		scene.load(cascade)
++		const sheet = new CSSStyleSheet()
++		sheet.replaceSync(cascade)
++		const root = scene.mount(markup)
++		const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
++		const container = requireValue(root.querySelector<HTMLElement>('#panel'), 'No container')
++		container.removeAttribute('class')
++		container.removeAttribute('id')
++		container.removeAttribute('tabindex')
++		const shadow = container.attachShadow({ mode: 'open' })
++		shadow.adoptedStyleSheets = [sheet]
++		shadow.innerHTML = `<div>${markup}</div>`
++		const host = requireValue(shadow.querySelector<HTMLElement>('#panel'), 'No panel')
++		const focused = createRecorder<readonly [Element | null]>()
++		const offcanvas = new Offcanvas(host, {
++			on: {
++				hide: (event) => {
++					opener.focus()
++					focused.handler(document.activeElement)
++					event.preventDefault()
++				},
++			},
++		})
++		onTestFinished(() => offcanvas.destroy())
++		expect(await offcanvas.show(opener)).toBe(true)
++		const backdrop = requireValue(
++			shadow.querySelector<HTMLElement>('.offcanvas-backdrop'),
++			'No backdrop',
++		)
++		const prevented = createRecorder<readonly [boolean]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		window.addEventListener('mousedown', (event) => prevented.handler(event.defaultPrevented), {
++			signal: controller.signal,
++		})
++		await userEvent.click(backdrop, { position: { x: beside.x, y: 200 } })
++		expect({
++			focused: focused.calls,
++			prevented: prevented.calls,
++			focus: document.activeElement,
++			shown: offcanvas.shown,
++		}).toEqual({ focused: [[opener]], prevented: [[false]], focus: document.body, shown: true })
++	})
++
++	// The panel sits in an open shadow root and the trigger in the light tree. Before the press, focus
++	// sits on the panel, or on a light-tree button outside the panel's root, which the isolation leaves
++	// interactive because it stops at the shadow boundary. Either way the isolation returns focus to
++	// the trigger, whose own root, the document, reads it, so the press cancels its default action.
++	it("cancels a trusted backdrop press's default action and leaves focus on a light-tree trigger of a panel inside a shadow root, whether focus sat on the panel or outside the panel's root, at the hidden event and after the press, with motion and under reduced motion", async () => {
++		scene.load(cascade)
++		const sheet = new CSSStyleSheet()
++		sheet.replaceSync(cascade)
++		const readings: unknown[] = []
++		const expected: unknown[] = []
++		for (const motion of [true, false]) {
++			if (!motion) {
++				await stageMedia({ motion: false })
++				onTestFinished(() => releaseMedia())
++			}
++			for (const origin of ['panel', 'outside'] as const) {
++				const root = scene.mount(`${markup}<button type="button" id="outer">Outer</button>`)
++				const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
++				const outer = requireValue(root.querySelector<HTMLElement>('#outer'), 'No outer button')
++				const container = requireValue(root.querySelector<HTMLElement>('#panel'), 'No container')
++				container.removeAttribute('class')
++				container.removeAttribute('id')
++				container.removeAttribute('tabindex')
++				const shadow = container.attachShadow({ mode: 'open' })
++				shadow.adoptedStyleSheets = [sheet]
++				shadow.innerHTML = `<div>${markup}</div>`
++				const host = requireValue(shadow.querySelector<HTMLElement>('#panel'), 'No panel')
++				const hidden = createRecorder<readonly [Element | null]>()
++				const offcanvas = new Offcanvas(host, {
++					on: { hidden: () => hidden.handler(document.activeElement) },
++				})
++				onTestFinished(() => offcanvas.destroy())
++				expect(await offcanvas.show(opener)).toBe(true)
++				if (origin === 'outside') outer.focus()
++				const before = [document.activeElement, shadow.activeElement]
++				const backdrop = requireValue(
++					shadow.querySelector<HTMLElement>('.offcanvas-backdrop'),
++					'No backdrop',
++				)
++				const prevented = createRecorder<readonly [boolean]>()
++				const controller = new AbortController()
++				onTestFinished(() => controller.abort())
++				window.addEventListener('mousedown', (event) => prevented.handler(event.defaultPrevented), {
++					signal: controller.signal,
++				})
++				await userEvent.click(backdrop, { position: { x: beside.x, y: 200 } })
++				const pressed = document.activeElement
++				await waitForCondition('the hide completes', () => hidden.count > 0)
++				readings.push({
++					motion,
++					origin,
++					before,
++					prevented: prevented.calls,
++					hidden: hidden.calls,
++					pressed,
++					settled: document.activeElement,
++				})
++				expected.push({
++					motion,
++					origin,
++					before: origin === 'panel' ? [container, host] : [outer, null],
++					prevented: [[true]],
++					hidden: [[opener]],
++					pressed: opener,
++					settled: opener,
++				})
++				controller.abort()
++				offcanvas.destroy()
++				root.remove()
++			}
++		}
++		expect(readings).toEqual(expected)
++	})
++
++	// The trigger sits inside the panel and holds focus before the press. The isolation's return finds
++	// it focused, so the press keeps the trigger's focus, as Bootstrap's data API returns focus to a
++	// visible trigger at its `hidden` event. The platform then moves focus off the trigger when the
++	// panel's computed visibility turns hidden, so focus ends on the body, as Bootstrap's does, whose
++	// data API finds the trigger hidden. The case reads focus after the press only with motion,
++	// because under reduced motion the panel is hidden before the press returns.
++	it("cancels a trusted backdrop press's default action and keeps focus on a trigger inside the panel that already held it until the panel's visibility turns hidden, then on the body, with motion and under reduced motion", async () => {
++		scene.load(cascade)
++		const readings: unknown[] = []
++		const expected: unknown[] = []
++		for (const motion of [true, false]) {
++			if (!motion) {
++				await stageMedia({ motion: false })
++				onTestFinished(() => releaseMedia())
++			}
++			const root = scene.mount(markup)
++			const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
++			const inside = requireValue(root.querySelector<HTMLElement>('#inside'), 'No inside button')
++			const offcanvas = new Offcanvas(host)
++			onTestFinished(() => offcanvas.destroy())
++			expect(await offcanvas.show(inside)).toBe(true)
++			inside.focus()
++			const before = document.activeElement
++			const backdrop = requireValue(
++				root.querySelector<HTMLElement>('.offcanvas-backdrop'),
++				'No backdrop',
++			)
++			const prevented = createRecorder<readonly [boolean]>()
++			const lost = createRecorder<readonly [string]>()
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			window.addEventListener('mousedown', (event) => prevented.handler(event.defaultPrevented), {
++				signal: controller.signal,
++			})
++			inside.addEventListener('focusout', () => lost.handler(getComputedStyle(host).visibility), {
++				signal: controller.signal,
++			})
++			await userEvent.click(backdrop, { position: { x: beside.x, y: 200 } })
++			const pressed = document.activeElement
++			await waitForCondition('the trigger loses focus', () => lost.count > 0)
++			await waitForCondition('the hide settles', () => !host.classList.contains('hiding'))
++			readings.push({
++				motion,
++				before,
++				prevented: prevented.calls,
++				pressed: motion ? pressed : undefined,
++				lost: lost.calls,
++				settled: document.activeElement,
++			})
++			expected.push({
++				motion,
++				before: inside,
++				prevented: [[true]],
++				pressed: motion ? inside : undefined,
++				lost: [['hidden']],
++				settled: document.body,
++			})
++			controller.abort()
++			offcanvas.destroy()
++			root.remove()
++		}
++		expect(readings).toEqual(expected)
++	})
++
++	// The panel sits inside the shadow root of a host that takes no focus of its own, with and without
++	// `delegatesFocus`, and `show` receives no trigger while a button in that root holds focus. The
++	// document retargets that button to the host, so the isolation falls back to the host, and the
++	// host reads as holding focus while the panel inside its tree does. The press therefore keeps the
++	// panel's focus until the panel's visibility turns hidden, and focus then ends on the body, as
++	// Bootstrap's does for a panel shown without a trigger. The case reads focus after the press only
++	// with motion, because under reduced motion the panel is hidden before the press returns.
++	it("keeps focus inside a shadow host the isolation fell back to until the panel's visibility turns hidden, then on the body, with and without delegated focus, with motion and under reduced motion", async () => {
++		scene.load(cascade)
++		const sheet = new CSSStyleSheet()
++		sheet.replaceSync(cascade)
++		const readings: unknown[] = []
++		const expected: unknown[] = []
++		for (const motion of [true, false]) {
++			if (!motion) {
++				await stageMedia({ motion: false })
++				onTestFinished(() => releaseMedia())
++			}
++			for (const delegatesFocus of [false, true]) {
++				const fallback = scene.mount('')
++				const shadow = fallback.attachShadow({ mode: 'open', delegatesFocus })
++				shadow.adoptedStyleSheets = [sheet]
++				shadow.innerHTML = `<button type="button" id="start">Start</button><div>${markup}</div>`
++				const start = requireValue(shadow.querySelector<HTMLElement>('#start'), 'No start')
++				const host = requireValue(shadow.querySelector<HTMLElement>('#panel'), 'No panel')
++				const offcanvas = new Offcanvas(host)
++				onTestFinished(() => offcanvas.destroy())
++				start.focus()
++				expect(await offcanvas.show()).toBe(true)
++				const before = [document.activeElement, shadow.activeElement]
++				const backdrop = requireValue(
++					shadow.querySelector<HTMLElement>('.offcanvas-backdrop'),
++					'No backdrop',
++				)
++				const prevented = createRecorder<readonly [boolean]>()
++				const controller = new AbortController()
++				onTestFinished(() => controller.abort())
++				window.addEventListener('mousedown', (event) => prevented.handler(event.defaultPrevented), {
++					signal: controller.signal,
++				})
++				await userEvent.click(backdrop, { position: { x: beside.x, y: 200 } })
++				const pressed = [document.activeElement, shadow.activeElement]
++				await waitForCondition('the hide settles', () => !host.classList.contains('hiding'))
++				await waitForCondition('focus leaves the host', () => document.activeElement !== fallback)
++				readings.push({
++					motion,
++					delegatesFocus,
++					before,
++					prevented: prevented.calls,
++					pressed: motion ? pressed : undefined,
++					settled: document.activeElement,
++				})
++				expected.push({
++					motion,
++					delegatesFocus,
++					before: [fallback, host],
++					prevented: [[true]],
++					pressed: motion ? [fallback, host] : undefined,
++					settled: document.body,
++				})
++				controller.abort()
++				offcanvas.destroy()
++				fallback.remove()
++			}
++		}
++		expect(readings).toEqual(expected)
++	})
++
+ 	// Each probe has its own assertion, so a press that counts on a container of the backdrop and a
+ 	// press that counts inside the panel each break one of them.
+ 	it('counts no press on a container of the backdrop and no press inside the panel', async () => {
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index 3051701..986857b 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -31,7 +31,7 @@ import {
+ 	isSelector,
+ 	matchesReducedMotion,
+ 	readClosest,
+-	readFocusedElement,
++	holdsFocus,
+ 	readOutermost,
+ 	readScrollbarWidth,
+ 	readSiblings,
+@@ -972,84 +972,86 @@ describe('readOutermost', () => {
+ 	})
+ })
+ 
+-// Each case reads the platform's own `activeElement` beside the helper, so a read that stops at the
+-// root it starts from reads what the platform reads there and breaks the case.
+-describe('readFocusedElement', () => {
+-	it('returns the focused element of a document whose focus sits in its own tree', () => {
++// Each case reads the root's own `activeElement` beside the helper, so a helper that reads another
++// root, such as the document for an element inside a shadow root, breaks the case.
++describe('holdsFocus', () => {
++	it('reads an element of the document as holding focus exactly when the document reports it active', () => {
+ 		const button = mount(build('button'))
++		const other = mount(build('button'))
+ 		onTestFinished(() => button.remove())
++		onTestFinished(() => other.remove())
+ 		button.focus()
+-		expect([document.activeElement, readFocusedElement(document)]).toEqual([button, button])
++		expect({
++			active: document.activeElement,
++			button: holdsFocus(button),
++			other: holdsFocus(other),
++		}).toEqual({ active: button, button: true, other: false })
+ 	})
+ 
+-	it('returns the focused element inside one open shadow root, which the document reads as its host', () => {
++	it('reads an element inside an open shadow root from that root, where the document reads only the host', () => {
+ 		const host = mount(build('div'))
+ 		onTestFinished(() => host.remove())
+ 		const shadow = host.attachShadow({ mode: 'open' })
+ 		const button = build('button')
+-		shadow.append(button)
+-		button.focus()
+-		expect({
+-			document: document.activeElement,
+-			deep: readFocusedElement(document),
+-			root: readFocusedElement(shadow),
+-		}).toEqual({ document: host, deep: button, root: button })
+-	})
+-
+-	it('returns the focused element two open shadow roots down, from the document and from the outer root', () => {
+-		const outer = mount(build('div'))
+-		onTestFinished(() => outer.remove())
+-		const first = outer.attachShadow({ mode: 'open' })
+-		const inner = build('div')
+-		first.append(inner)
+-		const second = inner.attachShadow({ mode: 'open' })
+-		const button = build('button')
+-		second.append(button)
++		const other = build('button')
++		shadow.append(button, other)
+ 		button.focus()
+ 		expect({
+ 			document: document.activeElement,
+-			outer: first.activeElement,
+-			deep: readFocusedElement(document),
+-			root: readFocusedElement(first),
+-		}).toEqual({ document: outer, outer: inner, deep: button, root: button })
++			root: shadow.activeElement,
++			button: holdsFocus(button),
++			other: holdsFocus(other),
++		}).toEqual({ document: host, root: button, button: true, other: false })
+ 	})
+ 
+-	it('ends the read at the host of a closed shadow root, which exposes no shadow root to read down', () => {
++	it('reads an element inside a closed shadow root through a reference to the element', () => {
+ 		const host = mount(build('div'))
+ 		onTestFinished(() => host.remove())
+ 		const shadow = host.attachShadow({ mode: 'closed' })
+ 		const button = build('button')
+-		shadow.append(button)
++		const other = build('button')
++		shadow.append(button, other)
+ 		button.focus()
+ 		expect({
+ 			exposed: host.shadowRoot,
+-			deep: readFocusedElement(document),
+-			root: readFocusedElement(shadow),
+-		}).toEqual({ exposed: null, deep: host, root: button })
+-	})
+-
+-	it('ends the read at a focused host whose open shadow root holds no focus', () => {
+-		const host = mount(build('div'))
+-		onTestFinished(() => host.remove())
+-		host.tabIndex = 0
+-		host.attachShadow({ mode: 'open' }).append(build('button'))
+-		host.focus()
+-		expect([document.activeElement, readFocusedElement(document)]).toEqual([host, host])
++			root: shadow.activeElement,
++			button: holdsFocus(button),
++			other: holdsFocus(other),
++		}).toEqual({ exposed: null, root: button, button: true, other: false })
++		other.focus()
++		expect([holdsFocus(button), holdsFocus(other)]).toEqual([false, true])
+ 	})
+ 
+-	it('returns undefined for a shadow root nothing inside has focus, and the body for a document nothing has focus in', () => {
++	it('reads a shadow host that takes no focus of its own as holding focus while an element of its shadow tree holds focus', () => {
+ 		const host = mount(build('div'))
+ 		onTestFinished(() => host.remove())
+-		const shadow = host.attachShadow({ mode: 'open' })
+ 		const button = build('button')
+-		shadow.append(button)
++		host.attachShadow({ mode: 'open' }).append(button)
++		expect(holdsFocus(host)).toBe(false)
+ 		button.focus()
++		expect({
++			tabIndex: host.tabIndex,
++			active: document.activeElement,
++			host: holdsFocus(host),
++		}).toEqual({ tabIndex: -1, active: host, host: true })
+ 		button.blur()
++		expect(holdsFocus(host)).toBe(false)
++	})
++
++	it('reads an element outside a document or a shadow root as holding no focus, one removed while it held focus included', () => {
++		const button = mount(build('button'))
++		button.focus()
++		expect(holdsFocus(button)).toBe(true)
++		button.remove()
++		const detached = build('div')
++		const nested = build('button')
++		detached.append(nested)
+ 		expect({
+-			root: shadow.activeElement,
+-			deep: readFocusedElement(shadow),
+-			document: readFocusedElement(document),
+-		}).toEqual({ root: null, deep: undefined, document: document.body })
++			removed: holdsFocus(button),
++			unmounted: holdsFocus(build('button')),
++			nested: holdsFocus(nested),
++			root: nested.getRootNode(),
++		}).toEqual({ removed: false, unmounted: false, nested: false, root: detached })
+ 	})
+ })
+ 
+diff --git a/tests/src/browser/index.test.ts b/tests/src/browser/index.test.ts
+index 538b1db..d481960 100644
+--- a/tests/src/browser/index.test.ts
++++ b/tests/src/browser/index.test.ts
+@@ -170,6 +170,7 @@ describe('src browser entry', () => {
+ 			'computeNeighbor',
+ 			'emitEvent',
+ 			'fillSlot',
++			'holdsFocus',
+ 			'isAttributeName',
+ 			'isBareEvent',
+ 			'isButtonEvent',
+@@ -205,7 +206,6 @@ describe('src browser entry', () => {
+ 			'readClosest',
+ 			'readControls',
+ 			'readElementName',
+-			'readFocusedElement',
+ 			'readHostPriority',
+ 			'readHostValue',
+ 			'readOutermost',

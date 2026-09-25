@@ -1,0 +1,15 @@
+diff --git a/src/browser/Tooltip.ts b/src/browser/Tooltip.ts
+index ece32fd..9fa1f3f 100644
+--- a/src/browser/Tooltip.ts
++++ b/src/browser/Tooltip.ts
+@@ -918,6 +918,10 @@ export class Tooltip<TOptions extends TooltipOptions = TooltipOptions> implement
+ 			const accepted = emitEvent(host, events.hide, null, true)
+ 			// A listener that only took the tip's `shown` token has made this call's token write for it.
+ 			if (!this.#holds(change, undefined)) return false
++			if (!accepted && !forced && this.#profile.popover === 'manual' && this.#tip !== undefined) {
++				this.#tip.classList.remove(this.#classes.shown)
++				this.#tip.classList.add(this.#classes.shown)
++			}
+ 			if (!accepted && !forced) return false
+ 			const tip = this.#tip
+ 			if (tip === undefined) return false
