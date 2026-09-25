@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+ ❯ |src:core| tests/src/core/templates.test.ts (33 tests | 1 failed | 32 skipped) 9379ms
+     × declares every emitted project factory with the override parameter 9377ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/templates.test.ts > emitted workspaces under their own gates > declares every emitted project factory with the override parameter
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/templates.test.ts:938:2
+    936|  })
+    937|
+    938|  it('declares every emitted project factory with the override paramete…
+       |  ^
+    939|   // Vitest calls a project row with its own invocation record, so a f…
+    940|   // declares a parameter receives those fields in the override positi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 32 skipped (33)
+   Start at  04:29:20
+   Duration  18.77s (transform 5.45s, setup 3.75s, import 3.14s, tests 9.38s, environment 0ms)
+
+exit=1

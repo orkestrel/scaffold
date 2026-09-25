@@ -1,0 +1,146 @@
+--- round2/tests/setupServer.ts
++++ round3/tests/setupServer.ts
+@@ -900,7 +900,7 @@
+ }
+ 
+ /**
+- * Reads the test files a Vitest JSON report records.
++ * Parses the test files a Vitest JSON report records.
+  *
+  * @param text - The report's text, as the `json` reporter wrote it to its output file.
+  * @returns Every test file the report records, in report order, or undefined when the text is not
+@@ -908,16 +908,16 @@
+  * `name` or no `assertionResults` list.
+  *
+  * @remarks
+- * The whole report is refused rather than the malformed entry dropped, so a reader never reports a
+- * partial file list as the run's. The reader narrows only the structure it walks; every verdict
++ * The whole report is refused rather than the malformed entry dropped, so a caller never receives
++ * a partial file list as the run's. The parser narrows only the structure it walks; every verdict
+  * field stays the reporter's value.
+  *
+  * @example
+  * ```ts
+- * readVitestReport('{"testResults":[]}') // []
++ * parseVitestReport('{"testResults":[]}') // []
+  * ```
+  */
+-export function readVitestReport(text: string): readonly TestReportFile[] | undefined {
++export function parseVitestReport(text: string): readonly TestReportFile[] | undefined {
+ 	const report = parseJSON(text)
+ 	if (!isRecord(report) || !isArray(report.testResults)) return undefined
+ 	const files: TestReportFile[] = []
+@@ -951,8 +951,9 @@
+  *
+  * @remarks
+  * The rivals are a configuration Vite cannot load, a proof that fails to collect on another
+- * import, a proof whose own assertion fails, and a run its timeout ends. Each rival rewrites the
+- * workspace for its own run, and the caller restores the generated text after it.
++ * import, a proof whose own assertion fails, and a run its timeout ends. Each rewriting rival
++ * writes its `files` for its own run alone, and the caller restores the generated text after it;
++ * the `timeout` rival runs the workspace as generated and differs only in its timeout.
+  */
+ export function buildReleaseScenarios(
+ 	release: readonly string[],
+--- round2/tests/setupServer.test.ts
++++ round3/tests/setupServer.test.ts
+@@ -80,7 +80,7 @@
+ 	readManifestVersion,
+ 	readNpmFloor,
+ 	readNpmVersion,
+-	readVitestReport,
++	parseVitestReport,
+ 	captureScaffoldRejection,
+ 	readSpecifiers,
+ 	readStatements,
+@@ -1032,7 +1032,7 @@
+ })
+ 
+ describe('the release-mode fixtures', () => {
+-	it('reads every test file a Vitest report records, and refuses a text that is not a report', () => {
++	it('parses every test file a Vitest report records, and refuses a text that is not a report', () => {
+ 		const report = JSON.stringify({
+ 			testResults: [
+ 				{
+@@ -1053,7 +1053,7 @@
+ 				},
+ 			],
+ 		})
+-		expect(readVitestReport(report)).toStrictEqual([
++		expect(parseVitestReport(report)).toStrictEqual([
+ 			{
+ 				name: '/workspace/tests/distribution.test.ts',
+ 				status: 'failed',
+@@ -1071,7 +1071,7 @@
+ 				],
+ 			},
+ 		])
+-		expect(readVitestReport('{"testResults":[]}')).toStrictEqual([])
++		expect(parseVitestReport('{"testResults":[]}')).toStrictEqual([])
+ 		// A report missing a structure the reader walks is refused whole, including one whose only
+ 		// defect is a single malformed file entry beside a well-formed one.
+ 		for (const text of [
+@@ -1083,7 +1083,7 @@
+ 			'{"testResults":[{"name":"/workspace/a.test.ts"}]}',
+ 			'{"testResults":[{"name":"/workspace/a.test.ts","assertionResults":[]},"entry"]}',
+ 		]) {
+-			expect(readVitestReport(text)).toBeUndefined()
++			expect(parseVitestReport(text)).toBeUndefined()
+ 		}
+ 	})
+ 
+--- round2/tests/distribution.test.ts
++++ round3/tests/distribution.test.ts
+@@ -32,7 +32,7 @@
+ 	readManifestVersion,
+ 	readNpmFloor,
+ 	readNpmVersion,
+-	readVitestReport,
++	parseVitestReport,
+ } from './setupServer.js'
+ 
+ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+@@ -763,7 +763,7 @@
+ 				workspace.write('generated/vite.config.ts', configuration)
+ 				workspace.write(`generated/${DISTRIBUTION_TEST_PATH}`, source)
+ 				const text = workspace.read(`generated/${report}`)
+-				const files = text === undefined ? undefined : readVitestReport(text)
++				const files = text === undefined ? undefined : parseVitestReport(text)
+ 				readings.set(scenario.label, {
+ 					// A run the timeout or a signal ended never reached the proof's verdict, and a run
+ 					// that never asked the fixture answers something other than its refusal.
+@@ -1163,7 +1163,7 @@
+ 				expect(proof.code, `${proof.stdout}\n${proof.stderr}`).toBe(0)
+ 				expect(proof.stdout).toContain('setup:browser')
+ 				expect(proof.stdout).toContain('tests/setupBrowser.test.ts')
+-				const report = readVitestReport(
++				const report = parseVitestReport(
+ 					requireValue(workspace.read('generated/tmp/setup-vue-results.json')),
+ 				)
+ 				if (report === undefined) {
+--- round2/tests/src/core/templates.test.ts
++++ round3/tests/src/core/templates.test.ts
+@@ -936,15 +936,16 @@
+ 	})
+ 
+ 	it('declares every emitted project factory with the override parameter', () => {
+-		// Vitest calls a project row with its own environment record, so a factory that
++		// Vitest calls a project row with its own invocation record, so a factory that
+ 		// declares a parameter receives those fields in the override position. The
+ 		// emitted `mergeOverride` is what makes the parameter safe: a `UserConfig` declares
+-		// `mode` but not `command`, and the record always carries both, so a value carrying
+-		// the pair returns the base in the record's mode and carries none of its other
+-		// fields. The vendored `tests/config.test.ts` drives every registered row through
+-		// that projection. This rule replaced a seal — a factory declaring no parameter at
+-		// all — so the controls are that seal put back: once into the template text the
+-		// emitters carry, and once into every emitted configuration the sweep reads.
++		// `mode` but not `command`, and the record always carries both, so `mergeOverride`,
++		// given a value carrying the pair, returns the base in the record's mode and
++		// carries none of its other fields. The vendored `tests/config.test.ts` drives
++		// every registered row through that projection. This rule replaced a seal — a
++		// factory declaring no parameter at all — so the controls are that seal put back:
++		// once into the template text the emitters carry, and once into every emitted
++		// configuration the sweep reads.
+ 		const sealed = sealParameter(CONFIG_TEMPLATES.factories.policy)
+ 		expect(sealed).not.toBe(CONFIG_TEMPLATES.factories.policy)
+ 		expect(findRefusals(sealed)).toStrictEqual(['policy()'])

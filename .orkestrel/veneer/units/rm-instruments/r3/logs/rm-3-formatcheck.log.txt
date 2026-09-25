@@ -1,0 +1,10 @@
+
+> @orkestrel/scaffold@0.0.77 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 141500ms on 228 files using 4 threads.
+exit=0
+exit=0
