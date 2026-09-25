@@ -1,0 +1,9 @@
+{
+ "tokenBelowRoot": "1px",
+ "aliasBelowRoot": "4px",
+ "islandRadius": "20px",
+ "rootRadius": "calc(.375rem * 1)",
+ "rootStripe": "17%",
+ "islandStripe": "5%",
+ "tokenOnRoot": "4px"
+}
