@@ -1,0 +1,16 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 22d2600..02f3b16 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -7179,8 +7179,9 @@ offcanvas panel, carousel slide and indicator, and accordion chevron timings, wh
+ release's literals as their own sections record. A scaled duration reads a `--vn-motion-*` token,
+ alone or scaled by a fixed ratio, so it doubles from its own resting value at a factor of `2` and
+ starts no transition at a factor of `0`. At a factor of `1`, it resolves to the value its token and
+-ratio give, which is the release's duration wherever Veneer keeps that duration. § Departures
+-records each scaled duration that differs from the release's, such as the `.icon-link` transform's.
++ratio give, which is the release's duration wherever Veneer keeps that duration. § Departures or §
++Additions records each scaled duration that differs from the release's, such as the `.icon-link`
++transform's in § Departures and the modal host's in § Additions.
+ 
+ A factor takes effect where the scale it multiplies is declared. Veneer declares the scales on the
+ `:root` selector, so a factor set on the root element rescales the document. A subtree that sets a
