@@ -1,0 +1,13 @@
+1. **UNRESOLVED** — The reader behavior holds at `tests/setupServer.ts:1337`: in-memory probes reject `Linux`, `—`, `macos`, and `windows` with the specified diagnostics. Valid platforms pass, and the real Receipts table at `guides/veneer.md:10592` is empty. The TSDoc states the distinction at `tests/setupServer.ts:1282`. The assertions at `tests/setupServer.test.ts:1315` and `tests/setupServer.test.ts:1344` distinguish deletion of the check: my in-memory mutation produces `AssertionError: Missing expected exception`. However, the actual case’s mutation failure appears only in `er-mech-report-3.md:26`; no plant log is retained. I read `erm-instruments/r3/logs/erm-3-test-setup.log.txt`, which records the passing suite only. Retain the focused case’s mutation run naming its assertion failure to settle that proof claim.
+
+2. **CONFIRMED** — `tests/setupServer.test.ts:2980` contains the dedicated describe block and exact requested title. Reconstructing round 2 from the delta reproduced its Git blob, and comparing the callback bodies found them byte-identical. Removing the running platform would fail `toContain`; duplicating a platform would fail the uniqueness assertion. The title claims those properties, not exhaustive platform coverage.
+
+3. **CONFIRMED** — The rival reading that `engine-strict=true` prevents this script under an excluded `engines.node` is contradicted by `erm-instruments/r3/logs/erm-3-engines.log.txt:1`: the script prints `script ran` and exits 0. The excluded `devEngines.packageManager` produces `EBADDEVENGINES` and exits 1 at line 9. I read the corresponding default-configuration results in `erm-instruments/r2/logs/erm-2-engines.log.txt:1`; they agree. These observations support `guides/veneer.md:10545` for npm 11.19.1 script execution.
+
+4. **CONFIRMED** — Comparing the retained round diffs found changes only in `tests/setupServer.ts` and `tests/setupServer.test.ts`. The delta introduces none of the prohibited constructs. The live whole diff matches `erm-3.diff` by SHA-256. An independent TypeScript declaration comparison found the runtime exports equal to the inventory at `tests/setupServer.test.ts:503`, including the additions at lines 507, 518, 560, and 583. An omitted inventory entry would fail that equality assertion.
+
+Findings outside the claims: none.
+
+Attacked and held: Supported hosts correctly accepts `—` at `tests/setupServer.ts:1260`; the in-memory probe confirmed this adjacent behavior remains intact.
+
+VERDICT: FAIL 1; outside the claims: none

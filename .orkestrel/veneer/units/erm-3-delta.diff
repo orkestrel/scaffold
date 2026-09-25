@@ -1,0 +1,67 @@
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 1244f80..dafd6e0 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1278,11 +1278,6 @@ describe('server setup', () => {
+ 		}
+ 	})
+ 
+-	it('lists the platform this process runs on among the platforms Node reports', () => {
+-		expect(NODE_PLATFORMS).toContain(process.platform)
+-		expect(new Set(NODE_PLATFORMS).size).toBe(NODE_PLATFORMS.length)
+-	})
+-
+ 	it('reads receipts only within their Hosts subsection and refuses each malformed cell', () => {
+ 		const scratch = createScratch()
+ 		const header =
+@@ -1317,6 +1312,8 @@ describe('server setup', () => {
+ 			expect(() => readReceipts(path)).toThrow('Receipt row <header>: missing Revision column')
+ 			const commands = '`test:guides`, `test:distribution -- --mode release`'
+ 			for (const [written, replacement, refusal] of [
++				['`linux`', '`Linux`', 'Receipt row 1: invalid Platform Linux'],
++				['`linux`', '—', 'Receipt row 1: invalid Platform —'],
+ 				['141.0.7390.37', '141.0.7390', 'Receipt row 1: invalid Build 141.0.7390'],
+ 				['2026-09-25', '2026-9-25', 'Receipt row 1: invalid Date 2026-9-25'],
+ 				['2026-09-25', '2026-02-30', 'Receipt row 1: invalid Date 2026-02-30'],
+@@ -2980,6 +2977,13 @@ describe('server setup', () => {
+ 	})
+ })
+ 
++describe('NODE_PLATFORMS', () => {
++	it('holds the platform this process runs on, and each platform once', () => {
++		expect(NODE_PLATFORMS).toContain(process.platform)
++		expect(new Set(NODE_PLATFORMS).size).toBe(NODE_PLATFORMS.length)
++	})
++})
++
+ describe('SheetReader', () => {
+ 	it('reads the statement a sheet opens with, past a leading comment and nowhere else', () => {
+ 		expect(
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 39e74ca..2d443f5 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1279,8 +1279,10 @@ export function readSupportedHosts(
+  *
+  * @remarks
+  * Date is a calendar date in the `YYYY-MM-DD` form and Revision a lowercase commit hash. Build is
+- * four numeric parts, and Node and npm are three. Commands holds one code span per package script,
+- * with a comma between each span and the next, and Result reads `Pass` or `Fail`.
++ * four numeric parts, and Node and npm are three. Platform must name a member of
++ * {@link NODE_PLATFORMS}; unlike a Supported host row, a receipt records the platform its run
++ * read, so the cell can never read `—`. Commands holds one code span per package script, with a
++ * comma between each span and the next, and Result reads `Pass` or `Fail`.
+  */
+ export function readReceipts(
+ 	path: string = resolve(WORKSPACE_ROOT, VENEER_GUIDE_PATH),
+@@ -1330,6 +1332,10 @@ export function readReceipts(
+ 				)
+ 			}
+ 			const label = `Receipt row ${String(position + 1)}`
++			// A receipt records the platform its run read, so unlike a Supported host row it never
++			// leaves this cell absent.
++			if (platform === ABSENT_CELL || !NODE_PLATFORMS.some((value) => value === platform))
++				throw new Error(`${label}: invalid Platform ${platform}`)
+ 			// A calendar date survives the round trip through a UTC midnight; `2026-02-30` rolls over
+ 			// to March and `2026-13-01` reads as no time at all.
+ 			const day = new Date(`${date}T00:00:00Z`)

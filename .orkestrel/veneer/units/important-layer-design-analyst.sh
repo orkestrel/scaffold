@@ -1,0 +1,6 @@
+#!/bin/bash
+# IMPORTANT-LAYER design round, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at /home/user/veneer-probe. Launched through codex-queue-2.sh; the cap is 2100 s (comparable design lanes ran 15 to 30 min, plus slack).
+# Brief: .orkestrel/veneer/units/important-layer-design-brief.md  Journal: tmp/codex/important-layer-design-analyst.jsonl  Last message: tmp/codex/important-layer-design-analyst-last.md
+cd /home/user/scaffold || exit 1
+timeout 2100 codex exec --json -C /home/user/veneer-probe --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message /home/user/scaffold/tmp/codex/important-layer-design-analyst-last.md "Your working directory is /home/user/veneer-probe. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/important-layer-design-brief.md exactly. You are the analyst and hold the objective lane of this design round. Make your final message the proposal the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/important-layer-design-analyst.jsonl 2> /home/user/scaffold/tmp/codex/important-layer-design-analyst.err
+echo "exit=$?" >> /home/user/scaffold/tmp/codex/important-layer-design-analyst.err

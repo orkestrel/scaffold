@@ -1,0 +1,152 @@
+diff --git a/tests/src/styles/components/collapse.test.ts b/tests/src/styles/components/collapse.test.ts
+index cb76b66..507cd1c 100644
+--- a/tests/src/styles/components/collapse.test.ts
++++ b/tests/src/styles/components/collapse.test.ts
+@@ -16,10 +16,11 @@ afterEach(async () => {
+ })
+ 
+ describe('collapse classes', () => {
+-	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+-	// release: the reading is every components-layer selector naming one of the key's own classes,
+-	// so a missing rule and an extra rule on the same classes each report here.
+-	it('writes the recorded collapse and collapsing selectors and no other rule on their classes', () => {
++	// The mutation this catches is a selector the partial stops writing, or one it writes beyond the
++	// release: the reading is the set of components-layer selectors naming one of the key's own
++	// classes, so a missing selector and an extra selector each report here, and a second rule on a
++	// recorded selector leaves the reading unchanged.
++	it('writes the recorded collapse and collapsing selectors and no other components-layer selector naming either class', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule
+diff --git a/tests/src/styles/components/fade.test.ts b/tests/src/styles/components/fade.test.ts
+index a13ef80..61ae12c 100644
+--- a/tests/src/styles/components/fade.test.ts
++++ b/tests/src/styles/components/fade.test.ts
+@@ -20,11 +20,12 @@ afterEach(async () => {
+ })
+ 
+ describe('fade classes', () => {
+-	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+-	// release: the reading is every components-layer selector whose classes are the `fade` class and
+-	// the `show` class alone, so a missing hidden state and an added shown state each report here.
+-	// The compounds the modal and offcanvas partials write carry their own classes and stay out.
+-	it('writes the recorded fade selectors and no other rule on the fade and show classes alone', () => {
++	// The mutation this catches is a selector the partial stops writing, or one it writes beyond the
++	// release: the reading is the set of components-layer selectors whose classes are the `fade` class
++	// and the `show` class alone, so a missing hidden state and an added shown state each report here,
++	// and a second rule on a recorded selector leaves the reading unchanged. The compounds the modal and
++	// offcanvas partials write carry their own classes and stay out.
++	it('writes the recorded fade selectors and no other components-layer selector whose classes are the fade and show classes alone', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule
+diff --git a/tests/src/styles/components/modal.test.ts b/tests/src/styles/components/modal.test.ts
+index 3df7e78..dda5a16 100644
+--- a/tests/src/styles/components/modal.test.ts
++++ b/tests/src/styles/components/modal.test.ts
+@@ -42,10 +42,11 @@ afterEach(async () => {
+ // engine writes inline when it opens a dialog; the `.modal` rule hides a modal otherwise.
+ 
+ describe('modal box', () => {
+-	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+-	// release: the reading is every components-layer selector naming one of the key's own classes,
+-	// so a missing rule and an extra rule on the same classes each report here.
+-	it('writes the recorded modal selectors and no other rule on their classes', () => {
++	// The mutation this catches is a selector the partial stops writing, or one it writes beyond the
++	// release: the reading is the set of components-layer selectors naming one of the key's own
++	// classes, so a missing selector and an extra selector each report here, and a second rule on a
++	// recorded selector leaves the reading unchanged.
++	it('writes the recorded modal selectors and no other components-layer selector naming a modal class', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule
+diff --git a/tests/src/styles/components/offcanvas.test.ts b/tests/src/styles/components/offcanvas.test.ts
+index e28e8e5..4f42454 100644
+--- a/tests/src/styles/components/offcanvas.test.ts
++++ b/tests/src/styles/components/offcanvas.test.ts
+@@ -40,11 +40,12 @@ afterEach(async () => {
+ })
+ 
+ describe('offcanvas classes', () => {
+-	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+-	// release: the reading is every components-layer selector naming one of the key's own classes,
+-	// the expanded navbar combinators the navbar partial writes included, so a missing rule and an
+-	// extra rule on the same classes each report here.
+-	it('writes the recorded offcanvas selectors and no other rule on their classes', () => {
++	// The mutation this catches is a selector the partial stops writing, or one it writes beyond the
++	// release: the reading is the set of components-layer selectors naming one of the key's own
++	// classes, the expanded navbar combinators the navbar partial writes included, so a missing
++	// selector and an extra selector each report here, and a second rule on a recorded selector
++	// leaves the reading unchanged.
++	it('writes the recorded offcanvas selectors and no other components-layer selector naming an offcanvas class', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule
+diff --git a/tests/src/styles/components/popover.test.ts b/tests/src/styles/components/popover.test.ts
+index 8f2b9e3..0dfb066 100644
+--- a/tests/src/styles/components/popover.test.ts
++++ b/tests/src/styles/components/popover.test.ts
+@@ -28,12 +28,12 @@ afterEach(() => {
+ })
+ 
+ describe('popover rules', () => {
+-	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+-	// release: the reading is every components-layer selector naming one of the key's own classes,
+-	// so a missing rule and an extra rule on the same classes each report here. The sheet writes an
+-	// attribute value in quotes and the release records it bare, so the quotes are dropped before
+-	// the two are compared.
+-	it('writes the recorded popover selectors and no other rule on their classes', () => {
++	// The mutation this catches is a selector the partial stops writing, or one it writes beyond the
++	// release: the reading is the set of components-layer selectors naming one of the key's own
++	// classes, so a missing selector and an extra selector each report here, and a second rule on a
++	// recorded selector leaves the reading unchanged. The sheet writes an attribute value in quotes
++	// and the release records it bare, so the quotes are dropped before the two are compared.
++	it('writes the recorded popover selectors and no other components-layer selector naming a popover class', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule
+diff --git a/tests/src/styles/components/toast.test.ts b/tests/src/styles/components/toast.test.ts
+index 02c0245..b95253f 100644
+--- a/tests/src/styles/components/toast.test.ts
++++ b/tests/src/styles/components/toast.test.ts
+@@ -30,11 +30,12 @@ afterEach(() => {
+ })
+ 
+ describe('toast box', () => {
+-	// The mutations this catches are a rule the partial stops writing and a rule it writes beyond the
+-	// release: the reading is every components-layer selector naming one of the key's own classes,
+-	// so a missing rule and an extra rule on the same classes each report here, and a header
+-	// combinator written against the bare toast class reads as both.
+-	it('writes the recorded toast selectors and no other rule on their classes', () => {
++	// The mutations this catches are a selector the partial stops writing and a selector it writes
++	// beyond the release: the reading is the set of components-layer selectors naming one of the key's
++	// own classes, so a missing selector and an extra selector each report here, a header combinator
++	// written against the bare toast class reads as both, and a second rule on a recorded selector
++	// leaves the reading unchanged.
++	it('writes the recorded toast selectors and no other components-layer selector naming a toast class', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule
+diff --git a/tests/src/styles/components/tooltip.test.ts b/tests/src/styles/components/tooltip.test.ts
+index 7e949fd..25b030f 100644
+--- a/tests/src/styles/components/tooltip.test.ts
++++ b/tests/src/styles/components/tooltip.test.ts
+@@ -28,12 +28,12 @@ afterEach(() => {
+ })
+ 
+ describe('tooltip rules', () => {
+-	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+-	// release: the reading is every components-layer selector naming one of the key's own classes,
+-	// so a missing rule and an extra rule on the same classes each report here. The sheet writes an
+-	// attribute value in quotes and the release records it bare, so the quotes are dropped before
+-	// the two are compared.
+-	it('writes the recorded tooltip selectors and no other rule on their classes', () => {
++	// The mutation this catches is a selector the partial stops writing, or one it writes beyond the
++	// release: the reading is the set of components-layer selectors naming one of the key's own
++	// classes, so a missing selector and an extra selector each report here, and a second rule on a
++	// recorded selector leaves the reading unchanged. The sheet writes an attribute value in quotes
++	// and the release records it bare, so the quotes are dropped before the two are compared.
++	it('writes the recorded tooltip selectors and no other components-layer selector naming a tooltip class', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+ 				rule instanceof CSSStyleRule

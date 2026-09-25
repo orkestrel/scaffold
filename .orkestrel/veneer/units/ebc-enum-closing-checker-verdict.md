@@ -1,0 +1,21 @@
+VERDICT: PASS
+
+1. Verbatim text — CONFIRMED. `/home/user/veneer-ebc/tests/src/styles/components/accordion.test.ts:37-43` and `carousel.test.ts:39-44` carry `ebc-brief-8.md` items 1 and 2 word for word (line breaks read as spaces). `/home/user/veneer-enum/tests/src/styles/components/{popover.test.ts:31-36, tooltip.test.ts:31-36, modal.test.ts:45-49, toast.test.ts:33-38, offcanvas.test.ts:43-48, collapse.test.ts:19-23, fade.test.ts:23-28}` carry `enum-titles-brief.md` items 1-7 word for word. `Grep` for `no other rule|a missing rule and an extra rule` across both worktrees' `tests/src/styles/components/` returns zero hits in the nine target files; the remaining hits in each grep (`ebc` worktree: collapse/offcanvas/tooltip/toast/modal/fade/popover; `enum` worktree: accordion/carousel) are the seven and two files respectively that belong to the *other* unit and are out of this unit's scope, confirming no enumeration case anywhere still carries the old wording.
+
+2. Assertions unchanged — CONFIRMED. `enum.diff` (base `0865c67`): every one of the seven hunks (collapse.test.ts:8-17, fade.test.ts:28-39, modal.test.ts:50-59, offcanvas.test.ts:70-81, popover.test.ts:92-104, toast.test.ts:115-126, tooltip.test.ts:137-149) touches only the comment block and the `it(` title; no hunk touches the `expect(...).toEqual(...)` array. `ebc-6.diff` (base `e07b3a6`) shows, for `accordion.test.ts` and `carousel.test.ts`, two disjoint hunks each: one hunk (accordion `@@-34,11+34,13@@`; carousel `@@-36,10+36,12@@`) touching only comment+title, verbatim per claim 1; a second, non-adjacent hunk (accordion `@@-49,7+51,11@@`; carousel `@@-50,7+52,13@@`) that adds `:where(button.accordion-button)` and `:where(button.carousel-control-prev, button.carousel-control-next)`/`:where(.carousel-indicators [data-bs-target])` to the expected array. This second hunk is not among round 6's changes: `ebc-brief-8.md` §Changes lists only the comment+title edit for these two files, and the selector additions are the button-reboot feature work from rounds 1-5, already CONFIRMED by `ebc-audit-3-verdict.md` claims 3-5 (revert probe coverage, control, kills). `e07b3a6` predates round 1 (per `ebc-brief-8.md` line 12: "holds rounds 1 to 5 uncommitted over e07b3a6"), while ENUM's base `0865c67` postdates that feature landing on Veneer `main`, which is exactly why the CASCADE diff shows this extra hunk and the ENUM diff does not. No hunk attributable to round 6 itself touches a line other than a comment or an `it(` title.
+
+3. Plants — CONFIRMED. All nine pairs read as required, each ending with an equal restore digest:
+   - `ebc-6-plant-dup-accordion.log.txt`: passed, `test exit=0`, restore `fcfb2c87…` = `fcfb2c87…`.
+   - `ebc-6-plant-extra-accordion.log.txt`: failed with `AssertionError`, `test exit=1`, restore digest equal.
+   - `ebc-6-plant-dup-carousel.log.txt`: passed, `test exit=0`, restore `d37aca34…` = `d37aca34…`.
+   - `ebc-6-plant-extra-carousel.log.txt`: failed with `AssertionError`, `test exit=1`, restore digest equal.
+   - `enum-plant-{popover,tooltip,modal,toast,offcanvas,collapse,fade}-dup.log.txt`: each `test_exit=0`, each `restore_sha_orig=restore_sha_after` with `equal=yes`.
+   - `enum-plant-{popover,tooltip,modal,toast,offcanvas,collapse,fade}-extra.log.txt`: each fails with `AssertionError` (e.g., `.popover-body.audit-probe` / `.tooltip-inner.audit-probe` / `.modal-body.audit-probe` / `.toast-body.audit-probe` / `.offcanvas-body.audit-probe` / `.collapsing.audit-probe` / `.fade.show:hover` appearing unexpectedly), `test_exit=1`, each with `restore_sha_orig=restore_sha_after`, `equal=yes`.
+
+4. Scope — CONFIRMED. `/home/user/scaffold/.orkestrel/veneer/units/ebc-6-status.txt` and `ebc-5-status.txt` list the identical 26 paths, line for line. `/home/user/veneer-enum/tmp/units/enum-status.txt` names exactly the seven owned files: `tests/src/styles/components/{collapse,fade,modal,offcanvas,popover,toast,tooltip}.test.ts`.
+
+Findings outside the claims: none.
+
+Attacked and held: claim 2's literal test (any hunk beyond comment/title) found a real hunk in the CASCADE diff; traced to pre-round-6 work already confirmed in `ebc-audit-3-verdict.md` claims 3-5, and absent from the round-6 brief's own change list, so it does not falsify claim 2 for this unit's own contribution.
+
+VERDICT: PASS

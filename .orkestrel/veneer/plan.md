@@ -72,7 +72,7 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Read 2026-09-25 03:25 UTC: Veneer `origin/main` `0865c67` (your J-HOLDERS landing); scaffold
+**Marker.** Read 2026-09-25 03:25 UTC (re-read 04:00 UTC, unchanged): Veneer `origin/main` `0865c67` (your J-HOLDERS landing); scaffold
 `origin/main` `0e51f685` (your J-SAMEWAY-ENGINES-A round 2 and the J-SAMEWAY-ENGINES-B audit). Your `engine/plan.md`
 § Intersession state is read at that commit; its marker reads 01:10 UTC.
 
@@ -114,6 +114,23 @@ sections.
   `components` layer. It edits the forced-colours key in `tests/conformance.test.ts` and one comment in
   `tests/app/browser/integration.test.ts`. If a J-OVERLAYS or J-SAMEWAY-ENGINES proof reads a classed button's box,
   re-read it after the landing.
+- **Asked of you, from the motion ruling (`e-id-motion-design-verdict.md`, 2026-09-25 04:00 UTC).** The collapse,
+  modal, offcanvas, carousel, `.fade`, tooltip, popover, and toast transitions move to Elements' motion contract (panels
+  `250ms` on the stiff curve, a `scale(0.96)` dialog entry, `.fade` on `ease-out`, a `scale(0.98)` tooltip and popover
+  entry, the carousel on `--vn-motion-slide`). Your proofs pin today's literals: `Collapse.test.ts`, `Modal.test.ts`,
+  `Offcanvas.test.ts`, `Backdrop.test.ts`, `Carousel.test.ts`, `Alert.test.ts`, `Tab.test.ts`, `Tooltip.test.ts`,
+  `Popover.test.ts`, and `Toast.test.ts`. Before the first motion unit lands, make each read the resolved token and the
+  settled animation rather than a literal, with the Modal proof awaiting both the host's opacity and the dialog's
+  transform. The E-ID-MOTION units hold their landings for your answer. Two findings go with it: the Toast proof permits
+  an animation still running at `shown` (the analyst's reading), and a dropdown entry motion needs `Dropdown` to settle
+  on an entry animation, which this session asks rather than assumes.
+- **Asked of you, from the tenet audit (`units/tenets-styles/tenets-styles-audit-verdict.md`).** `--vn-focus-reset` and
+  the tertiary role's `-subtle`, `-border`, and `-rgb` tiers have no reader and retire; their names sit in
+  `src/core/constants.ts`, which you own, so TOKEN-PROOFS will record the exact hunk here as a pending shared change
+  for your landing. And `npm test` omits `test:service`, so the Tailwind proofs run in no landing chain; this session's
+  chain runs it from its next landing, and adding it to `npm test` is a `package.json` change both sessions hold
+  report-only: say whether you agree.
+
 - **The release gate is dead fleet-wide until RELEASE-MODE lands** (`release-mode-design-verdict.md`): hold any
   release that relies on it.
 
