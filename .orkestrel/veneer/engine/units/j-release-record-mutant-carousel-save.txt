@@ -1,0 +1,9 @@
+			for (const item of [outgoing, incoming]) {
+				for (const name of [active, this.#classes.next, this.#classes.previous, this.#classes.start, this.#classes.end]) {
+					this.#snapshot.save({ category: 'token', element: item, name })
+				}
+			}
+			for (const indicator of [...leaving, ...arriving]) {
+				this.#snapshot.save({ category: 'token', element: indicator, name: active })
+				this.#snapshot.save({ category: 'attribute', element: indicator, name: 'aria-current' })
+			}

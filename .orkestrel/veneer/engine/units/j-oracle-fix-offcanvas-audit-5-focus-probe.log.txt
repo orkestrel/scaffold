@@ -1,0 +1,6 @@
+browser headless 153.0.8010.12
+A focused (emulation on) [{"which":"light","hasFocus":true,"rootActive":true,"matchesFocus":true,"hostMatches":false},{"which":"deep","hasFocus":true,"rootActive":true,"matchesFocus":true,"hostMatches":true}]
+A behind B (emulation off) [{"which":"light","hasFocus":true,"rootActive":true,"matchesFocus":true,"hostMatches":false},{"which":"deep","hasFocus":true,"rootActive":true,"matchesFocus":true,"hostMatches":true}]
+browser headed 153.0.8010.12
+A focused (emulation on) [{"which":"light","hasFocus":true,"rootActive":true,"matchesFocus":true,"hostMatches":false},{"which":"deep","hasFocus":true,"rootActive":true,"matchesFocus":true,"hostMatches":true}]
+A behind B (emulation off) [{"which":"light","hasFocus":false,"rootActive":true,"matchesFocus":false,"hostMatches":false},{"which":"deep","hasFocus":false,"rootActive":true,"matchesFocus":false,"hostMatches":false}]

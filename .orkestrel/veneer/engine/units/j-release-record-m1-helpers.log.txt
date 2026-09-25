@@ -1,0 +1,61 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/helpers.test.ts -t recordHostWrite
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/helpers.test.ts (107 tests | 2 failed | 100 skipped) 12ms
+     × writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds 5ms
+     × records an inline property with its priority, and an attribute and a token with the empty string 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1593:2 > recordHostWrite > writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds
+AssertionError: expected 'mixed' to be 'false' // Object.is equality
+
+Expected: [32m"false"[39m
+Received: [31m"mixed"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:1603:48
+    1601|   element.setAttribute('aria-expanded', 'mixed')
+    1602|   snapshot.restore()
+    1603|   expect(element.getAttribute('aria-expanded')).toBe('false')
+       |                                                ^
+    1604|  })
+    1605|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1683:2 > recordHostWrite > records an inline property with its priority, and an attribute and a token with the empty string
+AssertionError: expected [ '0px', '', null, false ] to deeply equal [ '12px', 'important', 'dialog', true ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "12px",[39m
+[32m-   "important",[39m
+[32m-   "dialog",[39m
+[32m-   true,[39m
+[31m+   "0px",[39m
+[31m+   "",[39m
+[31m+   null,[39m
+[31m+   false,[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/helpers.test.ts:1706:5
+    1704|    element.getAttribute('role'),
+    1705|    element.classList.contains('show'),
+    1706|   ]).toEqual(['12px', 'important', 'dialog', true])
+       |     ^
+    1707|  })
+    1708|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed | 100 skipped (107)
+   Start at  05:29:26
+   Duration  2.22s (transform 0ms, setup 685ms, import 48ms, tests 12ms, environment 0ms)
+

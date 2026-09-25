@@ -1,0 +1,99 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tab.test.ts -t already carried|its swap never wrote|sibling blur
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Tab.test.ts (52 tests | 4 failed | 47 skipped) 20ms
+     × keeps a consumer edit to a role or state the markup already carried through its destruction, writing nothing at construction 7ms
+     × keeps a consumer edit to an active token a listener added, which its swap never wrote, through its destruction 3ms
+     × restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown 5ms
+     × writes only the selection its swap read before the sibling blur, leaving a wrapper a blur listener makes a dropdown untouched 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:736:2 > Tab > keeps a consumer edit to a role or state the markup already carried through its destruction, writing nothing at construction
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tab.test.ts:756:36
+    754|   profilePane.setAttribute('aria-labelledby', 'profile-heading')
+    755|   tab.destroy()
+    756|   expect(list.hasAttribute('role')).toBe(false)
+       |                                    ^
+    757|   expect(profilePane.getAttribute('aria-labelledby')).toBe('profile-he…
+    758|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:762:2 > Tab > keeps a consumer edit to an active token a listener added, which its swap never wrote, through its destruction
+AssertionError: expected [ 'nav-link', 'active' ] to deeply equal [ 'nav-link' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "nav-link",[22m
+[31m+   "active",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Tab.test.ts:777:40
+    775|   profile.classList.remove('active')
+    776|   tab.destroy()
+    777|   expect(Array.from(profile.classList)).toEqual(['nav-link'])
+       |                                        ^
+    778|  })
+    779|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:782:2 > Tab > restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tab.test.ts:801:45
+    799|   expect(item.classList.contains('dropdown')).toBe(true)
+    800|   tab.destroy()
+    801|   expect(item.hasAttribute('aria-expanded')).toBe(false)
+       |                                             ^
+    802|  })
+    803|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:806:2 > Tab > writes only the selection its swap read before the sibling blur, leaving a wrapper a blur listener makes a dropdown untouched
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tab.test.ts:824:45
+    822|   expect(await tab.show()).toBe(true)
+    823|   expect(item.classList.contains('dropdown')).toBe(true)
+    824|   expect(item.hasAttribute('aria-expanded')).toBe(false)
+       |                                             ^
+    825|   expect(sibling.getAttribute('aria-selected')).toBe('false')
+    826|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed | 47 skipped (52)
+   Start at  05:13:33
+   Duration  2.22s (transform 0ms, setup 580ms, import 397ms, tests 20ms, environment 0ms)
+

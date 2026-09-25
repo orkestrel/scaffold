@@ -1,0 +1,3 @@
+		for (const name of [this.#classes.shown, this.#classes.transition, this.#classes.fade]) {
+			this.#snapshot.save({ category: 'token', element: this.#host, name })
+		}

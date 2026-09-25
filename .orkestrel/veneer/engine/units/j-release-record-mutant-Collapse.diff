@@ -1,0 +1,32 @@
+--- src/browser/Collapse.ts	2026-09-25 05:30:34.502287400 -0400
++++ /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record/tmp/j-release-record/mutants/Collapse.ts	2026-09-25 05:30:17.516435400 -0400
+@@ -209,6 +209,14 @@
+ 		const completed = [this.#classes.host]
+ 		const dimension = this.#dimension()
+ 		const triggers = this.#triggers()
++		for (const name of [this.#classes.host, this.#classes.shown, this.#classes.transition]) {
++			this.#snapshot.save({ category: 'token', element: this.#host, name })
++		}
++		this.#snapshot.save({ category: 'property', element: this.#host, name: dimension })
++		for (const trigger of triggers) {
++			this.#snapshot.save({ category: 'token', element: trigger, name: collapsed })
++			this.#snapshot.save({ category: 'attribute', element: trigger, name: 'aria-expanded' })
++		}
+ 		// Each write goes through the snapshot, which saves a target only at a write that changes it, and
+ 		// each target the call changes is recorded with the value it held before the call's first write
+ 		// to it, so the returning step writes it back. A reaction runs inside each write, so the door
+@@ -323,6 +331,14 @@
+ 		const completed = [this.#classes.host]
+ 		const dimension = this.#dimension()
+ 		const triggers = this.#triggers()
++		for (const name of [this.#classes.host, this.#classes.shown, this.#classes.transition]) {
++			this.#snapshot.save({ category: 'token', element: this.#host, name })
++		}
++		this.#snapshot.save({ category: 'property', element: this.#host, name: dimension })
++		for (const trigger of triggers) {
++			this.#snapshot.save({ category: 'token', element: trigger, name: collapsed })
++			this.#snapshot.save({ category: 'attribute', element: trigger, name: 'aria-expanded' })
++		}
+ 		// Each write goes through the snapshot and each target the call changes is recorded, as in
+ 		// `show`.
+ 		const snapshot = this.#snapshot

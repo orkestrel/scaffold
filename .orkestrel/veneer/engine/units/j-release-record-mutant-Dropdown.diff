@@ -1,0 +1,22 @@
+--- src/browser/Dropdown.ts	2026-09-25 05:31:25.316663100 -0400
++++ /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record/tmp/j-release-record/mutants/Dropdown.ts	2026-09-25 05:30:17.635118300 -0400
+@@ -259,6 +259,9 @@
+ 			const menu = this.#menu
+ 			const { shown } = this.#classes
+ 			const snapshot = this.#snapshot
++			this.#snapshot.save({ category: 'token', element: this.#host, name: this.#classes.shown })
++			this.#snapshot.save({ category: 'token', element: this.#menu, name: this.#classes.shown })
++			this.#snapshot.save({ category: 'attribute', element: this.#host, name: 'aria-expanded' })
+ 			// A show a reaction started inside a stopped show's returning step finds that show's placement,
+ 			// which the stopped step no longer destroys once this show supersedes it, so this show destroys
+ 			// it before it places the menu and one placement holds the menu's targets. Its destruction runs
+@@ -448,6 +451,9 @@
+ 			const menu = this.#menu
+ 			const { shown } = this.#classes
+ 			const snapshot = this.#snapshot
++			this.#snapshot.save({ category: 'token', element: this.#host, name: this.#classes.shown })
++			this.#snapshot.save({ category: 'token', element: this.#menu, name: this.#classes.shown })
++			this.#snapshot.save({ category: 'attribute', element: this.#host, name: 'aria-expanded' })
+ 			// The dropdown keeps the placement until its destruction returns, so a destroy called from a
+ 			// listener inside that destruction completes it. A destroyed placement stays destroyed when the
+ 			// host takes the hide over, because placing the menu again is an acquisition.

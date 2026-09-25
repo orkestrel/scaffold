@@ -1,0 +1,11 @@
+--- src/browser/helpers.ts	2026-09-25 05:29:43.497017900 -0400
++++ /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record/tmp/j-release-record/mutants/helpers.ts	2026-09-25 05:29:23.929761300 -0400
+@@ -995,7 +995,7 @@
+ 		recorded || matchesHostValue(target, next)
+ 			? writes
+ 			: [...writes, { target, value: readHostValue(target), priority: readHostPriority(target) }]
+-	snapshot.write(target, next)
++	writeHostValue(target, next)
+ 	return records
+ }
+ 

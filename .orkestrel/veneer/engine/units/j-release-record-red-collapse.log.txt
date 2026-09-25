@@ -1,0 +1,39 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Collapse.test.ts -t which its show never wrote
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Collapse.test.ts (50 tests | 1 failed | 49 skipped) 9ms
+     × keeps a consumer edit to a shown token a listener added, which its show never wrote, through its destruction 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:541:2 > Collapse > keeps a consumer edit to a shown token a listener added, which its show never wrote, through its destruction
+AssertionError: expected [ 'collapse', 'show' ] to deeply equal [ 'collapse' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "collapse",[22m
+[31m+   "show",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Collapse.test.ts:551:38
+    549|   panel.classList.remove('show')
+    550|   collapse.destroy()
+    551|   expect(Array.from(panel.classList)).toEqual(['collapse'])
+       |                                      ^
+    552|  })
+    553|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 49 skipped (50)
+   Start at  05:13:30
+   Duration  2.02s (transform 0ms, setup 536ms, import 344ms, tests 9ms, environment 0ms)
+

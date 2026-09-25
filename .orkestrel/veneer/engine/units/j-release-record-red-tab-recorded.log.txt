@@ -1,0 +1,39 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tab.test.ts -t whose token its swap never changed
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Tab.test.ts (53 tests | 1 failed | 52 skipped) 9ms
+     × keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:762:2 > Tab > keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction
+AssertionError: expected [ true, false ] to deeply equal [ true, true ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    true,[22m
+[32m-   true,[39m
+[31m+   false,[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Tab.test.ts:777:87
+    775|   homePane.classList.add('show')
+    776|   tab.destroy()
+    777|   expect([homePane.classList.contains('active'), homePane.classList.co…
+       |                                                                                       ^
+    778|    true,
+    779|    true,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 52 skipped (53)
+   Start at  05:27:56
+   Duration  1.92s (transform 0ms, setup 529ms, import 346ms, tests 9ms, environment 0ms)
+

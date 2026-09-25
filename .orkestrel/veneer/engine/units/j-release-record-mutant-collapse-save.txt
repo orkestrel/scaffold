@@ -1,0 +1,8 @@
+		for (const name of [this.#classes.host, this.#classes.shown, this.#classes.transition]) {
+			this.#snapshot.save({ category: 'token', element: this.#host, name })
+		}
+		this.#snapshot.save({ category: 'property', element: this.#host, name: dimension })
+		for (const trigger of triggers) {
+			this.#snapshot.save({ category: 'token', element: trigger, name: collapsed })
+			this.#snapshot.save({ category: 'attribute', element: trigger, name: 'aria-expanded' })
+		}

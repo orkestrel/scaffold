@@ -1,0 +1,36 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Collapse.test.ts -t whose token its show never changed
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Collapse.test.ts (51 tests | 1 failed | 50 skipped) 11ms
+     × keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:541:2 > Collapse > keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Collapse.test.ts:553:50
+    551|   trigger.classList.add('collapsed')
+    552|   collapse.destroy()
+    553|   expect(trigger.classList.contains('collapsed')).toBe(true)
+       |                                                  ^
+    554|   expect(trigger.getAttribute('aria-expanded')).toBe('false')
+    555|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 50 skipped (51)
+   Start at  05:27:51
+   Duration  1.94s (transform 0ms, setup 520ms, import 326ms, tests 11ms, environment 0ms)
+

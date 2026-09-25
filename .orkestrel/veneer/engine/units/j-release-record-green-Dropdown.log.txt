@@ -1,0 +1,46 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Dropdown.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Dropdown.test.ts (44 tests | 1 failed) 468ms
+     × writes back only the toggle targets a stopped change altered, to their prior values, in reverse order of its first writes 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:2097:2 > Dropdown > writes back only the toggle targets a stopped change altered, to their prior values, in reverse order of its first writes
+AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -56,10 +56,10 @@[39m
+[2m      {[22m
+[2m        "direction": "hide",[22m
+[2m        "expanded": "false",[22m
+[2m        "order": [],[22m
+[2m        "promoted": false,[22m
+[32m-       "resolved": false,[39m
+[31m+       "resolved": true,[39m
+[2m        "toggled": false,[22m
+[2m      },[22m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Dropdown.test.ts:2179:25
+    2177|    root.remove()
+    2178|   }
+    2179|   expect(readings.calls).toEqual(
+       |                         ^
+    2180|    DROPDOWN_WRITE_BACKS.map((row) => [
+    2181|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 43 passed (44)
+   Start at  05:28:57
+   Duration  2.57s (transform 0ms, setup 620ms, import 328ms, tests 468ms, environment 0ms)
+

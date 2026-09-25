@@ -1,0 +1,12 @@
+		for (const [control, controlPane] of [
+			[outgoing, previous],
+			[host, pane],
+		] as const) {
+			if (control === undefined) continue
+			this.#snapshot.save({ category: 'token', element: control, name: active })
+			if (controlPane !== undefined) {
+				this.#snapshot.save({ category: 'token', element: controlPane, name: active })
+				this.#snapshot.save({ category: 'token', element: controlPane, name: shown })
+			}
+		}
+		for (const [target] of [...deselection, ...selection]) this.#snapshot.save(target)

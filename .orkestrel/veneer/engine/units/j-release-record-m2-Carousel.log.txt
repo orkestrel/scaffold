@@ -1,0 +1,62 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Carousel.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Carousel.test.ts (75 tests | 2 failed) 22211ms
+     × keeps a direction token a consumer adds after a slide that never wrote it, through its destruction 4ms
+     × keeps a consumer edit to an active token a listener added, which its slide never wrote, through its destruction 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1836:2 > Carousel > keeps a direction token a consumer adds after a slide that never wrote it, through its destruction
+AssertionError: expected [ false, false ] to deeply equal [ true, true ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   true,[39m
+[32m-   true,[39m
+[31m+   false,[39m
+[31m+   false,[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Carousel.test.ts:1854:4
+    1852|   expect(
+    1853|    [outgoing, incoming].map((item) => item.classList.contains('carouse…
+    1854|   ).toEqual([true, true])
+       |    ^
+    1855|   expect([outgoing, incoming].map((item) => item.classList.contains('a…
+    1856|    true,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1863:2 > Carousel > keeps a consumer edit to an active token a listener added, which its slide never wrote, through its destruction
+AssertionError: expected [ 'carousel-item', 'active' ] to deeply equal [ 'carousel-item' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "carousel-item",[22m
+[31m+   "active",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Carousel.test.ts:1882:41
+    1880|   incoming.classList.remove('active')
+    1881|   carousel.destroy()
+    1882|   expect(Array.from(incoming.classList)).toEqual(['carousel-item'])
+       |                                         ^
+    1883|  })
+    1884|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 73 passed (75)
+   Start at  05:30:54
+   Duration  24.77s (transform 0ms, setup 728ms, import 456ms, tests 22.21s, environment 0ms)
+

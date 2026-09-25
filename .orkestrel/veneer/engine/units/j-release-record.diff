@@ -1,0 +1,2040 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 0fb7900..0252802 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -75,7 +75,7 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `readHostPriority`                        | function  | Reads the priority an inline property carries, as a `HostSnapshot` instance records it.                                                                                                       |
+ | `writeHostValue`                          | function  | Writes a value to a piece of host state, in the form the `readHostValue` function reads it.                                                                                                   |
+ | `matchesHostValue`                        | function  | Checks whether a piece of host state already reads a value and a priority, so a write of them changes nothing.                                                                                |
+-| `recordHostWrite`                         | function  | Returns a change's records with a target and the value and priority it reads appended, only when the coming write is the change's first to change that target.                                |
++| `recordHostWrite`                         | function  | Writes a value to a target through a snapshot, and returns a change's records with the target's prior value and priority appended when the write is the change's first to change that target. |
+ | `rewindHostWrites`                        | function  | Writes each recorded target back to the value and priority it held before the change's first write to it, in reverse order of those first writes.                                             |
+ | `settleAnimations`                        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                                                                          |
+ | `reflow`                                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                                                                                      |
+@@ -949,12 +949,16 @@ before it reads a hook, so a destruction a hook starts reaches it. The button's
+ that holding.
+ 
+ Each engine keeps a `HostSnapshot` instance of its own; the modal keeps a second one for the body's
+-`open` token, which its hide restores, as the modal's section states. A button writes through the
+-snapshot's `write` method, which saves a target only at a write that changes it. Construction
+-writes nothing, so a button destroyed before its first toggle writes nothing back. A toggle write
+-that leaves a target as it reads joins the target's record when a live holder holds it or a
+-restoration has it still to write back, and otherwise records nothing. Every other engine saves
+-each attribute, class token, and inline property it writes before its first write to it. Every
++`open` token, which its hide restores, as the modal's section states. A button, a collapse, a tab,
++a dropdown, a carousel, and a toast write through the snapshot's `write` method, which saves a target
++only at a write that changes it. A write that leaves a target as it reads joins the target's record
++when a live holder holds it or a restoration has it still to write back, and otherwise records
++nothing, so an edit you make to a value such an engine never changed survives its destruction. A
++button's construction writes nothing, so a button destroyed before its first toggle writes nothing
++back. A change that records its writes for its returning step makes each write through the
++`recordHostWrite` function, which reads the change's record and writes through the snapshot in one
++step, so every target the change records is one the snapshot holds. Every other engine saves each
++attribute, class token, and inline property it writes before its first write to it. Every
+ snapshot that saves one attribute, class token, or inline property of one element shares one
+ record of it, whatever engine class each snapshot belongs to. The first save made while no snapshot
+ holds the target and no restoration has it still to write back reads the host, and every later save
+@@ -1178,8 +1182,9 @@ target that already holds the recorded value and priority.
+ A destruction inside one of its writes stops the step and the snapshot's restoration stands, and
+ a call a reaction starts inside one supersedes the step.
+ Destruction aborts the wait, so a call awaiting the transition resolves `false` and dispatches no
+-completed event, and restoration writes back the panel's tokens and inline size and each trigger's
+-`collapsed` token and `aria-expanded` value.
++completed event, and restoration writes back each of the panel's tokens, its inline size, and each
++trigger's `collapsed` token and `aria-expanded` value that the collapse changed. A `shown` token a
++listener moved, which the collapse never wrote, keeps any edit you make to it.
+ 
+ The delegate's `collapse` option carries the collapse's groups. A click inside a trigger the resolved
+ `trigger` selector matches toggles each panel the trigger names that the root contains, through the
+@@ -1442,6 +1447,9 @@ call dispatches its completed events once. A listener that shows the control aga
+ `true`, and the call whose event it heard resolves `false`. A listener that prevents a pre-change
+ event starts no change, whatever else it wrote. A list whose markup marks two controls with the
+ `active` token never swaps, because the second one fails the read after the first one's removal.
++The swap reads each control's role and the dropdown that holds it when it starts, before its first
++write, so the consumer code the sibling's blur runs cannot add a target to the swap: a wrapper a
++blur listener gives the `dropdown` token takes no write.
+ 
+ The control's `active` token is agreement. A listener or a reaction that adds the token before the
+ call writes it has made that write for the call: the call writes the token only when the control
+@@ -1465,9 +1473,11 @@ and dispatches no completed event, and restoration writes back every value the t
+ live engine still holds: the roles and states it wrote at construction, and the tokens and states
+ of the control, its pane, the sibling it deactivated, that sibling's pane, and each dropdown. The
+ tabs of one list share
+-one record of each of those targets, as § Ownership and restoration states. Each tab joins the
+-record of every role and state construction writes on its list, whether it writes the value or
+-finds it already written, and each swap joins the records of the targets it writes. A tab destroyed
++one record of each of those targets, as § Ownership and restoration states. A tab records a role or
++state, at construction or in a swap, only at a write that changes it. A value it finds already
++written joins the record a live engine holds, such as a sibling tab that wrote it, or a restoration
++has still to write back, and otherwise records nothing, so an edit you make to a value the markup
++carried survives the tab's destruction. A tab destroyed
+ while another tab of its list lives leaves the list as the live tab shows it, and the last tab of
+ the list to be destroyed writes the list's markup values back, in whatever order the tabs are
+ destroyed and whichever tab swapped first, a tab acquired by a click on a control that was already
+@@ -1860,7 +1870,8 @@ The dropdown passes its lifetime to the placement as the `signal` option, and th
+ that signal after its `popover` attribute write and after the promotion, so a dropdown destroyed by
+ the menu's `beforetoggle` event or by a reaction to that write leaves the placement restored and
+ writing nothing more. Destruction closes an open menu without events, destroys the placement, and
+-writes back the `shown` tokens of the menu and the toggle and the toggle's `aria-expanded` value. A
++writes back each of the `shown` tokens of the menu and the toggle and the toggle's `aria-expanded`
++value that the dropdown changed. A
+ `destroy` call made from a custom element's reaction to one of that restoration's own attribute
+ writes, such as the menu's `popover` removal, completes the placement's restoration and the
+ dropdown's before it returns, so no write of either lands after it.
+@@ -2102,9 +2113,10 @@ and the target's value, and it writes nothing to a target that already holds the
+ Destruction aborts the wait, so a slide awaiting the transition
+ resolves `false` and dispatches no completed event, and a `slide` call waiting on it resolves
+ `false` as well.
+-Restoration writes back each item's tokens and each indicator's `active` token and `aria-current`
+-value first, and the swipe then writes back the host's `pointer` token when it holds the token
+-last, so a carousel a reaction to that token constructs finds the items restored. Every swipe on
++Restoration writes back each item token and each indicator's `active` token and `aria-current`
++value that the carousel changed, so a direction token you add after a slide that never wrote it
++stays. It writes them first, and the swipe then writes back the host's `pointer` token when it
++holds the token last, so a carousel a reaction to that token constructs finds the items restored. Every swipe on
+ the host shares one record of the `pointer` token, as § Ownership and restoration states: a
+ carousel constructed while the items are restored joins the destroyed carousel's record, so the
+ destroyed swipe writes nothing for the token while the live carousel's swipe holds it, and the last
+@@ -2617,8 +2629,10 @@ reads the call's identity, the toast's lifetime, and the token's presence, and i
+ a token that already has the recorded presence. The timer an accepted call cleared stays cleared
+ after the call is taken over, until the pointer or focus leaves the toast with neither inside or a
+ later show completes. Destruction clears the timer and aborts the wait, so a call awaiting the
+-transition resolves `false` and dispatches no completed event, and restoration writes back the
+-toast's `shown`, `transition`, and `fade` tokens.
++transition resolves `false` and dispatches no completed event, and restoration writes back each of
++the toast's `shown`, `transition`, and `fade` tokens that the toast changed. So a `fade` token you
++add after a show with `animated` off stays, and so does your removal of a `shown` token the markup
++carried when a show found it there.
+ 
+ The delegate's `toast` option carries the toast's groups. A click inside a trigger the resolved
+ `dismiss` selector matches inside the root hides the toast the trigger's target attribute or `href`
+diff --git a/src/browser/Carousel.ts b/src/browser/Carousel.ts
+index 8a1b87a..81cf880 100644
+--- a/src/browser/Carousel.ts
++++ b/src/browser/Carousel.ts
+@@ -370,9 +370,11 @@ export class Carousel implements CarouselInterface {
+ 			const arriving = this.#indicators(
+ 				`[${CSS.escape(this.#attributes.index)}="${String(detail.to)}"]`,
+ 			)
+-			this.#save(outgoing, incoming, [...leaving, ...arriving])
+-			// Each target the slide changes is recorded with the value it held before the slide's first
+-			// write to it, so the returning step writes it back.
++			// Each write goes through the snapshot, which saves a target only at a write that changes it,
++			// and each target the slide changes is recorded with the value it held before the slide's first
++			// write to it, so the returning step writes it back. A reaction runs inside each write, so the
++			// door follows it.
++			const snapshot = this.#snapshot
+ 			let written: readonly HostWrite[] = []
+ 			for (const indicator of leaving) {
+ 				const marked = indicator.getAttribute('aria-current')
+@@ -380,10 +382,10 @@ export class Carousel implements CarouselInterface {
+ 					written,
+ 					{ category: 'token', element: indicator, name: active },
+ 					undefined,
++					snapshot,
+ 				)
+ 				if (
+-					!this.#apply(
+-						() => indicator.classList.remove(active),
++					!this.#holds(
+ 						change,
+ 						pair,
+ 						expected,
+@@ -398,10 +400,10 @@ export class Carousel implements CarouselInterface {
+ 					written,
+ 					{ category: 'attribute', element: indicator, name: 'aria-current' },
+ 					undefined,
++					snapshot,
+ 				)
+ 				if (
+-					!this.#apply(
+-						() => indicator.removeAttribute('aria-current'),
++					!this.#holds(
+ 						change,
+ 						pair,
+ 						expected,
+@@ -419,10 +421,10 @@ export class Carousel implements CarouselInterface {
+ 					written,
+ 					{ category: 'token', element: indicator, name: active },
+ 					active,
++					snapshot,
+ 				)
+ 				if (
+-					!this.#apply(
+-						() => indicator.classList.add(active),
++					!this.#holds(
+ 						change,
+ 						pair,
+ 						expected,
+@@ -440,10 +442,10 @@ export class Carousel implements CarouselInterface {
+ 					written,
+ 					{ category: 'attribute', element: indicator, name: 'aria-current' },
+ 					'true',
++					snapshot,
+ 				)
+ 				if (
+-					!this.#apply(
+-						() => indicator.setAttribute('aria-current', 'true'),
++					!this.#holds(
+ 						change,
+ 						pair,
+ 						expected,
+@@ -463,10 +465,10 @@ export class Carousel implements CarouselInterface {
+ 				written,
+ 				{ category: 'token', element: incoming, name: order },
+ 				order,
++				snapshot,
+ 			)
+ 			if (
+-				!this.#apply(
+-					() => incoming.classList.add(order),
++				!this.#holds(
+ 					change,
+ 					pair,
+ 					expected,
+@@ -475,6 +477,7 @@ export class Carousel implements CarouselInterface {
+ 						[incoming, order],
+ 					],
+ 					blocked,
++					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+@@ -484,10 +487,10 @@ export class Carousel implements CarouselInterface {
+ 				written,
+ 				{ category: 'token', element: outgoing, name: direction },
+ 				direction,
++				snapshot,
+ 			)
+ 			if (
+-				!this.#apply(
+-					() => outgoing.classList.add(direction),
++				!this.#holds(
+ 					change,
+ 					pair,
+ 					expected,
+@@ -497,6 +500,7 @@ export class Carousel implements CarouselInterface {
+ 						[incoming, order],
+ 					],
+ 					blocked,
++					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+@@ -511,17 +515,9 @@ export class Carousel implements CarouselInterface {
+ 				written,
+ 				{ category: 'token', element: incoming, name: direction },
+ 				direction,
++				snapshot,
+ 			)
+-			if (
+-				!this.#apply(
+-					() => incoming.classList.add(direction),
+-					change,
+-					pair,
+-					expected,
+-					moving,
+-					blocked,
+-				)
+-			) {
++			if (!this.#holds(change, pair, expected, moving, blocked, [])) {
+ 				return this.#rewind(change, written)
+ 			}
+ 			// The direction tokens start the outgoing item's motion and the incoming item's together, and
+@@ -533,21 +529,47 @@ export class Carousel implements CarouselInterface {
+ 					return this.#rewind(change, written)
+ 				}
+ 			}
+-			// The removal is one write of two targets, each recorded when this is its first changing
+-			// write, as it is for an order or direction token the incoming item carried before the slide.
++			// Each removal is recorded when it is the target's first changing write, as it is for an order
++			// or direction token the incoming item carried before the slide.
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'token', element: incoming, name: direction },
+ 				undefined,
++				snapshot,
+ 			)
++			if (
++				!this.#holds(
++					change,
++					pair,
++					expected,
++					[
++						[outgoing, active],
++						[outgoing, direction],
++						[incoming, order],
++					],
++					[
++						[incoming, direction],
++						[outgoing, order],
++					],
++					[],
++				)
++			) {
++				return this.#rewind(change, written)
++			}
++			// Every door from here on reads the incoming item's order and direction tokens absent.
++			const settled: ReadonlyArray<readonly [HTMLElement, string]> = [
++				[incoming, order],
++				[incoming, direction],
++				[outgoing, order],
++			]
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'token', element: incoming, name: order },
+ 				undefined,
++				snapshot,
+ 			)
+ 			if (
+-				!this.#apply(
+-					() => incoming.classList.remove(direction, order),
++				!this.#holds(
+ 					change,
+ 					pair,
+ 					expected,
+@@ -555,65 +577,82 @@ export class Carousel implements CarouselInterface {
+ 						[outgoing, active],
+ 						[outgoing, direction],
+ 					],
++					settled,
++					[],
++				)
++			) {
++				return this.#rewind(change, written)
++			}
++			// An incoming item that carries the `active` token already has made this write for the slide,
++			// so the write changes nothing and the snapshot records nothing for it.
++			snapshot.write({ category: 'token', element: incoming, name: active }, active)
++			if (
++				!this.#holds(
++					change,
++					pair,
++					true,
+ 					[
+-						[incoming, order],
+-						[incoming, direction],
+-						[outgoing, order],
++						[outgoing, active],
++						[outgoing, direction],
+ 					],
++					settled,
++					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+ 			}
+-			// An incoming item that carries the `active` token already has made this write for the slide.
+-			const moved = this.#apply(
+-				() => {
+-					if (!incoming.classList.contains(active)) incoming.classList.add(active)
+-				},
+-				change,
+-				pair,
+-				true,
+-				[
+-					[outgoing, active],
+-					[outgoing, direction],
+-				],
+-				[
+-					[incoming, order],
+-					[incoming, direction],
+-					[outgoing, order],
+-				],
+-			)
+-			if (!moved) return this.#rewind(change, written)
+-			// The removal is one write of three targets, each recorded when this is its first changing
+-			// write, as it is for the outgoing item's `active` token.
++			// Each removal from the outgoing item is recorded when it is the target's first changing write,
++			// as it is for the outgoing item's `active` token.
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'token', element: outgoing, name: active },
+ 				undefined,
++				snapshot,
+ 			)
++			if (
++				!this.#holds(
++					change,
++					pair,
++					true,
++					[[outgoing, direction]],
++					[...settled, [outgoing, active]],
++					[],
++				)
++			) {
++				return this.#rewind(change, written)
++			}
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'token', element: outgoing, name: order },
+ 				undefined,
++				snapshot,
+ 			)
++			if (
++				!this.#holds(
++					change,
++					pair,
++					true,
++					[[outgoing, direction]],
++					[...settled, [outgoing, active]],
++					[],
++				)
++			) {
++				return this.#rewind(change, written)
++			}
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'token', element: outgoing, name: direction },
+ 				undefined,
++				snapshot,
+ 			)
+ 			if (
+-				!this.#apply(
+-					() => outgoing.classList.remove(active, order, direction),
++				!this.#holds(
+ 					change,
+ 					pair,
+ 					true,
+ 					[],
+-					[
+-						[incoming, order],
+-						[incoming, direction],
+-						[outgoing, active],
+-						[outgoing, direction],
+-						[outgoing, order],
+-					],
++					[...settled, [outgoing, active], [outgoing, direction]],
++					[],
+ 				)
+ 			) {
+ 				return this.#rewind(change, written)
+@@ -670,20 +709,6 @@ export class Carousel implements CarouselInterface {
+ 		return false
+ 	}
+ 
+-	// Runs one write a reaction can run inside, then reads the door after it.
+-	#apply(
+-		write: () => void,
+-		change: PromiseWithResolvers<void>,
+-		pair: readonly [HTMLElement, HTMLElement],
+-		active: boolean | undefined,
+-		present: ReadonlyArray<readonly [HTMLElement, string]>,
+-		absent: ReadonlyArray<readonly [HTMLElement, string]>,
+-		marks: ReadonlyArray<readonly [HTMLElement, string | null]> = [],
+-	): boolean {
+-		write()
+-		return this.#holds(change, pair, active, present, absent, marks)
+-	}
+-
+ 	// Ends a change the host took over by moving its token back: writes each target the change
+ 	// recorded back to the value it held before the change's first write to it, in reverse order,
+ 	// through the `rewindHostWrites` function. The step dispatches nothing and reads no door; before
+@@ -720,21 +745,6 @@ export class Carousel implements CarouselInterface {
+ 		return Array.from(list.querySelectorAll(selector)).filter(instanceOf(HTMLElement))
+ 	}
+ 
+-	// Records each item's and each indicator's tokens and each indicator's `aria-current` value before
+-	// the first write, so destruction restores them.
+-	#save(outgoing: HTMLElement, incoming: HTMLElement, indicators: readonly HTMLElement[]): void {
+-		const { active, next, previous, start, end } = this.#classes
+-		for (const item of [outgoing, incoming]) {
+-			for (const name of [active, next, previous, start, end]) {
+-				this.#snapshot.save({ category: 'token', element: item, name })
+-			}
+-		}
+-		for (const indicator of indicators) {
+-			this.#snapshot.save({ category: 'token', element: indicator, name: active })
+-			this.#snapshot.save({ category: 'attribute', element: indicator, name: 'aria-current' })
+-		}
+-	}
+-
+ 	// Arms the timer at the active item's interval, or the `interval` option when that item carries no
+ 	// numeric interval attribute. It arms nothing when the carousel is destroyed, cycling is not
+ 	// wanted, a touch deferral is pending, the pointer over the host holds it, or the view prefers
+diff --git a/src/browser/Collapse.ts b/src/browser/Collapse.ts
+index 8517036..0fc2387 100644
+--- a/src/browser/Collapse.ts
++++ b/src/browser/Collapse.ts
+@@ -209,61 +209,48 @@ export class Collapse implements CollapseInterface {
+ 		const completed = [this.#classes.host]
+ 		const dimension = this.#dimension()
+ 		const triggers = this.#triggers()
+-		this.#save(dimension, triggers)
+-		// Each target the call changes is recorded with the value it held before the call's first write
+-		// to it, so the returning step writes it back.
++		// Each write goes through the snapshot, which saves a target only at a write that changes it, and
++		// each target the call changes is recorded with the value it held before the call's first write
++		// to it, so the returning step writes it back. A reaction runs inside each write, so the door
++		// follows it.
++		const snapshot = this.#snapshot
+ 		let written: readonly HostWrite[] = []
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'token', element: host, name: transition },
+ 			transition,
++			snapshot,
+ 		)
+-		if (!this.#apply(change, expected, during, [], () => host.classList.add(transition))) {
+-			return this.#rewind(change, written)
+-		}
++		if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'token', element: host, name: this.#classes.host },
+ 			undefined,
++			snapshot,
+ 		)
+-		if (
+-			!this.#apply(change, expected, during, [], () => host.classList.remove(this.#classes.host))
+-		) {
+-			return this.#rewind(change, written)
+-		}
++		if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'property', element: host, name: dimension },
+ 			'0px',
++			snapshot,
+ 		)
+-		if (
+-			!this.#apply(change, expected, during, [], () => host.style.setProperty(dimension, '0px'))
+-		) {
+-			return this.#rewind(change, written)
+-		}
++		if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
+ 		for (const trigger of triggers) {
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'token', element: trigger, name: collapsed },
+ 				undefined,
++				snapshot,
+ 			)
+-			if (
+-				!this.#apply(change, expected, during, [], () => trigger.classList.toggle(collapsed, false))
+-			) {
+-				return this.#rewind(change, written)
+-			}
++			if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'attribute', element: trigger, name: 'aria-expanded' },
+ 				'true',
++				snapshot,
+ 			)
+-			if (
+-				!this.#apply(change, expected, during, [], () =>
+-					trigger.setAttribute('aria-expanded', 'true'),
+-				)
+-			) {
+-				return this.#rewind(change, written)
+-			}
++			if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
+ 		}
+ 		// Reading the scroll size lays the panel out at zero, so the size written next transitions.
+ 		const size = dimension === 'width' ? host.scrollWidth : host.scrollHeight
+@@ -271,46 +258,41 @@ export class Collapse implements CollapseInterface {
+ 			written,
+ 			{ category: 'property', element: host, name: dimension },
+ 			`${size}px`,
++			snapshot,
+ 		)
+-		if (
+-			!this.#apply(change, expected, during, [], () =>
+-				host.style.setProperty(dimension, `${size}px`),
+-			)
+-		) {
+-			return this.#rewind(change, written)
+-		}
++		if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
+ 		await settleAnimations(host, this.#controller.signal)
+ 		if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
+-		// A host that added the `shown` token first has made that write for the call, which then adds
+-		// the `host` token alone.
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'token', element: host, name: this.#classes.host },
+ 			this.#classes.host,
++			snapshot,
+ 		)
+-		const marked = this.#apply(change, true, [...completed, transition], [], () => {
+-			if (this.shown) host.classList.add(this.#classes.host)
+-			else host.classList.add(this.#classes.host, shown)
+-		})
+-		if (!marked) return this.#rewind(change, written)
+-		if (
+-			!this.#apply(change, true, completed, [transition], () => host.classList.remove(transition))
+-		) {
++		if (!this.#holds(change, expected, [...completed, transition], [])) {
+ 			return this.#rewind(change, written)
+ 		}
++		// A host that added the `shown` token first has made that write for the call, so the write
++		// changes nothing and the snapshot records nothing for it.
++		snapshot.write({ category: 'token', element: host, name: shown }, shown)
++		if (!this.#holds(change, true, [...completed, transition], [])) {
++			return this.#rewind(change, written)
++		}
++		written = recordHostWrite(
++			written,
++			{ category: 'token', element: host, name: transition },
++			undefined,
++			snapshot,
++		)
++		if (!this.#holds(change, true, completed, [transition])) return this.#rewind(change, written)
+ 		// The clearing is the first changing write of a size both earlier size writes left as it was.
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'property', element: host, name: dimension },
+ 			undefined,
++			snapshot,
+ 		)
+-		if (
+-			!this.#apply(change, true, completed, [transition], () =>
+-				host.style.removeProperty(dimension),
+-			)
+-		) {
+-			return this.#rewind(change, written)
+-		}
++		if (!this.#holds(change, true, completed, [transition])) return this.#rewind(change, written)
+ 		emitEvent(host, COLLAPSE_EVENTS.shown, null, false)
+ 		return !this.#controller.signal.aborted
+ 	}
+@@ -341,43 +323,37 @@ export class Collapse implements CollapseInterface {
+ 		const completed = [this.#classes.host]
+ 		const dimension = this.#dimension()
+ 		const triggers = this.#triggers()
+-		this.#save(dimension, triggers)
+-		// Each target the call changes is recorded as in `show`.
++		// Each write goes through the snapshot and each target the call changes is recorded, as in
++		// `show`.
++		const snapshot = this.#snapshot
+ 		let written: readonly HostWrite[] = []
+ 		const size = host.getBoundingClientRect()[dimension]
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'property', element: host, name: dimension },
+ 			`${size}px`,
++			snapshot,
+ 		)
+-		if (
+-			!this.#apply(change, expected, [], during, () =>
+-				host.style.setProperty(dimension, `${size}px`),
+-			)
+-		) {
+-			return this.#rewind(change, written)
+-		}
++		if (!this.#holds(change, expected, [], during)) return this.#rewind(change, written)
+ 		reflow(host)
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'token', element: host, name: transition },
+ 			transition,
++			snapshot,
+ 		)
+-		if (!this.#apply(change, expected, during, [], () => host.classList.add(transition))) {
+-			return this.#rewind(change, written)
+-		}
+-		// A host that removed the `shown` token first has made that write for the call, which then
+-		// removes the `host` token alone.
++		if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'token', element: host, name: this.#classes.host },
+ 			undefined,
++			snapshot,
+ 		)
+-		const cleared = this.#apply(change, false, during, [], () => {
+-			if (this.shown) host.classList.remove(this.#classes.host, shown)
+-			else host.classList.remove(this.#classes.host)
+-		})
+-		if (!cleared) return this.#rewind(change, written)
++		if (!this.#holds(change, expected, during, [])) return this.#rewind(change, written)
++		// A host that removed the `shown` token first has made that write for the call, so the write
++		// changes nothing and the snapshot records nothing for it.
++		snapshot.write({ category: 'token', element: host, name: shown }, undefined)
++		if (!this.#holds(change, false, during, [])) return this.#rewind(change, written)
+ 		const collapsing = triggers.filter(
+ 			(trigger) =>
+ 				!readTargets(trigger, this.#attributes).some((panel) => panel.classList.contains(shown)),
+@@ -387,34 +363,25 @@ export class Collapse implements CollapseInterface {
+ 				written,
+ 				{ category: 'token', element: trigger, name: collapsed },
+ 				collapsed,
++				snapshot,
+ 			)
+-			if (
+-				!this.#apply(change, false, during, [], () => trigger.classList.toggle(collapsed, true))
+-			) {
+-				return this.#rewind(change, written)
+-			}
++			if (!this.#holds(change, false, during, [])) return this.#rewind(change, written)
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'attribute', element: trigger, name: 'aria-expanded' },
+ 				'false',
++				snapshot,
+ 			)
+-			if (
+-				!this.#apply(change, false, during, [], () =>
+-					trigger.setAttribute('aria-expanded', 'false'),
+-				)
+-			) {
+-				return this.#rewind(change, written)
+-			}
++			if (!this.#holds(change, false, during, [])) return this.#rewind(change, written)
+ 		}
+ 		// The clearing is the first changing write of a size the measured size write left as it was.
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'property', element: host, name: dimension },
+ 			undefined,
++			snapshot,
+ 		)
+-		if (!this.#apply(change, false, during, [], () => host.style.removeProperty(dimension))) {
+-			return this.#rewind(change, written)
+-		}
++		if (!this.#holds(change, false, during, [])) return this.#rewind(change, written)
+ 		await settleAnimations(host, this.#controller.signal)
+ 		if (!this.#holds(change, false, during, [])) return this.#rewind(change, written)
+ 		// The addition is the first changing write of a `host` token the panel lacked before the hide.
+@@ -422,19 +389,18 @@ export class Collapse implements CollapseInterface {
+ 			written,
+ 			{ category: 'token', element: host, name: this.#classes.host },
+ 			this.#classes.host,
++			snapshot,
+ 		)
+-		if (
+-			!this.#apply(change, false, [...completed, transition], [], () =>
+-				host.classList.add(this.#classes.host),
+-			)
+-		) {
+-			return this.#rewind(change, written)
+-		}
+-		if (
+-			!this.#apply(change, false, completed, [transition], () => host.classList.remove(transition))
+-		) {
++		if (!this.#holds(change, false, [...completed, transition], [])) {
+ 			return this.#rewind(change, written)
+ 		}
++		written = recordHostWrite(
++			written,
++			{ category: 'token', element: host, name: transition },
++			undefined,
++			snapshot,
++		)
++		if (!this.#holds(change, false, completed, [transition])) return this.#rewind(change, written)
+ 		emitEvent(host, COLLAPSE_EVENTS.hidden, null, false)
+ 		return !this.#controller.signal.aborted
+ 	}
+@@ -500,18 +466,6 @@ export class Collapse implements CollapseInterface {
+ 		return false
+ 	}
+ 
+-	// Runs one write a reaction can run inside, then reads the door after it.
+-	#apply(
+-		change: object,
+-		shown: boolean | undefined,
+-		present: readonly string[],
+-		absent: readonly string[],
+-		write: () => void,
+-	): boolean {
+-		write()
+-		return this.#holds(change, shown, present, absent)
+-	}
+-
+ 	// Ends a change the host took over by moving its token back: writes each target the change
+ 	// recorded back to the value and priority it held before the change's first write to it, in
+ 	// reverse order, through the `rewindHostWrites` function. The step dispatches nothing and reads no
+@@ -595,18 +549,4 @@ export class Collapse implements CollapseInterface {
+ 			}
+ 		}
+ 	}
+-
+-	// Records the panel's tokens and inline size and each trigger's token and `aria-expanded` value
+-	// before the first write, so destruction restores them.
+-	#save(dimension: 'width' | 'height', triggers: readonly HTMLElement[]): void {
+-		const { host, shown, transition, collapsed } = this.#classes
+-		for (const name of [host, shown, transition]) {
+-			this.#snapshot.save({ category: 'token', element: this.#host, name })
+-		}
+-		this.#snapshot.save({ category: 'property', element: this.#host, name: dimension })
+-		for (const trigger of triggers) {
+-			this.#snapshot.save({ category: 'token', element: trigger, name: collapsed })
+-			this.#snapshot.save({ category: 'attribute', element: trigger, name: 'aria-expanded' })
+-		}
+-	}
+ }
+diff --git a/src/browser/Dropdown.ts b/src/browser/Dropdown.ts
+index ecf7c19..4918b4d 100644
+--- a/src/browser/Dropdown.ts
++++ b/src/browser/Dropdown.ts
+@@ -5,7 +5,6 @@ import type {
+ 	DropdownInterface,
+ 	DropdownOptions,
+ 	DropdownSelectorMap,
+-	HostSnapshotTarget,
+ 	HostWrite,
+ 	PlacementInterface,
+ 	PlacementPosition,
+@@ -259,7 +258,7 @@ export class Dropdown implements DropdownInterface {
+ 			const host = this.#host
+ 			const menu = this.#menu
+ 			const { shown } = this.#classes
+-			this.#save()
++			const snapshot = this.#snapshot
+ 			// A show a reaction started inside a stopped show's returning step finds that show's placement,
+ 			// which the stopped step no longer destroys once this show supersedes it, so this show destroys
+ 			// it before it places the menu and one placement holds the menu's targets. Its destruction runs
+@@ -274,31 +273,32 @@ export class Dropdown implements DropdownInterface {
+ 			if (placement === undefined) return false
+ 			this.#placement = placement
+ 			if (!this.#holds(change, expected)) return this.#rehide(change, [])
+-			if (!this.#apply(change, expected, () => host.focus())) return this.#rehide(change, [])
+-			// Each host target the call changes is recorded with the value it held before the call's first
+-			// changing write to it, so the returning step writes it back; a write that changes nothing
+-			// records nothing.
+-			const expanded: HostSnapshotTarget = {
+-				category: 'attribute',
+-				element: host,
+-				name: 'aria-expanded',
+-			}
+-			let written = recordHostWrite([], expanded, 'true')
+-			if (!this.#apply(change, expected, () => host.setAttribute('aria-expanded', 'true'))) {
+-				return this.#rehide(change, written)
+-			}
+-			// A host that added the token first has made this write for the call.
+-			const marked = this.#apply(change, true, () => {
+-				if (!this.shown) menu.classList.add(shown)
+-			})
+-			if (!marked) return this.#rehide(change, written)
+-			written = recordHostWrite(written, { category: 'token', element: host, name: shown }, shown)
+-			if (!this.#apply(change, true, () => host.classList.add(shown))) {
+-				return this.#rehide(change, written)
+-			}
+-			if (!this.#apply(change, true, () => placement.update())) {
+-				return this.#rehide(change, written)
+-			}
++			host.focus()
++			if (!this.#holds(change, expected)) return this.#rehide(change, [])
++			// Each write goes through the snapshot, which saves a target only at a write that changes it,
++			// and each host target the call changes is recorded with the value it held before the call's
++			// first changing write to it, so the returning step writes it back; a write that changes
++			// nothing records nothing in either. A reaction runs inside each write, so the door follows it.
++			let written = recordHostWrite(
++				[],
++				{ category: 'attribute', element: host, name: 'aria-expanded' },
++				'true',
++				snapshot,
++			)
++			if (!this.#holds(change, expected)) return this.#rehide(change, written)
++			// A host that added the token first has made this write for the call, so the write changes
++			// nothing and the snapshot records nothing for it.
++			snapshot.write({ category: 'token', element: menu, name: shown }, shown)
++			if (!this.#holds(change, true)) return this.#rehide(change, written)
++			written = recordHostWrite(
++				written,
++				{ category: 'token', element: host, name: shown },
++				shown,
++				snapshot,
++			)
++			if (!this.#holds(change, true)) return this.#rehide(change, written)
++			placement.update()
++			if (!this.#holds(change, true)) return this.#rehide(change, written)
+ 			this.#changing = false
+ 			emitEvent(host, DROPDOWN_EVENTS.shown, { click: undefined }, false)
+ 			return !this.#controller.signal.aborted
+@@ -379,12 +379,6 @@ export class Dropdown implements DropdownInterface {
+ 		return false
+ 	}
+ 
+-	// Runs one write a reaction or a listener can run inside, then reads the door after it.
+-	#apply(change: object, shown: boolean | undefined, write: () => void): boolean {
+-		write()
+-		return this.#holds(change, shown)
+-	}
+-
+ 	// Ends a show the host took over by taking the menu's `shown` token: writes each host target in
+ 	// `written` back to the value it held before the call's first changing write to it, through the
+ 	// `rewindHostWrites` function, then destroys the placement, the show's first write, so the step
+@@ -453,36 +447,34 @@ export class Dropdown implements DropdownInterface {
+ 			const host = this.#host
+ 			const menu = this.#menu
+ 			const { shown } = this.#classes
+-			this.#save()
++			const snapshot = this.#snapshot
+ 			// The dropdown keeps the placement until its destruction returns, so a destroy called from a
+ 			// listener inside that destruction completes it. A destroyed placement stays destroyed when the
+ 			// host takes the hide over, because placing the menu again is an acquisition.
+ 			this.#placement?.destroy()
+ 			this.#placement = undefined
+ 			if (!this.#holds(change, expected)) return false
+-			// A host that removed the token first has made this write for the call.
+-			const cleared = this.#apply(change, false, () => {
+-				if (this.shown) menu.classList.remove(shown)
+-			})
+-			if (!cleared) return false
++			// Each write goes through the snapshot, as in `show`. A host that removed the token first has
++			// made this write for the call, so the write changes nothing and the snapshot records nothing
++			// for it.
++			snapshot.write({ category: 'token', element: menu, name: shown }, undefined)
++			if (!this.#holds(change, false)) return false
+ 			// Each host target the call changes after its token step is recorded with the value it held
+ 			// before the call's first changing write to it; a write that changes nothing records nothing.
+ 			let written = recordHostWrite(
+ 				[],
+ 				{ category: 'token', element: host, name: shown },
+ 				undefined,
++				snapshot,
+ 			)
+-			if (!this.#apply(change, false, () => host.classList.remove(shown))) {
+-				return this.#reshow(change, written)
+-			}
++			if (!this.#holds(change, false)) return this.#reshow(change, written)
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'attribute', element: host, name: 'aria-expanded' },
+ 				'false',
++				snapshot,
+ 			)
+-			if (!this.#apply(change, false, () => host.setAttribute('aria-expanded', 'false'))) {
+-				return this.#reshow(change, written)
+-			}
++			if (!this.#holds(change, false)) return this.#reshow(change, written)
+ 			this.#changing = false
+ 			emitEvent(host, DROPDOWN_EVENTS.hidden, { click }, false)
+ 			return !this.#controller.signal.aborted
+@@ -595,13 +587,4 @@ export class Dropdown implements DropdownInterface {
+ 		if (tokens?.contains(up)) return aligned ? 'top-end' : 'top-start'
+ 		return aligned ? 'bottom-end' : 'bottom-start'
+ 	}
+-
+-	// Records the `shown` tokens and the toggle's `aria-expanded` value before the first write, so
+-	// destruction restores them.
+-	#save(): void {
+-		const { shown } = this.#classes
+-		this.#snapshot.save({ category: 'token', element: this.#host, name: shown })
+-		this.#snapshot.save({ category: 'token', element: this.#menu, name: shown })
+-		this.#snapshot.save({ category: 'attribute', element: this.#host, name: 'aria-expanded' })
+-	}
+ }
+diff --git a/src/browser/Tab.ts b/src/browser/Tab.ts
+index 01b1551..21cf478 100644
+--- a/src/browser/Tab.ts
++++ b/src/browser/Tab.ts
+@@ -24,7 +24,6 @@ import {
+ 	resolveVocabulary,
+ 	rewindHostWrites,
+ 	settleAnimations,
+-	writeHostValue,
+ } from './helpers.js'
+ import { HostSnapshot } from './HostSnapshot.js'
+ import { Registry } from './Registry.js'
+@@ -71,11 +70,17 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * dispatches nothing; before each write it reads the call's identity, the tab's lifetime, and the
+  * target's value, and it writes nothing to a target that already holds the recorded value.
+  *
+- * Destruction restores every value the tab wrote that no live engine still holds. Each tab joins
+- * the record of every role and state construction writes on its list, whether it writes the value
+- * or finds it already written, and the last engine holding a record writes its value back, so the
+- * list returns to its markup after its last tab is destroyed. An aborted `signal` destroys the tab.
+- * The keyboard is the delegate's: the tab listens for no key.
++ * The swap reads the dropdown each control sits in when it starts, before its first write, so the
++ * consumer code the sibling's blur runs cannot add a target to the swap.
++ *
++ * Destruction restores every value the tab changed that no live engine still holds. A tab records
++ * a role or state only at a write that changes it. A value it finds already written joins the
++ * record a live engine holds, such as a sibling tab that wrote it, or a restoration has still to
++ * write back, and otherwise records nothing, so an edit you make to a value the markup carried
++ * survives the tab's destruction. The last engine
++ * holding a record writes its value back, so the list returns to its markup after its last tab is
++ * destroyed. An aborted `signal` destroys the tab. The keyboard is the delegate's: the tab listens
++ * for no key.
+  *
+  * @example
+  * ```ts
+@@ -211,78 +216,79 @@ export class Tab implements TabInterface {
+ 			outgoing === undefined
+ 				? undefined
+ 				: (Tab.#registry.find(outgoing)?.pane ?? readTarget(outgoing, this.#attributes))
+-		const leaving = outgoing?.getAttribute('role') === 'tab'
+-		const entering = host.getAttribute('role') === 'tab'
+-		if (outgoing !== undefined) this.#save(outgoing, previous, leaving)
+-		this.#save(host, pane, entering)
+-		// Each write door reads the list and the pane for its phase: no control but the host active
+-		// from the sibling's first write on, and each pane token from its write on. Each target the
+-		// call changes is recorded with the value it held before the call's first write to it, so the
+-		// returning step writes it back.
++		// The selection writes are read once, before the first write: the sibling's blur runs consumer
++		// code, and a write set read after it could name targets the swap never read.
++		const deselection =
++			outgoing !== undefined && outgoing.getAttribute('role') === 'tab'
++				? this.#selection(outgoing, false)
++				: []
++		const selection = host.getAttribute('role') === 'tab' ? this.#selection(host, true) : []
++		// Each write goes through the snapshot, which saves a target only at a write that changes it,
++		// and each write door reads the list and the pane for its phase: no control but the host active
++		// from the sibling's first write on, and each pane token from its write on. Each target the call
++		// changes is recorded with the value it held before the call's first write to it, so the
++		// returning step writes it back. A reaction or a listener runs inside each write, so the door
++		// follows it.
++		const snapshot = this.#snapshot
+ 		let written: readonly HostWrite[] = []
+ 		if (outgoing !== undefined) {
+ 			written = recordHostWrite(
+ 				written,
+ 				{ category: 'token', element: outgoing, name: active },
+ 				undefined,
++				snapshot,
+ 			)
+-			if (!this.#apply(change, expected, [], () => outgoing.classList.remove(active))) {
+-				return this.#rewind(change, written)
+-			}
+-			if (!this.#apply(change, expected, [], () => outgoing.blur())) {
+-				return this.#rewind(change, written)
+-			}
++			if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
++			outgoing.blur()
++			if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
+ 			if (previous !== undefined) {
+-				// The removal is one write, and each token it takes off is a target of its own.
+ 				written = recordHostWrite(
+ 					written,
+ 					{ category: 'token', element: previous, name: active },
+ 					undefined,
++					snapshot,
+ 				)
++				if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
+ 				written = recordHostWrite(
+ 					written,
+ 					{ category: 'token', element: previous, name: shown },
+ 					undefined,
++					snapshot,
+ 				)
+-				if (!this.#apply(change, expected, [], () => previous.classList.remove(active, shown))) {
+-					return this.#rewind(change, written)
+-				}
++				if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
+ 			}
+-			if (leaving) {
+-				for (const [target, value] of this.#selection(outgoing, false)) {
+-					written = recordHostWrite(written, target, value)
+-					if (!this.#apply(change, expected, [], () => writeHostValue(target, value))) {
+-						return this.#rewind(change, written)
+-					}
+-				}
++			for (const [target, value] of deselection) {
++				written = recordHostWrite(written, target, value, snapshot)
++				if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
+ 			}
+ 		}
+-		// A control that carries the `active` token already has made this write for the call.
+-		const marked = this.#apply(change, true, [], () => {
+-			if (!this.active) host.classList.add(active)
+-		})
+-		if (!marked) return this.#rewind(change, written)
+-		if (entering) {
+-			for (const [target, value] of this.#selection(host, true)) {
+-				written = recordHostWrite(written, target, value)
+-				if (!this.#apply(change, true, [], () => writeHostValue(target, value))) {
+-					return this.#rewind(change, written)
+-				}
+-			}
++		// A control that carries the `active` token already has made this write for the call, so the
++		// write changes nothing and the snapshot records nothing for it.
++		snapshot.write({ category: 'token', element: host, name: active }, active)
++		if (!this.#holds(change, true, [])) return this.#rewind(change, written)
++		for (const [target, value] of selection) {
++			written = recordHostWrite(written, target, value, snapshot)
++			if (!this.#holds(change, true, [])) return this.#rewind(change, written)
+ 		}
+ 		const settled = [active, shown]
+ 		if (pane !== undefined) {
+-			written = recordHostWrite(written, { category: 'token', element: pane, name: active }, active)
+-			if (!this.#apply(change, true, [active], () => pane.classList.add(active))) {
+-				return this.#rewind(change, written)
+-			}
++			written = recordHostWrite(
++				written,
++				{ category: 'token', element: pane, name: active },
++				active,
++				snapshot,
++			)
++			if (!this.#holds(change, true, [active])) return this.#rewind(change, written)
+ 			const fading = pane.classList.contains(fade)
+ 			// Laying the pane out with its `active` token lets the `shown` token written next fade it.
+ 			if (fading) reflow(pane)
+-			written = recordHostWrite(written, { category: 'token', element: pane, name: shown }, shown)
+-			if (!this.#apply(change, true, settled, () => pane.classList.add(shown))) {
+-				return this.#rewind(change, written)
+-			}
++			written = recordHostWrite(
++				written,
++				{ category: 'token', element: pane, name: shown },
++				shown,
++				snapshot,
++			)
++			if (!this.#holds(change, true, settled)) return this.#rewind(change, written)
+ 			if (fading) {
+ 				await settleAnimations(pane, this.#controller.signal)
+ 				if (!this.#holds(change, true, settled)) return this.#rewind(change, written)
+@@ -337,17 +343,6 @@ export class Tab implements TabInterface {
+ 		return false
+ 	}
+ 
+-	// Runs one write a reaction or a listener can run inside, then reads the door after it.
+-	#apply(
+-		change: object,
+-		active: boolean | undefined,
+-		pane: readonly string[],
+-		write: () => void,
+-	): boolean {
+-		write()
+-		return this.#holds(change, active, pane)
+-	}
+-
+ 	// Ends a change the host took over by moving its token back: writes each target the change
+ 	// recorded back to the value it held before the change's first write to it, in reverse order,
+ 	// through the `rewindHostWrites` function. The step dispatches nothing and reads no door; before
+@@ -440,46 +435,19 @@ export class Tab implements TabInterface {
+ 		return !planned.some((write) => write.element === element && write.name === name)
+ 	}
+ 
+-	// Joins the record of every attribute the plan names before the first write, whether the tab
+-	// writes it or finds it already written, so a sibling tab's restoration leaves the list's roles
+-	// and states to this tab while it lives. It then writes each entry the element does not already
+-	// carry, stopping when a reaction to a write destroys the tab.
++	// Writes every attribute the plan names through the snapshot, which saves an attribute only at a
++	// write that changes it. A value the element already carries joins the attribute's record when a
++	// live engine holds it or a restoration has it still to write back, so a sibling tab's restoration
++	// leaves the list's roles and states to this tab while it lives; otherwise it records nothing, so an
++	// edit you make to a value the markup alone carried survives this tab's destruction. It stops when a
++	// reaction to a write destroys the tab.
+ 	#writeInitial(planned: readonly TabInitialWrite[]): void {
+-		const writes = planned.filter(
+-			({ element, name, value }) => element.getAttribute(name) !== value,
+-		)
+-		for (const { element, name } of planned) {
+-			this.#snapshot.save({ category: 'attribute', element, name })
+-		}
+-		for (const { element, name, value } of writes) {
+-			element.setAttribute(name, value)
++		for (const { element, name, value } of planned) {
++			this.#snapshot.write({ category: 'attribute', element, name }, value)
+ 			if (this.#controller.signal.aborted) return
+ 		}
+ 	}
+ 
+-	// Saves a control's `active` token and its pane's tokens before the swap first writes them, and
+-	// for a control whose role is `tab`, its selection, its tab stop, and its dropdown's state.
+-	#save(control: HTMLElement, pane: HTMLElement | undefined, tab: boolean): void {
+-		const { active, shown } = this.#classes
+-		this.#snapshot.save({ category: 'token', element: control, name: active })
+-		if (pane !== undefined) {
+-			this.#snapshot.save({ category: 'token', element: pane, name: active })
+-			this.#snapshot.save({ category: 'token', element: pane, name: shown })
+-		}
+-		if (!tab) return
+-		this.#snapshot.save({ category: 'attribute', element: control, name: 'aria-selected' })
+-		this.#snapshot.save({ category: 'attribute', element: control, name: 'tabindex' })
+-		const dropdown = this.#dropdown(control)
+-		if (dropdown === undefined) return
+-		this.#snapshot.save({ category: 'attribute', element: dropdown.wrapper, name: 'aria-expanded' })
+-		if (dropdown.toggle !== undefined) {
+-			this.#snapshot.save({ category: 'token', element: dropdown.toggle, name: active })
+-		}
+-		if (dropdown.menu !== undefined) {
+-			this.#snapshot.save({ category: 'token', element: dropdown.menu, name: shown })
+-		}
+-	}
+-
+ 	// Lists the writes that select or deselect a `tab` control, in the order the call makes them, each
+ 	// a target and the value the write gives it: the control's `aria-selected` value and tab stop,
+ 	// removed for a selected control and `-1` otherwise, and the toggle's `active` token, the menu's
+diff --git a/src/browser/Toast.ts b/src/browser/Toast.ts
+index 5d40413..98e5b68 100644
+--- a/src/browser/Toast.ts
++++ b/src/browser/Toast.ts
+@@ -193,35 +193,44 @@ export class Toast implements ToastInterface {
+ 		this.#disarm()
+ 		const host = this.#host
+ 		const { shown, transition, fade } = this.#classes
+-		this.#save()
+-		// Each token the call changes is recorded with the presence it had before the call's first
+-		// write to it, so the returning step writes it back.
++		// Each write goes through the snapshot, which saves a token only at a write that changes it, and
++		// each token the call changes is recorded with the presence it had before the call's first
++		// write to it, so the returning step writes it back. A reaction runs inside each write, so the
++		// door follows it.
++		const snapshot = this.#snapshot
+ 		let written: readonly HostWrite[] = []
+ 		if (this.#animated) {
+-			written = recordHostWrite(written, { category: 'token', element: host, name: fade }, fade)
+-			if (!this.#apply(change, expected, [], [transition], () => host.classList.add(fade))) {
+-				return this.#rewind(change, written)
+-			}
++			written = recordHostWrite(
++				written,
++				{ category: 'token', element: host, name: fade },
++				fade,
++				snapshot,
++			)
++			if (!this.#holds(change, expected, [], [transition])) return this.#rewind(change, written)
+ 		}
+ 		reflow(host)
++		// A host that added the token first has made this write for the call, so the write changes
++		// nothing and the snapshot records nothing for it.
++		snapshot.write({ category: 'token', element: host, name: shown }, shown)
++		if (!this.#holds(change, true, [], [transition])) return this.#rewind(change, written)
+ 		written = recordHostWrite(
+ 			written,
+ 			{ category: 'token', element: host, name: transition },
+ 			transition,
++			snapshot,
+ 		)
+-		// A host that added the token first has made this write for the call.
+-		const marked = this.#apply(change, true, [transition], [], () => {
+-			if (this.shown) host.classList.add(transition)
+-			else host.classList.add(shown, transition)
+-		})
+-		if (!marked) return this.#rewind(change, written)
++		if (!this.#holds(change, true, [transition], [])) return this.#rewind(change, written)
+ 		if (this.#animated) {
+ 			await settleAnimations(host, this.#controller.signal)
+ 			if (!this.#holds(change, true, [transition], [])) return this.#rewind(change, written)
+ 		}
+-		if (!this.#apply(change, true, [], [transition], () => host.classList.remove(transition))) {
+-			return this.#rewind(change, written)
+-		}
++		written = recordHostWrite(
++			written,
++			{ category: 'token', element: host, name: transition },
++			undefined,
++			snapshot,
++		)
++		if (!this.#holds(change, true, [], [transition])) return this.#rewind(change, written)
+ 		// The `transition` token holds a showing toast transparent, so the fade in starts as it leaves,
+ 		// and the shown event follows that motion too.
+ 		if (this.#animated) {
+@@ -246,7 +255,9 @@ export class Toast implements ToastInterface {
+ 		this.#disarm()
+ 		const host = this.#host
+ 		const { shown, transition } = this.#classes
+-		this.#save()
++		// Each write goes through the snapshot and each token the call changes is recorded, as in
++		// `show`.
++		const snapshot = this.#snapshot
+ 		let written: readonly HostWrite[] = []
+ 		// The layout read lets a toast inserted shown in this task fade out.
+ 		reflow(host)
+@@ -254,20 +265,24 @@ export class Toast implements ToastInterface {
+ 			written,
+ 			{ category: 'token', element: host, name: transition },
+ 			transition,
++			snapshot,
+ 		)
+-		if (!this.#apply(change, expected, [transition], [], () => host.classList.add(transition))) {
+-			return this.#rewind(change, written)
+-		}
++		if (!this.#holds(change, expected, [transition], [])) return this.#rewind(change, written)
+ 		if (this.#animated) {
+ 			await settleAnimations(host, this.#controller.signal)
+ 			if (!this.#holds(change, expected, [transition], [])) return this.#rewind(change, written)
+ 		}
+-		// A host that removed the token first has made this write for the call.
+-		const cleared = this.#apply(change, false, [], [transition], () => {
+-			if (this.shown) host.classList.remove(transition, shown)
+-			else host.classList.remove(transition)
+-		})
+-		if (!cleared) return this.#rewind(change, written)
++		written = recordHostWrite(
++			written,
++			{ category: 'token', element: host, name: transition },
++			undefined,
++			snapshot,
++		)
++		if (!this.#holds(change, expected, [], [transition])) return this.#rewind(change, written)
++		// A host that removed the token first has made this write for the call, so the write changes
++		// nothing and the snapshot records nothing for it.
++		snapshot.write({ category: 'token', element: host, name: shown }, undefined)
++		if (!this.#holds(change, false, [], [transition])) return this.#rewind(change, written)
+ 		emitEvent(host, TOAST_EVENTS.hidden, null, false)
+ 		return !this.#controller.signal.aborted
+ 	}
+@@ -320,18 +335,6 @@ export class Toast implements ToastInterface {
+ 		return false
+ 	}
+ 
+-	// Runs one write a reaction can run inside, then reads the door after it.
+-	#apply(
+-		change: object,
+-		shown: boolean | undefined,
+-		present: readonly string[],
+-		absent: readonly string[],
+-		write: () => void,
+-	): boolean {
+-		write()
+-		return this.#holds(change, shown, present, absent)
+-	}
+-
+ 	// Ends a change the host took over by moving its token back: writes each target the change
+ 	// recorded back to the value it held before the change's first write to it, in reverse order,
+ 	// through the `rewindHostWrites` function. The step dispatches nothing and reads no door; before
+@@ -343,15 +346,6 @@ export class Toast implements ToastInterface {
+ 		return false
+ 	}
+ 
+-	// Records the host's shown, transition, and fade tokens before the first write, so destruction
+-	// restores them.
+-	#save(): void {
+-		const { shown, transition, fade } = this.#classes
+-		for (const name of [shown, transition, fade]) {
+-			this.#snapshot.save({ category: 'token', element: this.#host, name })
+-		}
+-	}
+-
+ 	// Starts the delay in full for a live, shown, settled toast with `autohide`, replacing a pending one.
+ 	#arm(): void {
+ 		this.#disarm()
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index db89453..6c44f72 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -3,6 +3,7 @@ import type {
+ 	EventHooks,
+ 	EventWire,
+ 	HostWrite,
++	HostSnapshotInterface,
+ 	HostSnapshotTarget,
+ 	ParserMap,
+ 	SanitizerConfig,
+@@ -955,26 +956,33 @@ export function matchesHostValue(
+ }
+ 
+ /**
+- * Returns a change's records with a target and the value and priority it reads appended, only when the coming write is the change's first to change that target.
++ * Writes a value to a target through a snapshot, and returns a change's records with the target's prior value and priority appended when the write is the change's first to change that target.
+  *
+  * @param writes - The records the change holds so far, in the order of its first changing writes.
+  * @param target - The attribute, class token, or inline property the write gives a value.
+- * @param next - The value the write gives the target, in the form the `readHostValue` function reads it.
+- * @returns A copy of the records with the target and its value and priority appended; the records unchanged when the change recorded the target already or the write leaves the target as it reads.
++ * @param next - The value the write gives the target, in the form the `readHostValue` function reads it; undefined removes the target.
++ * @param snapshot - The snapshot of the engine making the change, whose `write` method makes the write.
++ * @returns A copy of the records with the target and the value and priority it held before the write appended; the records unchanged when the change recorded the target already or the write leaves the target as it reads.
+  * @remarks
+- * A target is recorded once, at the first write that changes it, so a later write to the same target
+- * keeps the value and priority it held before the change began writing it. The write gives no
+- * priority, so it changes an inline property that carries one even when it writes the value the
+- * property holds. The records passed in are not changed.
++ * One step keeps both records of the write: the change's own, which its returning step writes back,
++ * and the snapshot's, which destruction writes back. The change's record is read before the write,
++ * and the snapshot's `write` method then saves the target only when the write changes it, so a write
++ * that changes nothing records nothing in either, and every target the change records is one the
++ * snapshot holds. A target is recorded once, at the first write that changes it, so a later write to
++ * the same target keeps the value and priority it held before the change began writing it. The write
++ * gives no priority, so it changes an inline property that carries one even when it writes the value
++ * the property holds. The records passed in are not changed. A reaction to the write runs before the
++ * function returns, so a caller reads its door after the call.
+  * @example
+  * ```ts
+- * writes = recordHostWrite(writes, { category: 'token', element: panel, name: 'collapsing' }, 'collapsing')
++ * writes = recordHostWrite(writes, { category: 'token', element: panel, name: 'collapsing' }, 'collapsing', snapshot)
+  * ```
+  */
+ export function recordHostWrite(
+ 	writes: readonly HostWrite[],
+ 	target: HostSnapshotTarget,
+ 	next: string | undefined,
++	snapshot: HostSnapshotInterface,
+ ): readonly HostWrite[] {
+ 	const { category, element, name } = target
+ 	const recorded = writes.some(
+@@ -983,8 +991,12 @@ export function recordHostWrite(
+ 			write.target.element === element &&
+ 			write.target.name === name,
+ 	)
+-	if (recorded || matchesHostValue(target, next)) return writes
+-	return [...writes, { target, value: readHostValue(target), priority: readHostPriority(target) }]
++	const records =
++		recorded || matchesHostValue(target, next)
++			? writes
++			: [...writes, { target, value: readHostValue(target), priority: readHostPriority(target) }]
++	snapshot.write(target, next)
++	return records
+ }
+ 
+ /**
+@@ -995,7 +1007,9 @@ export function recordHostWrite(
+  * @remarks
+  * A target that already reads its recorded value and priority takes no write. The first read of
+  * `owns` that returns `false` ends the step, so a destruction or a later change a reaction starts
+- * inside one write stops the writes after it.
++ * inside one write stops the writes after it. Each record comes from the `recordHostWrite` function,
++ * whose write the engine's snapshot saved, so a step that stops leaves every remaining target to that
++ * snapshot's restoration.
+  * @example
+  * ```ts
+  * rewindHostWrites(writes, () => !signal.aborted)
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index e31f6b0..671a37a 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -3391,9 +3391,9 @@ export const DROPDOWN_WRITE_BACKS = Object.freeze([
+ 	} as const),
+ 	Object.freeze({
+ 		direction: 'hide',
+-		expanded: 'false',
++		expanded: 'true',
+ 		toggled: false,
+-		order: Object.freeze([]),
++		order: Object.freeze(['aria-expanded']),
+ 	} as const),
+ ])
+ 
+diff --git a/tests/src/browser/Carousel.test.ts b/tests/src/browser/Carousel.test.ts
+index bb57bca..261d496 100644
+--- a/tests/src/browser/Carousel.test.ts
++++ b/tests/src/browser/Carousel.test.ts
+@@ -1831,6 +1831,57 @@ describe('Carousel', () => {
+ 		expect(third?.getAttribute('aria-label')).toBe('Last')
+ 	})
+ 
++	// A forward slide writes the start direction token and never the end one, so the carousel holds no
++	// record of the end token on either item.
++	it('keeps a direction token a consumer adds after a slide that never wrote it, through its destruction', async () => {
++		const root = scene.mount(`
++			<div id="gallery" class="carousel">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const [one, two] = Array.from(root.querySelectorAll<HTMLElement>('.carousel-item'))
++		const outgoing = requireValue(one, 'No first item')
++		const incoming = requireValue(two, 'No second item')
++		const carousel = new Carousel(host)
++		onTestFinished(() => carousel.destroy())
++		expect(await carousel.next()).toBe(true)
++		outgoing.classList.add('carousel-item-end')
++		incoming.classList.add('carousel-item-end')
++		carousel.destroy()
++		expect(
++			[outgoing, incoming].map((item) => item.classList.contains('carousel-item-end')),
++		).toEqual([true, true])
++		expect([outgoing, incoming].map((item) => item.classList.contains('active'))).toEqual([
++			true,
++			false,
++		])
++	})
++
++	// A listener that adds the incoming item's `active` token makes the slide's token write for it, so
++	// the slide never writes that token and holds no record of it.
++	it('keeps a consumer edit to an active token a listener added, which its slide never wrote, through its destruction', async () => {
++		const root = scene.mount(`
++			<div id="gallery" class="carousel">
++				<div class="carousel-item active">One</div>
++				<div class="carousel-item">Two</div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#gallery'), 'No carousel')
++		const incoming = requireValue(
++			root.querySelectorAll<HTMLElement>('.carousel-item')[1],
++			'No second item',
++		)
++		const carousel = new Carousel(host)
++		onTestFinished(() => carousel.destroy())
++		host.addEventListener(CAROUSEL_EVENTS.slide, () => incoming.classList.add('active'), {
++			once: true,
++		})
++		expect(await carousel.next()).toBe(true)
++		incoming.classList.remove('active')
++		carousel.destroy()
++		expect(Array.from(incoming.classList)).toEqual(['carousel-item'])
++	})
++
+ 	// A custom element's attribute reaction runs inside the class write that triggers it, so the
+ 	// reaction destroys the carousel while `next` is still on the stack between two writes.
+ 	it('stops writing when a reaction to its own write destroys it, resolving false and restoring the items and the indicators', async () => {
+@@ -2433,6 +2484,7 @@ describe('Carousel', () => {
+ 			'carousel-item active',
+ 			'carousel-item active carousel-item-next',
+ 			'carousel-item active carousel-item-next carousel-item-start',
++			'carousel-item active carousel-item-next',
+ 		])
+ 		expect(events.calls).toEqual([['slide.vn.carousel'], ['slid.vn.carousel']])
+ 		expect(Array.from(one?.classList ?? [])).toEqual(['carousel-item'])
+@@ -2548,6 +2600,8 @@ describe('Carousel', () => {
+ 			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await carousel.next()).toBe(false)
++		// The reaction runs inside the removal of the outgoing item's `active` token, before the removal
++		// of its direction token, so the returning step adds the one and removes the other.
+ 		expect(
+ 			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
+ 				record.target === one ? 'one' : record.target === first ? 'first' : 'second',
+@@ -2555,7 +2609,8 @@ describe('Carousel', () => {
+ 				record.oldValue,
+ 			]),
+ 		).toEqual([
+-			['one', 'class', 'carousel-item'],
++			['one', 'class', 'carousel-item carousel-item-start'],
++			['one', 'class', 'carousel-item carousel-item-start active'],
+ 			['second', 'aria-current', 'true'],
+ 			['second', 'class', 'active'],
+ 			['first', 'aria-current', null],
+diff --git a/tests/src/browser/Collapse.test.ts b/tests/src/browser/Collapse.test.ts
+index 9114931..628188b 100644
+--- a/tests/src/browser/Collapse.test.ts
++++ b/tests/src/browser/Collapse.test.ts
+@@ -536,6 +536,39 @@ describe('Collapse', () => {
+ 		expect(trigger.getAttribute('aria-controls')).toBe('details')
+ 	})
+ 
++	// The trigger carries no `collapsed` token, as Bootstrap's documented markup leaves it, so the
++	// show's removal of that token changes nothing and records nothing.
++	it('keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction', async () => {
++		const root = scene.mount(`
++			<button type="button" data-bs-toggle="collapse" data-bs-target="#details" aria-expanded="false">Details</button>
++			<div id="details" class="collapse"></div>`)
++		const panel = requireValue(root.querySelector<HTMLElement>('#details'), 'No panel')
++		const trigger = requireValue(root.querySelector('button'), 'No trigger')
++		const collapse = new Collapse(panel)
++		onTestFinished(() => collapse.destroy())
++		expect(await collapse.show()).toBe(true)
++		expect(trigger.getAttribute('aria-expanded')).toBe('true')
++		trigger.classList.add('collapsed')
++		collapse.destroy()
++		expect(trigger.classList.contains('collapsed')).toBe(true)
++		expect(trigger.getAttribute('aria-expanded')).toBe('false')
++	})
++
++	// A listener that adds the `shown` token makes the show's token write for it, so the show never
++	// writes that token and holds no record of it.
++	it('keeps a consumer edit to a shown token a listener added, which its show never wrote, through its destruction', async () => {
++		const root = scene.mount(`<div id="details" class="collapse"></div>`)
++		const panel = requireValue(root.querySelector<HTMLElement>('#details'), 'No panel')
++		const collapse = new Collapse(panel)
++		onTestFinished(() => collapse.destroy())
++		panel.addEventListener(COLLAPSE_EVENTS.show, () => panel.classList.add('show'), { once: true })
++		expect(await collapse.show()).toBe(true)
++		expect(Array.from(panel.classList)).toEqual(['show', 'collapse'])
++		panel.classList.remove('show')
++		collapse.destroy()
++		expect(Array.from(panel.classList)).toEqual(['collapse'])
++	})
++
+ 	it('dispatches bubbling events, the pre-change ones cancelable, with no detail, and binds only engine-shaped events to hooks', async () => {
+ 		const root = scene.mount(`<div id="details" class="collapse"></div>`)
+ 		const panel = requireValue(root.querySelector<HTMLElement>('#details'), 'No panel')
+@@ -1518,17 +1551,21 @@ describe('Collapse', () => {
+ 		expect(trigger.getAttribute('aria-expanded')).toBe('mixed')
+ 	})
+ 
+-	// The panel carries no `host` token, so the show's removal of it changes nothing and the returning
+-	// step adds none.
+-	it('returns a show of a panel without the host token, whose host-token removal a reaction answers by removing the shown token, adding no host token', async () => {
++	// The panel carries no `host` token, so the show's removal of it changes nothing, writes nothing,
++	// and runs no reaction, and the returning step adds none.
++	it('returns a show of a panel without the host token, whose zero size write after the host-token removal a reaction answers by removing the shown token, adding no host token', async () => {
+ 		const name = 'vn-collapse-show-hostless'
+-		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		const reactions = new WeakMap<HTMLElement, (attribute: string, value: string | null) => void>()
+ 		customElements.define(
+ 			name,
+ 			class extends HTMLElement {
+-				static observedAttributes = ['class']
+-				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
+-					reactions.get(this)?.(value)
++				static observedAttributes = ['class', 'style']
++				attributeChangedCallback(
++					attribute: string,
++					_previous: string | null,
++					value: string | null,
++				) {
++					reactions.get(this)?.(attribute, value)
+ 				}
+ 			},
+ 		)
+@@ -1541,20 +1578,31 @@ describe('Collapse', () => {
+ 		const writes = createRecorder<readonly [readonly MutationRecord[]]>()
+ 		const observer = new MutationObserver((records) => writes.handler(records))
+ 		onTestFinished(() => observer.disconnect())
+-		const seen = createRecorder<readonly [string | null]>()
+-		reactions.set(panel, (value) => {
+-			seen.handler(value)
+-			// The first reaction is the listener's own write and the second the transition-token write.
++		const seen = createRecorder<readonly [string, string | null]>()
++		reactions.set(panel, (attribute, value) => {
++			seen.handler(attribute, value)
++			// The first reaction is the listener's own write, the second the transition-token write, and
++			// the third the zero size write.
+ 			if (seen.count < 3) return
+ 			reactions.delete(panel)
+ 			panel.classList.remove('show')
+ 			observer.observe(root, { attributes: true, subtree: true, attributeOldValue: true })
+ 		})
+ 		expect(await collapse.show()).toBe(false)
+-		expect(seen.calls).toEqual([['show'], ['show collapsing'], ['show collapsing']])
++		expect(seen.calls).toEqual([
++			['class', 'show'],
++			['class', 'show collapsing'],
++			['style', 'height: 0px;'],
++		])
+ 		expect(
+-			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.oldValue),
+-		).toEqual(['collapsing'])
++			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => [
++				record.attributeName,
++				record.oldValue,
++			]),
++		).toEqual([
++			['style', 'height: 0px;'],
++			['class', 'collapsing'],
++		])
+ 		expect(panel.getAttribute('class')).toBe('')
+ 	})
+ 
+diff --git a/tests/src/browser/Dropdown.test.ts b/tests/src/browser/Dropdown.test.ts
+index 4c1f290..769a242 100644
+--- a/tests/src/browser/Dropdown.test.ts
++++ b/tests/src/browser/Dropdown.test.ts
+@@ -994,6 +994,26 @@ describe('Dropdown', () => {
+ 		expect(menu.hasAttribute('data-popper-placement')).toBe(false)
+ 	})
+ 
++	// A listener that adds the menu's `shown` token makes the show's token write for it, so the show
++	// never writes that token and holds no record of it.
++	it('keeps a consumer edit to a menu shown token a listener added, which its show never wrote, through its destruction', async () => {
++		const root = scene.mount(`
++			<div class="dropdown">
++				<button type="button" id="toggle" data-bs-toggle="dropdown" aria-expanded="false">Menu</button>
++				<ul class="dropdown-menu"></ul>
++			</div>`)
++		const toggle = requireValue(root.querySelector<HTMLElement>('#toggle'), 'No toggle')
++		const menu = requireValue(root.querySelector<HTMLElement>('.dropdown-menu'), 'No menu')
++		const dropdown = new Dropdown(toggle)
++		onTestFinished(() => dropdown.destroy())
++		toggle.addEventListener(DROPDOWN_EVENTS.show, () => menu.classList.add('show'), { once: true })
++		expect(await dropdown.show()).toBe(true)
++		menu.classList.remove('show')
++		dropdown.destroy()
++		expect(Array.from(menu.classList)).toEqual(['dropdown-menu'])
++		expect(toggle.getAttribute('aria-expanded')).toBe('false')
++	})
++
+ 	// A custom element's attribute reaction runs inside the write that triggers it, so the reaction
+ 	// destroys the dropdown while `show` is still on the stack between two writes.
+ 	it('stops writing when a reaction to its own write destroys it, resolving false and restoring the toggle and the menu', async () => {
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index c68c52d..ecc801f 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -731,6 +731,123 @@ describe('Tab', () => {
+ 		expect(profile?.hasAttribute('role')).toBe(false)
+ 	})
+ 
++	// Every role and state the plan names is already in the markup, so construction writes nothing and
++	// the tab holds no record a consumer's later edit could lose.
++	it('keeps a consumer edit to a role or state the markup already carried through its destruction, writing nothing at construction', () => {
++		const root = scene.mount(`
++			<ul class="nav" role="tablist">
++				<li class="nav-item" role="presentation"><button type="button" class="nav-link active" id="home-tab" role="tab" aria-selected="true" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item" role="presentation"><button type="button" class="nav-link" id="profile-tab" role="tab" aria-selected="false" tabindex="-1" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active" id="home" role="tabpanel" aria-labelledby="home-tab"></div>
++			<div class="tab-pane" id="profile" role="tabpanel" aria-labelledby="profile-tab"></div>`)
++		const list = requireValue(root.querySelector<HTMLElement>('ul'), 'No list')
++		const profile = requireValue(root.querySelector<HTMLElement>('#profile-tab'), 'No control')
++		const profilePane = requireValue(root.querySelector('#profile'), 'No profile pane')
++		const observer = new MutationObserver(() => undefined)
++		onTestFinished(() => observer.disconnect())
++		observer.observe(root, { attributes: true, subtree: true })
++		const tab = new Tab(profile)
++		onTestFinished(() => tab.destroy())
++		expect(observer.takeRecords()).toEqual([])
++		list.removeAttribute('role')
++		profilePane.setAttribute('aria-labelledby', 'profile-heading')
++		tab.destroy()
++		expect(list.hasAttribute('role')).toBe(false)
++		expect(profilePane.getAttribute('aria-labelledby')).toBe('profile-heading')
++	})
++
++	// A pane without the `fade` token carries no `shown` token while active, so the swap's removal of
++	// that token from the sibling's pane changes nothing and records nothing.
++	it('keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const profile = requireValue(root.querySelectorAll('button')[1], 'No profile control')
++		const homePane = requireValue(root.querySelector('#home'), 'No home pane')
++		const tab = new Tab(profile)
++		onTestFinished(() => tab.destroy())
++		expect(await tab.show()).toBe(true)
++		homePane.classList.add('show')
++		tab.destroy()
++		expect([homePane.classList.contains('active'), homePane.classList.contains('show')]).toEqual([
++			true,
++			true,
++		])
++	})
++
++	// A listener that adds the control's `active` token makes the swap's token write for it, so the swap
++	// never writes that token and holds no record of it.
++	it('keeps a consumer edit to an active token a listener added, which its swap never wrote, through its destruction', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">Home</button></li>
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">Profile</button></li>
++			</ul>
++			<div class="tab-pane active show" id="home"></div>
++			<div class="tab-pane" id="profile"></div>`)
++		const profile = requireValue(root.querySelectorAll('button')[1], 'No profile control')
++		const tab = new Tab(profile)
++		onTestFinished(() => tab.destroy())
++		profile.addEventListener(TAB_EVENTS.show, () => profile.classList.add('active'), { once: true })
++		expect(await tab.show()).toBe(true)
++		profile.classList.remove('active')
++		tab.destroy()
++		expect(Array.from(profile.classList)).toEqual(['nav-link'])
++	})
++
++	// The sibling's blur runs consumer code before the sibling's selection is written, and here that
++	// code makes the sibling's wrapper a dropdown.
++	it('restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#first">First</button></li>
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#second">Second</button></li>
++			</ul>
++			<div class="tab-pane" id="first"></div>
++			<div class="tab-pane active show" id="second"></div>`)
++		const [first, second] = Array.from(root.querySelectorAll('button'))
++		const control = requireValue(first, 'No first control')
++		const sibling = requireValue(second, 'No second control')
++		const item = requireValue(sibling.parentElement, 'No wrapper')
++		sibling.focus()
++		sibling.addEventListener('blur', () => item.classList.add('dropdown'), { once: true })
++		const tab = new Tab(control)
++		onTestFinished(() => tab.destroy())
++		expect(await tab.show()).toBe(true)
++		expect(item.classList.contains('dropdown')).toBe(true)
++		tab.destroy()
++		expect(item.hasAttribute('aria-expanded')).toBe(false)
++	})
++
++	// The swap reads the sibling's dropdown when it starts, before the blur runs consumer code, so a
++	// wrapper that code makes a dropdown takes no write of the swap.
++	it('writes only the selection its swap read before the sibling blur, leaving a wrapper a blur listener makes a dropdown untouched', async () => {
++		const root = scene.mount(`
++			<ul class="nav">
++				<li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#first">First</button></li>
++				<li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#second">Second</button></li>
++			</ul>
++			<div class="tab-pane" id="first"></div>
++			<div class="tab-pane active show" id="second"></div>`)
++		const [first, second] = Array.from(root.querySelectorAll('button'))
++		const control = requireValue(first, 'No first control')
++		const sibling = requireValue(second, 'No second control')
++		const item = requireValue(sibling.parentElement, 'No wrapper')
++		sibling.focus()
++		sibling.addEventListener('blur', () => item.classList.add('dropdown'), { once: true })
++		const tab = new Tab(control)
++		onTestFinished(() => tab.destroy())
++		expect(await tab.show()).toBe(true)
++		expect(item.classList.contains('dropdown')).toBe(true)
++		expect(item.hasAttribute('aria-expanded')).toBe(false)
++		expect(sibling.getAttribute('aria-selected')).toBe('false')
++	})
++
+ 	it('dispatches bubbling events, the pre-change ones cancelable, with the other control in detail, and binds only engine-shaped events to hooks', async () => {
+ 		const root = scene.mount(`
+ 			<ul class="nav">
+diff --git a/tests/src/browser/Toast.test.ts b/tests/src/browser/Toast.test.ts
+index 383b1bc..941f719 100644
+--- a/tests/src/browser/Toast.test.ts
++++ b/tests/src/browser/Toast.test.ts
+@@ -812,6 +812,30 @@ describe('Toast', () => {
+ 		expect(Array.from(open.classList)).toEqual(['toast', 'show'])
+ 	})
+ 
++	// With `animated` false the show never writes the `fade` token, so the toast holds no record of it.
++	it('keeps a fade token a consumer adds after a show that never wrote it, through its destruction', async () => {
++		const root = scene.mount(`<div class="toast" id="note">Saved</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#note'), 'No toast')
++		const toast = new Toast(host, { animated: false, autohide: false })
++		onTestFinished(() => toast.destroy())
++		expect(await toast.show()).toBe(true)
++		host.classList.add('fade')
++		toast.destroy()
++		expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
++	})
++
++	// A show of a toast its markup shows finds the `shown` token at its end and never writes it.
++	it('keeps the removal of a shown token its markup carried, which its show never wrote, through its destruction', async () => {
++		const root = scene.mount(`<div class="toast show" id="open">Open</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#open'), 'No toast')
++		const toast = new Toast(host, { animated: false, autohide: false })
++		onTestFinished(() => toast.destroy())
++		expect(await toast.show()).toBe(true)
++		host.classList.remove('show')
++		toast.destroy()
++		expect(Array.from(host.classList)).toEqual(['toast'])
++	})
++
+ 	it('writes, removes, tests, and reads only the replacing values when every group is replaced', async () => {
+ 		const root = scene.mount(`
+ 			<div class="note" id="note" data-vn-autohide="false" data-bs-animation="false" data-bs-delay="soon">Saved</div>`)
+@@ -1114,9 +1138,11 @@ describe('Toast', () => {
+ 		expect(await toast.show()).toBe(true)
+ 		expect(inner.count).toBe(1)
+ 		expect(await inner.calls[0]?.[0]).toBe(false)
++		// The outer show writes the `shown` token, adds the `transition` token, and removes it again;
++		// the prevented nested show writes nothing.
+ 		expect(
+ 			[...writes.calls.flat(2), ...observer.takeRecords()].map((record) => record.attributeName),
+-		).toEqual(['class', 'class'])
++		).toEqual(['class', 'class', 'class'])
+ 		expect(events.calls).toEqual([['show.vn.toast'], ['show.vn.toast'], ['shown.vn.toast']])
+ 		expect(toast.shown).toBe(true)
+ 		expect(Array.from(host.classList)).toEqual(['toast', 'show'])
+@@ -1181,7 +1207,9 @@ describe('Toast', () => {
+ 		const replacement = requireValue(Toast.find(host), 'No replacement toast')
+ 		onTestFinished(() => replacement.destroy())
+ 		expect(await shows.calls[0]?.[0]).toBe(true)
+-		expect(Array.from(host.classList)).toEqual(['toast', 'fade', 'show'])
++		// The restoration writes the `fade` token back first, the first the destroyed show saved, and
++		// the replacement adds it again while the `shown` token is still to be written back.
++		expect(Array.from(host.classList)).toEqual(['toast', 'show', 'fade'])
+ 		replacement.destroy()
+ 		expect(Array.from(host.classList)).toEqual(['toast'])
+ 	})
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index b4b94ed..bf04fbe 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -14,6 +14,7 @@ import {
+ 	computeNeighbor,
+ 	emitEvent,
+ 	fillSlot,
++	HostSnapshot,
+ 	collectAttributes,
+ 	collectChildren,
+ 	matchesBaselineAttribute,
+@@ -1589,18 +1590,54 @@ describe('matchesHostValue', () => {
+ })
+ 
+ describe('recordHostWrite', () => {
+-	it('records nothing for a write that leaves the target as it reads, returning the same records', () => {
++	it('writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds', () => {
++		const element = build('div')
++		element.setAttribute('aria-expanded', 'false')
++		const expanded: HostSnapshotTarget = { category: 'attribute', element, name: 'aria-expanded' }
++		const snapshot = new HostSnapshot()
++		const writes = recordHostWrite([], expanded, 'true', snapshot)
++		expect(element.getAttribute('aria-expanded')).toBe('true')
++		expect(writes).toEqual([{ target: expanded, value: 'false', priority: '' }])
++		element.setAttribute('aria-expanded', 'mixed')
++		snapshot.restore()
++		expect(element.getAttribute('aria-expanded')).toBe('false')
++	})
++
++	it('records nothing in the call or the snapshot for a write that changes nothing, so an edit made after it survives the restoration', () => {
++		const element = build('div')
++		element.className = 'show'
++		const shown: HostSnapshotTarget = { category: 'token', element, name: 'show' }
++		const snapshot = new HostSnapshot()
++		const writes: readonly HostWrite[] = []
++		expect(recordHostWrite(writes, shown, 'show', snapshot)).toBe(writes)
++		element.classList.remove('show')
++		snapshot.restore()
++		expect(element.classList.contains('show')).toBe(false)
++	})
++
++	it('records nothing for a write that leaves the target as it reads, returning the same records and writing nothing', () => {
+ 		const element = build('div')
+ 		element.className = 'show'
++		const snapshot = new HostSnapshot()
++		const observer = new MutationObserver(() => undefined)
++		onTestFinished(() => observer.disconnect())
++		observer.observe(element, { attributes: true })
+ 		const writes: readonly HostWrite[] = []
+-		const present = recordHostWrite(writes, { category: 'token', element, name: 'show' }, 'show')
++		const present = recordHostWrite(
++			writes,
++			{ category: 'token', element, name: 'show' },
++			'show',
++			snapshot,
++		)
+ 		const absent = recordHostWrite(
+ 			present,
+ 			{ category: 'attribute', element, name: 'role' },
+ 			undefined,
++			snapshot,
+ 		)
+ 		expect(absent).toBe(writes)
+ 		expect(absent).toEqual([])
++		expect(observer.takeRecords()).toEqual([])
+ 	})
+ 
+ 	it('records a target once, at its first changing write, with the value it held then, in the order of those first writes', () => {
+@@ -1608,28 +1645,39 @@ describe('recordHostWrite', () => {
+ 		element.setAttribute('aria-expanded', 'false')
+ 		const expanded: HostSnapshotTarget = { category: 'attribute', element, name: 'aria-expanded' }
+ 		const shown: HostSnapshotTarget = { category: 'token', element, name: 'show' }
+-		const first = recordHostWrite([], expanded, 'true')
+-		element.setAttribute('aria-expanded', 'true')
+-		const second = recordHostWrite(first, shown, 'show')
+-		element.classList.add('show')
+-		const third = recordHostWrite(second, { ...expanded }, 'false')
++		const snapshot = new HostSnapshot()
++		const first = recordHostWrite([], expanded, 'true', snapshot)
++		const second = recordHostWrite(first, shown, 'show', snapshot)
++		const third = recordHostWrite(second, { ...expanded }, 'mixed', snapshot)
+ 		expect(third).toBe(second)
+ 		expect(third).toEqual([
+ 			{ target: expanded, value: 'false', priority: '' },
+ 			{ target: shown, value: undefined, priority: '' },
+ 		])
+ 		expect(first).toEqual([{ target: expanded, value: 'false', priority: '' }])
++		expect(element.getAttribute('aria-expanded')).toBe('mixed')
++		expect(element.classList.contains('show')).toBe(true)
+ 	})
+ 
+ 	it('records an attribute and a token of the same name on one element as two targets', () => {
+ 		const element = build('div')
+ 		const token: HostSnapshotTarget = { category: 'token', element, name: 'hidden' }
+ 		const attribute: HostSnapshotTarget = { category: 'attribute', element, name: 'hidden' }
+-		const writes = recordHostWrite(recordHostWrite([], token, 'hidden'), attribute, '')
++		const snapshot = new HostSnapshot()
++		const writes = recordHostWrite(
++			recordHostWrite([], token, 'hidden', snapshot),
++			attribute,
++			'',
++			snapshot,
++		)
+ 		expect(writes).toEqual([
+ 			{ target: token, value: undefined, priority: '' },
+ 			{ target: attribute, value: undefined, priority: '' },
+ 		])
++		expect([element.classList.contains('hidden'), element.getAttribute('hidden')]).toEqual([
++			true,
++			'',
++		])
+ 	})
+ 
+ 	it('records an inline property with its priority, and an attribute and a token with the empty string', () => {
+@@ -1640,14 +1688,22 @@ describe('recordHostWrite', () => {
+ 		const size: HostSnapshotTarget = { category: 'property', element, name: 'height' }
+ 		const role: HostSnapshotTarget = { category: 'attribute', element, name: 'role' }
+ 		const shown: HostSnapshotTarget = { category: 'token', element, name: 'show' }
+-		let writes = recordHostWrite([], size, '0px')
+-		writes = recordHostWrite(writes, role, undefined)
+-		writes = recordHostWrite(writes, shown, undefined)
++		const snapshot = new HostSnapshot()
++		let writes = recordHostWrite([], size, '0px', snapshot)
++		writes = recordHostWrite(writes, role, undefined, snapshot)
++		writes = recordHostWrite(writes, shown, undefined, snapshot)
+ 		expect(writes).toEqual([
+ 			{ target: size, value: '12px', priority: 'important' },
+ 			{ target: role, value: 'dialog', priority: '' },
+ 			{ target: shown, value: 'show', priority: '' },
+ 		])
++		snapshot.restore()
++		expect([
++			element.style.getPropertyValue('height'),
++			element.style.getPropertyPriority('height'),
++			element.getAttribute('role'),
++			element.classList.contains('show'),
++		]).toEqual(['12px', 'important', 'dialog', true])
+ 	})
+ 
+ 	// A write gives no priority, so writing the value an important property already holds drops the
+@@ -1656,11 +1712,11 @@ describe('recordHostWrite', () => {
+ 		const element = build('div')
+ 		element.style.setProperty('height', '0px', 'important')
+ 		const size: HostSnapshotTarget = { category: 'property', element, name: 'height' }
+-		const writes = recordHostWrite([], size, '0px')
++		const snapshot = new HostSnapshot()
++		const writes = recordHostWrite([], size, '0px', snapshot)
+ 		expect(writes).toEqual([{ target: size, value: '0px', priority: 'important' }])
+-		element.style.setProperty('height', '0px')
+ 		expect(element.style.getPropertyPriority('height')).toBe('')
+-		expect(recordHostWrite([], size, '0px')).toEqual([])
++		expect(recordHostWrite([], size, '0px', snapshot)).toEqual([])
+ 	})
+ })
+ 
+@@ -1673,14 +1729,11 @@ describe('rewindHostWrites', () => {
+ 		const role: HostSnapshotTarget = { category: 'attribute', element, name: 'role' }
+ 		const shown: HostSnapshotTarget = { category: 'token', element, name: 'show' }
+ 		const size: HostSnapshotTarget = { category: 'property', element, name: 'height' }
+-		let writes = recordHostWrite([], expanded, 'true')
+-		writes = recordHostWrite(writes, role, 'alert')
+-		writes = recordHostWrite(writes, shown, 'show')
+-		writes = recordHostWrite(writes, size, '0px')
+-		element.setAttribute('aria-expanded', 'true')
+-		element.setAttribute('role', 'alert')
+-		element.classList.add('show')
+-		element.style.setProperty('height', '0px')
++		const snapshot = new HostSnapshot()
++		let writes = recordHostWrite([], expanded, 'true', snapshot)
++		writes = recordHostWrite(writes, role, 'alert', snapshot)
++		writes = recordHostWrite(writes, shown, 'show', snapshot)
++		writes = recordHostWrite(writes, size, '0px', snapshot)
+ 		// The host writes the role and the token back itself, so each already reads its prior value.
+ 		element.setAttribute('role', 'dialog')
+ 		element.classList.remove('show')
+@@ -1706,10 +1759,25 @@ describe('rewindHostWrites', () => {
+ 
+ 	it('stops at the first read of owns that returns false, reading and writing nothing after it', () => {
+ 		const element = build('div')
+-		let writes = recordHostWrite([], { category: 'token', element, name: 'first' }, 'first')
+-		writes = recordHostWrite(writes, { category: 'token', element, name: 'second' }, 'second')
+-		writes = recordHostWrite(writes, { category: 'token', element, name: 'third' }, 'third')
+-		element.classList.add('first', 'second', 'third')
++		const snapshot = new HostSnapshot()
++		let writes = recordHostWrite(
++			[],
++			{ category: 'token', element, name: 'first' },
++			'first',
++			snapshot,
++		)
++		writes = recordHostWrite(
++			writes,
++			{ category: 'token', element, name: 'second' },
++			'second',
++			snapshot,
++		)
++		writes = recordHostWrite(
++			writes,
++			{ category: 'token', element, name: 'third' },
++			'third',
++			snapshot,
++		)
+ 		const reads = createRecorder<readonly []>()
+ 		rewindHostWrites(writes, () => {
+ 			reads.handler()
+@@ -1725,18 +1793,19 @@ describe('rewindHostWrites', () => {
+ 		const kept = build('div')
+ 		sized.style.setProperty('height', '12px', 'important')
+ 		kept.style.setProperty('height', '12px', 'important')
++		const snapshot = new HostSnapshot()
+ 		let writes = recordHostWrite(
+ 			[],
+ 			{ category: 'property', element: sized, name: 'height' },
+ 			'0px',
++			snapshot,
+ 		)
+ 		writes = recordHostWrite(
+ 			writes,
+ 			{ category: 'property', element: kept, name: 'height' },
+ 			'12px',
++			snapshot,
+ 		)
+-		sized.style.setProperty('height', '0px')
+-		kept.style.setProperty('height', '12px')
+ 		rewindHostWrites(writes, () => true)
+ 		expect(
+ 			[sized, kept].map((element) => [

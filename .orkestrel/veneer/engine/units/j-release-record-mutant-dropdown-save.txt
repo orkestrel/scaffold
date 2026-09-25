@@ -1,0 +1,3 @@
+			this.#snapshot.save({ category: 'token', element: this.#host, name: this.#classes.shown })
+			this.#snapshot.save({ category: 'token', element: this.#menu, name: this.#classes.shown })
+			this.#snapshot.save({ category: 'attribute', element: this.#host, name: 'aria-expanded' })
