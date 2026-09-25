@@ -1,0 +1,19 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 78082f0..d18f313 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -494,8 +494,14 @@ export const CONTENT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({ name: 'Subscript', markup: '<span>H<sub>2</sub>O</span>' }),
+ 	Object.freeze({ name: 'Superscript', markup: '<span>x<sup>2</sup></span>' }),
+ 	Object.freeze({ name: 'Code', markup: '<code>const answer = 42</code>' }),
++	Object.freeze({ name: 'Linked code', markup: '<a href="#main"><code>answer</code></a>' }),
+ 	Object.freeze({ name: 'Preformatted', markup: '<pre>first line\nsecond line</pre>' }),
++	Object.freeze({
++		name: 'Code block',
++		markup: '<pre><code>const answer = 42\nconsole.log(answer)</code></pre>',
++	}),
+ 	Object.freeze({ name: 'Keyboard', markup: '<kbd>Ctrl</kbd>' }),
++	Object.freeze({ name: 'Key combination', markup: '<kbd><kbd>Ctrl</kbd> + <kbd>S</kbd></kbd>' }),
+ 	Object.freeze({ name: 'Sample', markup: '<samp>Operation complete</samp>' }),
+ 	Object.freeze({ name: 'Variable', markup: '<var>result</var>' }),
+ 	Object.freeze({ name: 'Bold', markup: '<b>Attention without added importance</b>' }),

@@ -1,0 +1,17 @@
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index 4891279..e2bd1dd 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -103,8 +103,10 @@
+ 	vertical-align: baseline;
+ }
+ 
+-@mixin code-surface {
+-	background-color: var(--vn-surface-code);
++// Emits the chip the `code`, `kbd`, `samp`, and `var` elements wear: a surface and the small corner.
++// The `samp` and `var` elements pass the raised surface where `code` and `kbd` keep the code one.
++@mixin code-surface($surface: var(--vn-surface-code)) {
++	background-color: $surface;
+ 	border-radius: var(--vn-radius-small);
+ }
+ 

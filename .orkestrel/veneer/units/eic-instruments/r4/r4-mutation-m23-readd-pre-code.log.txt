@@ -1,0 +1,36 @@
+
+ RUN  v4.1.11 /home/user/veneer-eic
+
+ ❯ |app:browser (chromium)| tests/app/browser/sections/ContentSection.test.ts (3 tests | 1 failed) 2112ms
+     × keeps each tag its own treatment inside a link, a code block, and a key 14ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  00:45:09
+   Duration  8.01s (transform 0ms, setup 430ms, import 358ms, tests 2.11s, environment 0ms)
+
+exit=1
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/sections/ContentSection.test.ts:239:2 > ContentSection > keeps each tag its own treatment inside a link, a code block, and a key
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/app/browser/sections/ContentSection.test.ts:263:5
+    261|    expect(
+    262|     matchesColor(readStyle(block, 'background-color'), readToken(block…
+    263|    ).toBe(true)
+       |     ^
+    264|    expect(readPixels(block, 'border-top-left-radius')).toBe(
+    265|     readPixels(bare, 'border-top-left-radius'),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+restore src/styles/elements/_code.scss: before 2b5e293c2081ac9205d355b932c574f114e0d6452a3bd77c5cd24371acd4cb04 after 2b5e293c2081ac9205d355b932c574f114e0d6452a3bd77c5cd24371acd4cb04 identical
