@@ -1,0 +1,608 @@
+plant=undecided
+7.49 5.05 5.50 11/262 21317
++	ValueResolver,
++	LEDGER_TIMEOUT,
++	PROBE_PROPERTIES,
++	PROBE_SYNTAXES,
++	classifyValueGaps,
++	collectContextElements,
++	createValueResolver,
++	describeValueGap,
++	matchesDarkScope,
++	normalizeResolvedColors,
++	scanCanonicalValues,
++	scanWitnesses,
++			'LEDGER_TIMEOUT',
++			'PROBE_PREFIX',
++			'PROBE_PROPERTIES',
++			'PROBE_SYNTAXES',
++			'ValueResolver',
++			'classifyValueGaps',
++			'collectContextElements',
++			'createValueResolver',
++			'describeValueGap',
++			'matchesDarkScope',
++			'normalizeResolvedColors',
++			'scanCanonicalValues',
++			'scanWitnesses',
++		expect(Object.isFrozen(PROBE_SYNTAXES)).toBe(true)
++		for (const initials of Object.values(PROBE_SYNTAXES))
++			expect(Object.isFrozen(initials)).toBe(true)
++		expect(Object.isFrozen(PROBE_PROPERTIES)).toBe(true)
+-			scratch.write('ledger.md', LEDGER_GUIDE.replaceAll('| tokenized |', '| retuned |'))
++			scratch.write('ledger.md', LEDGER_GUIDE.replaceAll('| tokenized |', '| declared |'))
+-				'Departure row btn: .btn: invalid departure retuned',
++				'Departure row btn: .btn: invalid departure declared',
+-		expect(classifyDeparture('invert(1)', '')).toBe('declared')
+-		expect(classifyDeparture('', 'var(--vn-font-sans)')).toBe('tokenized')
+-			).departures.map(describeDeparture),
+-		).toEqual([
+-			'btn | .btn-close-white | --bs-btn-close-filter | — | invert(1) | (empty) | declared',
+-		])
++			).gaps.map(describeValueGap),
++		).toEqual(['btn | .btn-close-white | --bs-btn-close-filter | — | invert(1) | (empty)'])
+-	it('reports a planted tokenized, aliased, declared, dropped, and fallback difference against a written cascade', () => {
+-		const measured = collectValueGaps(
++	it('measures a planted difference of every written shape against a written cascade, with every value the release writes at its site', () => {
++		const gaps = collectValueGaps(
+-		).map(describeDeparture)
+-		expect(measured).toEqual([
+-			'btn | .btn | color | — | #fff | var(--vn-button-face) | tokenized',
+-			'btn | .btn | opacity | — | 0.65 | var(--bs-btn-disabled-opacity) | aliased',
+-			'btn | .btn | filter | — | none | — | dropped',
+-			'btn | .btn | font-family | — | (empty) | var(--vn-font-sans) | tokenized',
+-			'btn | .btn | padding | @media (width >= 576px) | 1rem | 0 | declared',
+-			'btn | :root | --bs-btn-close-filter | — | invert(1) | none | declared',
+-			'reboot | body | text-align | — | var(--bs-body-text-align) | var(--bs-body-text-align, start) | fallback',
+-			'reboot | body | color | — | #000 | red | declared',
+-			'table | .caption-top | caption-side | — | top | — | dropped',
++		)
++		expect(gaps.map(describeValueGap)).toEqual([
++			'btn | .btn | color | — | #fff | var(--vn-button-face)',
++			'btn | .btn | opacity | — | 0.65 | var(--bs-btn-disabled-opacity)',
++			'btn | .btn | filter | — | none | —',
++			'btn | .btn | font-family | — | (empty) | var(--vn-font-sans)',
++			'btn | .btn | padding | @media (width >= 576px) | 1rem | 0',
++			'btn | :root | --bs-btn-close-filter | — | invert(1) | none',
++			'reboot | body | text-align | — | var(--bs-body-text-align) | var(--bs-body-text-align, start)',
++			'reboot | body | color | — | #000 | red',
++			'table | .caption-top | caption-side | — | top | —',
++		])
++		expect(gaps.map((gap) => gap.written)).toEqual([
++			['#fff'],
++			['0.65'],
++			['none'],
++			[''],
++			['1rem'],
++			['invert(1)'],
++			['var(--bs-body-text-align)'],
++			['#000'],
++			['top'],
+-		expect(collectValueGaps(blocks, inventory, ['btn']).map(describeDeparture)).toEqual([
+-			'btn | :root | --bs-btn-close-filter | — | invert(1) | none | declared',
++		expect(collectValueGaps(blocks, inventory, ['btn']).map(describeValueGap)).toEqual([
++			'btn | :root | --bs-btn-close-filter | — | invert(1) | none',
+-		expect(collectValueGaps(blocks, inventory, ['btn']).map(describeDeparture)).toEqual([
+-			'btn | .btn | --bs-btn-close-filter | — | invert(1) | none | declared',
++		expect(collectValueGaps(blocks, inventory, ['btn']).map(describeValueGap)).toEqual([
++			'btn | .btn | --bs-btn-close-filter | — | invert(1) | none',
+-		expect(collectValueGaps(blocks, inventory, ['row', 'row-gap']).map(describeDeparture)).toEqual([
+-			'row-gap | .row-gap-0 | row-gap | — | 0 | var(--vn-gap-0) | tokenized',
++		expect(collectValueGaps(blocks, inventory, ['row', 'row-gap']).map(describeValueGap)).toEqual([
++			'row-gap | .row-gap-0 | row-gap | — | 0 | var(--vn-gap-0)',
+-		expect(collectValueGaps(blocks, inventory, ['btn']).map(describeDeparture)).toEqual([
+-			'btn | .btn | color | — | #fff | red | declared',
+-			'btn | .btn | color | — | #000 | red | declared',
++		// Both gaps carry both recorded values, so each resolves the value the second rule leaves.
++		const gaps = collectValueGaps(blocks, inventory, ['btn'])
++		expect(gaps.map(describeValueGap)).toEqual([
++			'btn | .btn | color | — | #fff | red',
++			'btn | .btn | color | — | #000 | red',
++		])
++		expect(gaps.map((gap) => gap.written)).toEqual([
++			['#fff', '#000'],
++			['#fff', '#000'],
++		])
++		const conditioned = collectValueGaps(
++			readCascadeBlocks('@layer components { .btn { color: red } }'),
++			{
++				...inventory,
++				components: {
++					btn: {
++						...repeated,
++						rules: [
++							...repeated.rules,
++							{
++								selector: '.btn',
++								condition: '@media print',
++								declarations: [{ property: 'color', value: '#111' }],
++							},
++						],
++					},
++				},
++			},
++			['btn'],
++		)
++		expect(conditioned.map((gap) => gap.written)).toEqual([
++			['#fff', '#000'],
++			['#fff', '#000'],
++			['#111'],
+-		expect(collectLedger(LEDGER_CASCADE, LEDGER_INVENTORY, LEDGER_SHIPPED).departures).toHaveLength(
+-			9,
+-		)
++		expect(collectLedger(LEDGER_CASCADE, LEDGER_INVENTORY, LEDGER_SHIPPED).gaps).toHaveLength(9)
+-			departures: [],
++			gaps: [],
+-			departures: [],
++			gaps: [],
+-	it('names a planted unrecorded difference, a planted stale row, and a planted unrecorded name', () => {
++	it('names a planted stale addition and a planted unrecorded name', () => {
+-			const path = scratch.write('ledger.md', LEDGER_GUIDE)
+-			const carried = scanLedgerDrift(measured.departures, readDepartures(path), describeDeparture)
+-			expect(carried.unrecorded).toEqual([
+-				'btn | .btn | opacity | — | 0.65 | var(--bs-btn-disabled-opacity) | aliased',
+-				'btn | .btn | font-family | — | (empty) | var(--vn-font-sans) | tokenized',
+-				'btn | .btn | padding | @media (width >= 576px) | 1rem | 0 | declared',
+-				'btn | :root | --bs-btn-close-filter | — | invert(1) | none | declared',
+-				'reboot | body | text-align | — | var(--bs-body-text-align) | var(--bs-body-text-align, start) | fallback',
+-				'reboot | body | color | — | #000 | red | declared',
+-				'table | .caption-top | caption-side | — | top | — | dropped',
+-			])
+-			expect(carried.stale).toEqual([])
+-			scratch.write(
++			const path = scratch.write(
+-				LEDGER_GUIDE.replaceAll('| `#fff` |', '| `#eee` |').replaceAll(
+-					'| `.btn-tertiary` |',
+-					'| `.btn-quaternary` |',
+-				),
++				LEDGER_GUIDE.replaceAll('| `.btn-tertiary` |', '| `.btn-quaternary` |'),
+-			expect(
+-				scanLedgerDrift(measured.departures, readDepartures(path), describeDeparture).stale,
+-			).toEqual(['btn | .btn | color | — | #eee | var(--vn-button-face) | tokenized'])
+-	it('names each departure member from the two values alone', () => {
+-		expect(classifyDeparture('none', undefined)).toBe('dropped')
+-		expect(classifyDeparture('var(--bs-x)', 'var(--bs-x, start)')).toBe('fallback')
+-		expect(classifyDeparture('#fff', 'var(--vn-button-face)')).toBe('tokenized')
+-		expect(classifyDeparture('0.65', 'var(--bs-btn-disabled-opacity)')).toBe('aliased')
+-		expect(classifyDeparture('0.25', '0.2')).toBe('declared')
+-		expect(classifyDeparture('', 'var(--vn-font-sans)')).toBe('tokenized')
+-		expect(classifyDeparture('none', undefined)).toBe('dropped')
+-		expect(classifyDeparture('var(--bs-x)', 'var(--bs-x) solid')).toBe('declared')
++	it('names each departure member from the resolved values first, and from the written text where they agree', () => {
++		const alike = { recorded: '16px', emitted: '16px' }
++		const apart = { recorded: '16px', emitted: '14px' }
++		const pairs = [
++			['var(--bs-x)', 'var(--bs-x, start)'],
++			['#fff', 'var(--vn-button-face)'],
++			['0.65', 'var(--bs-btn-disabled-opacity)'],
++			['0.25', '0.2'],
++			['var(--bs-x)', 'var(--bs-x) solid'],
++			['', 'var(--vn-font-sans)'],
++			['invert(1)', ''],
++		] as const
++		expect(pairs.map(([recorded, emitted]) => classifyDeparture(recorded, emitted, alike))).toEqual(
++			['fallback', 'tokenized', 'aliased', 'restated', 'restated', 'tokenized', 'restated'],
++		)
++		expect(pairs.map(([recorded, emitted]) => classifyDeparture(recorded, emitted, apart))).toEqual(
++			pairs.map(() => 'retuned'),
++		)
++		expect(
++			pairs.map(([recorded, emitted]) => classifyDeparture(recorded, emitted, undefined)),
++		).toEqual(pairs.map(() => undefined))
++		expect(classifyDeparture('none', undefined, undefined)).toBe('dropped')
++		expect(classifyDeparture('none', undefined, apart)).toBe('dropped')
+-		expect(isDeparture('retuned')).toBe(false)
++		expect(isDeparture('restated')).toBe(true)
++		expect(isDeparture('retuned')).toBe(true)
++		expect(isDeparture('declared')).toBe(false)
++	// The release side reads the installed stylesheet. The emitted side reads a small sheet that
++	// declares only the names the planted values read, with a mode scope that retunes one of them,
++	// so each classification below turns on a value this proof chose rather than on the shipped
++	// cascade. The canonical side reads one sheet for both values, as the ledger gate does.
++	const emitted = [
++		':root { --vn-factor-density: 1; --vn-space-8: calc(1rem * var(--vn-factor-density)); --vn-size-2: 0.875rem; --vn-link: #0d6efd; --vn-color-primary-base: oklch(0.48 0.255 264); --vn-button-face: #fff; --vn-font-sans: serif; --bs-btn-disabled-opacity: 0.65 }',
++		'[data-bs-theme=dark] { --vn-link: #6ea8fe }',
++	].join('\n')
++	const canonical = ':root { --vn-factor-radius: 1 }'
++	let resolver: ValueResolver | undefined
++	let tokens: ValueResolver | undefined
++	beforeAll(async () => {
++		resolver = await createValueResolver(readBootstrapCascade(), emitted)
++		tokens = await createValueResolver(canonical, canonical)
++	}, LEDGER_TIMEOUT)
++	afterAll(async () => {
++		await resolver?.destroy()
++		await tokens?.destroy()
++	})
++	it('classifies a pair whose values differ in text and resolve alike as its text-only member', async () => {
++		const gaps = [
++			['accordion', '.accordion', '--bs-accordion-btn-padding-y', ['1rem'], 'var(--vn-space-8)'],
++			['btn', '.btn', 'opacity', ['0.65'], 'var(--bs-btn-disabled-opacity)'],
++			['reboot', 'small', 'font-size', ['0.875em'], '87.5%'],
++			['sticky', '.sticky-top', 'position', ['-webkit-sticky', 'sticky'], 'sticky'],
++			[
++				'reboot',
++				'body',
++				'text-align',
++				['var(--bs-body-text-align)'],
++				'var(--bs-body-text-align, start)',
++			],
++			['theme', ':root', '--bs-link-color', ['#0d6efd'], 'var(--vn-link)'],
++			['theme', '[data-bs-theme=dark]', '--bs-link-color', ['#6ea8fe'], 'var(--vn-link)'],
++			['btn', '.btn', 'filter', ['none'], undefined],
++			['btn', '.btn', '--bs-btn-padding-x', ['1px'], 'red'],
++		] as const
++		const ledger = await classifyValueGaps(
++			gaps.map(([component, selector, property, written, value]) => ({
++				component,
++				selector,
++				property,
++				condition: undefined,
++				recorded: written[0],
++				emitted: value,
++				written,
++			})),
++			requireValue(resolver, 'No resolver launched'),
++		)
++		expect(ledger.departures.map(describeDeparture)).toEqual([
++			'accordion | .accordion | --bs-accordion-btn-padding-y | — | 1rem | var(--vn-space-8) | tokenized',
++			'btn | .btn | opacity | — | 0.65 | var(--bs-btn-disabled-opacity) | aliased',
++			'reboot | small | font-size | — | 0.875em | 87.5% | restated',
++			'sticky | .sticky-top | position | — | -webkit-sticky | sticky | restated',
++			'reboot | body | text-align | — | var(--bs-body-text-align) | var(--bs-body-text-align, start) | fallback',
++			'theme | :root | --bs-link-color | — | #0d6efd | var(--vn-link) | tokenized',
++			'theme | [data-bs-theme=dark] | --bs-link-color | — | #6ea8fe | var(--vn-link) | tokenized',
++			'btn | .btn | filter | — | none | — | dropped',
++		])
++		expect(ledger.undecided).toEqual([])
++	})
++	it('classifies a pair whose values resolve apart as retuned, whatever its text reads', async () => {
++		const gaps = [
++			['btn', '.btn', '--bs-btn-font-size', '1rem', 'var(--vn-size-2)'],
++			['theme', ':root', '--bs-primary', '#0d6efd', 'var(--vn-color-primary-base)'],
++			['reboot', 'hr', 'opacity', '0.25', '0.2'],
++			['theme', '[data-bs-theme=dark]', '--bs-link-color', '#0d6efd', 'var(--vn-link)'],
++			[
++				'btn',
++				'[data-bs-theme=dark] .btn-primary',
++				'--bs-btn-color',
++				'#fff',
++				'light-dark(#fff, #000)',
++			],
++			['btn', '.btn-primary', '--bs-btn-color', '#fff', 'light-dark(#fff, #000)'],
++		] as const
++		const ledger = await classifyValueGaps(
++			gaps.map(([component, selector, property, recorded, value]) => ({
++				component,
++				selector,
++				property,
++				condition: undefined,
++				recorded,
++				emitted: value,
++				written: [recorded],
++			})),
++			requireValue(resolver, 'No resolver launched'),
++		)
++		expect(ledger.departures.map((row) => row.departure)).toEqual([
++			'retuned',
++			'retuned',
++			'retuned',
++			'retuned',
++			'retuned',
++			'restated',
++		])
++		expect(ledger.undecided).toEqual([])
++	})
++	it('names each pair the resolver cannot decide, and classifies none of them', async () => {
++		// No typed probe parses both a length and a color, and Chromium parses no declaration of a
++		// position the release writes only in its prefixed form.
++		const gaps = [
++			{
++				component: 'btn',
++				selector: '.btn',
++				property: '--bs-btn-padding-x',
++				condition: undefined,
++				recorded: '1px',
++				emitted: 'red',
++				written: ['1px'],
++			},
++			{
++				component: 'sticky',
++				selector: '.sticky-top',
++				property: 'position',
++				condition: '@media print',
++				recorded: '-webkit-sticky',
++				emitted: 'sticky',
++				written: ['-webkit-sticky'],
++			},
++		]
++		const ledger = await classifyValueGaps(gaps, requireValue(resolver, 'No resolver launched'))
++		expect(ledger.undecided).toEqual([
++			'btn | .btn | --bs-btn-padding-x | — | 1px | red',
++			'sticky | .sticky-top | position | @media print | -webkit-sticky | sticky',
++		])
++		expect(ledger.undecided).toEqual(gaps.map(describeValueGap))
++		expect(ledger.departures).toEqual([])
++	})
++	it('resolves each side in its own stylesheet, a custom property through the first typed probe both values parse', async () => {
++		const read = await requireValue(resolver, 'No resolver launched').resolve([
++			{
++				selector: '.accordion',
++				property: '--bs-accordion-btn-padding-y',
++				recorded: ['1rem'],
++				emitted: ['var(--vn-space-8)'],
++			},
++			{
++				selector: ':root',
++				property: '--bs-border-color-translucent',
++				recorded: ['rgba(0, 0, 0, 0.175)'],
++				emitted: ['color-mix(in srgb, #000 17.5%, transparent)'],
++			},
++			{
++				selector: ':root',
++				property: '--bs-heading-color-rgb',
++				recorded: ['var(--bs-body-color-rgb)'],
++				emitted: ['33, 37, 41'],
++			},
++			{ selector: '.btn', property: '--bs-btn-font-family', recorded: [''], emitted: ['serif'] },
++			{ selector: '.btn', property: 'filter', recorded: ['none'], emitted: [] },
++			{
++				selector: '.btn',
++				property: '--bs-btn-focus-box-shadow',
++				recorded: ['0 0 0 0.25rem rgba(13, 110, 253, 0.25)'],
++				emitted: ['0 0 0 4px color-mix(in srgb, #0d6efd 25%, transparent)'],
++			},
++			{
++				selector: ':root',
++				property: '--bs-font-sans-serif',
++				recorded: ['system-ui, "Segoe UI"'],
++				emitted: ["system-ui, 'Segoe UI'"],
++			},
++			{
++				selector: ':root',
++				property: '--bs-ease',
++				recorded: ['cubic-bezier(0.32, 0.72, 0, 1)'],
++				emitted: ['cubic-bezier(.32,.72,0,1)'],
++			},
++			{ selector: 'small', property: 'font-size', recorded: ['0.875em'], emitted: ['87.5%'] },
++			{
++				selector: ':root',
++				property: '--bs-gradient',
++				recorded: ['linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0))'],
++				emitted: [
++					'linear-gradient(180deg, color-mix(in srgb, #fff 15%, transparent), transparent)',
++				],
++			},
++		])
++		expect(read).toEqual([
++			{ recorded: '16px', emitted: '16px' },
++			{ recorded: 'rgba(0, 0, 0, 0.176)', emitted: 'rgba(0, 0, 0, 0.176)' },
++			{ recorded: '33, 37, 41', emitted: '33, 37, 41' },
++			{ recorded: '', emitted: 'serif' },
++			undefined,
++			{
++				recorded: 'rgba(13, 110, 253, 0.25) 0px 0px 0px 4px',
++				emitted: 'rgba(13, 110, 253, 0.25) 0px 0px 0px 4px',
++			},
++			{ recorded: 'system-ui, "Segoe UI"', emitted: 'system-ui, "Segoe UI"' },
++			{ recorded: 'cubic-bezier(0.32, 0.72, 0, 1)', emitted: 'cubic-bezier(0.32, 0.72, 0, 1)' },
++			{ recorded: '14px', emitted: '14px' },
++			{
++				recorded: 'linear-gradient(rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0))',
++				emitted: 'linear-gradient(rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0))',
++			},
++		])
++	})
++	it('types a custom property through each probe syntax, telling its two initial values apart', async () => {
++		const syntaxes = Object.entries(PROBE_SYNTAXES)
++		const read = await requireValue(resolver, 'No resolver launched').resolve(
++			syntaxes.flatMap(([, [initial, control]]) => [
++				{ selector: ':root', property: '--vn-sample', recorded: [initial], emitted: [initial] },
++				{ selector: ':root', property: '--vn-sample', recorded: [initial], emitted: [control] },
++			]),
++		)
++		expect(read.map((resolution) => resolution !== undefined)).toEqual(
++			syntaxes.flatMap(() => [true, true]),
++		)
++		expect(read.map((resolution) => resolution?.recorded === resolution?.emitted)).toEqual(
++			syntaxes.flatMap(() => [true, false]),
++		)
++	})
++	it('names a planted unrecorded departure, a planted stale row, and each planted difference it cannot decide', async () => {
++		const scratch = createScratch()
++		try {
++			const path = scratch.write('ledger.md', LEDGER_GUIDE)
++			const measured = await classifyValueGaps(
++				collectLedger(LEDGER_CASCADE, LEDGER_INVENTORY, LEDGER_SHIPPED).gaps,
++				requireValue(resolver, 'No resolver launched'),
++			)
++			const carried = scanLedgerDrift(measured.departures, readDepartures(path), describeDeparture)
++			expect(carried.unrecorded).toEqual([
++				'btn | .btn | opacity | — | 0.65 | var(--bs-btn-disabled-opacity) | aliased',
++				'btn | .btn | padding | @media (width >= 576px) | 1rem | 0 | retuned',
++				'reboot | body | text-align | — | var(--bs-body-text-align) | var(--bs-body-text-align, start) | fallback',
++				'reboot | body | color | — | #000 | red | retuned',
++				'table | .caption-top | caption-side | — | top | — | dropped',
++			])
++			expect(carried.stale).toEqual([])
++			// Chromium parses no empty font family, and no probe types both an inversion and `none`,
++			// so the planted world carries two differences no resolution decides.
++			expect(measured.undecided).toEqual([
++				'btn | .btn | font-family | — | (empty) | var(--vn-font-sans)',
++				'btn | :root | --bs-btn-close-filter | — | invert(1) | none',
++			])
++			scratch.write('ledger.md', LEDGER_GUIDE.replaceAll('| `#fff` |', '| `#eee` |'))
++			expect(
++				scanLedgerDrift(measured.departures, readDepartures(path), describeDeparture).stale,
++			).toEqual(['btn | .btn | color | — | #eee | var(--vn-button-face) | tokenized'])
++			expect(measured.departures.map(describeDeparture)).toEqual(
++				measured.departures.map((row) => `${describeValueGap(row)} | ${row.departure}`),
++			)
++		} finally {
++			scratch.destroy()
++		}
++	})
++	it('builds one element per compound, beside the one before it across a sibling combinator', () => {
++		expect(collectContextElements('.form-floating > textarea:focus ~ label::after')).toEqual([
++			{ tag: 'div', classes: ['form-floating'], attributes: [], sibling: false },
++			{ tag: 'textarea', classes: [], attributes: [], sibling: false },
++			{ tag: 'label', classes: [], attributes: [], sibling: true },
++		])
++		expect(
++			collectContextElements('[data-bs-theme=dark] .btn-check:checked + .btn:not(.active)'),
++		).toEqual([
++			{ tag: 'div', classes: [], attributes: [['data-bs-theme', 'dark']], sibling: false },
++			{ tag: 'div', classes: ['btn-check'], attributes: [], sibling: false },
++			{ tag: 'div', classes: ['btn'], attributes: [], sibling: true },
++		])
++		expect(
++			collectContextElements('select.form-select[size="1"][data-popper-placement^=top]'),
++		).toEqual([
++			{
++				tag: 'select',
++				classes: ['form-select'],
++				attributes: [
++					['size', '1'],
++					['data-popper-placement', 'top'],
++				],
++				sibling: false,
++			},
++		])
++		expect(collectContextElements(':root')).toEqual([
++			{ tag: 'div', classes: [], attributes: [], sibling: false },
++		])
++		expect(() => collectContextElements('.btn[data-x~=]')).toThrow(
++			'Context element reader reads no attribute selector: [data-x~=]',
++		)
++		expect(matchesDarkScope('[data-bs-theme=dark] .btn')).toBe(true)
++		expect(matchesDarkScope('[data-bs-theme=dark] [data-bs-theme=light] .btn')).toBe(false)
++		expect(matchesDarkScope('[data-bs-theme=light] [data-bs-theme=dark]')).toBe(true)
++		expect(matchesDarkScope(':root')).toBe(false)
++	})
++	it('writes every sRGB color at the 8-bit precision a legacy color computes to, and leaves every other color alone', () => {
++		expect(normalizeResolvedColors('rgba(0, 0, 0, 0.176)')).toBe('rgba(0, 0, 0, 0.176)')
++		expect(normalizeResolvedColors('color(srgb 0 0 0 / 0.175)')).toBe('rgba(0, 0, 0, 0.176)')
++		expect(
++			normalizeResolvedColors('color(srgb 0.0509804 0.431373 0.992157 / 0.25) 0px 0px 0px 4px'),
++		).toBe('rgba(13, 110, 253, 0.25) 0px 0px 0px 4px')
++		expect(normalizeResolvedColors('rgb(13, 110, 253)')).toBe('rgb(13, 110, 253)')
++		expect(normalizeResolvedColors('color(srgb 0.0509804 0.431373 0.992157)')).toBe(
++			'rgb(13, 110, 253)',
++		)
++		expect(normalizeResolvedColors('color(srgb -0.0789361 0.451636 0.195783)')).toBe(
++			'rgb(-20, 115, 50)',
++		)
++		expect(normalizeResolvedColors('color(srgb 1e-06 1 1 / 0.5)')).toBe('rgba(0, 255, 255, 0.5)')
++		expect(normalizeResolvedColors('rgba(0, 0, 0, 0)')).toBe('rgba(0, 0, 0, 0)')
++		expect(
++			normalizeResolvedColors(
++				'linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0))',
++			),
++		).toBe('linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0))')
++		expect(normalizeResolvedColors('color(srgb 1 1 1 / 0)')).toBe('rgba(0, 0, 0, 0)')
++		expect(normalizeResolvedColors('oklch(0.48 0.255 264)')).toBe('oklch(0.48 0.255 264)')
++		expect(normalizeResolvedColors('color(display-p3 1 0 0)')).toBe('color(display-p3 1 0 0)')
++	})
++	it('names a canonical token whose declaration resolves apart from its reference cell, at every site that declares it', async () => {
++		const references = [
++			{
++				token: '--vn-radius-base',
++				light: 'calc(0.375rem * var(--vn-factor-radius))',
++				dark: 'calc(0.375rem * var(--vn-factor-radius))',
++				source: 'elements',
++			},
++		]
++		const declared = ':root { --vn-radius-base: calc(0.375rem * var(--vn-factor-radius)) }'
++		const doubled = ':root { --vn-radius-base: calc(0.75rem * var(--vn-factor-radius)) }'
++		const sited = `${declared}\n.btn { --vn-radius-base: 1rem }`
++		const reader = requireValue(tokens, 'No resolver launched')
++		expect(await scanCanonicalValues(readCascadeBlocks(declared), references, reader)).toEqual([])
++		expect(await scanCanonicalValues(readCascadeBlocks(doubled), references, reader)).toEqual([
++			'--vn-radius-base | :root | — | calc(0.375rem * var(--vn-factor-radius)) | calc(0.75rem * var(--vn-factor-radius)) | 6px | 12px',
++			'--vn-radius-base | [data-bs-theme=dark] | — | calc(0.375rem * var(--vn-factor-radius)) | calc(0.75rem * var(--vn-factor-radius)) | 6px | 12px',
++		])
++		expect(await scanCanonicalValues(readCascadeBlocks(sited), references, reader)).toEqual([
++			'--vn-radius-base | .btn | — | calc(0.375rem * var(--vn-factor-radius)) | 1rem | 6px | 16px',
++		])
++		expect(
++			await scanCanonicalValues(readCascadeBlocks('.btn { color: red }'), references, reader),
++		).toEqual(['--vn-radius-base | :root | — | calc(0.375rem * var(--vn-factor-radius)) | —'])
++	})
++	it('names each bootstrap token no departure row reads at the release value', () => {
++		const references = [
++			{ token: '--vn-gray-100', light: '#f8f9fa', dark: '#f8f9fa', source: 'bootstrap' },
++			{ token: '--vn-gray-200', light: '#e9ecef', dark: '#e9ecef', source: 'bootstrap' },
++			{ token: '--vn-container-sm', light: '540px', dark: '540px', source: 'bootstrap' },
++			{ token: '--vn-gray-300', light: '#dee2e6', dark: '#dee2e6', source: 'bootstrap' },
++			{ token: '--vn-color-primary-base', light: 'red', dark: 'red', source: 'elements' },
++		]
++		const departures = [
++			['theme', ':root', '--bs-gray-100', '#f8f9fa', 'var(--vn-gray-100)', 'tokenized'],
++			['theme', ':root', '--bs-gray-200', '#e9ecef', 'var(--vn-gray-200)', 'retuned'],
++			[
++				'container',
++				'.container-sm',
++				'max-width',
++				'540px',
++				'calc(var(--vn-container-sm) * 1)',
++				'restated',
++			],
++			['theme', ':root', '--bs-gray-300', '#dee2e6', 'var(--vn-gray-3000)', 'tokenized'],
++			['theme', ':root', '--bs-primary', '#0d6efd', 'var(--vn-color-primary-base)', 'retuned'],
++		] as const
++		expect(
++			scanWitnesses(
++				departures.map(([component, selector, property, recorded, value, departure]) => ({
++					component,
++					selector,
++					property,
++					condition: undefined,
++					recorded,
++					emitted: value,
++					departure,
++				})),
++				references,
++			),
++		).toEqual(['--vn-gray-200', '--vn-gray-300'])
++	})
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+ ❯ |setup| tests/setupServer.test.ts (137 tests | 1 failed | 136 skipped) 1624ms
+     × classifies a pair whose values differ in text and resolve alike as its text-only member 63ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > classifies a pair whose values differ in text and resolve alike as its text-only member
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "btn | .btn | --bs-btn-padding-x | — | 1px | red",
++ ]
+
+ ❯ tests/setupServer.test.ts:3696:28
+    3694|    'btn | .btn | filter | — | none | — | dropped',
+    3695|   ])
+    3696|   expect(ledger.undecided).toEqual([])
+       |                            ^
+    3697|  })
+    3698|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 136 skipped (137)
+   Start at  07:39:40
+   Duration  4.13s (transform 1.07s, setup 245ms, import 2.06s, tests 1.62s, environment 0ms)
+
+exit=1
+restored tests/setupServer.test.ts byte-identical
+--- git diff --stat after restore
+ guides/veneer.md          | 1074 +++++++++++++++++++++++----------------------
+ tests/setupServer.test.ts |  580 +++++++++++++++++++++---
+ 2 files changed, 1064 insertions(+), 590 deletions(-)

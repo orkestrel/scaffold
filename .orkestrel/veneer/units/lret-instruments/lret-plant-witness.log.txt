@@ -1,0 +1,1101 @@
+plant=witness
+4.03 3.93 5.18 3/494 19025
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 51d2a6b..62026c0 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -425,7 +425,7 @@ $icons: (
+ 		--vn-radius-large: calc(0.5rem * var(--vn-factor-radius));
+ 		--vn-radius-xlarge: calc(1rem * var(--vn-factor-radius));
+ 		--vn-radius-xxlarge: calc(2rem * var(--vn-factor-radius));
+-		--vn-radius-pill: 50rem;
++		--vn-radius-pill: 40rem;
+ 
+ 		--vn-shadow-1:
+ 			0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.125rem * var(--vn-factor-elevation))
+-| `--vn-radius-xlarge`, `-xxlarge`, `-pill` | `calc(1rem * var(--vn-factor-radius))`, `calc(2rem * var(--vn-factor-radius))`, `50rem`                          
++| `--vn-radius-xlarge`, `-xxlarge`, `-pill` | `calc(1rem * var(--vn-factor-radius))`, `calc(2rem * var(--vn-factor-radius))`, `40rem`                          
+-| `btn`     | `.btn`                                          | `--bs-btn-font-family`           | —         | (empty)                                       
+-| `btn`     | `.btn`                                          | `--bs-btn-font-size`             | —         | `1rem`                                        
++| `btn`     | `.btn`                                          | `--bs-btn-font-family`           | —         | (empty)                                       
++| `btn`     | `.btn`                                          | `--bs-btn-font-size`             | —         | `1rem`                                        
+-| `btn`     | `.btn`                                          | `--bs-btn-color`                 | —         | `var(--bs-body-color)`                        
++| `btn`     | `.btn`                                          | `--bs-btn-color`                 | —         | `var(--bs-body-color)`                        
+-| `btn`     | `.btn`                                          | `--bs-btn-box-shadow`            | —         | `inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1p
++| `btn`     | `.btn`                                          | `--bs-btn-box-shadow`            | —         | `inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1p
+-| `btn`     | `.btn`                                          | `--bs-btn-focus-box-shadow`      | —         | `0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-
++| `btn`     | `.btn`                                          | `--bs-btn-focus-box-shadow`      | —         | `0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-
+-| `btn`     | `.btn`                                          | `transition`                     | —         | `color 0.15s ease-in-out, background-color 0.1
++| `btn`     | `.btn`                                          | `transition`                     | —         | `color 0.15s ease-in-out, background-color 0.1
+-| `btn`     | `.btn:focus-visible`                            | `outline`                        | —         | `0`                                           
++| `btn`     | `.btn:focus-visible`                            | `outline`                        | —         | `0`                                           
+-| `btn`     | `.btn-check:focus-visible + .btn`               | `outline`                        | —         | `0`                                           
++| `btn`     | `.btn-check:focus-visible + .btn`               | `outline`                        | —         | `0`                                           
+-| `btn`     | `.btn-primary`                                  | `--bs-btn-bg`                    | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-primary`                                  | `--bs-btn-border-color`          | —         | `#0d6efd`                                     
++| `btn`     | `.btn-primary`                                  | `--bs-btn-bg`                    | —         | `#0d6efd`                                     
++| `btn`     | `.btn-primary`                                  | `--bs-btn-border-color`          | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-primary`                                  | `--bs-btn-hover-bg`              | —         | `#0b5ed7`                                     
+-| `btn`     | `.btn-primary`                                  | `--bs-btn-hover-border-color`    | —         | `#0a58ca`                                     
++| `btn`     | `.btn-primary`                                  | `--bs-btn-hover-bg`              | —         | `#0b5ed7`                                     
++| `btn`     | `.btn-primary`                                  | `--bs-btn-hover-border-color`    | —         | `#0a58ca`                                     
+-| `btn`     | `.btn-primary`                                  | `--bs-btn-active-bg`             | —         | `#0a58ca`                                     
+-| `btn`     | `.btn-primary`                                  | `--bs-btn-active-border-color`   | —         | `#0a53be`                                     
++| `btn`     | `.btn-primary`                                  | `--bs-btn-active-bg`             | —         | `#0a58ca`                                     
++| `btn`     | `.btn-primary`                                  | `--bs-btn-active-border-color`   | —         | `#0a53be`                                     
+-| `btn`     | `.btn-primary`                                  | `--bs-btn-disabled-bg`           | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-primary`                                  | `--bs-btn-disabled-border-color` | —         | `#0d6efd`                                     
++| `btn`     | `.btn-primary`                                  | `--bs-btn-disabled-bg`           | —         | `#0d6efd`                                     
++| `btn`     | `.btn-primary`                                  | `--bs-btn-disabled-border-color` | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-secondary`                                | `--bs-btn-bg`                    | —         | `#6c757d`                                     
+-| `btn`     | `.btn-secondary`                                | `--bs-btn-border-color`          | —         | `#6c757d`                                     
++| `btn`     | `.btn-secondary`                                | `--bs-btn-bg`                    | —         | `#6c757d`                                     
++| `btn`     | `.btn-secondary`                                | `--bs-btn-border-color`          | —         | `#6c757d`                                     
+-| `btn`     | `.btn-secondary`                                | `--bs-btn-hover-bg`              | —         | `#5c636a`                                     
+-| `btn`     | `.btn-secondary`                                | `--bs-btn-hover-border-color`    | —         | `#565e64`                                     
++| `btn`     | `.btn-secondary`                                | `--bs-btn-hover-bg`              | —         | `#5c636a`                                     
++| `btn`     | `.btn-secondary`                                | `--bs-btn-hover-border-color`    | —         | `#565e64`                                     
+-| `btn`     | `.btn-secondary`                                | `--bs-btn-active-bg`             | —         | `#565e64`                                     
+-| `btn`     | `.btn-secondary`                                | `--bs-btn-active-border-color`   | —         | `#51585e`                                     
++| `btn`     | `.btn-secondary`                                | `--bs-btn-active-bg`             | —         | `#565e64`                                     
++| `btn`     | `.btn-secondary`                                | `--bs-btn-active-border-color`   | —         | `#51585e`                                     
+-| `btn`     | `.btn-secondary`                                | `--bs-btn-disabled-bg`           | —         | `#6c757d`                                     
+-| `btn`     | `.btn-secondary`                                | `--bs-btn-disabled-border-color` | —         | `#6c757d`                                     
++| `btn`     | `.btn-secondary`                                | `--bs-btn-disabled-bg`           | —         | `#6c757d`                                     
++| `btn`     | `.btn-secondary`                                | `--bs-btn-disabled-border-color` | —         | `#6c757d`                                     
+-| `btn`     | `.btn-success`                                  | `--bs-btn-bg`                    | —         | `#198754`                                     
+-| `btn`     | `.btn-success`                                  | `--bs-btn-border-color`          | —         | `#198754`                                     
++| `btn`     | `.btn-success`                                  | `--bs-btn-bg`                    | —         | `#198754`                                     
++| `btn`     | `.btn-success`                                  | `--bs-btn-border-color`          | —         | `#198754`                                     
+-| `btn`     | `.btn-success`                                  | `--bs-btn-hover-bg`              | —         | `#157347`                                     
+-| `btn`     | `.btn-success`                                  | `--bs-btn-hover-border-color`    | —         | `#146c43`                                     
++| `btn`     | `.btn-success`                                  | `--bs-btn-hover-bg`              | —         | `#157347`                                     
++| `btn`     | `.btn-success`                                  | `--bs-btn-hover-border-color`    | —         | `#146c43`                                     
+-| `btn`     | `.btn-success`                                  | `--bs-btn-active-bg`             | —         | `#146c43`                                     
+-| `btn`     | `.btn-success`                                  | `--bs-btn-active-border-color`   | —         | `#13653f`                                     
++| `btn`     | `.btn-success`                                  | `--bs-btn-active-bg`             | —         | `#146c43`                                     
++| `btn`     | `.btn-success`                                  | `--bs-btn-active-border-color`   | —         | `#13653f`                                     
+-| `btn`     | `.btn-success`                                  | `--bs-btn-disabled-bg`           | —         | `#198754`                                     
+-| `btn`     | `.btn-success`                                  | `--bs-btn-disabled-border-color` | —         | `#198754`                                     
+-| `btn`     | `.btn-info`                                     | `--bs-btn-color`                 | —         | `#000`                                        
+-| `btn`     | `.btn-info`                                     | `--bs-btn-bg`                    | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-info`                                     | `--bs-btn-border-color`          | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-info`                                     | `--bs-btn-hover-color`           | —         | `#000`                                        
+-| `btn`     | `.btn-info`                                     | `--bs-btn-hover-bg`              | —         | `#31d2f2`                                     
+-| `btn`     | `.btn-info`                                     | `--bs-btn-hover-border-color`    | —         | `#25cff2`                                     
++| `btn`     | `.btn-success`                                  | `--bs-btn-disabled-bg`           | —         | `#198754`                                     
++| `btn`     | `.btn-success`                                  | `--bs-btn-disabled-border-color` | —         | `#198754`                                     
++| `btn`     | `.btn-info`                                     | `--bs-btn-color`                 | —         | `#000`                                        
++| `btn`     | `.btn-info`                                     | `--bs-btn-bg`                    | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-info`                                     | `--bs-btn-border-color`          | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-info`                                     | `--bs-btn-hover-color`           | —         | `#000`                                        
++| `btn`     | `.btn-info`                                     | `--bs-btn-hover-bg`              | —         | `#31d2f2`                                     
++| `btn`     | `.btn-info`                                     | `--bs-btn-hover-border-color`    | —         | `#25cff2`                                     
+-| `btn`     | `.btn-info`                                     | `--bs-btn-active-color`          | —         | `#000`                                        
+-| `btn`     | `.btn-info`                                     | `--bs-btn-active-bg`             | —         | `#3dd5f3`                                     
+-| `btn`     | `.btn-info`                                     | `--bs-btn-active-border-color`   | —         | `#25cff2`                                     
++| `btn`     | `.btn-info`                                     | `--bs-btn-active-color`          | —         | `#000`                                        
++| `btn`     | `.btn-info`                                     | `--bs-btn-active-bg`             | —         | `#3dd5f3`                                     
++| `btn`     | `.btn-info`                                     | `--bs-btn-active-border-color`   | —         | `#25cff2`                                     
+-| `btn`     | `.btn-info`                                     | `--bs-btn-disabled-color`        | —         | `#000`                                        
+-| `btn`     | `.btn-info`                                     | `--bs-btn-disabled-bg`           | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-info`                                     | `--bs-btn-disabled-border-color` | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-color`                 | —         | `#000`                                        
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-bg`                    | —         | `#ffc107`                                     
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-border-color`          | —         | `#ffc107`                                     
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-hover-color`           | —         | `#000`                                        
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-hover-bg`              | —         | `#ffca2c`                                     
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-hover-border-color`    | —         | `#ffc720`                                     
++| `btn`     | `.btn-info`                                     | `--bs-btn-disabled-color`        | —         | `#000`                                        
++| `btn`     | `.btn-info`                                     | `--bs-btn-disabled-bg`           | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-info`                                     | `--bs-btn-disabled-border-color` | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-warning`                                  | `--bs-btn-color`                 | —         | `#000`                                        
++| `btn`     | `.btn-warning`                                  | `--bs-btn-bg`                    | —         | `#ffc107`                                     
++| `btn`     | `.btn-warning`                                  | `--bs-btn-border-color`          | —         | `#ffc107`                                     
++| `btn`     | `.btn-warning`                                  | `--bs-btn-hover-color`           | —         | `#000`                                        
++| `btn`     | `.btn-warning`                                  | `--bs-btn-hover-bg`              | —         | `#ffca2c`                                     
++| `btn`     | `.btn-warning`                                  | `--bs-btn-hover-border-color`    | —         | `#ffc720`                                     
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-active-color`          | —         | `#000`                                        
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-active-bg`             | —         | `#ffcd39`                                     
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-active-border-color`   | —         | `#ffc720`                                     
++| `btn`     | `.btn-warning`                                  | `--bs-btn-active-color`          | —         | `#000`                                        
++| `btn`     | `.btn-warning`                                  | `--bs-btn-active-bg`             | —         | `#ffcd39`                                     
++| `btn`     | `.btn-warning`                                  | `--bs-btn-active-border-color`   | —         | `#ffc720`                                     
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-disabled-color`        | —         | `#000`                                        
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-disabled-bg`           | —         | `#ffc107`                                     
+-| `btn`     | `.btn-warning`                                  | `--bs-btn-disabled-border-color` | —         | `#ffc107`                                     
++| `btn`     | `.btn-warning`                                  | `--bs-btn-disabled-color`        | —         | `#000`                                        
++| `btn`     | `.btn-warning`                                  | `--bs-btn-disabled-bg`           | —         | `#ffc107`                                     
++| `btn`     | `.btn-warning`                                  | `--bs-btn-disabled-border-color` | —         | `#ffc107`                                     
+-| `btn`     | `.btn-danger`                                   | `--bs-btn-bg`                    | —         | `#dc3545`                                     
+-| `btn`     | `.btn-danger`                                   | `--bs-btn-border-color`          | —         | `#dc3545`                                     
++| `btn`     | `.btn-danger`                                   | `--bs-btn-bg`                    | —         | `#dc3545`                                     
++| `btn`     | `.btn-danger`                                   | `--bs-btn-border-color`          | —         | `#dc3545`                                     
+-| `btn`     | `.btn-danger`                                   | `--bs-btn-hover-bg`              | —         | `#bb2d3b`                                     
+-| `btn`     | `.btn-danger`                                   | `--bs-btn-hover-border-color`    | —         | `#b02a37`                                     
++| `btn`     | `.btn-danger`                                   | `--bs-btn-hover-bg`              | —         | `#bb2d3b`                                     
++| `btn`     | `.btn-danger`                                   | `--bs-btn-hover-border-color`    | —         | `#b02a37`                                     
+-| `btn`     | `.btn-danger`                                   | `--bs-btn-active-bg`             | —         | `#b02a37`                                     
+-| `btn`     | `.btn-danger`                                   | `--bs-btn-active-border-color`   | —         | `#a52834`                                     
++| `btn`     | `.btn-danger`                                   | `--bs-btn-active-bg`             | —         | `#b02a37`                                     
++| `btn`     | `.btn-danger`                                   | `--bs-btn-active-border-color`   | —         | `#a52834`                                     
+-| `btn`     | `.btn-danger`                                   | `--bs-btn-disabled-bg`           | —         | `#dc3545`                                     
+-| `btn`     | `.btn-danger`                                   | `--bs-btn-disabled-border-color` | —         | `#dc3545`                                     
++| `btn`     | `.btn-danger`                                   | `--bs-btn-disabled-bg`           | —         | `#dc3545`                                     
++| `btn`     | `.btn-danger`                                   | `--bs-btn-disabled-border-color` | —         | `#dc3545`                                     
+-| `btn`     | `.btn-light`                                    | `--bs-btn-hover-bg`              | —         | `#d3d4d5`                                     
+-| `btn`     | `.btn-light`                                    | `--bs-btn-hover-border-color`    | —         | `#c6c7c8`                                     
++| `btn`     | `.btn-light`                                    | `--bs-btn-hover-bg`              | —         | `#d3d4d5`                                     
++| `btn`     | `.btn-light`                                    | `--bs-btn-hover-border-color`    | —         | `#c6c7c8`                                     
+-| `btn`     | `.btn-light`                                    | `--bs-btn-active-bg`             | —         | `#c6c7c8`                                     
+-| `btn`     | `.btn-light`                                    | `--bs-btn-active-border-color`   | —         | `#babbbc`                                     
++| `btn`     | `.btn-light`                                    | `--bs-btn-active-bg`             | —         | `#c6c7c8`                                     
++| `btn`     | `.btn-light`                                    | `--bs-btn-active-border-color`   | —         | `#babbbc`                                     
+-| `btn`     | `.btn-dark`                                     | `--bs-btn-hover-bg`              | —         | `#424649`                                     
+-| `btn`     | `.btn-dark`                                     | `--bs-btn-hover-border-color`    | —         | `#373b3e`                                     
++| `btn`     | `.btn-dark`                                     | `--bs-btn-hover-bg`              | —         | `#424649`                                     
++| `btn`     | `.btn-dark`                                     | `--bs-btn-hover-border-color`    | —         | `#373b3e`                                     
+-| `btn`     | `.btn-dark`                                     | `--bs-btn-active-bg`             | —         | `#4d5154`                                     
+-| `btn`     | `.btn-dark`                                     | `--bs-btn-active-border-color`   | —         | `#373b3e`                                     
++| `btn`     | `.btn-dark`                                     | `--bs-btn-active-bg`             | —         | `#4d5154`                                     
++| `btn`     | `.btn-dark`                                     | `--bs-btn-active-border-color`   | —         | `#373b3e`                                     
+-| `btn`     | `.btn-outline-primary`                          | `--bs-btn-color`                 | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-outline-primary`                          | `--bs-btn-border-color`          | —         | `#0d6efd`                                     
++| `btn`     | `.btn-outline-primary`                          | `--bs-btn-color`                 | —         | `#0d6efd`                                     
++| `btn`     | `.btn-outline-primary`                          | `--bs-btn-border-color`          | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-outline-primary`                          | `--bs-btn-hover-bg`              | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-outline-primary`                          | `--bs-btn-hover-border-color`    | —         | `#0d6efd`                                     
++| `btn`     | `.btn-outline-primary`                          | `--bs-btn-hover-bg`              | —         | `#0d6efd`                                     
++| `btn`     | `.btn-outline-primary`                          | `--bs-btn-hover-border-color`    | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-outline-primary`                          | `--bs-btn-active-bg`             | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-outline-primary`                          | `--bs-btn-active-border-color`   | —         | `#0d6efd`                                     
++| `btn`     | `.btn-outline-primary`                          | `--bs-btn-active-bg`             | —         | `#0d6efd`                                     
++| `btn`     | `.btn-outline-primary`                          | `--bs-btn-active-border-color`   | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-outline-primary`                          | `--bs-btn-disabled-color`        | —         | `#0d6efd`                                     
++| `btn`     | `.btn-outline-primary`                          | `--bs-btn-disabled-color`        | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-outline-primary`                          | `--bs-btn-disabled-border-color` | —         | `#0d6efd`                                     
++| `btn`     | `.btn-outline-primary`                          | `--bs-btn-disabled-border-color` | —         | `#0d6efd`                                     
+-| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-color`                 | —         | `#6c757d`                                     
+-| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-border-color`          | —         | `#6c757d`                                     
++| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-color`                 | —         | `#6c757d`                                     
++| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-border-color`          | —         | `#6c757d`                                     
+-| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-hover-bg`              | —         | `#6c757d`                                     
+-| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-hover-border-color`    | —         | `#6c757d`                                     
++| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-hover-bg`              | —         | `#6c757d`                                     
++| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-hover-border-color`    | —         | `#6c757d`                                     
+-| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-active-bg`             | —         | `#6c757d`                                     
+-| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-active-border-color`   | —         | `#6c757d`                                     
++| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-active-bg`             | —         | `#6c757d`                                     
++| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-active-border-color`   | —         | `#6c757d`                                     
+-| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-disabled-color`        | —         | `#6c757d`                                     
++| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-disabled-color`        | —         | `#6c757d`                                     
+-| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-disabled-border-color` | —         | `#6c757d`                                     
++| `btn`     | `.btn-outline-secondary`                        | `--bs-btn-disabled-border-color` | —         | `#6c757d`                                     
+-| `btn`     | `.btn-outline-success`                          | `--bs-btn-color`                 | —         | `#198754`                                     
+-| `btn`     | `.btn-outline-success`                          | `--bs-btn-border-color`          | —         | `#198754`                                     
++| `btn`     | `.btn-outline-success`                          | `--bs-btn-color`                 | —         | `#198754`                                     
++| `btn`     | `.btn-outline-success`                          | `--bs-btn-border-color`          | —         | `#198754`                                     
+-| `btn`     | `.btn-outline-success`                          | `--bs-btn-hover-bg`              | —         | `#198754`                                     
+-| `btn`     | `.btn-outline-success`                          | `--bs-btn-hover-border-color`    | —         | `#198754`                                     
++| `btn`     | `.btn-outline-success`                          | `--bs-btn-hover-bg`              | —         | `#198754`                                     
++| `btn`     | `.btn-outline-success`                          | `--bs-btn-hover-border-color`    | —         | `#198754`                                     
+-| `btn`     | `.btn-outline-success`                          | `--bs-btn-active-bg`             | —         | `#198754`                                     
+-| `btn`     | `.btn-outline-success`                          | `--bs-btn-active-border-color`   | —         | `#198754`                                     
++| `btn`     | `.btn-outline-success`                          | `--bs-btn-active-bg`             | —         | `#198754`                                     
++| `btn`     | `.btn-outline-success`                          | `--bs-btn-active-border-color`   | —         | `#198754`                                     
+-| `btn`     | `.btn-outline-success`                          | `--bs-btn-disabled-color`        | —         | `#198754`                                     
++| `btn`     | `.btn-outline-success`                          | `--bs-btn-disabled-color`        | —         | `#198754`                                     
+-| `btn`     | `.btn-outline-success`                          | `--bs-btn-disabled-border-color` | —         | `#198754`                                     
++| `btn`     | `.btn-outline-success`                          | `--bs-btn-disabled-border-color` | —         | `#198754`                                     
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-color`                 | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-border-color`          | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-hover-color`           | —         | `#000`                                        
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-hover-bg`              | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-hover-border-color`    | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-color`                 | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-border-color`          | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-hover-color`           | —         | `#000`                                        
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-hover-bg`              | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-hover-border-color`    | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-active-color`          | —         | `#000`                                        
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-active-bg`             | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-active-border-color`   | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-active-color`          | —         | `#000`                                        
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-active-bg`             | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-active-border-color`   | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-disabled-color`        | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-disabled-color`        | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-outline-info`                             | `--bs-btn-disabled-border-color` | —         | `#0dcaf0`                                     
++| `btn`     | `.btn-outline-info`                             | `--bs-btn-disabled-border-color` | —         | `#0dcaf0`                                     
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-color`                 | —         | `#ffc107`                                     
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-border-color`          | —         | `#ffc107`                                     
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-hover-color`           | —         | `#000`                                        
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-hover-bg`              | —         | `#ffc107`                                     
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-hover-border-color`    | —         | `#ffc107`                                     
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-color`                 | —         | `#ffc107`                                     
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-border-color`          | —         | `#ffc107`                                     
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-hover-color`           | —         | `#000`                                        
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-hover-bg`              | —         | `#ffc107`                                     
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-hover-border-color`    | —         | `#ffc107`                                     
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-active-color`          | —         | `#000`                                        
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-active-bg`             | —         | `#ffc107`                                     
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-active-border-color`   | —         | `#ffc107`                                     
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-active-color`          | —         | `#000`                                        
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-active-bg`             | —         | `#ffc107`                                     
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-active-border-color`   | —         | `#ffc107`                                     
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-disabled-color`        | —         | `#ffc107`                                     
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-disabled-color`        | —         | `#ffc107`                                     
+-| `btn`     | `.btn-outline-warning`                          | `--bs-btn-disabled-border-color` | —         | `#ffc107`                                     
++| `btn`     | `.btn-outline-warning`                          | `--bs-btn-disabled-border-color` | —         | `#ffc107`                                     
+-| `btn`     | `.btn-outline-danger`                           | `--bs-btn-color`                 | —         | `#dc3545`                                     
+-| `btn`     | `.btn-outline-danger`                           | `--bs-btn-border-color`          | —         | `#dc3545`                                     
++| `btn`     | `.btn-outline-danger`                           | `--bs-btn-color`                 | —         | `#dc3545`                                     
++| `btn`     | `.btn-outline-danger`                           | `--bs-btn-border-color`          | —         | `#dc3545`                                     
+-| `btn`     | `.btn-outline-danger`                           | `--bs-btn-hover-bg`              | —         | `#dc3545`                                     
+-| `btn`     | `.btn-outline-danger`                           | `--bs-btn-hover-border-color`    | —         | `#dc3545`                                     
++| `btn`     | `.btn-outline-danger`                           | `--bs-btn-hover-bg`              | —         | `#dc3545`                                     
++| `btn`     | `.btn-outline-danger`                           | `--bs-btn-hover-border-color`    | —         | `#dc3545`                                     
+-| `btn`     | `.btn-outline-danger`                           | `--bs-btn-active-bg`             | —         | `#dc3545`                                     
+-| `btn`     | `.btn-outline-danger`                           | `--bs-btn-active-border-color`   | —         | `#dc3545`                                     
++| `btn`     | `.btn-outline-danger`                           | `--bs-btn-active-bg`             | —         | `#dc3545`                                     
++| `btn`     | `.btn-outline-danger`                           | `--bs-btn-active-border-color`   | —         | `#dc3545`                                     
+-| `btn`     | `.btn-outline-danger`                           | `--bs-btn-disabled-color`        | —         | `#dc3545`                                     
++| `btn`     | `.btn-outline-danger`                           | `--bs-btn-disabled-color`        | —         | `#dc3545`                                     
+-| `btn`     | `.btn-outline-danger`                           | `--bs-btn-disabled-border-color` | —         | `#dc3545`                                     
++| `btn`     | `.btn-outline-danger`                           | `--bs-btn-disabled-border-color` | —         | `#dc3545`                                     
+-| `btn`     | `.btn-outline-light`                            | `--bs-btn-active-bg`             | —         | `#f8f9fa`                                     
++| `btn`     | `.btn-outline-light`                            | `--bs-btn-active-bg`             | —         | `#f8f9fa`                                     
+-| `btn`     | `.btn-outline-dark`                             | `--bs-btn-active-bg`             | —         | `#212529`                                     
++| `btn`     | `.btn-outline-dark`                             | `--bs-btn-active-bg`             | —         | `#212529`                                     
+-| `btn`     | `.btn-link`                                     | `--bs-btn-color`                 | —         | `var(--bs-link-color)`                        
++| `btn`     | `.btn-link`                                     | `--bs-btn-color`                 | —         | `var(--bs-link-color)`                        
+-| `btn`     | `.btn-link`                                     | `--bs-btn-hover-color`           | —         | `var(--bs-link-hover-color)`                  
++| `btn`     | `.btn-link`                                     | `--bs-btn-hover-color`           | —         | `var(--bs-link-hover-color)`                  
+-| `btn`     | `.btn-link`                                     | `--bs-btn-active-color`          | —         | `var(--bs-link-hover-color)`                  
++| `btn`     | `.btn-link`                                     | `--bs-btn-active-color`          | —         | `var(--bs-link-hover-color)`                  
+-| `btn`     | `.btn-link`                                     | `--bs-btn-disabled-color`        | —         | `#6c757d`                                     
++| `btn`     | `.btn-link`                                     | `--bs-btn-disabled-color`        | —         | `#6c757d`                                     
+-| `btn`     | `.btn-lg`                                       | `--bs-btn-font-size`             | —         | `1.25rem`                                     
++| `btn`     | `.btn-lg`                                       | `--bs-btn-font-size`             | —         | `1.25rem`                                     
+-| `btn`     | `.btn-group-lg > .btn`                          | `--bs-btn-font-size`             | —         | `1.25rem`                                     
++| `btn`     | `.btn-group-lg > .btn`                          | `--bs-btn-font-size`             | —         | `1.25rem`                                     
+-| `btn`     | `.btn-sm`                                       | `--bs-btn-font-size`             | —         | `0.875rem`                                    
++| `btn`     | `.btn-sm`                                       | `--bs-btn-font-size`             | —         | `0.875rem`                                    
+-| `btn`     | `.btn-group-sm > .btn`                          | `--bs-btn-font-size`             | —         | `0.875rem`                                    
++| `btn`     | `.btn-group-sm > .btn`                          | `--bs-btn-font-size`             | —         | `0.875rem`                                    
+-| `dropdown` | `.dropend .dropdown-toggle::after`    | `vertical-align`                    | —         | `0.255em`                   | `0`                   
+-| `dropdown` | `.dropstart .dropdown-toggle::after`  | `display`                           | —         | `inline-block`              | `none`                
+-| `dropdown` | `.dropstart .dropdown-toggle::before` | `vertical-align`                    | —         | `0.255em`                   | `0`                   
++| `dropdown` | `.dropend .dropdown-toggle::after`    | `vertical-align`                    | —         | `0.255em`                   | `0`                   
++| `dropdown` | `.dropstart .dropdown-toggle::after`  | `display`                           | —         | `inline-block`              | `none`                
++| `dropdown` | `.dropstart .dropdown-toggle::before` | `vertical-align`                    | —         | `0.255em`                   | `0`                   
+-| `form-check` | `.form-check-input:focus`                        | `border-color`               | —         | `#86b7fe`                                | `co
+-| `form-check` | `.form-check-input:focus`                        | `box-shadow`                 | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)` | `0 
++| `form-check` | `.form-check-input:focus`                        | `border-color`               | —         | `#86b7fe`                                | `co
++| `form-check` | `.form-check-input:focus`                        | `box-shadow`                 | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)` | `0 
+-| `form-check` | `.form-switch .form-check-input`                 | `transition`                 | —         | `background-position 0.15s ease-in-out`  | `ba
++| `form-check` | `.form-switch .form-check-input`                 | `transition`                 | —         | `background-position 0.15s ease-in-out`  | `ba
+-| `form-control` | `.form-control`                          | `transition`         | —         | `border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-ou
+-| `form-control` | `.form-control:focus`                    | `border-color`       | —         | `#86b7fe`                                                   
+-| `form-control` | `.form-control:focus`                    | `box-shadow`         | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                    
++| `form-control` | `.form-control`                          | `transition`         | —         | `border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-ou
++| `form-control` | `.form-control:focus`                    | `border-color`       | —         | `#86b7fe`                                                   
++| `form-control` | `.form-control:focus`                    | `box-shadow`         | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                    
+-| `form-control` | `.form-control::file-selector-button`    | `transition`         | —         | `color 0.15s ease-in-out, background-color 0.15s ease-in-out
++| `form-control` | `.form-control::file-selector-button`    | `transition`         | —         | `color 0.15s ease-in-out, background-color 0.15s ease-in-out
+-| `form-control` | `.form-control.is-valid:focus`           | `box-shadow`         | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)`           
+-| `form-control` | `.form-control.is-invalid:focus`         | `box-shadow`         | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`            
++| `form-control` | `.form-control.is-valid:focus`           | `box-shadow`         | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)`           
++| `form-control` | `.form-control.is-invalid:focus`         | `box-shadow`         | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`            
+-| `form-range` | `.form-range:focus::-webkit-slider-thumb`    | `box-shadow`         | —                                         | `0 0 0 1px #fff, 0 0 0 0.2
+-| `form-range` | `.form-range:focus::-moz-range-thumb`        | `box-shadow`         | —                                         | `0 0 0 1px #fff, 0 0 0 0.2
++| `form-range` | `.form-range:focus::-webkit-slider-thumb`    | `box-shadow`         | —                                         | `0 0 0 1px #fff, 0 0 0 0.2
++| `form-range` | `.form-range:focus::-moz-range-thumb`        | `box-shadow`         | —                                         | `0 0 0 1px #fff, 0 0 0 0.2
+-| `form-range` | `.form-range::-webkit-slider-thumb`          | `transition`         | —                                         | `background-color 0.15s ea
++| `form-range` | `.form-range::-webkit-slider-thumb`          | `transition`         | —                                         | `background-color 0.15s ea
+-| `form-range` | `.form-range::-moz-range-thumb`              | `transition`         | —                                         | `background-color 0.15s ea
++| `form-range` | `.form-range::-moz-range-thumb`              | `transition`         | —                                         | `background-color 0.15s ea
+-| `form-select` | `.form-select`                       | `transition`          | —         | `border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out` |
+-| `form-select` | `.form-select:focus`                 | `border-color`        | —         | `#86b7fe`                                                      |
+-| `form-select` | `.form-select:focus`                 | `box-shadow`          | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                       |
++| `form-select` | `.form-select`                       | `transition`          | —         | `border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out` |
++| `form-select` | `.form-select:focus`                 | `border-color`        | —         | `#86b7fe`                                                      |
++| `form-select` | `.form-select:focus`                 | `box-shadow`          | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                       |
+-| `form-select` | `.form-select.is-valid:focus`        | `box-shadow`          | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)`              |
+-| `form-select` | `.form-select.is-invalid:focus`      | `box-shadow`          | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`               |
++| `form-select` | `.form-select.is-valid:focus`        | `box-shadow`          | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)`              |
++| `form-select` | `.form-select.is-invalid:focus`      | `box-shadow`          | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`               |
+-| `fs`      | `.fs-1`  | `font-size` | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.125rem
+-| `fs`      | `.fs-1`  | `font-size` | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-size-8)`                                              
+-| `fs`      | `.fs-2`  | `font-size` | —                          | `calc(1.325rem + 0.9vw)` | `calc(var(--vn-size-7) - max(var(--vn-size-7) * 0.9 - 1.125rem
+-| `fs`      | `.fs-2`  | `font-size` | `@media (width >= 1200px)` | `2rem`                   | `var(--vn-size-7)`                                              
+-| `fs`      | `.fs-3`  | `font-size` | —                          | `calc(1.3rem + 0.6vw)`   | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem
+-| `fs`      | `.fs-3`  | `font-size` | `@media (width >= 1200px)` | `1.75rem`                | `var(--vn-size-6)`                                              
+-| `fs`      | `.fs-4`  | `font-size` | —                          | `calc(1.275rem + 0.3vw)` | `calc(var(--vn-size-5) - max(var(--vn-size-5) * 0.9 - 1.125rem
+-| `fs`      | `.fs-4`  | `font-size` | `@media (width >= 1200px)` | `1.5rem`                 | `var(--vn-size-5)`                                              
+-| `fs`      | `.fs-5`  | `font-size` | —                          | `1.25rem`                | `calc(var(--vn-size-4) - max(var(--vn-size-4) * 0.9 - 1.125rem
++| `fs`      | `.fs-1`  | `font-size` | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.125rem
++| `fs`      | `.fs-1`  | `font-size` | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-size-8)`                                              
++| `fs`      | `.fs-2`  | `font-size` | —                          | `calc(1.325rem + 0.9vw)` | `calc(var(--vn-size-7) - max(var(--vn-size-7) * 0.9 - 1.125rem
++| `fs`      | `.fs-2`  | `font-size` | `@media (width >= 1200px)` | `2rem`                   | `var(--vn-size-7)`                                              
++| `fs`      | `.fs-3`  | `font-size` | —                          | `calc(1.3rem + 0.6vw)`   | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem
++| `fs`      | `.fs-3`  | `font-size` | `@media (width >= 1200px)` | `1.75rem`                | `var(--vn-size-6)`                                              
++| `fs`      | `.fs-4`  | `font-size` | —                          | `calc(1.275rem + 0.3vw)` | `calc(var(--vn-size-5) - max(var(--vn-size-5) * 0.9 - 1.125rem
++| `fs`      | `.fs-4`  | `font-size` | `@media (width >= 1200px)` | `1.5rem`                 | `var(--vn-size-5)`                                              
++| `fs`      | `.fs-5`  | `font-size` | —                          | `1.25rem`                | `calc(var(--vn-size-4) - max(var(--vn-size-4) * 0.9 - 1.125rem
+-| `h1`      | `.h1`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                
++| `h1`      | `.h1`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                
+-| `h1`      | `.h1`    | `font-size`     | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.12
+-| `h1`      | `.h1`    | `font-size`     | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-size-8)`                                          
++| `h1`      | `.h1`    | `font-size`     | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-size-8) - max(var(--vn-size-8) * 0.9 - 1.12
++| `h1`      | `.h1`    | `font-size`     | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-size-8)`                                          
+-| `h2`      | `.h2`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                
++| `h2`      | `.h2`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                
+-| `h2`      | `.h2`    | `font-size`     | —                          | `calc(1.325rem + 0.9vw)` | `calc(var(--vn-size-7) - max(var(--vn-size-7) * 0.9 - 1.12
+-| `h2`      | `.h2`    | `font-size`     | `@media (width >= 1200px)` | `2rem`                   | `var(--vn-size-7)`                                          
++| `h2`      | `.h2`    | `font-size`     | —                          | `calc(1.325rem + 0.9vw)` | `calc(var(--vn-size-7) - max(var(--vn-size-7) * 0.9 - 1.12
++| `h2`      | `.h2`    | `font-size`     | `@media (width >= 1200px)` | `2rem`                   | `var(--vn-size-7)`                                          
+-| `h3`      | `.h3`    | `font-weight`   | —                          | `500`                  | `var(--vn-weight-heading)`                                  
++| `h3`      | `.h3`    | `font-weight`   | —                          | `500`                  | `var(--vn-weight-heading)`                                  
+-| `h3`      | `.h3`    | `font-size`     | —                          | `calc(1.3rem + 0.6vw)` | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125r
+-| `h3`      | `.h3`    | `font-size`     | `@media (width >= 1200px)` | `1.75rem`              | `var(--vn-size-6)`                                            
++| `h3`      | `.h3`    | `font-size`     | —                          | `calc(1.3rem + 0.6vw)` | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125r
++| `h3`      | `.h3`    | `font-size`     | `@media (width >= 1200px)` | `1.75rem`              | `var(--vn-size-6)`                                            
+-| `h4`      | `.h4`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                
++| `h4`      | `.h4`    | `font-weight`   | —                          | `500`                    | `var(--vn-weight-heading)`                                
+-| `h4`      | `.h4`    | `font-size`     | —                          | `calc(1.275rem + 0.3vw)` | `calc(var(--vn-size-5) - max(var(--vn-size-5) * 0.9 - 1.12
+-| `h4`      | `.h4`    | `font-size`     | `@media (width >= 1200px)` | `1.5rem`                 | `var(--vn-size-5)`                                          
++| `h4`      | `.h4`    | `font-size`     | —                          | `calc(1.275rem + 0.3vw)` | `calc(var(--vn-size-5) - max(var(--vn-size-5) * 0.9 - 1.12
++| `h4`      | `.h4`    | `font-size`     | `@media (width >= 1200px)` | `1.5rem`                 | `var(--vn-size-5)`                                          
+-| `h5`      | `.h5`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)`                                                          
++| `h5`      | `.h5`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)`                                                          
+-| `h5`      | `.h5`    | `font-size`     | —         | `1.25rem`       | `calc(var(--vn-size-4) - max(var(--vn-size-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 
++| `h5`      | `.h5`    | `font-size`     | —         | `1.25rem`       | `calc(var(--vn-size-4) - max(var(--vn-size-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 
+-| `h6`      | `.h6`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)`                                                          
++| `h6`      | `.h6`    | `font-weight`   | —         | `500`           | `var(--vn-weight-heading)`                                                          
+-| `icon-link` | `.icon-link`       | `text-decoration-color`         | —         | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 0.5))` | `rgba(var(
++| `icon-link` | `.icon-link`       | `text-decoration-color`         | —         | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 0.5))` | `rgba(var(
+-| `icon-link` | `.icon-link > .bi` | `transition`                    | —         | `0.2s ease-in-out transform`                                  | `transform
++| `icon-link` | `.icon-link > .bi` | `transition`                    | —         | `0.2s ease-in-out transform`                                  | `transform
+-| `is-invalid` | `.form-check-input.is-invalid:focus` | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)` | `0 0 0 var(--vn-focus-w
++| `is-invalid` | `.form-check-input.is-invalid:focus` | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)` | `0 0 0 var(--vn-focus-w
+-| `is-valid` | `.form-check-input.is-valid:focus` | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)` | `0 0 0 var(--vn-focus-widt
++| `is-valid` | `.form-check-input.is-valid:focus` | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)` | `0 0 0 var(--vn-focus-widt
+-| `link`    | `.link-primary`             | `color`                         | —         | `RGBA(var(--bs-primary-rgb), var(--bs-link-opacity, 1))`           
++| `link`    | `.link-primary`             | `color`                         | —         | `RGBA(var(--bs-primary-rgb), var(--bs-link-opacity, 1))`           
+-| `link`    | `.link-primary`             | `text-decoration-color`         | —         | `RGBA(var(--bs-primary-rgb), var(--bs-link-underline-opacity, 1))` 
+-| `link`    | `.link-primary:hover`       | `color`                         | —         | `RGBA(10, 88, 202, var(--bs-link-opacity, 1))`                     
++| `link`    | `.link-primary`             | `text-decoration-color`         | —         | `RGBA(var(--bs-primary-rgb), var(--bs-link-underline-opacity, 1))` 
++| `link`    | `.link-primary:hover`       | `color`                         | —         | `RGBA(10, 88, 202, var(--bs-link-opacity, 1))`                     
+-| `link`    | `.link-primary:hover`       | `text-decoration-color`         | —         | `RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))`           
+-| `link`    | `.link-primary:focus`       | `color`                         | —         | `RGBA(10, 88, 202, var(--bs-link-opacity, 1))`                     
++| `link`    | `.link-primary:hover`       | `text-decoration-color`         | —         | `RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))`           
++| `link`    | `.link-primary:focus`       | `color`                         | —         | `RGBA(10, 88, 202, var(--bs-link-opacity, 1))`                     
+-| `link`    | `.link-primary:focus`       | `text-decoration-color`         | —         | `RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))`           
+-| `link`    | `.link-secondary`           | `color`                         | —         | `RGBA(var(--bs-secondary-rgb), var(--bs-link-opacity, 1))`         
++| `link`    | `.link-primary:focus`       | `text-decoration-color`         | —         | `RGBA(10, 88, 202, var(--bs-link-underline-opacity, 1))`           
++| `link`    | `.link-secondary`           | `color`                         | —         | `RGBA(var(--bs-secondary-rgb), var(--bs-link-opacity, 1))`         
+-| `link`    | `.link-secondary`           | `text-decoration-color`         | —         | `RGBA(var(--bs-secondary-rgb), var(--bs-link-underline-opacity, 1))
+-| `link`    | `.link-secondary:hover`     | `color`                         | —         | `RGBA(86, 94, 100, var(--bs-link-opacity, 1))`                     
++| `link`    | `.link-secondary`           | `text-decoration-color`         | —         | `RGBA(var(--bs-secondary-rgb), var(--bs-link-underline-opacity, 1))
++| `link`    | `.link-secondary:hover`     | `color`                         | —         | `RGBA(86, 94, 100, var(--bs-link-opacity, 1))`                     
+-| `link`    | `.link-secondary:hover`     | `text-decoration-color`         | —         | `RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1))`           
+-| `link`    | `.link-secondary:focus`     | `color`                         | —         | `RGBA(86, 94, 100, var(--bs-link-opacity, 1))`                     
++| `link`    | `.link-secondary:hover`     | `text-decoration-color`         | —         | `RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1))`           
++| `link`    | `.link-secondary:focus`     | `color`                         | —         | `RGBA(86, 94, 100, var(--bs-link-opacity, 1))`                     
+-| `link`    | `.link-secondary:focus`     | `text-decoration-color`         | —         | `RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1))`           
+-| `link`    | `.link-success`             | `color`                         | —         | `RGBA(var(--bs-success-rgb), var(--bs-link-opacity, 1))`           
++| `link`    | `.link-secondary:focus`     | `text-decoration-color`         | —         | `RGBA(86, 94, 100, var(--bs-link-underline-opacity, 1))`           
++| `link`    | `.link-success`             | `color`                         | —         | `RGBA(var(--bs-success-rgb), var(--bs-link-opacity, 1))`           
+-| `link`    | `.link-success`             | `text-decoration-color`         | —         | `RGBA(var(--bs-success-rgb), var(--bs-link-underline-opacity, 1))` 
+-| `link`    | `.link-success:hover`       | `color`                         | —         | `RGBA(20, 108, 67, var(--bs-link-opacity, 1))`                     
++| `link`    | `.link-success`             | `text-decoration-color`         | —         | `RGBA(var(--bs-success-rgb), var(--bs-link-underline-opacity, 1))` 
++| `link`    | `.link-success:hover`       | `color`                         | —         | `RGBA(20, 108, 67, var(--bs-link-opacity, 1))`                     
+-| `link`    | `.link-success:hover`       | `text-decoration-color`         | —         | `RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1))`           
+-| `link`    | `.link-success:focus`       | `color`                         | —         | `RGBA(20, 108, 67, var(--bs-link-opacity, 1))`                     
++| `link`    | `.link-success:hover`       | `text-decoration-color`         | —         | `RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1))`           
++| `link`    | `.link-success:focus`       | `color`                         | —         | `RGBA(20, 108, 67, var(--bs-link-opacity, 1))`                     
+-| `link`    | `.link-success:focus`       | `text-decoration-color`         | —         | `RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1))`           
+-| `link`    | `.link-info`                | `color`                         | —         | `RGBA(var(--bs-info-rgb), var(--bs-link-opacity, 1))`              
++| `link`    | `.link-success:focus`       | `text-decoration-color`         | —         | `RGBA(20, 108, 67, var(--bs-link-underline-opacity, 1))`           
++| `link`    | `.link-info`                | `color`                         | —         | `RGBA(var(--bs-info-rgb), var(--bs-link-opacity, 1))`              
+-| `link`    | `.link-info`                | `text-decoration-color`         | —         | `RGBA(var(--bs-info-rgb), var(--bs-link-underline-opacity, 1))`    
+-| `link`    | `.link-info:hover`          | `color`                         | —         | `RGBA(61, 213, 243, var(--bs-link-opacity, 1))`                    
++| `link`    | `.link-info`                | `text-decoration-color`         | —         | `RGBA(var(--bs-info-rgb), var(--bs-link-underline-opacity, 1))`    
++| `link`    | `.link-info:hover`          | `color`                         | —         | `RGBA(61, 213, 243, var(--bs-link-opacity, 1))`                    
+-| `link`    | `.link-info:hover`          | `text-decoration-color`         | —         | `RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1))`          
+-| `link`    | `.link-info:focus`          | `color`                         | —         | `RGBA(61, 213, 243, var(--bs-link-opacity, 1))`                    
++| `link`    | `.link-info:hover`          | `text-decoration-color`         | —         | `RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1))`          
++| `link`    | `.link-info:focus`          | `color`                         | —         | `RGBA(61, 213, 243, var(--bs-link-opacity, 1))`                    
+-| `link`    | `.link-info:focus`          | `text-decoration-color`         | —         | `RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1))`          
+-| `link`    | `.link-warning`             | `color`                         | —         | `RGBA(var(--bs-warning-rgb), var(--bs-link-opacity, 1))`           
++| `link`    | `.link-info:focus`          | `text-decoration-color`         | —         | `RGBA(61, 213, 243, var(--bs-link-underline-opacity, 1))`          
++| `link`    | `.link-warning`             | `color`                         | —         | `RGBA(var(--bs-warning-rgb), var(--bs-link-opacity, 1))`           
+-| `link`    | `.link-warning`             | `text-decoration-color`         | —         | `RGBA(var(--bs-warning-rgb), var(--bs-link-underline-opacity, 1))` 
+-| `link`    | `.link-warning:hover`       | `color`                         | —         | `RGBA(255, 205, 57, var(--bs-link-opacity, 1))`                    
++| `link`    | `.link-warning`             | `text-decoration-color`         | —         | `RGBA(var(--bs-warning-rgb), var(--bs-link-underline-opacity, 1))` 
++| `link`    | `.link-warning:hover`       | `color`                         | —         | `RGBA(255, 205, 57, var(--bs-link-opacity, 1))`                    
+-| `link`    | `.link-warning:hover`       | `text-decoration-color`         | —         | `RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1))`          
+-| `link`    | `.link-warning:focus`       | `color`                         | —         | `RGBA(255, 205, 57, var(--bs-link-opacity, 1))`                    
++| `link`    | `.link-warning:hover`       | `text-decoration-color`         | —         | `RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1))`          
++| `link`    | `.link-warning:focus`       | `color`                         | —         | `RGBA(255, 205, 57, var(--bs-link-opacity, 1))`                    
+-| `link`    | `.link-warning:focus`       | `text-decoration-color`         | —         | `RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1))`          
+-| `link`    | `.link-danger`              | `color`                         | —         | `RGBA(var(--bs-danger-rgb), var(--bs-link-opacity, 1))`            
++| `link`    | `.link-warning:focus`       | `text-decoration-color`         | —         | `RGBA(255, 205, 57, var(--bs-link-underline-opacity, 1))`          
++| `link`    | `.link-danger`              | `color`                         | —         | `RGBA(var(--bs-danger-rgb), var(--bs-link-opacity, 1))`            
+-| `link`    | `.link-danger`              | `text-decoration-color`         | —         | `RGBA(var(--bs-danger-rgb), var(--bs-link-underline-opacity, 1))`  
+-| `link`    | `.link-danger:hover`        | `color`                         | —         | `RGBA(176, 42, 55, var(--bs-link-opacity, 1))`                     
++| `link`    | `.link-danger`              | `text-decoration-color`         | —         | `RGBA(var(--bs-danger-rgb), var(--bs-link-underline-opacity, 1))`  
++| `link`    | `.link-danger:hover`        | `color`                         | —         | `RGBA(176, 42, 55, var(--bs-link-opacity, 1))`                     
+-| `link`    | `.link-danger:hover`        | `text-decoration-color`         | —         | `RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1))`           
+-| `link`    | `.link-danger:focus`        | `color`                         | —         | `RGBA(176, 42, 55, var(--bs-link-opacity, 1))`                     
++| `link`    | `.link-danger:hover`        | `text-decoration-color`         | —         | `RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1))`           
++| `link`    | `.link-danger:focus`        | `color`                         | —         | `RGBA(176, 42, 55, var(--bs-link-opacity, 1))`                     
+-| `link`    | `.link-danger:focus`        | `text-decoration-color`         | —         | `RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1))`           
++| `link`    | `.link-danger:focus`        | `text-decoration-color`         | —         | `RGBA(176, 42, 55, var(--bs-link-underline-opacity, 1))`           
+-| `link`    | `.link-dark:hover`          | `color`                         | —         | `RGBA(26, 30, 33, var(--bs-link-opacity, 1))`                      
++| `link`    | `.link-dark:hover`          | `color`                         | —         | `RGBA(26, 30, 33, var(--bs-link-opacity, 1))`                      
+-| `link`    | `.link-dark:hover`          | `text-decoration-color`         | —         | `RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1))`            
+-| `link`    | `.link-dark:focus`          | `color`                         | —         | `RGBA(26, 30, 33, var(--bs-link-opacity, 1))`                      
++| `link`    | `.link-dark:hover`          | `text-decoration-color`         | —         | `RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1))`            
++| `link`    | `.link-dark:focus`          | `color`                         | —         | `RGBA(26, 30, 33, var(--bs-link-opacity, 1))`                      
+-| `link`    | `.link-dark:focus`          | `text-decoration-color`         | —         | `RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1))`            
++| `link`    | `.link-dark:focus`          | `text-decoration-color`         | —         | `RGBA(26, 30, 33, var(--bs-link-underline-opacity, 1))`            
+-| `link`    | `.link-underline-primary`   | `text-decoration-color`         | —         | `rgba(var(--bs-primary-rgb), var(--bs-link-underline-opacity))`    
++| `link`    | `.link-underline-primary`   | `text-decoration-color`         | —         | `rgba(var(--bs-primary-rgb), var(--bs-link-underline-opacity))`    
+-| `link`    | `.link-underline-secondary` | `text-decoration-color`         | —         | `rgba(var(--bs-secondary-rgb), var(--bs-link-underline-opacity))`  
++| `link`    | `.link-underline-secondary` | `text-decoration-color`         | —         | `rgba(var(--bs-secondary-rgb), var(--bs-link-underline-opacity))`  
+-| `link`    | `.link-underline-success`   | `text-decoration-color`         | —         | `rgba(var(--bs-success-rgb), var(--bs-link-underline-opacity))`    
++| `link`    | `.link-underline-success`   | `text-decoration-color`         | —         | `rgba(var(--bs-success-rgb), var(--bs-link-underline-opacity))`    
+-| `link`    | `.link-underline-info`      | `text-decoration-color`         | —         | `rgba(var(--bs-info-rgb), var(--bs-link-underline-opacity))`       
++| `link`    | `.link-underline-info`      | `text-decoration-color`         | —         | `rgba(var(--bs-info-rgb), var(--bs-link-underline-opacity))`       
+-| `link`    | `.link-underline-warning`   | `text-decoration-color`         | —         | `rgba(var(--bs-warning-rgb), var(--bs-link-underline-opacity))`    
++| `link`    | `.link-underline-warning`   | `text-decoration-color`         | —         | `rgba(var(--bs-warning-rgb), var(--bs-link-underline-opacity))`    
+-| `link`    | `.link-underline-danger`    | `text-decoration-color`         | —         | `rgba(var(--bs-danger-rgb), var(--bs-link-underline-opacity))`     
++| `link`    | `.link-underline-danger`    | `text-decoration-color`         | —         | `rgba(var(--bs-danger-rgb), var(--bs-link-underline-opacity))`     
+-| `link`    | `.link-underline`           | `text-decoration-color`         | —         | `rgba(var(--bs-link-color-rgb), var(--bs-link-underline-opacity, 1)
++| `link`    | `.link-underline`           | `text-decoration-color`         | —         | `rgba(var(--bs-link-color-rgb), var(--bs-link-underline-opacity, 1)
+-| `mark`    | `.mark`  | `padding`          | —         | `0.1875em`                  | `0 0.1875em`             | declared  |
+-| `mark`    | `.mark`  | `color`            | —         | `var(--bs-highlight-color)` | `var(--vn-text-mark)`    | tokenized |
+-| `mark`    | `.mark`  | `background-color` | —         | `var(--bs-highlight-bg)`    | `var(--vn-surface-mark)` | tokenized |
++| `mark`    | `.mark`  | `padding`          | —         | `0.1875em`                  | `0 0.1875em`             | retuned   |
++| `mark`    | `.mark`  | `color`            | —         | `var(--bs-highlight-color)` | `var(--vn-text-mark)`    | retuned   |
++| `mark`    | `.mark`  | `background-color` | —         | `var(--bs-highlight-bg)`    | `var(--vn-surface-mark)` | retuned   |
+-| `offset`  | `.offset-sm-0`  | `margin-left` | `@media (width >= 576px)`  | `0`             | `0%`   | declared  |
+-| `offset`  | `.offset-md-0`  | `margin-left` | `@media (width >= 768px)`  | `0`             | `0%`   | declared  |
+-| `offset`  | `.offset-lg-0`  | `margin-left` | `@media (width >= 992px)`  | `0`             | `0%`   | declared  |
+-| `offset`  | `.offset-xl-0`  | `margin-left` | `@media (width >= 1200px)` | `0`             | `0%`   | declared  |
+-| `offset`  | `.offset-xxl-0` | `margin-left` | `@media (width >= 1400px)` | `0`             | `0%`   | declared  |
++| `offset`  | `.offset-sm-0`  | `margin-left` | `@media (width >= 576px)`  | `0`             | `0%`   | restated  |
++| `offset`  | `.offset-md-0`  | `margin-left` | `@media (width >= 768px)`  | `0`             | `0%`   | restated  |
++| `offset`  | `.offset-lg-0`  | `margin-left` | `@media (width >= 992px)`  | `0`             | `0%`   | restated  |
++| `offset`  | `.offset-xl-0`  | `margin-left` | `@media (width >= 1200px)` | `0`             | `0%`   | restated  |
++| `offset`  | `.offset-xxl-0` | `margin-left` | `@media (width >= 1400px)` | `0`             | `0%`   | restated  |
+-| `position` | `.position-sticky` | `position` | —         | `-webkit-sticky` | `sticky` | declared  |
++| `position` | `.position-sticky` | `position` | —         | `-webkit-sticky` | `sticky` | restated  |
+-| `reboot`  | `body`        | `-webkit-tap-highlight-color`      | —                          | `rgba(0, 0, 0, 0)`                                          |
++| `reboot`  | `body`        | `-webkit-tap-highlight-color`      | —                          | `rgba(0, 0, 0, 0)`                                          |
+-| `reboot`  | `hr`          | `border-top`                       | —                          | `var(--bs-border-width) solid`                              |
+-| `reboot`  | `hr`          | `opacity`                          | —                          | `0.25`                                                      |
++| `reboot`  | `hr`          | `border-top`                       | —                          | `var(--bs-border-width) solid`                              |
++| `reboot`  | `hr`          | `opacity`                          | —                          | `0.25`                                                      |
+-| `reboot`  | `h6`          | `font-weight`                      | —                          | `500`                                                       |
++| `reboot`  | `h6`          | `font-weight`                      | —                          | `500`                                                       |
+-| `reboot`  | `h5`          | `font-weight`                      | —                          | `500`                                                       |
++| `reboot`  | `h5`          | `font-weight`                      | —                          | `500`                                                       |
+-| `reboot`  | `h4`          | `font-weight`                      | —                          | `500`                                                       |
++| `reboot`  | `h4`          | `font-weight`                      | —                          | `500`                                                       |
+-| `reboot`  | `h3`          | `font-weight`                      | —                          | `500`                                                       |
++| `reboot`  | `h3`          | `font-weight`                      | —                          | `500`                                                       |
+-| `reboot`  | `h2`          | `font-weight`                      | —                          | `500`                                                       |
++| `reboot`  | `h2`          | `font-weight`                      | —                          | `500`                                                       |
+-| `reboot`  | `h1`          | `font-weight`                      | —                          | `500`                                                       |
++| `reboot`  | `h1`          | `font-weight`                      | —                          | `500`                                                       |
+-| `reboot`  | `h1`          | `font-size`                        | —                          | `calc(1.375rem + 1.5vw)`                                    |
+-| `reboot`  | `h1`          | `font-size`                        | `@media (width >= 1200px)` | `2.5rem`                                                    | `
+-| `reboot`  | `h2`          | `font-size`                        | —                          | `calc(1.325rem + 0.9vw)`                                    |
+-| `reboot`  | `h2`          | `font-size`                        | `@media (width >= 1200px)` | `2rem`                                                      | `
+-| `reboot`  | `h3`          | `font-size`                        | —                          | `calc(1.3rem + 0.6vw)`                                      |
+-| `reboot`  | `h3`          | `font-size`                        | `@media (width >= 1200px)` | `1.75rem`                                                   | `
+-| `reboot`  | `h4`          | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    |
+-| `reboot`  | `h4`          | `font-size`                        | `@media (width >= 1200px)` | `1.5rem`                                                    | `
+-| `reboot`  | `h5`          | `font-size`                        | —                          | `1.25rem`                                                   |
++| `reboot`  | `h1`          | `font-size`                        | —                          | `calc(1.375rem + 1.5vw)`                                    |
++| `reboot`  | `h1`          | `font-size`                        | `@media (width >= 1200px)` | `2.5rem`                                                    | `
++| `reboot`  | `h2`          | `font-size`                        | —                          | `calc(1.325rem + 0.9vw)`                                    |
++| `reboot`  | `h2`          | `font-size`                        | `@media (width >= 1200px)` | `2rem`                                                      | `
++| `reboot`  | `h3`          | `font-size`                        | —                          | `calc(1.3rem + 0.6vw)`                                      |
++| `reboot`  | `h3`          | `font-size`                        | `@media (width >= 1200px)` | `1.75rem`                                                   | `
++| `reboot`  | `h4`          | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    |
++| `reboot`  | `h4`          | `font-size`                        | `@media (width >= 1200px)` | `1.5rem`                                                    | `
++| `reboot`  | `h5`          | `font-size`                        | —                          | `1.25rem`                                                   |
+-| `reboot`  | `dt`          | `font-weight`                      | —                          | `700`                                                       |
++| `reboot`  | `dt`          | `font-weight`                      | —                          | `700`                                                       |
+-| `reboot`  | `small`       | `font-size`                        | —                          | `0.875em`                                                   |
+-| `reboot`  | `mark`        | `padding`                          | —                          | `0.1875em`                                                  |
+-| `reboot`  | `mark`        | `color`                            | —                          | `var(--bs-highlight-color)`                                 |
+-| `reboot`  | `mark`        | `background-color`                 | —                          | `var(--bs-highlight-bg)`                                    |
+-| `reboot`  | `sub`         | `font-size`                        | —                          | `0.75em`                                                    |
+-| `reboot`  | `sup`         | `font-size`                        | —                          | `0.75em`                                                    |
+-| `reboot`  | `a`           | `color`                            | —                          | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1))` |
++| `reboot`  | `small`       | `font-size`                        | —                          | `0.875em`                                                   |
++| `reboot`  | `mark`        | `padding`                          | —                          | `0.1875em`                                                  |
++| `reboot`  | `mark`        | `color`                            | —                          | `var(--bs-highlight-color)`                                 |
++| `reboot`  | `mark`        | `background-color`                 | —                          | `var(--bs-highlight-bg)`                                    |
++| `reboot`  | `sub`         | `font-size`                        | —                          | `0.75em`                                                    |
++| `reboot`  | `sup`         | `font-size`                        | —                          | `0.75em`                                                    |
++| `reboot`  | `a`           | `color`                            | —                          | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1))` |
+-| `reboot`  | `pre`         | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  |
+-| `reboot`  | `pre`         | `font-size`                        | —                          | `1em`                                                       |
+-| `reboot`  | `code`        | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  |
+-| `reboot`  | `code`        | `font-size`                        | —                          | `1em`                                                       |
+-| `reboot`  | `kbd`         | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  |
+-| `reboot`  | `kbd`         | `font-size`                        | —                          | `1em`                                                       |
+-| `reboot`  | `samp`        | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  |
+-| `reboot`  | `samp`        | `font-size`                        | —                          | `1em`                                                       |
++| `reboot`  | `pre`         | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  |
++| `reboot`  | `pre`         | `font-size`                        | —                          | `1em`                                                       |
++| `reboot`  | `code`        | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  |
++| `reboot`  | `code`        | `font-size`                        | —                          | `1em`                                                       |
++| `reboot`  | `kbd`         | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  |
++| `reboot`  | `kbd`         | `font-size`                        | —                          | `1em`                                                       |
++| `reboot`  | `samp`        | `font-family`                      | —                          | `var(--bs-font-monospace)`                                  |
++| `reboot`  | `samp`        | `font-size`                        | —                          | `1em`                                                       |
+-| `reboot`  | `pre`         | `font-size`                        | —                          | `0.875em`                                                   |
+-| `reboot`  | `code`        | `font-size`                        | —                          | `0.875em`                                                   |
+-| `reboot`  | `code`        | `color`                            | —                          | `var(--bs-code-color)`                                      |
++| `reboot`  | `pre`         | `font-size`                        | —                          | `0.875em`                                                   |
++| `reboot`  | `code`        | `font-size`                        | —                          | `0.875em`                                                   |
++| `reboot`  | `code`        | `color`                            | —                          | `var(--bs-code-color)`                                      |
+-| `reboot`  | `kbd`         | `padding`                          | —                          | `0.1875rem 0.375rem`                                        |
+-| `reboot`  | `kbd`         | `font-size`                        | —                          | `0.875em`                                                   |
+-| `reboot`  | `kbd`         | `color`                            | —                          | `var(--bs-body-bg)`                                         |
+-| `reboot`  | `kbd`         | `background-color`                 | —                          | `var(--bs-body-color)`                                      |
++| `reboot`  | `kbd`         | `padding`                          | —                          | `0.1875rem 0.375rem`                                        |
++| `reboot`  | `kbd`         | `font-size`                        | —                          | `0.875em`                                                   |
++| `reboot`  | `kbd`         | `color`                            | —                          | `var(--bs-body-bg)`                                         |
++| `reboot`  | `kbd`         | `background-color`                 | —                          | `var(--bs-body-color)`                                      |
+-| `reboot`  | `table`       | `caption-side`                     | —                          | `bottom`                                                    |
++| `reboot`  | `table`       | `caption-side`                     | —                          | `bottom`                                                    |
+-| `reboot`  | `caption`     | `color`                            | —                          | `var(--bs-secondary-color)`                                 |
+-| `reboot`  | `th`          | `text-align`                       | —                          | `-webkit-match-parent`                                      |
+-| `reboot`  | `button`      | `border-radius`                    | —                          | `0`                                                         |
+-| `reboot`  | `button`      | `font-family`                      | —                          | `inherit`                                                   |
+-| `reboot`  | `button`      | `font-size`                        | —                          | `inherit`                                                   |
+-| `reboot`  | `button`      | `line-height`                      | —                          | `inherit`                                                   |
++| `reboot`  | `caption`     | `color`                            | —                          | `var(--bs-secondary-color)`                                 |
++| `reboot`  | `th`          | `text-align`                       | —                          | `-webkit-match-parent`                                      |
++| `reboot`  | `button`      | `border-radius`                    | —                          | `0`                                                         |
++| `reboot`  | `button`      | `font-family`                      | —                          | `inherit`                                                   |
++| `reboot`  | `button`      | `font-size`                        | —                          | `inherit`                                                   |
++| `reboot`  | `button`      | `line-height`                      | —                          | `inherit`                                                   |
+-| `sticky`  | `.sticky-top`        | `position` | —                          | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-top`        | `position` | —                          | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-bottom`     | `position` | —                          | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-bottom`     | `position` | —                          | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-sm-top`     | `position` | `@media (width >= 576px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-sm-top`     | `position` | `@media (width >= 576px)`  | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-sm-bottom`  | `position` | `@media (width >= 576px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-sm-bottom`  | `position` | `@media (width >= 576px)`  | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-md-top`     | `position` | `@media (width >= 768px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-md-top`     | `position` | `@media (width >= 768px)`  | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-md-bottom`  | `position` | `@media (width >= 768px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-md-bottom`  | `position` | `@media (width >= 768px)`  | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-lg-top`     | `position` | `@media (width >= 992px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-lg-top`     | `position` | `@media (width >= 992px)`  | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-lg-bottom`  | `position` | `@media (width >= 992px)`  | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-lg-bottom`  | `position` | `@media (width >= 992px)`  | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-xl-top`     | `position` | `@media (width >= 1200px)` | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-xl-top`     | `position` | `@media (width >= 1200px)` | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-xl-bottom`  | `position` | `@media (width >= 1200px)` | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-xl-bottom`  | `position` | `@media (width >= 1200px)` | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-xxl-top`    | `position` | `@media (width >= 1400px)` | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-xxl-top`    | `position` | `@media (width >= 1400px)` | `-webkit-sticky` | `sticky`                 | restated  |
+-| `sticky`  | `.sticky-xxl-bottom` | `position` | `@media (width >= 1400px)` | `-webkit-sticky` | `sticky`                 | declared  |
++| `sticky`  | `.sticky-xxl-bottom` | `position` | `@media (width >= 1400px)` | `-webkit-sticky` | `sticky`                 | restated  |
+-| `table`   | `.table-primary`   | `--bs-table-bg`            | —         | `#cfe2ff`                                  | `color-mix( in srgb, var(--vn-color-
+-| `table`   | `.table-primary`   | `--bs-table-border-color`  | —         | `#a6b5cc`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-primary`   | `--bs-table-striped-bg`    | —         | `#c5d7f2`                                  | `color-mix( in srgb, var(--bs-table-
++| `table`   | `.table-primary`   | `--bs-table-bg`            | —         | `#cfe2ff`                                  | `color-mix( in srgb, var(--vn-color-
++| `table`   | `.table-primary`   | `--bs-table-border-color`  | —         | `#a6b5cc`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-primary`   | `--bs-table-striped-bg`    | —         | `#c5d7f2`                                  | `color-mix( in srgb, var(--bs-table-
+-| `table`   | `.table-primary`   | `--bs-table-active-bg`     | —         | `#bacbe6`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-primary`   | `--bs-table-active-bg`     | —         | `#bacbe6`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-primary`   | `--bs-table-hover-bg`      | —         | `#bfd1ec`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-primary`   | `--bs-table-hover-bg`      | —         | `#bfd1ec`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-secondary` | `--bs-table-bg`            | —         | `#e2e3e5`                                  | `color-mix( in srgb, var(--vn-color-
+-| `table`   | `.table-secondary` | `--bs-table-border-color`  | —         | `#b5b6b7`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-secondary` | `--bs-table-striped-bg`    | —         | `#d7d8da`                                  | `color-mix( in srgb, var(--bs-table-
++| `table`   | `.table-secondary` | `--bs-table-bg`            | —         | `#e2e3e5`                                  | `color-mix( in srgb, var(--vn-color-
++| `table`   | `.table-secondary` | `--bs-table-border-color`  | —         | `#b5b6b7`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-secondary` | `--bs-table-striped-bg`    | —         | `#d7d8da`                                  | `color-mix( in srgb, var(--bs-table-
+-| `table`   | `.table-secondary` | `--bs-table-active-bg`     | —         | `#cbccce`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-secondary` | `--bs-table-active-bg`     | —         | `#cbccce`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-secondary` | `--bs-table-hover-bg`      | —         | `#d1d2d4`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-secondary` | `--bs-table-hover-bg`      | —         | `#d1d2d4`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-success`   | `--bs-table-bg`            | —         | `#d1e7dd`                                  | `color-mix( in srgb, var(--vn-color-
+-| `table`   | `.table-success`   | `--bs-table-border-color`  | —         | `#a7b9b1`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-success`   | `--bs-table-striped-bg`    | —         | `#c7dbd2`                                  | `color-mix( in srgb, var(--bs-table-
++| `table`   | `.table-success`   | `--bs-table-bg`            | —         | `#d1e7dd`                                  | `color-mix( in srgb, var(--vn-color-
++| `table`   | `.table-success`   | `--bs-table-border-color`  | —         | `#a7b9b1`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-success`   | `--bs-table-striped-bg`    | —         | `#c7dbd2`                                  | `color-mix( in srgb, var(--bs-table-
+-| `table`   | `.table-success`   | `--bs-table-active-bg`     | —         | `#bcd0c7`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-success`   | `--bs-table-active-bg`     | —         | `#bcd0c7`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-success`   | `--bs-table-hover-bg`      | —         | `#c1d6cc`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-success`   | `--bs-table-hover-bg`      | —         | `#c1d6cc`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-info`      | `--bs-table-bg`            | —         | `#cff4fc`                                  | `color-mix( in srgb, var(--vn-color-
+-| `table`   | `.table-info`      | `--bs-table-border-color`  | —         | `#a6c3ca`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-info`      | `--bs-table-striped-bg`    | —         | `#c5e8ef`                                  | `color-mix( in srgb, var(--bs-table-
++| `table`   | `.table-info`      | `--bs-table-bg`            | —         | `#cff4fc`                                  | `color-mix( in srgb, var(--vn-color-
++| `table`   | `.table-info`      | `--bs-table-border-color`  | —         | `#a6c3ca`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-info`      | `--bs-table-striped-bg`    | —         | `#c5e8ef`                                  | `color-mix( in srgb, var(--bs-table-
+-| `table`   | `.table-info`      | `--bs-table-active-bg`     | —         | `#badce3`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-info`      | `--bs-table-active-bg`     | —         | `#badce3`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-info`      | `--bs-table-hover-bg`      | —         | `#bfe2e9`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-info`      | `--bs-table-hover-bg`      | —         | `#bfe2e9`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-warning`   | `--bs-table-bg`            | —         | `#fff3cd`                                  | `color-mix( in srgb, var(--vn-color-
+-| `table`   | `.table-warning`   | `--bs-table-border-color`  | —         | `#ccc2a4`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-warning`   | `--bs-table-striped-bg`    | —         | `#f2e7c3`                                  | `color-mix( in srgb, var(--bs-table-
++| `table`   | `.table-warning`   | `--bs-table-bg`            | —         | `#fff3cd`                                  | `color-mix( in srgb, var(--vn-color-
++| `table`   | `.table-warning`   | `--bs-table-border-color`  | —         | `#ccc2a4`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-warning`   | `--bs-table-striped-bg`    | —         | `#f2e7c3`                                  | `color-mix( in srgb, var(--bs-table-
+-| `table`   | `.table-warning`   | `--bs-table-active-bg`     | —         | `#e6dbb9`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-warning`   | `--bs-table-active-bg`     | —         | `#e6dbb9`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-warning`   | `--bs-table-hover-bg`      | —         | `#ece1be`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-warning`   | `--bs-table-hover-bg`      | —         | `#ece1be`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-danger`    | `--bs-table-bg`            | —         | `#f8d7da`                                  | `color-mix( in srgb, var(--vn-color-
+-| `table`   | `.table-danger`    | `--bs-table-border-color`  | —         | `#c6acae`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-danger`    | `--bs-table-striped-bg`    | —         | `#eccccf`                                  | `color-mix( in srgb, var(--bs-table-
++| `table`   | `.table-danger`    | `--bs-table-bg`            | —         | `#f8d7da`                                  | `color-mix( in srgb, var(--vn-color-
++| `table`   | `.table-danger`    | `--bs-table-border-color`  | —         | `#c6acae`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-danger`    | `--bs-table-striped-bg`    | —         | `#eccccf`                                  | `color-mix( in srgb, var(--bs-table-
+-| `table`   | `.table-danger`    | `--bs-table-active-bg`     | —         | `#dfc2c4`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-danger`    | `--bs-table-active-bg`     | —         | `#dfc2c4`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `table`   | `.table-danger`    | `--bs-table-hover-bg`      | —         | `#e5c7ca`                                  | `color-mix(in srgb, var(--bs-table-c
++| `table`   | `.table-danger`    | `--bs-table-hover-bg`      | —         | `#e5c7ca`                                  | `color-mix(in srgb, var(--bs-table-c
+-| `text`        | `.text-bg-info`      | `color`               | —         | `#000`                                                  | `var(--vn-palette-whit
+-| `text`        | `.text-bg-warning`   | `color`               | —         | `#000`                                                  | `var(--vn-palette-whit
++| `text`        | `.text-bg-info`      | `color`               | —         | `#000`                                                  | `var(--vn-palette-whit
++| `text`        | `.text-bg-warning`   | `color`               | —         | `#000`                                                  | `var(--vn-palette-whit
+-| `text`        | `.text-primary`      | `color`               | —         | `rgba(var(--bs-primary-rgb), var(--bs-text-opacity))`   | `rgb(from var(--bs-pri
+-| `text`        | `.text-secondary`    | `color`               | —         | `rgba(var(--bs-secondary-rgb), var(--bs-text-opacity))` | `rgb(from var(--bs-sec
+-| `text`        | `.text-success`      | `color`               | —         | `rgba(var(--bs-success-rgb), var(--bs-text-opacity))`   | `rgb(from var(--bs-suc
+-| `text`        | `.text-info`         | `color`               | —         | `rgba(var(--bs-info-rgb), var(--bs-text-opacity))`      | `rgb(from var(--bs-inf
+-| `text`        | `.text-warning`      | `color`               | —         | `rgba(var(--bs-warning-rgb), var(--bs-text-opacity))`   | `rgb(from var(--bs-war
+-| `text`        | `.text-danger`       | `color`               | —         | `rgba(var(--bs-danger-rgb), var(--bs-text-opacity))`    | `rgb(from var(--bs-dan
++| `text`        | `.text-primary`      | `color`               | —         | `rgba(var(--bs-primary-rgb), var(--bs-text-opacity))`   | `rgb(from var(--bs-pri
++| `text`        | `.text-secondary`    | `color`               | —         | `rgba(var(--bs-secondary-rgb), var(--bs-text-opacity))` | `rgb(from var(--bs-sec
++| `text`        | `.text-success`      | `color`               | —         | `rgba(var(--bs-success-rgb), var(--bs-text-opacity))`   | `rgb(from var(--bs-suc
++| `text`        | `.text-info`         | `color`               | —         | `rgba(var(--bs-info-rgb), var(--bs-text-opacity))`      | `rgb(from var(--bs-inf
++| `text`        | `.text-warning`      | `color`               | —         | `rgba(var(--bs-warning-rgb), var(--bs-text-opacity))`   | `rgb(from var(--bs-war
++| `text`        | `.text-danger`       | `color`               | —         | `rgba(var(--bs-danger-rgb), var(--bs-text-opacity))`    | `rgb(from var(--bs-dan
+-| `toast`   | `.toast-container` | `width`                         | —         | `-webkit-max-content` | `max-content`                         | declared  |
+-| `toast`   | `.toast-container` | `width`                         | —         | `-moz-max-content`    | `max-content`                         | declared  |
++| `toast`   | `.toast-container` | `width`                         | —         | `-webkit-max-content` | `max-content`                         | restated  |
++| `toast`   | `.toast-container` | `width`                         | —         | `-moz-max-content`    | `max-content`                         | restated  |
+-| `tooltip` | `.tooltip`         | `text-align`                    | —         | `left`                | `start`                               | declared  |
++| `tooltip` | `.tooltip`         | `text-align`                    | —         | `left`                | `start`                               | restated  |
+-| `popover` | `.popover`         | `text-align`                    | —         | `left`                | `start`                               | declared  |
++| `popover` | `.popover`         | `text-align`                    | —         | `left`                | `start`                               | restated  |
+-| `transition` | `.fade`  | `transition` | —         | `opacity 0.15s linear` | `opacity var(--vn-motion-feedback) var(--vn-ease-out)` | tokenized |
++| `transition` | `.fade`  | `transition` | —         | `opacity 0.15s linear` | `opacity var(--vn-motion-feedback) var(--vn-ease-out)` | retuned   |
+-| `was-validated` | `.was-validated .form-control:valid:focus`       | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)` | `0 0 0 
+-| `was-validated` | `.was-validated .form-select:valid:focus`        | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)` | `0 0 0 
++| `was-validated` | `.was-validated .form-control:valid:focus`       | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)` | `0 0 0 
++| `was-validated` | `.was-validated .form-select:valid:focus`        | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)` | `0 0 0 
+-| `was-validated` | `.was-validated .form-check-input:valid:focus`   | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)` | `0 0 0 
+-| `was-validated` | `.was-validated .form-control:invalid:focus`     | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`  | `0 0 0 
+-| `was-validated` | `.was-validated .form-select:invalid:focus`      | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`  | `0 0 0 
++| `was-validated` | `.was-validated .form-check-input:valid:focus`   | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25)` | `0 0 0 
++| `was-validated` | `.was-validated .form-control:invalid:focus`     | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`  | `0 0 0 
++| `was-validated` | `.was-validated .form-select:invalid:focus`      | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`  | `0 0 0 
+-| `was-validated` | `.was-validated .form-check-input:invalid:focus` | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`  | `0 0 0 
++| `was-validated` | `.was-validated .form-check-input:invalid:focus` | `box-shadow` | —         | `0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25)`  | `0 0 0 
+-| `theme`   | `:root`                 | `--bs-primary`                      | —         | `#0d6efd`                                                          
+-| `theme`   | `:root`                 | `--bs-secondary`                    | —         | `#6c757d`                                                          
+-| `theme`   | `:root`                 | `--bs-success`                      | —         | `#198754`                                                          
+-| `theme`   | `:root`                 | `--bs-info`                         | —         | `#0dcaf0`                                                          
+-| `theme`   | `:root`                 | `--bs-warning`                      | —         | `#ffc107`                                                          
+-| `theme`   | `:root`                 | `--bs-danger`                       | —         | `#dc3545`                                                          
++| `theme`   | `:root`                 | `--bs-primary`                      | —         | `#0d6efd`                                                          
++| `theme`   | `:root`                 | `--bs-secondary`                    | —         | `#6c757d`                                                          
++| `theme`   | `:root`                 | `--bs-success`                      | —         | `#198754`                                                          
++| `theme`   | `:root`                 | `--bs-info`                         | —         | `#0dcaf0`                                                          
++| `theme`   | `:root`                 | `--bs-warning`                      | —         | `#ffc107`                                                          
++| `theme`   | `:root`                 | `--bs-danger`                       | —         | `#dc3545`                                                          
+-| `theme`   | `:root`                 | `--bs-primary-rgb`                  | —         | `13, 110, 253`                                                     
+-| `theme`   | `:root`                 | `--bs-secondary-rgb`                | —         | `108, 117, 125`                                                    
+-| `theme`   | `:root`                 | `--bs-success-rgb`                  | —         | `25, 135, 84`                                                      
+-| `theme`   | `:root`                 | `--bs-info-rgb`                     | —         | `13, 202, 240`                                                     
+-| `theme`   | `:root`                 | `--bs-warning-rgb`                  | —         | `255, 193, 7`                                                      
+-| `theme`   | `:root`                 | `--bs-danger-rgb`                   | —         | `220, 53, 69`                                                      
++| `theme`   | `:root`                 | `--bs-primary-rgb`                  | —         | `13, 110, 253`                                                     
++| `theme`   | `:root`                 | `--bs-secondary-rgb`                | —         | `108, 117, 125`                                                    
++| `theme`   | `:root`                 | `--bs-success-rgb`                  | —         | `25, 135, 84`                                                      
++| `theme`   | `:root`                 | `--bs-info-rgb`                     | —         | `13, 202, 240`                                                     
++| `theme`   | `:root`                 | `--bs-warning-rgb`                  | —         | `255, 193, 7`                                                      
++| `theme`   | `:root`                 | `--bs-danger-rgb`                   | —         | `220, 53, 69`                                                      
+-| `theme`   | `:root`                 | `--bs-primary-text-emphasis`        | —         | `#052c65`                                                          
+-| `theme`   | `:root`                 | `--bs-secondary-text-emphasis`      | —         | `#2b2f32`                                                          
+-| `theme`   | `:root`                 | `--bs-success-text-emphasis`        | —         | `#0a3622`                                                          
+-| `theme`   | `:root`                 | `--bs-info-text-emphasis`           | —         | `#055160`                                                          
+-| `theme`   | `:root`                 | `--bs-warning-text-emphasis`        | —         | `#664d03`                                                          
+-| `theme`   | `:root`                 | `--bs-danger-text-emphasis`         | —         | `#58151c`                                                          
++| `theme`   | `:root`                 | `--bs-primary-text-emphasis`        | —         | `#052c65`                                                          
++| `theme`   | `:root`                 | `--bs-secondary-text-emphasis`      | —         | `#2b2f32`                                                          
++| `theme`   | `:root`                 | `--bs-success-text-emphasis`        | —         | `#0a3622`                                                          
++| `theme`   | `:root`                 | `--bs-info-text-emphasis`           | —         | `#055160`                                                          
++| `theme`   | `:root`                 | `--bs-warning-text-emphasis`        | —         | `#664d03`                                                          
++| `theme`   | `:root`                 | `--bs-danger-text-emphasis`         | —         | `#58151c`                                                          
+-| `theme`   | `:root`                 | `--bs-primary-bg-subtle`            | —         | `#cfe2ff`                                                          
+-| `theme`   | `:root`                 | `--bs-secondary-bg-subtle`          | —         | `#e2e3e5`                                                          
+-| `theme`   | `:root`                 | `--bs-success-bg-subtle`            | —         | `#d1e7dd`                                                          
+-| `theme`   | `:root`                 | `--bs-info-bg-subtle`               | —         | `#cff4fc`                                                          
+-| `theme`   | `:root`                 | `--bs-warning-bg-subtle`            | —         | `#fff3cd`                                                          
+-| `theme`   | `:root`                 | `--bs-danger-bg-subtle`             | —         | `#f8d7da`                                                          
++| `theme`   | `:root`                 | `--bs-primary-bg-subtle`            | —         | `#cfe2ff`                                                          
++| `theme`   | `:root`                 | `--bs-secondary-bg-subtle`          | —         | `#e2e3e5`                                                          
++| `theme`   | `:root`                 | `--bs-success-bg-subtle`            | —         | `#d1e7dd`                                                          
++| `theme`   | `:root`                 | `--bs-info-bg-subtle`               | —         | `#cff4fc`                                                          
++| `theme`   | `:root`                 | `--bs-warning-bg-subtle`            | —         | `#fff3cd`                                                          
++| `theme`   | `:root`                 | `--bs-danger-bg-subtle`             | —         | `#f8d7da`                                                          
+-| `theme`   | `:root`                 | `--bs-primary-border-subtle`        | —         | `#9ec5fe`                                                          
+-| `theme`   | `:root`                 | `--bs-secondary-border-subtle`      | —         | `#c4c8cb`                                                          
+-| `theme`   | `:root`                 | `--bs-success-border-subtle`        | —         | `#a3cfbb`                                                          
+-| `theme`   | `:root`                 | `--bs-info-border-subtle`           | —         | `#9eeaf9`                                                          
+-| `theme`   | `:root`                 | `--bs-warning-border-subtle`        | —         | `#ffe69c`                                                          
+-| `theme`   | `:root`                 | `--bs-danger-border-subtle`         | —         | `#f1aeb5`                                                          
++| `theme`   | `:root`                 | `--bs-primary-border-subtle`        | —         | `#9ec5fe`                                                          
++| `theme`   | `:root`                 | `--bs-secondary-border-subtle`      | —         | `#c4c8cb`                                                          
++| `theme`   | `:root`                 | `--bs-success-border-subtle`        | —         | `#a3cfbb`                                                          
++| `theme`   | `:root`                 | `--bs-info-border-subtle`           | —         | `#9eeaf9`                                                          
++| `theme`   | `:root`                 | `--bs-warning-border-subtle`        | —         | `#ffe69c`                                                          
++| `theme`   | `:root`                 | `--bs-danger-border-subtle`         | —         | `#f1aeb5`                                                          
+-| `theme`   | `:root`                 | `--bs-font-sans-serif`              | —         | `system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "N
++| `theme`   | `:root`                 | `--bs-font-sans-serif`              | —         | `system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "N
+-| `theme`   | `:root`                 | `--bs-body-font-family`             | —         | `var(--bs-font-sans-serif)`                                        
+-| `theme`   | `:root`                 | `--bs-body-font-size`               | —         | `1rem`                                                             
++| `theme`   | `:root`                 | `--bs-body-font-family`             | —         | `var(--bs-font-sans-serif)`                                        
++| `theme`   | `:root`                 | `--bs-body-font-size`               | —         | `1rem`                                                             
+-| `theme`   | `:root`                 | `--bs-body-color`                   | —         | `#212529`                                                          
+-| `theme`   | `:root`                 | `--bs-body-color-rgb`               | —         | `33, 37, 41`                                                       
++| `theme`   | `:root`                 | `--bs-body-color`                   | —         | `#212529`                                                          
++| `theme`   | `:root`                 | `--bs-body-color-rgb`               | —         | `33, 37, 41`                                                       
+-| `theme`   | `:root`                 | `--bs-secondary-color`              | —         | `rgba(33, 37, 41, 0.75)`                                           
+-| `theme`   | `:root`                 | `--bs-secondary-color-rgb`          | —         | `33, 37, 41`                                                       
++| `theme`   | `:root`                 | `--bs-secondary-color`              | —         | `rgba(33, 37, 41, 0.75)`                                           
++| `theme`   | `:root`                 | `--bs-secondary-color-rgb`          | —         | `33, 37, 41`                                                       
+-| `theme`   | `:root`                 | `--bs-tertiary-color`               | —         | `rgba(33, 37, 41, 0.5)`                                            
+-| `theme`   | `:root`                 | `--bs-tertiary-color-rgb`           | —         | `33, 37, 41`                                                       
++| `theme`   | `:root`                 | `--bs-tertiary-color`               | —         | `rgba(33, 37, 41, 0.5)`                                            
++| `theme`   | `:root`                 | `--bs-tertiary-color-rgb`           | —         | `33, 37, 41`                                                       
+-| `theme`   | `:root`                 | `--bs-link-color`                   | —         | `#0d6efd`                                                          
+-| `theme`   | `:root`                 | `--bs-link-color-rgb`               | —         | `13, 110, 253`                                                     
++| `theme`   | `:root`                 | `--bs-link-color`                   | —         | `#0d6efd`                                                          
++| `theme`   | `:root`                 | `--bs-link-color-rgb`               | —         | `13, 110, 253`                                                     
+-| `theme`   | `:root`                 | `--bs-link-hover-color`             | —         | `#0a58ca`                                                          
+-| `theme`   | `:root`                 | `--bs-link-hover-color-rgb`         | —         | `10, 88, 202`                                                      
+-| `theme`   | `:root`                 | `--bs-code-color`                   | —         | `#d63384`                                                          
+-| `theme`   | `:root`                 | `--bs-highlight-color`              | —         | `#212529`                                                          
+-| `theme`   | `:root`                 | `--bs-highlight-bg`                 | —         | `#fff3cd`                                                          
++| `theme`   | `:root`                 | `--bs-link-hover-color`             | —         | `#0a58ca`                                                          
++| `theme`   | `:root`                 | `--bs-link-hover-color-rgb`         | —         | `10, 88, 202`                                                      
++| `theme`   | `:root`                 | `--bs-code-color`                   | —         | `#d63384`                                                          
++| `theme`   | `:root`                 | `--bs-highlight-color`              | —         | `#212529`                                                          
++| `theme`   | `:root`                 | `--bs-highlight-bg`                 | —         | `#fff3cd`                                                          
+-| `theme`   | `:root`                 | `--bs-border-color`                 | —         | `#dee2e6`                                                          
++| `theme`   | `:root`                 | `--bs-border-color`                 | —         | `#dee2e6`                                                          
+-| `theme`   | `:root`                 | `--bs-box-shadow`                   | —         | `0 0.5rem 1rem rgba(0, 0, 0, 0.15)`                                
+-| `theme`   | `:root`                 | `--bs-box-shadow-sm`                | —         | `0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)`                          
+-| `theme`   | `:root`                 | `--bs-box-shadow-lg`                | —         | `0 1rem 3rem rgba(0, 0, 0, 0.175)`                                 
++| `theme`   | `:root`                 | `--bs-box-shadow`                   | —         | `0 0.5rem 1rem rgba(0, 0, 0, 0.15)`                                
++| `theme`   | `:root`                 | `--bs-box-shadow-sm`                | —         | `0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)`                          
++| `theme`   | `:root`                 | `--bs-box-shadow-lg`                | —         | `0 1rem 3rem rgba(0, 0, 0, 0.175)`                                 
+-| `theme`   | `:root`                 | `--bs-focus-ring-width`             | —         | `0.25rem`                                                          
+-| `theme`   | `:root`                 | `--bs-focus-ring-opacity`           | —         | `0.25`                                                             
+-| `theme`   | `:root`                 | `--bs-focus-ring-color`             | —         | `rgba(13, 110, 253, 0.25)`                                         
+-| `theme`   | `:root`                 | `--bs-form-valid-color`             | —         | `#198754`                                                          
+-| `theme`   | `:root`                 | `--bs-form-valid-border-color`      | —         | `#198754`                                                          
+-| `theme`   | `:root`                 | `--bs-form-invalid-color`           | —         | `#dc3545`                                                          
+-| `theme`   | `:root`                 | `--bs-form-invalid-border-color`    | —         | `#dc3545`                                                          
++| `theme`   | `:root`                 | `--bs-focus-ring-width`             | —         | `0.25rem`                                                          
++| `theme`   | `:root`                 | `--bs-focus-ring-opacity`           | —         | `0.25`                                                             
++| `theme`   | `:root`                 | `--bs-focus-ring-color`             | —         | `rgba(13, 110, 253, 0.25)`                                         
++| `theme`   | `:root`                 | `--bs-form-valid-color`             | —         | `#198754`                                                          
++| `theme`   | `:root`                 | `--bs-form-valid-border-color`      | —         | `#198754`                                                          
++| `theme`   | `:root`                 | `--bs-form-invalid-color`           | —         | `#dc3545`                                                          
++| `theme`   | `:root`                 | `--bs-form-invalid-border-color`    | —         | `#dc3545`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-primary`                      | —         | `#0d6efd`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-secondary`                    | —         | `#6c757d`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-primary`                      | —         | `#0d6efd`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-secondary`                    | —         | `#6c757d`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-primary-rgb`                  | —         | `13, 110, 253`                                                     
+-| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-rgb`                | —         | `108, 117, 125`                                                    
++| `theme`   | `[data-bs-theme=light]` | `--bs-primary-rgb`                  | —         | `13, 110, 253`                                                     
++| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-rgb`                | —         | `108, 117, 125`                                                    
+-| `theme`   | `[data-bs-theme=light]` | `--bs-primary-text-emphasis`        | —         | `#052c65`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-text-emphasis`      | —         | `#2b2f32`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-success-text-emphasis`        | —         | `#0a3622`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-info-text-emphasis`           | —         | `#055160`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-warning-text-emphasis`        | —         | `#664d03`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-danger-text-emphasis`         | —         | `#58151c`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-primary-text-emphasis`        | —         | `#052c65`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-text-emphasis`      | —         | `#2b2f32`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-success-text-emphasis`        | —         | `#0a3622`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-info-text-emphasis`           | —         | `#055160`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-warning-text-emphasis`        | —         | `#664d03`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-danger-text-emphasis`         | —         | `#58151c`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-primary-bg-subtle`            | —         | `#cfe2ff`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-bg-subtle`          | —         | `#e2e3e5`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-success-bg-subtle`            | —         | `#d1e7dd`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-info-bg-subtle`               | —         | `#cff4fc`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-warning-bg-subtle`            | —         | `#fff3cd`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-danger-bg-subtle`             | —         | `#f8d7da`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-primary-bg-subtle`            | —         | `#cfe2ff`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-bg-subtle`          | —         | `#e2e3e5`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-success-bg-subtle`            | —         | `#d1e7dd`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-info-bg-subtle`               | —         | `#cff4fc`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-warning-bg-subtle`            | —         | `#fff3cd`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-danger-bg-subtle`             | —         | `#f8d7da`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-primary-border-subtle`        | —         | `#9ec5fe`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-border-subtle`      | —         | `#c4c8cb`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-success-border-subtle`        | —         | `#a3cfbb`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-info-border-subtle`           | —         | `#9eeaf9`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-warning-border-subtle`        | —         | `#ffe69c`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-danger-border-subtle`         | —         | `#f1aeb5`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-primary-border-subtle`        | —         | `#9ec5fe`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-border-subtle`      | —         | `#c4c8cb`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-success-border-subtle`        | —         | `#a3cfbb`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-info-border-subtle`           | —         | `#9eeaf9`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-warning-border-subtle`        | —         | `#ffe69c`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-danger-border-subtle`         | —         | `#f1aeb5`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-body-color`                   | —         | `#212529`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-body-color-rgb`               | —         | `33, 37, 41`                                                       
++| `theme`   | `[data-bs-theme=light]` | `--bs-body-color`                   | —         | `#212529`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-body-color-rgb`               | —         | `33, 37, 41`                                                       
+-| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-color`              | —         | `rgba(33, 37, 41, 0.75)`                                           
+-| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-color-rgb`          | —         | `33, 37, 41`                                                       
++| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-color`              | —         | `rgba(33, 37, 41, 0.75)`                                           
++| `theme`   | `[data-bs-theme=light]` | `--bs-secondary-color-rgb`          | —         | `33, 37, 41`                                                       
+-| `theme`   | `[data-bs-theme=light]` | `--bs-tertiary-color`               | —         | `rgba(33, 37, 41, 0.5)`                                            
+-| `theme`   | `[data-bs-theme=light]` | `--bs-tertiary-color-rgb`           | —         | `33, 37, 41`                                                       
++| `theme`   | `[data-bs-theme=light]` | `--bs-tertiary-color`               | —         | `rgba(33, 37, 41, 0.5)`                                            
++| `theme`   | `[data-bs-theme=light]` | `--bs-tertiary-color-rgb`           | —         | `33, 37, 41`                                                       
+-| `theme`   | `[data-bs-theme=light]` | `--bs-link-color`                   | —         | `#0d6efd`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-link-color-rgb`               | —         | `13, 110, 253`                                                     
++| `theme`   | `[data-bs-theme=light]` | `--bs-link-color`                   | —         | `#0d6efd`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-link-color-rgb`               | —         | `13, 110, 253`                                                     
+-| `theme`   | `[data-bs-theme=light]` | `--bs-link-hover-color`             | —         | `#0a58ca`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-link-hover-color-rgb`         | —         | `10, 88, 202`                                                      
+-| `theme`   | `[data-bs-theme=light]` | `--bs-code-color`                   | —         | `#d63384`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-highlight-color`              | —         | `#212529`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-highlight-bg`                 | —         | `#fff3cd`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-link-hover-color`             | —         | `#0a58ca`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-link-hover-color-rgb`         | —         | `10, 88, 202`                                                      
++| `theme`   | `[data-bs-theme=light]` | `--bs-code-color`                   | —         | `#d63384`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-highlight-color`              | —         | `#212529`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-highlight-bg`                 | —         | `#fff3cd`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-border-color`                 | —         | `#dee2e6`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-border-color`                 | —         | `#dee2e6`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-focus-ring-color`             | —         | `rgba(13, 110, 253, 0.25)`                                         
+-| `theme`   | `[data-bs-theme=light]` | `--bs-form-valid-color`             | —         | `#198754`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-form-valid-border-color`      | —         | `#198754`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-form-invalid-color`           | —         | `#dc3545`                                                          
+-| `theme`   | `[data-bs-theme=light]` | `--bs-form-invalid-border-color`    | —         | `#dc3545`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-body-color`                   | —         | `#dee2e6`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-body-color-rgb`               | —         | `222, 226, 230`                                                    
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-body-bg`                      | —         | `#212529`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-body-bg-rgb`                  | —         | `33, 37, 41`                                                       
++| `theme`   | `[data-bs-theme=light]` | `--bs-focus-ring-color`             | —         | `rgba(13, 110, 253, 0.25)`                                         
++| `theme`   | `[data-bs-theme=light]` | `--bs-form-valid-color`             | —         | `#198754`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-form-valid-border-color`      | —         | `#198754`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-form-invalid-color`           | —         | `#dc3545`                                                          
++| `theme`   | `[data-bs-theme=light]` | `--bs-form-invalid-border-color`    | —         | `#dc3545`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-body-color`                   | —         | `#dee2e6`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-body-color-rgb`               | —         | `222, 226, 230`                                                    
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-body-bg`                      | —         | `#212529`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-body-bg-rgb`                  | —         | `33, 37, 41`                                                       
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-color`              | —         | `rgba(222, 226, 230, 0.75)`                                        
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-color-rgb`          | —         | `222, 226, 230`                                                    
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-color`              | —         | `rgba(222, 226, 230, 0.75)`                                        
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-color-rgb`          | —         | `222, 226, 230`                                                    
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-tertiary-color`               | —         | `rgba(222, 226, 230, 0.5)`                                         
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-tertiary-color-rgb`           | —         | `222, 226, 230`                                                    
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-tertiary-bg`                  | —         | `#2b3035`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-tertiary-color`               | —         | `rgba(222, 226, 230, 0.5)`                                         
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-tertiary-color-rgb`           | —         | `222, 226, 230`                                                    
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-tertiary-bg`                  | —         | `#2b3035`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-primary-text-emphasis`        | —         | `#6ea8fe`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-text-emphasis`      | —         | `#a7acb1`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-success-text-emphasis`        | —         | `#75b798`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-info-text-emphasis`           | —         | `#6edff6`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-warning-text-emphasis`        | —         | `#ffda6a`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-danger-text-emphasis`         | —         | `#ea868f`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-primary-text-emphasis`        | —         | `#6ea8fe`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-text-emphasis`      | —         | `#a7acb1`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-success-text-emphasis`        | —         | `#75b798`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-info-text-emphasis`           | —         | `#6edff6`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-warning-text-emphasis`        | —         | `#ffda6a`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-danger-text-emphasis`         | —         | `#ea868f`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-primary-bg-subtle`            | —         | `#031633`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-bg-subtle`          | —         | `#161719`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-success-bg-subtle`            | —         | `#051b11`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-info-bg-subtle`               | —         | `#032830`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-warning-bg-subtle`            | —         | `#332701`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-danger-bg-subtle`             | —         | `#2c0b0e`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-primary-bg-subtle`            | —         | `#031633`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-bg-subtle`          | —         | `#161719`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-success-bg-subtle`            | —         | `#051b11`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-info-bg-subtle`               | —         | `#032830`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-warning-bg-subtle`            | —         | `#332701`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-danger-bg-subtle`             | —         | `#2c0b0e`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-primary-border-subtle`        | —         | `#084298`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-border-subtle`      | —         | `#41464b`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-success-border-subtle`        | —         | `#0f5132`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-info-border-subtle`           | —         | `#087990`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-warning-border-subtle`        | —         | `#997404`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-danger-border-subtle`         | —         | `#842029`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-primary-border-subtle`        | —         | `#084298`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-secondary-border-subtle`      | —         | `#41464b`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-success-border-subtle`        | —         | `#0f5132`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-info-border-subtle`           | —         | `#087990`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-warning-border-subtle`        | —         | `#997404`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-danger-border-subtle`         | —         | `#842029`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-link-color`                   | —         | `#6ea8fe`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-link-hover-color`             | —         | `#8bb9fe`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-link-color-rgb`               | —         | `110, 168, 254`                                                    
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-link-hover-color-rgb`         | —         | `139, 185, 254`                                                    
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-code-color`                   | —         | `#e685b5`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-highlight-color`              | —         | `#dee2e6`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-highlight-bg`                 | —         | `#664d03`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-border-color`                 | —         | `#495057`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-link-color`                   | —         | `#6ea8fe`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-link-hover-color`             | —         | `#8bb9fe`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-link-color-rgb`               | —         | `110, 168, 254`                                                    
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-link-hover-color-rgb`         | —         | `139, 185, 254`                                                    
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-code-color`                   | —         | `#e685b5`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-highlight-color`              | —         | `#dee2e6`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-highlight-bg`                 | —         | `#664d03`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-border-color`                 | —         | `#495057`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-form-valid-color`             | —         | `#75b798`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-form-valid-border-color`      | —         | `#75b798`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-form-invalid-color`           | —         | `#ea868f`                                                          
+-| `theme`   | `[data-bs-theme=dark]`  | `--bs-form-invalid-border-color`    | —         | `#ea868f`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-form-valid-color`             | —         | `#75b798`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-form-valid-border-color`      | —         | `#75b798`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-form-invalid-color`           | —         | `#ea868f`                                                          
++| `theme`   | `[data-bs-theme=dark]`  | `--bs-form-invalid-border-color`    | —         | `#ea868f`                                                          
+build exit=0
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+········x·xx··x··················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(6) ], [] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,8 @@
+  [
+    [
++     "theme | :root | --bs-border-radius-pill",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+
+ ❯ tests/conformance.test.ts:241:20
+    239|   // The component-owned dark images are a second record of the same r…
+    240|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    241|   expect(darkened).toEqual([
+       |                    ^
+    242|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    243|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "theme | :root | --bs-border-radius-pill | — | 50rem | var(--vn-radius-pill) | retuned",
++ ]
+
+ ❯ tests/conformance.test.ts:265:5
+    263|     describeDeparture,
+    264|    ).unrecorded,
+    265|   ).toEqual([])
+       |     ^
+    266|  })
+    267|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "theme | :root | --bs-border-radius-pill | — | 50rem | var(--vn-radius-pill) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:275:5
+    273|     describeDeparture,
+    274|    ).stale,
+    275|   ).toEqual([])
+       |     ^
+    276|  })
+    277|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > witnesses every bootstrap-sourced token with a departure row that reads it at the release value
+AssertionError: expected [ '--vn-radius-pill' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "--vn-radius-pill",
++ ]
+
+ ❯ tests/conformance.test.ts:314:49
+    312|  it('witnesses every bootstrap-sourced token with a departure row that…
+    313|   const departures = requireValue(classified, 'No departure was classi…
+    314|   expect(scanWitnesses(departures, references)).toEqual([])
+       |                                                 ^
+    315|   // The scan reads the whole bootstrap population: with every row ret…
+    316|   // token, and the scan names each one the map sources from the relea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 29 passed (33)
+   Start at  07:38:43
+   Duration  51.98s (transform 802ms, setup 238ms, import 33.21s, tests 18.35s, environment 0ms)
+
+exit=1
+restored src/styles/_tokens.scss byte-identical
+restored guides/veneer.md byte-identical
+--- git diff --stat after restore
+ guides/veneer.md          | 1074 +++++++++++++++++++++++----------------------
+ tests/setupServer.test.ts |  580 +++++++++++++++++++++---
+ 2 files changed, 1064 insertions(+), 590 deletions(-)

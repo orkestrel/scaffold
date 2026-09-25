@@ -1,0 +1,17 @@
+mutation=text-compare
+4.71 3.91 5.33 2/360 14627
+ × |setup| tests/setupServer.test.ts > server setup > names each departure member from the resolved values first, and from the written text where they agree 24ms
+ × |setup| tests/setupServer.test.ts > ValueResolver > classifies a pair whose values differ in text and resolve alike as its text-only member 31ms
+ × |setup| tests/setupServer.test.ts > ValueResolver > classifies a pair whose values resolve apart as retuned, whatever its text reads 25ms
+ ✓ |setup| tests/setupServer.test.ts > ValueResolver > names each pair the resolver cannot decide, and classifies none of them 20ms
+ ✓ |setup| tests/setupServer.test.ts > ValueResolver > resolves each side in its own stylesheet, a custom property through the first typed probe both values parse 39ms
+ ✓ |setup| tests/setupServer.test.ts > ValueResolver > types a custom property through each probe syntax, telling its two initial values apart 39ms
+ × |setup| tests/setupServer.test.ts > ValueResolver > names a planted unrecorded departure, a planted stale row, and each planted difference it cannot decide 39ms
+ ✓ |setup| tests/setupServer.test.ts > ValueResolver > builds one element per compound, beside the one before it across a sibling combinator 6ms
+ ✓ |setup| tests/setupServer.test.ts > ValueResolver > writes every sRGB color at the 8-bit precision a legacy color computes to, and leaves every other color alone 1ms
+ ✓ |setup| tests/setupServer.test.ts > ValueResolver > names a canonical token whose declaration resolves apart from its reference cell, at every site that declares it 26ms
+ ✓ |setup| tests/setupServer.test.ts > ValueResolver > names each bootstrap token no departure row reads at the release value 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  4 failed | 7 passed | 126 skipped (137)
+exit=1
+restored=byte-identical

@@ -1,0 +1,11 @@
+3.69 3.31 5.29 4/263 12056
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+
+ Test Files  2 passed (2)
+      Tests  290 passed (290)
+   Start at  07:35:20
+   Duration  26.69s (transform 3.69s, setup 506ms, import 6.93s, tests 37.64s, environment 0ms)
+
+exit=0

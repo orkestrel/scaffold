@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native Claude subagent reached through the harness's Agent tool, the sole writer in
-`/home/user/veneer-lret` (branch `unit/lret`, cut from Veneer `LANDING_HEAD`, the tree LEDGER-ADDITIONS lands on,
+`/home/user/veneer-lret` (branch `unit/lret`, cut from Veneer `73326c7`, the tree LEDGER-ADDITIONS lands on,
 `node_modules` hardlinked from `/home/user/veneer`). The conformance project launches Chromium from a vitest worker,
 which a bench sandbox denies, so the unit runs on the native writing lane. Start every shell command with
 `cd /home/user/veneer-lret &&` and give every file tool an absolute path under it. Read, in order:
@@ -148,7 +148,7 @@ Perform the assignment directly and spawn nothing.
 Write `tmp/units/lret-report.md` and return the same text. It holds: the Evidence re-readings; the resolver mechanism
 and its timing reading; the Unknowns' answers; the changes, by symbol; the failing-first and green readings with
 commands and counts; the rows whose member changed, as the gate printed them; the plant table (plant, command, failing
-assertion, restored); the gate table; `tmp/units/lret.diff` (`git diff LANDING_HEAD`) and `tmp/units/lret-status.txt`.
+assertion, restored); the gate table; `tmp/units/lret.diff` (`git diff 73326c7`) and `tmp/units/lret-status.txt`.
 State no count in prose.
 
 ## Deviation contract

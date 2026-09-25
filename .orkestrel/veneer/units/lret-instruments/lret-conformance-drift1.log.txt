@@ -1,0 +1,32 @@
+6.18 11.68 10.37 6/321 19560
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+········--------------···········
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger
+Error: Departure row btn: .btn:focus-visible: invalid departure declared
+ ❯ readDepartures tests/setupServer.ts:1662:11
+    1660|    }
+    1661|    if (!isDeparture(departure))
+    1662|     throw new Error(`Departure row ${component}: ${selector}: invalid …
+       |           ^
+    1663|    rows.push({
+    1664|     component,
+ ❯ tests/conformance.test.ts:226:42
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  19 passed | 14 skipped (33)
+   Start at  07:15:46
+   Duration  49.81s (transform 770ms, setup 258ms, import 33.71s, tests 15.68s, environment 0ms)
+
+exit=1

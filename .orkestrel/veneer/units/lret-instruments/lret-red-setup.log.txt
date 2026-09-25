@@ -1,0 +1,57 @@
+10.19 7.32 6.33 14/654 11221
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+ ❯ |setup| tests/setupServer.test.ts (133 tests | 1 failed | 18 skipped) 39506ms
+     × records and reads official control state and rejects contradicted or absent obligation steps 10103ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > oracle action bindings and exclusions
+Error: Hook timed out in 10100ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/setupServer.test.ts:753:3
+    751|  describe('oracle action bindings and exclusions', () => {
+    752|   let fixture: OracleFixture
+    753|   beforeAll(async () => {
+       |   ^
+    754|    fixture = await recordButtonOracle()
+    755|   }, ORACLE_TIMEOUT)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver
+TypeError: createValueResolver is not a function
+ ❯ tests/setupServer.test.ts:3590:20
+    3588|
+    3589|  beforeAll(async () => {
+    3590|   resolver = await createValueResolver(readBootstrapCascade(), emitted)
+       |                    ^
+    3591|   tokens = await createValueResolver(canonical, canonical)
+    3592|  }, ORACLE_TIMEOUT)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > records and reads official control state and rejects contradicted or absent obligation steps
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupServer.test.ts:702:2
+    700|  })
+    701|
+    702|  it(
+       |  ^
+    703|   'records and reads official control state and rejects contradicted o…
+    704|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 268 passed | 18 skipped (287)
+   Start at  07:02:26
+   Duration  50.64s (transform 10.23s, setup 1.06s, import 21.32s, tests 69.56s, environment 0ms)
+
+exit=1

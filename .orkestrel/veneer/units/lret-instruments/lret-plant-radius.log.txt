@@ -1,0 +1,141 @@
+plant=radius
+3.96 3.90 5.24 1/483 17166
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 51d2a6b..093f03c 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -421,7 +421,7 @@ $icons: (
+ 		--vn-border-style: solid;
+ 
+ 		--vn-radius-small: calc(0.25rem * var(--vn-factor-radius));
+-		--vn-radius-base: calc(0.375rem * var(--vn-factor-radius));
++		--vn-radius-base: calc(0.75rem * var(--vn-factor-radius));
+ 		--vn-radius-large: calc(0.5rem * var(--vn-factor-radius));
+ 		--vn-radius-xlarge: calc(1rem * var(--vn-factor-radius));
+ 		--vn-radius-xxlarge: calc(2rem * var(--vn-factor-radius));
+build exit=0
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+········x·xx·x···················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(8) ], [ …(2) ] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "btn | .btn | --bs-btn-border-radius",
++     "btn-close | .btn-close | border-radius",
++     "theme | :root | --bs-border-radius",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "btn | .btn | --bs-btn-border-radius",
++     "btn-close | .btn-close | border-radius",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:241:20
+    239|   // The component-owned dark images are a second record of the same r…
+    240|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    241|   expect(darkened).toEqual([
+       |                    ^
+    242|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    243|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "btn | .btn | --bs-btn-border-radius | — | var(--bs-border-radius) | var(--vn-radius-base) | retuned",
++   "btn-close | .btn-close | border-radius | — | 0.375rem | var(--vn-radius-base) | retuned",
++   "theme | :root | --bs-border-radius | — | 0.375rem | var(--vn-radius-base) | retuned",
++ ]
+
+ ❯ tests/conformance.test.ts:265:5
+    263|     describeDeparture,
+    264|    ).unrecorded,
+    265|   ).toEqual([])
+       |     ^
+    266|  })
+    267|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+AssertionError: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "btn | .btn | --bs-btn-border-radius | — | var(--bs-border-radius) | var(--vn-radius-base) | tokenized",
++   "btn-close | .btn-close | border-radius | — | 0.375rem | var(--vn-radius-base) | tokenized",
++   "theme | :root | --bs-border-radius | — | 0.375rem | var(--vn-radius-base) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:275:5
+    273|     describeDeparture,
+    274|    ).stale,
+    275|   ).toEqual([])
+       |     ^
+    276|  })
+    277|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > resolves every canonical token at every site that declares it to its reference map cell, in each mode
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "--vn-radius-base | :root | — | calc(0.375rem * var(--vn-factor-radius)) | calc(0.75rem * var(--vn-factor-radius)) | 6px | 12px",
++   "--vn-radius-base | [data-bs-theme=dark] | — | calc(0.375rem * var(--vn-factor-radius)) | calc(0.75rem * var(--vn-factor-radius)) | 6px | 12px",
++ ]
+
+ ❯ tests/conformance.test.ts:291:70
+    289|
+    290|  it('resolves every canonical token at every site that declares it to …
+    291|   expect(requireValue(canonical, 'No canonical value was resolved')).t…
+       |                                                                      ^
+    292|   // The coverage floor is a membership reading rather than a total: a…
+    293|   // contributing rows for leaves its tokens in neither the map nor th…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 29 passed (33)
+   Start at  07:37:49
+   Duration  48.49s (transform 755ms, setup 179ms, import 32.43s, tests 15.68s, environment 0ms)
+
+exit=1
+restored src/styles/_tokens.scss byte-identical
+--- git diff --stat after restore
+ guides/veneer.md          | 1074 +++++++++++++++++++++++----------------------
+ tests/setupServer.test.ts |  580 +++++++++++++++++++++---
+ 2 files changed, 1064 insertions(+), 590 deletions(-)

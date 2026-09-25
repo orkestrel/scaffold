@@ -1,0 +1,7 @@
+load 3.87 4.46 5.23 1/410 25161
+command: ./node_modules/.bin/oxfmt --config .oxfmtrc.json --check tests/setupServer.ts tests/setupServer.test.ts tests/conformance.test.ts tests/setupStyles.ts tests/setupStyles.test.ts tests/src/styles/tokens.test.ts guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 26803ms on 7 files using 4 threads.
+exit=0

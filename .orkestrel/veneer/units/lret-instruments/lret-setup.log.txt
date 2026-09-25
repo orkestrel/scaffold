@@ -1,0 +1,12 @@
+load 4.14 4.47 5.21 2/321 26325
+command: npx vitest run --config vite.config.ts --no-cache --project setup tests/setupServer.test.ts tests/setupStyles.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+
+ Test Files  2 passed (2)
+      Tests  290 passed (290)
+   Start at  07:41:56
+   Duration  21.58s (transform 2.55s, setup 448ms, import 5.67s, tests 28.62s, environment 0ms)
+
+exit=0
