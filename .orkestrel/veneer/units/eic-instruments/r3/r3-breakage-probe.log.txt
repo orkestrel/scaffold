@@ -1,0 +1,284 @@
+## preformatted code @390: 
+  0:pre h: veneer 69 | bootstrap 42
+  0:pre margin: veneer 0px | bootstrap 0px 0px 16px
+  0:pre padding: veneer 14px 16px | bootstrap 0px
+  0:pre border-top-width: veneer 1px | bootstrap 0px
+  0:pre border-left-width: veneer 1px | bootstrap 0px
+  0:pre font-size: veneer 12.25px | bootstrap 14px
+  0:pre color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:pre background-color: veneer oklch(0.968 0.007 247.896) | bootstrap rgba(0, 0, 0, 0)
+  0:pre line-height: veneer 19.6px | bootstrap 21px
+  1:code x: veneer 17 | bootstrap 0
+  1:code y: veneer 17 | bootstrap 2
+  1:code w: veneer 36 | bootstrap 42
+  1:code h: veneer 34 | bootstrap 37
+  1:code padding: veneer 1.37812px 2.75625px | bootstrap 0px
+  1:code font-size: veneer 11.025px | bootstrap 14px
+  1:code color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  1:code background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgba(0, 0, 0, 0)
+  1:code line-height: veneer 17.64px | bootstrap 21px
+  2:p y: veneer 69 | bootstrap 58
+  2:p h: veneer 21 | bootstrap 24
+  2:p margin: veneer 0px | bootstrap 0px 0px 16px
+  2:p font-size: veneer 14px | bootstrap 16px
+  2:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  2:p line-height: veneer 21px | bootstrap 24px
+  relation veneer: pre code font-size 11.025 / pre 12.25; color equal; word-break normal; padding 1.37812px 2.75625px; background oklab(0.208 -0.00310889 -0.0418848 / 0.12)
+  relation bootstrap: pre code font-size 14 / pre 14; color equal; word-break normal; padding 0px; background rgba(0, 0, 0, 0)
+## preformatted code @1280: 
+  0:pre h: veneer 69 | bootstrap 42
+  0:pre margin: veneer 0px | bootstrap 0px 0px 16px
+  0:pre padding: veneer 14px 16px | bootstrap 0px
+  0:pre border-top-width: veneer 1px | bootstrap 0px
+  0:pre border-left-width: veneer 1px | bootstrap 0px
+  0:pre font-size: veneer 12.25px | bootstrap 14px
+  0:pre color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:pre background-color: veneer oklch(0.968 0.007 247.896) | bootstrap rgba(0, 0, 0, 0)
+  0:pre line-height: veneer 19.6px | bootstrap 21px
+  1:code x: veneer 17 | bootstrap 0
+  1:code y: veneer 17 | bootstrap 2
+  1:code w: veneer 36 | bootstrap 42
+  1:code h: veneer 34 | bootstrap 37
+  1:code padding: veneer 1.37812px 2.75625px | bootstrap 0px
+  1:code font-size: veneer 11.025px | bootstrap 14px
+  1:code color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  1:code background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgba(0, 0, 0, 0)
+  1:code line-height: veneer 17.64px | bootstrap 21px
+  2:p y: veneer 69 | bootstrap 58
+  2:p h: veneer 21 | bootstrap 24
+  2:p margin: veneer 0px | bootstrap 0px 0px 16px
+  2:p font-size: veneer 14px | bootstrap 16px
+  2:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  2:p line-height: veneer 21px | bootstrap 24px
+  relation veneer: pre code font-size 11.025 / pre 12.25; color equal; word-break normal; padding 1.37812px 2.75625px; background oklab(0.208 -0.00310889 -0.0418848 / 0.12)
+  relation bootstrap: pre code font-size 14 / pre 14; color equal; word-break normal; padding 0px; background rgba(0, 0, 0, 0)
+## long preformatted line @390: 
+  0:pre h: veneer 50 | bootstrap 21
+  0:pre margin: veneer 0px | bootstrap 0px 0px 16px
+  0:pre padding: veneer 14px 16px | bootstrap 0px
+  0:pre border-top-width: veneer 1px | bootstrap 0px
+  0:pre border-left-width: veneer 1px | bootstrap 0px
+  0:pre font-size: veneer 12.25px | bootstrap 14px
+  0:pre color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:pre background-color: veneer oklch(0.968 0.007 247.896) | bootstrap rgba(0, 0, 0, 0)
+  0:pre line-height: veneer 19.6px | bootstrap 21px
+  1:code x: veneer 17 | bootstrap 0
+  1:code y: veneer 17 | bootstrap 2
+  1:code w: veneer 2650 | bootstrap 3361
+  1:code h: veneer 15 | bootstrap 16
+  1:code padding: veneer 1.37812px 2.75625px | bootstrap 0px
+  1:code font-size: veneer 11.025px | bootstrap 14px
+  1:code color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  1:code background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgba(0, 0, 0, 0)
+  1:code line-height: veneer 17.64px | bootstrap 21px
+  2:p y: veneer 50 | bootstrap 37
+  2:p h: veneer 21 | bootstrap 24
+  2:p margin: veneer 0px | bootstrap 0px 0px 16px
+  2:p font-size: veneer 14px | bootstrap 16px
+  2:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  2:p line-height: veneer 21px | bootstrap 24px
+  relation veneer: pre code font-size 11.025 / pre 12.25; color equal; word-break normal; padding 1.37812px 2.75625px; background oklab(0.208 -0.00310889 -0.0418848 / 0.12)
+  relation bootstrap: pre code font-size 14 / pre 14; color equal; word-break normal; padding 0px; background rgba(0, 0, 0, 0)
+## long preformatted line @1280: 
+  0:pre h: veneer 50 | bootstrap 21
+  0:pre margin: veneer 0px | bootstrap 0px 0px 16px
+  0:pre padding: veneer 14px 16px | bootstrap 0px
+  0:pre border-top-width: veneer 1px | bootstrap 0px
+  0:pre border-left-width: veneer 1px | bootstrap 0px
+  0:pre font-size: veneer 12.25px | bootstrap 14px
+  0:pre color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:pre background-color: veneer oklch(0.968 0.007 247.896) | bootstrap rgba(0, 0, 0, 0)
+  0:pre line-height: veneer 19.6px | bootstrap 21px
+  1:code x: veneer 17 | bootstrap 0
+  1:code y: veneer 17 | bootstrap 2
+  1:code w: veneer 2650 | bootstrap 3361
+  1:code h: veneer 15 | bootstrap 16
+  1:code padding: veneer 1.37812px 2.75625px | bootstrap 0px
+  1:code font-size: veneer 11.025px | bootstrap 14px
+  1:code color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  1:code background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgba(0, 0, 0, 0)
+  1:code line-height: veneer 17.64px | bootstrap 21px
+  2:p y: veneer 50 | bootstrap 37
+  2:p h: veneer 21 | bootstrap 24
+  2:p margin: veneer 0px | bootstrap 0px 0px 16px
+  2:p font-size: veneer 14px | bootstrap 16px
+  2:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  2:p line-height: veneer 21px | bootstrap 24px
+  relation veneer: pre code font-size 11.025 / pre 12.25; color equal; word-break normal; padding 1.37812px 2.75625px; background oklab(0.208 -0.00310889 -0.0418848 / 0.12)
+  relation bootstrap: pre code font-size 14 / pre 14; color equal; word-break normal; padding 0px; background rgba(0, 0, 0, 0)
+## linked code @390: 
+  0:p h: veneer 22 | bootstrap 24
+  0:p margin: veneer 0px | bootstrap 0px 0px 16px
+  0:p font-size: veneer 14px | bootstrap 16px
+  0:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:p line-height: veneer 21px | bootstrap 24px
+  1:a w: veneer 82 | bootstrap 84
+  1:a h: veneer 16 | bootstrap 19
+  1:a font-size: veneer 14px | bootstrap 16px
+  1:a color: veneer color(srgb 0.0510206 0.212902 0.672726) | bootstrap rgb(13, 110, 253)
+  1:a line-height: veneer 21px | bootstrap 24px
+  2:code y: veneer 3 | bootstrap 5
+  2:code w: veneer 82 | bootstrap 84
+  2:code h: veneer 17 | bootstrap 16
+  2:code padding: veneer 1.575px 3.15px | bootstrap 0px
+  2:code font-size: veneer 12.6px | bootstrap 14px
+  2:code color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(13, 110, 253)
+  2:code background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgba(0, 0, 0, 0)
+  2:code line-height: veneer 18.9px | bootstrap 21px
+  relation veneer: a > code color differs (oklch(0.208 0.042 265.755) / color(srgb 0.0510206 0.212902 0.672726))
+  relation bootstrap: a > code color equal (rgb(13, 110, 253) / rgb(13, 110, 253))
+## linked code @1280: 
+  0:p h: veneer 22 | bootstrap 24
+  0:p margin: veneer 0px | bootstrap 0px 0px 16px
+  0:p font-size: veneer 14px | bootstrap 16px
+  0:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:p line-height: veneer 21px | bootstrap 24px
+  1:a w: veneer 82 | bootstrap 84
+  1:a h: veneer 16 | bootstrap 19
+  1:a font-size: veneer 14px | bootstrap 16px
+  1:a color: veneer color(srgb 0.0510206 0.212902 0.672726) | bootstrap rgb(13, 110, 253)
+  1:a line-height: veneer 21px | bootstrap 24px
+  2:code y: veneer 3 | bootstrap 5
+  2:code w: veneer 82 | bootstrap 84
+  2:code h: veneer 17 | bootstrap 16
+  2:code padding: veneer 1.575px 3.15px | bootstrap 0px
+  2:code font-size: veneer 12.6px | bootstrap 14px
+  2:code color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(13, 110, 253)
+  2:code background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgba(0, 0, 0, 0)
+  2:code line-height: veneer 18.9px | bootstrap 21px
+  relation veneer: a > code color differs (oklch(0.208 0.042 265.755) / color(srgb 0.0510206 0.212902 0.672726))
+  relation bootstrap: a > code color equal (rgb(13, 110, 253) / rgb(13, 110, 253))
+## keyboard composition @390: 
+  0:p h: veneer 21 | bootstrap 24
+  0:p margin: veneer 0px | bootstrap 0px 0px 16px
+  0:p font-size: veneer 14px | bootstrap 16px
+  0:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:p line-height: veneer 21px | bootstrap 24px
+  1:kbd x: veneer 41 | bootstrap 47
+  1:kbd y: veneer 3 | bootstrap 2
+  1:kbd w: veneer 85 | bootstrap 79
+  1:kbd h: veneer 18 | bootstrap 22
+  1:kbd padding: veneer 0.765625px 4.59375px | bootstrap 3px 6px
+  1:kbd border-top-width: veneer 1px | bootstrap 0px
+  1:kbd border-left-width: veneer 1px | bootstrap 0px
+  1:kbd font-size: veneer 12.25px | bootstrap 14px
+  1:kbd color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(255, 255, 255)
+  1:kbd background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgb(33, 37, 41)
+  1:kbd line-height: veneer 18.375px | bootstrap 21px
+  2:kbd x: veneer 47 | bootstrap 53
+  2:kbd y: veneer 4 | bootstrap 5
+  2:kbd w: veneer 36 | bootstrap 34
+  2:kbd h: veneer 15 | bootstrap 16
+  2:kbd padding: veneer 0.669922px 4.01953px | bootstrap 0px
+  2:kbd border-top-width: veneer 1px | bootstrap 0px
+  2:kbd border-left-width: veneer 1px | bootstrap 0px
+  2:kbd font-size: veneer 10.7188px | bootstrap 14px
+  2:kbd color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(255, 255, 255)
+  2:kbd background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgb(33, 37, 41)
+  2:kbd line-height: veneer 16.0781px | bootstrap 21px
+  3:kbd x: veneer 105 | bootstrap 112
+  3:kbd y: veneer 4 | bootstrap 5
+  3:kbd w: veneer 16 | bootstrap 8
+  3:kbd h: veneer 15 | bootstrap 16
+  3:kbd padding: veneer 0.669922px 4.01953px | bootstrap 0px
+  3:kbd border-top-width: veneer 1px | bootstrap 0px
+  3:kbd border-left-width: veneer 1px | bootstrap 0px
+  3:kbd font-size: veneer 10.7188px | bootstrap 14px
+  3:kbd color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(255, 255, 255)
+  3:kbd background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgb(33, 37, 41)
+  3:kbd line-height: veneer 16.0781px | bootstrap 21px
+  relation veneer: kbd kbd font-size 10.7188 / outer 12.25; padding 0.669922px 4.01953px; border-top-width 1px; background oklab(0.208 -0.00310889 -0.0418848 / 0.12)
+  relation veneer: kbd kbd font-size 10.7188 / outer 12.25; padding 0.669922px 4.01953px; border-top-width 1px; background oklab(0.208 -0.00310889 -0.0418848 / 0.12)
+  relation bootstrap: kbd kbd font-size 14 / outer 14; padding 0px; border-top-width 0px; background rgb(33, 37, 41)
+  relation bootstrap: kbd kbd font-size 14 / outer 14; padding 0px; border-top-width 0px; background rgb(33, 37, 41)
+## keyboard composition @1280: 
+  0:p h: veneer 21 | bootstrap 24
+  0:p margin: veneer 0px | bootstrap 0px 0px 16px
+  0:p font-size: veneer 14px | bootstrap 16px
+  0:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:p line-height: veneer 21px | bootstrap 24px
+  1:kbd x: veneer 41 | bootstrap 47
+  1:kbd y: veneer 3 | bootstrap 2
+  1:kbd w: veneer 85 | bootstrap 79
+  1:kbd h: veneer 18 | bootstrap 22
+  1:kbd padding: veneer 0.765625px 4.59375px | bootstrap 3px 6px
+  1:kbd border-top-width: veneer 1px | bootstrap 0px
+  1:kbd border-left-width: veneer 1px | bootstrap 0px
+  1:kbd font-size: veneer 12.25px | bootstrap 14px
+  1:kbd color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(255, 255, 255)
+  1:kbd background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgb(33, 37, 41)
+  1:kbd line-height: veneer 18.375px | bootstrap 21px
+  2:kbd x: veneer 47 | bootstrap 53
+  2:kbd y: veneer 4 | bootstrap 5
+  2:kbd w: veneer 36 | bootstrap 34
+  2:kbd h: veneer 15 | bootstrap 16
+  2:kbd padding: veneer 0.669922px 4.01953px | bootstrap 0px
+  2:kbd border-top-width: veneer 1px | bootstrap 0px
+  2:kbd border-left-width: veneer 1px | bootstrap 0px
+  2:kbd font-size: veneer 10.7188px | bootstrap 14px
+  2:kbd color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(255, 255, 255)
+  2:kbd background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgb(33, 37, 41)
+  2:kbd line-height: veneer 16.0781px | bootstrap 21px
+  3:kbd x: veneer 105 | bootstrap 112
+  3:kbd y: veneer 4 | bootstrap 5
+  3:kbd w: veneer 16 | bootstrap 8
+  3:kbd h: veneer 15 | bootstrap 16
+  3:kbd padding: veneer 0.669922px 4.01953px | bootstrap 0px
+  3:kbd border-top-width: veneer 1px | bootstrap 0px
+  3:kbd border-left-width: veneer 1px | bootstrap 0px
+  3:kbd font-size: veneer 10.7188px | bootstrap 14px
+  3:kbd color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(255, 255, 255)
+  3:kbd background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgb(33, 37, 41)
+  3:kbd line-height: veneer 16.0781px | bootstrap 21px
+  relation veneer: kbd kbd font-size 10.7188 / outer 12.25; padding 0.669922px 4.01953px; border-top-width 1px; background oklab(0.208 -0.00310889 -0.0418848 / 0.12)
+  relation veneer: kbd kbd font-size 10.7188 / outer 12.25; padding 0.669922px 4.01953px; border-top-width 1px; background oklab(0.208 -0.00310889 -0.0418848 / 0.12)
+  relation bootstrap: kbd kbd font-size 14 / outer 14; padding 0px; border-top-width 0px; background rgb(33, 37, 41)
+  relation bootstrap: kbd kbd font-size 14 / outer 14; padding 0px; border-top-width 0px; background rgb(33, 37, 41)
+## inline code and output @390: 
+  0:p h: veneer 22 | bootstrap 25
+  0:p margin: veneer 0px | bootstrap 0px 0px 16px
+  0:p font-size: veneer 14px | bootstrap 16px
+  0:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:p line-height: veneer 21px | bootstrap 24px
+  1:code x: veneer 40 | bootstrap 45
+  1:code y: veneer 3 | bootstrap 5
+  1:code w: veneer 82 | bootstrap 84
+  1:code h: veneer 17 | bootstrap 16
+  1:code padding: veneer 1.575px 3.15px | bootstrap 0px
+  1:code font-size: veneer 12.6px | bootstrap 14px
+  1:code color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(214, 51, 132)
+  1:code background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgba(0, 0, 0, 0)
+  1:code line-height: veneer 18.9px | bootstrap 21px
+  2:samp x: veneer 162 | bootstrap 176
+  2:samp y: veneer 3 | bootstrap 4
+  2:samp w: veneer 112 | bootstrap 134
+  2:samp h: veneer 17 | bootstrap 18
+  2:samp padding: veneer 1.575px 3.15px | bootstrap 0px
+  2:samp font-size: veneer 12.6px | bootstrap 16px
+  2:samp color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  2:samp background-color: veneer oklch(0.968 0.007 247.896) | bootstrap rgba(0, 0, 0, 0)
+  2:samp line-height: veneer 18.9px | bootstrap 24px
+## inline code and output @1280: 
+  0:p h: veneer 22 | bootstrap 25
+  0:p margin: veneer 0px | bootstrap 0px 0px 16px
+  0:p font-size: veneer 14px | bootstrap 16px
+  0:p color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  0:p line-height: veneer 21px | bootstrap 24px
+  1:code x: veneer 40 | bootstrap 45
+  1:code y: veneer 3 | bootstrap 5
+  1:code w: veneer 82 | bootstrap 84
+  1:code h: veneer 17 | bootstrap 16
+  1:code padding: veneer 1.575px 3.15px | bootstrap 0px
+  1:code font-size: veneer 12.6px | bootstrap 14px
+  1:code color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(214, 51, 132)
+  1:code background-color: veneer oklab(0.208 -0.00310889 -0.0418848 / 0.12) | bootstrap rgba(0, 0, 0, 0)
+  1:code line-height: veneer 18.9px | bootstrap 21px
+  2:samp x: veneer 162 | bootstrap 176
+  2:samp y: veneer 3 | bootstrap 4
+  2:samp w: veneer 112 | bootstrap 134
+  2:samp h: veneer 17 | bootstrap 18
+  2:samp padding: veneer 1.575px 3.15px | bootstrap 0px
+  2:samp font-size: veneer 12.6px | bootstrap 16px
+  2:samp color: veneer oklch(0.208 0.042 265.755) | bootstrap rgb(33, 37, 41)
+  2:samp background-color: veneer oklch(0.968 0.007 247.896) | bootstrap rgba(0, 0, 0, 0)
+  2:samp line-height: veneer 18.9px | bootstrap 24px

@@ -1,0 +1,37 @@
+m13-kbd-border-hook | src/styles/elements/_kbd.scss | restore identical 6eab8bc05f08 | counts ['1 failed | 2 passed (3)']
+  failed: reads its border width from the release hook a scope retunes
+   AssertionError: expected '1px' to be '3px' // Object.is equality
+m14-pre-border-hook | src/styles/elements/_pre.scss | restore identical 9e8a1a704e70 | counts ['1 failed | 2 passed (3)']
+  failed: reads its border width from the release hook a scope retunes
+   AssertionError: expected '1px' to be '3px' // Object.is equality
+m15-samp-radius | src/styles/elements/_samp.scss | restore identical 4b098756db4e | counts ['2 failed (2)']
+  failed: resolves the samp values in 'dark' mode
+  failed: resolves the samp values in 'light' mode
+   AssertionError: expected +0 to be 4 // Object.is equality
+m18-readd-pre-code | src/styles/elements/_code.scss | restore identical 2b5e293c2081 | counts ['1 failed | 4 passed (5)', '7 failed | 19 passed (26)']
+  failed: gives every styled tag the same treatment wherever the markup puts it
+   AssertionError: expected 'Excluded name pre code is present in …' to be undefined
+   AssertionError: expected 'Excluded name pre code is present in …' to contain '.link-opacity-10-hover:hover'
+   AssertionError: expected 'Excluded name pre code is present in …' to contain '.navbar > .container-fluid'
+   AssertionError: expected 'Excluded name pre code is present in …' to contain '[data-bs-theme=dark] .navbar-toggler-…'
+   AssertionError: expected [ 'pre > code' ] to deeply equal []
+   AssertionError: expected [ 'pre code' ] to deeply equal []
+   AssertionError: expected [ Array(1) ] to deeply equal []
+   AssertionError: expected [ [ …(6) ], …(1) ] to deeply equal [ [ …(5) ], [] ]
+m19-readd-a-code | src/styles/elements/_code.scss | restore identical 2b5e293c2081 | counts ['1 failed | 4 passed (5)', '5 failed | 21 passed (26)']
+  failed: gives every styled tag the same treatment wherever the markup puts it
+   AssertionError: expected 'Excluded name a > code is present in …' to be undefined
+   AssertionError: expected 'Excluded name a > code is present in …' to contain '.link-opacity-10-hover:hover'
+   AssertionError: expected 'Excluded name a > code is present in …' to contain '.navbar > .container-fluid'
+   AssertionError: expected 'Excluded name a > code is present in …' to contain '[data-bs-theme=dark] .navbar-toggler-…'
+   AssertionError: expected [ 'a > code' ] to deeply equal []
+m20-readd-kbd-kbd | src/styles/elements/_kbd.scss | restore identical 6eab8bc05f08 | counts ['1 failed | 4 passed (5)', '7 failed | 19 passed (26)']
+  failed: gives every styled tag the same treatment wherever the markup puts it
+   AssertionError: expected 'Excluded name kbd kbd is present in t…' to be undefined
+   AssertionError: expected 'Excluded name kbd kbd is present in t…' to contain '.link-opacity-10-hover:hover'
+   AssertionError: expected 'Excluded name kbd kbd is present in t…' to contain '.navbar > .container-fluid'
+   AssertionError: expected 'Excluded name kbd kbd is present in t…' to contain '[data-bs-theme=dark] .navbar-toggler-…'
+   AssertionError: expected [ 'kbd > kbd' ] to deeply equal []
+   AssertionError: expected [ 'kbd kbd' ] to deeply equal []
+   AssertionError: expected [ Array(1) ] to deeply equal []
+   AssertionError: expected [ [ …(6) ], …(1) ] to deeply equal [ [ …(5) ], [] ]

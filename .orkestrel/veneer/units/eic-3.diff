@@ -1,0 +1,215 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 78082f0..d18f313 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -494,8 +494,14 @@ export const CONTENT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({ name: 'Subscript', markup: '<span>H<sub>2</sub>O</span>' }),
+ 	Object.freeze({ name: 'Superscript', markup: '<span>x<sup>2</sup></span>' }),
+ 	Object.freeze({ name: 'Code', markup: '<code>const answer = 42</code>' }),
++	Object.freeze({ name: 'Linked code', markup: '<a href="#main"><code>answer</code></a>' }),
+ 	Object.freeze({ name: 'Preformatted', markup: '<pre>first line\nsecond line</pre>' }),
++	Object.freeze({
++		name: 'Code block',
++		markup: '<pre><code>const answer = 42\nconsole.log(answer)</code></pre>',
++	}),
+ 	Object.freeze({ name: 'Keyboard', markup: '<kbd>Ctrl</kbd>' }),
++	Object.freeze({ name: 'Key combination', markup: '<kbd><kbd>Ctrl</kbd> + <kbd>S</kbd></kbd>' }),
+ 	Object.freeze({ name: 'Sample', markup: '<samp>Operation complete</samp>' }),
+ 	Object.freeze({ name: 'Variable', markup: '<var>result</var>' }),
+ 	Object.freeze({ name: 'Bold', markup: '<b>Attention without added importance</b>' }),
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 53130d3..8eadca6 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -6620,9 +6620,9 @@ name this release declares nowhere is recorded in § Outside the ledger instead.
+ | `ul ul`                                                                          | Excluded | Nested list treatment infers styling from tag composition.                                                                                                                                                      |
+ | `ol ul`                                                                          | Excluded | Nested list treatment infers styling from tag composition.                                                                                                                                                      |
+ | `ul ol`                                                                          | Excluded | Nested list treatment infers styling from tag composition.                                                                                                                                                      |
+-| `pre code`                                                                       | Excluded | Contextual code treatment infers styling from tag composition.                                                                                                                                                  |
+-| `a > code`                                                                       | Excluded | Contextual code treatment infers styling from tag composition.                                                                                                                                                  |
+-| `kbd kbd`                                                                        | Excluded | Nested keyboard treatment infers styling from tag composition.                                                                                                                                                  |
++| `pre code`                                                                       | Excluded | Contextual code treatment infers styling from tag composition, which the semantic-tags tenet in the `ROADMAP.md` file refuses.                                                                                  |
++| `a > code`                                                                       | Excluded | Contextual code treatment infers styling from tag composition, which the semantic-tags tenet in the `ROADMAP.md` file refuses.                                                                                  |
++| `kbd kbd`                                                                        | Excluded | Nested keyboard treatment infers styling from tag composition, which the semantic-tags tenet in the `ROADMAP.md` file refuses.                                                                                  |
+ | `legend + *`                                                                     | Excluded | Sibling clearing infers layout from adjacency to a legend.                                                                                                                                                      |
+ | `::-moz-focus-inner`                                                             | Excluded | This Gecko-only pseudo-element is unreachable on the managed Chromium and Edge receipts.                                                                                                                        |
+ | `::-webkit-file-upload-button`                                                   | Excluded | The standard `::file-selector-button` ships the same control part and the managed Chromium and Edge receipts resolve it, so the prefixed alias is redundant; omitting its authored rule preserves that absence. |
+@@ -9919,6 +9919,7 @@ measurement fixes.
+ | `reboot`       | `samp { padding }`                                            | —                                                | declaration | Elements paints inline code on its own surface with its own inset.                                                                                                          |
+ | `reboot`       | `samp { color }`                                              | —                                                | declaration | Elements paints inline code on its own surface with its own inset.                                                                                                          |
+ | `reboot`       | `samp { background-color }`                                   | —                                                | declaration | Elements paints inline code on its own surface with its own inset.                                                                                                          |
++| `reboot`       | `samp { border-radius }`                                      | —                                                | declaration | Elements gives sample output the chip corner the rest of the code family carries.                                                                                           |
+ | `reboot`       | `var`                                                         | —                                                | selector    | Elements paints a variable name as inline code, which the release leaves unstyled.                                                                                          |
+ | `reboot`       | `figure { display }`                                          | —                                                | declaration | Elements stacks a figure and its caption in a column.                                                                                                                       |
+ | `reboot`       | `figure { flex-direction }`                                   | —                                                | declaration | Elements stacks a figure and its caption in a column.                                                                                                                       |
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index 4891279..9c89cab 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -103,8 +103,10 @@
+ 	vertical-align: baseline;
+ }
+ 
+-@mixin code-surface {
+-	background-color: var(--vn-surface-code);
++// Emits the chip every inline member of the code family wears: its surface and the one corner the
++// family shares. The `samp` element paints the raised surface where code and keys paint the code one.
++@mixin code-surface($surface: var(--vn-surface-code)) {
++	background-color: $surface;
+ 	border-radius: var(--vn-radius-small);
+ }
+ 
+diff --git a/src/styles/elements/_kbd.scss b/src/styles/elements/_kbd.scss
+index 47d681f..e1c1be6 100644
+--- a/src/styles/elements/_kbd.scss
++++ b/src/styles/elements/_kbd.scss
+@@ -4,6 +4,6 @@
+ 	kbd {
+ 		@include code-text(87.5%, 0.0625em 0.375em);
+ 		@include code-surface;
+-		border: var(--vn-border-width) solid color-mix(in oklab, var(--vn-text-code) 22%, transparent);
++		border: var(--bs-border-width) solid color-mix(in oklab, var(--vn-text-code) 22%, transparent);
+ 	}
+ }
+diff --git a/src/styles/elements/_pre.scss b/src/styles/elements/_pre.scss
+index ce0ccd9..5c6c104 100644
+--- a/src/styles/elements/_pre.scss
++++ b/src/styles/elements/_pre.scss
+@@ -8,7 +8,7 @@
+ 		overflow: auto;
+ 		line-height: var(--vn-line-code);
+ 		background-color: var(--vn-surface-raised);
+-		border: var(--vn-border-width) solid var(--vn-border-color);
++		border: var(--bs-border-width) solid var(--vn-border-color);
+ 		border-radius: var(--vn-radius-base);
+ 	}
+ }
+diff --git a/src/styles/elements/_samp.scss b/src/styles/elements/_samp.scss
+index 7445092..3e44c83 100644
+--- a/src/styles/elements/_samp.scss
++++ b/src/styles/elements/_samp.scss
+@@ -3,6 +3,6 @@
+ @layer elements {
+ 	samp {
+ 		@include code-text;
+-		background-color: var(--vn-surface-raised);
++		@include code-surface(var(--vn-surface-raised));
+ 	}
+ }
+diff --git a/tests/app/browser/sections/ContentSection.test.ts b/tests/app/browser/sections/ContentSection.test.ts
+index 3ebb201..da1dbc0 100644
+--- a/tests/app/browser/sections/ContentSection.test.ts
++++ b/tests/app/browser/sections/ContentSection.test.ts
+@@ -38,8 +38,11 @@ describe('ContentSection', () => {
+ 				'Subscript',
+ 				'Superscript',
+ 				'Code',
++				'Linked code',
+ 				'Preformatted',
++				'Code block',
+ 				'Keyboard',
++				'Key combination',
+ 				'Sample',
+ 				'Variable',
+ 				'Bold',
+@@ -89,8 +92,11 @@ describe('ContentSection', () => {
+ 				'<span>H<sub>2</sub>O</span>',
+ 				'<span>x<sup>2</sup></span>',
+ 				'<code>const answer = 42</code>',
++				'<a href="#main"><code>answer</code></a>',
+ 				'<pre>first line\nsecond line</pre>',
++				'<pre><code>const answer = 42\nconsole.log(answer)</code></pre>',
+ 				'<kbd>Ctrl</kbd>',
++				'<kbd><kbd>Ctrl</kbd> + <kbd>S</kbd></kbd>',
+ 				'<samp>Operation complete</samp>',
+ 				'<var>result</var>',
+ 				'<b>Attention without added importance</b>',
+@@ -147,7 +153,14 @@ describe('ContentSection', () => {
+ 				'span',
+ 				'sup',
+ 				'code',
++				'a',
++				'code',
+ 				'pre',
++				'pre',
++				'code',
++				'kbd',
++				'kbd',
++				'kbd',
+ 				'kbd',
+ 				'samp',
+ 				'var',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 8f883b6..5ebc750 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1469,6 +1469,7 @@ export const TEXT_SAMP_CASES = Object.freeze(
+ 				'padding-top': '1.575px',
+ 				'padding-left': '3.15px',
+ 			}),
++			radius: 4,
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
+ 			background: mode === 'light' ? 'oklch(0.968 0.007 247.896)' : 'oklch(0.265 0.014 256)',
+ 			family:
+diff --git a/tests/src/styles/elements/kbd.test.ts b/tests/src/styles/elements/kbd.test.ts
+index 016b6ca..c0517ee 100644
+--- a/tests/src/styles/elements/kbd.test.ts
++++ b/tests/src/styles/elements/kbd.test.ts
+@@ -32,4 +32,10 @@ describe('kbd text treatment', () => {
+ 			expect(readPixels(element, 'border-top-left-radius')).toBe(radius)
+ 		},
+ 	)
++	it('reads its border width from the release hook a scope retunes', () => {
++		const host = scene.mount('<div style="--bs-border-width: 3px"><kbd>Ctrl</kbd></div>')
++		expect(
++			readStyle(requireValue(host.querySelector('kbd'), 'No kbd specimen'), 'border-top-width'),
++		).toBe('3px')
++	})
+ })
+diff --git a/tests/src/styles/elements/pre.test.ts b/tests/src/styles/elements/pre.test.ts
+index 52c37dc..4519aff 100644
+--- a/tests/src/styles/elements/pre.test.ts
++++ b/tests/src/styles/elements/pre.test.ts
+@@ -32,4 +32,10 @@ describe('pre text treatment', () => {
+ 			expect(readPixels(element, 'border-top-left-radius')).toBe(radius)
+ 		},
+ 	)
++	it('reads its border width from the release hook a scope retunes', () => {
++		const host = scene.mount('<div style="--bs-border-width: 3px"><pre>first</pre></div>')
++		expect(
++			readStyle(requireValue(host.querySelector('pre'), 'No pre specimen'), 'border-top-width'),
++		).toBe('3px')
++	})
+ })
+diff --git a/tests/src/styles/elements/samp.test.ts b/tests/src/styles/elements/samp.test.ts
+index 80b689f..3d1ca41 100644
+--- a/tests/src/styles/elements/samp.test.ts
++++ b/tests/src/styles/elements/samp.test.ts
+@@ -1,5 +1,5 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle, readToken } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
+ import { TEXT_SAMP_CASES } from '../../../setupStyles.js'
+@@ -9,10 +9,10 @@ afterEach(() => {
+ })
+ 
+ describe('samp text treatment', () => {
+-	// The geometry and the raised surface follow the code-family record.
++	// The geometry, the raised surface, and the chip corner follow the code-family record.
+ 	it.each(TEXT_SAMP_CASES)(
+ 		'resolves the samp values in $mode mode',
+-		({ mode, values, color, background, family }) => {
++		({ mode, values, color, background, family, radius }) => {
+ 			const host = scene.mount(
+ 				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><samp>Result</samp></div>`,
+ 			)
+@@ -28,6 +28,7 @@ describe('samp text treatment', () => {
+ 			)
+ 			expect(readStyle(element, 'font-family')).toBe(family)
+ 			expect(matchesColor(readStyle(element, 'background-color'), background)).toBe(true)
++			expect(readPixels(element, 'border-top-left-radius')).toBe(radius)
+ 		},
+ 	)
+ })

@@ -20,17 +20,17 @@ Command: `npx vitest run --config configs/src/vite.styles.config.ts --no-cache t
 
 | Stage | Reading | Log |
 | --- | --- | --- |
-| Proofs added, source at base | 11 failed, 49 passed. Every failure is a new proof: `takes the release block margins …` on each tag and each `.h*` class | `tmp/units/flow-logs/owned-red.log.txt` |
+| Proofs added, source at base | 11 failed, 49 passed. Every failure is a new proof: `takes the release block margins …` on each tag and each `.h*` class | `/home/user/scaffold/.orkestrel/veneer/units/flow-instruments/logs/owned-red.log.txt` |
 | Source fixed, calibrations not yet updated | New proofs green. The calibration cases the change made false are red: 16 failed, 44 passed | overwritten by the next run in the same log path; the list is in § Tests the change made false |
-| Calibrations updated | 60 passed | `tmp/units/flow-logs/owned-green.log.txt` |
+| Calibrations updated | 60 passed | `/home/user/scaffold/.orkestrel/veneer/units/flow-instruments/logs/owned-green.log.txt` |
 
 ## Mutation table
 
-`tmp/units/flow-mutate.sh` runs each mutation. The script copies the file, applies the mutation, rebuilds the styles, runs the named files, copies the file back, and compares the SHA-256 digests.
+`/home/user/scaffold/.orkestrel/veneer/units/flow-instruments/flow-mutate.sh` runs each mutation. The script copies the file, applies the mutation, rebuilds the styles, runs the named files, copies the file back, and compares the SHA-256 digests.
 
 | Mutation | Assertion it reddens | Reading | Log | Restore |
 | --- | --- | --- | --- | --- |
-| `_p.scss` `var(--vn-space-8)` → `1rem` | p density proof (`release * 2`) | 1 failed, 2 passed | `tmp/units/flow-logs/mutation-p-literal.log.txt` | identical, `439d1157…0423` |
+| `_p.scss` `var(--vn-space-8)` → `1rem` | p density proof (`release * 2`) | 1 failed, 2 passed | `/home/user/scaffold/.orkestrel/veneer/units/flow-instruments/logs/mutation-p-literal.log.txt` | identical, `439d1157…0423` |
 | `heading-text` `var(--vn-space-4)` → `0.5rem` | heading density proof, each `.h*` class density proof | 7 failed, 41 passed. The calibrations stay green | `mutation-heading-literal.log.txt` | identical, `aeb473b8…e2` |
 | `heading-text` `var(--vn-space-4)` → `var(--vn-space-8)` | heading and `.h*` default-density proofs, heading calibration, `.h*` twin margin | 15 failed, 33 passed | `mutation-heading-step.log.txt` | identical |
 | `_address.scss` `var(--vn-space-8)` → `var(--vn-space-7)` (the old value) | address proof and calibration | 3 failed | `mutation-address-old.log.txt` | identical, `95351988…2011` |
@@ -39,7 +39,7 @@ Command: `npx vitest run --config configs/src/vite.styles.config.ts --no-cache t
 
 ## Probe readings against Bootstrap
 
-The probe `tmp/units/flow-probe.mjs` renders the same markup under the built Veneer cascade and under `bootstrap/dist/css/bootstrap.css` in Chromium at 390 and 1280 pixels, then doubles the density on the Veneer page. Log: `tmp/units/flow-logs/probe.log.txt`, exit 0. At both widths, every row reads the same on both sides:
+The probe `/home/user/scaffold/.orkestrel/veneer/units/flow-instruments/flow-probe.mjs` renders the same markup under the built Veneer cascade and under `bootstrap/dist/css/bootstrap.css` in Chromium at 390 and 1280 pixels, then doubles the density on the Veneer page. Log: `/home/user/scaffold/.orkestrel/veneer/units/flow-instruments/logs/probe.log.txt`, exit 0. At both widths, every row reads the same on both sides:
 
 - `h1` to `h6` and `div.h1` to `div.h6`: 0px top and 8px bottom. At density 2, Veneer reads 16px.
 - `p`, `address`, `ol`, and `ul`: 0px top and 16px bottom. At density 2, Veneer reads 32px.
@@ -63,7 +63,7 @@ Each of these tests was found by running the suites after the change:
 
 ## Gate table
 
-Logs sit under `tmp/units/flow-logs/`. The final run is `tmp/units/flow-gates-2.sh`.
+Logs sit under `/home/user/scaffold/.orkestrel/veneer/units/flow-instruments/logs/`. The final run is `/home/user/scaffold/.orkestrel/veneer/units/flow-instruments/flow-gates-2.sh`.
 
 | Gate | Exit | Reading | Log |
 | --- | --- | --- | --- |
@@ -78,7 +78,7 @@ Logs sit under `tmp/units/flow-logs/`. The final run is `tmp/units/flow-gates-2.
 | `npm run test:guides` | 0 | 20 passed | `guides-2.log.txt` |
 | `npx vitest run --config vite.config.ts --no-cache --project app:browser` | 0 | 222 passed | `app-browser-2.log.txt` |
 
-The earlier run (`tmp/units/flow-gates.sh`, logs without the `-2` suffix) read two reds, and both are fixed in the preceding section:
+The earlier run (`/home/user/scaffold/.orkestrel/veneer/units/flow-instruments/flow-gates.sh`, logs without the `-2` suffix) read two reds, and both are fixed in the preceding section:
 
 - `src-styles`: `card.test.ts` failed.
 - `setup`: the `setupStyles.test.ts` inventory failed.
@@ -87,7 +87,7 @@ The first `test:conformance` run (`conformance-1.log.txt`) printed the ledger ro
 
 ## Shared-file hunks
 
-The exact bytes are in `tmp/units/flow.diff`.
+The exact bytes are in `/home/user/scaffold/.orkestrel/veneer/units/flow.diff`.
 
 - `src/styles/_mixins.scss`:
 
@@ -117,8 +117,8 @@ The exact bytes are in `tmp/units/flow.diff`.
 
 ## Diff and status
 
-- `tmp/units/flow.diff` is `git diff 6882751`. It changes 13 files: 235 insertions and 67 deletions.
-- `tmp/units/flow-status.txt` is `git status --short`. It lists `M` for `guides/veneer.md`, `src/styles/_mixins.scss`, `src/styles/elements/_address.scss`, `src/styles/elements/_p.scss`, `tests/setupStyles.test.ts`, `tests/setupStyles.ts`, `tests/src/styles/components/card.test.ts`, `tests/src/styles/components/type.test.ts`, and `tests/src/styles/elements/{address,heading,ol,p,ul}.test.ts`.
+- `/home/user/scaffold/.orkestrel/veneer/units/flow.diff` is `git diff 6882751`. It changes 13 files: 235 insertions and 67 deletions.
+- `/home/user/scaffold/.orkestrel/veneer/units/flow-status.txt` is `git status --short`. It lists `M` for `guides/veneer.md`, `src/styles/_mixins.scss`, `src/styles/elements/_address.scss`, `src/styles/elements/_p.scss`, `tests/setupStyles.test.ts`, `tests/setupStyles.ts`, `tests/src/styles/components/card.test.ts`, `tests/src/styles/components/type.test.ts`, and `tests/src/styles/elements/{address,heading,ol,p,ul}.test.ts`.
 
 ## Deviation state
 

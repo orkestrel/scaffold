@@ -110,28 +110,30 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-24 23:40 UTC.** Implementation first, the user's instruction.
-- **Veneer `main` is `6882751`**: APPEARANCE landed (AP-COLOR `8507fba`, P7; AP-TYPE `1775bb7`, P8), the roadmap fold
-  `f1f34dd`, and this session's merge of your J-GUARDS. The landing chain over `ca83afb` read styles 1463, setup
-  321, conformance 26, guides 20, policy 109, and the journey 252 with capture and 252 without; the merge over your
-  J-GUARDS read `format:check`, `lint:check`, `check`, guides, policy, and conformance green
-  (`units/appearance-instruments/`). They change `src/styles/**`, `tests/src/styles/**`, `tests/setupStyles.ts`,
-  `tests/setupStyles.test.ts`, `tests/setup.ts`, and the guide's style sections, and no engine file. The roadmap's
-  rulings sentence now says you work on `main` with one worktree per unit.
-- **Your J-SANITIZER on Chromium 141** (`units/sanitizer-read/`, read at `b1d314d`): `app:browser` 222, `setup:browser`
-  83, `src:browser` 887 passed and 1 failed. The red is `ConfigSanitizer.test.ts` › "parses in the context of the
-  target, so an annotation-xml element whose encoding is text/html keeps an HTML anchor", reading `''` for
-  `<a>kept</a>`, and it reads the same with its file alone. Yours to carry.
-- **In flight here: E-IDENTITY** (`e-identity-design-verdict.md`): a bare element takes Veneer's look, and markup built
-  with Bootstrap's classes lays out as Bootstrap lays it out. E-ID-LAYOUT (`dl`, `blockquote`, `figure`), E-ID-CODE
-  (`pre code`, `a > code`, `kbd kbd`, `samp`), and E-ID-RECORD (every border width reads `--bs-border-width`;
-  `.btn-check` hides as Bootstrap does) run in worktrees cut from `ca83afb`. They touch `src/styles/**`,
-  `tests/src/styles/**`, `tests/setupStyles.ts`, `app/browser/constants.ts` (specimens), and the guide's element rows,
-  and no engine file.
-- **Next here:** J-FIXTURES (this session carries it; its callers sit in `tests/app/**` and `tests/setupBrowser.test.ts`,
-  and it touches only the four lookups in `tests/setupBrowser.ts`), E-RECEIPTS (the release-mode distribution proof
-  read green at `b1d314d`, `units/receipts-read/`), and P1 SCAFFOLD-PROPAGATE. E-VUE wraps your engine API: say
-  whether you take it.
+**In flight (this session), 2026-09-25 01:00 UTC.** Implementation first, the user's instruction.
+- **Your J-SANITIZER-CONTEXT on Chromium 141** (`units/sanitizer-read-2/`, read at `6d27028` on Chromium
+  141.0.7390.37): `ConfigSanitizer.test.ts` alone reads 70 passed and 2 skipped, and `test:src:browser` reads 891 passed
+  and 2 skipped. The skips are the cases gated on a native `Sanitizer` and on `setHTML`, which this Chromium lacks. The
+  annotation-xml case passes, so your carried row's closing condition holds.
+- **E-IDENTITY, realigned on the tenets** (`e-identity-design-verdict.md` § Addendum 2, the user's ruling of
+  2026-09-24): tag-only semantic defaults, Bootstrap's classes carry Bootstrap's layout, no contextual tag pairs
+  (`pre code`, `a > code`, `kbd kbd`, and the nested-list margin rule stay Excluded), no `:not([class])`, no `:has()`.
+  Bootstrap's reboot flow margins return through the space scale. Units: E-ID-LAYOUT round 3, E-ID-CODE round 3, and
+  E-ID-RECORD round 2 (from `ca83afb`), and E-ID-FLOW (headings, `.h1` to `.h6`, `p`, `address`, `ol`, `ul`, from
+  `6882751`) are green and in audit. They land serially over your `6d27028`, and they touch `src/styles/**`,
+  `tests/src/styles/**`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `app/browser/constants.ts`
+  (specimens), and the guide's style rows, and no engine file. E-ID-FLOW-2 (`dl`, `pre`, `hr`, `figure`) follows the
+  landing. A probe of Bootstrap's documented component markup under the E-ID-FLOW cascade reads every component margin
+  equal to Bootstrap's (`units/flow-instruments/orchestrator-components-probe.log.txt`).
+- **J-FIXTURES, carried for you** (`units/j-fixtures-report.md`): `readButton`, `readSpecimen`, and `readSubject` end in
+  one exported helper, `requireMatch(matched, messages)` with a `MatchMessages` object; every message is
+  byte-identical and no caller changes. It touches only `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts`, and it
+  is in audit. It lands with the E-ID units; your fixture-lookups row closes then.
+- **Your motion question** (the J-TENETS identity lens): the styles session owns the motion values the cascade ships.
+  E-IDENTITY ruled type, colour, and layout, not motion. The styles session puts the Elements motion question to the
+  user with the next status report, and neither session changes motion before the user's ruling.
+- **Next here:** E-RECEIPTS (the release-mode distribution proof read green at `b1d314d`, `units/receipts-read/`) and
+  P1 SCAFFOLD-PROPAGATE. E-VUE waits on the user's ruling.
 
 ## Landing procedure
 

@@ -1,0 +1,210 @@
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index e185f7c..bd27dde 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -74,6 +74,7 @@ import {
+ 	readRegion,
+ 	readSpecimen,
+ 	readSubject,
++	requireMatch,
+ 	SPECIMEN_ATTRIBUTE,
+ 	scene,
+ 	visitBreakpoint,
+@@ -919,6 +920,7 @@ describe('browser setup', () => {
+ 				'recordListeners',
+ 				'recordPlacements',
+ 				'recordState',
++				'requireMatch',
+ 				'scanPositionalPairs',
+ 				'scene',
+ 				'shadowSetHTML',
+@@ -1758,6 +1760,42 @@ describe('browser setup', () => {
+ 	})
+ })
+ 
++describe('requireMatch', () => {
++	const messages = {
++		absent: 'No sample in the root is named "Placeholder"',
++		duplicate: 'samples in the root are named "Placeholder"',
++		foreign: 'The "Placeholder" sample is not an HTML element',
++	}
++
++	it('returns the one candidate a lookup matched', () => {
++		const sample = build('div')
++		expect(requireMatch([sample], messages)).toBe(sample)
++	})
++
++	it('refuses a lookup that matched nothing with the absent message', () => {
++		expect(() => requireMatch([], messages)).toThrow(
++			new Error('No sample in the root is named "Placeholder"'),
++		)
++	})
++
++	it('refuses a lookup that matched several candidates, and names their count', () => {
++		expect(() => requireMatch([build('div'), build('span')], messages)).toThrow(
++			new Error('2 samples in the root are named "Placeholder"'),
++		)
++		expect(() => requireMatch([build('div'), build('div'), build('div')], messages)).toThrow(
++			new Error('3 samples in the root are named "Placeholder"'),
++		)
++	})
++
++	it('refuses a lone candidate that is not an HTML element with the foreign message', () => {
++		// An SVG element is an `Element` a typed query would hand over as an HTML element unchecked.
++		const graphic = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
++		expect(() => requireMatch([graphic], messages)).toThrow(
++			new Error('The "Placeholder" sample is not an HTML element'),
++		)
++	})
++})
++
+ describe('scanPositionalPairs', () => {
+ 	it('excludes a nesting the content model mandates, and reports it when nothing mandates it', () => {
+ 		// The exclusion is the one place the reader can stay silent, so the same plant runs with the
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index e2e2ec0..ce67ec6 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -426,6 +426,53 @@ export const BUTTON_CLASS = 'btn'
+ /** Names the attribute the showcase labels each rendered specimen with. */
+ export const SPECIMEN_ATTRIBUTE = 'data-specimen'
+ 
++/**
++ * Words the refusals of one named lookup, so {@link requireMatch} can refuse in that lookup's own
++ * terms.
++ */
++export interface MatchMessages {
++	/** Refuses a name no candidate answers to. */
++	readonly absent: string
++	/** Refuses a name several candidates answer to, as the text that follows their count. */
++	readonly duplicate: string
++	/** Refuses a name whose one candidate is not an HTML element. */
++	readonly foreign: string
++}
++
++/**
++ * Returns the one candidate a named lookup matched, checked as an HTML element.
++ *
++ * @param matched - The candidates the lookup's selection policy kept for one name.
++ * @param messages - The refusals, worded in the lookup's own terms.
++ * @returns The one matched candidate.
++ * @throws An `Error` carrying `messages.duplicate` after the count when several candidates matched,
++ *   `messages.absent` when none did, and `messages.foreign` when the one match is not an HTML element.
++ *
++ * @remarks
++ * Every named lookup ends the same way: a name that addresses two elements addresses neither, a name
++ * that addresses none is a missing subject, and a typed answer must be checked rather than narrowed.
++ * The lookups differ only in which candidates they keep and how they word the refusal, so each keeps
++ * its selection and its wording and hands this the rest.
++ *
++ * Several matches are refused rather than answered with the first of them, and the refusal names
++ * their count, so a root that grew a second element of that name says so.
++ *
++ * @example
++ * ```ts
++ * requireMatch([...root.querySelectorAll('[data-specimen="Capped container"]')], {
++ * 	absent: 'No specimen in the root is named "Capped container"',
++ * 	duplicate: 'specimens in the root are named "Capped container"',
++ * 	foreign: 'The "Capped container" specimen is not an HTML element',
++ * })
++ * ```
++ */
++export function requireMatch(matched: readonly Element[], messages: MatchMessages): HTMLElement {
++	if (matched.length > 1) throw new Error(`${String(matched.length)} ${messages.duplicate}`)
++	const element = requireValue(matched[0], messages.absent)
++	if (!(element instanceof HTMLElement)) throw new Error(messages.foreign)
++	return element
++}
++
+ /**
+  * Reads one rendered button inside a root by the accessible name it announces.
+  *
+@@ -446,9 +493,9 @@ export const SPECIMEN_ATTRIBUTE = 'data-specimen'
+  * readers compute, over the elements a root carries, and judges nothing about reachability.
+  *
+  * Two buttons announcing one name inside one root are refused rather than answered with the first of
+- * them. A reading that silently took document order would make every assertion after it a statement
+- * about whichever host the section happened to render first, and nothing would report the ambiguity.
+- * The refusal names the count, so a root that grew a second host of that name says so.
++ * them, through {@link requireMatch}. A reading that silently took document order would make every
++ * assertion after it a statement about whichever host the section happened to render first, and
++ * nothing would report the ambiguity.
+  *
+  * @example
+  * ```ts
+@@ -459,19 +506,11 @@ export function readButton(root: ParentNode, name: string): HTMLElement {
+ 	const matched = [...root.querySelectorAll(`.${BUTTON_CLASS}`)].filter(
+ 		(candidate) => readName(candidate) === name,
+ 	)
+-	if (matched.length > 1) {
+-		throw new Error(
+-			`${String(matched.length)} buttons in the root announce the accessible name "${name}"`,
+-		)
+-	}
+-	const element = requireValue(
+-		matched[0],
+-		`No button in the root announces the accessible name "${name}"`,
+-	)
+-	if (!(element instanceof HTMLElement)) {
+-		throw new Error(`The "${name}" button is not an HTML element`)
+-	}
+-	return element
++	return requireMatch(matched, {
++		absent: `No button in the root announces the accessible name "${name}"`,
++		duplicate: `buttons in the root announce the accessible name "${name}"`,
++		foreign: `The "${name}" button is not an HTML element`,
++	})
+ }
+ 
+ /**
+@@ -490,8 +529,8 @@ export function readButton(root: ParentNode, name: string): HTMLElement {
+  * return whichever of them the showcase rendered first, and a frame placed on it would be labelled
+  * for a specimen it does not show.
+  *
+- * The duplicate refusal is {@link readButton}'s, for the reason stated there: a name that addresses
+- * two specimens addresses neither.
++ * The duplicate refusal is {@link requireMatch}'s, for the reason stated there: a name that
++ * addresses two specimens addresses neither.
+  *
+  * @example
+  * ```ts
+@@ -502,14 +541,11 @@ export function readSpecimen(root: ParentNode, name: string): HTMLElement {
+ 	const matched = [...root.querySelectorAll(`[${SPECIMEN_ATTRIBUTE}]`)].filter(
+ 		(candidate) => candidate.getAttribute(SPECIMEN_ATTRIBUTE) === name,
+ 	)
+-	if (matched.length > 1) {
+-		throw new Error(`${String(matched.length)} specimens in the root are named "${name}"`)
+-	}
+-	const element = requireValue(matched[0], `No specimen in the root is named "${name}"`)
+-	if (!(element instanceof HTMLElement)) {
+-		throw new Error(`The "${name}" specimen is not an HTML element`)
+-	}
+-	return element
++	return requireMatch(matched, {
++		absent: `No specimen in the root is named "${name}"`,
++		duplicate: `specimens in the root are named "${name}"`,
++		foreign: `The "${name}" specimen is not an HTML element`,
++	})
+ }
+ 
+ /**
+@@ -579,14 +615,11 @@ export function readSubject(root: ParentNode, name: string): HTMLElement {
+ 			candidate.getAttribute('aria-label') === name ||
+ 			(candidate.classList.contains(BUTTON_CLASS) && readName(candidate) === name),
+ 	)
+-	if (matched.length > 1) {
+-		throw new Error(`${String(matched.length)} rendered subjects answer to the name "${name}"`)
+-	}
+-	const element = requireValue(matched[0], `No rendered subject answers to the name "${name}"`)
+-	if (!(element instanceof HTMLElement)) {
+-		throw new Error(`The "${name}" subject is not an HTML element`)
+-	}
+-	return element
++	return requireMatch(matched, {
++		absent: `No rendered subject answers to the name "${name}"`,
++		duplicate: `rendered subjects answer to the name "${name}"`,
++		foreign: `The "${name}" subject is not an HTML element`,
++	})
+ }
+ 
+ /**

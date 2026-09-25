@@ -1,0 +1,149 @@
+## bare list @390
+  veneer    0:dl x=0.00 y=0.00 w=520.00 h=108.00 bottom=108.00 display=grid gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=173.328px 346.672px
+  veneer    1:dt x=0.00 y=0.00 w=173.33 h=21.00 bottom=21.00 display=block gap=normal margin=0px padding=0px 16px 0px 0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:dt x=0.00 y=21.00 w=173.33 h=29.00 bottom=50.00 display=block gap=normal margin=0px padding=0px 16px 0px 0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:dd x=173.33 y=21.00 w=346.67 h=21.00 bottom=42.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:dt x=0.00 y=50.00 w=173.33 h=29.00 bottom=79.00 display=block gap=normal margin=0px padding=0px 16px 0px 0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    5:dd x=173.33 y=50.00 w=346.67 h=21.00 bottom=71.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    6:dd x=173.33 y=79.00 w=346.67 h=21.00 bottom=100.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:dl x=0.00 y=0.00 w=520.00 h=160.00 bottom=160.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:dt x=0.00 y=0.00 w=520.00 h=24.00 bottom=24.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:dt x=0.00 y=24.00 w=520.00 h=24.00 bottom=48.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:dd x=0.00 y=48.00 w=520.00 h=24.00 bottom=72.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:dt x=0.00 y=80.00 w=520.00 h=24.00 bottom=104.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 5:dd x=0.00 y=104.00 w=520.00 h=24.00 bottom=128.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 6:dd x=0.00 y=136.00 w=520.00 h=24.00 bottom=160.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## utility-classed list @390
+  veneer    0:dl.mb-0 x=0.00 y=0.00 w=520.00 h=29.00 bottom=29.00 display=grid gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=173.328px 346.672px
+  veneer    1:dt x=0.00 y=0.00 w=173.33 h=29.00 bottom=29.00 display=block gap=normal margin=0px padding=0px 16px 0px 0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:dd x=173.33 y=0.00 w=346.67 h=21.00 bottom=21.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:dl.mb-0 x=0.00 y=0.00 w=520.00 h=48.00 bottom=48.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:dt x=0.00 y=0.00 w=520.00 h=24.00 bottom=24.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:dd x=0.00 y=24.00 w=520.00 h=24.00 bottom=48.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## horizontal description list @575
+  veneer    0:div.container x=0.00 y=0.00 w=575.00 h=100.00 bottom=100.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:dl.row x=0.00 y=0.00 w=575.00 h=100.00 bottom=100.00 display=flex gap=normal margin=0px -12px padding=0px border-left-width=0px font-style=normal grid-template-columns=1fr 2fr
+  veneer    2:dt.col-sm-3 x=0.00 y=0.00 w=575.00 h=21.00 bottom=21.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:dd.col-sm-9 x=0.00 y=21.00 w=575.00 h=21.00 bottom=42.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:dt.col-sm-3 x=0.00 y=50.00 w=575.00 h=21.00 bottom=71.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    5:dd.col-sm-9 x=0.00 y=71.00 w=575.00 h=21.00 bottom=92.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:div.container x=0.00 y=0.00 w=575.00 h=112.00 bottom=112.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:dl.row x=0.00 y=0.00 w=575.00 h=112.00 bottom=112.00 display=flex gap=normal margin=0px -12px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:dt.col-sm-3 x=0.00 y=0.00 w=575.00 h=24.00 bottom=24.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:dd.col-sm-9 x=0.00 y=24.00 w=575.00 h=24.00 bottom=48.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:dt.col-sm-3 x=0.00 y=56.00 w=575.00 h=24.00 bottom=80.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 5:dd.col-sm-9 x=0.00 y=80.00 w=575.00 h=24.00 bottom=104.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+## horizontal description list @576
+  veneer    0:div.container x=18.00 y=0.00 w=540.00 h=58.00 bottom=58.00 display=block gap=normal margin=0px 18px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:dl.row x=18.00 y=0.00 w=540.00 h=58.00 bottom=58.00 display=flex gap=normal margin=0px -12px padding=0px border-left-width=0px font-style=normal grid-template-columns=1fr 2fr
+  veneer    2:dt.col-sm-3 x=18.00 y=0.00 w=135.00 h=29.00 bottom=29.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:dd.col-sm-9 x=153.00 y=0.00 w=405.00 h=21.00 bottom=21.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:dt.col-sm-3 x=18.00 y=29.00 w=135.00 h=29.00 bottom=58.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    5:dd.col-sm-9 x=153.00 y=29.00 w=405.00 h=21.00 bottom=50.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:div.container x=18.00 y=0.00 w=540.00 h=64.00 bottom=64.00 display=block gap=normal margin=0px 18px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:dl.row x=18.00 y=0.00 w=540.00 h=64.00 bottom=64.00 display=flex gap=normal margin=0px -12px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:dt.col-sm-3 x=18.00 y=0.00 w=135.00 h=32.00 bottom=32.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:dd.col-sm-9 x=153.00 y=0.00 w=405.00 h=24.00 bottom=24.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:dt.col-sm-3 x=18.00 y=32.00 w=135.00 h=32.00 bottom=64.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 5:dd.col-sm-9 x=153.00 y=32.00 w=405.00 h=24.00 bottom=56.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+## horizontal description list @1280
+  veneer    0:div.container x=70.00 y=0.00 w=1140.00 h=58.00 bottom=58.00 display=block gap=normal margin=0px 70px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:dl.row x=70.00 y=0.00 w=1140.00 h=58.00 bottom=58.00 display=flex gap=normal margin=0px -12px padding=0px border-left-width=0px font-style=normal grid-template-columns=1fr 2fr
+  veneer    2:dt.col-sm-3 x=70.00 y=0.00 w=285.00 h=29.00 bottom=29.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:dd.col-sm-9 x=355.00 y=0.00 w=855.00 h=21.00 bottom=21.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:dt.col-sm-3 x=70.00 y=29.00 w=285.00 h=29.00 bottom=58.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    5:dd.col-sm-9 x=355.00 y=29.00 w=855.00 h=21.00 bottom=50.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:div.container x=70.00 y=0.00 w=1140.00 h=64.00 bottom=64.00 display=block gap=normal margin=0px 70px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:dl.row x=70.00 y=0.00 w=1140.00 h=64.00 bottom=64.00 display=flex gap=normal margin=0px -12px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:dt.col-sm-3 x=70.00 y=0.00 w=285.00 h=32.00 bottom=32.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:dd.col-sm-9 x=355.00 y=0.00 w=855.00 h=24.00 bottom=24.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:dt.col-sm-3 x=70.00 y=32.00 w=285.00 h=32.00 bottom=64.00 display=block gap=normal margin=0px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 5:dd.col-sm-9 x=355.00 y=32.00 w=855.00 h=24.00 bottom=56.00 display=block gap=normal margin=0px 0px 8px padding=0px 12px border-left-width=0px font-style=normal grid-template-columns=none
+## bare quotation @390
+  veneer    0:blockquote x=0.00 y=0.00 w=390.00 h=21.00 bottom=21.00 display=block gap=normal margin=0px 0px 16px padding=0px 0px 0px 16px border-left-width=4px font-style=italic grid-template-columns=none
+  veneer    1:p x=20.00 y=0.00 w=370.00 h=21.00 bottom=21.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=italic grid-template-columns=none
+  bootstrap 0:blockquote x=0.00 y=0.00 w=390.00 h=24.00 bottom=24.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:p x=0.00 y=0.00 w=390.00 h=24.00 bottom=24.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## utility-classed quotation @390
+  veneer    0:blockquote.mb-0 x=0.00 y=0.00 w=390.00 h=21.00 bottom=21.00 display=block gap=normal margin=0px padding=0px 0px 0px 16px border-left-width=4px font-style=italic grid-template-columns=none
+  veneer    1:p x=20.00 y=0.00 w=370.00 h=21.00 bottom=21.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=italic grid-template-columns=none
+  bootstrap 0:blockquote.mb-0 x=0.00 y=0.00 w=390.00 h=24.00 bottom=24.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:p x=0.00 y=0.00 w=390.00 h=24.00 bottom=24.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## class quotation @390
+  veneer    0:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## attributed quotation @390
+  veneer    0:figure x=0.00 y=0.00 w=390.00 h=63.14 bottom=63.14 display=flex gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=17.14 bottom=47.14 display=block gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure x=0.00 y=0.00 w=390.00 h=51.00 bottom=51.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=21.00 bottom=51.00 display=block gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## attributed quotation @1280
+  veneer    0:figure x=0.00 y=0.00 w=1280.00 h=63.14 bottom=63.14 display=flex gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=17.14 bottom=47.14 display=block gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure x=0.00 y=0.00 w=1280.00 h=51.00 bottom=51.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=21.00 bottom=51.00 display=block gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## centered attributed quotation @390
+  veneer    0:figure.text-center x=0.00 y=0.00 w=390.00 h=63.14 bottom=63.14 display=flex gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=17.14 bottom=47.14 display=block gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-center x=0.00 y=0.00 w=390.00 h=51.00 bottom=51.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=21.00 bottom=51.00 display=block gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## end-aligned attributed quotation @390
+  veneer    0:figure.text-end x=0.00 y=0.00 w=390.00 h=63.14 bottom=63.14 display=flex gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=17.14 bottom=47.14 display=block gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-end x=0.00 y=0.00 w=390.00 h=51.00 bottom=51.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=21.00 bottom=51.00 display=block gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## captioned image @390
+  veneer    0:figure x=0.00 y=0.00 w=390.00 h=105.14 bottom=105.14 display=flex gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:img x=0.00 y=0.00 w=120.00 h=80.00 bottom=80.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:figcaption x=0.00 y=88.00 w=390.00 h=17.14 bottom=105.14 display=block gap=normal margin=8px 0px 0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure x=0.00 y=0.00 w=390.00 h=104.00 bottom=104.00 display=block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:img x=0.00 y=0.00 w=120.00 h=80.00 bottom=80.00 display=inline gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:figcaption x=0.00 y=80.00 w=390.00 h=24.00 bottom=104.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## figure class pattern @390
+  veneer    0:figure.figure x=0.00 y=0.00 w=148.44 h=105.14 bottom=105.14 display=inline-block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:img.figure-img.img-fluid.rounded x=0.00 y=0.00 w=120.00 h=80.00 bottom=80.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:figcaption.figure-caption x=0.00 y=88.00 w=148.44 h=17.14 bottom=105.14 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.figure x=0.00 y=0.00 w=169.64 h=109.00 bottom=109.00 display=inline-block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:img.figure-img.img-fluid.rounded x=0.00 y=0.00 w=120.00 h=80.00 bottom=80.00 display=inline gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:figcaption.figure-caption x=0.00 y=88.00 w=169.64 h=21.00 bottom=109.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## figure class pattern @1280
+  veneer    0:figure.figure x=0.00 y=0.00 w=148.44 h=105.14 bottom=105.14 display=inline-block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:img.figure-img.img-fluid.rounded x=0.00 y=0.00 w=120.00 h=80.00 bottom=80.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:figcaption.figure-caption x=0.00 y=88.00 w=148.44 h=17.14 bottom=105.14 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.figure x=0.00 y=0.00 w=169.64 h=109.00 bottom=109.00 display=inline-block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:img.figure-img.img-fluid.rounded x=0.00 y=0.00 w=120.00 h=80.00 bottom=80.00 display=inline gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:figcaption.figure-caption x=0.00 y=88.00 w=169.64 h=21.00 bottom=109.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## figure class pattern, end-aligned caption @390
+  veneer    0:figure.figure x=0.00 y=0.00 w=148.44 h=105.14 bottom=105.14 display=inline-block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:img.figure-img.img-fluid.rounded x=0.00 y=0.00 w=120.00 h=80.00 bottom=80.00 display=block gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:figcaption.figure-caption.text-end x=0.00 y=88.00 w=148.44 h=17.14 bottom=105.14 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.figure x=0.00 y=0.00 w=169.64 h=109.00 bottom=109.00 display=inline-block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:img.figure-img.img-fluid.rounded x=0.00 y=0.00 w=120.00 h=80.00 bottom=80.00 display=inline gap=normal margin=0px 0px 8px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:figcaption.figure-caption.text-end x=0.00 y=88.00 w=169.64 h=21.00 bottom=109.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## figure class around a swatch (the showcase swatch markup) @390
+  veneer    0:div x=0.00 y=0.00 w=200.00 h=168.00 bottom=168.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:figure.figure.w-100 x=0.00 y=0.00 w=200.00 h=167.14 bottom=167.14 display=inline-block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:div.ratio.ratio-4x3.bg-success x=0.00 y=0.00 w=200.00 h=150.00 bottom=150.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.figure-caption x=0.00 y=150.00 w=200.00 h=17.14 bottom=167.14 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:div x=0.00 y=0.00 w=200.00 h=187.00 bottom=187.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:figure.figure.w-100 x=0.00 y=0.00 w=200.00 h=171.00 bottom=171.00 display=inline-block gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:div.ratio.ratio-4x3.bg-success x=0.00 y=0.00 w=200.00 h=150.00 bottom=150.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.figure-caption x=0.00 y=150.00 w=200.00 h=21.00 bottom=171.00 display=block gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
