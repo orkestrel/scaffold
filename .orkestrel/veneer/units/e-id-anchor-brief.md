@@ -30,11 +30,17 @@ a consumer class overrides it without `!important`.
   technique is a pattern) and the ledger's per-component attribution; the selector keeps the class list at zero
   specificity and reads the open state through `:popover-open`.
 - **The record.** Each emitted name the release lacks is a row of `guides/veneer.md` § Tokens › § Additions
-  (Component, Name, Condition, Category, Reason), which the conformance proof reads; each component's § Styles classes
-  subsection states the rule.
+  (Component, Name, Condition, Category, Veneer, Reason), which the conformance proof reads; the `Veneer` cell holds the
+  declared value, and a `selector` row's cell is `—` (the § Additions preamble, search "The `Veneer` cell holds").
+  Attribution reads a class inside a `:where()` argument as the rule's own (`collectAttributionClasses` and
+  `collectLedger` in `tests/setupServer.ts`), so a rule whose `:where()` names the three keys' classes reaches each
+  component's measurement. Read how `collectLedger` attributes such a rule before settling one rule or one per partial,
+  and report the reading. Each component's § Styles classes subsection states the rule.
 - **The enumeration cases.** `tests/src/styles/components/{dropdown,tooltip,popover}.test.ts` each hold a case that
-  reads the set of components-layer selectors naming the key's classes; each admits the new selector by name, and its
-  title and comment follow the seam ruling.
+  reads the set of components-layer selectors naming the key's classes (the dropdown case titled "hides the menu at
+  rest, shows it through the class, and reaches the components layer with every recorded selector", and the tooltip
+  and popover cases titled "writes the recorded … selectors and no other components-layer selector naming a … class");
+  each admits the new selector by name, and its title and comment follow the seam ruling.
 - **Host.** Linux, bash; put `/tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/npm11/node_modules/.bin`
   first on `PATH` and set `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`. The styles project reads the built cascade, so
   run `npm run build:src:styles` before a styles test. Format only with
@@ -88,3 +94,8 @@ a gate reads red outside the change's reach.
 
 The new cases read red at the base and green after; the declaration's deletion reddens each of them with an assertion
 and the conformance proof with a stale Additions row; every gate in Execution step 4 exits 0.
+
+## Review evidence
+
+The diff and status, the mutation logs, and the gate logs. The audit runs `analyst` on GPT-6 Astra and `reviewer` on
+Opus 5.5, and `checker` on Sonnet reads the Additions rows against the conformance output.
