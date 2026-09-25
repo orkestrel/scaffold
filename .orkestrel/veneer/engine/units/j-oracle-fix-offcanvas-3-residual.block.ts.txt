@@ -1,0 +1,68 @@
+
+// J-ORACLE-FIX-OFFCANVAS round 3 probe block, appended to Offcanvas.test.ts by residual-probe.sh and
+// removed after the run: two inputs the panel's-root deep read might miss.
+describe('offcanvas press probe', () => {
+	const probeCascade = `${tokensCascade}\n${fadeCascade}\n${offcanvasCascade}`
+	const probeMarkup = `
+		<button type="button" id="opener">Open</button>
+		<button type="button" id="outer">Outer</button>
+		<div id="panel" class="offcanvas offcanvas-start" tabindex="-1">
+			<div class="offcanvas-body"><button type="button" id="inside">Inside</button></div>
+		</div>`
+
+	it('probe closed: a closed shadow root the panel carries holds the trigger and the focused button', async () => {
+		scene.load(probeCascade)
+		const root = scene.mount(probeMarkup)
+		const host = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+		const shadow = host.attachShadow({ mode: 'closed' })
+		shadow.innerHTML = '<button type="button">Return</button><button type="button">Inside</button>'
+		const [first, second] = shadow.querySelectorAll<HTMLElement>('button')
+		const trigger = requireValue(first, 'No trigger')
+		const inside = requireValue(second, 'No inside')
+		const offcanvas = new Offcanvas(host)
+		onTestFinished(() => offcanvas.destroy())
+		expect(await offcanvas.show(trigger)).toBe(true)
+		inside.focus()
+		const prevented = createRecorder<readonly [boolean]>()
+		const controller = new AbortController()
+		onTestFinished(() => controller.abort())
+		window.addEventListener('mousedown', (event) => prevented.handler(event.defaultPrevented), {
+			signal: controller.signal,
+		})
+		const backdrop = requireValue(root.querySelector<HTMLElement>('.offcanvas-backdrop'), 'No backdrop')
+		await userEvent.click(backdrop, { position: { x: 407, y: 200 } })
+		console.log('PROBE closed', JSON.stringify({ prevented: prevented.calls, onTrigger: shadow.activeElement === trigger, body: document.activeElement === document.body }))
+		expect(prevented.calls).toEqual([[true]])
+	})
+
+	it('probe outside: a panel in a shadow root, focus on a light-tree button outside the root, and a light-tree trigger', async () => {
+		scene.load(probeCascade)
+		const sheet = new CSSStyleSheet()
+		sheet.replaceSync(probeCascade)
+		const root = scene.mount(probeMarkup)
+		const opener = requireValue(root.querySelector<HTMLElement>('#opener'), 'No opener')
+		const outer = requireValue(root.querySelector<HTMLElement>('#outer'), 'No outer')
+		const container = requireValue(root.querySelector<HTMLElement>('#panel'), 'No panel')
+		container.removeAttribute('class')
+		container.removeAttribute('id')
+		const shadow = container.attachShadow({ mode: 'open' })
+		shadow.adoptedStyleSheets = [sheet]
+		shadow.innerHTML = '<div><div id="panel" class="offcanvas offcanvas-start" tabindex="-1"><button type="button">Inside</button></div></div>'
+		const host = requireValue(shadow.querySelector<HTMLElement>('#panel'), 'No shadow panel')
+		const offcanvas = new Offcanvas(host)
+		onTestFinished(() => offcanvas.destroy())
+		expect(await offcanvas.show(opener)).toBe(true)
+		outer.focus()
+		const focusedBefore = document.activeElement === outer
+		const prevented = createRecorder<readonly [boolean]>()
+		const controller = new AbortController()
+		onTestFinished(() => controller.abort())
+		window.addEventListener('mousedown', (event) => prevented.handler(event.defaultPrevented), {
+			signal: controller.signal,
+		})
+		const backdrop = requireValue(shadow.querySelector<HTMLElement>('.offcanvas-backdrop'), 'No backdrop')
+		await userEvent.click(backdrop, { position: { x: 407, y: 200 } })
+		console.log('PROBE outside', JSON.stringify({ focusedBefore, outerInert: outer.inert, prevented: prevented.calls, onOpener: document.activeElement === opener, body: document.activeElement === document.body, active: document.activeElement?.id, shown: offcanvas.shown, hostHiding: host.className }))
+		expect(prevented.calls).toEqual([[true]])
+	})
+})

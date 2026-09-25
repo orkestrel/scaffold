@@ -1,0 +1,62 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Offcanvas.test.ts -t probe (closed|outside)
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-fix-offcanvas
+
+stdout | tests/src/browser/Offcanvas.test.ts:3908:2 > offcanvas press probe > probe closed: a closed shadow root the panel carries holds the trigger and the focused button
+PROBE closed {"prevented":[[false]],"onTrigger":false,"body":true}
+stdout | tests/src/browser/Offcanvas.test.ts:3933:2 > offcanvas press probe > probe outside: a panel in a shadow root, focus on a light-tree button outside the root, and a light-tree trigger
+PROBE outside {"focusedBefore":true,"outerInert":false,"prevented":[[false]],"onOpener":false,"body":false,"active":"","shown":false,"hostHiding":"offcanvas offcanvas-start hiding"}
+ ❯ |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts (68 tests | 2 failed | 66 skipped) 844ms
+     × probe closed: a closed shadow root the panel carries holds the trigger and the focused button 422ms
+     × probe outside: a panel in a shadow root, focus on a light-tree button outside the root, and a light-tree trigger 419ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:3908:2 > offcanvas press probe > probe closed: a closed shadow root the panel carries holds the trigger and the focused button
+AssertionError: expected [ [ false ] ] to deeply equal [ [ true ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[32m-     true,[39m
+[31m+     false,[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:3930:26
+    3928|   await userEvent.click(backdrop, { position: { x: 407, y: 200 } })
+    3929|   console.log('PROBE closed', JSON.stringify({ prevented: prevented.ca…
+    3930|   expect(prevented.calls).toEqual([[true]])
+       |                          ^
+    3931|  })
+    3932|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Offcanvas.test.ts:3933:2 > offcanvas press probe > probe outside: a panel in a shadow root, focus on a light-tree button outside the root, and a light-tree trigger
+AssertionError: expected [ [ false ] ] to deeply equal [ [ true ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[32m-     true,[39m
+[31m+     false,[39m
+[2m    ],[22m
+[2m  ][22m
+
+ ❯ tests/src/browser/Offcanvas.test.ts:3961:26
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 66 skipped (68)
+   Start at  04:09:39
+   Duration  2.99s (transform 0ms, setup 569ms, import 405ms, tests 844ms, environment 0ms)
+

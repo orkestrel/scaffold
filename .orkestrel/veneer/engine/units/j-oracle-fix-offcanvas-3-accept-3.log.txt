@@ -1,0 +1,47 @@
+npm run check exit 0
+npm run lint:check exit 0
+npm run format:check exit 0
+npm run test:policy exit 0
+npm run test:guides exit 0
+npm run test:setup:browser exit 0
+tmp/j-oracle-fix-offcanvas/accept-3-test-policy.log.txt: Test Files  1 passed (1)
+tmp/j-oracle-fix-offcanvas/accept-3-test-policy.log.txt:      Tests  109 passed | 1 skipped (110)
+tmp/j-oracle-fix-offcanvas/accept-3-test-setup-browser.log.txt: Test Files  1 passed (1)
+tmp/j-oracle-fix-offcanvas/accept-3-test-setup-browser.log.txt:      Tests  93 passed (93)
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m26 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 04:22:44
+[2m   Duration [22m 3.98s[2m (transform 589ms, setup 103ms, import 2.40s, tests 1.32s, environment 0ms)[22m
+
+helpers.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  99 passed (99)
+Offcanvas.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  66 passed (66)
+Isolation.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+Modal.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  61 passed (61)
+index.test.ts exit 0
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+census exit 0
+compare exit 0
+departures round 2 66 round 3 66
+only round 2: []
+only round 3: []
+facets round 3: ['attribute']
+focus departures round 3: []
+offcanvas bootstrap steps 18 changed steps: []
+offcanvas veneer steps 18 changed steps: []
+modal bootstrap steps 22 changed steps: []
+modal veneer steps 22 changed steps: []
+departures.json byte-identical
+offcanvas.bootstrap.json byte-identical
+offcanvas.veneer.json byte-identical
+modal.bootstrap.json byte-identical
+modal.veneer.json byte-identical
+findings.json without timings identical {'modal.steps': 'every non-refused step changes state', 'modal.departures': 48, 'offcanvas.steps': 'every non-refused step changes state', 'offcanvas.departures': 18}

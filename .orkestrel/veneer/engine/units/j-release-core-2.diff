@@ -1,0 +1,527 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 503e3f8..7cc16d4 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -383,11 +383,11 @@ The interface exposes the following lifecycle operations.
+ 
+ #### `LifetimeInterface`
+ 
+-| Method    | Summary                                                                                                  |
+-| --------- | -------------------------------------------------------------------------------------------------------- |
+-| `hold`    | Holds a record until its release gives it back, or runs the release at once when destruction has begun.  |
+-| `release` | Gives one holding back now.                                                                              |
+-| `destroy` | Aborts the signal on the first call, then gives back every pending holding, newest first, on every call. |
++| Method    | Summary                                                                                                                                                   |
++| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `hold`    | Holds a record until its release gives it back; after destruction began, it holds nothing more and runs the release of a record it does not hold at once. |
++| `release` | Gives one holding back now.                                                                                                                               |
++| `destroy` | Aborts the signal on the first call, then gives back every pending holding, newest first, on every call.                                                  |
+ 
+ #### `HostSnapshotInterface`
+ 
+@@ -944,19 +944,22 @@ reaction to the restoration sends finds no destroyed engine and can claim the ho
+ destroys itself when the `signal` you pass it aborts, and at construction when that signal has
+ already aborted. A signal that a `Lifetime` instance owns makes the button one of that lifetime's
+ holdings instead, so each destruction of the lifetime destroys the button, and a button constructed
+-after that destruction began is destroyed at construction.
++after that destruction began is destroyed at construction. The button joins right after its claim,
++before it reads a hook, so a destruction a hook starts reaches it. The button's own destruction ends
++that holding.
+ 
+ Each engine keeps a `HostSnapshot` instance of its own; the modal keeps a second one for the body's
+ `open` token, which its hide restores, as the modal's section states. A button writes through the
+-snapshot's `write` method, which saves a target only at a write that changes it: construction
+-writes nothing, so a button destroyed before its first toggle writes nothing back, and a toggle
+-write that leaves a target as it reads records nothing for it unless another snapshot holds it or
+-a restoration has it still to write back, in which case the write joins that record. Every other
+-engine saves each attribute, class token, and inline property it writes before its first write to
+-it. Every snapshot that saves one attribute, class token, or inline property of one element shares
+-one record of it, whatever engine class each snapshot belongs to. The first save made while no
+-snapshot holds the target and no restoration has it still to write back reads the host, and every
+-later save joins that record without reading, so the record keeps the value the target carried before any engine wrote it.
++snapshot's `write` method, which saves a target only at a write that changes it. Construction
++writes nothing, so a button destroyed before its first toggle writes nothing back. A toggle write
++that leaves a target as it reads joins the target's record when a live holder holds it or a
++restoration has it still to write back, and otherwise records nothing. Every other engine saves
++each attribute, class token, and inline property it writes before its first write to it. Every
++snapshot that saves one attribute, class token, or inline property of one element shares one
++record of it, whatever engine class each snapshot belongs to. The first save made while no snapshot
++holds the target and no restoration has it still to write back reads the host, and every later save
++joins that record without reading, so the record keeps the value the target carried before any
++engine wrote it.
+ Destruction relinquishes every target the engine's snapshots hold. A target another live engine
+ still holds is left as the live engines wrote it, and the last engine holding a target writes the
+ record's value back at its destruction: a value the record reads as absent is removed. The host
+@@ -1007,16 +1010,25 @@ writes that target back, and every other snapshot keeps its holdings. State no s
+ every edit you made.
+ 
+ A `Lifetime` instance holds what its owner took, each record with the release that gives it back.
+-The `hold` method enrolls a record before the take can run other code, and runs the release at once
+-when destruction has begun; the `release` method gives one holding back; and the `destroy` method
+-aborts the lifetime's `signal` on its first call and then gives back every pending holding, newest
+-first, on every call. A holding stays pending while its release runs, so a destruction that code
+-inside the release starts runs that release again along with every other pending release, and
+-returns only after every holding is given back. Each release is resumable: run again, it finishes its unfinished
+-work and repeats nothing it completed, as a snapshot's `restore` does. A release that throws ends its
+-holding, and the drain gives back every other holding before it rethrows the first error. A class
+-constructed with a lifetime's `signal` joins that lifetime through the static `join` method of the
+-`Lifetime` class, with its own `destroy` method as the release. A button keeps one lifetime, which
++The `hold` method holds a record, the `release` method gives one holding back, and the `destroy`
++method aborts the lifetime's `signal` on its first call and then gives back every pending holding,
++newest first, on every call. After destruction began, the `hold` method returns `false` for every
++record. It runs the release of a record it does not hold at once, and it leaves a record it holds
++already pending for the drain to give back. A holding stays pending while its release runs, so a
++destruction that code inside the release starts runs that release again along with every other
++pending release, and returns only after every holding is given back. A release that throws ends
++its holding, and the drain gives back every other holding before it rethrows the first error.
++
++An engine that keeps a lifetime must hold each take before the take can run other code, so a
++destruction that code starts gives the take back. When the `hold` method returns `false`, the engine
++must take nothing further. Each release must be resumable: run again, it finishes its unfinished
++work and repeats nothing it completed, as a snapshot's `restore` does. The static `join` method of
++the `Lifetime` class makes a class constructed with a lifetime's `signal` one of that lifetime's
++holdings, with the class's own `destroy` method as the release; a button joins this way. A class
++must join right after its claim, before it runs any consumer code. The class passes its own
++lifetime too, and the destruction of that lifetime ends the owner's holding of the class, so an
++owner that builds a child and destroys it on every change keeps no holding of a destroyed child. A
++signal no lifetime owns destroys the class when it aborts. A button keeps one lifetime, which
+ holds its snapshot. Its `destroy` method releases the claim once, before any restoration, and then
+ drains that lifetime on every call, so a destruction a reaction to the button's restoration starts
+ returns with the host restored, and the destruction it interrupted, resuming, writes nothing more.
+diff --git a/src/browser/Button.ts b/src/browser/Button.ts
+index 9821069..4c92787 100644
+--- a/src/browser/Button.ts
++++ b/src/browser/Button.ts
+@@ -18,8 +18,9 @@ import { isButtonEvent, isClassToken, isSelector } from './validators.js'
+  * hooks use the host's DOM events. Construction writes nothing, and a toggle saves the `pressed`
+  * token or the `aria-pressed` attribute only at a write that changes it, so destruction leaves a
+  * value the button never changed as you set it. A `signal` that a `Lifetime` instance owns makes
+- * the button one of that lifetime's holdings, and any other `signal` destroys the button when it
+- * aborts.
++ * the button one of that lifetime's holdings until the button is destroyed, and any other `signal`
++ * destroys the button when it aborts. The button joins right after its claim, before it reads a
++ * hook, so a destruction a hook starts reaches it.
+  *
+  * @example
+  * ```ts
+@@ -36,7 +37,7 @@ export class Button implements ButtonInterface {
+ 	readonly #lifetime = new Lifetime()
+ 
+ 	/**
+-	 * Claims the host, holds its snapshot, binds initial hooks, and joins the lifetime its signal names.
++	 * Claims the host, joins the lifetime its signal names, holds its snapshot, and binds initial hooks.
+ 	 *
+ 	 * @param host - The HTML element to own.
+ 	 * @param options - The markup vocabulary, initial event subscriptions, and lifetime.
+@@ -57,14 +58,16 @@ export class Button implements ButtonInterface {
+ 		// The delegate routes by the selectors and the button itself matches with none, so the resolved
+ 		// group is not kept; resolving it still refuses an invalid value at construction.
+ 		resolveVocabulary('BUTTON_OPTION_INVALID', BUTTON_SELECTORS, isSelector, options?.selectors)
++		const signal = options?.signal
+ 		this.#host = host
+ 		Button.#registry.claim(host, this)
+-		// An option read or a hook read can throw after the claim, which ends the construction, so the
+-		// button then releases its claim and its listeners before the error propagates.
++		// The button joins right after its claim, before it reads a hook, so a destruction that a hook
++		// starts reaches it. A hook read can throw, which ends the construction, so the button then
++		// releases its claim, its listeners, and its holding before the error propagates.
+ 		try {
++			Lifetime.join(signal, this, this.#lifetime)
+ 			this.#lifetime.hold(this.#snapshot, (snapshot) => snapshot.restore())
+ 			bindEventMap(host, BUTTON_EVENTS, isButtonEvent, options?.on, this.#lifetime.signal)
+-			Lifetime.join(options?.signal, this, this.#lifetime)
+ 		} catch (error) {
+ 			this.destroy()
+ 			throw error
+diff --git a/src/browser/HostSnapshot.ts b/src/browser/HostSnapshot.ts
+index 99eadf3..c274164 100644
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -24,8 +24,8 @@ import { matchesHostValue, readHostPriority, readHostValue, writeHostValue } fro
+  * target reads the record that save joined, even after the element moves into another document.
+  *
+  * An engine writes through `write`, which saves a target only at a write that changes it. A write
+- * that changes nothing records nothing, unless another snapshot holds the target or a restoration
+- * has it still to write back, and then it joins that record. So a value the host carried before the
++ * that changes nothing joins the target's record when a live holder holds it or a restoration has
++ * it still to write back, and otherwise records nothing. So a value the host carried before the
+  * engine wrote it is written back, and a value the engine never changed is left as you set it.
+  *
+  * A restoration relinquishes every target its snapshot holds before its first write, writes nothing
+diff --git a/src/browser/Lifetime.ts b/src/browser/Lifetime.ts
+index 7f07e19..0abe687 100644
+--- a/src/browser/Lifetime.ts
++++ b/src/browser/Lifetime.ts
+@@ -4,13 +4,13 @@ import type { LifetimeHolding, LifetimeInterface } from './types.js'
+  * Holds what an owner took, each record with the release that gives it back, and gives every holding back on every destruction.
+  *
+  * @remarks
+- * An owner holds a take before the take can run consumer code, and destroys the lifetime where it
+- * ends. The drain gives holdings back newest first, so the record an owner holds first, such as the
+- * snapshot of its host, is given back last. Every call to `destroy` drains, a call a release starts
+- * included, so it returns only after every holding is given back. A class whose options take a
+- * `signal` joins through the static `join` method: a lifetime's signal makes the class one of that
+- * lifetime's holdings, with its `destroy` method as the release, and any other signal destroys the
+- * class when it aborts.
++ * An owner must hold a take before the take can run consumer code, and destroys the lifetime where
++ * it ends. The drain gives holdings back newest first, so the record an owner holds first, such as
++ * the snapshot of its host, is given back last. Every call to `destroy` drains, a call a release
++ * starts included, so it returns only after every holding is given back. The static `join` method
++ * makes a class constructed with a lifetime's `signal` one of that lifetime's holdings, with the
++ * class's `destroy` method as the release, until the class's own lifetime ends; a button joins this
++ * way.
+  *
+  * @example
+  * ```ts
+@@ -39,19 +39,26 @@ export class Lifetime implements LifetimeInterface {
+ 	 *
+ 	 * @param signal - The signal the class's options carry; undefined joins nothing.
+ 	 * @param resource - The class, whose `destroy` method is the release.
+-	 * @param lifetime - The class's own lifetime, whose destruction removes the listener a signal no lifetime owns carries.
++	 * @param lifetime - The class's own lifetime, whose destruction ends the class's membership: it ends the owner's holding of the class, or removes the listener a signal no lifetime owns carries.
+ 	 * @remarks
+-	 * A lifetime's signal makes the class a holding of that lifetime, so every destruction of it, a
+-	 * nested one included, destroys the class; when that destruction has begun, the class is destroyed
+-	 * inside this call. Any other signal destroys the class when it aborts, and at once when it has
+-	 * aborted already. A class destroyed on its own stays held until its owner releases it or is
+-	 * destroyed, and that release finds nothing left to give back.
++	 * A class must join right after its claim, before it runs any consumer code, so a destruction
++	 * that code starts reaches it. A lifetime's signal makes the class a holding of that lifetime, so
++	 * every destruction of it, a nested one included, destroys the class; when that destruction has
++	 * begun, the class is destroyed inside this call. The destruction of the class's own lifetime ends
++	 * that holding: the owner's `release` method runs the class's `destroy` method again, nested in the
++	 * destruction that ended the lifetime, and the owner then holds nothing of the class. So an owner
++	 * that builds a child and destroys it on every change keeps no holding of a destroyed child. Any
++	 * other signal destroys the class when it aborts, and at once when it has aborted already.
+ 	 * @example
+ 	 * ```ts
++	 * // A class passes the signal its options carry, itself, and its own lifetime, as a button's
++	 * // constructor does: Lifetime.join(signal, this, this.#lifetime). A lifetime stands in for the
++	 * // class here.
+ 	 * const owner = new Lifetime()
+-	 * const lifetime = new Lifetime()
+-	 * Lifetime.join(owner.signal, lifetime, lifetime)
+-	 * owner.destroy() // destroys lifetime as one of its holdings
++	 * const child = new Lifetime()
++	 * Lifetime.join(owner.signal, child, child)
++	 * child.destroy() // ends the owner's holding of child
++	 * owner.release(child) // false
+ 	 * ```
+ 	 */
+ 	static join(
+@@ -61,8 +68,13 @@ export class Lifetime implements LifetimeInterface {
+ 	): void {
+ 		if (signal === undefined) return
+ 		const owner = Lifetime.#lifetimes.get(signal)
+-		if (owner !== undefined) owner.hold(resource, (held) => held.destroy())
+-		else if (signal.aborted) resource.destroy()
++		if (owner !== undefined) {
++			if (!owner.hold(resource, (held) => held.destroy())) return
++			// The resource's own destruction ends the owner's holding, so an owner that builds and ends
++			// a child on every change keeps a bounded ledger. The release runs the resource's `destroy`
++			// again, nested in that destruction, and it returns with the holding ended.
++			lifetime.signal.addEventListener('abort', () => owner.release(resource), { once: true })
++		} else if (signal.aborted) resource.destroy()
+ 		else {
+ 			signal.addEventListener('abort', () => resource.destroy(), {
+ 				once: true,
+@@ -76,7 +88,11 @@ export class Lifetime implements LifetimeInterface {
+ 	}
+ 
+ 	hold<TRecord extends object>(record: TRecord, release: (record: TRecord) => void): boolean {
+-		if (this.#holdings.some((holding) => holding.record === record)) return true
++		// A record held already keeps its first release, and after destruction began the drain gives
++		// that holding back, so the caller takes nothing further.
++		if (this.#holdings.some((holding) => holding.record === record)) {
++			return !this.#controller.signal.aborted
++		}
+ 		const holding = { record, release: release.bind(undefined, record) }
+ 		this.#holdings = [...this.#holdings, holding]
+ 		if (!this.#controller.signal.aborted) return true
+@@ -96,7 +112,7 @@ export class Lifetime implements LifetimeInterface {
+ 		let failure: { readonly error: unknown } | undefined
+ 		for (const holding of [...this.#holdings].reverse()) {
+ 			// A release this drain ran can start a nested destruction that gives later holdings back, so
+-			// each one is read again and skipped once it has ended.
++			// each one is read again and skipped after it has ended.
+ 			if (!this.#holdings.includes(holding)) continue
+ 			try {
+ 				this.#give(holding)
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 14b2a13..1c1fa2b 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -67,7 +67,7 @@ export interface ButtonOptions {
+ 	readonly selectors?: Partial<ButtonSelectorMap>
+ 	/** Subscribes until the button is destroyed. */
+ 	readonly on?: ButtonHooks
+-	/** Destroys the button when it aborts; a `Lifetime` instance's signal makes the button a holding of that lifetime, so each of its destructions destroys the button. */
++	/** Destroys the button when it aborts; a `Lifetime` instance's signal makes the button a holding of that lifetime until the button is destroyed, so each of its destructions destroys the button. */
+ 	readonly signal?: AbortSignal
+ }
+ 
+@@ -335,19 +335,22 @@ export interface RegistryInterface<TEngine extends object> {
+  * its record names, and it reads the page again only to skip work that is already done.
+  */
+ export interface LifetimeInterface {
+-	/** Carries the signal that aborts when destruction begins; a class constructed with it joins the lifetime as a holding. */
++	/** Carries the signal that aborts when destruction begins; a class that joins through the static `join` method of the `Lifetime` class and is constructed with it becomes one of the lifetime's holdings. */
+ 	readonly signal: AbortSignal
+ 	/**
+-	 * Holds a record until its release gives it back, or runs the release at once when destruction has begun.
++	 * Holds a record until its release gives it back; after destruction began, it holds nothing more and runs the release of a record it does not hold at once.
+ 	 *
+ 	 * @param record - The object that keys the holding and carries what the release needs to finish the take or to skip it.
+ 	 * @param release - Gives the record back; it receives the record, so it acts on what the take recorded.
+-	 * @returns True if the lifetime holds the record; false when destruction had begun, so the release ran inside this call and the caller takes nothing further.
++	 * @returns True if the lifetime holds the record; false when destruction had begun, so the caller must take nothing further.
+ 	 * @remarks
+-	 * Hold a take that can run consumer code, such as a `showPopover()` call or a child's construction,
+-	 * before it runs, so a destruction that code starts gives it back. A record the lifetime already
+-	 * holds keeps its first release, and the call returns true. A record held after destruction began
+-	 * stays held while its release runs, so a destruction nested in that release runs it again.
++	 * A take that can run consumer code, such as a `showPopover()` call or a child's construction, must
++	 * be held before it runs, so a destruction that code starts gives it back. A record the lifetime
++	 * already holds keeps its first release. Before destruction begins, the call then returns true.
++	 * After destruction began, every call returns false. For a record the lifetime does not hold, the
++	 * call runs the release inside the call. For a record it holds already, the call leaves the holding
++	 * pending, and the drain gives it back with its first release. A record held after destruction
++	 * began stays held while its release runs, so a destruction nested in that release runs it again.
+ 	 * @example
+ 	 * ```ts
+ 	 * lifetime.hold(snapshot, (held) => held.restore())
+@@ -455,10 +458,11 @@ export interface HostSnapshotInterface {
+ 	 * target already reads the value and the priority; the comparison reads the platform's serialized
+ 	 * form, so a property value the platform serializes differently counts as a change. A write that
+ 	 * changes the target saves it, joining its record or reading the element when no record exists,
+-	 * and then writes. A write that changes nothing writes nothing, and it joins the target's record
+-	 * only when another snapshot holds it or a restoration has it still to write back; otherwise it
+-	 * records nothing, so destruction writes back no value the host already carried, and an edit you
+-	 * make after that write survives the destruction.
++	 * and then writes. A write that changes nothing writes nothing. It joins the target's record when
++	 * a live holder holds it or a restoration has it still to write back, so the record is written
++	 * back only when its last holder, this snapshot included, restores. Otherwise it records nothing,
++	 * so destruction writes back no value the host already carried, and an edit you make after that
++	 * write survives the destruction.
+ 	 * @example
+ 	 * ```ts
+ 	 * snapshot.write({ category: 'attribute', element: host, name: 'aria-expanded' }, 'true')
+diff --git a/tests/src/browser/Button.test.ts b/tests/src/browser/Button.test.ts
+index e792df7..9d01e3a 100644
+--- a/tests/src/browser/Button.test.ts
++++ b/tests/src/browser/Button.test.ts
+@@ -765,7 +765,7 @@ describe('Button', () => {
+ 		expect(Button.find(host)).toBeUndefined()
+ 	})
+ 
+-	it('joins the lifetime that owns its signal, whose destruction restores the host, and is destroyed at construction once that destruction began', () => {
++	it('joins the lifetime that owns its signal, whose destruction restores the host, and is destroyed at construction after that destruction began', () => {
+ 		const host = build('button', { attributes: { 'aria-pressed': 'mixed' } })
+ 		const owner = new Lifetime()
+ 		const button = new Button(host, { signal: owner.signal })
+@@ -783,6 +783,78 @@ describe('Button', () => {
+ 		expect(host.getAttribute('aria-pressed')).toBe('mixed')
+ 	})
+ 
++	it('joins the lifetime that owns its signal before it reads a hook, so a destruction a hook starts restores the host before it returns', () => {
++		const host = build('button')
++		const owner = new Lifetime()
++		const readings = createRecorder<readonly [string | null, boolean]>()
++		const button = new Button(host, {
++			signal: owner.signal,
++			get on() {
++				Button.find(host)?.toggle()
++				owner.destroy()
++				readings.handler(host.getAttribute('aria-pressed'), host.classList.contains('active'))
++				return {}
++			},
++		})
++		onTestFinished(() => button.destroy())
++		expect(readings.calls).toEqual([[null, false]])
++		expect(Button.find(host)).toBeUndefined()
++		expect(owner.release(button)).toBe(false)
++	})
++
++	it('leaves its owner no holding when a hook destroys it during its construction', () => {
++		const host = build('button')
++		const owner = new Lifetime()
++		const button = new Button(host, {
++			signal: owner.signal,
++			get on() {
++				Button.find(host)?.toggle()
++				Button.find(host)?.destroy()
++				return {}
++			},
++		})
++		onTestFinished(() => button.destroy())
++		expect(host.hasAttribute('aria-pressed')).toBe(false)
++		expect(Button.find(host)).toBeUndefined()
++		expect(owner.release(button)).toBe(false)
++	})
++
++	it('leaves its owner no holding when a hook read throws during its construction', () => {
++		const host = build('button')
++		const owner = new Lifetime()
++		const found = createRecorder<readonly [ButtonInterface | undefined]>()
++		const failed = attempt(
++			() =>
++				new Button(host, {
++					signal: owner.signal,
++					get on(): never {
++						found.handler(Button.find(host))
++						Button.find(host)?.toggle()
++						throw new Error('stop')
++					},
++				}),
++		)
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		const button = requireValue(found.calls[0]?.[0])
++		expect(host.hasAttribute('aria-pressed')).toBe(false)
++		expect(owner.release(button)).toBe(false)
++	})
++
++	it('leaves its owner no holding across repeated construction and destruction', () => {
++		const host = build('button')
++		const owner = new Lifetime()
++		const buttons: ButtonInterface[] = []
++		for (const pressed of ['true', 'false', 'mixed']) {
++			host.setAttribute('aria-pressed', pressed)
++			const button = new Button(host, { signal: owner.signal })
++			button.toggle()
++			button.destroy()
++			expect(host.getAttribute('aria-pressed')).toBe(pressed)
++			buttons.push(button)
++		}
++		expect(buttons.map((button) => owner.release(button))).toEqual([false, false, false])
++	})
++
+ 	it('keeps separate hosts independent and permits programmatic disabled toggles', () => {
+ 		const host = build('button', { attributes: { disabled: '' } })
+ 		const anchor = build('a', { classes: 'disabled', attributes: { 'aria-disabled': 'true' } })
+diff --git a/tests/src/browser/HostSnapshot.test.ts b/tests/src/browser/HostSnapshot.test.ts
+index e84d8f9..8f3d273 100644
+--- a/tests/src/browser/HostSnapshot.test.ts
++++ b/tests/src/browser/HostSnapshot.test.ts
+@@ -1457,7 +1457,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.style.getPropertyPriority('height')).toBe('')
+ 	})
+ 
+-	it('joins a live holder record at a write that changes nothing, so only the last holder writes the earliest value back, in either order', () => {
++	it("joins a live holder's record at a write that changes nothing, so only the last holder writes the earliest value back, in either order", () => {
+ 		for (const order of ['first', 'second'] as const) {
+ 			const host = build('button')
+ 			const first = new HostSnapshot()
+@@ -1518,7 +1518,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.hasAttribute('data-state')).toBe(false)
+ 	})
+ 
+-	it('resolves the target name once, so a write under another spelling joins the record the first write keyed', () => {
++	it('shares one record across spellings of an attribute name, so only the last holder writes it back', () => {
+ 		const host = build('div')
+ 		const first = new HostSnapshot()
+ 		const second = new HostSnapshot()
+diff --git a/tests/src/browser/Lifetime.test.ts b/tests/src/browser/Lifetime.test.ts
+index a05a4e4..5d63acf 100644
+--- a/tests/src/browser/Lifetime.test.ts
++++ b/tests/src/browser/Lifetime.test.ts
+@@ -141,6 +141,22 @@ describe('Lifetime', () => {
+ 		expect(second.count).toBe(0)
+ 	})
+ 
++	it('returns false for a record it holds already after destruction began, keeping the first release for the drain', () => {
++		const lifetime = new Lifetime()
++		const record = {}
++		const releases = createRecorder<readonly [string]>()
++		const holds = createRecorder<readonly [boolean]>()
++		lifetime.hold(record, () => releases.handler('first'))
++		lifetime.signal.addEventListener('abort', () => {
++			holds.handler(lifetime.hold(record, () => releases.handler('second')))
++		})
++		lifetime.destroy()
++		expect(holds.calls).toEqual([[false]])
++		expect(releases.calls).toEqual([['first']])
++		expect(lifetime.hold(record, () => releases.handler('third'))).toBe(false)
++		expect(releases.calls).toEqual([['first'], ['third']])
++	})
++
+ 	it('gives one holding back on release and leaves the others to the destruction', () => {
+ 		const lifetime = new Lifetime()
+ 		const record = {}
+@@ -237,6 +253,77 @@ describe('Lifetime.join', () => {
+ 		expect(destroyed.count).toBe(0)
+ 	})
+ 
++	it("ends the owner's holding of a resource destroyed on its own, so the owner neither releases nor destroys it again", () => {
++		const owner = new Lifetime()
++		const lifetime = new Lifetime()
++		const steps = createRecorder<readonly [string]>()
++		const resource = {
++			destroy: () => {
++				steps.handler('destroy')
++				lifetime.destroy()
++			},
++		}
++		Lifetime.join(owner.signal, resource, lifetime)
++		lifetime.hold({}, () => steps.handler('released'))
++		resource.destroy()
++		expect(steps.calls).toEqual([['destroy'], ['destroy'], ['released']])
++		expect(owner.release(resource)).toBe(false)
++		steps.clear()
++		owner.destroy()
++		expect(steps.count).toBe(0)
++	})
++
++	it("ends the owner's holding of a lifetime joined as its own class when that lifetime is destroyed", () => {
++		const owner = new Lifetime()
++		const child = new Lifetime()
++		Lifetime.join(owner.signal, child, child)
++		child.destroy()
++		expect(owner.release(child)).toBe(false)
++	})
++
++	it('leaves no holding behind across repeated joins of resources destroyed on their own', () => {
++		const owner = new Lifetime()
++		const destroyed = createRecorder<readonly [number]>()
++		const resources: Array<{ readonly destroy: () => void }> = []
++		for (const cycle of [1, 2, 3]) {
++			const lifetime = new Lifetime()
++			const resource = {
++				destroy: () => {
++					destroyed.handler(cycle)
++					lifetime.destroy()
++				},
++			}
++			Lifetime.join(owner.signal, resource, lifetime)
++			resource.destroy()
++			resources.push(resource)
++		}
++		expect(resources.map((resource) => owner.release(resource))).toEqual([false, false, false])
++		destroyed.clear()
++		owner.destroy()
++		expect(destroyed.count).toBe(0)
++	})
++
++	it('destroys a joined resource from the owner drain, whose own lifetime ending ends the holding inside that release', () => {
++		const owner = new Lifetime()
++		const lifetime = new Lifetime()
++		const steps = createRecorder<readonly [string]>()
++		const resource = {
++			destroy: () => {
++				steps.handler('destroy')
++				lifetime.destroy()
++			},
++		}
++		owner.hold({}, () => steps.handler('oldest'))
++		Lifetime.join(owner.signal, resource, lifetime)
++		lifetime.hold({}, () => steps.handler('released'))
++		owner.hold({}, () => steps.handler('newest'))
++		owner.destroy()
++		expect(steps.calls).toEqual([['newest'], ['destroy'], ['destroy'], ['released'], ['oldest']])
++		expect(owner.release(resource)).toBe(false)
++		owner.destroy()
++		expect(steps.count).toBe(5)
++	})
++
+ 	it('joins nothing for an absent signal', () => {
+ 		const destroyed = createRecorder<readonly []>()
+ 		Lifetime.join(undefined, { destroy: destroyed.handler }, new Lifetime())
