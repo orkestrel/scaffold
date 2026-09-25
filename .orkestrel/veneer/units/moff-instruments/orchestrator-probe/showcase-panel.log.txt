@@ -1,0 +1,6 @@
+ROW width=1280 specimen {"classes":"offcanvas offcanvas-end show","opacity":"1","visibility":"visible","transform":"none","position":"static","transition":"none 0s"}
+ROW width=1280 control without show {"classes":"offcanvas offcanvas-end","opacity":"1","visibility":"visible","transform":"none","position":"static","transition":"none 0s"}
+ROW width=390 specimen {"classes":"offcanvas offcanvas-end show","opacity":"1","visibility":"visible","transform":"none","position":"fixed","transition":"transform, opacity 0.25s, 0.25s"}
+ROW width=390 control without show {"classes":"offcanvas offcanvas-end","opacity":"0","visibility":"hidden","transform":"matrix(1, 0, 0, 1, 390, 0)","position":"fixed","transition":"transform, opacity 0.25s, 0.25s"}
+BUILD 141.0.7390.37 markup-length=933
+exit=0
