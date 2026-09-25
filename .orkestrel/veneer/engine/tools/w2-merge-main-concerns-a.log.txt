@@ -1,0 +1,47 @@
+# J-CONCERNS-A landing: the merge of main into unit/concerns-a (2026-09-24)
+e92fb7e Prove ScrollSpy's cancellation, focus, and motion and Button's focus and motion (J-CONCERNS-A)
+0865c67 Merge branch 'main' into unit/holders
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+094a71e Merge remote-tracking branch 'origin/main' into unit/roadmap-0925
+Merge made by the 'ort' strategy.
+ ROADMAP.md                                      |  79 +++---
+ app/browser/styles/_shell.scss                  |  14 +-
+ guides/veneer.md                                | 127 +++++----
+ src/styles/_mixins.scss                         |  23 ++
+ src/styles/_tokens.scss                         |   6 +-
+ src/styles/components/_accordion.scss           |   6 +
+ src/styles/components/_carousel.scss            |  12 +
+ src/styles/components/_close.scss               |   6 +
+ src/styles/components/_dropdown.scss            |   6 +
+ src/styles/components/_list-group.scss          |   6 +
+ src/styles/components/_nav.scss                 |   6 +
+ src/styles/components/_navbar.scss              |   6 +
+ src/styles/components/_pagination.scss          |   6 +
+ src/styles/elements/_button.scss                |  23 +-
+ tests/app/browser/Showcase.test.ts              |   2 +-
+ tests/app/browser/integration.test.ts           |   2 +-
+ tests/app/browser/sections/BadgeSection.test.ts |   3 +-
+ tests/conformance.test.ts                       |   4 +-
+ tests/service/tailwind/consumer.test.ts         |  46 +++-
+ tests/setupStyles.test.ts                       |  13 +-
+ tests/setupStyles.ts                            | 193 +++++++++++++-
+ tests/src/styles/components/accordion.test.ts   |  18 +-
+ tests/src/styles/components/button.test.ts      |   4 +-
+ tests/src/styles/components/carousel.test.ts    |  18 +-
+ tests/src/styles/components/close.test.ts       |   4 +-
+ tests/src/styles/components/collapse.test.ts    |   9 +-
+ tests/src/styles/components/fade.test.ts        |  11 +-
+ tests/src/styles/components/modal.test.ts       |   9 +-
+ tests/src/styles/components/offcanvas.test.ts   |  11 +-
+ tests/src/styles/components/popover.test.ts     |  12 +-
+ tests/src/styles/components/toast.test.ts       |  11 +-
+ tests/src/styles/components/tooltip.test.ts     |  12 +-
+ tests/src/styles/elements/button.test.ts        | 325 ++++++++++++++++++------
+ tests/src/styles/mixins.test.ts                 |  41 ++-
+ 34 files changed, 825 insertions(+), 249 deletions(-)
+merge main into unit/concerns-a exit=0
+conflicts: none

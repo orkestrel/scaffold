@@ -1,0 +1,12 @@
+Record and return a taken-over change's writes through four shared helper leaves
+
+Collapse, Tab, and Carousel each carried an almost identical record, read, and rewind set, and Toast its own record. They now share four exported, tested leaves in helpers.ts:
+- readHostValue reads a target as HostSnapshot's save reads it, with absence as undefined.
+- writeHostValue writes a target.
+- recordHostChange records a target once, at its first changing write, and nothing for a write that changes nothing.
+- rewindHostChanges restores each recorded target in reverse order, skipping one already at its value, and stops when the call no longer owns the change.
+
+HostChange, the entry shape, is declared once in types.ts. Each engine keeps only its #rewind boundary, which carries the call's identity into the leaf.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K

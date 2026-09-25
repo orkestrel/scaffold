@@ -1,0 +1,31 @@
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -6,6 +6,7 @@
+ 	HostSnapshotRecord,
+ 	HostSnapshotTarget,
+ } from './types.js'
++import { readHostValue } from './helpers.js'
+ 
+ /**
+  * Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.
+@@ -109,18 +110,8 @@
+ 		let value = record?.value
+ 		let priority = record?.priority ?? ''
+ 		if (record === undefined) {
+-			switch (category) {
+-				case 'attribute':
+-					value = element.getAttribute(name) ?? undefined
+-					break
+-				case 'token':
+-					value = element.classList.contains(name) ? name : undefined
+-					break
+-				case 'property':
+-					value = element.style.getPropertyValue(name) || undefined
+-					priority = element.style.getPropertyPriority(name)
+-					break
+-			}
++			value = readHostValue(resolved)
++			if (category === 'property') priority = element.style.getPropertyPriority(name)
+ 		}
+ 		// Joining a record a restoration owns takes the target over: the record has a holder again, so
+ 		// that restoration no longer owns its write.
