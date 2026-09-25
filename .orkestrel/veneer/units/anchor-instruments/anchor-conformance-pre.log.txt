@@ -1,0 +1,30 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-anchor
+
+··········································x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+Error: ENOENT: no such file or directory, open '/home/user/veneer-anchor/dist/src/core/index.js'
+ ❯ scanForbiddenBuild tests/setupServer.ts:2320:16
+    2318|  signatures: readonly string[],
+    2319| ): string | undefined {
+    2320|  const built = readFileSync(path, 'utf8')
+       |                ^
+    2321|  return (
+    2322|   scanForbiddenSource(built, names) ??
+ ❯ tests/conformance.test.ts:769:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 44 passed (45)
+   Start at  07:37:11
+   Duration  122.85s (transform 1.10s, setup 323ms, import 22.51s, tests 99.82s, environment 0ms)
+

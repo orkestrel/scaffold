@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on Opus 5.5, a native Claude subagent, the sole writer in `/home/user/veneer-anchor` (branch `unit/anchor` cut
-from Veneer at `LANDING_HEAD`, `node_modules` hardlinked from `/home/user/veneer`). The unit runs Chromium, which a
+from Veneer at `0a0a252`, `node_modules` hardlinked from `/home/user/veneer`). The unit runs Chromium, which a
 bench sandbox's child processes cannot, so it runs on the native writing lane. The harness environment block may name
 another directory as the primary working directory; start every shell command with `cd /home/user/veneer-anchor &&` and
 give every file tool an absolute path under it. Read, in order: `/home/user/scaffold/AGENTS.md`; the rules
@@ -81,7 +81,7 @@ Perform the assignment directly and spawn nothing.
 
 Write `tmp/units/anchor-report.md` and return the same text: the changes; the failing-first and green readings with
 commands and counts; the mutation table; the Tailwind search result; the gate table; `tmp/units/anchor.diff`
-(`git diff LANDING_HEAD`) and `tmp/units/anchor-status.txt`. State no count.
+(`git diff 0a0a252`) and `tmp/units/anchor-status.txt`. State no count.
 
 ## Deviation contract
 

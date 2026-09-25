@@ -1,0 +1,44 @@
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-anchor
+
+····························x················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits
+AssertionError: expected [ …(6) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "dropdown | :where(.dropdown-menu):popover-open | — | selector | —",
++   "dropdown | :where(.dropdown-menu):popover-open { position-visibility } | — | declaration | anchors-visible",
++   "tooltip | :where(.tooltip):popover-open | — | selector | —",
++   "tooltip | :where(.tooltip):popover-open { position-visibility } | — | declaration | anchors-visible",
++   "popover | :where(.popover):popover-open | — | selector | —",
++   "popover | :where(.popover):popover-open { position-visibility } | — | declaration | anchors-visible",
++ ]
+
+ ❯ tests/conformance.test.ts:277:27
+    275|
+    276|  it('names no addition the compiled cascade no longer emits', () => {
+    277|   expect(additions.stale).toEqual([])
+       |                           ^
+    278|  })
+    279|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 44 passed (45)
+   Start at  07:40:43
+   Duration  118.78s (transform 979ms, setup 310ms, import 21.46s, tests 96.81s, environment 0ms)
+
+exit=1

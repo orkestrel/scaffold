@@ -1,0 +1,28 @@
+import { it } from 'vitest'
+import {
+	collectLedger,
+	collectShippedComponents,
+	compileExpandedCascade,
+	describeAddition,
+	readAdditions,
+	readCompatibility,
+	readOracleInventory,
+	scanLedgerDrift,
+} from '../../tests/setupServer.js'
+
+// Reads which component the ledger attributes one combined rule to, beside the shipped per-partial
+// rules. The control plants nothing and must report no drift.
+it('reads how the ledger attributes the anchored-visibility rule', () => {
+	const cascade = compileExpandedCascade()
+	const inventory = readOracleInventory()
+	const shipped = collectShippedComponents(readCompatibility())
+	const recorded = readAdditions()
+	for (const [label, plant] of [
+		['control', ''],
+		['one', ':where(.dropdown-menu, .tooltip, .popover):popover-open { position-visibility: anchors-visible }'],
+	] as const) {
+		const ledger = collectLedger(`${cascade}\n@layer components { ${plant} }\n`, inventory, shipped, recorded)
+		const drift = scanLedgerDrift(ledger.additions, recorded, describeAddition)
+		console.log(`PROBE ${label}`, JSON.stringify({ unrecorded: drift.unrecorded, stale: drift.stale, unattributed: ledger.unattributed }))
+	}
+}, 120000)
