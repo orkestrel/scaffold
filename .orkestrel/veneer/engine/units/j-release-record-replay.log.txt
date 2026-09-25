@@ -1,0 +1,317 @@
+# J-RELEASE-RECORD replay (2026-09-25) at a1041bd Integrate J-RELEASE-RECORD's shared DROPDOWN_WRITE_BACKS row
+--- witnesses at b8c6a08's engine sources
+exit 1
+     × keeps a fade token a consumer adds after a show that never wrote it, through its destruction 9ms
+     × keeps the removal of a shown token its markup carried, which its show never wrote, through its destruction 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:816:2 > Toast > keeps a fade token a consumer adds after a show that never wrote it, through its destruction
+AssertionError: expected [ 'toast' ] to deeply equal [ 'toast', 'fade' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Toast.test.ts:824:37
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:828:2 > Toast > keeps the removal of a shown token its markup carried, which its show never wrote, through its destruction
+AssertionError: expected [ 'toast', 'show' ] to deeply equal [ 'toast' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Toast.test.ts:836:37
+ Test Files  1 failed (1)
+      Tests  2 failed | 45 skipped (47)
+restored
+exit 1
+     × keeps a direction token a consumer adds after a slide that never wrote it, through its destruction 10ms
+     × keeps a consumer edit to an active token a listener added, which its slide never wrote, through its destruction 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1836:2 > Carousel > keeps a direction token a consumer adds after a slide that never wrote it, through its destruction
+AssertionError: expected [ false, false ] to deeply equal [ true, true ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Carousel.test.ts:1854:4
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1863:2 > Carousel > keeps a consumer edit to an active token a listener added, which its slide never wrote, through its destruction
+AssertionError: expected [ 'carousel-item', 'active' ] to deeply equal [ 'carousel-item' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Carousel.test.ts:1882:41
+ Test Files  1 failed (1)
+      Tests  2 failed | 73 skipped (75)
+restored
+exit 1
+     × keeps a consumer edit to a role or state the markup already carried through its destruction, writing nothing at construction 6ms
+     × keeps a consumer edit to an active token a listener added, which its swap never wrote, through its destruction 3ms
+     × restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown 5ms
+     × writes only the selection its swap read before the sibling blur, leaving a wrapper a blur listener makes a dropdown untouched 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:736:2 > Tab > keeps a consumer edit to a role or state the markup already carried through its destruction, writing nothing at construction
+AssertionError: expected true to be false // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:756:36
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:785:2 > Tab > keeps a consumer edit to an active token a listener added, which its swap never wrote, through its destruction
+AssertionError: expected [ 'nav-link', 'active' ] to deeply equal [ 'nav-link' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:800:40
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:805:2 > Tab > restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown
+AssertionError: expected true to be false // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:824:45
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:829:2 > Tab > writes only the selection its swap read before the sibling blur, leaving a wrapper a blur listener makes a dropdown untouched
+AssertionError: expected true to be false // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:847:45
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed | 48 skipped (53)
+restored
+exit 1
+     × keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction 9ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:762:2 > Tab > keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction
+AssertionError: expected [ true, false ] to deeply equal [ true, true ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:777:87
+ Test Files  1 failed (1)
+      Tests  1 failed | 52 skipped (53)
+restored
+exit 1
+     × writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds 4ms
+     × records a target once, at its first changing write, with the value it held then, in the order of those first writes 1ms
+     × records an attribute and a token of the same name on one element as two targets 2ms
+     × records a write of the value an inline property holds when the property carries a priority 0ms
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1593:2 > recordHostWrite > writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds
+AssertionError: expected 'false' to be 'true' // Object.is equality
+Expected: [32m"[7mtru[27me"[39m
+Received: [31m"[7mfals[27me"[39m
+ ❯ tests/src/browser/helpers.test.ts:1599:48
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1643:2 > recordHostWrite > records a target once, at its first changing write, with the value it held then, in the order of those first writes
+AssertionError: expected 'false' to be 'mixed' // Object.is equality
+Expected: [32m"mixed"[39m
+Received: [31m"false"[39m
+ ❯ tests/src/browser/helpers.test.ts:1658:48
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1662:2 > recordHostWrite > records an attribute and a token of the same name on one element as two targets
+AssertionError: expected [ false, null ] to deeply equal [ true, '' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/helpers.test.ts:1677:81
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1711:2 > recordHostWrite > records a write of the value an inline property holds when the property carries a priority
+AssertionError: expected 'important' to be '' // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/helpers.test.ts:1718:54
+ Test Files  1 failed (1)
+      Tests  4 failed | 3 passed | 100 skipped (107)
+restored
+exit 1
+     × keeps a consumer edit to a shown token a listener added, which its show never wrote, through its destruction 7ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:559:2 > Collapse > keeps a consumer edit to a shown token a listener added, which its show never wrote, through its destruction
+AssertionError: expected [ 'collapse', 'show' ] to deeply equal [ 'collapse' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Collapse.test.ts:569:38
+ Test Files  1 failed (1)
+      Tests  1 failed | 50 skipped (51)
+restored
+exit 1
+     × keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction 10ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:541:2 > Collapse > keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction
+AssertionError: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Collapse.test.ts:553:50
+ Test Files  1 failed (1)
+      Tests  1 failed | 50 skipped (51)
+restored
+exit 1
+     × keeps a consumer edit to a menu shown token a listener added, which its show never wrote, through its destruction 11ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:999:2 > Dropdown > keeps a consumer edit to a menu shown token a listener added, which its show never wrote, through its destruction
+AssertionError: expected [ 'dropdown-menu', 'show' ] to deeply equal [ 'dropdown-menu' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Dropdown.test.ts:1013:37
+ Test Files  1 failed (1)
+      Tests  1 failed | 43 skipped (44)
+restored
+--- mutations
+exit 1
+     × writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds 5ms
+     × records an inline property with its priority, and an attribute and a token with the empty string 2ms
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1593:2 > recordHostWrite > writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds
+AssertionError: expected 'mixed' to be 'false' // Object.is equality
+Expected: [32m"false"[39m
+Received: [31m"mixed"[39m
+ ❯ tests/src/browser/helpers.test.ts:1603:48
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1683:2 > recordHostWrite > records an inline property with its priority, and an attribute and a token with the empty string
+AssertionError: expected [ '0px', '', null, false ] to deeply equal [ '12px', 'important', 'dialog', true ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/helpers.test.ts:1706:5
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed | 100 skipped (107)
+restored
+exit 1
+     × hides the open first-level sibling in its parent through the sibling engine and its own events, and owns the engine it constructs 351ms
+     × abandons the transition in flight on destruction, resolving false and restoring the panel and its triggers 3ms
+     × restores the panel, its size, and its triggers after a completed show, keeping consumer edits 1ms
+     × keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction 1ms
+     × stops writing when a reaction to its own write destroys it, resolving false and restoring the panel and its triggers 1ms
+     × restores a shared trigger to its original when the restoration that saved first destroys the button inside its token write 2ms
+     × restores a shared trigger to its original when the restoration that saved last destroys the button inside its token write 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:180:2 > Collapse > hides the open first-level sibling in its parent through the sibling engine and its own events, and owns the engine it constructs
+AssertionError: expected 'false' to be 'true' // Object.is equality
+Expected: [32m"[7mtru[27me"[39m
+Received: [31m"[7mfals[27me"[39m
+ ❯ tests/src/browser/Collapse.test.ts:239:54
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:472:2 > Collapse > abandons the transition in flight on destruction, resolving false and restoring the panel and its triggers
+AssertionError: expected [ 'collapsing' ] to deeply equal [ 'collapse' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Collapse.test.ts:499:38
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:519:2 > Collapse > restores the panel, its size, and its triggers after a completed show, keeping consumer edits
+AssertionError: expected true to be false // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Collapse.test.ts:535:48
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:541:2 > Collapse > keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction
+AssertionError: expected 'true' to be 'false' // Object.is equality
+Expected: [32m"[7mfals[27me"[39m
+Received: [31m"[7mtru[27me"[39m
+ ❯ tests/src/browser/Collapse.test.ts:554:48
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:767:2 > Collapse > stops writing when a reaction to its own write destroys it, resolving false and restoring the panel and its triggers
+AssertionError: expected [ 'collapse', 'collapsing' ] to deeply equal [ 'collapse' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Collapse.test.ts:808:38
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1823:2 > Collapse > restores a shared trigger to its original when the restoration that saved first destroys the button inside its token write
+AssertionError: expected Button{} to be undefined
+[32m- Expected:[39m
+[31m+ Received:[39m
+ ❯ tests/src/browser/Collapse.test.ts:1854:31
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1861:2 > Collapse > restores a shared trigger to its original when the restoration that saved last destroys the button inside its token write
+AssertionError: expected Button{} to be undefined
+[32m- Expected:[39m
+[31m+ Received:[39m
+ ❯ tests/src/browser/Collapse.test.ts:1892:31
+ Test Files  1 failed (1)
+      Tests  7 failed | 44 passed (51)
+restored
+exit 1
+     × keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction 3ms
+     × keeps a consumer edit to a shown token a listener added, which its show never wrote, through its destruction 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:541:2 > Collapse > keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction
+AssertionError: expected false to be true // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Collapse.test.ts:553:50
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:559:2 > Collapse > keeps a consumer edit to a shown token a listener added, which its show never wrote, through its destruction
+AssertionError: expected [ 'collapse', 'show' ] to deeply equal [ 'collapse' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Collapse.test.ts:569:38
+ Test Files  1 failed (1)
+      Tests  2 failed | 49 passed (51)
+restored
+exit 1
+     × keeps a fade token a consumer adds after a show that never wrote it, through its destruction 6ms
+     × keeps the removal of a shown token its markup carried, which its show never wrote, through its destruction 2ms
+     × hands the tokens still to be written back to a toast a reaction constructs while destruction restores the host 4ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:816:2 > Toast > keeps a fade token a consumer adds after a show that never wrote it, through its destruction
+AssertionError: expected [ 'toast' ] to deeply equal [ 'toast', 'fade' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Toast.test.ts:824:37
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:828:2 > Toast > keeps the removal of a shown token its markup carried, which its show never wrote, through its destruction
+AssertionError: expected [ 'toast', 'show' ] to deeply equal [ 'toast' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Toast.test.ts:836:37
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1177:2 > Toast > hands the tokens still to be written back to a toast a reaction constructs while destruction restores the host
+AssertionError: expected [ 'toast', 'fade', 'show' ] to deeply equal [ 'toast', 'show', 'fade' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Toast.test.ts:1212:37
+ Test Files  1 failed (1)
+      Tests  3 failed | 44 passed (47)
+restored
+exit 1
+     × keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction 3ms
+     × keeps a consumer edit to an active token a listener added, which its swap never wrote, through its destruction 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:762:2 > Tab > keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction
+AssertionError: expected [ true, false ] to deeply equal [ true, true ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:777:87
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:785:2 > Tab > keeps a consumer edit to an active token a listener added, which its swap never wrote, through its destruction
+AssertionError: expected [ 'nav-link', 'active' ] to deeply equal [ 'nav-link' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:800:40
+ Test Files  1 failed (1)
+      Tests  2 failed | 51 passed (53)
+restored
+exit 1
+     × keeps a direction token a consumer adds after a slide that never wrote it, through its destruction 4ms
+     × keeps a consumer edit to an active token a listener added, which its slide never wrote, through its destruction 1ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1836:2 > Carousel > keeps a direction token a consumer adds after a slide that never wrote it, through its destruction
+AssertionError: expected [ false, false ] to deeply equal [ true, true ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Carousel.test.ts:1854:4
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1863:2 > Carousel > keeps a consumer edit to an active token a listener added, which its slide never wrote, through its destruction
+AssertionError: expected [ 'carousel-item', 'active' ] to deeply equal [ 'carousel-item' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Carousel.test.ts:1882:41
+ Test Files  1 failed (1)
+      Tests  2 failed | 73 passed (75)
+restored
+exit 1
+     × keeps a consumer edit to a menu shown token a listener added, which its show never wrote, through its destruction 4ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:999:2 > Dropdown > keeps a consumer edit to a menu shown token a listener added, which its show never wrote, through its destruction
+AssertionError: expected [ 'dropdown-menu', 'show' ] to deeply equal [ 'dropdown-menu' ]
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Dropdown.test.ts:1013:37
+ Test Files  1 failed (1)
+      Tests  1 failed | 43 passed (44)
+restored
+exit 1
+     × writes only the selection its swap read before the sibling blur, leaving a wrapper a blur listener makes a dropdown untouched 3ms
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:829:2 > Tab > writes only the selection its swap read before the sibling blur, leaving a wrapper a blur listener makes a dropdown untouched
+AssertionError: expected true to be false // Object.is equality
+[32m- Expected[39m
+[31m+ Received[39m
+ ❯ tests/src/browser/Tab.test.ts:847:45
+ Test Files  1 failed (1)
+      Tests  1 failed | 52 passed (53)
+restored
+--- error class of each replay log
+tmp/j-release-record/logs/replay-m1-collapse.log.txt: assertion=7 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-m1-helpers.log.txt: assertion=2 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-m2-Carousel.log.txt: assertion=2 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-m2-Collapse.log.txt: assertion=2 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-m2-Dropdown.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-m2-Tab.log.txt: assertion=2 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-m2-Toast.log.txt: assertion=3 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-m3-tab-reread.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-red-carousel.log.txt: assertion=2 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-red-collapse-recorded.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-red-collapse.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-red-dropdown.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-red-helpers.log.txt: assertion=4 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-red-tab-recorded.log.txt: assertion=1 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-red-tab.log.txt: assertion=4 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+tmp/j-release-record/logs/replay-red-toast.log.txt: assertion=2 other=0 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+--- whole files
+Collapse whole-file       Tests  51 passed (51)
+Toast whole-file       Tests  47 passed (47)
+Tab whole-file       Tests  53 passed (53)
+Carousel whole-file       Tests  75 passed (75)
+Dropdown whole-file       Tests  44 passed (44)
+helpers whole-file       Tests  107 passed (107)
+test:setup:browser exit=0       Tests  98 passed (98)
+test:conformance exit=1 
+--- the tree after the replay
+--- conformance after the styles build (the first run found no dist/src/styles/index.css)
+build:src:styles exit=0
+test:conformance exit=1 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 44 passed (45)
+--- conformance after the full build (the second run found no dist/src/core/index.js)
+build exit=0
+test:conformance exit=0       Tests  45 passed (45)

@@ -76,3 +76,12 @@ The J-SAMEWAY-ENGINES-B landing chain read the four reds. The Orchestrator re-ra
 | `tests/src/styles/components/nav.test.ts`, "nav-link button reboot" | pressed | `outline-width: 0px` | absent |
 
 Each is the same Chromium 153 behaviour as the third row: the user agent's focus outline on a pressed button, which the release's map carries and Veneer's does not. E5 excludes these four as standing rows, and the landing runs `tools/w2-land-rest.sh` past them. The styles session receives the reading.
+
+## The fourth reading closes (2026-09-25, REBOOT-153)
+
+The styles session's REBOOT-153 (`6586b11`) reads each outline and border width whose line style is `none` or `hidden` at `0px` in `readFormDifferences`. On this host:
+
+- The J-CONCERNS-B landing merged `6586b11` and read every styles file green: 115 of 115 files, 1556 tests (`tools/w2-land-2d-concerns-b-merge.log.txt`).
+- The five files the styles session named read green alone at Veneer `main` `a65d308`, which holds `6586b11`: the four button-reboot files and `button.test.ts`, 5 of 5 files, 160 tests (`units/main-reboot-153-reading.log.txt`, instrument `../tools/main-reboot-153-reading.sh`).
+
+No standing row remains. E5 excludes nothing from a landing chain on this host.

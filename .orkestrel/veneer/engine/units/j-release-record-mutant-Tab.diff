@@ -1,0 +1,21 @@
+--- src/browser/Tab.ts	2026-09-25 05:31:40.308444300 -0400
++++ /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record/tmp/j-release-record/mutants/Tab.ts	2026-09-25 05:30:17.693846000 -0400
+@@ -229,6 +229,18 @@
+ 		// changes is recorded with the value it held before the call's first write to it, so the
+ 		// returning step writes it back. A reaction or a listener runs inside each write, so the door
+ 		// follows it.
++		for (const [control, controlPane] of [
++			[outgoing, previous],
++			[host, pane],
++		] as const) {
++			if (control === undefined) continue
++			this.#snapshot.save({ category: 'token', element: control, name: active })
++			if (controlPane !== undefined) {
++				this.#snapshot.save({ category: 'token', element: controlPane, name: active })
++				this.#snapshot.save({ category: 'token', element: controlPane, name: shown })
++			}
++		}
++		for (const [target] of [...deselection, ...selection]) this.#snapshot.save(target)
+ 		const snapshot = this.#snapshot
+ 		let written: readonly HostWrite[] = []
+ 		if (outgoing !== undefined) {

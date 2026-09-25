@@ -1,0 +1,58 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Collapse.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Collapse.test.ts (51 tests | 2 failed) 5487ms
+     × keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction 4ms
+     × keeps a consumer edit to a shown token a listener added, which its show never wrote, through its destruction 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:541:2 > Collapse > keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/Collapse.test.ts:553:50
+    551|   trigger.classList.add('collapsed')
+    552|   collapse.destroy()
+    553|   expect(trigger.classList.contains('collapsed')).toBe(true)
+       |                                                  ^
+    554|   expect(trigger.getAttribute('aria-expanded')).toBe('false')
+    555|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:559:2 > Collapse > keeps a consumer edit to a shown token a listener added, which its show never wrote, through its destruction
+AssertionError: expected [ 'collapse', 'show' ] to deeply equal [ 'collapse' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "collapse",[22m
+[31m+   "show",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Collapse.test.ts:569:38
+    567|   panel.classList.remove('show')
+    568|   collapse.destroy()
+    569|   expect(Array.from(panel.classList)).toEqual(['collapse'])
+       |                                      ^
+    570|  })
+    571|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 49 passed (51)
+   Start at  05:30:26
+   Duration  8.03s (transform 0ms, setup 721ms, import 425ms, tests 5.49s, environment 0ms)
+

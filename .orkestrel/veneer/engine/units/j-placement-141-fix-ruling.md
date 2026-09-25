@@ -27,6 +27,11 @@ Candidate A (`tokenFirst`) also anchors, but it reorders the show, which is a Bo
 
 If either reading differs, the seam returns to this ruling.
 
-**Sequencing.** J-ORACLE-FIX-PLACEMENT writes the deferred shape after J-RELEASE-POPUPS lands, so it builds on E35's holdings in `Placement`. Its brief carries the probe's `deferAnchor` preparation as the pattern, and it owns the Chromium 141 limit sentences the E-ID-ANCHOR fix round writes on the styles side.
+**Sequencing.** J-PLACEMENT-141-FIX writes the deferred shape after J-RELEASE-POPUPS lands, so it builds on E35's holdings in `Placement`. It is serialized with J-ORACLE-FIX-PLACEMENT, which shares `Placement.ts` and `Dropdown.ts`. Its brief carries the probe's `deferAnchor` preparation as the pattern. It also owns the Chromium 141 limit sentences that the E-ID-ANCHOR fix round writes on the styles side, because the fix makes them false.
 
-VERDICT: PASS (the deferred shape; the complete 141 run confirms it before the fix unit is accepted)
+**The condition is met (2026-09-25).** The styles session re-ran the same probe on Chromium 141.0.7390.37 twice (`../units/native141/j-placement-141-probe-2-141-run-2.log.txt` and `-run-3.log.txt`, SHA-256 `2f07fa27…`, 8 of 8 tests passed in each). In both runs:
+- `deferAnchor` reads anchored on all four readings under each rule;
+- `missingAnchor` reads failing on all four readings under each rule;
+- `baseline` reads not anchored, and `tokenFirst`, `tokenFirstLayout`, and `display` read anchored.
+
+VERDICT: PASS (the deferred shape, confirmed by two complete Chromium 141 runs)

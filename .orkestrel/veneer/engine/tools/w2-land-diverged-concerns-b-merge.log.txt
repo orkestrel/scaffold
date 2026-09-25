@@ -1,0 +1,40 @@
+# J-CONCERNS-B-MERGE landing over a moved origin/main (2026-09-25)
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+4c36c7d Merge branch 'main' into unit/concerns-b
+6586b11 Read an outline or border width that paints no line at zero in the form reading (REBOOT-153)
+Preparing worktree (new branch 'unit/concerns-b-merge')
+HEAD is now at 4c36c7d Merge branch 'main' into unit/concerns-b
+worktree add exit=0
+npm ci exit=0
+Merge made by the 'ort' strategy.
+ ROADMAP.md                                        |   4 +-
+ guides/veneer.md                                  | 456 +++++++++++++---------
+ src/styles/_mixins.scss                           |   6 +-
+ src/styles/components/_accordion.scss             |  14 +-
+ src/styles/components/_form-floating.scss         |  12 +-
+ src/styles/components/_modal.scss                 |  20 +-
+ src/styles/components/_nav.scss                   |  13 +-
+ src/styles/components/_navbar.scss                |   4 +-
+ src/styles/components/_pagination.scss            |  14 +-
+ src/styles/components/_progress.scss              |   5 +-
+ tests/setupBrowser.test.ts                        | 143 +++++++
+ tests/setupBrowser.ts                             | 100 ++++-
+ tests/setupStyles.ts                              |   1 +
+ tests/src/styles/components/accordion.test.ts     |  40 ++
+ tests/src/styles/components/fade.test.ts          |  30 +-
+ tests/src/styles/components/form-floating.test.ts |  58 ++-
+ tests/src/styles/components/modal.test.ts         | 286 +++++++++++---
+ tests/src/styles/components/nav.test.ts           |  30 ++
+ tests/src/styles/components/navbar.test.ts        |  25 ++
+ tests/src/styles/components/offcanvas.test.ts     |  85 ++++
+ tests/src/styles/components/pagination.test.ts    |  32 ++
+ tests/src/styles/components/progress.test.ts      |  49 ++-
+ tests/src/styles/mixins.test.ts                   |  40 +-
+ 23 files changed, 1185 insertions(+), 282 deletions(-)
+merge origin/main exit=0
+conflicts: none
+a65d308 Merge remote-tracking branch 'origin/main' into unit/concerns-b-merge
+6586b11 Read an outline or border width that paints no line at zero in the form reading (REBOOT-153)
+877e7c6 Fold the E-ID-MOTION-MODAL and E-ID-MOTION-FACTOR landing into the roadmap

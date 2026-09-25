@@ -1,0 +1,11 @@
+--- src/browser/Tab.ts	2026-09-25 05:31:40.308444300 -0400
++++ /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record/tmp/j-release-record/mutants/Tab-reread.ts	2026-09-25 05:31:33.528622600 -0400
+@@ -257,7 +257,7 @@
+ 				)
+ 				if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
+ 			}
+-			for (const [target, value] of deselection) {
++			for (const [target, value] of deselection.length > 0 ? this.#selection(outgoing, false) : []) {
+ 				written = recordHostWrite(written, target, value, snapshot)
+ 				if (!this.#holds(change, expected, [])) return this.#rewind(change, written)
+ 			}

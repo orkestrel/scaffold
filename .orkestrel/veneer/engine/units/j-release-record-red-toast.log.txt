@@ -1,0 +1,61 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Toast.test.ts -t never wrote it|its show never wrote
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Toast.test.ts (47 tests | 2 failed | 45 skipped) 12ms
+     × keeps a fade token a consumer adds after a show that never wrote it, through its destruction 9ms
+     × keeps the removal of a shown token its markup carried, which its show never wrote, through its destruction 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:816:2 > Toast > keeps a fade token a consumer adds after a show that never wrote it, through its destruction
+AssertionError: expected [ 'toast' ] to deeply equal [ 'toast', 'fade' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "toast",[22m
+[32m-   "fade",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Toast.test.ts:824:37
+    822|   host.classList.add('fade')
+    823|   toast.destroy()
+    824|   expect(Array.from(host.classList)).toEqual(['toast', 'fade'])
+       |                                     ^
+    825|  })
+    826|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:828:2 > Toast > keeps the removal of a shown token its markup carried, which its show never wrote, through its destruction
+AssertionError: expected [ 'toast', 'show' ] to deeply equal [ 'toast' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "toast",[22m
+[31m+   "show",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Toast.test.ts:836:37
+    834|   host.classList.remove('show')
+    835|   toast.destroy()
+    836|   expect(Array.from(host.classList)).toEqual(['toast'])
+       |                                     ^
+    837|  })
+    838|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 45 skipped (47)
+   Start at  05:13:22
+   Duration  2.32s (transform 0ms, setup 538ms, import 325ms, tests 12ms, environment 0ms)
+

@@ -1,0 +1,12 @@
+# J-RELEASE-RECORD integration (2026-09-25) at b8c6a08 Merge branch 'main' into unit/release-core
+apply check exit=0
+apply exit=0
+ tests/setupBrowser.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+Dropdown exit=0       Tests  44 passed (44)
+Collapse exit=0       Tests  51 passed (51)
+Toast exit=0       Tests  47 passed (47)
+Tab exit=0       Tests  53 passed (53)
+Carousel exit=0       Tests  75 passed (75)
+helpers exit=0       Tests  107 passed (107)
+test:setup:browser exit=0       Tests  98 passed (98)

@@ -1,0 +1,39 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Dropdown.test.ts -t its show never wrote
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Dropdown.test.ts (44 tests | 1 failed | 43 skipped) 13ms
+     × keeps a consumer edit to a menu shown token a listener added, which its show never wrote, through its destruction 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:999:2 > Dropdown > keeps a consumer edit to a menu shown token a listener added, which its show never wrote, through its destruction
+AssertionError: expected [ 'dropdown-menu', 'show' ] to deeply equal [ 'dropdown-menu' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "dropdown-menu",[22m
+[31m+   "show",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Dropdown.test.ts:1013:37
+    1011|   menu.classList.remove('show')
+    1012|   dropdown.destroy()
+    1013|   expect(Array.from(menu.classList)).toEqual(['dropdown-menu'])
+       |                                     ^
+    1014|   expect(toggle.getAttribute('aria-expanded')).toBe('false')
+    1015|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 43 skipped (44)
+   Start at  05:13:47
+   Duration  2.02s (transform 0ms, setup 590ms, import 304ms, tests 13ms, environment 0ms)
+

@@ -1,0 +1,18 @@
+--- src/browser/Carousel.ts	2026-09-25 05:31:19.863688500 -0400
++++ /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record/tmp/j-release-record/mutants/Carousel.ts	2026-09-25 05:30:17.665700600 -0400
+@@ -375,6 +375,15 @@
+ 			// write to it, so the returning step writes it back. A reaction runs inside each write, so the
+ 			// door follows it.
+ 			const snapshot = this.#snapshot
++			for (const item of [outgoing, incoming]) {
++				for (const name of [active, this.#classes.next, this.#classes.previous, this.#classes.start, this.#classes.end]) {
++					this.#snapshot.save({ category: 'token', element: item, name })
++				}
++			}
++			for (const indicator of [...leaving, ...arriving]) {
++				this.#snapshot.save({ category: 'token', element: indicator, name: active })
++				this.#snapshot.save({ category: 'attribute', element: indicator, name: 'aria-current' })
++			}
+ 			let written: readonly HostWrite[] = []
+ 			for (const indicator of leaving) {
+ 				const marked = indicator.getAttribute('aria-current')

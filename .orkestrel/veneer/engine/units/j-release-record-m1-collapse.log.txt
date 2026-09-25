@@ -1,0 +1,154 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Collapse.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Collapse.test.ts (51 tests | 7 failed) 5501ms
+     × hides the open first-level sibling in its parent through the sibling engine and its own events, and owns the engine it constructs 369ms
+     × abandons the transition in flight on destruction, resolving false and restoring the panel and its triggers 4ms
+     × restores the panel, its size, and its triggers after a completed show, keeping consumer edits 1ms
+     × keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction 1ms
+     × stops writing when a reaction to its own write destroys it, resolving false and restoring the panel and its triggers 1ms
+     × restores a shared trigger to its original when the restoration that saved first destroys the button inside its token write 2ms
+     × restores a shared trigger to its original when the restoration that saved last destroys the button inside its token write 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:180:2 > Collapse > hides the open first-level sibling in its parent through the sibling engine and its own events, and owns the engine it constructs
+AssertionError: expected 'false' to be 'true' // Object.is equality
+
+Expected: [32m"[7mtru[27me"[39m
+Received: [31m"[7mfals[27me"[39m
+
+ ❯ tests/src/browser/Collapse.test.ts:239:54
+    237|   expect(Array.from(first.classList)).toEqual(['collapse', 'show'])
+    238|   expect(Array.from(second.classList)).toEqual(['collapse'])
+    239|   expect(firstTrigger?.getAttribute('aria-expanded')).toBe('true')
+       |                                                      ^
+    240|   expect(firstTrigger?.classList.contains('collapsed')).toBe(false)
+    241|   expect(secondTrigger?.getAttribute('aria-expanded')).toBe('false')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:472:2 > Collapse > abandons the transition in flight on destruction, resolving false and restoring the panel and its triggers
+AssertionError: expected [ 'collapsing' ] to deeply equal [ 'collapse' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "collapse",[39m
+[31m+   "collapsing",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Collapse.test.ts:499:38
+    497|   expect(await showing).toBe(false)
+    498|   expect(hooks.calls).toEqual([['show.vn.collapse']])
+    499|   expect(Array.from(panel.classList)).toEqual(['collapse'])
+       |                                      ^
+    500|   expect(panel.hasAttribute('style')).toBe(false)
+    501|   expect(trigger.getAttribute('aria-expanded')).toBe('false')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:519:2 > Collapse > restores the panel, its size, and its triggers after a completed show, keeping consumer edits
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Collapse.test.ts:535:48
+    533|   expect(Array.from(panel.style)).toEqual(['outline-color'])
+    534|   expect(trigger.hasAttribute('class')).toBe(false)
+    535|   expect(trigger.hasAttribute('aria-expanded')).toBe(false)
+       |                                                ^
+    536|   expect(trigger.getAttribute('aria-controls')).toBe('details')
+    537|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:541:2 > Collapse > keeps a collapsed token a consumer adds to a trigger whose token its show never changed, through its destruction
+AssertionError: expected 'true' to be 'false' // Object.is equality
+
+Expected: [32m"[7mfals[27me"[39m
+Received: [31m"[7mtru[27me"[39m
+
+ ❯ tests/src/browser/Collapse.test.ts:554:48
+    552|   collapse.destroy()
+    553|   expect(trigger.classList.contains('collapsed')).toBe(true)
+    554|   expect(trigger.getAttribute('aria-expanded')).toBe('false')
+       |                                                ^
+    555|  })
+    556|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:767:2 > Collapse > stops writing when a reaction to its own write destroys it, resolving false and restoring the panel and its triggers
+AssertionError: expected [ 'collapse', 'collapsing' ] to deeply equal [ 'collapse' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "collapse",[22m
+[31m+   "collapsing",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Collapse.test.ts:808:38
+    806|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+    807|   expect(events.calls).toEqual([['show.vn.collapse']])
+    808|   expect(Array.from(panel.classList)).toEqual(['collapse'])
+       |                                      ^
+    809|   expect(panel.hasAttribute('style')).toBe(false)
+    810|   expect(trigger.getAttribute('aria-expanded')).toBe('false')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1823:2 > Collapse > restores a shared trigger to its original when the restoration that saved first destroys the button inside its token write
+AssertionError: expected Button{} to be undefined
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+Button {}
+
+ ❯ tests/src/browser/Collapse.test.ts:1854:31
+    1852|   })
+    1853|   collapse.destroy()
+    1854|   expect(Button.find(trigger)).toBeUndefined()
+       |                               ^
+    1855|   expect(trigger.hasAttribute('class')).toBe(false)
+    1856|   expect(trigger.hasAttribute('aria-expanded')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1861:2 > Collapse > restores a shared trigger to its original when the restoration that saved last destroys the button inside its token write
+AssertionError: expected Button{} to be undefined
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+Button {}
+
+ ❯ tests/src/browser/Collapse.test.ts:1892:31
+    1890|   })
+    1891|   collapse.destroy()
+    1892|   expect(Button.find(trigger)).toBeUndefined()
+       |                               ^
+    1893|   expect(trigger.hasAttribute('class')).toBe(false)
+    1894|   expect(trigger.hasAttribute('aria-expanded')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 44 passed (51)
+   Start at  05:29:35
+   Duration  7.87s (transform 0ms, setup 659ms, import 412ms, tests 5.50s, environment 0ms)
+

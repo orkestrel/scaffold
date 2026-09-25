@@ -1,0 +1,34 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/helpers.test.ts -t recordHostWrite
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/helpers.test.ts (107 tests | 1 failed | 100 skipped) 8ms
+     × writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1593:2 > recordHostWrite > writes through the snapshot, which records the target at that write, so the restoration writes back the value the call record holds
+AssertionError: expected 'false' to be 'true' // Object.is equality
+
+Expected: [32m"[7mtru[27me"[39m
+Received: [31m"[7mfals[27me"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:1599:48
+    1597|   const snapshot = new HostSnapshot()
+    1598|   const writes = recordHostWrite([], expanded, 'true', snapshot)
+    1599|   expect(element.getAttribute('aria-expanded')).toBe('true')
+       |                                                ^
+    1600|   expect(writes).toEqual([{ target: expanded, value: 'false', priority…
+    1601|   element.setAttribute('aria-expanded', 'mixed')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed | 100 skipped (107)
+   Start at  05:13:51
+   Duration  2.14s (transform 0ms, setup 696ms, import 50ms, tests 8ms, environment 0ms)
+

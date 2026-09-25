@@ -1,0 +1,61 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tab.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Tab.test.ts (53 tests | 2 failed) 1669ms
+     × keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction 4ms
+     × keeps a consumer edit to an active token a listener added, which its swap never wrote, through its destruction 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:762:2 > Tab > keeps a shown token a consumer adds to the sibling pane, whose token its swap never changed, through its destruction
+AssertionError: expected [ true, false ] to deeply equal [ true, true ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    true,[22m
+[32m-   true,[39m
+[31m+   false,[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Tab.test.ts:777:87
+    775|   homePane.classList.add('show')
+    776|   tab.destroy()
+    777|   expect([homePane.classList.contains('active'), homePane.classList.co…
+       |                                                                                       ^
+    778|    true,
+    779|    true,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:785:2 > Tab > keeps a consumer edit to an active token a listener added, which its swap never wrote, through its destruction
+AssertionError: expected [ 'nav-link', 'active' ] to deeply equal [ 'nav-link' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "nav-link",[22m
+[31m+   "active",[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/Tab.test.ts:800:40
+    798|   profile.classList.remove('active')
+    799|   tab.destroy()
+    800|   expect(Array.from(profile.classList)).toEqual(['nav-link'])
+       |                                        ^
+    801|  })
+    802|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 51 passed (53)
+   Start at  05:30:48
+   Duration  4.34s (transform 0ms, setup 735ms, import 469ms, tests 1.67s, environment 0ms)
+

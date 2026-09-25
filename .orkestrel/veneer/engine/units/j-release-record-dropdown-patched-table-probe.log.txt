@@ -1,0 +1,11 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Dropdown.test.ts -t writes back only the toggle targets
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 43 skipped (44)
+   Start at  05:23:00
+   Duration  1.92s (transform 0ms, setup 532ms, import 304ms, tests 18ms, environment 0ms)
+

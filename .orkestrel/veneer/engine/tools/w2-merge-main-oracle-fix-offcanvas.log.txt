@@ -1,0 +1,89 @@
+# J-ORACLE-FIX-OFFCANVAS landing: the merge of main into unit/oracle-fix-offcanvas (2026-09-24)
+88d06f4 Cancel a dismissing backdrop press when its hide released the isolation and the trigger holds focus (J-ORACLE-FIX-OFFCANVAS round 5)
+43fa73d Compare the deepest focused element in the backdrop press, and state the two moves it misses (J-ORACLE-FIX-OFFCANVAS round 3)
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+a65d308 Merge remote-tracking branch 'origin/main' into unit/concerns-b-merge
+Auto-merging guides/veneer.md
+Auto-merging src/browser/helpers.ts
+Auto-merging src/browser/types.ts
+Auto-merging tests/src/browser/helpers.test.ts
+Auto-merging tests/src/browser/index.test.ts
+Merge made by the 'ort' strategy.
+ ROADMAP.md                                        |   10 +-
+ guides/veneer.md                                  | 1357 +++++++++++++--------
+ src/browser/Button.ts                             |   63 +-
+ src/browser/Carousel.ts                           |   13 +-
+ src/browser/Dropdown.ts                           |  274 ++++-
+ src/browser/HostSnapshot.ts                       |   85 +-
+ src/browser/Lifetime.ts                           |  151 +++
+ src/browser/Popover.ts                            |    4 +-
+ src/browser/Toast.ts                              |   44 +-
+ src/browser/Tooltip.ts                            |  203 ++-
+ src/browser/helpers.ts                            |   34 +-
+ src/browser/index.ts                              |    1 +
+ src/browser/types.ts                              |  142 ++-
+ src/styles/_mixins.scss                           |    6 +-
+ src/styles/components/_accordion.scss             |   14 +-
+ src/styles/components/_form-floating.scss         |   12 +-
+ src/styles/components/_modal.scss                 |   20 +-
+ src/styles/components/_nav.scss                   |   13 +-
+ src/styles/components/_navbar.scss                |    4 +-
+ src/styles/components/_pagination.scss            |   14 +-
+ src/styles/components/_placeholder.scss           |   16 +-
+ src/styles/components/_progress.scss              |    5 +-
+ src/styles/components/_spinner.scss               |   24 +-
+ tests/app/browser/sections/EngineSection.test.ts  |   25 +-
+ tests/fixtures/tailwind/components.html           |   56 +
+ tests/fixtures/tailwind/consumer-preflight.css    |    6 +
+ tests/service/tailwind/consumer.test.ts           |  291 ++++-
+ tests/service/tailwind/preflight.test.ts          |   35 +-
+ tests/service/tailwind/profiles.test.ts           |   43 +-
+ tests/setupBrowser.test.ts                        |  270 ++++
+ tests/setupBrowser.ts                             |  486 ++++++++
+ tests/setupServer.test.ts                         |  103 ++
+ tests/setupServer.ts                              |   40 +
+ tests/setupService.test.ts                        |   62 +-
+ tests/setupService.ts                             |  131 +-
+ tests/setupStyles.test.ts                         |   26 +-
+ tests/setupStyles.ts                              |  186 ++-
+ tests/src/browser/Button.test.ts                  |  174 ++-
+ tests/src/browser/Carousel.test.ts                |  341 +++++-
+ tests/src/browser/Collapse.test.ts                |  155 +--
+ tests/src/browser/Dropdown.test.ts                | 1064 +++++++++++++++-
+ tests/src/browser/HostSnapshot.test.ts            |  119 ++
+ tests/src/browser/Lifetime.test.ts                |  398 ++++++
+ tests/src/browser/Popover.test.ts                 |  551 ++++++++-
+ tests/src/browser/Tab.test.ts                     |  174 ++-
+ tests/src/browser/Toast.test.ts                   |  200 ++-
+ tests/src/browser/Tooltip.test.ts                 |  944 +++++++++++++-
+ tests/src/browser/helpers.test.ts                 |   67 +
+ tests/src/browser/index.test.ts                   |    2 +
+ tests/src/styles/components/accordion.test.ts     |   69 +-
+ tests/src/styles/components/carousel.test.ts      |   35 +-
+ tests/src/styles/components/close.test.ts         |   24 +-
+ tests/src/styles/components/dropdown.test.ts      |   24 +-
+ tests/src/styles/components/fade.test.ts          |   30 +-
+ tests/src/styles/components/form-floating.test.ts |   58 +-
+ tests/src/styles/components/list-group.test.ts    |   24 +-
+ tests/src/styles/components/modal.test.ts         |  286 ++++-
+ tests/src/styles/components/nav.test.ts           |   59 +-
+ tests/src/styles/components/navbar.test.ts        |   48 +
+ tests/src/styles/components/offcanvas.test.ts     |   85 ++
+ tests/src/styles/components/pagination.test.ts    |   55 +
+ tests/src/styles/components/placeholder.test.ts   |   56 +-
+ tests/src/styles/components/progress.test.ts      |   49 +-
+ tests/src/styles/components/spinner.test.ts       |   60 +-
+ tests/src/styles/elements/button.test.ts          |  129 +-
+ tests/src/styles/mixins.test.ts                   |   68 +-
+ tests/src/styles/tokens.test.ts                   |  458 ++++++-
+ 67 files changed, 8641 insertions(+), 1434 deletions(-)
+ create mode 100644 src/browser/Lifetime.ts
+ create mode 100644 tests/fixtures/tailwind/components.html
+ create mode 100644 tests/fixtures/tailwind/consumer-preflight.css
+ create mode 100644 tests/src/browser/Lifetime.test.ts
+merge main into unit/oracle-fix-offcanvas exit=0
+conflicts: none
