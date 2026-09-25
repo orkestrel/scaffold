@@ -1,0 +1,32 @@
+--- tmp/units/tokens.test.ts.bak-10	2026-09-25 07:24:00.720006411 +0000
++++ tests/src/styles/tokens.test.ts	2026-09-25 07:24:15.088841924 +0000
+@@ -426,8 +426,9 @@
+ 	it('resolves the stripe percentage to the retained Bootstrap tint in each mode', () => {
+ 		const sheet = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
+ 		// Each mode scope declares the stripe again, with the declaration the `:root` selector
+-		// writes, so a reading on an island cannot tell where its value was declared. Each mode's
+-		// own declaration list is what places the stripe beside the hover and active percentages.
++		// writes. With no override, an island reads the same default whether it declares the
++		// stripe or inherits it, so these readings cannot place the declaration; each mode's own
++		// declaration list is what places the stripe beside the hover and active percentages.
+ 		expect(
+ 			collectScopeProperties(collectNestedRules(sheet.cssRules), "[data-bs-theme='light']"),
+ 		).toContain(TOKEN_NAMES.state.stripe)
+--- tmp/units/veneer.md.bak-10	2026-09-25 07:24:00.722301129 +0000
++++ guides/veneer.md	2026-09-25 07:24:41.020841331 +0000
+@@ -9760,10 +9760,11 @@
+ smooth-scroll rule, and the dark component rules, and each row sits where the release writes the
+ declaration, whatever partial writes it here. The `dropped` rows are the names the release repeats
+ in its light scope although no mode changes them. Veneer declares each of them at the `:root`
+-selector alone, and an island inherits each one from its parent, so a light island nested in a dark
+-one reads the document value unless an ancestor below the root overrides the name; the
+-`tests/src/styles/theme.test.ts` proof reads every such name there. The dark component rules the
+-form select, form check, navbar, and accordion partials write match the release and carry no row.
++selector alone, and an element that does not override one inherits it from its parent, so a light
++island nested in a dark one reads the document value unless the island or an ancestor below the
++root overrides the name; the `tests/src/styles/theme.test.ts` proof reads every such name there.
++The dark component rules the form select, form check, navbar, and accordion partials write match
++the release and carry no row.
+ 
+ | Component | Selector                | Property                            | Condition | Bootstrap 5.3.8                                                                                                                                                                                   | Veneer                                                                               | Departure |
+ | --------- | ----------------------- | ----------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------- |

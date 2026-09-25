@@ -1,0 +1,7 @@
+./node_modules/.bin/oxfmt --config .oxfmtrc.json --check tests/src/styles/tokens.test.ts guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 15569ms on 2 files using 4 threads.
+exit=0
+2.08 5.11 7.61 1/167 891
