@@ -1,0 +1,9 @@
+1. **CONFIRMED.** The delta at `mfac-instruments/r4/mfac-4-delta.diff:3` removes exactly the specified clause after whitespace normalization; replacement lines fit within 100 columns and match `guides/veneer.md:7106`. An additional word mutation fails the comparison. Parsing every transition declaration and alias in `dist/src/styles/index.css:1` and the partials compiled in memory found no duration outside the paragraph’s scaling rule or named exceptions. Controls introducing a fixed nav duration and an additional `transition-duration:120ms` declaration were detected. The `.icon-link` duration differs from Bootstrap’s `0.2s` at `node_modules/bootstrap/dist/css/bootstrap.css:6990`, and `guides/veneer.md:8633` records that departure.
+
+2. **CONFIRMED.** The retained logs record successful completion and `exit=0`: `mfac-instruments/r4/mfac-4-oxfmt.log.txt:6`, `mfac-instruments/r4/mfac-4-test-guides.log.txt:16`, and `mfac-instruments/r4/mfac-4-test-policy.log.txt:16`. In-memory mutations replacing the exit with `1` or removing its marker fail the log assertion. This confirms the recorded exits; it does not establish behavioral coverage.
+
+**Outside the claims — EVIDENCE-DIFF: BROKEN.** `e-id-motion-factor-report-4.md:23` describes the artifact as `git diff b613ae4` over the worktree. The retained `mfac-4.diff:1` instead equals `git diff b613ae4 -- guides/veneer.md`. It omits source and test changes present in the live full diff and recorded in `mfac-4-status.txt:2`. Full-diff equality fails; guide-only equality passes. Regenerate the retained artifact from the unfiltered command. The round-specific delta remains accurate.
+
+**Attacked and held.** The `transition: revert` declaration at `src/styles/_mixins.scss:148` resets styling without writing a duration. Reduced-motion `transition: none` declarations likewise introduce no unscaled timing. Neither contradicts the remaining paragraph.
+
+VERDICT: FAIL none; outside the claims: EVIDENCE-DIFF
