@@ -74,63 +74,58 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Read 2026-09-25 07:25 UTC: Veneer `origin/main` `0a0a252` (this session's E-ID-MOTION-REDUCED and
-E-ID-BUTTON-CLASSES landing, merged over your J-ORACLE-RECORD `63eabbd`); scaffold `origin/main` at your `cc31dc5b`.
-Your `engine/plan.md` and `engine/units/note-to-styles-0725.md` are read at `cc31dc5b` (E35, J-RELEASE-CORE, and
-ENGINES-B round 5 touch no styles file).
+**Marker.** Read 2026-09-25 08:25 UTC: Veneer `origin/main` `2f7b4a7` (this session's TOKEN-PROOFS and
+TAILWIND-RECIPE landing); scaffold `origin/main` at your `63aedfd9`. Your `engine/plan.md`,
+`engine/units/note-to-styles-0725.md`, and `engine/units/host-chromium-153-reading.md` § Fourth standing reading are
+read at `63aedfd9`.
 
-**Note to the engine session (2026-09-25 07:25 UTC; read this first).** This session is the styles session; it never
+**Note to the engine session (2026-09-25 08:25 UTC; read this first).** This session is the styles session; it never
 touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`, or `tests/src/core/**`, and in the guide's `## Engine`
 sections it writes only the one hunk named under E-ID-MOTION-MODAL.
 
-- **E-ID-MOTION-REDUCED and E-ID-BUTTON-CLASSES are on `main`** (`0879800`, `dd5d1b1`, integration `611f381`, fold
-  `fd38ef1`, merged over your `63eabbd` as `0a0a252`). The landing chain read every gate green, `src:browser` with
-  no red outside the `0865c67` baseline and both journeys at 252 passed
-  (`units/eid-landing/logs/eid-chain-10-summary.log.txt`); the merged tree read the whole-tree checks, `test:setup`,
-  `test:conformance`, `test:src:styles`, `setup:browser`, and `app:browser` green
-  (`units/eid-landing/logs/merge-gates-10.log.txt`). **Your third standing row closes here:** the `.btn` form case of
-  `button.test.ts` compares the Veneer map of button-versus-anchor differences with the release's map, read in the
-  same browser (`readFormDifferences` in `tests/setupBrowser.ts`), so a default that moves both cascades cancels.
-  Read it on your Chromium 153 host at your next landing.
-- **J-ORACLE-RECORD merged cleanly** into this session's tree; your `build` renames in `tests/setupServer.ts` and
-  `tests/setupServer.test.ts` are kept as you wrote them.
-- **E-ID-MOTION-MODAL is in its round 2** (`mmod-audit-verdict.md`). Round 1 moved the dialog to `scale(0.96)` over
-  `--vn-motion-panel` on `--vn-ease-panel`, and the host and both backdrops to `--vn-motion-panel` on `--vn-ease-out`
-  through the one `overlay-backdrop` mixin; your `Modal`, `Backdrop`, and `Offcanvas` proofs and `npm run test:app`
-  read green on it. **One hunk lands in your `## Engine` Offcanvas section:** the paragraph that says "the fade
-  partial fades the backdrop through its `.fade` rule" becomes "the `overlay-backdrop` mixin fades the backdrop over
-  the `--vn-motion-panel` token", because this unit makes the old sentence false; the panel's `0.3s` wording is
-  unchanged, and both audit lanes read the new sentence true. Merge it by hunk. Round 2 touches only its wrap there.
-- **LEDGER-RETUNE is writing** from `73326c7` in `tests/setupServer.ts`, `tests/setupServer.test.ts`, and
-  `tests/conformance.test.ts`; it merges your J-ORACLE-RECORD hunks at its landing (D49).
-- **TOKEN-PROOFS is in round 10** (`token-proofs-brief-10.md`): the last sentences about where an override reaches
-  state their conditions, each read in Chromium 141 by an asserted probe (`tkp-instruments/r10/`). No engine file
-  changes.
-- **TAILWIND-RECIPE is accepted** and lands with TOKEN-PROOFS next. Your J-TAILWIND-PROBE can build on
-  `tests/fixtures/tailwind/preflight.css` after it lands; the recipe keeps Tailwind's automatic source detection, and
-  the layer order, control variables, and source lines its proofs read move to `tests/setupService.ts`.
-- **E-ID-MOTION-FACTOR round 2 is under audit** (`mfac-audit-2-claims.md`). It adds `sweepMotionFactor` to
-  `tests/setupBrowser.ts` (the reader, its `TOKEN_NAMES` import, its proof, and its export-list entry only); merge it
-  by hunk beside your helpers. Every factor read now stays in `src/styles/_tokens.scss`. Its Tab finding is yours in
-  J-MOTION-PROOFS-B, as your note records.
-- **E-ID-ANCHOR dispatches from this landing** (`e-id-anchor-brief.md`): `position-visibility: anchors-visible` on the
-  promoted dropdown menu, tooltip, and popover in the open popover state, from the Chromium 141 reading you asked for.
+- **TOKEN-PROOFS and TAILWIND-RECIPE are on `main`** (`3a4043f`, `23b2d0f`, fold `2f7b4a7`). Your ENGINES-B landing
+  merges them. J-TAILWIND-PROBE can build on `tests/fixtures/tailwind/preflight.css`.
+- **E-ID-MOTION-MODAL and E-ID-MOTION-FACTOR are accepted and integrated** on this session's branch (`d09a7fb`,
+  `fac6289`, integration `c3ef630`, and FACTORS-LEDGER `6052e25`, which names § Departures and § Additions in
+  § Factors' closing sentence). The landing chain runs after Astra's check of that sentence, then this session
+  pushes `main`. **Two hunks land in your files; merge each by hunk:**
+  - `guides/veneer.md` `## Engine` Offcanvas: "the fade partial fades the backdrop through its `.fade` rule" becomes
+    "the `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` token".
+  - `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts`: `sweepMotionFactor`, its `TOKEN_NAMES` import, its
+    proof, and its export-list entry.
+- **Your fourth standing reading is answered by REBOOT-153** (`units/reboot-153-brief.md`, `builder` on Sonnet,
+  writing from `6052e25`). The release's map carries only `outline-width`, so both release forms read one outline
+  style, and the pressed button's is `none`. `readFormDifferences` will read every outline and border width whose line
+  style is `none` or `hidden` at `0px` (`normalizeLineWidths` and `LINE_STYLES` in `tests/setupBrowser.ts`, with a
+  pure proof and an export-list entry). This host reads such a width at `0px` already, so no rendered case reads red
+  here. **Request:** after REBOOT-153 reaches `main`, read the four button-reboot files and `button.test.ts` on your
+  Chromium 153 host, and record the reading in your host file.
+- **E-ID-ANCHOR is under audit.** The subjective lane ruled FAIL 4 and 7 with F1 and F2
+  (`units/anchor-audit-subjective-verdict.md`): the "shows only while its toggle is visible" sentence overclaims on
+  both builds (`V.viewport`, `V.partial`), and the dropdown paint claim is false on Chromium 141 until
+  J-PLACEMENT-141-FIX lands. The Astra lane is still running. The fix round states only the computed value on both
+  builds and the Chromium 141 limit for the dropdown's paint; your D47 and E29 record the combined
+  `:where(.dropdown-menu, .tooltip, .popover)` rule, and the shipped shape is one rule per partial through the
+  `anchor-visibility` mixin, on attribution evidence.
+- **LEDGER-RETUNE is in round 2** (`ledger-retune-brief-2.md`, `opus`), in `tests/setupServer.ts`,
+  `tests/setupServer.test.ts`, and `tests/conformance.test.ts`. It merges your J-ORACLE-RECORD hunks at its landing
+  (D49).
 - **Standing answers.** Each E-ID-MOTION unit on a waiting engine (collapse, offcanvas, carousel, tooltip, popover,
-  toast) holds its landing until your J-MOTION-PROOFS unit for that component lands (E32); MODAL's engines are covered
-  by J-MOTION-PROOFS-A. TOKEN-RETIRE records the `src/core/constants.ts` hunk here for your unit when it runs; it has
-  not run. This session runs the Chromium 141 readings you ask for.
+  toast) holds its landing until your J-MOTION-PROOFS unit for that component lands on `main` (E32, as amended);
+  J-MOTION-PROOFS-B's acceptance releases collapse, carousel, and toast here once it is on `main`. TOKEN-RETIRE
+  records the `src/core/constants.ts` hunk here for your unit when it runs; it has not run. This session runs the
+  Chromium 141 readings you ask for.
 
-**In flight (this session), 2026-09-25 07:25 UTC.** Implementation and its audit first, the user's instruction.
-- **Writing:** TOKEN-PROOFS round 10 (`builder` on Sonnet), then its check on Astra.
-- **Under audit:** E-ID-MOTION-FACTOR round 2 (`analyst` on Astra and `reviewer` on Opus 5.5).
-- **Accepted, waiting to land:** TAILWIND-RECIPE (`twr-audit-3-verdict.md`), with TOKEN-PROOFS.
-- **Writing:** E-ID-MOTION-MODAL round 2 and LEDGER-RETUNE, each `opus` on Opus 5.5.
+**In flight (this session), 2026-09-25 08:25 UTC.** Implementation and its audit first, the user's instruction.
+- **Landing:** MODAL and FACTOR (`eid-chain-12.sh` after the FACTORS-LEDGER check on Astra).
+- **Writing:** LEDGER-RETUNE round 2 (`opus`) and REBOOT-153 (`builder`).
+- **Under audit:** E-ID-ANCHOR (Astra lane running; the subjective lane returned).
 
-**Next here, in order:** one landing for TOKEN-PROOFS and TAILWIND-RECIPE; E-ID-ANCHOR from this landing; the audits of
-MODAL round 2, FACTOR round 2, and LEDGER-RETUNE, then their landings, whichever of MODAL and LEDGER-RETUNE lands second
-regenerating the dialog's departure rows; E-ID-MOTION-OFFCANVAS after MODAL lands; RM-RELEASE with the user's
-one-time code, then P1 SCAFFOLD-PROPAGATE and the ER-LINUX receipt; the remaining motion units as your J-MOTION-PROOFS-B
-and C land; IMPORTANT-EMIT after the user rules.
+**Next here, in order:** the MODAL and FACTOR landing and `main` push; E-ID-MOTION-OFFCANVAS from that landing;
+E-ID-ANCHOR's fix round; REBOOT-153's check and landing; LEDGER-RETUNE's audit and landing, regenerating the dialog's
+departure rows; the collapse, carousel, and toast motion units after your J-MOTION-PROOFS-B is on `main`; tooltip and
+popover after J-MOTION-PROOFS-C; RM-RELEASE with the user's one-time code, then P1 SCAFFOLD-PROPAGATE and the
+ER-LINUX receipt; IMPORTANT-EMIT after the user rules.
 
 **Waiting on the user:** the IMPORTANT-LAYER ruling, whether Chrome is installed and on which platform (ER-CHROME), and
 the one-time code for the scaffold release.
