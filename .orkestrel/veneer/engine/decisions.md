@@ -228,3 +228,19 @@ The J-ELEMENTS design round (`units/j-elements-design-brief.md`) had two blind l
   - The measurement: J-NATIVE-PROBE round 2 adds the `V.*` rows (support, a clipped toggle, a partial clip, a viewport scroll, focus, events, the tooltip) on Chromium 153 and 141.
   - On green readings on both hosts: the styles session adds `:where(.dropdown-menu, .tooltip, .popover):popover-open { position-visibility: anchors-visible }`. J-ANCHOR-VISIBLE (`opus` on Opus 5.5) then proves it against the shipped cascade, after J-CASCADE, J-SAMEWAY-ENGINES, and J-ROWS, which share its files.
   - A red reading on either host is recorded as a refusal here.
+
+## E30 — an engine addresses its host through the host's own members, and only the sanitizer defends against clobbering (2026-09-25)
+
+The J-SNAPSHOT-SHARED round-3 objective lane (the analyst on Astra, thread `01a0d615-fc74-7172-b0d8-ae5a4eb19c9c`, `units/j-snapshot-shared-audit-3-objective-verdict.md`) failed E25's C1 invariant on one input class. A `<form>` host whose controls' `name` values shadow a DOM member makes that member return the control, because a form's named properties override its inherited members. The witnesses are:
+- `removeAttribute`, which breaks Placement's and ColorMode's release;
+- `addEventListener`, which breaks Swipe's construction;
+- `toggleAttribute`, which breaks Isolation's construction;
+- `hasAttribute`, which breaks `HostSnapshot.save`;
+- a later bind in Delegate.
+
+That is the third round on this seam, so the class closes by ruling rather than by another list. The Orchestrator rules:
+
+- **Engines read and write a host through the host's own members, as Bootstrap 5.3.8 does.** Bootstrap binds every handler with `element.addEventListener(typeEvent, fn, isDelegated)` (`node_modules/bootstrap/js/src/dom/event-handler.js`, around line 184) and writes state through `element.setAttribute` and `element.classList`.
+- **A host whose named controls shadow a DOM member an engine uses is outside the engine contract.** On that host, construction or a later call can throw, and E25's release guarantees do not extend to it. The guide states that limit once, and J-ROWS carries the sentence.
+- **The sanitizer is the one exception, because it walks untrusted markup.** `ConfigSanitizer`'s walk already reads and removes through prototypes (`Element.prototype.removeAttributeNode.call`, `Node.prototype.removeChild.call`, and `readElementName` and `collectAttributes` in `src/browser/helpers.ts`), so a parsed form's named control cannot stand in for the member it names. That rule stays with the sanitizer and does not spread to the engines.
+- **A host moved from an XML document into an HTML document while a snapshot holds an attribute whose name has an uppercase letter restores the lowercase attribute.** The lane's A1 witness shows this. The key stays fixed at the save (E25 N1). The write goes through the name-based accessors, which in an HTML document cannot name the original attribute. The move in the other direction restores correctly. The guide states this limit beside the other, and J-ROWS carries the sentence.
