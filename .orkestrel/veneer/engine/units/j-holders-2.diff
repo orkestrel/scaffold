@@ -1,0 +1,1201 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 6d55058..5dee7db 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -8,315 +8,315 @@ The core entry publishes the token registry and the types that read it. The brow
+ publishes the color-mode controller, the engine's classes and contracts, and the shared mechanisms
+ § Engine describes. The token values those names carry are in § Tokens.
+ 
+-| Name                                      | Kind      | Summary                                                                                                                                                                                      |
+-| ----------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `TOKEN_NAMES`                             | const     | Names every canonical custom property the shipped cascade declares, grouped by the surface each one paints or the scale it controls.                                                         |
+-| `TokenLeaf`                               | type      | Reduces a group of custom-property names to the union of the names at its leaves.                                                                                                            |
+-| `TokenMap`                                | type      | Describes the grouped tree of custom-property names the token registry carries.                                                                                                              |
+-| `TokenName`                               | type      | Names one canonical custom property the shipped cascade declares.                                                                                                                            |
+-| `ColorModeState`                          | type      | Names the color modes Bootstrap's color-mode attribute accepts.                                                                                                                              |
+-| `ColorModeAttributeMap`                   | interface | Names the attribute a color-mode controller writes; its default is Bootstrap's attribute name.                                                                                               |
+-| `ColorModeOptions`                        | interface | Configures the root, optional persistence, and markup vocabulary of a color-mode controller.                                                                                                 |
+-| `ColorModeInterface`                      | interface | Controls the color-mode attribute on one root element.                                                                                                                                       |
+-| `ColorMode`                               | class     | Applies and optionally restores a root's color mode without registering listeners.                                                                                                           |
+-| `isColorModeState`                        | const     | Checks whether a value names a supported color mode.                                                                                                                                         |
+-| `COLOR_MODE_ATTRIBUTES`                   | const     | Names the attribute a color-mode controller writes by default, the attribute Bootstrap's cascade reads.                                                                                      |
+-| `COLOR_MODE_KEY`                          | const     | Names the storage key for the chosen color mode.                                                                                                                                             |
+-| `AppError`                                | class     | Describes a programmer error with a machine-readable code and optional context.                                                                                                              |
+-| `isAppError`                              | function  | Checks whether a value belongs to the application's error class.                                                                                                                             |
+-| `BUTTON_CLASSES`                          | const     | Names the class token a button writes and tests by default, the token Bootstrap's cascade selects on.                                                                                        |
+-| `BUTTON_SELECTORS`                        | const     | Names the default selector the delegate routes button clicks by, Bootstrap's data-attribute selector; a button constructed directly matches with none.                                       |
+-| `BUTTON_EVENTS`                           | const     | Names the bubbling event a button dispatches after it toggles, keyed by the verb it carries.                                                                                                 |
+-| `Button`                                  | class     | Toggles a host's pressed state and restores its original state on destruction.                                                                                                               |
+-| `ButtonDetail`                            | interface | Describes the pressed state after a button toggles.                                                                                                                                          |
+-| `ButtonEventMap`                          | interface | Maps the verb to the button event it names.                                                                                                                                                  |
+-| `ButtonHooks`                             | type      | Configures the initial DOM event subscriptions for a button.                                                                                                                                 |
+-| `ButtonClassMap`                          | interface | Names the class token a button writes and tests; its default is the token the cascade selects on.                                                                                            |
+-| `ButtonSelectorMap`                       | interface | Names the selector the delegate routes button clicks by; a button constructed directly matches with none, and the default is Bootstrap's selector.                                           |
+-| `ButtonInterface`                         | interface | Controls the `pressed` token and the `aria-pressed` attribute on a host.                                                                                                                     |
+-| `ButtonOptions`                           | interface | Configures a button's markup vocabulary, hooks, and lifetime.                                                                                                                                |
+-| `ButtonVocabulary`                        | interface | Carries a button's resolved markup vocabulary: each group with every key present.                                                                                                            |
+-| `CollapseVocabulary`                      | interface | Carries a collapse's resolved markup vocabulary: each group with every key present.                                                                                                          |
+-| `AlertVocabulary`                         | interface | Carries an alert's resolved markup vocabulary: each group with every key present.                                                                                                            |
+-| `TabVocabulary`                           | interface | Carries a tab's resolved markup vocabulary: each group with every key present.                                                                                                               |
+-| `CarouselVocabulary`                      | interface | Carries a carousel's resolved markup vocabulary: each group with every key present.                                                                                                          |
+-| `ModalVocabulary`                         | interface | Carries a modal's resolved markup vocabulary: each group with every key present.                                                                                                             |
+-| `ToastVocabulary`                         | interface | Carries a toast's resolved markup vocabulary: each group with every key present.                                                                                                             |
+-| `OffcanvasVocabulary`                     | interface | Carries an offcanvas panel's resolved markup vocabulary: each group with every key present.                                                                                                  |
+-| `Delegate`                                | class     | Activates data-attribute hosts through a root's delegated click and key listeners and a scan at construction.                                                                                |
+-| `DelegateInterface`                       | interface | Owns delegated activation and the engines it constructs.                                                                                                                                     |
+-| `DelegateOptions`                         | interface | Configures the root of delegated activation and the markup vocabulary of each entity it routes.                                                                                              |
+-| `bindEventMap`                            | function  | Binds an entity's hooks to the wire events its table names until the signal aborts.                                                                                                          |
+-| `emitEvent`                               | function  | Dispatches a bubbling DOM event carrying the supplied detail.                                                                                                                                |
+-| `isButtonEvent`                           | function  | Checks whether a DOM event carries a boolean pressed state.                                                                                                                                  |
+-| `isBareEvent`                             | function  | Checks whether a DOM event is a custom event that carries no payload.                                                                                                                        |
+-| `isRelatedEvent`                          | function  | Checks whether a DOM event carries a detail whose related target is an HTML element or nothing.                                                                                              |
+-| `EventHooks`                              | type      | Maps each verb of an entity's event map to an optional listener for the event it names, bound until the entity is destroyed.                                                                 |
+-| `EventWire`                               | type      | Maps each verb of an entity's event map to the wire name of the bubbling DOM event it names.                                                                                                 |
+-| `RelatedDetail`                           | interface | Describes the detail of an event whose `relatedTarget` member carries the other element of a change, as Bootstrap's `relatedTarget` field does.                                              |
+-| `AttributeMap`                            | type      | Maps each key an attribute reader needs to the name of the attribute it reads.                                                                                                               |
+-| `ParserMap`                               | type      | Maps each declared option key to the parser that coerces its attribute value.                                                                                                                |
+-| `RegistryOptions`                         | interface | Configures the ownership record one engine class keeps for its hosts.                                                                                                                        |
+-| `RegistryInterface`                       | interface | Records which engine owns each host, one record per engine class.                                                                                                                            |
+-| `Registry`                                | class     | Records which engine owns each host, keyed weakly so a discarded host leaves no record behind.                                                                                               |
+-| `HostSnapshotCategory`                    | type      | Names the kinds of host state a snapshot records: an attribute, a class token, or an inline property.                                                                                        |
+-| `HostSnapshotTarget`                      | interface | Describes one piece of host state a snapshot records before an engine first writes it.                                                                                                       |
+-| `HostSnapshotInterface`                   | interface | Records host state before an engine writes it, and writes that state back when the last snapshot holding it restores.                                                                        |
+-| `HostSnapshotEntry`                       | interface | Describes one target a snapshot holds: the target under the name the platform resolved at its save, and the record key that save fixed.                                                      |
+-| `HostSnapshotRecord`                      | interface | Describes the one record that every snapshot holding a target shares, and that the target's last holder writes back.                                                                         |
+-| `HostSnapshotHolding`                     | interface | Names one presence record a snapshot holds: an element and the attribute, `class` or `style`, whose presence the record reads.                                                               |
+-| `HostSnapshotPresence`                    | interface | Describes the presence record that every snapshot saving a class token or an inline property on one element shares for the attribute that holds it.                                          |
+-| `HostSnapshot`                            | class     | Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.                                                                  |
+-| `settleAnimations`                        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                                                                         |
+-| `reflow`                                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                                                                                     |
+-| `matchesReducedMotion`                    | function  | Checks whether the view an element's document belongs to prefers reduced motion.                                                                                                             |
+-| `readTag`                                 | function  | Reads the tag name of a value that is an element.                                                                                                                                            |
+-| `readTarget`                              | function  | Returns the first HTML element a trigger's target attribute, or its `href` fragment, names in its document.                                                                                  |
+-| `readTargets`                             | function  | Returns the HTML elements a trigger's target attribute, or its `href` fragment, names in its document.                                                                                       |
+-| `TARGET_ATTRIBUTE`                        | const     | Names the attribute a trigger carries its target selector in by default, Bootstrap's attribute name.                                                                                         |
+-| `resolveOptions`                          | function  | Resolves an entity's options from its defaults, its declared attributes, and the constructor object.                                                                                         |
+-| `resolveVocabulary`                       | function  | Resolves one markup vocabulary group from its default table and the values that replace it.                                                                                                  |
+-| `computeNeighbor`                         | function  | Returns the member after or before the current one in a list, as Bootstrap's `getNextActiveElement` function does.                                                                           |
+-| `readControls`                            | function  | Returns the controls of a tab list, as Bootstrap's `_getChildren` function does.                                                                                                             |
+-| `readClosest`                             | function  | Returns the closest element a selector matches from an element, the element itself included, when that element is an HTML element and the optional root contains it.                         |
+-| `readSiblings`                            | function  | Returns the siblings on one side of an element that a selector matches, nearest first.                                                                                                       |
+-| `readOutermost`                           | function  | Returns the HTML elements inside a root that a selector matches and that sit inside no other match within the root.                                                                          |
+-| `matchesDisabled`                         | function  | Checks whether an element carries a disabled token, matches the platform's `:disabled` state, or carries a `disabled` attribute whose value is not `false`.                                  |
+-| `readScrollbarWidth`                      | function  | Returns the width of the vertical scrollbar a document's view shows, as Bootstrap's `ScrollBarHelper` measures it.                                                                           |
+-| `isClassToken`                            | function  | Checks whether a value is one class token a class list accepts.                                                                                                                              |
+-| `isAttributeName`                         | function  | Checks whether a value is an attribute name the document accepts.                                                                                                                            |
+-| `isSelector`                              | function  | Checks whether a value is a selector list the document parses.                                                                                                                               |
+-| `IsolationOptions`                        | interface | Configures where focus returns when an isolation ends, the elements it spares, and the lifetime that ends it.                                                                                |
+-| `IsolationInterface`                      | interface | Makes every element outside a host inert while the isolation lives.                                                                                                                          |
+-| `Isolation`                               | class     | Makes every element outside a host inert while the isolation lives, and returns focus when it ends.                                                                                          |
+-| `BackdropClassMap`                        | interface | Names the class tokens a backdrop writes; each default is the token the cascade selects on, and each key names the overlay token it receives.                                                |
+-| `BackdropOptions`                         | interface | Configures the parent, fade, and markup vocabulary of the backdrop element a modal or an offcanvas panel places behind itself.                                                               |
+-| `BackdropInterface`                       | interface | Shows and hides the cascade's own backdrop element.                                                                                                                                          |
+-| `Backdrop`                                | class     | Shows and hides the cascade's own backdrop element behind a modal or an offcanvas panel, in the page's flow.                                                                                 |
+-| `BACKDROP_CLASSES`                        | const     | Names the class tokens a backdrop writes by default, the tokens Bootstrap's cascade selects on for a modal's backdrop.                                                                       |
+-| `ScrollLockSelectorMap`                   | interface | Names the selectors a scroll lock matches with; each default is Bootstrap's selector.                                                                                                        |
+-| `ScrollLockOptions`                       | interface | Configures the document a scroll lock holds, the markup vocabulary it matches with, and the lifetime that ends it.                                                                           |
+-| `ScrollLockInterface`                     | interface | Holds one reference to a document-wide scroll lock that compensates for the scrollbar's width.                                                                                               |
+-| `ScrollLock`                              | class     | Holds one reference to a document's scroll lock, which hides the body's overflow and compensates for the scrollbar it hides.                                                                 |
+-| `SCROLL_LOCK_SELECTORS`                   | const     | Names the default selectors a scroll lock compensates, Bootstrap's fixed and sticky selectors.                                                                                               |
+-| `PlacementPosition`                       | type      | Names Bootstrap's placement strings, the positions a menu or a tip takes against its reference.                                                                                              |
+-| `PlacementSide`                           | type      | Names the physical side a positioned element resolves to, the value a placement writes to the attribute `attributes.side` names.                                                             |
+-| `PlacementAttributeMap`                   | interface | Names the attributes a placement writes; each default is the attribute name the cascade selects on.                                                                                          |
+-| `PlacementOptions`                        | interface | Configures a placement's position, offset, fallbacks, static display, and markup vocabulary, from the values the owning component resolved.                                                  |
+-| `PlacementInput`                          | interface | Names the elements a placement anchors, the popover mode it promotes the positioned element with, and the arrow it points at the reference.                                                  |
+-| `PlacementInterface`                      | interface | Anchors a menu or a tip to its reference through CSS anchor positioning in the top layer.                                                                                                    |
+-| `Placement`                               | class     | Anchors a menu or a tip to its reference through CSS anchor positioning in the top layer.                                                                                                    |
+-| `PLACEMENT_ATTRIBUTES`                    | const     | Names the attributes a placement writes by default, the attribute names Bootstrap's cascade selects on.                                                                                      |
+-| `PLACEMENT_DEFAULTS`                      | const     | Names the position, offset, and static display a placement takes when its options leave them out.                                                                                            |
+-| `PLACEMENT_AREAS`                         | const     | Maps each placement position to the physical `position-area` value that anchors it, `auto` taking the bottom side.                                                                           |
+-| `POPOVER_PROPERTIES`                      | const     | Names the properties the platform's popover rule sets that a placement writes back to their unpromoted values wherever promotion changed them.                                               |
+-| `SwipeDirection`                          | type      | Names the horizontal direction a swipe or a slide moves the content.                                                                                                                         |
+-| `SwipeClassMap`                           | interface | Names the class token a swipe writes; its default is the token the cascade selects on.                                                                                                       |
+-| `SwipeOptions`                            | interface | Configures a swipe's handler, threshold, and markup vocabulary.                                                                                                                              |
+-| `SwipeInterface`                          | interface | Reports horizontal touch and pen swipes on a host through pointer events.                                                                                                                    |
+-| `Swipe`                                   | class     | Reports each horizontal touch or pen swipe on a host from its pointer events.                                                                                                                |
+-| `SWIPE_CLASSES`                           | const     | Names the class token a swipe writes by default, the token Bootstrap's cascade selects on.                                                                                                   |
+-| `SWIPE_DEFAULTS`                          | const     | Names a swipe's default options, Bootstrap's swipe threshold in pixels.                                                                                                                      |
+-| `SanitizerInterface`                      | interface | Writes markup into an element through a sanitizing policy the engine does not own.                                                                                                           |
+-| `ConfigSanitizerOptions`                  | interface | Configures the sanitizer that writes markup through one sanitizer configuration, whether or not the element carries the platform's `setHTML` method.                                         |
+-| `SanitizerElementNamespace`               | interface | Mirrors the HTML standard's dictionary that names one element by its local name and namespace.                                                                                               |
+-| `SanitizerBaseline`                       | interface | Declares what a sanitizer's walk removes whatever its configuration lists.                                                                                                                   |
+-| `SanitizerElementNamespaceWithAttributes` | interface | Mirrors the HTML standard's dictionary that names one element the platform sanitizer keeps and the attributes kept on it.                                                                    |
+-| `SanitizerConfig`                         | interface | Mirrors the HTML standard's dictionary that lists the elements and attributes the platform sanitizer keeps.                                                                                  |
+-| `SetHTMLOptions`                          | interface | Mirrors the HTML standard's dictionary the platform's `setHTML` method reads its sanitizer from.                                                                                             |
+-| `SanitizeTargetInterface`                 | interface | Describes a node whose `setHTML` method parses markup through a sanitizer.                                                                                                                   |
+-| `TipContent`                              | type      | Describes the content of a tip slot: text, an element moved in, or a function of the trigger returning either.                                                                               |
+-| `ConfigSanitizer`                         | class     | Writes markup into an element through one sanitizer configuration, by the element's `setHTML` method where it has one and by a walk of the parsed markup otherwise.                          |
+-| `SANITIZER_ALLOWLIST`                     | const     | Lists the elements and attributes the `ConfigSanitizer` class keeps by default, the platform dictionary built from Bootstrap's default allowlist.                                            |
+-| `SANITIZER_BASELINE`                      | const     | Declares the safety floor the `ConfigSanitizer` class's walk applies whatever its configuration lists.                                                                                       |
+-| `SANITIZER_NAMESPACE`                     | const     | Names the namespace a sanitizer configuration's element names designate, the HTML namespace.                                                                                                 |
+-| `SANITIZER_MATHML_NAMESPACE`              | const     | Names the MathML namespace, in which the `ConfigSanitizer` class's walk reads an `annotation-xml` element as an HTML integration point.                                                      |
+-| `SANITIZER_SVG_NAMESPACE`                 | const     | Names the SVG namespace, the namespace of the SVG elements the `SANITIZER_BASELINE` floor removes and the `SANITIZER_SVG_INTEGRATIONS` list names.                                           |
+-| `SANITIZER_SVG_INTEGRATIONS`              | const     | Lists the local names of the SVG elements the HTML standard makes HTML integration points by their name alone.                                                                               |
+-| `SANITIZER_ENCODINGS`                     | const     | Lists the `encoding` attribute values, in ASCII lowercase, that make a MathML `annotation-xml` element an HTML integration point.                                                            |
+-| `isSanitizeTarget`                        | function  | Checks whether a value carries the platform's `setHTML` method, which parses markup through a sanitizer.                                                                                     |
+-| `isSanitizerConfig`                       | function  | Checks whether a value is a sanitizer configuration the platform's `setHTML` method accepts, within the fields the engine mirrors.                                                           |
+-| `matchesJavaScriptURL`                    | function  | Checks whether an attribute value is a URL the platform's URL parser reads as a `javascript:` URL.                                                                                           |
+-| `readElementName`                         | function  | Reads an element's local name and namespace through the accessors of the `Element` prototype.                                                                                                |
+-| `collectChildren`                         | function  | Collects a node's children, in order, through a tree walker.                                                                                                                                 |
+-| `collectAttributes`                       | function  | Collects an element's attributes, in order, through the methods of the `Element` prototype.                                                                                                  |
+-| `matchesBaselineElement`                  | function  | Checks whether an element name is one the `SANITIZER_BASELINE` safety floor removes with its content.                                                                                        |
+-| `matchesBaselineAttribute`                | function  | Checks whether an attribute is one the `SANITIZER_BASELINE` safety floor removes from its element.                                                                                           |
+-| `matchesKeptElement`                      | function  | Checks whether a sanitizer configuration keeps an element, before the safety floor applies.                                                                                                  |
+-| `matchesKeptAttribute`                    | function  | Checks whether a sanitizer configuration keeps an attribute on an element, before the safety floor applies.                                                                                  |
+-| `matchesPlainData`                        | function  | Checks whether a value is plain data at its own level: a primitive, an array, or a record, holding only enumerable data members.                                                             |
+-| `buildTip`                                | function  | Builds a detached tip from a template, writing the template through a sanitizer.                                                                                                             |
+-| `fillSlot`                                | function  | Fills one slot of a tip with its content, or removes the slot when the content is empty.                                                                                                     |
+-| `writeContent`                            | function  | Replaces a slot's children with an element, text, or markup.                                                                                                                                 |
+-| `CollapseEventMap`                        | interface | Maps each verb to the collapse event it names, carrying null detail.                                                                                                                         |
+-| `CollapseHooks`                           | type      | Configures the initial DOM event subscriptions for a collapse.                                                                                                                               |
+-| `CollapseClassMap`                        | interface | Names the class tokens a collapse writes, removes, and tests; each default is the token the cascade selects on.                                                                              |
+-| `CollapseAttributeMap`                    | interface | Names the attributes a collapse reads; each default is Bootstrap's attribute name.                                                                                                           |
+-| `CollapseSelectorMap`                     | interface | Names the selector a collapse matches with; its default is Bootstrap's selector.                                                                                                             |
+-| `CollapseOptions`                         | interface | Configures a collapse's accordion parent, markup vocabulary, hooks, and lifetime.                                                                                                            |
+-| `CollapseInterface`                       | interface | Shows and hides a `.collapse` panel through its height or width transition.                                                                                                                  |
+-| `Collapse`                                | class     | Shows and hides a panel through its size transition, keeping its triggers' expanded state in step.                                                                                           |
+-| `COLLAPSE_CLASSES`                        | const     | Names the class tokens a collapse writes, removes, and tests by default, the tokens Bootstrap's cascade selects on.                                                                          |
+-| `COLLAPSE_ATTRIBUTES`                     | const     | Names the attributes a collapse reads by default, Bootstrap's attribute names.                                                                                                               |
+-| `COLLAPSE_SELECTORS`                      | const     | Names the default selector a collapse finds its triggers by and the delegate routes collapse clicks by, Bootstrap's data-attribute selector.                                                 |
+-| `COLLAPSE_EVENTS`                         | const     | Names the bubbling events a collapse dispatches on its panel, keyed by the verb each carries.                                                                                                |
+-| `parseElement`                            | function  | Parses a selector, or an element, to the HTML element it names in the document.                                                                                                              |
+-| `DropdownDetail`                          | interface | Describes the detail each dropdown event carries; the event is dispatched on the toggle, which is its target.                                                                                |
+-| `DropdownEventMap`                        | interface | Maps each verb to the dropdown event it names.                                                                                                                                               |
+-| `DropdownHooks`                           | type      | Configures the initial DOM event subscriptions for a dropdown.                                                                                                                               |
+-| `DropdownClassMap`                        | interface | Names the class tokens a dropdown writes and tests; each default is the token the cascade selects on.                                                                                        |
+-| `DropdownAttributeMap`                    | interface | Names the attributes a dropdown reads and writes; each default is Bootstrap's attribute name.                                                                                                |
+-| `DropdownSelectorMap`                     | interface | Names the selectors a dropdown and the delegate match with; a dropdown constructed directly matches with `menu` and `navbar` alone.                                                          |
+-| `DropdownOptions`                         | interface | Configures a dropdown's dismissal, placement, reference, markup vocabulary, hooks, and lifetime.                                                                                             |
+-| `DropdownDefaults`                        | interface | Names the dismissal and placement a dropdown takes when neither its attributes nor its constructor set them.                                                                                 |
+-| `DropdownVocabulary`                      | interface | Carries a dropdown's resolved markup vocabulary: each group with every key present.                                                                                                          |
+-| `DropdownInterface`                       | interface | Opens and closes a `.dropdown-menu` from its toggle, anchored in the top layer.                                                                                                              |
+-| `Dropdown`                                | class     | Opens and closes a menu from its toggle, anchoring the open menu to its reference.                                                                                                           |
+-| `DROPDOWN_CLASSES`                        | const     | Names the class tokens a dropdown writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                    |
+-| `DROPDOWN_ATTRIBUTES`                     | const     | Names the attributes a dropdown reads and writes by default, Bootstrap's attribute names.                                                                                                    |
+-| `DROPDOWN_SELECTORS`                      | const     | Names the default selectors a dropdown finds its menu and navbar by and the delegate routes dropdown clicks and keys by, Bootstrap's selectors.                                              |
+-| `DROPDOWN_EVENTS`                         | const     | Names the bubbling events a dropdown dispatches on its toggle, keyed by the verb each carries.                                                                                               |
+-| `DROPDOWN_DEFAULTS`                       | const     | Names the dismissal and placement a dropdown takes when neither its attributes nor its constructor set them, Bootstrap's defaults.                                                           |
+-| `isDropdownEvent`                         | function  | Checks whether a DOM event is a dropdown event, whose detail carries an optional click.                                                                                                      |
+-| `parseDismiss`                            | function  | Parses Bootstrap's auto-close value to the dismissal a dropdown applies.                                                                                                                     |
+-| `parseOffset`                             | function  | Parses an offset to its skid and distance in pixels.                                                                                                                                         |
+-| `parseStatic`                             | function  | Parses Bootstrap's display value to whether a menu stays in flow.                                                                                                                            |
+-| `TabEventMap`                             | interface | Maps each verb to the tab event it names, whose `relatedTarget` detail member carries the other tab of the swap, or undefined when no tab was active.                                        |
+-| `TabHooks`                                | type      | Configures the initial DOM event subscriptions for a tab.                                                                                                                                    |
+-| `TabClassMap`                             | interface | Names the class tokens a tab writes and tests; each default is the token the cascade selects on.                                                                                             |
+-| `TabAttributeMap`                         | interface | Names the attribute a tab reads; its default is Bootstrap's attribute name.                                                                                                                  |
+-| `TabSelectorMap`                          | interface | Names the selectors a tab matches with; each default is Bootstrap's selector.                                                                                                                |
+-| `TabOptions`                              | interface | Configures a tab's markup vocabulary, hooks, and lifetime.                                                                                                                                   |
+-| `TabInitialWrite`                         | interface | Describes one role or state a tab's construction sets on its list: the element, the attribute's name, and the value it takes.                                                                |
+-| `TabDropdown`                             | interface | Describes the dropdown a tab control's wrapper forms: the wrapper and the toggle and menu inside it.                                                                                         |
+-| `TabInterface`                            | interface | Activates a tab control and its pane, deactivating the active sibling control and its pane.                                                                                                  |
+-| `Tab`                                     | class     | Activates a tab control and its pane, deactivating the active sibling control and its pane.                                                                                                  |
+-| `TAB_CLASSES`                             | const     | Names the class tokens a tab writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                         |
+-| `TAB_ATTRIBUTES`                          | const     | Names the attribute a tab control carries its pane selector in by default, Bootstrap's attribute name.                                                                                       |
+-| `TAB_SELECTORS`                           | const     | Names the default selectors a tab and the delegate match tab lists, controls, and dropdowns with, Bootstrap's selectors.                                                                     |
+-| `TAB_EVENTS`                              | const     | Names the bubbling events a tab dispatches on its controls, keyed by the verb each carries.                                                                                                  |
+-| `ScrollSpyDetail`                         | interface | Describes the detail the scrollspy event carries.                                                                                                                                            |
+-| `ScrollSpyEventMap`                       | interface | Maps the verb to the scrollspy event it names.                                                                                                                                               |
+-| `ScrollSpyHooks`                          | type      | Configures the initial DOM event subscriptions for a scrollspy.                                                                                                                              |
+-| `ScrollSpyClassMap`                       | interface | Names the class tokens a scrollspy writes and tests; each default is the token the cascade selects on.                                                                                       |
+-| `ScrollSpyAttributeMap`                   | interface | Names the attributes a scrollspy reads; each default is Bootstrap's attribute name.                                                                                                          |
+-| `ScrollSpySelectorMap`                    | interface | Names the selectors a scrollspy matches with; each default is Bootstrap's selector.                                                                                                          |
+-| `ScrollSpyOptions`                        | interface | Configures a scrollspy's navigation, scrolling, observation, markup vocabulary, hooks, and lifetime.                                                                                         |
+-| `ScrollSpyInterface`                      | interface | Activates the navigation link whose section is in view as a container scrolls.                                                                                                               |
+-| `ScrollSpy`                               | class     | Activates the navigation link whose section is in view as its host scrolls, and the links that lead to it.                                                                                   |
+-| `SCROLL_SPY_CLASSES`                      | const     | Names the class tokens a scrollspy writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                   |
+-| `SCROLL_SPY_ATTRIBUTES`                   | const     | Names the attributes a scrollspy reads on its host by default, Bootstrap's attribute names.                                                                                                  |
+-| `SCROLL_SPY_SELECTORS`                    | const     | Names the default selectors the delegate finds scrollspy hosts by and a scrollspy finds parent links and toggles by, Bootstrap's selectors.                                                  |
+-| `SCROLL_SPY_EVENTS`                       | const     | Names the bubbling event a scrollspy dispatches on its host, keyed by the verb it carries.                                                                                                   |
+-| `SCROLL_SPY_DEFAULTS`                     | const     | Names the option values a scrollspy uses where neither its attributes nor its constructor supply one, Bootstrap's defaults.                                                                  |
+-| `isScrollSpyEvent`                        | function  | Checks whether a DOM event carries the link a scrollspy activated.                                                                                                                           |
+-| `parseRootMargin`                         | function  | Parses a string to an intersection observer's root margin, returning the margin unchanged when the platform accepts it.                                                                      |
+-| `parseThreshold`                          | function  | Parses a comma-separated list, a JSON array, or an array of ratios to the thresholds an intersection observer reports at.                                                                    |
+-| `DismissOptions`                          | interface | Selects which close requests hide a modal or an offcanvas panel.                                                                                                                             |
+-| `ModalEventMap`                           | interface | Maps each verb to the modal event it names. The `relatedTarget` detail member carries the trigger passed to `show` on the `show` and `shown` events, and undefined on every other event.     |
+-| `ModalHooks`                              | type      | Configures the initial DOM event subscriptions for a modal.                                                                                                                                  |
+-| `ModalClassMap`                           | interface | Names the class tokens a modal writes and tests; each default is the token the cascade selects on.                                                                                           |
+-| `ModalAttributeMap`                       | interface | Names the attributes a modal reads; each default is Bootstrap's attribute name.                                                                                                              |
+-| `ModalSelectorMap`                        | interface | Names the selectors a modal matches with; each default is Bootstrap's selector.                                                                                                              |
+-| `ModalOptions`                            | interface | Configures a modal's backdrop, dismissal, focus, markup vocabulary, hooks, and lifetime.                                                                                                     |
+-| `ModalInterface`                          | interface | Shows and hides a `.modal` over a backdrop, with scroll lock and focus isolation.                                                                                                            |
+-| `Modal`                                   | class     | Shows and hides a modal in the page's flow over the cascade's backdrop, locking scrolling and isolating focus while it is shown.                                                             |
+-| `MODAL_CLASSES`                           | const     | Names the class tokens a modal writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                       |
+-| `MODAL_ATTRIBUTES`                        | const     | Names the attributes a modal and its triggers read by default, Bootstrap's attribute names.                                                                                                  |
+-| `MODAL_SELECTORS`                         | const     | Names the default selectors a modal matches with and the delegate routes modal clicks by, Bootstrap's selectors.                                                                             |
+-| `MODAL_DEFAULTS`                          | const     | Names the option values a modal takes when neither its attributes nor its constructor supply them, Bootstrap's defaults.                                                                     |
+-| `MODAL_EVENTS`                            | const     | Names the bubbling events a modal dispatches on its host, keyed by the verb each carries.                                                                                                    |
+-| `parseBackdrop`                           | function  | Parses a backdrop value to a boolean, or to `static`.                                                                                                                                        |
+-| `OffcanvasEventMap`                       | interface | Maps each verb to the offcanvas event it names. The `relatedTarget` detail member carries the trigger passed to `show` on the `show` and `shown` events, and undefined on every other event. |
+-| `OffcanvasHooks`                          | type      | Configures the initial DOM event subscriptions for an offcanvas panel.                                                                                                                       |
+-| `OffcanvasClassMap`                       | interface | Names the class tokens an offcanvas panel writes and tests; each default is the token the cascade selects on.                                                                                |
+-| `OffcanvasAttributeMap`                   | interface | Names the attributes an offcanvas panel reads; each default is Bootstrap's attribute name.                                                                                                   |
+-| `OffcanvasSelectorMap`                    | interface | Names the selectors the delegate routes offcanvas clicks by; a panel constructed directly matches with none, and each default is Bootstrap's selector.                                       |
+-| `OffcanvasOptions`                        | interface | Configures an offcanvas panel's backdrop, dismissal, scrolling, markup vocabulary, hooks, and lifetime.                                                                                      |
+-| `OffcanvasInterface`                      | interface | Slides an `.offcanvas` panel in and out, with an optional backdrop, scroll lock, and focus isolation.                                                                                        |
+-| `Offcanvas`                               | class     | Slides an offcanvas panel in and out over the cascade's backdrop, locking scrolling and isolating focus as its options ask.                                                                  |
+-| `OFFCANVAS_CLASSES`                       | const     | Names the class tokens an offcanvas panel writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                            |
+-| `OFFCANVAS_ATTRIBUTES`                    | const     | Names the attributes an offcanvas panel and its triggers read by default, Bootstrap's attribute names.                                                                                       |
+-| `OFFCANVAS_SELECTORS`                     | const     | Names the default selectors the delegate routes offcanvas clicks by, Bootstrap's data-attribute selectors.                                                                                   |
+-| `OFFCANVAS_DEFAULTS`                      | const     | Names the option values an offcanvas panel takes when neither its attributes nor its constructor supply them, Bootstrap's defaults.                                                          |
+-| `OFFCANVAS_EVENTS`                        | const     | Names the bubbling events an offcanvas panel dispatches on its host, keyed by the verb each carries.                                                                                         |
+-| `TooltipEventMap`                         | interface | Maps each verb to the tooltip event it names, carrying null detail.                                                                                                                          |
+-| `TooltipHooks`                            | type      | Configures the initial DOM event subscriptions for a tooltip.                                                                                                                                |
+-| `TooltipClassMap`                         | interface | Names the class tokens a tooltip writes and tests; each default is the token the cascade selects on.                                                                                         |
+-| `TooltipAttributeMap`                     | interface | Names the attributes a tooltip reads and writes; each default is Bootstrap's attribute name.                                                                                                 |
+-| `TooltipSelectorMap`                      | interface | Names the selectors a tooltip matches inside its tip; each default is Bootstrap's selector.                                                                                                  |
+-| `TooltipOptions`                          | interface | Configures a tooltip's content, triggers, timing, tip, placement, sanitizer, markup vocabulary, hooks, and lifetime.                                                                         |
+-| `TooltipDefaults`                         | interface | Names the options a tooltip or a popover starts from before its attributes and the constructor, Bootstrap's defaults for each.                                                               |
+-| `TooltipProfile`                          | interface | Describes what a tip class supplies the tooltip engine: its name, its events, its default vocabulary and options, and the popover value its tip is promoted with.                            |
+-| `TooltipInterface`                        | interface | Shows a tip anchored to its trigger in the top layer on hover, focus, click, or call.                                                                                                        |
+-| `Tooltip`                                 | class     | Shows a tip built from a template beside its trigger, anchored in the top layer, on hover, focus, click, or call.                                                                            |
+-| `TOOLTIP_CLASSES`                         | const     | Names the class tokens a tooltip writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                     |
+-| `TOOLTIP_ATTRIBUTES`                      | const     | Names the attributes a tooltip reads on its trigger and writes on its tip by default, Bootstrap's attribute names.                                                                           |
+-| `TOOLTIP_SELECTORS`                       | const     | Names the default selectors of the tip slot a tooltip's title fills and of the tip's arrow, Bootstrap's selectors.                                                                           |
+-| `TOOLTIP_TEMPLATE`                        | const     | Names the markup a tooltip builds its tip from by default, Bootstrap's tooltip template.                                                                                                     |
+-| `TOOLTIP_DEFAULTS`                        | const     | Sets the options a tooltip starts from before its attributes and the constructor, Bootstrap's defaults.                                                                                      |
+-| `TOOLTIP_EVENTS`                          | const     | Names the bubbling events a tooltip dispatches on its trigger, keyed by the verb each carries.                                                                                               |
+-| `parseDelay`                              | function  | Parses a delay in milliseconds, or Bootstrap's object of a show and a hide delay, to the waits a tooltip takes before it shows and hides its tip.                                            |
+-| `parseTrigger`                            | function  | Parses Bootstrap's space-separated trigger words to the interactions that show and hide a tooltip's tip.                                                                                     |
+-| `parsePosition`                           | function  | Parses a placement string to the position it names.                                                                                                                                          |
+-| `parseFallbacks`                          | function  | Parses a comma-separated list, a JSON array, or an array of placement strings to the positions a tip tries when its preferred one overflows.                                                 |
+-| `PopoverEventMap`                         | interface | Maps each verb to the popover event it names, carrying null detail.                                                                                                                          |
+-| `PopoverHooks`                            | type      | Configures the initial DOM event subscriptions for a popover.                                                                                                                                |
+-| `PopoverClassMap`                         | interface | Names the class tokens a popover writes and tests: the tooltip's keys, with the popover's own arrow-placement token.                                                                         |
+-| `PopoverAttributeMap`                     | interface | Names the attributes a popover reads and writes: the tooltip's keys, with the attribute that feeds the body slot.                                                                            |
+-| `PopoverSelectorMap`                      | interface | Names the selectors a popover matches inside its tip: the header slot in place of the tooltip's text slot, the body slot, and the popover's arrow.                                           |
+-| `PopoverOptions`                          | interface | Configures a popover: the tooltip options, a body slot, the popover's markup vocabulary, and the popover defaults.                                                                           |
+-| `PopoverInterface`                        | interface | Shows a header-and-body tip anchored to its trigger: the tooltip contract under the `.vn.popover` event names.                                                                               |
+-| `Popover`                                 | class     | Shows a header-and-body tip built from a template beside its trigger, anchored in the top layer, on a click or a call.                                                                       |
+-| `POPOVER_CLASSES`                         | const     | Names the class tokens a popover writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                     |
+-| `POPOVER_ATTRIBUTES`                      | const     | Names the attributes a popover reads on its trigger and writes on its tip by default: the tooltip's attribute names and the attribute that feeds the body slot, Bootstrap's names.           |
+-| `POPOVER_SELECTORS`                       | const     | Names the default selectors of the tip slots a popover's title and content fill and of the tip's arrow, Bootstrap's selectors.                                                               |
+-| `POPOVER_TEMPLATE`                        | const     | Names the markup a popover builds its tip from by default, Bootstrap's popover template.                                                                                                     |
+-| `POPOVER_DEFAULTS`                        | const     | Sets the options a popover starts from before its attributes and the constructor: the tooltip's defaults with Bootstrap's popover click trigger, template, position, and offset.             |
+-| `POPOVER_EVENTS`                          | const     | Names the bubbling events a popover dispatches on its trigger, keyed by the verb each carries.                                                                                               |
+-| `AlertEventMap`                           | interface | Maps each verb to the alert event it names, carrying null detail.                                                                                                                            |
+-| `AlertHooks`                              | type      | Configures the initial DOM event subscriptions for an alert.                                                                                                                                 |
+-| `AlertClassMap`                           | interface | Names the class tokens an alert writes and tests; each default is the token the cascade selects on.                                                                                          |
+-| `AlertAttributeMap`                       | interface | Names the attribute the delegate's dismiss route reads; an alert constructed directly reads none, and the default is Bootstrap's attribute name.                                             |
+-| `AlertSelectorMap`                        | interface | Names the selector the delegate routes dismiss clicks by; an alert constructed directly matches with none, and the default is Bootstrap's selector.                                          |
+-| `AlertOptions`                            | interface | Configures an alert's markup vocabulary, hooks, and lifetime.                                                                                                                                |
+-| `AlertInterface`                          | interface | Closes an `.alert` by fading it out and removing it from the document.                                                                                                                       |
+-| `Alert`                                   | class     | Closes an alert by removing its shown token, waiting out its fade, and removing it from the document.                                                                                        |
+-| `ALERT_CLASSES`                           | const     | Names the class tokens an alert writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                      |
+-| `ALERT_ATTRIBUTES`                        | const     | Names the attribute a dismiss trigger carries its alert's selector in by default, Bootstrap's attribute name.                                                                                |
+-| `ALERT_SELECTORS`                         | const     | Names the default selector the delegate routes alert dismiss clicks by, Bootstrap's data-attribute selector.                                                                                 |
+-| `ALERT_EVENTS`                            | const     | Names the bubbling events an alert dispatches on its host, keyed by the verb each carries.                                                                                                   |
+-| `ToastEventMap`                           | interface | Maps each verb to the toast event it names, carrying null detail.                                                                                                                            |
+-| `ToastHooks`                              | type      | Configures the initial DOM event subscriptions for a toast.                                                                                                                                  |
+-| `ToastClassMap`                           | interface | Names the tokens a toast writes and tests, `shown`, `transition`, and `fade`, and those the delegate's dismiss route tests, `host` and `disabled`.                                           |
+-| `ToastAttributeMap`                       | interface | Names the attributes a toast reads for its options and the one the delegate's dismiss route reads; each default is Bootstrap's attribute name.                                               |
+-| `ToastSelectorMap`                        | interface | Names the selector the delegate routes dismiss clicks by; a toast constructed directly matches with none, and the default is Bootstrap's selector.                                           |
+-| `ToastOptions`                            | interface | Configures a toast's fade, automatic hiding, markup vocabulary, hooks, and lifetime.                                                                                                         |
+-| `ToastInterface`                          | interface | Shows a `.toast` in its container's flow and hides it after a delay.                                                                                                                         |
+-| `Toast`                                   | class     | Shows and hides a toast in its container's flow, and hides it after a delay unless the pointer or focus holds it.                                                                            |
+-| `TOAST_CLASSES`                           | const     | Names the class tokens a toast writes and tests and the delegate's dismiss route tests by default, the tokens Bootstrap's cascade and data API use.                                          |
+-| `TOAST_ATTRIBUTES`                        | const     | Names the attributes a toast and the delegate's dismiss route read by default, Bootstrap's attribute names.                                                                                  |
+-| `TOAST_SELECTORS`                         | const     | Names the default selector the delegate routes toast dismiss clicks by, Bootstrap's data-attribute selector.                                                                                 |
+-| `TOAST_DEFAULTS`                          | const     | Sets the fade, automatic hiding, and delay a toast starts from before its attributes and the constructor, Bootstrap's defaults.                                                              |
+-| `TOAST_EVENTS`                            | const     | Names the bubbling events a toast dispatches on its host, keyed by the verb each carries.                                                                                                    |
+-| `CarouselDetail`                          | interface | Describes the detail each carousel event carries.                                                                                                                                            |
+-| `CarouselEventMap`                        | interface | Maps each verb to the carousel event it names.                                                                                                                                               |
+-| `CarouselHooks`                           | type      | Configures the initial DOM event subscriptions for a carousel.                                                                                                                               |
+-| `CarouselRide`                            | type      | Names when a carousel starts cycling on its own: at construction, or after each slide a call, a key, or a swipe asks for.                                                                    |
+-| `CarouselClassMap`                        | interface | Names the class tokens a carousel writes and tests; each default is the token the cascade selects on.                                                                                        |
+-| `CarouselAttributeMap`                    | interface | Names the attributes a carousel reads; each default is Bootstrap's attribute name.                                                                                                           |
+-| `CarouselSelectorMap`                     | interface | Names the selectors a carousel matches with; each default is Bootstrap's selector.                                                                                                           |
+-| `CarouselOptions`                         | interface | Configures a carousel's cycling, keyboard and touch input, wrapping, markup vocabulary, hooks, and lifetime.                                                                                 |
+-| `CarouselInterface`                       | interface | Moves a `.carousel` between its items by call, key, swipe, indicator, or interval.                                                                                                           |
+-| `Carousel`                                | class     | Moves a carousel between its items through their order and direction tokens, by call, key, swipe, or its own timer.                                                                          |
+-| `CAROUSEL_EVENTS`                         | const     | Names the bubbling events a carousel dispatches on its host, keyed by the verb each carries.                                                                                                 |
+-| `CAROUSEL_CLASSES`                        | const     | Names the class tokens a carousel writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                    |
+-| `CAROUSEL_ATTRIBUTES`                     | const     | Names the attributes a carousel and its slide controls carry by default, Bootstrap's attribute names.                                                                                        |
+-| `CAROUSEL_SELECTORS`                      | const     | Names the selectors a carousel finds its items, their images, and its indicator list by default, Bootstrap's selectors.                                                                      |
+-| `CAROUSEL_DEFAULTS`                       | const     | Names a carousel's default options, Bootstrap's defaults with hover pausing as `true`; no default ride means no automatic cycling.                                                           |
+-| `CAROUSEL_TOUCH_DELAY`                    | const     | Names the milliseconds a carousel waits beyond its interval after a touch or pen lifts, which leaves time for the mouse events a tap fires.                                                  |
+-| `isCarouselEvent`                         | function  | Checks whether a DOM event is a carousel event carrying the item it activates, its direction, and its positions.                                                                             |
+-| `parseRide`                               | function  | Parses a ride, or Bootstrap's spelling of one, to the moment a carousel starts cycling on its own.                                                                                           |
++| Name                                      | Kind      | Summary                                                                                                                                                                                       |
++| ----------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `TOKEN_NAMES`                             | const     | Names every canonical custom property the shipped cascade declares, grouped by the surface each one paints or the scale it controls.                                                          |
++| `TokenLeaf`                               | type      | Reduces a group of custom-property names to the union of the names at its leaves.                                                                                                             |
++| `TokenMap`                                | type      | Describes the grouped tree of custom-property names the token registry carries.                                                                                                               |
++| `TokenName`                               | type      | Names one canonical custom property the shipped cascade declares.                                                                                                                             |
++| `ColorModeState`                          | type      | Names the color modes Bootstrap's color-mode attribute accepts.                                                                                                                               |
++| `ColorModeAttributeMap`                   | interface | Names the attribute a color-mode controller writes; its default is Bootstrap's attribute name.                                                                                                |
++| `ColorModeOptions`                        | interface | Configures the root, optional persistence, and markup vocabulary of a color-mode controller.                                                                                                  |
++| `ColorModeInterface`                      | interface | Controls the color-mode attribute on one root element.                                                                                                                                        |
++| `ColorMode`                               | class     | Applies and optionally restores a root's color mode without registering listeners.                                                                                                            |
++| `isColorModeState`                        | const     | Checks whether a value names a supported color mode.                                                                                                                                          |
++| `COLOR_MODE_ATTRIBUTES`                   | const     | Names the attribute a color-mode controller writes by default, the attribute Bootstrap's cascade reads.                                                                                       |
++| `COLOR_MODE_KEY`                          | const     | Names the storage key for the chosen color mode.                                                                                                                                              |
++| `AppError`                                | class     | Describes a programmer error with a machine-readable code and optional context.                                                                                                               |
++| `isAppError`                              | function  | Checks whether a value belongs to the application's error class.                                                                                                                              |
++| `BUTTON_CLASSES`                          | const     | Names the class token a button writes and tests by default, the token Bootstrap's cascade selects on.                                                                                         |
++| `BUTTON_SELECTORS`                        | const     | Names the default selector the delegate routes button clicks by, Bootstrap's data-attribute selector; a button constructed directly matches with none.                                        |
++| `BUTTON_EVENTS`                           | const     | Names the bubbling event a button dispatches after it toggles, keyed by the verb it carries.                                                                                                  |
++| `Button`                                  | class     | Toggles a host's pressed state and restores its original state on destruction.                                                                                                                |
++| `ButtonDetail`                            | interface | Describes the pressed state after a button toggles.                                                                                                                                           |
++| `ButtonEventMap`                          | interface | Maps the verb to the button event it names.                                                                                                                                                   |
++| `ButtonHooks`                             | type      | Configures the initial DOM event subscriptions for a button.                                                                                                                                  |
++| `ButtonClassMap`                          | interface | Names the class token a button writes and tests; its default is the token the cascade selects on.                                                                                             |
++| `ButtonSelectorMap`                       | interface | Names the selector the delegate routes button clicks by; a button constructed directly matches with none, and the default is Bootstrap's selector.                                            |
++| `ButtonInterface`                         | interface | Controls the `pressed` token and the `aria-pressed` attribute on a host.                                                                                                                      |
++| `ButtonOptions`                           | interface | Configures a button's markup vocabulary, hooks, and lifetime.                                                                                                                                 |
++| `ButtonVocabulary`                        | interface | Carries a button's resolved markup vocabulary: each group with every key present.                                                                                                             |
++| `CollapseVocabulary`                      | interface | Carries a collapse's resolved markup vocabulary: each group with every key present.                                                                                                           |
++| `AlertVocabulary`                         | interface | Carries an alert's resolved markup vocabulary: each group with every key present.                                                                                                             |
++| `TabVocabulary`                           | interface | Carries a tab's resolved markup vocabulary: each group with every key present.                                                                                                                |
++| `CarouselVocabulary`                      | interface | Carries a carousel's resolved markup vocabulary: each group with every key present.                                                                                                           |
++| `ModalVocabulary`                         | interface | Carries a modal's resolved markup vocabulary: each group with every key present.                                                                                                              |
++| `ToastVocabulary`                         | interface | Carries a toast's resolved markup vocabulary: each group with every key present.                                                                                                              |
++| `OffcanvasVocabulary`                     | interface | Carries an offcanvas panel's resolved markup vocabulary: each group with every key present.                                                                                                   |
++| `Delegate`                                | class     | Activates data-attribute hosts through a root's delegated click and key listeners and a scan at construction.                                                                                 |
++| `DelegateInterface`                       | interface | Owns delegated activation and the engines it constructs.                                                                                                                                      |
++| `DelegateOptions`                         | interface | Configures the root of delegated activation and the markup vocabulary of each entity it routes.                                                                                               |
++| `bindEventMap`                            | function  | Binds an entity's hooks to the wire events its table names until the signal aborts.                                                                                                           |
++| `emitEvent`                               | function  | Dispatches a bubbling DOM event carrying the supplied detail.                                                                                                                                 |
++| `isButtonEvent`                           | function  | Checks whether a DOM event carries a boolean pressed state.                                                                                                                                   |
++| `isBareEvent`                             | function  | Checks whether a DOM event is a custom event that carries no payload.                                                                                                                         |
++| `isRelatedEvent`                          | function  | Checks whether a DOM event carries a detail whose related target is an HTML element or nothing.                                                                                               |
++| `EventHooks`                              | type      | Maps each verb of an entity's event map to an optional listener for the event it names, bound until the entity is destroyed.                                                                  |
++| `EventWire`                               | type      | Maps each verb of an entity's event map to the wire name of the bubbling DOM event it names.                                                                                                  |
++| `RelatedDetail`                           | interface | Describes the detail of an event whose `relatedTarget` member carries the other element of a change, as Bootstrap's `relatedTarget` field does.                                               |
++| `AttributeMap`                            | type      | Maps each key an attribute reader needs to the name of the attribute it reads.                                                                                                                |
++| `ParserMap`                               | type      | Maps each declared option key to the parser that coerces its attribute value.                                                                                                                 |
++| `RegistryOptions`                         | interface | Configures the ownership record one engine class keeps for its hosts.                                                                                                                         |
++| `RegistryInterface`                       | interface | Records which engine owns each host, one record per engine class.                                                                                                                             |
++| `Registry`                                | class     | Records which engine owns each host, keyed weakly so a discarded host leaves no record behind.                                                                                                |
++| `HostSnapshotCategory`                    | type      | Names the kinds of host state a snapshot records: an attribute, a class token, or an inline property.                                                                                         |
++| `HostSnapshotTarget`                      | interface | Describes one piece of host state a snapshot records before an engine first writes it.                                                                                                        |
++| `HostSnapshotInterface`                   | interface | Records host state before an engine writes it, and writes that state back when the last snapshot holding it restores.                                                                         |
++| `HostSnapshotEntry`                       | interface | Describes one target a snapshot holds: the target under the name the platform resolved at its save, and the record key that save fixed.                                                       |
++| `HostSnapshotRecord`                      | interface | Describes the one record that every snapshot holding a target shares, and whose value the target's last holder writes back.                                                                   |
++| `HostSnapshotHolding`                     | interface | Names one presence record a snapshot holds: an element and the attribute, `class` or `style`, whose presence the record reads.                                                                |
++| `HostSnapshotPresence`                    | interface | Describes the presence record that every snapshot saving a class token or an inline property on one element shares, which reads whether the element carried its `class` or `style` attribute. |
++| `HostSnapshot`                            | class     | Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.                                                                   |
++| `settleAnimations`                        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                                                                          |
++| `reflow`                                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                                                                                      |
++| `matchesReducedMotion`                    | function  | Checks whether the view an element's document belongs to prefers reduced motion.                                                                                                              |
++| `readTag`                                 | function  | Reads the tag name of a value that is an element.                                                                                                                                             |
++| `readTarget`                              | function  | Returns the first HTML element a trigger's target attribute, or its `href` fragment, names in its document.                                                                                   |
++| `readTargets`                             | function  | Returns the HTML elements a trigger's target attribute, or its `href` fragment, names in its document.                                                                                        |
++| `TARGET_ATTRIBUTE`                        | const     | Names the attribute a trigger carries its target selector in by default, Bootstrap's attribute name.                                                                                          |
++| `resolveOptions`                          | function  | Resolves an entity's options from its defaults, its declared attributes, and the constructor object.                                                                                          |
++| `resolveVocabulary`                       | function  | Resolves one markup vocabulary group from its default table and the values that replace it.                                                                                                   |
++| `computeNeighbor`                         | function  | Returns the member after or before the current one in a list, as Bootstrap's `getNextActiveElement` function does.                                                                            |
++| `readControls`                            | function  | Returns the controls of a tab list, as Bootstrap's `_getChildren` function does.                                                                                                              |
++| `readClosest`                             | function  | Returns the closest element a selector matches from an element, the element itself included, when that element is an HTML element and the optional root contains it.                          |
++| `readSiblings`                            | function  | Returns the siblings on one side of an element that a selector matches, nearest first.                                                                                                        |
++| `readOutermost`                           | function  | Returns the HTML elements inside a root that a selector matches and that sit inside no other match within the root.                                                                           |
++| `matchesDisabled`                         | function  | Checks whether an element carries a disabled token, matches the platform's `:disabled` state, or carries a `disabled` attribute whose value is not `false`.                                   |
++| `readScrollbarWidth`                      | function  | Returns the width of the vertical scrollbar a document's view shows, as Bootstrap's `ScrollBarHelper` measures it.                                                                            |
++| `isClassToken`                            | function  | Checks whether a value is one class token a class list accepts.                                                                                                                               |
++| `isAttributeName`                         | function  | Checks whether a value is an attribute name the document accepts.                                                                                                                             |
++| `isSelector`                              | function  | Checks whether a value is a selector list the document parses.                                                                                                                                |
++| `IsolationOptions`                        | interface | Configures where focus returns when an isolation ends, the elements it spares, and the lifetime that ends it.                                                                                 |
++| `IsolationInterface`                      | interface | Makes every element outside a host inert while the isolation lives.                                                                                                                           |
++| `Isolation`                               | class     | Makes every element outside a host inert while the isolation lives, and returns focus when it ends.                                                                                           |
++| `BackdropClassMap`                        | interface | Names the class tokens a backdrop writes; each default is the token the cascade selects on, and each key names the overlay token it receives.                                                 |
++| `BackdropOptions`                         | interface | Configures the parent, fade, and markup vocabulary of the backdrop element a modal or an offcanvas panel places behind itself.                                                                |
++| `BackdropInterface`                       | interface | Shows and hides the cascade's own backdrop element.                                                                                                                                           |
++| `Backdrop`                                | class     | Shows and hides the cascade's own backdrop element behind a modal or an offcanvas panel, in the page's flow.                                                                                  |
++| `BACKDROP_CLASSES`                        | const     | Names the class tokens a backdrop writes by default, the tokens Bootstrap's cascade selects on for a modal's backdrop.                                                                        |
++| `ScrollLockSelectorMap`                   | interface | Names the selectors a scroll lock matches with; each default is Bootstrap's selector.                                                                                                         |
++| `ScrollLockOptions`                       | interface | Configures the document a scroll lock holds, the markup vocabulary it matches with, and the lifetime that ends it.                                                                            |
++| `ScrollLockInterface`                     | interface | Holds one reference to a document-wide scroll lock that compensates for the scrollbar's width.                                                                                                |
++| `ScrollLock`                              | class     | Holds one reference to a document's scroll lock, which hides the body's overflow and compensates for the scrollbar it hides.                                                                  |
++| `SCROLL_LOCK_SELECTORS`                   | const     | Names the default selectors a scroll lock compensates, Bootstrap's fixed and sticky selectors.                                                                                                |
++| `PlacementPosition`                       | type      | Names Bootstrap's placement strings, the positions a menu or a tip takes against its reference.                                                                                               |
++| `PlacementSide`                           | type      | Names the physical side a positioned element resolves to, the value a placement writes to the attribute `attributes.side` names.                                                              |
++| `PlacementAttributeMap`                   | interface | Names the attributes a placement writes; each default is the attribute name the cascade selects on.                                                                                           |
++| `PlacementOptions`                        | interface | Configures a placement's position, offset, fallbacks, static display, and markup vocabulary, from the values the owning component resolved.                                                   |
++| `PlacementInput`                          | interface | Names the elements a placement anchors, the popover mode it promotes the positioned element with, and the arrow it points at the reference.                                                   |
++| `PlacementInterface`                      | interface | Anchors a menu or a tip to its reference through CSS anchor positioning in the top layer.                                                                                                     |
++| `Placement`                               | class     | Anchors a menu or a tip to its reference through CSS anchor positioning in the top layer.                                                                                                     |
++| `PLACEMENT_ATTRIBUTES`                    | const     | Names the attributes a placement writes by default, the attribute names Bootstrap's cascade selects on.                                                                                       |
++| `PLACEMENT_DEFAULTS`                      | const     | Names the position, offset, and static display a placement takes when its options leave them out.                                                                                             |
++| `PLACEMENT_AREAS`                         | const     | Maps each placement position to the physical `position-area` value that anchors it, `auto` taking the bottom side.                                                                            |
++| `POPOVER_PROPERTIES`                      | const     | Names the properties the platform's popover rule sets that a placement writes back to their unpromoted values wherever promotion changed them.                                                |
++| `SwipeDirection`                          | type      | Names the horizontal direction a swipe or a slide moves the content.                                                                                                                          |
++| `SwipeClassMap`                           | interface | Names the class token a swipe writes; its default is the token the cascade selects on.                                                                                                        |
++| `SwipeOptions`                            | interface | Configures a swipe's handler, threshold, and markup vocabulary.                                                                                                                               |
++| `SwipeInterface`                          | interface | Reports horizontal touch and pen swipes on a host through pointer events.                                                                                                                     |
++| `Swipe`                                   | class     | Reports each horizontal touch or pen swipe on a host from its pointer events.                                                                                                                 |
++| `SWIPE_CLASSES`                           | const     | Names the class token a swipe writes by default, the token Bootstrap's cascade selects on.                                                                                                    |
++| `SWIPE_DEFAULTS`                          | const     | Names a swipe's default options, Bootstrap's swipe threshold in pixels.                                                                                                                       |
++| `SanitizerInterface`                      | interface | Writes markup into an element through a sanitizing policy the engine does not own.                                                                                                            |
++| `ConfigSanitizerOptions`                  | interface | Configures the sanitizer that writes markup through one sanitizer configuration, whether or not the element carries the platform's `setHTML` method.                                          |
++| `SanitizerElementNamespace`               | interface | Mirrors the HTML standard's dictionary that names one element by its local name and namespace.                                                                                                |
++| `SanitizerBaseline`                       | interface | Declares what a sanitizer's walk removes whatever its configuration lists.                                                                                                                    |
++| `SanitizerElementNamespaceWithAttributes` | interface | Mirrors the HTML standard's dictionary that names one element the platform sanitizer keeps and the attributes kept on it.                                                                     |
++| `SanitizerConfig`                         | interface | Mirrors the HTML standard's dictionary that lists the elements and attributes the platform sanitizer keeps.                                                                                   |
++| `SetHTMLOptions`                          | interface | Mirrors the HTML standard's dictionary the platform's `setHTML` method reads its sanitizer from.                                                                                              |
++| `SanitizeTargetInterface`                 | interface | Describes a node whose `setHTML` method parses markup through a sanitizer.                                                                                                                    |
++| `TipContent`                              | type      | Describes the content of a tip slot: text, an element moved in, or a function of the trigger returning either.                                                                                |
++| `ConfigSanitizer`                         | class     | Writes markup into an element through one sanitizer configuration, by the element's `setHTML` method where it has one and by a walk of the parsed markup otherwise.                           |
++| `SANITIZER_ALLOWLIST`                     | const     | Lists the elements and attributes the `ConfigSanitizer` class keeps by default, the platform dictionary built from Bootstrap's default allowlist.                                             |
++| `SANITIZER_BASELINE`                      | const     | Declares the safety floor the `ConfigSanitizer` class's walk applies whatever its configuration lists.                                                                                        |
++| `SANITIZER_NAMESPACE`                     | const     | Names the namespace a sanitizer configuration's element names designate, the HTML namespace.                                                                                                  |
++| `SANITIZER_MATHML_NAMESPACE`              | const     | Names the MathML namespace, in which the `ConfigSanitizer` class's walk reads an `annotation-xml` element as an HTML integration point.                                                       |
++| `SANITIZER_SVG_NAMESPACE`                 | const     | Names the SVG namespace, the namespace of the SVG elements the `SANITIZER_BASELINE` floor removes and the `SANITIZER_SVG_INTEGRATIONS` list names.                                            |
++| `SANITIZER_SVG_INTEGRATIONS`              | const     | Lists the local names of the SVG elements the HTML standard makes HTML integration points by their name alone.                                                                                |
++| `SANITIZER_ENCODINGS`                     | const     | Lists the `encoding` attribute values, in ASCII lowercase, that make a MathML `annotation-xml` element an HTML integration point.                                                             |
++| `isSanitizeTarget`                        | function  | Checks whether a value carries the platform's `setHTML` method, which parses markup through a sanitizer.                                                                                      |
++| `isSanitizerConfig`                       | function  | Checks whether a value is a sanitizer configuration the platform's `setHTML` method accepts, within the fields the engine mirrors.                                                            |
++| `matchesJavaScriptURL`                    | function  | Checks whether an attribute value is a URL the platform's URL parser reads as a `javascript:` URL.                                                                                            |
++| `readElementName`                         | function  | Reads an element's local name and namespace through the accessors of the `Element` prototype.                                                                                                 |
++| `collectChildren`                         | function  | Collects a node's children, in order, through a tree walker.                                                                                                                                  |
++| `collectAttributes`                       | function  | Collects an element's attributes, in order, through the methods of the `Element` prototype.                                                                                                   |
++| `matchesBaselineElement`                  | function  | Checks whether an element name is one the `SANITIZER_BASELINE` safety floor removes with its content.                                                                                         |
++| `matchesBaselineAttribute`                | function  | Checks whether an attribute is one the `SANITIZER_BASELINE` safety floor removes from its element.                                                                                            |
++| `matchesKeptElement`                      | function  | Checks whether a sanitizer configuration keeps an element, before the safety floor applies.                                                                                                   |
++| `matchesKeptAttribute`                    | function  | Checks whether a sanitizer configuration keeps an attribute on an element, before the safety floor applies.                                                                                   |
++| `matchesPlainData`                        | function  | Checks whether a value is plain data at its own level: a primitive, an array, or a record, holding only enumerable data members.                                                              |
++| `buildTip`                                | function  | Builds a detached tip from a template, writing the template through a sanitizer.                                                                                                              |
++| `fillSlot`                                | function  | Fills one slot of a tip with its content, or removes the slot when the content is empty.                                                                                                      |
++| `writeContent`                            | function  | Replaces a slot's children with an element, text, or markup.                                                                                                                                  |
++| `CollapseEventMap`                        | interface | Maps each verb to the collapse event it names, carrying null detail.                                                                                                                          |
++| `CollapseHooks`                           | type      | Configures the initial DOM event subscriptions for a collapse.                                                                                                                                |
++| `CollapseClassMap`                        | interface | Names the class tokens a collapse writes, removes, and tests; each default is the token the cascade selects on.                                                                               |
++| `CollapseAttributeMap`                    | interface | Names the attributes a collapse reads; each default is Bootstrap's attribute name.                                                                                                            |
++| `CollapseSelectorMap`                     | interface | Names the selector a collapse matches with; its default is Bootstrap's selector.                                                                                                              |
++| `CollapseOptions`                         | interface | Configures a collapse's accordion parent, markup vocabulary, hooks, and lifetime.                                                                                                             |
++| `CollapseInterface`                       | interface | Shows and hides a `.collapse` panel through its height or width transition.                                                                                                                   |
++| `Collapse`                                | class     | Shows and hides a panel through its size transition, keeping its triggers' expanded state in step.                                                                                            |
++| `COLLAPSE_CLASSES`                        | const     | Names the class tokens a collapse writes, removes, and tests by default, the tokens Bootstrap's cascade selects on.                                                                           |
++| `COLLAPSE_ATTRIBUTES`                     | const     | Names the attributes a collapse reads by default, Bootstrap's attribute names.                                                                                                                |
++| `COLLAPSE_SELECTORS`                      | const     | Names the default selector a collapse finds its triggers by and the delegate routes collapse clicks by, Bootstrap's data-attribute selector.                                                  |
++| `COLLAPSE_EVENTS`                         | const     | Names the bubbling events a collapse dispatches on its panel, keyed by the verb each carries.                                                                                                 |
++| `parseElement`                            | function  | Parses a selector, or an element, to the HTML element it names in the document.                                                                                                               |
++| `DropdownDetail`                          | interface | Describes the detail each dropdown event carries; the event is dispatched on the toggle, which is its target.                                                                                 |
++| `DropdownEventMap`                        | interface | Maps each verb to the dropdown event it names.                                                                                                                                                |
++| `DropdownHooks`                           | type      | Configures the initial DOM event subscriptions for a dropdown.                                                                                                                                |
++| `DropdownClassMap`                        | interface | Names the class tokens a dropdown writes and tests; each default is the token the cascade selects on.                                                                                         |
++| `DropdownAttributeMap`                    | interface | Names the attributes a dropdown reads and writes; each default is Bootstrap's attribute name.                                                                                                 |
++| `DropdownSelectorMap`                     | interface | Names the selectors a dropdown and the delegate match with; a dropdown constructed directly matches with `menu` and `navbar` alone.                                                           |
++| `DropdownOptions`                         | interface | Configures a dropdown's dismissal, placement, reference, markup vocabulary, hooks, and lifetime.                                                                                              |
++| `DropdownDefaults`                        | interface | Names the dismissal and placement a dropdown takes when neither its attributes nor its constructor set them.                                                                                  |
++| `DropdownVocabulary`                      | interface | Carries a dropdown's resolved markup vocabulary: each group with every key present.                                                                                                           |
++| `DropdownInterface`                       | interface | Opens and closes a `.dropdown-menu` from its toggle, anchored in the top layer.                                                                                                               |
++| `Dropdown`                                | class     | Opens and closes a menu from its toggle, anchoring the open menu to its reference.                                                                                                            |
++| `DROPDOWN_CLASSES`                        | const     | Names the class tokens a dropdown writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                     |
++| `DROPDOWN_ATTRIBUTES`                     | const     | Names the attributes a dropdown reads and writes by default, Bootstrap's attribute names.                                                                                                     |
++| `DROPDOWN_SELECTORS`                      | const     | Names the default selectors a dropdown finds its menu and navbar by and the delegate routes dropdown clicks and keys by, Bootstrap's selectors.                                               |
++| `DROPDOWN_EVENTS`                         | const     | Names the bubbling events a dropdown dispatches on its toggle, keyed by the verb each carries.                                                                                                |
++| `DROPDOWN_DEFAULTS`                       | const     | Names the dismissal and placement a dropdown takes when neither its attributes nor its constructor set them, Bootstrap's defaults.                                                            |
++| `isDropdownEvent`                         | function  | Checks whether a DOM event is a dropdown event, whose detail carries an optional click.                                                                                                       |
++| `parseDismiss`                            | function  | Parses Bootstrap's auto-close value to the dismissal a dropdown applies.                                                                                                                      |
++| `parseOffset`                             | function  | Parses an offset to its skid and distance in pixels.                                                                                                                                          |
++| `parseStatic`                             | function  | Parses Bootstrap's display value to whether a menu stays in flow.                                                                                                                             |
++| `TabEventMap`                             | interface | Maps each verb to the tab event it names, whose `relatedTarget` detail member carries the other tab of the swap, or undefined when no tab was active.                                         |
++| `TabHooks`                                | type      | Configures the initial DOM event subscriptions for a tab.                                                                                                                                     |
++| `TabClassMap`                             | interface | Names the class tokens a tab writes and tests; each default is the token the cascade selects on.                                                                                              |
++| `TabAttributeMap`                         | interface | Names the attribute a tab reads; its default is Bootstrap's attribute name.                                                                                                                   |
++| `TabSelectorMap`                          | interface | Names the selectors a tab matches with; each default is Bootstrap's selector.                                                                                                                 |
++| `TabOptions`                              | interface | Configures a tab's markup vocabulary, hooks, and lifetime.                                                                                                                                    |
++| `TabInitialWrite`                         | interface | Describes one role or state a tab's construction sets on its list: the element, the attribute's name, and the value it takes.                                                                 |
++| `TabDropdown`                             | interface | Describes the dropdown a tab control's wrapper forms: the wrapper and the toggle and menu inside it.                                                                                          |
++| `TabInterface`                            | interface | Activates a tab control and its pane, deactivating the active sibling control and its pane.                                                                                                   |
++| `Tab`                                     | class     | Activates a tab control and its pane, deactivating the active sibling control and its pane.                                                                                                   |
++| `TAB_CLASSES`                             | const     | Names the class tokens a tab writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                          |
++| `TAB_ATTRIBUTES`                          | const     | Names the attribute a tab control carries its pane selector in by default, Bootstrap's attribute name.                                                                                        |
++| `TAB_SELECTORS`                           | const     | Names the default selectors a tab and the delegate match tab lists, controls, and dropdowns with, Bootstrap's selectors.                                                                      |
++| `TAB_EVENTS`                              | const     | Names the bubbling events a tab dispatches on its controls, keyed by the verb each carries.                                                                                                   |
++| `ScrollSpyDetail`                         | interface | Describes the detail the scrollspy event carries.                                                                                                                                             |
++| `ScrollSpyEventMap`                       | interface | Maps the verb to the scrollspy event it names.                                                                                                                                                |
++| `ScrollSpyHooks`                          | type      | Configures the initial DOM event subscriptions for a scrollspy.                                                                                                                               |
++| `ScrollSpyClassMap`                       | interface | Names the class tokens a scrollspy writes and tests; each default is the token the cascade selects on.                                                                                        |
++| `ScrollSpyAttributeMap`                   | interface | Names the attributes a scrollspy reads; each default is Bootstrap's attribute name.                                                                                                           |
++| `ScrollSpySelectorMap`                    | interface | Names the selectors a scrollspy matches with; each default is Bootstrap's selector.                                                                                                           |
++| `ScrollSpyOptions`                        | interface | Configures a scrollspy's navigation, scrolling, observation, markup vocabulary, hooks, and lifetime.                                                                                          |
++| `ScrollSpyInterface`                      | interface | Activates the navigation link whose section is in view as a container scrolls.                                                                                                                |
++| `ScrollSpy`                               | class     | Activates the navigation link whose section is in view as its host scrolls, and the links that lead to it.                                                                                    |
++| `SCROLL_SPY_CLASSES`                      | const     | Names the class tokens a scrollspy writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                    |
++| `SCROLL_SPY_ATTRIBUTES`                   | const     | Names the attributes a scrollspy reads on its host by default, Bootstrap's attribute names.                                                                                                   |
++| `SCROLL_SPY_SELECTORS`                    | const     | Names the default selectors the delegate finds scrollspy hosts by and a scrollspy finds parent links and toggles by, Bootstrap's selectors.                                                   |
++| `SCROLL_SPY_EVENTS`                       | const     | Names the bubbling event a scrollspy dispatches on its host, keyed by the verb it carries.                                                                                                    |
++| `SCROLL_SPY_DEFAULTS`                     | const     | Names the option values a scrollspy uses where neither its attributes nor its constructor supply one, Bootstrap's defaults.                                                                   |
++| `isScrollSpyEvent`                        | function  | Checks whether a DOM event carries the link a scrollspy activated.                                                                                                                            |
++| `parseRootMargin`                         | function  | Parses a string to an intersection observer's root margin, returning the margin unchanged when the platform accepts it.                                                                       |
++| `parseThreshold`                          | function  | Parses a comma-separated list, a JSON array, or an array of ratios to the thresholds an intersection observer reports at.                                                                     |
++| `DismissOptions`                          | interface | Selects which close requests hide a modal or an offcanvas panel.                                                                                                                              |
++| `ModalEventMap`                           | interface | Maps each verb to the modal event it names. The `relatedTarget` detail member carries the trigger passed to `show` on the `show` and `shown` events, and undefined on every other event.      |
++| `ModalHooks`                              | type      | Configures the initial DOM event subscriptions for a modal.                                                                                                                                   |
++| `ModalClassMap`                           | interface | Names the class tokens a modal writes and tests; each default is the token the cascade selects on.                                                                                            |
++| `ModalAttributeMap`                       | interface | Names the attributes a modal reads; each default is Bootstrap's attribute name.                                                                                                               |
++| `ModalSelectorMap`                        | interface | Names the selectors a modal matches with; each default is Bootstrap's selector.                                                                                                               |
++| `ModalOptions`                            | interface | Configures a modal's backdrop, dismissal, focus, markup vocabulary, hooks, and lifetime.                                                                                                      |
++| `ModalInterface`                          | interface | Shows and hides a `.modal` over a backdrop, with scroll lock and focus isolation.                                                                                                             |
++| `Modal`                                   | class     | Shows and hides a modal in the page's flow over the cascade's backdrop, locking scrolling and isolating focus while it is shown.                                                              |
++| `MODAL_CLASSES`                           | const     | Names the class tokens a modal writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                        |
++| `MODAL_ATTRIBUTES`                        | const     | Names the attributes a modal and its triggers read by default, Bootstrap's attribute names.                                                                                                   |
++| `MODAL_SELECTORS`                         | const     | Names the default selectors a modal matches with and the delegate routes modal clicks by, Bootstrap's selectors.                                                                              |
++| `MODAL_DEFAULTS`                          | const     | Names the option values a modal takes when neither its attributes nor its constructor supply them, Bootstrap's defaults.                                                                      |
++| `MODAL_EVENTS`                            | const     | Names the bubbling events a modal dispatches on its host, keyed by the verb each carries.                                                                                                     |
++| `parseBackdrop`                           | function  | Parses a backdrop value to a boolean, or to `static`.                                                                                                                                         |
++| `OffcanvasEventMap`                       | interface | Maps each verb to the offcanvas event it names. The `relatedTarget` detail member carries the trigger passed to `show` on the `show` and `shown` events, and undefined on every other event.  |
++| `OffcanvasHooks`                          | type      | Configures the initial DOM event subscriptions for an offcanvas panel.                                                                                                                        |
++| `OffcanvasClassMap`                       | interface | Names the class tokens an offcanvas panel writes and tests; each default is the token the cascade selects on.                                                                                 |
++| `OffcanvasAttributeMap`                   | interface | Names the attributes an offcanvas panel reads; each default is Bootstrap's attribute name.                                                                                                    |
++| `OffcanvasSelectorMap`                    | interface | Names the selectors the delegate routes offcanvas clicks by; a panel constructed directly matches with none, and each default is Bootstrap's selector.                                        |
++| `OffcanvasOptions`                        | interface | Configures an offcanvas panel's backdrop, dismissal, scrolling, markup vocabulary, hooks, and lifetime.                                                                                       |
++| `OffcanvasInterface`                      | interface | Slides an `.offcanvas` panel in and out, with an optional backdrop, scroll lock, and focus isolation.                                                                                         |
++| `Offcanvas`                               | class     | Slides an offcanvas panel in and out over the cascade's backdrop, locking scrolling and isolating focus as its options ask.                                                                   |
++| `OFFCANVAS_CLASSES`                       | const     | Names the class tokens an offcanvas panel writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                             |
++| `OFFCANVAS_ATTRIBUTES`                    | const     | Names the attributes an offcanvas panel and its triggers read by default, Bootstrap's attribute names.                                                                                        |
++| `OFFCANVAS_SELECTORS`                     | const     | Names the default selectors the delegate routes offcanvas clicks by, Bootstrap's data-attribute selectors.                                                                                    |
++| `OFFCANVAS_DEFAULTS`                      | const     | Names the option values an offcanvas panel takes when neither its attributes nor its constructor supply them, Bootstrap's defaults.                                                           |
++| `OFFCANVAS_EVENTS`                        | const     | Names the bubbling events an offcanvas panel dispatches on its host, keyed by the verb each carries.                                                                                          |
++| `TooltipEventMap`                         | interface | Maps each verb to the tooltip event it names, carrying null detail.                                                                                                                           |
++| `TooltipHooks`                            | type      | Configures the initial DOM event subscriptions for a tooltip.                                                                                                                                 |
++| `TooltipClassMap`                         | interface | Names the class tokens a tooltip writes and tests; each default is the token the cascade selects on.                                                                                          |
++| `TooltipAttributeMap`                     | interface | Names the attributes a tooltip reads and writes; each default is Bootstrap's attribute name.                                                                                                  |
++| `TooltipSelectorMap`                      | interface | Names the selectors a tooltip matches inside its tip; each default is Bootstrap's selector.                                                                                                   |
++| `TooltipOptions`                          | interface | Configures a tooltip's content, triggers, timing, tip, placement, sanitizer, markup vocabulary, hooks, and lifetime.                                                                          |
++| `TooltipDefaults`                         | interface | Names the options a tooltip or a popover starts from before its attributes and the constructor, Bootstrap's defaults for each.                                                                |
++| `TooltipProfile`                          | interface | Describes what a tip class supplies the tooltip engine: its name, its events, its default vocabulary and options, and the popover value its tip is promoted with.                             |
++| `TooltipInterface`                        | interface | Shows a tip anchored to its trigger in the top layer on hover, focus, click, or call.                                                                                                         |
++| `Tooltip`                                 | class     | Shows a tip built from a template beside its trigger, anchored in the top layer, on hover, focus, click, or call.                                                                             |
++| `TOOLTIP_CLASSES`                         | const     | Names the class tokens a tooltip writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                      |
++| `TOOLTIP_ATTRIBUTES`                      | const     | Names the attributes a tooltip reads on its trigger and writes on its tip by default, Bootstrap's attribute names.                                                                            |
++| `TOOLTIP_SELECTORS`                       | const     | Names the default selectors of the tip slot a tooltip's title fills and of the tip's arrow, Bootstrap's selectors.                                                                            |
++| `TOOLTIP_TEMPLATE`                        | const     | Names the markup a tooltip builds its tip from by default, Bootstrap's tooltip template.                                                                                                      |
++| `TOOLTIP_DEFAULTS`                        | const     | Sets the options a tooltip starts from before its attributes and the constructor, Bootstrap's defaults.                                                                                       |
++| `TOOLTIP_EVENTS`                          | const     | Names the bubbling events a tooltip dispatches on its trigger, keyed by the verb each carries.                                                                                                |
++| `parseDelay`                              | function  | Parses a delay in milliseconds, or Bootstrap's object of a show and a hide delay, to the waits a tooltip takes before it shows and hides its tip.                                             |
++| `parseTrigger`                            | function  | Parses Bootstrap's space-separated trigger words to the interactions that show and hide a tooltip's tip.                                                                                      |
++| `parsePosition`                           | function  | Parses a placement string to the position it names.                                                                                                                                           |
++| `parseFallbacks`                          | function  | Parses a comma-separated list, a JSON array, or an array of placement strings to the positions a tip tries when its preferred one overflows.                                                  |
++| `PopoverEventMap`                         | interface | Maps each verb to the popover event it names, carrying null detail.                                                                                                                           |
++| `PopoverHooks`                            | type      | Configures the initial DOM event subscriptions for a popover.                                                                                                                                 |
++| `PopoverClassMap`                         | interface | Names the class tokens a popover writes and tests: the tooltip's keys, with the popover's own arrow-placement token.                                                                          |
++| `PopoverAttributeMap`                     | interface | Names the attributes a popover reads and writes: the tooltip's keys, with the attribute that feeds the body slot.                                                                             |
++| `PopoverSelectorMap`                      | interface | Names the selectors a popover matches inside its tip: the header slot in place of the tooltip's text slot, the body slot, and the popover's arrow.                                            |
++| `PopoverOptions`                          | interface | Configures a popover: the tooltip options, a body slot, the popover's markup vocabulary, and the popover defaults.                                                                            |
++| `PopoverInterface`                        | interface | Shows a header-and-body tip anchored to its trigger: the tooltip contract under the `.vn.popover` event names.                                                                                |
++| `Popover`                                 | class     | Shows a header-and-body tip built from a template beside its trigger, anchored in the top layer, on a click or a call.                                                                        |
++| `POPOVER_CLASSES`                         | const     | Names the class tokens a popover writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                      |
++| `POPOVER_ATTRIBUTES`                      | const     | Names the attributes a popover reads on its trigger and writes on its tip by default: the tooltip's attribute names and the attribute that feeds the body slot, Bootstrap's names.            |
++| `POPOVER_SELECTORS`                       | const     | Names the default selectors of the tip slots a popover's title and content fill and of the tip's arrow, Bootstrap's selectors.                                                                |
++| `POPOVER_TEMPLATE`                        | const     | Names the markup a popover builds its tip from by default, Bootstrap's popover template.                                                                                                      |
++| `POPOVER_DEFAULTS`                        | const     | Sets the options a popover starts from before its attributes and the constructor: the tooltip's defaults with Bootstrap's popover click trigger, template, position, and offset.              |
++| `POPOVER_EVENTS`                          | const     | Names the bubbling events a popover dispatches on its trigger, keyed by the verb each carries.                                                                                                |
++| `AlertEventMap`                           | interface | Maps each verb to the alert event it names, carrying null detail.                                                                                                                             |
++| `AlertHooks`                              | type      | Configures the initial DOM event subscriptions for an alert.                                                                                                                                  |
++| `AlertClassMap`                           | interface | Names the class tokens an alert writes and tests; each default is the token the cascade selects on.                                                                                           |
++| `AlertAttributeMap`                       | interface | Names the attribute the delegate's dismiss route reads; an alert constructed directly reads none, and the default is Bootstrap's attribute name.                                              |
++| `AlertSelectorMap`                        | interface | Names the selector the delegate routes dismiss clicks by; an alert constructed directly matches with none, and the default is Bootstrap's selector.                                           |
++| `AlertOptions`                            | interface | Configures an alert's markup vocabulary, hooks, and lifetime.                                                                                                                                 |
++| `AlertInterface`                          | interface | Closes an `.alert` by fading it out and removing it from the document.                                                                                                                        |
++| `Alert`                                   | class     | Closes an alert by removing its shown token, waiting out its fade, and removing it from the document.                                                                                         |
++| `ALERT_CLASSES`                           | const     | Names the class tokens an alert writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                       |
++| `ALERT_ATTRIBUTES`                        | const     | Names the attribute a dismiss trigger carries its alert's selector in by default, Bootstrap's attribute name.                                                                                 |
++| `ALERT_SELECTORS`                         | const     | Names the default selector the delegate routes alert dismiss clicks by, Bootstrap's data-attribute selector.                                                                                  |
++| `ALERT_EVENTS`                            | const     | Names the bubbling events an alert dispatches on its host, keyed by the verb each carries.                                                                                                    |
++| `ToastEventMap`                           | interface | Maps each verb to the toast event it names, carrying null detail.                                                                                                                             |
++| `ToastHooks`                              | type      | Configures the initial DOM event subscriptions for a toast.                                                                                                                                   |
++| `ToastClassMap`                           | interface | Names the tokens a toast writes and tests, `shown`, `transition`, and `fade`, and those the delegate's dismiss route tests, `host` and `disabled`.                                            |
++| `ToastAttributeMap`                       | interface | Names the attributes a toast reads for its options and the one the delegate's dismiss route reads; each default is Bootstrap's attribute name.                                                |
++| `ToastSelectorMap`                        | interface | Names the selector the delegate routes dismiss clicks by; a toast constructed directly matches with none, and the default is Bootstrap's selector.                                            |
++| `ToastOptions`                            | interface | Configures a toast's fade, automatic hiding, markup vocabulary, hooks, and lifetime.                                                                                                          |
++| `ToastInterface`                          | interface | Shows a `.toast` in its container's flow and hides it after a delay.                                                                                                                          |
++| `Toast`                                   | class     | Shows and hides a toast in its container's flow, and hides it after a delay unless the pointer or focus holds it.                                                                             |
++| `TOAST_CLASSES`                           | const     | Names the class tokens a toast writes and tests and the delegate's dismiss route tests by default, the tokens Bootstrap's cascade and data API use.                                           |
++| `TOAST_ATTRIBUTES`                        | const     | Names the attributes a toast and the delegate's dismiss route read by default, Bootstrap's attribute names.                                                                                   |
++| `TOAST_SELECTORS`                         | const     | Names the default selector the delegate routes toast dismiss clicks by, Bootstrap's data-attribute selector.                                                                                  |
++| `TOAST_DEFAULTS`                          | const     | Sets the fade, automatic hiding, and delay a toast starts from before its attributes and the constructor, Bootstrap's defaults.                                                               |
++| `TOAST_EVENTS`                            | const     | Names the bubbling events a toast dispatches on its host, keyed by the verb each carries.                                                                                                     |
++| `CarouselDetail`                          | interface | Describes the detail each carousel event carries.                                                                                                                                             |
++| `CarouselEventMap`                        | interface | Maps each verb to the carousel event it names.                                                                                                                                                |
++| `CarouselHooks`                           | type      | Configures the initial DOM event subscriptions for a carousel.                                                                                                                                |
++| `CarouselRide`                            | type      | Names when a carousel starts cycling on its own: at construction, or after each slide a call, a key, or a swipe asks for.                                                                     |
++| `CarouselClassMap`                        | interface | Names the class tokens a carousel writes and tests; each default is the token the cascade selects on.                                                                                         |
++| `CarouselAttributeMap`                    | interface | Names the attributes a carousel reads; each default is Bootstrap's attribute name.                                                                                                            |
++| `CarouselSelectorMap`                     | interface | Names the selectors a carousel matches with; each default is Bootstrap's selector.                                                                                                            |
++| `CarouselOptions`                         | interface | Configures a carousel's cycling, keyboard and touch input, wrapping, markup vocabulary, hooks, and lifetime.                                                                                  |
++| `CarouselInterface`                       | interface | Moves a `.carousel` between its items by call, key, swipe, indicator, or interval.                                                                                                            |
++| `Carousel`                                | class     | Moves a carousel between its items through their order and direction tokens, by call, key, swipe, or its own timer.                                                                           |
++| `CAROUSEL_EVENTS`                         | const     | Names the bubbling events a carousel dispatches on its host, keyed by the verb each carries.                                                                                                  |
++| `CAROUSEL_CLASSES`                        | const     | Names the class tokens a carousel writes and tests by default, the tokens Bootstrap's cascade selects on.                                                                                     |
++| `CAROUSEL_ATTRIBUTES`                     | const     | Names the attributes a carousel and its slide controls carry by default, Bootstrap's attribute names.                                                                                         |
++| `CAROUSEL_SELECTORS`                      | const     | Names the selectors a carousel finds its items, their images, and its indicator list by default, Bootstrap's selectors.                                                                       |
++| `CAROUSEL_DEFAULTS`                       | const     | Names a carousel's default options, Bootstrap's defaults with hover pausing as `true`; no default ride means no automatic cycling.                                                            |
++| `CAROUSEL_TOUCH_DELAY`                    | const     | Names the milliseconds a carousel waits beyond its interval after a touch or pen lifts, which leaves time for the mouse events a tap fires.                                                   |
++| `isCarouselEvent`                         | function  | Checks whether a DOM event is a carousel event carrying the item it activates, its direction, and its positions.                                                                              |
++| `parseRide`                               | function  | Parses a ride, or Bootstrap's spelling of one, to the moment a carousel starts cycling on its own.                                                                                            |
+ 
+ The controller reads its mode from the root on every access. A `dark` attribute selects dark mode;
+ every other value selects light mode. Applying a mode writes the attribute for that mode, light
+@@ -924,30 +924,31 @@ reaction to the restoration sends finds no destroyed engine and can claim the ho
+ destroys itself when the `signal` you pass it aborts, and at construction when that signal has
+ already aborted.
+ 
+-Each engine keeps a `HostSnapshot` instance, and it saves every attribute, class token, and inline
+-property the engine writes before the first write. Every snapshot that saves one attribute, class
+-token, or inline property of one element shares one record of it, whatever engine class each
+-snapshot belongs to. The first save made while no snapshot holds the target and no restoration has
+-it still to write back reads the host, and every later save joins that record without reading, so
+-the record keeps the value the target carried before any engine wrote it. Destruction relinquishes
+-every target the engine's snapshot holds. A target another live engine still holds is left as the
+-live engines wrote it, and the last engine holding a target writes the record's value back at its
+-destruction: a value the record reads as absent is removed. The host returns to its own values after
+-the last engine holding them is destroyed, in whatever order the engines are destroyed, as a list
+-whose tabs are destroyed one by one does. An engine whose lifetime ends without a restoration, such
+-as an alert whose close completed, clears its snapshot with the `clear` method, which relinquishes
+-its targets without writing, so the last remaining holder of each record it shared writes that
+-record back, and a later save reads a record it held alone from the host. No construction leaves a
+-holder behind: every class of the browser entry reads all its options, and every platform
+-prerequisite its first claim or save needs, before that claim or save, or it releases what it
+-claimed and saved before the error propagates. So a placement reads each fallback entry before it
+-promotes the element, a scroll lock refuses a document with no body before it holds the lock, and
+-an engine whose option getter throws after its claim is destroyed, releasing the claim and the
+-listeners and writing back what it saved. A target is named as the platform reads it: an attribute of an HTML element in an HTML
+-document, whatever the document's content type, and an inline property other than a custom
+-property, match in any ASCII case, so `data-state` and `DATA-STATE` share one record. The name
+-resolves once, at the save, and every release of the target reads the record that save joined,
+-even after the element moves into another document.
++Each engine keeps a `HostSnapshot` instance of its own, and it saves every attribute, class token,
++and inline property the engine writes before the first write; the modal keeps a second one for the
++body's `open` token, which its hide restores, as the modal's section states. Every snapshot that
++saves one attribute, class token, or inline property of one element shares one record of it,
++whatever engine class each snapshot belongs to. The first save made while no snapshot holds the
++target and no restoration has it still to write back reads the host, and every later save joins that
++record without reading, so the record keeps the value the target carried before any engine wrote it.
++Destruction relinquishes every target the engine's snapshots hold. A target another live engine
++still holds is left as the live engines wrote it, and the last engine holding a target writes the
++record's value back at its destruction: a value the record reads as absent is removed. The host
++returns to its own values after the last engine holding them is destroyed, in whatever order the
++engines are destroyed, as a list whose tabs are destroyed one by one does. An engine whose lifetime
++ends without a restoration, such as an alert whose close completed, clears its snapshot with the
++`clear` method, which relinquishes its targets without writing, so the last remaining holder of each
++record it shared writes that record back, and a later save reads a record it held alone from the
++host. No construction leaves a holder behind: every class of the browser entry reads all its
++options, and every platform prerequisite its first claim or save needs, before that claim or save,
++or it releases what it claimed and saved before the error propagates. So a placement reads each
++fallback entry before it promotes the element, a scroll lock refuses a document with no body before
++it holds the lock, and an engine whose option getter throws after its claim is destroyed, releasing
++the claim and the listeners and writing back what it saved. A target is named as the platform reads
++it: an attribute of an HTML element in an HTML document, whatever the document's content type, and
++an inline property other than a custom property, match in any ASCII case, so `data-state` and
++`DATA-STATE` share one record. The name resolves once, at the save, and every release of the target
++reads the record that save joined, even after the element moves into another document.
+ 
+ Every snapshot that saves a class token on an element also shares one presence record of whether
+ the element carried a `class` attribute, and every snapshot that saves an inline property shares one
+@@ -956,11 +957,12 @@ holds it, and forgotten after the last snapshot holding it restores, so a later
+ element again. Restoration writes class tokens first, then removes a `class` attribute the presence
+ record reads as absent when the list is empty, then writes inline properties, removes a `style`
+ attribute the presence record reads as absent when the inline style is empty, and writes
+-attributes last. Every restoration holding a presence record that reads the attribute absent judges
+-that removal after its own writes, whether or not it held any target last. No complete set of
+-restorations, in any order and overlapping or one after another, by engines of any class, and no
+-partial one, such as a button destroyed while a collapse on the same trigger stays live, leaves the
+-attribute present and empty unless a write throws or a `clear` call ends the restoration.
++attributes last. A restoration judges that removal after its own writes, and removes the attribute
++only when no other snapshot still holds the presence record. So a button destroyed while a collapse
++on the same trigger stays live leaves a `class` attribute their writes emptied present and empty,
++and the collapse's destruction removes it. No complete set of restorations, in any order and
++overlapping or one after another, by engines of any class, leaves the attribute present and empty
++unless a write throws or a `clear` call ends the restoration.
+ 
+ A restoration owns each target it holds last until it writes that target back. A snapshot saved for
+ one of those targets, by an engine of any class and from any caller, the restoring snapshot
+@@ -2036,21 +2038,21 @@ body lacks it, adjusts the host's padding as the `update` method does, and, when
+ option is `true`, shows the backdrop and waits for its fade. It then appends the host to the body
+ when the body does not contain it, writes `display: block`, removes `aria-hidden`, writes
+ `aria-modal="true"` and `role="dialog"`, scrolls the host and the element the `body` selector
+-matches inside the dialog to the top, forces a layout read, and adds the `shown` token. When the host carries the `fade` token, the show waits for
+-the dialog's transition to settle, or for the host's own when the host holds no dialog. With the
+-`focus` option `true`, it isolates the rest of the document and moves focus to the host. It then
+-dispatches `shown.vn.modal`. Hiding releases the isolation, removes the `shown` token, waits for the
+-host's own fade when the host carries the `fade` token, writes `display: none` and
+-`aria-hidden="true"`, removes `aria-modal` and `role`, hides and removes the backdrop, releases the
+-`open` token, removes the host's padding, releases the scroll lock, and dispatches
+-`hidden.vn.modal`. The `show`, `hide`, and `toggle` methods resolve `true` after the completed
+-event, also when the host moved the `shown` token to the change's end before the call wrote it. Each
+-resolves `false` when the modal already carries the state, a change is in flight, a listener
+-prevented the pre-change event or started a change of its own inside it, the modal is destroyed, or
+-the host moved the `shown` token back after the call found it at the change's end and before the
+-call dispatched its completed event. A listener to the completed event that hides or shows the modal
+-starts a change of its own, so a hide a `shown.vn.modal` hook completes leaves the show's `true` in
+-place. The `shown` property reads the `shown` token on every access.
++matches inside the dialog to the top, forces a layout read, and adds the `shown` token. When the
++host carries the `fade` token, the show waits for the dialog's transition to settle, or for the
++host's own when the host holds no dialog. With the `focus` option `true`, it isolates the rest of
++the document and moves focus to the host. It then dispatches `shown.vn.modal`. Hiding releases the
++isolation, removes the `shown` token, waits for the host's own fade when the host carries the `fade`
++token, writes `display: none` and `aria-hidden="true"`, removes `aria-modal` and `role`, hides and
++removes the backdrop, releases the `open` token, removes the host's padding, releases the scroll
++lock, and dispatches `hidden.vn.modal`. The `show`, `hide`, and `toggle` methods resolve `true`
++after the completed event, also when the host moved the `shown` token to the change's end before the
++call wrote it. Each resolves `false` when the modal already carries the state, a change is in
++flight, a listener prevented the pre-change event or started a change of its own inside it, the
++modal is destroyed, or the host moved the `shown` token back after the call found it at the change's
++end and before the call dispatched its completed event. A listener to the completed event that hides
++or shows the modal starts a change of its own, so a hide a `shown.vn.modal` hook completes leaves
++the show's `true` in place. The `shown` property reads the `shown` token on every access.
+ 
+ Escape on the host hides the modal when `dismiss.escape` is `true`. A press whose `mousedown` and
+ `click` both land on the host itself, beside the dialog, hides the modal when `dismiss.backdrop` is
+@@ -2104,17 +2106,17 @@ The modal composes the following mechanisms, which the browser entry exports as
+   isolations share one record of it, and the last to release it writes back the value the first
+   claim found. Isolations may end in any order, and an ancestor stays clear while any isolation
+   beneath it lives. An aborted `signal` destroys the isolation, and one that aborts inside a claim's
+-  write during construction stops the construction there. The modal passes its own
+-  lifetime as that signal. The isolation claims each element its `spare` option lists as not
+-  inert, as it claims the chain: at construction when the element is connected, and at each
+-  observer delivery that inserts it beside the chain. That claim joins the same precedence and
+-  restoration, so a spared element stays interactive while the isolation lives, whatever another
+-  live isolation claims, and the isolation copies the list when it is constructed; an offcanvas
+-  panel spares its backdrop this way. Destruction moves focus to the trigger, the one the options
+-  name or else the element that held focus at construction; the platform moves no focus to a
+-  trigger that is disconnected or not rendered. The
+-  modal passes the trigger its `show` call received. The backdrop sits beside the chain and becomes
+-  inert with the rest of the page; the modal's host covers it, so no press reaches it either way.
++  write during construction stops the construction there. The modal passes its own lifetime as that
++  signal. The isolation claims each element its `spare` option lists as not inert, as it claims the
++  chain: at construction when the element is connected, and at each observer delivery that inserts
++  it beside the chain. That claim joins the same precedence and restoration, so a spared element
++  stays interactive while the isolation lives, whatever another live isolation claims, and the
++  isolation copies the list when it is constructed; an offcanvas panel spares its backdrop this way.
++  Destruction moves focus to the trigger, the one the options name or else the element that held
++  focus at construction; the platform moves no focus to a trigger that is disconnected or not
++  rendered. The modal passes the trigger its `show` call received. The backdrop sits beside the
++  chain and becomes inert with the rest of the page; the modal's host covers it, so no press reaches
++  it either way.
+ 
+ The modal writes and tests the following class tokens, under the names its `classes` group
+ resolves; each default is the token the shipped cascade selects on.
+@@ -2231,14 +2233,14 @@ the isolation, the backdrop, the `open` token, and the scroll lock, and restores
+ its `display` and padding properties, and its `aria-hidden`, `aria-modal`, and `role` attributes. A
+ host that a show appended to the body stays in the body.
+ 
+-The modals of one document that resolve the same `open` token share one record of it, and the
+-last to release the token restores the body. Each modal holds the token through a snapshot of its
+-own, which its hide or its destruction restores, so only the last holder writes the body back. A
+-show adds the token whenever the body lacks it, as Bootstrap's show does, so a token that other code
+-removed while a modal held it returns at the next show. Modals that resolve different `open` tokens
+-share the body's `class` presence record, as § Ownership and restoration states, so when the body
+-carried no `class` attribute before the first took its token, each release that leaves the list
+-empty removes the attribute, in whichever order they release.
++The modals of one document that resolve the same `open` token share one record of it. Each modal
++holds the token through a snapshot of its own, which its hide or its destruction restores, and only
++the last holder to release it writes the body back. A show adds the token whenever the body lacks
++it, as Bootstrap's show does, so a token that other code removed while a modal held it returns at
++the next show. Modals that resolve different `open` tokens share the body's `class` presence record,
++as § Ownership and restoration states, so when the body carried no `class` attribute before the
++first took its token, the last release removes the attribute when it leaves the list empty, in
++whichever order they release.
+ 
+ The delegate's `modal` option carries the modal's groups. A click inside a trigger the resolved
+ `trigger` selector matches shows the modal the trigger's target attribute or `href` fragment names
+diff --git a/src/browser/HostSnapshot.ts b/src/browser/HostSnapshot.ts
+index a295d1e..47a1150 100644
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -26,21 +26,23 @@ import type {
+  * for a target another snapshot still holds, and writes back each target it held last from the
+  * record, so the value the target carried before any holder wrote it returns when the last holder
+  * restores, whatever order the holders restore in. A restoration writes class tokens, removes the
+- * `class` attribute when the presence record reads it absent and the list is empty, writes inline
+- * properties, removes the `style` attribute when the presence record reads it absent and the inline
+- * style is empty, and writes attributes last, whatever order the targets were saved in.
++ * `class` attribute when it is the last holder of a presence record that reads it absent and the
++ * list is empty, writes inline properties, removes the `style` attribute when it is the last holder
++ * of a presence record that reads it absent and the inline style is empty, and writes attributes
++ * last, whatever order the targets were saved in.
+  *
+  * Every snapshot that saves a class token on an element shares one presence record for the
+  * element's `class` attribute, and every snapshot that saves an inline property shares one for its
+  * `style` attribute. The first of those saves while no snapshot holds the presence record reads
+  * whether the element carries the attribute, each later save joins that reading, and the presence
+  * record is forgotten after the last snapshot holding it restores, so a later save reads the
+- * element again. Every restoration holding a presence record that reads the attribute absent
+- * removes it when the list or the inline style is empty after its own writes, whether or not it
+- * held any target last, including when a save during the restoration rejoins the snapshot's holding
+- * for its next restoration. No complete set of restorations, in any order and overlapping or one
+- * after another, and no partial one leaves the attribute present and empty unless a write throws or
+- * a `clear` call ends the restoration.
++ * element again. A restoration that leaves a presence record reading the attribute absent, with no
++ * other snapshot still holding it, removes the attribute when the list or the inline style is empty
++ * after its own writes, and so does one whose snapshot a save during the restoration rejoined while
++ * no other snapshot holds the record. A restoration another snapshot's holding outlives writes
++ * nothing there, so an emptied attribute stays present and empty until the last holder restores.
++ * No complete set of restorations, in any order and overlapping or one after another, leaves the
++ * attribute present and empty unless a write throws or a `clear` call ends the restoration.
+  *
+  * A restoration owns each target it holds last until it writes that target back. A snapshot saved
+  * for such a target, by any engine of any class and by the restoring snapshot itself, joins the
+@@ -145,7 +147,8 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		this.#joined = []
+ 		const targets = this.#owned
+ 		// The presence records this call holds when its writes begin. A save a reaction makes during
+-		// those writes can rejoin one, and the call still removes the attribute left empty.
++		// those writes can rejoin one, and the call still removes the attribute left empty when no other
++		// snapshot holds that record.
+ 		const held = this.#leaving
+ 		try {
+ 			for (const entry of targets) {
+@@ -257,9 +260,9 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	}
+ 
+ 	// Leaves a presence record a restoration of this snapshot still holds, forgetting the record after
+-	// its last holder leaves. Returns true when the record reads the attribute absent, so the caller
+-	// removes an attribute left empty; false when the snapshot does not hold it or the record reads
+-	// the attribute present.
++	// its last holder leaves. Returns true when this snapshot was its last holder and the record reads
++	// the attribute absent, so the caller removes an attribute left empty; false when the snapshot does
++	// not hold it, another snapshot still holds it, or the record reads the attribute present.
+ 	#leave(element: HTMLElement, attribute: HostSnapshotHolding['attribute']): boolean {
+ 		const leaving = this.#leaving.some(
+ 			(presence) => presence.element === element && presence.attribute === attribute,
+@@ -272,24 +275,27 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		const record = records?.get(attribute)
+ 		if (records === undefined || record === undefined) return false
+ 		const holders = new Set([...record.holders].filter((holder) => holder !== this))
+-		if (holders.size > 0) records.set(attribute, { present: record.present, holders })
+-		else {
+-			records.delete(attribute)
+-			if (records.size === 0) HostSnapshot.#presence.delete(element)
++		if (holders.size > 0) {
++			records.set(attribute, { present: record.present, holders })
++			return false
+ 		}
++		records.delete(attribute)
++		if (records.size === 0) HostSnapshot.#presence.delete(element)
+ 		return !record.present
+ 	}
+ 
+-	// Reports whether the element's presence record reads the attribute absent, for a restoration
+-	// whose own token or property writes are done: a record the restoration still leaves departs
+-	// through `#leave`, and a record a save during the restoration took back is read and stays held
+-	// for the snapshot's next restoration.
++	// Reports whether a restoration whose own token or property writes are done removes an emptied
++	// attribute: a record the restoration still leaves departs through `#leave`, and a record a save
++	// during the restoration took back stays held for the snapshot's next restoration and reports true
++	// when it reads the attribute absent and no other snapshot holds it.
+ 	#absent(element: HTMLElement, attribute: HostSnapshotHolding['attribute']): boolean {
+ 		const joined = this.#joined.some(
+ 			(presence) => presence.element === element && presence.attribute === attribute,
+ 		)
+ 		if (!joined) return this.#leave(element, attribute)
+-		return HostSnapshot.#presence.get(element)?.get(attribute)?.present === false
++		const record = HostSnapshot.#presence.get(element)?.get(attribute)
++		if (record === undefined || record.present) return false
++		return [...record.holders].every((holder) => holder === this)
+ 	}
+ 
+ 	// Returns the target under the name the platform resolves when it is saved, so every spelling of
+diff --git a/src/browser/Modal.ts b/src/browser/Modal.ts
+index 9ab378f..24479ce 100644
+--- a/src/browser/Modal.ts
++++ b/src/browser/Modal.ts
+@@ -47,16 +47,17 @@ import { isAttributeName, isClassToken, isRelatedEvent, isSelector } from './val
+  * `false` turns off, and `dismiss.backdrop`, which only `static` turns off; each path takes the
+  * constructor's value when the constructor supplies one.
+  *
+- * Showing takes a reference to the document's scroll lock, joins the one record the modals of one
+- * document share of the body's `open` token and adds the token when the body lacks it, shows the
++ * Showing takes a reference to the document's scroll lock, joins the record of the body's `open`
++ * token that the modals of one document share, adds the token when the body lacks it, shows the
+  * backdrop when `backdrop` is `true` and waits for its fade, appends a host the body does not
+- * contain to the body, displays the host, marks it as a modal dialog, scrolls it and its body to the
+- * top, and adds the `shown` token. It then waits for the dialog's transition when the host carries
+- * the `fade` token, isolates focus inside the host and moves focus to it when `focus` is `true`, and
+- * dispatches `shown.vn.modal`. Hiding releases the isolation, removes the `shown` token, waits for
+- * the host's own fade, hides the host, hides and removes the backdrop, and releases the `open`
+- * token, the dialog adjustment, and the scroll lock before it dispatches `hidden.vn.modal`. The last
+- * modal to release the `open` token writes back the body's value the first show found.
++ * contain to the body, displays the host, marks it as a modal dialog, scrolls it and its body to
++ * the top, and adds the `shown` token. It then waits for the dialog's transition when the host
++ * carries the `fade` token, isolates focus inside the host and moves focus to it when `focus` is
++ * `true`, and dispatches `shown.vn.modal`. Hiding releases the isolation, removes the `shown`
++ * token, waits for the host's own fade, hides the host, hides and removes the backdrop, and
++ * releases the `open` token, the dialog adjustment, and the scroll lock before it dispatches
++ * `hidden.vn.modal`. The last modal to release the `open` token writes back the body's value the
++ * first show found.
+  *
+  * A call carries the change identity it sets when its change starts. After each write, dispatch,
+  * and await, it reads whether the modal is live and whether a later `show` or `hide` call has
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index e585544..5a395db 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -381,20 +381,20 @@ export interface HostSnapshotInterface {
+ 	 * a later save reads the element again. The writes run in a fixed order: class tokens, then the
+ 	 * removal of a `class` attribute the presence record reads as absent when the list is empty, then
+ 	 * inline properties, then the removal of a `style` attribute the presence record reads as absent
+-	 * when the inline style is empty, and attributes last. Every restoration holding a presence
+-	 * record that reads the attribute absent judges that removal after its own writes, whether or not
+-	 * it holds any target last, so a restoration that leaves a live holder removes an attribute left
+-	 * empty. No complete set of restorations, in any order and overlapping or one after another, by
+-	 * engines of any class, and no partial one leaves the attribute present and empty unless a write
+-	 * throws or a `clear` call ends the restoration. A target the restoration has still to write back
+-	 * is owned by it until written. A snapshot saved for such a target while the restoration runs
+-	 * joins its record, and the restoration then leaves that target to it. A restore that a reaction
+-	 * to one of the restoration's writes calls on the same snapshot, as an engine's `destroy` does,
+-	 * writes back every target the interrupted restoration still owns, so nothing the snapshot holds
+-	 * last is left to write when that call returns, and the interrupted restoration then writes
+-	 * nothing more. A restoration whose write throws withdraws every target it has not written back,
+-	 * those of a restoration of the same snapshot it interrupted included, so no restoration writes
+-	 * that target back, and every other snapshot keeps its holdings.
++	 * when the inline style is empty, and attributes last. A restoration judges that removal after its
++	 * own writes, and removes the attribute only when no other snapshot still holds the presence
++	 * record, so a restoration that leaves a live holder writes nothing there, and an emptied attribute
++	 * stays present and empty until the last holder restores. No complete set of restorations, in any
++	 * order and overlapping or one after another, by engines of any class, leaves the attribute
++	 * present and empty unless a write throws or a `clear` call ends the restoration. A target the
++	 * restoration has still to write back is owned by it until written. A snapshot saved for such a
++	 * target while the restoration runs joins its record, and the restoration then leaves that target
++	 * to it. A restore that a reaction to one of the restoration's writes calls on the same snapshot,
++	 * as an engine's `destroy` does, writes back every target the interrupted restoration still owns,
++	 * so nothing the snapshot holds last is left to write when that call returns, and the interrupted
++	 * restoration then writes nothing more. A restoration whose write throws withdraws every target it
++	 * has not written back, those of a restoration of the same snapshot it interrupted included, so no
++	 * restoration writes that target back, and every other snapshot keeps its holdings.
+ 	 * @example
+ 	 * ```ts
+ 	 * snapshot.restore()
+@@ -427,7 +427,7 @@ export interface HostSnapshotEntry {
+ 	readonly key: string
+ }
+ 
+-/** Describes the one record that every snapshot holding a target shares, and that the target's last holder writes back. */
++/** Describes the one record that every snapshot holding a target shares, and whose value the target's last holder writes back. */
+ export interface HostSnapshotRecord {
+ 	/** Carries what the first save read: the attribute's or the inline property's value, or the class token when the list carried it. Undefined when the target was absent. */
+ 	readonly value: string | undefined
+@@ -449,7 +449,7 @@ export interface HostSnapshotHolding {
+ 	readonly attribute: 'class' | 'style'
+ }
+ 
+-/** Describes the presence record that every snapshot saving a class token or an inline property on one element shares for the attribute that holds it. */
++/** Describes the presence record that every snapshot saving a class token or an inline property on one element shares, which reads whether the element carried its `class` or `style` attribute. */
+ export interface HostSnapshotPresence {
+ 	/** If `true`, the element carried the attribute when the first snapshot holding the record saved; if `false`, it did not. */
+ 	readonly present: boolean
+diff --git a/tests/src/browser/HostSnapshot.test.ts b/tests/src/browser/HostSnapshot.test.ts
+index 1f27411..d3fd833 100644
+--- a/tests/src/browser/HostSnapshot.test.ts
++++ b/tests/src/browser/HostSnapshot.test.ts
+@@ -521,7 +521,7 @@ describe('HostSnapshot', () => {
+ 		expect(host.hasAttribute('aria-pressed')).toBe(false)
+ 	})
+ 
+-	it('removes the class attribute the first save found absent when a nested restoration that holds a shared token last empties the list', () => {
++	it('removes the class attribute the first save found absent at the outer restoration, the last holder, after a nested restoration that holds a shared token last empties the list', () => {
+ 		const name = 'vn-probe-snapshot-late-empty'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+ 		customElements.define(
+@@ -549,7 +549,7 @@ describe('HostSnapshot', () => {
+ 			readings.handler(host.getAttribute('class'))
+ 		})
+ 		later.restore()
+-		expect(readings.calls).toEqual([[null]])
++		expect(readings.calls).toEqual([['']])
+ 		expect(host.classList.length).toBe(0)
+ 		expect(host.hasAttribute('class')).toBe(false)
+ 	})
+@@ -577,6 +577,64 @@ describe('HostSnapshot', () => {
+ 		}
+ 	})
+ 
++	it('leaves the class attribute its restoration empties when a save during it rejoins the snapshot while another snapshot holds the presence record, and the last holder removes it', () => {
++		const name = 'vn-probe-snapshot-rejoin-shared'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		const other = new HostSnapshot()
++		other.save({ category: 'token', element: host, name: 'show' })
++		host.classList.add('show')
++		const snapshot = new HostSnapshot()
++		snapshot.save({ category: 'token', element: host, name: 'active' })
++		host.classList.add('active')
++		host.classList.remove('show')
++		reactions.set(host, () => {
++			reactions.delete(host)
++			snapshot.save({ category: 'token', element: host, name: 'active' })
++		})
++		snapshot.restore()
++		expect(host.getAttribute('class')).toBe('')
++		other.restore()
++		expect(host.getAttribute('class')).toBe('')
++		snapshot.restore()
++		expect(host.hasAttribute('class')).toBe(false)
++	})
++
++	it('leaves a class or style attribute other code emptied while another snapshot holds its presence record, and the last holder removes it, in either order', () => {
++		for (const ordered of [true, false]) {
++			const host = build('div')
++			const first = new HostSnapshot()
++			first.save({ category: 'token', element: host, name: 'active' })
++			first.save({ category: 'property', element: host, name: 'height' })
++			host.classList.add('active')
++			host.style.setProperty('height', '10px')
++			const second = new HostSnapshot()
++			second.save({ category: 'token', element: host, name: 'show' })
++			second.save({ category: 'property', element: host, name: 'width' })
++			host.classList.add('show')
++			host.style.setProperty('width', '20px')
++			host.classList.remove('active', 'show')
++			host.style.removeProperty('height')
++			host.style.removeProperty('width')
++			const [earlier, later] = ordered ? [first, second] : [second, first]
++			earlier.restore()
++			expect(host.getAttribute('class')).toBe('')
++			expect(host.getAttribute('style')).toBe('')
++			later.restore()
++			expect(host.hasAttribute('class')).toBe(false)
++			expect(host.hasAttribute('style')).toBe(false)
++		}
++	})
++
+ 	it('removes the class attribute of a trigger a button and a collapse share when the button restoration destroys the collapse', async () => {
+ 		const name = 'vn-probe-snapshot-shared-trigger'
+ 		const reactions = new WeakMap<HTMLElement, () => void>()
+@@ -615,7 +673,7 @@ describe('HostSnapshot', () => {
+ 		expect(Array.from(panel.classList)).toEqual(['collapse'])
+ 	})
+ 
+-	it('removes the class attribute of a trigger a button restoration leaves empty while a collapse on the same trigger stays live', async () => {
++	it('leaves the class attribute of a trigger a button restoration empties while a collapse on the same trigger stays live, and the collapse destruction removes it', async () => {
+ 		const root = scene.mount(`
+ 			<div id="details" class="collapse show"></div>
+ 			<button type="button" id="trigger" data-bs-toggle="collapse" data-bs-target="#details">Details</button>`)
+@@ -633,9 +691,12 @@ describe('HostSnapshot', () => {
+ 		expect(trigger.getAttribute('class')).toBe('')
+ 		button.destroy()
+ 		expect(Collapse.find(panel)).toBe(collapse)
+-		expect(trigger.hasAttribute('class')).toBe(false)
++		expect(trigger.getAttribute('class')).toBe('')
+ 		expect(trigger.getAttribute('aria-expanded')).toBe('true')
+ 		expect(trigger.hasAttribute('aria-pressed')).toBe(false)
++		collapse.destroy()
++		expect(trigger.hasAttribute('class')).toBe(false)
++		expect(trigger.hasAttribute('aria-expanded')).toBe(false)
+ 	})
+ 
+ 	it('keeps its share of the class record for a token it saves during its own restoration until it restores that token', () => {
+diff --git a/tests/src/browser/Isolation.test.ts b/tests/src/browser/Isolation.test.ts
+index cffe7af..6f24f4b 100644
+--- a/tests/src/browser/Isolation.test.ts
++++ b/tests/src/browser/Isolation.test.ts
+@@ -1,7 +1,7 @@
+ import { Isolation } from '@src/browser'
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+-import { requireValue } from '@orkestrel/test'
++import { createRecorder, requireValue } from '@orkestrel/test'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import { scene } from '../../setupBrowser.js'
+ 
+@@ -179,6 +179,49 @@ describe('Isolation', () => {
+ 		expect(root.querySelectorAll('[inert]')).toHaveLength(0)
+ 	})
+ 
++	it('restores every element it released last after every hand-off, so an inert reaction to a hand-off cannot undo a restored value', () => {
++		const name = 'vn-isolation-inert-watcher'
++		const reactions = new WeakMap<HTMLElement, (value: string | null) => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['inert']
++				attributeChangedCallback(_name: string, _previous: string | null, value: string | null) {
++					reactions.get(this)?.(value)
++				}
++			},
++		)
++		const root = scene.mount(
++			`<div id="outer" tabindex="-1"></div><${name}><div id="inner" tabindex="-1" inert></div></${name}>`,
++		)
++		const outer = requireValue(root.querySelector<HTMLElement>('#outer'), 'No outer host')
++		const inner = requireValue(root.querySelector<HTMLElement>('#inner'), 'No inner host')
++		const watcher = requireValue(root.querySelector<HTMLElement>(name), 'No watcher')
++		const first = new Isolation(outer)
++		onTestFinished(() => first.destroy())
++		const second = new Isolation(inner)
++		onTestFinished(() => second.destroy())
++		expect(watcher.inert).toBe(false)
++		expect(inner.inert).toBe(false)
++		// The hand-off gives the watcher back to the first isolation's inert claim, and the watcher's
++		// reaction to that write clears the inner element's attribute, which the second isolation holds
++		// last. Its restoration comes after every hand-off, so the value its first claim found stands.
++		const seen = createRecorder<readonly [string | null]>()
++		reactions.set(watcher, (value) => {
++			seen.handler(value)
++			if (value !== null) inner.removeAttribute('inert')
++		})
++		second.destroy()
++		expect(seen.calls).toEqual([['']])
++		expect(watcher.inert).toBe(true)
++		expect(inner.getAttribute('inert')).toBe('')
++		reactions.delete(watcher)
++		first.destroy()
++		expect(watcher.hasAttribute('inert')).toBe(false)
++		expect(outer.hasAttribute('inert')).toBe(false)
++		expect(inner.getAttribute('inert')).toBe('')
++	})
++
+ 	it('keeps an inert ancestor clear while any isolation inside it lives, and restores it at the last release', () => {
+ 		const root = scene.mount(`
+ 			<section id="section" inert>
+diff --git a/tests/src/browser/Modal.test.ts b/tests/src/browser/Modal.test.ts
+index 188d75b..7fb6de2 100644
+--- a/tests/src/browser/Modal.test.ts
++++ b/tests/src/browser/Modal.test.ts
+@@ -652,6 +652,33 @@ describe('Modal', () => {
+ 		expect(body.hasAttribute('class')).toBe(false)
+ 	})
+ 
++	it('leaves the empty class attribute a modal that is not the last holder finds after other code removed the open token, and the last hide removes it', async () => {
++		const root = scene.mount(`
++			<div id="first" class="modal"><div class="modal-dialog"></div></div>
++			<div id="second" class="modal"><div class="modal-dialog"></div></div>`)
++		const first = requireValue(root.querySelector<HTMLElement>('#first'), 'No first modal')
++		const second = requireValue(root.querySelector<HTMLElement>('#second'), 'No second modal')
++		const body = document.body
++		const classed = body.getAttribute('class')
++		onTestFinished(() => {
++			if (classed === null) body.removeAttribute('class')
++			else body.setAttribute('class', classed)
++		})
++		body.removeAttribute('class')
++		const one = new Modal(first, { focus: false, backdrop: false })
++		const two = new Modal(second, { focus: false, backdrop: false })
++		onTestFinished(() => one.destroy())
++		onTestFinished(() => two.destroy())
++		expect(await one.show()).toBe(true)
++		expect(await two.show()).toBe(true)
++		body.classList.remove('modal-open')
++		expect(body.getAttribute('class')).toBe('')
++		expect(await one.hide()).toBe(true)
++		expect(body.getAttribute('class')).toBe('')
++		expect(await two.hide()).toBe(true)
++		expect(body.hasAttribute('class')).toBe(false)
++	})
++
+ 	it('adds the open token again when a later modal shows on a body that lost it, and the last hide writes back the body class the first show found', async () => {
+ 		const root = scene.mount(`
+ 			<div id="first" class="modal"><div class="modal-dialog"></div></div>
+diff --git a/tests/src/browser/Tab.test.ts b/tests/src/browser/Tab.test.ts
+index 9429fa5..d68216f 100644
+--- a/tests/src/browser/Tab.test.ts
++++ b/tests/src/browser/Tab.test.ts
+@@ -1586,7 +1586,7 @@ describe('Tab', () => {
+ 			const [earlier, later] = ordered ? [second, first] : [first, second]
+ 			earlier.destroy()
+ 			expect(a?.getAttribute('class')).toBe('active')
+-			expect(b?.hasAttribute('class')).toBe(false)
++			expect(b?.getAttribute('class')).toBe('')
+ 			later.destroy()
+ 			expect(root.innerHTML).toBe(markup)
+ 			scene.clear()

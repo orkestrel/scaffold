@@ -1,21 +1,42 @@
 # J-HOLDERS landing: the merge of main into unit/holders (2026-09-24)
-ef320ca Route Modal's open token and Isolation's write-back through the shared snapshot record, and name the record's shapes
-4cd56a8 Merge branch 'main' into unit/integration
+ada50f4 Expect the emptied class attribute a sibling tab's destruction leaves to the last holder
+88f15c7 Remove an emptied class or style attribute only at the presence record's last holder, and pin Isolation's restore-last order
 From https://github.com/mikesaintsg/veneer
  * branch            main       -> FETCH_HEAD
 fetch exit=0
-Already up to date.
+Updating 8bc940d..14fe489
+Fast-forward
+ ROADMAP.md                               |  2 +-
+ guides/veneer.md                         | 12 +++----
+ src/styles/_mixins.scss                  |  6 ----
+ src/styles/elements/_dl.scss             |  3 +-
+ src/styles/elements/_fieldset.scss       |  3 +-
+ src/styles/elements/_figure.scss         |  2 +-
+ src/styles/elements/_hr.scss             |  8 ++---
+ src/styles/elements/_pre.scss            |  3 +-
+ tests/setupStyles.ts                     | 13 +++----
+ tests/src/styles/elements/dl.test.ts     | 27 ++++++++++++++-
+ tests/src/styles/elements/figure.test.ts | 59 +++++++++++++++++++++++++++++---
+ tests/src/styles/elements/hr.test.ts     | 26 ++++++++++++--
+ tests/src/styles/elements/pre.test.ts    | 25 +++++++++++++-
+ 13 files changed, 150 insertions(+), 39 deletions(-)
 main ff to origin exit=0
-8bc940d Bound each fade engine's completed event to one frame at a zero and a large motion factor
+14fe489 Record the E-ID-FLOW-2 landing on the E-IDENTITY plan row
 Auto-merging guides/veneer.md
 Merge made by the 'ort' strategy.
- guides/veneer.md                   |  25 ++++---
- tests/src/browser/Alert.test.ts    | 112 +++++++++++++++++++++++-----
- tests/src/browser/Carousel.test.ts |  63 ++++++++++++++++
- tests/src/browser/Popover.test.ts  | 145 ++++++++++++++++++++++++++++++++++++-
- tests/src/browser/Tab.test.ts      | 114 ++++++++++++++++++++++++++---
- tests/src/browser/Toast.test.ts    | 143 +++++++++++++++++++++++++++---------
- tests/src/browser/Tooltip.test.ts  | 104 ++++++++++++++++++++++----
- 7 files changed, 620 insertions(+), 86 deletions(-)
+ ROADMAP.md                               |  2 +-
+ guides/veneer.md                         | 12 +++----
+ src/styles/_mixins.scss                  |  6 ----
+ src/styles/elements/_dl.scss             |  3 +-
+ src/styles/elements/_fieldset.scss       |  3 +-
+ src/styles/elements/_figure.scss         |  2 +-
+ src/styles/elements/_hr.scss             |  8 ++---
+ src/styles/elements/_pre.scss            |  3 +-
+ tests/setupStyles.ts                     | 13 +++----
+ tests/src/styles/elements/dl.test.ts     | 27 ++++++++++++++-
+ tests/src/styles/elements/figure.test.ts | 59 +++++++++++++++++++++++++++++---
+ tests/src/styles/elements/hr.test.ts     | 26 ++++++++++++--
+ tests/src/styles/elements/pre.test.ts    | 25 +++++++++++++-
+ 13 files changed, 150 insertions(+), 39 deletions(-)
 merge main into unit/holders exit=0
 conflicts: none

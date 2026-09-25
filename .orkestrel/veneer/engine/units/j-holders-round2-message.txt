@@ -1,0 +1,8 @@
+Remove an emptied class or style attribute only at the presence record's last holder, and pin Isolation's restore-last order
+
+A restoration that was not the last holder removed an emptied class or style attribute that another snapshot still held. So a modal's hide stripped the body's empty class attribute while another modal held the open token. HostSnapshot now removes one only when the restoration leaves the presence record as its last holder, on the rejoin path as well. That reverses E25's "Presence stays as tested" bullet by its amendment of 2026-09-25.
+
+An Isolation case pins that destruction restores after every hand-off, so a reaction to a hand-off cannot undo a restored value. The TSDoc, the guide's § Surface rows for the record and presence shapes, the "each engine keeps a snapshot" sentence, and the Modal record paragraph take the subjective lane's prescribed wording.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K
