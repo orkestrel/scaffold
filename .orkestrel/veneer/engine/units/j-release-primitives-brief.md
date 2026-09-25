@@ -65,12 +65,12 @@ A helper whose job an installed export does is a defect.
 
 **Host.**
 - Windows 11 with Git Bash. Chromium 153 is installed for Playwright.
-- The worktree is `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-primitives`, on `unit/release-primitives`, cut from Veneer `main` at `BASE_TIP`, with `node_modules` installed.
+- The worktree is `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-primitives`, on `unit/release-primitives`, cut from Veneer `main` at `92ca407`, with `node_modules` installed.
 - A foreground call is capped at 10 minutes.
 - Write each program to a file under `tmp/j-release-primitives/`, and run the file. Use no heredoc, no `python -c`, and no `node -e`.
 - Run one file at a time: `npx vitest run --config vite.config.ts --no-cache --project src:browser <file>`.
 
-**Measurements.** Before any source edit, write each witness as a case, and record its red reading at `BASE_TIP`:
+**Measurements.** Before any source edit, write each witness as a case, and record its red reading at `92ca407`:
 - **I3s:** a reaction to an `inert` write that `Isolation.destroy` makes calls that isolation's `destroy()` again. The nested call returns only after every claim is written back.
 - **I4s:** an `<aside inert>` beside the host, under a `MutationObserver`. Constructing and destroying an isolation records no `inert` mutation on it.
 - **ScrollLock S3:** a style reaction during the last holder's restoration calls that holder's `destroy()` again. The nested call returns only after `overflow`, `padding-right`, and `margin-right` are written back.
@@ -81,13 +81,13 @@ A helper whose job an installed export does is a defect.
 
   Follow `Button.test.ts`'s cases for these.
 
-A witness that reads green at `BASE_TIP` is not a witness. Report it, and do not count it as proof.
+A witness that reads green at `92ca407` is not a witness. Report it, and do not count it as proof.
 
 **Control identifiers.** The sweep labels (I3s, I4s, S3) stay in the records. Name each test for what it proves.
 
 **Standing conditions.**
-- Every gate reads green on `main` at `BASE_TIP` on this host.
-- J-RELEASE-RECORD is under audit in its own worktree. It owns `Carousel.ts`, `Collapse.ts`, `Tab.ts`, `Toast.ts`, `Dropdown.ts`, and their tests. This unit touches none of them.
+- Every gate reads green on `main` at `92ca407` on this host.
+- J-RELEASE-RECORD round 2 is writing in its own worktree. It owns `Carousel.ts`, `Collapse.ts`, `Tab.ts`, `Toast.ts`, `Dropdown.ts`, and their tests. This unit touches none of them.
 
 ## Unknowns
 
@@ -134,7 +134,7 @@ Perform the assignment directly and spawn nothing.
 ## Output
 
 Your final message holds:
-- the witnesses' red readings at `BASE_TIP`, each naming its assertion;
+- the witnesses' red readings at `92ca407`, each naming its assertion;
 - per class:
   - what it holds, and whether each release can run consumer code;
   - each `save` removed or kept, with the reason;
@@ -164,7 +164,7 @@ You decide the private names, the case titles, and where each case sits.
 1. `npm run check`, `npm run lint:check`, and `npm run format:check` exit 0.
 2. `npm run test:guides` and `npm run test:setup:browser` exit 0.
 3. The four primitives' test files pass in scoped runs, and so do `Modal.test.ts`, `Offcanvas.test.ts`, `Carousel.test.ts`, and `Delegate.test.ts`.
-4. Every witness reads red at `BASE_TIP` by an assertion, and green after.
+4. Every witness reads red at `92ca407` by an assertion, and green after.
 5. No class keeps a `destroy` latch that returns before its pending releases finish.
 6. Every mutation reddens its proof by an assertion.
 
