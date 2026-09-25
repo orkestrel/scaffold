@@ -1,0 +1,51 @@
+--- tmp/units/tokens.test.ts.bak-8	2026-09-25 06:42:33.102481663 +0000
++++ tests/src/styles/tokens.test.ts	2026-09-25 06:43:13.128898235 +0000
+@@ -685,11 +685,11 @@
+ // and a mode scope for the validation rules, whose aliases resolve there. The twin is read first,
+ // so a consumer that stops reading the token fails on the overridden reading while the twin's rest
+ // reading has already held. The placement cases read where an override reaches: a `--bs-form-*`
+-// alias follows its canonical token from a mode scope and not from a plain ancestor, and a rule
+-// reading that alias follows it from an ancestor, except inside a mode scope below that ancestor
+-// that declares it again. The scope case reads the published `--bs-*` aliases themselves, under a mode scope and
+-// under the document element. Every hover and press is read with motion reduced, so no reading
+-// lands partway through a transition.
++// alias follows its canonical token from the root or a mode scope and not from a plain ancestor
++// below the root, and a rule reading that alias follows it from an ancestor, except inside a mode
++// scope below that ancestor that declares it again. The scope case reads the published `--bs-*`
++// aliases themselves, under a mode scope and under the document element. Every hover and press is
++// read with motion reduced, so no reading lands partway through a transition.
+ describe('ancestor token overrides', () => {
+ 	afterEach(async () => {
+ 		await releasePointer()
+@@ -953,10 +953,10 @@
+ 		expect(readStyle(nestedFeedback, 'color')).toBe(feedback)
+ 	})
+ 	// A mode scope re-declares the aliases whose value follows the mode, and a second `:root` block
+-	// declares the fixed ones once, so a mode-scope override reaches the mode aliases and not the
+-	// root-only ones. A document-element override reaches both whether or not the document element
+-	// carries a mode, because the override wins over that element's own mode scope, and a mode scope
+-	// below it that re-declares the token keeps its own value.
++	// declares the fixed ones once, so an override on a mode scope below the root reaches the mode
++	// aliases and not the root-only ones. A document-element override reaches both whether or not the
++	// document element carries a mode, because the override wins over that element's own mode scope,
++	// and a mode scope below it that re-declares the token keeps its own value.
+ 	it('moves a mode-scope alias and holds the root-only aliases under a mode scope that overrides their tokens, moves all of them from the document element outside a mode scope that re-declares the token, and moves a mode alias and a root-only alias from a document element that carries a mode', () => {
+ 		const override = [
+ 			`${TOKEN_NAMES.color.primary.base}: rgb(4, 5, 6)`,
+--- tmp/units/veneer.md.bak-8	2026-09-25 06:42:33.104767488 +0000
++++ guides/veneer.md	2026-09-25 06:43:17.900898126 +0000
+@@ -3802,10 +3802,11 @@
+ `var()` references already substituted, so each mode scope declares again every token whose value
+ the mode changes, every tier mixed from one, and every `--bs-*` alias reading one. A light island
+ nested in a dark one therefore returns its subtree to the light closure. A name no mode changes
+-keeps one value in every scope. The `:root` selector declares most such names alone, and an island
+-below the root inherits them from there. Each mode scope declares the `--vn-state-hover`,
++carries the same declaration in every scope. The `:root` selector declares most such names alone,
++and an island inherits them from its parent. Each mode scope declares the `--vn-state-hover`,
+ `--vn-state-active`, `--vn-state-stripe`, `--vn-focus-highlight`, `--vn-focus-reset`, and
+-`--bs-heading-color` variables again, with the value the `:root` selector gives them.
++`--bs-heading-color` variables again, with the declaration the `:root` selector writes, so each
++resolves against the tokens its own element holds.
+ 
+ The mode scopes retune tokens and paint nothing. An island paints its own surface and text through
+ the `bg-body` and `text-body` utilities, or through a component that reads the body tokens. Each

@@ -1,0 +1,12 @@
+cmd: npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/tokens.test.ts
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  06:44:47
+   Duration  12.29s (transform 0ms, setup 1.26s, import 131ms, tests 2.28s, environment 0ms)
+
+exit=0
+3.07 3.62 7.30 1/341 31862
