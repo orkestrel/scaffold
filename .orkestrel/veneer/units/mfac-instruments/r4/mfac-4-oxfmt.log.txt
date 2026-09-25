@@ -1,0 +1,7 @@
+./node_modules/.bin/oxfmt --config .oxfmtrc.json --check guides/veneer.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 25253ms on 1 files using 4 threads.
+exit=0
+4.55 4.63 5.20 2/296 29263

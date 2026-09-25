@@ -1,0 +1,16 @@
+ M guides/veneer.md
+ M src/styles/components/_accordion.scss
+ M src/styles/components/_form-floating.scss
+ M src/styles/components/_nav.scss
+ M src/styles/components/_navbar.scss
+ M src/styles/components/_pagination.scss
+ M src/styles/components/_progress.scss
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+ M tests/src/styles/components/accordion.test.ts
+ M tests/src/styles/components/fade.test.ts
+ M tests/src/styles/components/form-floating.test.ts
+ M tests/src/styles/components/nav.test.ts
+ M tests/src/styles/components/navbar.test.ts
+ M tests/src/styles/components/pagination.test.ts
+ M tests/src/styles/components/progress.test.ts
