@@ -1,0 +1,57 @@
+mutation: spacing on src/styles/elements/_button.scss
+diff --git a/src/styles/elements/_button.scss b/src/styles/elements/_button.scss
+index 1b3cac1..1f0f20e 100644
+--- a/src/styles/elements/_button.scss
++++ b/src/styles/elements/_button.scss
+@@ -1,24 +1,21 @@
+ @use '../mixins' as *;
+ 
+ @layer elements {
+-	// Every button keeps the release's reboot at the release's values, whatever class it carries,
+-	// so a component's button form starts where the release starts it and paints as its anchor form
+-	// does.
++	// Every button keeps the release's reboot at the release's values, whatever class it carries.
+ 	button {
+ 		margin: 0;
+-		font-family: inherit;
+-		font-size: inherit;
+-		line-height: inherit;
+-		border-radius: 0;
+ 		text-transform: none;
+ 		-webkit-appearance: button;
+ 	}
+ 
+-	// The calibrated surface and its states reach a button no class claims. The attribute test keeps
+-	// the release's carousel indicators out as well: the release gives a resting indicator no class,
+-	// and the attribute sits on the tag itself, so the rule still treats the tag by what it carries
+-	// rather than by where the markup puts it.
+-	button:not([class], [data-bs-target]) {
++	// Every button wears the calibrated surface and its states, whatever class it carries. The
++	// surface's type and corner stand in for the release's inherited type and square corners, so the
++	// reboot rule before it writes neither. The `button-reboot` mixin writes the release's values
++	// back, for every property the surface writes, on each class the release builds on a button, in
++	// the `components` layer. That layer outranks this one whatever the selector, so the surface
++	// declares nothing important, and a consumer's class in a later layer, or in none, wins over the
++	// surface without a specificity contest.
++	button {
+ 		padding: var(--vn-space-3) var(--vn-space-6);
+ 		font-family: var(--vn-font-sans);
+ 		font-size: var(--vn-size-2);
+@@ -29,7 +26,7 @@
+ 		border: 0;
+ 		border-radius: var(--vn-radius-base);
+ 		box-shadow: var(--vn-button-shadow);
+-		cursor: pointer;
++		letter-spacing: 0.05em;
+ 		@include transition(
+ 			(
+ 				color var(--vn-motion-feedback) var(--vn-ease-standard),
+build exit=0
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:195:2 > declaration mixins > writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:197:2 > button > resolves every .btn form on a button as the same form resolves on an anchor, apart from the button appearance
+ Test Files  2 failed (2)
+      Tests  2 failed | 57 passed (59)
+styles exit=1
+restore: byte-identical 097448cad4859635bbb2ebfd1beb7ba5e7d3aff5c4947c0a202df0b13833508e
+rebuild exit=0

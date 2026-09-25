@@ -1,0 +1,608 @@
+
+ RUN  v4.1.11 /home/user/veneer-ebc
+
+1:25:23 AM [vite] (client) [optimizer] bundling dependencies...
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:33 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:34 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+13 │ @import 'bootstrap/scss/functions';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 13:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+14 │ @import 'bootstrap/scss/variables';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 14:9  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:55  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:30  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 177:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 191:13  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 217:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+     ╷
+1753 │ @import "variables-dark"; // TODO: can be removed safely in v6, only here to avoid breaking changes in v5.3
+     │         ^^^^^^^^^^^^^^^^
+     ╵
+    node_modules/bootstrap/scss/_variables.scss 1753:9  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 207:11  tint-color()
+    node_modules/bootstrap/scss/_variables.scss 79:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 212:11  shade-color()
+    node_modules/bootstrap/scss/_variables.scss 84:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_variables.scss 342:27  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:30  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:51  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 185:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 186:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 187:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:11   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:24   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+WARNING: 35 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+ ❯ |[object Object] (chromium)| tests/src/styles/mixins.test.ts (47 tests | 1 failed) 3501ms
+     × writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important 65ms
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+1:25:40 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts (12 tests | 3 failed) 2747ms
+     × shows the pointer over an enabled button and the default cursor over a disabled one 81ms
+     × paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state 1177ms
+     × lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value 62ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:195:2 > declaration mixins > writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important
+AssertionError: expected [] to deeply equal [ …(9) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   ":where(.carousel-indicators [data-bs-target])",[39m
+[32m-   ":where(button.accordion-button)",[39m
+[32m-   ":where(button.btn-close)",[39m
+[32m-   ":where(button.carousel-control-prev, button.carousel-control-next)",[39m
+[32m-   ":where(button.dropdown-item)",[39m
+[32m-   ":where(button.list-group-item)",[39m
+[32m-   ":where(button.nav-link)",[39m
+[32m-   ":where(button.navbar-toggler)",[39m
+[32m-   ":where(button.page-link)",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/src/styles/mixins.test.ts:213:80
+    211|    rule instanceof CSSStyleRule && rule.selectorText.startsWith(':wher…
+    212|   )
+    213|   expect(resets.map((rule) => normalizeSelectorText(rule.selectorText)…
+       |                                                                                ^
+    214|    [...BUTTON_REBOOT_SELECTORS].sort(),
+    215|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:76:2 > button > shows the pointer over an enabled button and the default cursor over a disabled one
+AssertionError: expected 'pointer' to be 'default' // Object.is equality
+
+Expected: [32m"default"[39m
+Received: [31m"pointer"[39m
+
+ ❯ tests/src/styles/elements/button.test.ts:82:76
+     80|   const [enabled, disabled] = [...host.querySelectorAll('button')]
+     81|   expect(readStyle(requireValue(enabled, 'No enabled button'), 'cursor…
+     82|   expect(readStyle(requireValue(disabled, 'No disabled button'), 'curs…
+       |                                                                            ^
+     83|  })
+     84|  it('paints an empty-class, a utility-class, a consumer-class, and a t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:84:2 > button > paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state
+AssertionError: expected { name: 'Emptied control', …(1) } to deeply equal { name: 'Emptied control', …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "name": "Emptied control",[22m
+[2m    "reading": {[22m
+[2m      "disabled": {[22m
+[32m-       "background-color": "rgba(0, 0, 0, 0)",[39m
+[32m-       "border-top-left-radius": "6px",[39m
+[32m-       "border-top-style": "none",[39m
+[32m-       "border-top-width": "0px",[39m
+[32m-       "box-shadow": "rgb(102, 51, 153) 0px 2px 6px 0px",[39m
+[32m-       "color": "oklch(0.208 0.042 265.755)",[39m
+[32m-       "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",[39m
+[32m-       "font-size": "14px",[39m
+[32m-       "font-weight": "700",[39m
+[32m-       "line-height": "21px",[39m
+[32m-       "opacity": "0.65",[39m
+[31m+       "background-color": "rgba(239, 239, 239, 0.3)",[39m
+[31m+       "border-top-left-radius": "0px",[39m
+[31m+       "border-top-style": "outset",[39m
+[31m+       "border-top-width": "2px",[39m
+[31m+       "box-shadow": "none",[39m
+[31m+       "color": "rgba(16, 16, 16, 0.3)",[39m
+[31m+       "font-family": "serif",[39m
+[31m+       "font-size": "19px",[39m
+[31m+       "font-weight": "400",[39m
+[31m+       "line-height": "29px",[39m
+[31m+       "opacity": "1",[39m
+[2m        "outline-style": "none",[22m
+[32m-       "padding-bottom": "6px",[39m
+[32m-       "padding-left": "12px",[39m
+[32m-       "padding-right": "12px",[39m
+[32m-       "padding-top": "6px",[39m
+[32m-       "pointer-events": "none",[39m
+[31m+       "padding-bottom": "1px",[39m
+[31m+       "padding-left": "6px",[39m
+[31m+       "padding-right": "6px",[39m
+[31m+       "padding-top": "1px",[39m
+[31m+       "pointer-events": "auto",[39m
+[2m        "transition-duration": "0s",[22m
+[32m-       "transition-property": "none",[39m
+[31m+       "transition-property": "all",[39m
+[2m      },[22m
+[2m      "focused": {[22m
+[32m-       "background-color": "rgba(0, 0, 0, 0)",[39m
+[32m-       "border-top-left-radius": "6px",[39m
+[32m-       "border-top-style": "none",[39m
+[32m-       "border-top-width": "0px",[39m
+[32m-       "box-shadow": "oklab(0.48 -0.0266547 -0.253603 / 0.45) 0px 0px 0px 3px",[39m
+[32m-       "color": "oklch(0.208 0.042 265.755)",[39m
+[32m-       "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",[39m
+[32m-       "font-size": "14px",[39m
+[32m-       "font-weight": "700",[39m
+[32m-       "line-height": "21px",[39m
+[31m+       "background-color": "rgb(239, 239, 239)",[39m
+[31m+       "border-top-left-radius": "0px",[39m
+[31m+       "border-top-style": "outset",[39m
+[31m+       "border-top-width": "2px",[39m
+[31m+       "box-shadow": "none",[39m
+[31m+       "color": "rgb(0, 0, 0)",[39m
+[31m+       "font-family": "serif",[39m
+[31m+       "font-size": "19px",[39m
+[31m+       "font-weight": "400",[39m
+[31m+       "line-height": "29px",[39m
+[2m        "opacity": "1",[22m
+[32m-       "outline-style": "none",[39m
+[32m-       "padding-bottom": "6px",[39m
+[32m-       "padding-left": "12px",[39m
+[32m-       "padding-right": "12px",[39m
+[32m-       "padding-top": "6px",[39m
+[31m+       "outline-style": "auto",[39m
+[31m+       "padding-bottom": "1px",[39m
+[31m+       "padding-left": "6px",[39m
+[31m+       "padding-right": "6px",[39m
+[31m+       "padding-top": "1px",[39m
+[2m        "pointer-events": "auto",[22m
+[2m        "transition-duration": "0s",[22m
+[32m-       "transition-property": "none",[39m
+[31m+       "transition-property": "all",[39m
+[2m      },[22m
+[2m      "hovered": {[22m
+[32m-       "background-color": "color(srgb 0.00742457 0.0232852 0.0925134 / 0.12)",[39m
+[32m-       "border-top-left-radius": "6px",[39m
+[32m-       "border-top-style": "none",[39m
+[32m-       "border-top-width": "0px",[39m
+[32m-       "box-shadow": "rgb(102, 51, 153) 0px 2px 6px 0px",[39m
+[32m-       "color": "oklch(0.208 0.042 265.755)",[39m
+[32m-       "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",[39m
+[32m-       "font-size": "14px",[39m
+[32m-       "font-weight": "700",[39m
+[32m-       "line-height": "21px",[39m
+[31m+       "background-color": "rgb(239, 239, 239)",[39m
+[31m+       "border-top-left-radius": "0px",[39m
+[31m+       "border-top-style": "outset",[39m
+[31m+       "border-top-width": "2px",[39m
+[31m+       "box-shadow": "none",[39m
+[31m+       "color": "rgb(0, 0, 0)",[39m
+[31m+       "font-family": "serif",[39m
+[31m+       "font-size": "19px",[39m
+[31m+       "font-weight": "400",[39m
+[31m+       "line-height": "29px",[39m
+[2m        "opacity": "1",[22m
+[2m        "outline-style": "none",[22m
+[32m-       "padding-bottom": "6px",[39m
+[32m-       "padding-left": "12px",[39m
+[32m-       "padding-right": "12px",[39m
+[32m-       "padding-top": "6px",[39m
+[31m+       "padding-bottom": "1px",[39m
+[31m+       "padding-left": "6px",[39m
+[31m+       "padding-right": "6px",[39m
+[31m+       "padding-top": "1px",[39m
+[2m        "pointer-events": "auto",[22m
+[2m        "transition-duration": "0s",[22m
+[32m-       "transition-property": "none",[39m
+[31m+       "transition-property": "all",[39m
+[2m      },[22m
+[2m      "pressed": {[22m
+[32m-       "background-color": "color(srgb 0.00742457 0.0232852 0.0925134 / 0.22)",[39m
+[32m-       "border-top-left-radius": "6px",[39m
+[32m-       "border-top-style": "none",[39m
+[32m-       "border-top-width": "0px",[39m
+[32m-       "box-shadow": "rgb(102, 51, 153) 0px 2px 6px 0px",[39m
+[32m-       "color": "oklch(0.208 0.042 265.755)",[39m
+[32m-       "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",[39m
+[32m-       "font-size": "14px",[39m
+[32m-       "font-weight": "700",[39m
+[32m-       "line-height": "21px",[39m
+[31m+       "background-color": "rgb(239, 239, 239)",[39m
+[31m+       "border-top-left-radius": "0px",[39m
+[31m+       "border-top-style": "inset",[39m
+[31m+       "border-top-width": "2px",[39m
+[31m+       "box-shadow": "none",[39m
+[31m+       "color": "rgb(0, 0, 0)",[39m
+[31m+       "font-family": "serif",[39m
+[31m+       "font-size": "19px",[39m
+[31m+       "font-weight": "400",[39m
+[31m+       "line-height": "29px",[39m
+[2m        "opacity": "1",[22m
+[2m        "outline-style": "none",[22m
+[32m-       "padding-bottom": "6px",[39m
+[32m-       "padding-left": "12px",[39m
+[32m-       "padding-right": "12px",[39m
+[32m-       "padding-top": "6px",[39m
+[31m+       "padding-bottom": "1px",[39m
+[31m+       "padding-left": "6px",[39m
+[31m+       "padding-right": "6px",[39m
+[31m+       "padding-top": "1px",[39m
+[2m        "pointer-events": "auto",[22m
+[2m        "transition-duration": "0s",[22m
+[32m-       "transition-property": "none",[39m
+[31m+       "transition-property": "all",[39m
+[2m      },[22m
+[2m      "rest": {[22m
+[32m-       "background-color": "rgba(0, 0, 0, 0)",[39m
+[32m-       "border-top-left-radius": "6px",[39m
+[32m-       "border-top-style": "none",[39m
+[32m-       "border-top-width": "0px",[39m
+[32m-       "box-shadow": "rgb(102, 51, 153) 0px 2px 6px 0px",[39m
+[32m-       "color": "oklch(0.208 0.042 265.755)",[39m
+[32m-       "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",[39m
+[32m-       "font-size": "14px",[39m
+[32m-       "font-weight": "700",[39m
+[32m-       "line-height": "21px",[39m
+[31m+       "background-color": "rgb(239, 239, 239)",[39m
+[31m+       "border-top-left-radius": "0px",[39m
+[31m+       "border-top-style": "outset",[39m
+[31m+       "border-top-width": "2px",[39m
+[31m+       "box-shadow": "none",[39m
+[31m+       "color": "rgb(0, 0, 0)",[39m
+[31m+       "font-family": "serif",[39m
+[31m+       "font-size": "19px",[39m
+[31m+       "font-weight": "400",[39m
+[31m+       "line-height": "29px",[39m
+[2m        "opacity": "1",[22m
+[2m        "outline-style": "none",[22m
+[32m-       "padding-bottom": "6px",[39m
+[32m-       "padding-left": "12px",[39m
+[32m-       "padding-right": "12px",[39m
+[32m-       "padding-top": "6px",[39m
+[31m+       "padding-bottom": "1px",[39m
+[31m+       "padding-left": "6px",[39m
+[31m+       "padding-right": "6px",[39m
+[31m+       "padding-top": "1px",[39m
+[2m        "pointer-events": "auto",[22m
+[32m-       "transition-duration": "0.15s, 0.15s, 0.15s, 0.15s, 0.15s",[39m
+[32m-       "transition-property": "color, background-color, border-color, box-shadow, opacity",[39m
+[31m+       "transition-duration": "0s",[39m
+[31m+       "transition-property": "all",[39m
+[2m      },[22m
+[2m    },[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:159:49
+    157|    for (const [longhand, value] of Object.entries(written))
+    158|     expect({ longhand, value }).not.toEqual({ longhand, value: rest[lo…
+    159|    expect({ name, reading: readings.get(name) }).toEqual({
+       |                                                 ^
+    160|     name,
+    161|     reading: Object.fromEntries(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:167:2 > button > lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "css": ".order-action { padding: 0; border-radius: 2px }",[22m
+[2m    "reading": {[22m
+[32m-     "background-color": "rgba(0, 0, 0, 0)",[39m
+[31m+     "background-color": "rgb(239, 239, 239)",[39m
+[2m      "border-top-left-radius": "2px",[22m
+[32m-     "border-top-style": "none",[39m
+[32m-     "border-top-width": "0px",[39m
+[32m-     "box-shadow": "rgb(102, 51, 153) 0px 2px 6px 0px",[39m
+[32m-     "color": "oklch(0.208 0.042 265.755)",[39m
+[32m-     "font-family": "system-ui, -apple-system, \"Segoe UI\", roboto, \"Helvetica Neue\", arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",[39m
+[32m-     "font-size": "14px",[39m
+[32m-     "font-weight": "700",[39m
+[32m-     "line-height": "21px",[39m
+[31m+     "border-top-style": "outset",[39m
+[31m+     "border-top-width": "2px",[39m
+[31m+     "box-shadow": "none",[39m
+[31m+     "color": "rgb(0, 0, 0)",[39m
+[31m+     "font-family": "serif",[39m
+[31m+     "font-size": "19px",[39m
+[31m+     "font-weight": "400",[39m
+[31m+     "line-height": "29px",[39m
+[2m      "opacity": "1",[22m
+[2m      "outline-style": "none",[22m
+[2m      "padding-bottom": "0px",[22m
+[2m      "padding-left": "0px",[22m
+[2m      "padding-right": "0px",[22m
+[2m      "padding-top": "0px",[22m
+[2m      "pointer-events": "auto",[22m
+[32m-     "transition-duration": "0.15s, 0.15s, 0.15s, 0.15s, 0.15s",[39m
+[32m-     "transition-property": "color, background-color, border-color, box-shadow, opacity",[39m
+[31m+     "transition-duration": "0s",[39m
+[31m+     "transition-property": "all",[39m
+[2m    },[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:180:6
+    178|      BUTTON_SURFACE_LONGHANDS.map((longhand) => [longhand, readStyle(h…
+    179|     ),
+    180|    }).toEqual({
+       |      ^
+    181|     css,
+    182|     reading: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 55 passed (59)
+   Start at  01:25:21
+   Duration  22.13s (transform 0ms, setup 2.39s, import 1.88s, tests 6.25s, environment 0ms)
+
+exit=1

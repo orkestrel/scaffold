@@ -1,0 +1,24 @@
+mutation: nav on src/styles/components/_nav.scss
+diff --git a/src/styles/components/_nav.scss b/src/styles/components/_nav.scss
+index edd8b00..037127f 100644
+--- a/src/styles/components/_nav.scss
++++ b/src/styles/components/_nav.scss
+@@ -16,6 +16,9 @@
+ 		flex-wrap: wrap;
+ 	}
+ 
++	// Writes the button reboot on the button form, so the rules that follow paint the nav link over
++	// the release's button rather than over the `elements` surface.
++
+ 	.nav-link {
+ 		display: block;
+ 		padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+build exit=0
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:195:2 > declaration mixins > writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:223:2 > button > writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow
+ Test Files  2 failed (2)
+      Tests  2 failed | 57 passed (59)
+styles exit=1
+restore: byte-identical f5b495417ef9ab7e38aec042d629fc1dd8a46ce083b788ee7ca6cb69e3564fbe
+rebuild exit=0
