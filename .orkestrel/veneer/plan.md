@@ -135,9 +135,8 @@ sections it writes only the hunks named here.
   motion units wait on your J-MOTION-PROOFS-C. This session runs the Chromium 141 readings you ask for.
 
 **In flight (this session), 2026-09-25 10:05 UTC.** Implementation and its audit first, the user's instruction.
-- **Writing:** E-ID-MOTION-TOAST (`opus`).
+- **Writing:** E-ID-MOTION-TOAST and TOKEN-RETIRE (`opus`).
 - **Fix rounds:** E-ID-MOTION-OFFCANVAS and E-ID-MOTION-COLLAPSE round 2 (`opus`).
-- **Writing:** TOKEN-RETIRE (`opus`).
 - **Designing:** LEDGER-BOUNDARY (`planner` on Opus 5.5, `analyst` on Astra).
 
 **Next here, in order:** the landings of OFFCANVAS and COLLAPSE; LEDGER-RETUNE round 3 on the boundary ruling, then its
