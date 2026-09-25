@@ -1,0 +1,196 @@
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index c26d7e1..9bb3823 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -3026,8 +3026,8 @@ export const ICON_LINK_MARKUP =
+ 	'<svg class="bi" viewBox="0 0 16 16"><path d="M2 8h12"></path></svg>'
+ 
+ /**
+- * Holds the transition durations, the focus-ring lengths, and the least hover step for the
+- * bare-button cases.
++ * Holds the transition durations, the focus-ring lengths, and the least hover step the button
++ * surface resolves on a `button` element.
+  *
+  * @remarks
+  * The `step` field is the least contrast the dark veil's hover fill keeps against the resting fill,
+@@ -3041,7 +3041,7 @@ export const BUTTON_BARE_VALUES = Object.freeze({
+ })
+ 
+ /**
+- * Holds the theme and paint readings for the bare-button geometry and interaction cases.
++ * Holds the theme and paint readings for the button surface's geometry and interaction cases.
+  */
+ export const BUTTON_BARE_CASES = Object.freeze([
+ 	Object.freeze([
+@@ -3060,6 +3060,171 @@ export const BUTTON_BARE_CASES = Object.freeze([
+ 	] as const),
+ ] as const)
+ 
++/**
++ * Holds the inline style of the holder the button-surface proofs mount their buttons in.
++ *
++ * @remarks
++ * The holder retunes the body weight and the button shadow the surface reads, and sets a face, a
++ * weight, a size, and a line height no token resolves to. A surface declaration that reaches a
++ * button it must not reach then reads a value the release never produces there, and a button that
++ * inherits its type reads the holder rather than a token that happens to resolve to the same value.
++ */
++export const BUTTON_HOLDER_STYLE =
++	'--vn-weight-body: 700; --vn-button-shadow: 0 2px 6px rebeccapurple; font: 600 19px/29px serif'
++
++/**
++ * Lists the resolved longhands a button-surface reading compares, covering each property the
++ * surface writes at rest or in a state.
++ */
++export const BUTTON_SURFACE_LONGHANDS = Object.freeze([
++	'padding-top',
++	'padding-right',
++	'padding-bottom',
++	'padding-left',
++	'font-family',
++	'font-size',
++	'font-weight',
++	'line-height',
++	'color',
++	'background-color',
++	'border-top-width',
++	'border-top-style',
++	'border-top-left-radius',
++	'box-shadow',
++	'outline-style',
++	'opacity',
++	'pointer-events',
++	'transition-property',
++	'transition-duration',
++])
++
++/**
++ * Lists the buttons whose markup differs from a classless button's, each with its accessible name,
++ * its markup, and the longhands a utility it carries writes in place of the surface's.
++ *
++ * @remarks
++ * The `utility` field names the utility class and the longhands its rule declares, or holds
++ * `undefined` where the button carries none, so the proof reads those longhands on an element
++ * carrying the utility alone rather than writing the utility's value here.
++ */
++export const BUTTON_TAG_CASES = Object.freeze([
++	Object.freeze({
++		name: 'Emptied control',
++		markup: '<button type="button" class="">Emptied control</button>',
++		utility: undefined,
++	}),
++	Object.freeze({
++		name: 'Spaced control',
++		markup: '<button type="button" class="px-3">Spaced control</button>',
++		utility: Object.freeze({
++			name: 'px-3',
++			longhands: Object.freeze(['padding-right', 'padding-left']),
++		}),
++	}),
++	Object.freeze({
++		name: 'Hooked control',
++		markup: '<button type="button" class="order-action">Hooked control</button>',
++		utility: undefined,
++	}),
++	Object.freeze({
++		name: 'Targeted control',
++		markup: '<button type="button" data-bs-target="#harbor">Targeted control</button>',
++		utility: undefined,
++	}),
++])
++
++/**
++ * Lists the consumer rules a button's own class writes over the surface, one unlayered and one
++ * inside the `components` layer, each declaring the padding and the corner the proof reads.
++ */
++export const BUTTON_CONSUMER_RULES = Object.freeze([
++	'.order-action { padding: 0; border-radius: 2px }',
++	'@layer components { .order-action { padding: 0; border-radius: 2px } }',
++])
++
++/**
++ * Lists the `.btn` forms written once on a `button` element and once on an anchor, each with the
++ * markup that mounts the pair.
++ *
++ * @remarks
++ * Each form carries the same label on both elements, so the two boxes lay out alike and every
++ * longhand the browser resolves can be compared. The checked form follows a checked `.btn-check`
++ * input, which is the sibling the release's checked rule reads.
++ */
++export const BUTTON_FORM_CASES = Object.freeze(
++	[
++		{ form: 'filled', prefix: '', classes: 'btn btn-primary', disabled: false },
++		{ form: 'outline', prefix: '', classes: 'btn btn-outline-primary', disabled: false },
++		{ form: 'link', prefix: '', classes: 'btn btn-link', disabled: false },
++		{ form: 'large', prefix: '', classes: 'btn btn-primary btn-lg', disabled: false },
++		{ form: 'small', prefix: '', classes: 'btn btn-primary btn-sm', disabled: false },
++		{ form: 'disabled', prefix: '', classes: 'btn btn-primary', disabled: true },
++		{
++			form: 'checked',
++			prefix: '<input type="checkbox" class="btn-check" autocomplete="off" checked>',
++			classes: 'btn btn-outline-primary',
++			disabled: false,
++		},
++	].map(({ form, prefix, classes, disabled }) =>
++		Object.freeze({
++			form,
++			button: `<div>${prefix}<button type="button" class="${classes}"${disabled ? ' disabled' : ''}>Harbor form</button></div>`,
++			anchor: `<div>${prefix}<a href="#harbor" class="${classes}${disabled ? ' disabled' : ''}"${disabled ? ' aria-disabled="true"' : ''}>Harbor form</a></div>`,
++		}),
++	),
++)
++
++/**
++ * Lists the longhands a `button` element resolves apart from an anchor carrying the same `.btn`
++ * classes: the button appearance the release's reboot writes on every button.
++ */
++export const BUTTON_FORM_DIFFERENCES = Object.freeze(['appearance'])
++
++/**
++ * Lists the selectors the `elements` layer writes the button surface and its states on.
++ */
++export const BUTTON_SURFACE_SELECTORS = Object.freeze([
++	'button',
++	'button:hover',
++	'button:active',
++	'button:focus-visible',
++	'button:disabled',
++])
++
++/**
++ * Lists the longhands the `elements` layer writes on every button at the release's own reboot
++ * values, which the button reboot never writes back.
++ */
++export const BUTTON_REBOOT_LONGHANDS = Object.freeze([
++	'margin-top',
++	'margin-right',
++	'margin-bottom',
++	'margin-left',
++	'text-transform',
++	'appearance',
++])
++
++/**
++ * Lists the selectors the `components` layer writes the button reboot on, one for each class the
++ * release builds on a `button` element.
++ *
++ * @remarks
++ * The carousel indicators carry no class at rest, so their selector is the release's own
++ * component selector for them. A classless `button` element carrying the `data-bs-target`
++ * attribute outside the indicators matches none of these.
++ */
++export const BUTTON_REBOOT_SELECTORS = Object.freeze([
++	':where(button.btn-close)',
++	':where(button.navbar-toggler)',
++	':where(button.accordion-button)',
++	':where(button.dropdown-item)',
++	':where(button.nav-link)',
++	':where(button.list-group-item)',
++	':where(button.page-link)',
++	':where(button.carousel-control-prev, button.carousel-control-next)',
++	':where(.carousel-indicators [data-bs-target])',
++])
++
+ /**
+  * Holds the role and mode readings for the filled-button interaction cases.
+  *

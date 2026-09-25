@@ -1,0 +1,53 @@
+--- a/tests/src/styles/components/accordion.test.ts
++++ b/tests/src/styles/components/accordion.test.ts
+@@ -37,7 +37,8 @@
+ 	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+ 	// release: the reading is every components-layer selector naming an accordion class, so a
+ 	// missing rule and an extra rule on the same classes each report here. The dark icon rule is
+-	// the release's own, recorded under the theme key, so it is read beside the key's list.
++	// the release's own, recorded under the theme key, so it is read beside the key's list, and so is
++	// the button reboot the partial writes back on the header's button form.
+ 	it('writes the recorded accordion selectors and the dark icon rule, and no other rule on the accordion classes', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+@@ -49,7 +50,11 @@
+ 			),
+ 		)
+ 		expect([...written].sort()).toEqual(
+-			[...ACCORDION_SELECTORS, '[data-bs-theme="dark"] .accordion-button::after'].sort(),
++			[
++				...ACCORDION_SELECTORS,
++				'[data-bs-theme="dark"] .accordion-button::after',
++				':where(button.accordion-button)',
++			].sort(),
+ 		)
+ 	})
+ 
+--- a/tests/src/styles/components/carousel.test.ts
++++ b/tests/src/styles/components/carousel.test.ts
+@@ -38,7 +38,9 @@
+ describe('carousel track and slides', () => {
+ 	// The mutation this catches is a rule the partial stops writing, or one it writes beyond the
+ 	// release: the reading is every components-layer selector naming one of the key's own classes,
+-	// so a missing rule and an extra rule on the same classes each report here.
++	// so a missing rule and an extra rule on the same classes each report here. The button reboot
++	// the partial writes back on the controls' and the indicators' button forms is read beside the
++	// key's list.
+ 	it('writes the recorded carousel selectors and no other rule on their classes', () => {
+ 		const written = new Set(
+ 			collectLayer('components').flatMap((rule) =>
+@@ -50,7 +52,13 @@
+ 			),
+ 		)
+ 		expect([...written].sort()).toEqual(
+-			CAROUSEL_SELECTORS.map((selector) => normalizeComplexSelector(selector)).sort(),
++			[
++				...CAROUSEL_SELECTORS,
++				':where(button.carousel-control-prev, button.carousel-control-next)',
++				':where(.carousel-indicators [data-bs-target])',
++			]
++				.map((selector) => normalizeComplexSelector(selector))
++				.sort(),
+ 		)
+ 	})
+ 

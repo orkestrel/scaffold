@@ -1,0 +1,1123 @@
+diff --git a/app/browser/styles/_shell.scss b/app/browser/styles/_shell.scss
+index 3971250..d67d77b 100644
+--- a/app/browser/styles/_shell.scss
++++ b/app/browser/styles/_shell.scss
+@@ -17,14 +17,12 @@
+ 	}
+ 
+ 	// The mode control is the shell's own chrome, and the border is its whole affordance: the
+-	// published `elements` treatment for a bare button paints no border over a transparent fill, so
+-	// the control reads as the prose beside it until a pointer rests on it and the state mix — whose
+-	// mixer retunes with the mode — paints the only mark it ever gets. The border reads the same in
+-	// both modes and takes the shipped border token. The selector is the `data-control` attribute
+-	// the showcase sets on that one button, so no specimen is painted here whatever the shell's
+-	// markup grows into. The hook is an attribute rather than a class because the published
+-	// treatment reaches a button no class claims, and a class here would hand the control the
+-	// release's reboot alone.
++	// published button surface every `button` element wears paints no border over a transparent
++	// fill, so the control reads as the prose beside it until a pointer rests on it and the state
++	// mix — whose mixer retunes with the mode — paints the only mark it ever gets. The border reads
++	// the same in both modes and takes the shipped border token. The selector is the `data-control`
++	// attribute the showcase sets on that one button, so no specimen is painted here whatever the
++	// shell's markup grows into.
+ 	[data-control] {
+ 		border: var(--vn-border-width) var(--vn-border-style) var(--vn-border-color);
+ 	}
+diff --git a/guides/veneer.md b/guides/veneer.md
+index d3cf42c..4a6fbeb 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -3145,7 +3145,7 @@ The following files carry the axis.
+ | `tests/setup.css`                             | The `tailwind` profile the service proofs compile, and the home of the exclusion line.                                                                                                                                                                                                             |
+ | `tests/fixtures/tailwind/`                    | The `preflight` profile, the unexcluded instrument, the executed consumer profile, and the markup that profile scans.                                                                                                                                                                              |
+ | `tests/service/tailwind/`                     | The Node proofs of the Tailwind profiles, the consumer pairing, and the preflight pairing, run in the `service` project.                                                                                                                                                                           |
+-| `src/styles/elements/_button.scss`            | The release's reboot on every button, and the calibrated surface and its states on the bare button, a button with no `class` attribute and no `data-bs-target` attribute, in the elements layer.                                                                                                   |
++| `src/styles/elements/_button.scss`            | The release's reboot, and the calibrated surface and its states, on every button, in the elements layer.                                                                                                                                                                                           |
+ 
+ The barrel's `@use` rules name the `_tokens.scss` and `_theme.scss` partials and the element
+ partials under the `elements/`, `components/`, and `utilities/` directories; the `_mixins.scss` partial reaches the build through the
+@@ -3163,22 +3163,27 @@ rules the `Element.matches` method reports across those placements. A rule reach
+ its position reports as a pair. Nothing here parses a selector, and a construct such as the `:has()`
+ or `:is()` pseudo-class is answered by the engine that ships it.
+ 
+-A bare button is a `button` element that carries no `class` attribute and no `data-bs-target`
+-attribute, and the calibrated button surface and its states reach a bare button alone. Every other
+-button takes the release's reboot alone from the `elements` layer, at the release's values: no
+-margin, the parent's font family, size, and line height, square corners, no text transform, the
+-button appearance, the pointer cursor while enabled, and no outline on a focus the browser does not
+-mark as visible. So the `elements` layer paints no surface of its own on a component's button form,
+-and a disabled `button.nav-link` element reads the same opacity and type as the disabled
+-`a.nav-link` element beside it. A button carrying a class of your own, a utility class, or an empty
+-`class` attribute takes that reboot and nothing more from the `elements` layer. The
+-`data-bs-target` attribute keeps the release's carousel indicators out as well, because the release
+-gives a resting indicator no class. The attribute sits on the tag itself, so the rule still treats
+-the tag by what it carries rather than by where the markup puts it. Add the `btn` class to a classed
+-button to paint it with the Button treatment. The elements proof reads a classed button, an empty
+-`class` attribute, and a `data-bs-target` button resolving the reboot alone beside the bare
+-button's calibrated values; see
+-[the bare button proof](../tests/src/styles/elements/button.test.ts).
++Every `button` element takes the calibrated button surface and its states from the `elements`
++layer, whatever class it carries: an empty `class` attribute, a utility class, a class of your own,
++and a `data-bs-target` attribute each leave the surface in place. The layer also writes the
++release's reboot on every button: no margin, no text transform, the button appearance, the pointer
++cursor while enabled, and no outline on a focus the browser does not mark as visible. Each class
++the release builds on a `button` element writes the button reboot back on its button form. The
++`button-reboot` mixin writes, for every property the surface writes at rest or in a state, the
++release's value: the parent's font family, size, and line height, square corners, and the
++browser's own value for the rest. Each partial includes it on a `:where()` selector, which has
++zero specificity, in the `components` layer. That layer outranks the `elements` layer whatever the
++selector, so the reboot outranks every surface state, and every rule the class writes outranks the
++reboot. So a disabled `button.nav-link` element reads the same opacity and type as the disabled
++`a.nav-link` element beside it. The classes are the `btn-close`, `navbar-toggler`,
++`accordion-button`, `dropdown-item`, `nav-link`, `list-group-item`, `page-link`,
++`carousel-control-prev`, and `carousel-control-next` classes. A resting carousel indicator carries
++no class, so its reboot sits on the release's own `.carousel-indicators [data-bs-target]`
++selector, and a `data-bs-target` button outside the indicators keeps the surface. The `btn` class
++writes every property the surface writes, at rest and in each state, so it takes no reboot. The
++surface declares nothing important, so a class of your own in a later layer, or in none,
++overrides the surface property it names without a specificity contest. See
++[the button proof](../tests/src/styles/elements/button.test.ts).
+ 
+ The wrapper replaces the plugins, the output directory, the library entry, the build options
+ (keeping the root's build-log handler and dropping the browser externals and output paths), and the
+@@ -3290,10 +3295,11 @@ The order line never changes between profiles. It is the line the `src/styles/_t
+ file declares, and declaring it ahead of the Tailwind import is what makes Tailwind's own
+ narrower order merge as a no-op.
+ 
+-A button styled with utility classes carries a `class` attribute, so it is no bare button and takes
+-the release's reboot rather than the calibrated surface, as § Styles states. Add the `btn` class
+-where that button needs the Button treatment; a utility in the `utilities` layer still overrides the
+-`btn` class declaration it shares a property with.
++A button styled with utility classes keeps the button surface, as § Styles states, and each
++utility in the `utilities` layer overrides the surface property it declares. A utility also
++overrides the `btn` class declaration it shares a property with.
++[The consumer pairing](../tests/service/tailwind/consumer.test.ts) reads a button carrying the
++`px-8` utility alone with the utility's inline padding and every other value of the surface.
+ 
+ The exclusion line names the class names Veneer and Tailwind both declare. A shared name leaves
+ the exclusion line only where Veneer declares with `!important` every longhand that Tailwind's
+@@ -9339,6 +9345,10 @@ declaration.
+ | `reboot`  | `caption`     | `padding-bottom`                   | —                          | `0.5rem`                                                    | —                                                                                             | dropped   |
+ | `reboot`  | `caption`     | `color`                            | —                          | `var(--bs-secondary-color)`                                 | `var(--vn-text-muted)`                                                                        | tokenized |
+ | `reboot`  | `th`          | `text-align`                       | —                          | `-webkit-match-parent`                                      | `inherit`                                                                                     | declared  |
++| `reboot`  | `button`      | `border-radius`                    | —                          | `0`                                                         | `var(--vn-radius-base)`                                                                       | tokenized |
++| `reboot`  | `button`      | `font-family`                      | —                          | `inherit`                                                   | `var(--vn-font-sans)`                                                                         | tokenized |
++| `reboot`  | `button`      | `font-size`                        | —                          | `inherit`                                                   | `var(--vn-size-2)`                                                                            | tokenized |
++| `reboot`  | `button`      | `line-height`                      | —                          | `inherit`                                                   | `var(--vn-line-body)`                                                                         | tokenized |
+ | `reboot`  | `legend`      | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
+ | `reboot`  | `legend`      | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+ | `reboot`  | `legend`      | `font-size`                        | `@media (width >= 1200px)` | `1.5rem`                                                    | `var(--vn-size-6)`                                                                            | tokenized |
+@@ -9978,13 +9988,19 @@ measurement fixes.
+ | `reboot`       | `th { border-bottom }`                                        | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+ | `reboot`       | `th { vertical-align }`                                       | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+ | `reboot`       | `th { font-weight }`                                          | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+-| `reboot`       | `button:not([class], [data-bs-target])`                       | —                                                | selector    | Elements paints a bare button with the calibrated button surface, which the release leaves unpainted.                                                                       |
+-| `reboot`       | `button:not([class], [data-bs-target])`                       | `@media (prefers-reduced-motion: reduce)`        | selector    | The release declares no transition on a bare button, and the `transition` mixin writes this one with its reduced-motion pair.                                               |
+-| `reboot`       | `button:not([class], [data-bs-target]):hover`                 | —                                                | selector    | Elements repaints a bare button on hover, which the release leaves to its button component.                                                                                 |
+-| `reboot`       | `button:not([class], [data-bs-target]):active`                | —                                                | selector    | Elements repaints a bare button while it is pressed, which the release leaves to its button component.                                                                      |
+-| `reboot`       | `button:not([class], [data-bs-target]):focus-visible`         | —                                                | selector    | Elements rings a bare button on keyboard focus, which the release leaves to its button component.                                                                           |
+-| `reboot`       | `button:not([class], [data-bs-target]):focus-visible`         | `@media (forced-colors: active)`                 | selector    | The focus ring is repainted in system colors under forced colors, which the release does not query.                                                                         |
+-| `reboot`       | `button:not([class], [data-bs-target]):disabled`              | —                                                | selector    | Elements dims a disabled bare button, which the release leaves to its button component.                                                                                     |
++| `reboot`       | `button { padding }`                                          | —                                                | declaration | Elements paints every button with the calibrated button surface, which the release leaves to the browser.                                                                   |
++| `reboot`       | `button { font-weight }`                                      | —                                                | declaration | Elements paints every button with the calibrated button surface, which the release leaves to the browser.                                                                   |
++| `reboot`       | `button { color }`                                            | —                                                | declaration | Elements paints every button with the calibrated button surface, which the release leaves to the browser.                                                                   |
++| `reboot`       | `button { background-color }`                                 | —                                                | declaration | Elements paints every button with the calibrated button surface, which the release leaves to the browser.                                                                   |
++| `reboot`       | `button { border }`                                           | —                                                | declaration | Elements paints every button with the calibrated button surface, which the release leaves to the browser.                                                                   |
++| `reboot`       | `button { box-shadow }`                                       | —                                                | declaration | Elements paints every button with the calibrated button surface, which the release leaves to the browser.                                                                   |
++| `reboot`       | `button { transition }`                                       | —                                                | declaration | Elements paints every button with the calibrated button surface, which the release leaves to the browser.                                                                   |
++| `reboot`       | `button { transition }`                                       | `@media (prefers-reduced-motion: reduce)`        | declaration | The release declares no transition on a button, and the `transition` mixin writes the surface's with its reduced-motion pair.                                               |
++| `reboot`       | `button:hover`                                                | —                                                | selector    | Elements repaints every button on hover, which the release leaves to its button component.                                                                                  |
++| `reboot`       | `button:active`                                               | —                                                | selector    | Elements repaints every button while it is pressed, which the release leaves to its button component.                                                                       |
++| `reboot`       | `button:focus-visible`                                        | —                                                | selector    | Elements rings every button on keyboard focus, which the release leaves to its button component.                                                                            |
++| `reboot`       | `button:focus-visible`                                        | `@media (forced-colors: active)`                 | selector    | The focus ring is repainted in system colors under forced colors, which the release does not query.                                                                         |
++| `reboot`       | `button:disabled`                                             | —                                                | selector    | Elements dims every disabled button, which the release leaves to its button component.                                                                                      |
+ | `btn`          | `.btn { --bs-btn-focus-shadow-rgb }`                          | —                                                | declaration | The engine binds this state variable once on the base class, where the release binds it on each role class.                                                                 |
+ | `btn`          | `.btn { --bs-btn-hover-color }`                               | —                                                | declaration | The engine binds this state variable once on the base class, where the release binds it on each role class.                                                                 |
+ | `btn`          | `.btn { --bs-btn-hover-bg }`                                  | —                                                | declaration | The engine binds this state variable once on the base class, where the release binds it on each role class.                                                                 |
+@@ -10087,8 +10103,8 @@ measurement fixes.
+ ### Outside the ledger
+ 
+ The ledger measures the shipped components' own vocabulary. Canonical token values, role coverage,
+-names this release declares nowhere, and the Elements behaviors this package does not copy sit
+-outside that measurement, and are recorded here instead.
++names this release declares nowhere, the button reboot rules, and the Elements behaviors this
++package does not copy sit outside that measurement, and are recorded here instead.
+ 
+ Canonical token values are the first. The release records no `--vn-*` name, so the ledger compares
+ no canonical value: the `#### theme` table in § Departures compares each `--bs-*` alias the theme
+@@ -10115,6 +10131,14 @@ paint them. The tooltip paints its hint surface from the release's `--bs-emphasi
+ never writes reaches neither table here nor § Deferred selectors, whose rows must sit in the pinned
+ inventory the `scanCompatibilityPresence` function reads.
+ 
++The button reboot rules come after those names. Each class the release builds on a button writes
++the reboot on a `:where()` selector, such as `:where(button.nav-link)`, and the
++`collectSelectorClasses` function reads no class inside a functional argument, so no shipped
++component claims the rule and the ledger measures none of them. The `tests/src/styles/mixins.test.ts`
++proof holds each rule's longhands equal to the longhands the button surface writes, and
++[the button proof](../tests/src/styles/elements/button.test.ts) reads a `button.nav-link` element at
++the release's corner, type, and shadow.
++
+ The Elements behaviors this package does not copy close the list. Elements' disclosure interpolates
+ its content height when the engine reports `prefers-reduced-motion: reduce`; the `transition` mixin
+ emits the reduced-motion pair for every transition it writes, and the
+@@ -10454,8 +10478,8 @@ sit in Color beside the text colors. The
+ showcase's own button drives the controller and announces the selected mode, and its entry
+ constructs a `Delegate` instance beside the showcase. The shell's own stylesheet reaches that button
+ through the `data-control` attribute the showcase sets on it, so no rule of the shell's reaches a
+-specimen through the element it happens to be. The hook is an attribute rather than a class, so the
+-button stays a bare button and keeps the published treatment the shell's border sits on. The
++specimen through the element it happens to be. The button wears the published button surface, and
++the shell's border sits on it. The
+ regions mount into a `main` element the shell carries no id on: a proof reaches it through the host
+ it mounted the showcase into, and each region through its accessible name. The application barrel
+ is a workspace implementation surface and is outside this guide's published API tables.
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index de3eeb3..e380916 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -131,6 +131,29 @@
+ 	list-style: none;
+ }
+ 
++// Emits the button reboot: every property the `elements` layer's button surface writes, at rest or
++// in a state, back at the release's value. Where the release's reboot writes a value, this writes
++// the same one; where the release leaves a property to the browser, `revert` hands it back to the
++// browser's own button. Each class the release builds on a button includes it on that button form,
++// at zero specificity in the `components` layer, so the layer outranks every surface state and
++// every rule the class writes outranks the reboot.
++@mixin button-reboot {
++	padding: revert;
++	font-family: inherit;
++	font-size: inherit;
++	font-weight: revert;
++	line-height: inherit;
++	color: revert;
++	background-color: revert;
++	border: revert;
++	border-radius: 0;
++	outline: revert;
++	box-shadow: revert;
++	opacity: revert;
++	pointer-events: revert;
++	transition: revert;
++}
++
+ // Returns the layout boundaries, as the one Sass source of every width the ramp carries.
+ //
+ // `_tokens.scss` loads this file, so it emits `--vn-breakpoint-*` by walking this map, and the
+diff --git a/src/styles/components/_accordion.scss b/src/styles/components/_accordion.scss
+index 5a51191..3428767 100644
+--- a/src/styles/components/_accordion.scss
++++ b/src/styles/components/_accordion.scss
+@@ -37,6 +37,12 @@
+ 		--bs-accordion-active-bg: var(--bs-primary-bg-subtle);
+ 	}
+ 
++	// Writes the button reboot on the button form, so the rules that follow paint the accordion header
++	// over the release's button rather than over the `elements` surface.
++	:where(button.accordion-button) {
++		@include button-reboot;
++	}
++
+ 	// The timing is the release's own rather than the motion tokens the `.btn` class reads, because
+ 	// this key ships the release's recorded surface. The `transition` mixin emits the reduced-motion
+ 	// twin the release records beside the button's transition and beside the chevron's.
+diff --git a/src/styles/components/_carousel.scss b/src/styles/components/_carousel.scss
+index 1805bad..a029cf6 100644
+--- a/src/styles/components/_carousel.scss
++++ b/src/styles/components/_carousel.scss
+@@ -81,6 +81,12 @@
+ 		@include transition(opacity 0s 0.6s);
+ 	}
+ 
++	// Writes the button reboot on the button form, so the rules that follow paint the carousel
++	// controls over the release's button rather than over the `elements` surface.
++	:where(button.carousel-control-prev, button.carousel-control-next) {
++		@include button-reboot;
++	}
++
+ 	// The controls paint the release's white through the palette token that holds it, and their
+ 	// opacity change reads the feedback duration, so the motion factor rescales it. The filter
+ 	// reads the variable the theme scopes and the dark class declare, which is what inverts the
+@@ -161,6 +167,12 @@
+ 		margin-left: 15%;
+ 	}
+ 
++	// The release gives a resting indicator no class and reaches it through its own component
++	// selector, so the button reboot is written back on the same selector at zero specificity.
++	:where(.carousel-indicators [data-bs-target]) {
++		@include button-reboot;
++	}
++
+ 	// Each pip is a bar inside a transparent top and bottom border, which widens the target the
+ 	// pointer reaches without widening the bar it paints.
+ 	.carousel-indicators [data-bs-target] {
+diff --git a/src/styles/components/_close.scss b/src/styles/components/_close.scss
+index 0e57398..024db45 100644
+--- a/src/styles/components/_close.scss
++++ b/src/styles/components/_close.scss
+@@ -1,6 +1,12 @@
+ @use '../mixins' as *;
+ 
+ @layer components {
++	// Writes the button reboot on the button form, so the rules that follow paint the close control
++	// over the release's button rather than over the `elements` surface.
++	:where(button.btn-close) {
++		@include button-reboot;
++	}
++
+ 	// The close control ships Bootstrap's recorded surface. Its text color routes through the
+ 	// palette token that already holds black byte for byte, and its radius through the base radius
+ 	// token, so a consumer retuning either one moves this control with the rest of the cascade.
+diff --git a/src/styles/components/_dropdown.scss b/src/styles/components/_dropdown.scss
+index 7c2827b..470c872 100644
+--- a/src/styles/components/_dropdown.scss
++++ b/src/styles/components/_dropdown.scss
+@@ -223,6 +223,12 @@ $carets: (
+ 		opacity: 1;
+ 	}
+ 
++	// Writes the button reboot on the button form, so the rules that follow paint the dropdown item
++	// over the release's button rather than over the `elements` surface.
++	:where(button.dropdown-item) {
++		@include button-reboot;
++	}
++
+ 	// The width, the alignment, the transparent fill, and the missing border are what make a button
+ 	// host read like the anchor beside it.
+ 	.dropdown-item {
+diff --git a/src/styles/components/_list-group.scss b/src/styles/components/_list-group.scss
+index 139bf0a..e362cee 100644
+--- a/src/styles/components/_list-group.scss
++++ b/src/styles/components/_list-group.scss
+@@ -37,6 +37,12 @@
+ 		counter-increment: section;
+ 	}
+ 
++	// Writes the button reboot on the button form, so the rules that follow paint the list group item
++	// over the release's button rather than over the `elements` surface.
++	:where(button.list-group-item) {
++		@include button-reboot;
++	}
++
+ 	.list-group-item {
+ 		position: relative;
+ 		display: block;
+diff --git a/src/styles/components/_nav.scss b/src/styles/components/_nav.scss
+index edd8b00..343fd83 100644
+--- a/src/styles/components/_nav.scss
++++ b/src/styles/components/_nav.scss
+@@ -16,6 +16,12 @@
+ 		flex-wrap: wrap;
+ 	}
+ 
++	// Writes the button reboot on the button form, so the rules that follow paint the nav link over
++	// the release's button rather than over the `elements` surface.
++	:where(button.nav-link) {
++		@include button-reboot;
++	}
++
+ 	.nav-link {
+ 		display: block;
+ 		padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+diff --git a/src/styles/components/_navbar.scss b/src/styles/components/_navbar.scss
+index 99cdfff..1bbbcc1 100644
+--- a/src/styles/components/_navbar.scss
++++ b/src/styles/components/_navbar.scss
+@@ -100,6 +100,12 @@
+ 		align-items: center;
+ 	}
+ 
++	// Writes the button reboot on the button form, so the rules that follow paint the toggler over the
++	// release's button rather than over the `elements` surface.
++	:where(button.navbar-toggler) {
++		@include button-reboot;
++	}
++
+ 	.navbar-toggler {
+ 		padding: var(--bs-navbar-toggler-padding-y) var(--bs-navbar-toggler-padding-x);
+ 		font-size: var(--bs-navbar-toggler-font-size);
+diff --git a/src/styles/components/_pagination.scss b/src/styles/components/_pagination.scss
+index de68ede..6110a29 100644
+--- a/src/styles/components/_pagination.scss
++++ b/src/styles/components/_pagination.scss
+@@ -40,6 +40,12 @@ $sizes: (
+ 		list-style: none;
+ 	}
+ 
++	// Writes the button reboot on the button form, so the rules that follow paint the page link over
++	// the release's button rather than over the `elements` surface.
++	:where(button.page-link) {
++		@include button-reboot;
++	}
++
+ 	.page-link {
+ 		position: relative;
+ 		display: block;
+diff --git a/src/styles/elements/_button.scss b/src/styles/elements/_button.scss
+index 1b3cac1..3e3773f 100644
+--- a/src/styles/elements/_button.scss
++++ b/src/styles/elements/_button.scss
+@@ -1,24 +1,21 @@
+ @use '../mixins' as *;
+ 
+ @layer elements {
+-	// Every button keeps the release's reboot at the release's values, whatever class it carries,
+-	// so a component's button form starts where the release starts it and paints as its anchor form
+-	// does.
++	// Every button keeps the release's reboot at the release's values, whatever class it carries.
+ 	button {
+ 		margin: 0;
+-		font-family: inherit;
+-		font-size: inherit;
+-		line-height: inherit;
+-		border-radius: 0;
+ 		text-transform: none;
+ 		-webkit-appearance: button;
+ 	}
+ 
+-	// The calibrated surface and its states reach a button no class claims. The attribute test keeps
+-	// the release's carousel indicators out as well: the release gives a resting indicator no class,
+-	// and the attribute sits on the tag itself, so the rule still treats the tag by what it carries
+-	// rather than by where the markup puts it.
+-	button:not([class], [data-bs-target]) {
++	// Every button wears the calibrated surface and its states, whatever class it carries. The
++	// surface's type and corner stand in for the release's inherited type and square corners, so the
++	// reboot rule before it writes neither. The `button-reboot` mixin writes the release's values
++	// back, for every property the surface writes, on each class the release builds on a button, in
++	// the `components` layer. That layer outranks this one whatever the selector, so the surface
++	// declares nothing important, and a consumer's class in a later layer, or in none, wins over the
++	// surface without a specificity contest.
++	button {
+ 		padding: var(--vn-space-3) var(--vn-space-6);
+ 		font-family: var(--vn-font-sans);
+ 		font-size: var(--vn-size-2);
+@@ -29,7 +26,6 @@
+ 		border: 0;
+ 		border-radius: var(--vn-radius-base);
+ 		box-shadow: var(--vn-button-shadow);
+-		cursor: pointer;
+ 		@include transition(
+ 			(
+ 				color var(--vn-motion-feedback) var(--vn-ease-standard),
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index 91e0c73..74a563c 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -317,7 +317,7 @@ describe('Showcase', () => {
+ 		const mounted = await mountShowcase()
+ 		try {
+ 			// The control is reached and driven through the keyboard, so neither reading is taken
+-			// while the pointer rests on it: the published bare-button treatment paints a hover fill
++			// while the pointer rests on it: the published button surface paints a hover fill
+ 			// whose mixer retunes with the mode, and a reading taken under that state would report it
+ 			// as the control's affordance.
+ 			const control = await traverseAccessible('Dark mode')
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 1cd1fb6..6650b13 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -283,7 +283,7 @@ describe('journey', () => {
+ 		JOURNAL.record('click', 'Dark mode', dark)
+ 		// No frame is shot here. The arrival frame is placed in the mode this run's own variant
+ 		// names, so the dark arrival frame is the dark run's, taken with no pointer on the page; a
+-		// frame shot under this click would carry the hover mix the published bare-button treatment
++		// frame shot under this click would carry the hover mix the published button surface
+ 		// paints on the control it was clicked with, and a reader comparing the two modes would read
+ 		// that mark as a mode difference.
+ 		await releasePointer()
+diff --git a/tests/app/browser/sections/BadgeSection.test.ts b/tests/app/browser/sections/BadgeSection.test.ts
+index b63e740..54ad81c 100644
+--- a/tests/app/browser/sections/BadgeSection.test.ts
++++ b/tests/app/browser/sections/BadgeSection.test.ts
+@@ -53,7 +53,7 @@ describe('BadgeSection', () => {
+ 			)
+ 			expect(button.querySelector('.badge')?.textContent).toBe('7')
+ 			// The badge paints its label and declares no fill, so the host carries a filled variant:
+-			// the bare button class paints the body text over the dark cell and no fill behind it.
++			// the `btn` class alone paints the body text over the dark cell and no fill behind it.
+ 			expect(button.classList.contains('btn-primary')).toBe(true)
+ 			expect(Object.isFrozen(BADGE_COPY)).toBe(true)
+ 			expect(Object.isFrozen(BADGE_SPECIMENS)).toBe(true)
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 9d4830b..495e701 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -418,7 +418,7 @@ describe('declaration priority', () => {
+ 		const grouped = Map.groupBy(forced, renderRuleKey)
+ 		expect([...grouped.keys()]).toEqual(
+ 			expect.arrayContaining([
+-				'button:not([class], [data-bs-target]):focus-visible @media (forced-colors: active)',
++				'button:focus-visible @media (forced-colors: active)',
+ 				'.btn:focus-visible @media (forced-colors: active)',
+ 				'.form-control:focus @media (forced-colors: active)',
+ 				'.form-select:focus @media (forced-colors: active)',
+@@ -428,7 +428,7 @@ describe('declaration priority', () => {
+ 		)
+ 		expect([...grouped].filter(([, blocks]) => blocks.length > 1).map(([key]) => key)).toEqual([])
+ 		for (const key of [
+-			'button:not([class], [data-bs-target]):focus-visible @media (forced-colors: active)',
++			'button:focus-visible @media (forced-colors: active)',
+ 			'.btn:focus-visible @media (forced-colors: active)',
+ 		]) {
+ 			const [block] = requireValue(grouped.get(key), `The expanded compile writes no ${key} block`)
+diff --git a/tests/fixtures/tailwind/markup.html b/tests/fixtures/tailwind/markup.html
+index 0300696..98af179 100644
+--- a/tests/fixtures/tailwind/markup.html
++++ b/tests/fixtures/tailwind/markup.html
+@@ -95,6 +95,8 @@
+ 		<span class="align-text-bottom">Aligned Text Bottom</span>
+ 	</p>
+ 	<button type="button" class="btn px-8">Action</button>
++	<button type="button" data-surface="plain">Plain action</button>
++	<button type="button" data-surface="spaced" class="px-8">Spaced action</button>
+ </div>
+ <div class="w-25">Width step 25</div>
+ <div class="w-50">Width step 50</div>
+diff --git a/tests/service/tailwind/consumer.test.ts b/tests/service/tailwind/consumer.test.ts
+index 84dbb77..2443aa5 100644
+--- a/tests/service/tailwind/consumer.test.ts
++++ b/tests/service/tailwind/consumer.test.ts
+@@ -18,7 +18,7 @@ import {
+ 	stage,
+ 	TAILWIND_PATHS,
+ } from '../../setupService.js'
+-import { collectFencedBlocks } from '../../setupStyles.js'
++import { BUTTON_SURFACE_LONGHANDS, collectFencedBlocks } from '../../setupStyles.js'
+ 
+ // The line the executed profile changes, and the line the shipped recipe writes in its place. A
+ // consumer names their own markup directory here; the fixture names the markup file beside it.
+@@ -288,4 +288,30 @@ describe('the consumer pairing', () => {
+ 		// lets it: `utilities` sits after `components`.
+ 		expect(standalone.get('padding-left')).not.toBe(resolved)
+ 	})
++
++	it('keeps the button surface on a button carrying a utility alone, and lets the utility win the padding it declares', async () => {
++		await stage.mount(consumerMarkup)
++		await stage.load(consumerProfile)
++		const declared = new SheetReader(consumerProfile).declarations
++			.filter(
++				(declaration) => declaration.layer === 'utilities' && declaration.selector === '.px-8',
++			)
++			.map((declaration) => `${declaration.property}: ${declaration.value}`)
++			.join('; ')
++		await stage.mount(`<div data-vn-probe style="${declared}"></div>`)
++		const [probe] = await stage.read('[data-vn-probe]', ['padding-left'])
++		const resolved = requireValue(probe?.get('padding-left'), 'The probe resolved no padding')
++		const [plain] = await stage.read('[data-surface="plain"]', BUTTON_SURFACE_LONGHANDS)
++		const [spaced] = await stage.read('[data-surface="spaced"]', BUTTON_SURFACE_LONGHANDS)
++		const surface = requireValue(plain, 'The fixture mounts no plain button')
++		const utility = requireValue(spaced, 'The fixture mounts no spaced button')
++		// The utility writes the inline padding alone, and it has to write a value the surface does
++		// not, or the reading could not tell the two apart.
++		expect(surface.get('padding-left')).not.toBe(resolved)
++		expect(Object.fromEntries(utility)).toEqual({
++			...Object.fromEntries(surface),
++			'padding-left': resolved,
++			'padding-right': resolved,
++		})
++	})
+ })
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 69df3f2..a6a67fc 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -356,7 +356,10 @@ describe('styles setup', () => {
+ 				'BREAKPOINT_INFIXES',
+ 				'BUTTON_BARE_CASES',
+ 				'BUTTON_BARE_VALUES',
++				'BUTTON_CONSUMER_RULES',
+ 				'BUTTON_FILLED_CASES',
++				'BUTTON_FORM_CASES',
++				'BUTTON_FORM_DIFFERENCES',
+ 				'BUTTON_GROUP_CARET_CASES',
+ 				'BUTTON_GROUP_CHECK_MARKUP',
+ 				'BUTTON_GROUP_CORNERS',
+@@ -366,13 +369,19 @@ describe('styles setup', () => {
+ 				'BUTTON_GROUP_SPLIT_CASES',
+ 				'BUTTON_GROUP_SPLIT_FORMS',
+ 				'BUTTON_GROUP_STACK_CASES',
++				'BUTTON_HOLDER_STYLE',
+ 				'BUTTON_ISLAND_CASES',
+ 				'BUTTON_ISLAND_MARKUP',
+ 				'BUTTON_LABEL_CASES',
+ 				'BUTTON_MODES',
+ 				'BUTTON_OUTLINE_CASES',
++				'BUTTON_REBOOT_LONGHANDS',
++				'BUTTON_REBOOT_SELECTORS',
+ 				'BUTTON_SCHEME_CASES',
+ 				'BUTTON_SIZE_CASES',
++				'BUTTON_SURFACE_LONGHANDS',
++				'BUTTON_SURFACE_SELECTORS',
++				'BUTTON_TAG_CASES',
+ 				'BUTTON_TIER_ROLES',
+ 				'BUTTON_TRANSITION_CASES',
+ 				'CALIBRATED_TIERS',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index c26d7e1..9bb3823 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -3026,8 +3026,8 @@ export const ICON_LINK_MARKUP =
+ 	'<svg class="bi" viewBox="0 0 16 16"><path d="M2 8h12"></path></svg>'
+ 
+ /**
+- * Holds the transition durations, the focus-ring lengths, and the least hover step for the
+- * bare-button cases.
++ * Holds the transition durations, the focus-ring lengths, and the least hover step the button
++ * surface resolves on a `button` element.
+  *
+  * @remarks
+  * The `step` field is the least contrast the dark veil's hover fill keeps against the resting fill,
+@@ -3041,7 +3041,7 @@ export const BUTTON_BARE_VALUES = Object.freeze({
+ })
+ 
+ /**
+- * Holds the theme and paint readings for the bare-button geometry and interaction cases.
++ * Holds the theme and paint readings for the button surface's geometry and interaction cases.
+  */
+ export const BUTTON_BARE_CASES = Object.freeze([
+ 	Object.freeze([
+@@ -3060,6 +3060,171 @@ export const BUTTON_BARE_CASES = Object.freeze([
+ 	] as const),
+ ] as const)
+ 
++/**
++ * Holds the inline style of the holder the button-surface proofs mount their buttons in.
++ *
++ * @remarks
++ * The holder retunes the body weight and the button shadow the surface reads, and sets a face, a
++ * weight, a size, and a line height no token resolves to. A surface declaration that reaches a
++ * button it must not reach then reads a value the release never produces there, and a button that
++ * inherits its type reads the holder rather than a token that happens to resolve to the same value.
++ */
++export const BUTTON_HOLDER_STYLE =
++	'--vn-weight-body: 700; --vn-button-shadow: 0 2px 6px rebeccapurple; font: 600 19px/29px serif'
++
++/**
++ * Lists the resolved longhands a button-surface reading compares, covering each property the
++ * surface writes at rest or in a state.
++ */
++export const BUTTON_SURFACE_LONGHANDS = Object.freeze([
++	'padding-top',
++	'padding-right',
++	'padding-bottom',
++	'padding-left',
++	'font-family',
++	'font-size',
++	'font-weight',
++	'line-height',
++	'color',
++	'background-color',
++	'border-top-width',
++	'border-top-style',
++	'border-top-left-radius',
++	'box-shadow',
++	'outline-style',
++	'opacity',
++	'pointer-events',
++	'transition-property',
++	'transition-duration',
++])
++
++/**
++ * Lists the buttons whose markup differs from a classless button's, each with its accessible name,
++ * its markup, and the longhands a utility it carries writes in place of the surface's.
++ *
++ * @remarks
++ * The `utility` field names the utility class and the longhands its rule declares, or holds
++ * `undefined` where the button carries none, so the proof reads those longhands on an element
++ * carrying the utility alone rather than writing the utility's value here.
++ */
++export const BUTTON_TAG_CASES = Object.freeze([
++	Object.freeze({
++		name: 'Emptied control',
++		markup: '<button type="button" class="">Emptied control</button>',
++		utility: undefined,
++	}),
++	Object.freeze({
++		name: 'Spaced control',
++		markup: '<button type="button" class="px-3">Spaced control</button>',
++		utility: Object.freeze({
++			name: 'px-3',
++			longhands: Object.freeze(['padding-right', 'padding-left']),
++		}),
++	}),
++	Object.freeze({
++		name: 'Hooked control',
++		markup: '<button type="button" class="order-action">Hooked control</button>',
++		utility: undefined,
++	}),
++	Object.freeze({
++		name: 'Targeted control',
++		markup: '<button type="button" data-bs-target="#harbor">Targeted control</button>',
++		utility: undefined,
++	}),
++])
++
++/**
++ * Lists the consumer rules a button's own class writes over the surface, one unlayered and one
++ * inside the `components` layer, each declaring the padding and the corner the proof reads.
++ */
++export const BUTTON_CONSUMER_RULES = Object.freeze([
++	'.order-action { padding: 0; border-radius: 2px }',
++	'@layer components { .order-action { padding: 0; border-radius: 2px } }',
++])
++
++/**
++ * Lists the `.btn` forms written once on a `button` element and once on an anchor, each with the
++ * markup that mounts the pair.
++ *
++ * @remarks
++ * Each form carries the same label on both elements, so the two boxes lay out alike and every
++ * longhand the browser resolves can be compared. The checked form follows a checked `.btn-check`
++ * input, which is the sibling the release's checked rule reads.
++ */
++export const BUTTON_FORM_CASES = Object.freeze(
++	[
++		{ form: 'filled', prefix: '', classes: 'btn btn-primary', disabled: false },
++		{ form: 'outline', prefix: '', classes: 'btn btn-outline-primary', disabled: false },
++		{ form: 'link', prefix: '', classes: 'btn btn-link', disabled: false },
++		{ form: 'large', prefix: '', classes: 'btn btn-primary btn-lg', disabled: false },
++		{ form: 'small', prefix: '', classes: 'btn btn-primary btn-sm', disabled: false },
++		{ form: 'disabled', prefix: '', classes: 'btn btn-primary', disabled: true },
++		{
++			form: 'checked',
++			prefix: '<input type="checkbox" class="btn-check" autocomplete="off" checked>',
++			classes: 'btn btn-outline-primary',
++			disabled: false,
++		},
++	].map(({ form, prefix, classes, disabled }) =>
++		Object.freeze({
++			form,
++			button: `<div>${prefix}<button type="button" class="${classes}"${disabled ? ' disabled' : ''}>Harbor form</button></div>`,
++			anchor: `<div>${prefix}<a href="#harbor" class="${classes}${disabled ? ' disabled' : ''}"${disabled ? ' aria-disabled="true"' : ''}>Harbor form</a></div>`,
++		}),
++	),
++)
++
++/**
++ * Lists the longhands a `button` element resolves apart from an anchor carrying the same `.btn`
++ * classes: the button appearance the release's reboot writes on every button.
++ */
++export const BUTTON_FORM_DIFFERENCES = Object.freeze(['appearance'])
++
++/**
++ * Lists the selectors the `elements` layer writes the button surface and its states on.
++ */
++export const BUTTON_SURFACE_SELECTORS = Object.freeze([
++	'button',
++	'button:hover',
++	'button:active',
++	'button:focus-visible',
++	'button:disabled',
++])
++
++/**
++ * Lists the longhands the `elements` layer writes on every button at the release's own reboot
++ * values, which the button reboot never writes back.
++ */
++export const BUTTON_REBOOT_LONGHANDS = Object.freeze([
++	'margin-top',
++	'margin-right',
++	'margin-bottom',
++	'margin-left',
++	'text-transform',
++	'appearance',
++])
++
++/**
++ * Lists the selectors the `components` layer writes the button reboot on, one for each class the
++ * release builds on a `button` element.
++ *
++ * @remarks
++ * The carousel indicators carry no class at rest, so their selector is the release's own
++ * component selector for them. A classless `button` element carrying the `data-bs-target`
++ * attribute outside the indicators matches none of these.
++ */
++export const BUTTON_REBOOT_SELECTORS = Object.freeze([
++	':where(button.btn-close)',
++	':where(button.navbar-toggler)',
++	':where(button.accordion-button)',
++	':where(button.dropdown-item)',
++	':where(button.nav-link)',
++	':where(button.list-group-item)',
++	':where(button.page-link)',
++	':where(button.carousel-control-prev, button.carousel-control-next)',
++	':where(.carousel-indicators [data-bs-target])',
++])
++
+ /**
+  * Holds the role and mode readings for the filled-button interaction cases.
+  *
+diff --git a/tests/src/styles/components/close.test.ts b/tests/src/styles/components/close.test.ts
+index 044815e..186367e 100644
+--- a/tests/src/styles/components/close.test.ts
++++ b/tests/src/styles/components/close.test.ts
+@@ -126,8 +126,8 @@ describe('close control states', () => {
+ 
+ 	it('declares no transition, as the release declares none, so each state paints the moment it flips', () => {
+ 		const control = mountClose()
+-		// The control carries a class, so the calibrated transition of a button no class claims stays
+-		// off it, and the reboot the element keeps declares none.
++		// The control's partial writes the button reboot back on its button form, so the surface's
++		// calibrated transition every button wears gives way to the browser's none.
+ 		expect(readStyle(control, 'transition-property')).toBe('all')
+ 		expect(readStyle(control, 'transition-duration')).toBe('0s')
+ 	})
+diff --git a/tests/src/styles/elements/button.test.ts b/tests/src/styles/elements/button.test.ts
+index a342694..e75d388 100644
+--- a/tests/src/styles/elements/button.test.ts
++++ b/tests/src/styles/elements/button.test.ts
+@@ -19,6 +19,12 @@ import { scene } from '../../../setupBrowser.js'
+ import {
+ 	BUTTON_BARE_CASES,
+ 	BUTTON_BARE_VALUES,
++	BUTTON_CONSUMER_RULES,
++	BUTTON_FORM_CASES,
++	BUTTON_FORM_DIFFERENCES,
++	BUTTON_HOLDER_STYLE,
++	BUTTON_SURFACE_LONGHANDS,
++	BUTTON_TAG_CASES,
+ 	extractShadowLayers,
+ 	TEXT_MODES,
+ } from '../../../setupStyles.js'
+@@ -29,7 +35,7 @@ afterEach(async () => {
+ 	scene.clear()
+ })
+ 
+-describe('bare button', () => {
++describe('button', () => {
+ 	it.each(TEXT_MODES)('removes the outline for pointer focus in %s mode', async (mode) => {
+ 		const button = requireValue(
+ 			scene
+@@ -67,90 +73,181 @@ describe('bare button', () => {
+ 			expect(readStyle(control, 'cursor')).not.toBe('pointer')
+ 		}
+ 	})
+-	it('leaves a classed, an empty-class, and a slide-target button to the reboot alone', async () => {
+-		// The wrapper's 19px size matches no size token, and its 29px line height matches no line token
+-		// at any token size, so an inherited reading names the reboot's `inherit` value rather than a
+-		// token that happens to resolve to the same length.
++	it('shows the pointer over an enabled button and the default cursor over a disabled one', () => {
+ 		const host = scene.mount(
+-			'<div style="font: 19px/29px serif"><button type="button" class="order-action">Hooked control</button><button type="button" class="">Emptied control</button><button type="button" data-bs-target="#harbor">Targeted control</button></div>',
++			'<div><button type="button">Enabled control</button><button type="button" disabled>Disabled control</button></div>',
+ 		)
+-		const wrapper = requireValue(host.querySelector('div'), 'No wrapper')
+-		const hooked = requireValue(
+-			host.querySelector<HTMLButtonElement>('.order-action'),
+-			'No hooked button',
+-		)
+-		const emptied = requireValue(
+-			host.querySelector<HTMLButtonElement>('[class=""]'),
+-			'No emptied button',
++		const [enabled, disabled] = [...host.querySelectorAll('button')]
++		expect(readStyle(requireValue(enabled, 'No enabled button'), 'cursor')).toBe('pointer')
++		expect(readStyle(requireValue(disabled, 'No disabled button'), 'cursor')).toBe('default')
++	})
++	it('paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state', async () => {
++		// The holder retunes the weight and the shadow the surface reads, so a button the surface
++		// misses reads the release's reboot instead, which differs from the surface in both.
++		const host = scene.mount(
++			`<div style="${BUTTON_HOLDER_STYLE}"><button type="button">Plain control</button>${BUTTON_TAG_CASES.map(({ markup }) => markup).join('')}${BUTTON_TAG_CASES.flatMap(({ utility }) => (utility === undefined ? [] : [`<div data-utility="${utility.name}" class="${utility.name}"></div>`])).join('')}</div>`,
+ 		)
+-		const targeted = requireValue(
+-			host.querySelector<HTMLButtonElement>('[data-bs-target]'),
+-			'No targeted button',
++		const names = ['Plain control', ...BUTTON_TAG_CASES.map(({ name }) => name)]
++		const buttons = names.map((name) =>
++			requireValue(
++				[...host.querySelectorAll('button')].find((button) => button.textContent === name),
++				`No ${name}`,
++			),
+ 		)
+-		for (const [name, button] of [
+-			['Hooked control', hooked],
+-			['Emptied control', emptied],
+-			['Targeted control', targeted],
+-		] as const) {
+-			const reboot = {
+-				name,
+-				margin: readStyle(button, 'margin'),
+-				transform: readStyle(button, 'text-transform'),
+-				appearance: readStyle(button, 'appearance'),
+-				family: readStyle(button, 'font-family'),
+-				size: readPixels(button, 'font-size'),
+-				line: readPixels(button, 'line-height'),
+-				radius: readPixels(button, 'border-top-left-radius'),
+-				shadow: readStyle(button, 'box-shadow'),
+-				duration: readStyle(button, 'transition-duration'),
+-			}
+-			expect(reboot).toEqual({
+-				name,
+-				margin: '0px',
+-				transform: 'none',
+-				appearance: 'button',
+-				family: readStyle(wrapper, 'font-family'),
+-				size: 19,
+-				line: 29,
+-				radius: 0,
+-				shadow: 'none',
+-				duration: '0s',
++		const readings = new Map<string, Record<string, Record<string, string>>>()
++		for (const [index, button] of buttons.entries()) {
++			readings.set(requireValue(names[index], 'No name'), {
++				rest: Object.fromEntries(
++					BUTTON_SURFACE_LONGHANDS.map((longhand) => [longhand, readStyle(button, longhand)]),
++				),
+ 			})
+-			// Each state is read against the resting reading, so a state rule reaching the button
+-			// reports as a moved value whatever the user agent paints at rest.
+-			const rest = readStyle(button, 'background-color')
+-			button.focus()
+-			await pressKeys('{ArrowRight}')
+-			expect(button.matches(':focus-visible')).toBe(true)
+-			expect({ name, focused: readStyle(button, 'box-shadow') }).toEqual({ name, focused: 'none' })
+-			button.blur()
++		}
++		// Every state is read with motion reduced, so no reading lands partway through a transition.
++		await stageMedia({ motion: false })
++		for (const [index, button] of buttons.entries()) {
++			const name = requireValue(names[index], 'No name')
++			const reading = requireValue(readings.get(name), `No ${name} reading`)
+ 			await hoverAccessible(name)
+ 			expect(button.matches(':hover')).toBe(true)
+-			expect({ name, hovered: readStyle(button, 'background-color') }).toEqual({
+-				name,
+-				hovered: rest,
+-			})
++			reading.hovered = Object.fromEntries(
++				BUTTON_SURFACE_LONGHANDS.map((longhand) => [longhand, readStyle(button, longhand)]),
++			)
+ 			await holdAccessible(name)
+ 			expect(button.matches(':active')).toBe(true)
+-			expect({ name, pressed: readStyle(button, 'background-color') }).toEqual({
+-				name,
+-				pressed: rest,
+-			})
++			reading.pressed = Object.fromEntries(
++				BUTTON_SURFACE_LONGHANDS.map((longhand) => [longhand, readStyle(button, longhand)]),
++			)
+ 			await releasePointer()
++			button.blur()
++			button.focus()
++			await pressKeys('{ArrowRight}')
++			expect(button.matches(':focus-visible')).toBe(true)
++			reading.focused = Object.fromEntries(
++				BUTTON_SURFACE_LONGHANDS.map((longhand) => [longhand, readStyle(button, longhand)]),
++			)
++			button.blur()
+ 			button.disabled = true
+-			expect({
++			reading.disabled = Object.fromEntries(
++				BUTTON_SURFACE_LONGHANDS.map((longhand) => [longhand, readStyle(button, longhand)]),
++			)
++			button.disabled = false
++		}
++		const plain = requireValue(readings.get('Plain control'), 'No plain reading')
++		const rest = requireValue(plain.rest, 'No plain resting reading')
++		// The classless button wears the surface itself: the retuned weight and shadow, and the
++		// surface's own size rather than the holder's.
++		expect(rest['font-weight']).toBe('700')
++		expect(rest['font-size']).toBe('14px')
++		expect(rest['box-shadow']).not.toBe('none')
++		for (const { name, utility } of BUTTON_TAG_CASES) {
++			const written = Object.fromEntries(
++				(utility?.longhands ?? []).map((longhand) => [
++					longhand,
++					readStyle(
++						requireValue(
++							host.querySelector(`[data-utility="${utility?.name}"]`),
++							`No ${String(utility?.name)} element`,
++						),
++						longhand,
++					),
++				]),
++			)
++			// A utility's own longhands read the utility in every state, and it has to write a value
++			// the surface does not, or the case could not tell the two apart.
++			for (const [longhand, value] of Object.entries(written))
++				expect({ longhand, value }).not.toEqual({ longhand, value: rest[longhand] })
++			expect({ name, reading: readings.get(name) }).toEqual({
+ 				name,
+-				opacity: readStyle(button, 'opacity'),
+-				pointer: readStyle(button, 'pointer-events'),
+-			}).toEqual({ name, opacity: '1', pointer: 'auto' })
++				reading: Object.fromEntries(
++					Object.entries(plain).map(([state, values]) => [state, { ...values, ...written }]),
++				),
++			})
++		}
++	})
++	it('lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value', () => {
++		for (const css of BUTTON_CONSUMER_RULES) {
++			const sheet = scene.load(css)
++			const host = scene.mount(
++				`<div style="${BUTTON_HOLDER_STYLE}"><button type="button">Plain control</button><button type="button" class="order-action">Hooked control</button></div>`,
++			)
++			const plain = requireValue(host.querySelector('button'), 'No plain button')
++			const hooked = requireValue(host.querySelector('.order-action'), 'No hooked button')
++			expect({
++				css,
++				reading: Object.fromEntries(
++					BUTTON_SURFACE_LONGHANDS.map((longhand) => [longhand, readStyle(hooked, longhand)]),
++				),
++			}).toEqual({
++				css,
++				reading: {
++					...Object.fromEntries(
++						BUTTON_SURFACE_LONGHANDS.map((longhand) => [longhand, readStyle(plain, longhand)]),
++					),
++					'padding-top': '0px',
++					'padding-right': '0px',
++					'padding-bottom': '0px',
++					'padding-left': '0px',
++					'border-top-left-radius': '2px',
++				},
++			})
++			sheet.remove()
++			host.remove()
+ 		}
+ 	})
++	it('resolves every .btn form on a button as the same form resolves on an anchor, apart from the button appearance', () => {
++		// The surface reaches the button form and never the anchor form, and the button class writes
++		// every property the surface writes, so a surface property the class leaves unset shows as a
++		// longhand the two forms resolve apart.
++		const host = scene.mount(
++			`<div style="${BUTTON_HOLDER_STYLE}">${BUTTON_FORM_CASES.map(({ form, button, anchor }) => `<div data-form="${form}">${button}${anchor}</div>`).join('')}</div>`,
++		)
++		expect(
++			BUTTON_FORM_CASES.map(({ form }) => {
++				const button = requireValue(
++					host.querySelector(`[data-form="${form}"] button.btn`),
++					`No ${form} button`,
++				)
++				const anchor = requireValue(
++					host.querySelector(`[data-form="${form}"] a.btn`),
++					`No ${form} anchor`,
++				)
++				return {
++					form,
++					longhands: Array.from(getComputedStyle(button)).filter(
++						(longhand) => readStyle(button, longhand) !== readStyle(anchor, longhand),
++					),
++				}
++			}),
++		).toEqual(BUTTON_FORM_CASES.map(({ form }) => ({ form, longhands: BUTTON_FORM_DIFFERENCES })))
++	})
++	it("writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow", () => {
++		const host = scene.mount(
++			`<div style="${BUTTON_HOLDER_STYLE}"><nav class="nav"><button type="button" class="nav-link">Harbor link</button></nav></div>`,
++		)
++		const holder = requireValue(host.querySelector('div'), 'No holder')
++		const link = requireValue(host.querySelector('.nav-link'), 'No nav link')
++		expect({
++			radius: readPixels(link, 'border-top-left-radius'),
++			shadow: readStyle(link, 'box-shadow'),
++			family: readStyle(link, 'font-family'),
++			size: readPixels(link, 'font-size'),
++			line: readPixels(link, 'line-height'),
++			weight: readStyle(link, 'font-weight'),
++		}).toEqual({
++			radius: 0,
++			shadow: 'none',
++			family: readStyle(holder, 'font-family'),
++			size: 19,
++			line: 29,
++			weight: '600',
++		})
++	})
+ 	it.each(BUTTON_BARE_CASES)(
+ 		'resolves the calibrated geometry and interaction paint in %s mode',
+ 		async (mode, color, hover, active, focus) => {
+ 			const button = requireValue(
+ 				scene
+-					.mount(`<div data-bs-theme="${mode}"><button>Bare specimen</button></div>`)
++					.mount(`<div data-bs-theme="${mode}"><button>Surface specimen</button></div>`)
+ 					.querySelector('button'),
+ 				'No button',
+ 			)
+@@ -178,10 +275,10 @@ describe('bare button', () => {
+ 			expect(ring.lengths).toEqual(BUTTON_BARE_VALUES.ring)
+ 			expect(matchesColor(ring.color, focus)).toBe(true)
+ 			expect(readStyle(button, 'outline-style')).toBe('none')
+-			await hoverAccessible('Bare specimen')
++			await hoverAccessible('Surface specimen')
+ 			expect(button.matches(':hover')).toBe(true)
+ 			expect(matchesColor(readStyle(button, 'background-color'), hover)).toBe(true)
+-			await holdAccessible('Bare specimen')
++			await holdAccessible('Surface specimen')
+ 			expect(button.matches(':active')).toBe(true)
+ 			expect(matchesColor(readStyle(button, 'background-color'), active)).toBe(true)
+ 			await releasePointer()
+@@ -191,7 +288,7 @@ describe('bare button', () => {
+ 			expect(matchesColor(readStyle(button, 'background-color'), 'transparent')).toBe(true)
+ 		},
+ 	)
+-	it('steps the bare veil in a dark island by at least the least hover step', async () => {
++	it('steps the surface veil in a dark island by at least the least hover step', async () => {
+ 		const container = scene.mount(
+ 			'<div data-bs-theme="dark" style="background-color: var(--bs-body-bg)"><button>Veiled element</button></div>',
+ 		)
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index 78e6793..55982f5 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -14,10 +14,14 @@ import {
+ } from '@orkestrel/test/browser'
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { collectMediaConditions, scene, visitBreakpoint } from '../../setupBrowser.js'
++import { normalizeSelectorText } from '../../setup.js'
++import { collectLayer, collectMediaConditions, scene, visitBreakpoint } from '../../setupBrowser.js'
+ import {
+ 	BREAKPOINT_CASES,
+ 	BUTTON_LABEL_CASES,
++	BUTTON_REBOOT_LONGHANDS,
++	BUTTON_REBOOT_SELECTORS,
++	BUTTON_SURFACE_SELECTORS,
+ 	CAPPED_WIDTHS,
+ 	FLUID_SIZE_CASES,
+ 	FLUID_WIDTHS,
+@@ -188,6 +192,41 @@ describe('declaration mixins', () => {
+ 			).toBe(true)
+ 		}
+ 	})
++	it('writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important', () => {
++		// The surface's rules sit in the elements layer beside the release's own reboot on every
++		// button, whose longhands the button reboot never writes back because the element and the
++		// release write them alike. Every other longhand the surface writes, at rest or in a state,
++		// has to be written back by each reset, or a class that leaves it unset shows the surface.
++		const surface = collectLayer('elements').flatMap((rule) =>
++			rule instanceof CSSStyleRule &&
++			BUTTON_SURFACE_SELECTORS.includes(normalizeSelectorText(rule.selectorText))
++				? [rule]
++				: [],
++		)
++		const written = [...new Set(surface.flatMap((rule) => Array.from(rule.style)))].sort()
++		expect(written.filter((longhand) => BUTTON_REBOOT_LONGHANDS.includes(longhand))).toEqual(
++			[...BUTTON_REBOOT_LONGHANDS].sort(),
++		)
++		const resets = collectLayer('components').flatMap((rule) =>
++			rule instanceof CSSStyleRule && rule.selectorText.startsWith(':where(') ? [rule] : [],
++		)
++		expect(resets.map((rule) => normalizeSelectorText(rule.selectorText)).sort()).toEqual(
++			[...BUTTON_REBOOT_SELECTORS].sort(),
++		)
++		for (const rule of resets)
++			expect({ selector: rule.selectorText, longhands: Array.from(rule.style).sort() }).toEqual({
++				selector: rule.selectorText,
++				longhands: written.filter((longhand) => !BUTTON_REBOOT_LONGHANDS.includes(longhand)),
++			})
++		// An important surface declaration would outrank every later layer, the reset's included.
++		expect(
++			surface.flatMap((rule) =>
++				Array.from(rule.style).filter(
++					(longhand) => rule.style.getPropertyPriority(longhand) === 'important',
++				),
++			),
++		).toEqual([])
++	})
+ 	it('resets every text treatment the tip rules reset, over a treatment staged beneath it', () => {
+ 		// The staged treatment sits in a layer, and the fixture's own rule sits in none, so the reset
+ 		// outranks it wherever the mixin declares the property. A declaration the mixin dropped leaves

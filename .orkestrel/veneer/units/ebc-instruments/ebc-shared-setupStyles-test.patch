@@ -1,0 +1,35 @@
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 69df3f2..a6a67fc 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -356,7 +356,10 @@ describe('styles setup', () => {
+ 				'BREAKPOINT_INFIXES',
+ 				'BUTTON_BARE_CASES',
+ 				'BUTTON_BARE_VALUES',
++				'BUTTON_CONSUMER_RULES',
+ 				'BUTTON_FILLED_CASES',
++				'BUTTON_FORM_CASES',
++				'BUTTON_FORM_DIFFERENCES',
+ 				'BUTTON_GROUP_CARET_CASES',
+ 				'BUTTON_GROUP_CHECK_MARKUP',
+ 				'BUTTON_GROUP_CORNERS',
+@@ -366,13 +369,19 @@ describe('styles setup', () => {
+ 				'BUTTON_GROUP_SPLIT_CASES',
+ 				'BUTTON_GROUP_SPLIT_FORMS',
+ 				'BUTTON_GROUP_STACK_CASES',
++				'BUTTON_HOLDER_STYLE',
+ 				'BUTTON_ISLAND_CASES',
+ 				'BUTTON_ISLAND_MARKUP',
+ 				'BUTTON_LABEL_CASES',
+ 				'BUTTON_MODES',
+ 				'BUTTON_OUTLINE_CASES',
++				'BUTTON_REBOOT_LONGHANDS',
++				'BUTTON_REBOOT_SELECTORS',
+ 				'BUTTON_SCHEME_CASES',
+ 				'BUTTON_SIZE_CASES',
++				'BUTTON_SURFACE_LONGHANDS',
++				'BUTTON_SURFACE_SELECTORS',
++				'BUTTON_TAG_CASES',
+ 				'BUTTON_TIER_ROLES',
+ 				'BUTTON_TRANSITION_CASES',
+ 				'CALIBRATED_TIERS',
