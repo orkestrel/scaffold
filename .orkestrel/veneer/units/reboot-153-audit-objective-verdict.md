@@ -1,0 +1,23 @@
+1. **CONFIRMED** — The scope attack failed. The live `git diff 6052e25` equals the retained diff byte-for-byte. The additions, integration, assertions, and guide sentence match the Items at [tests/setupBrowser.ts:1850](/home/user/veneer-r153/tests/setupBrowser.ts:1850), [tests/setupBrowser.ts:2061](/home/user/veneer-r153/tests/setupBrowser.ts:2061), [tests/setupBrowser.test.ts:1986](/home/user/veneer-r153/tests/setupBrowser.test.ts:1986), and [guides/veneer.md:10770](/home/user/veneer-r153/guides/veneer.md:10770). No unrelated tracked change appears.
+
+2. **UNRESOLVED** — The normalization mechanism holds, but the complete browser claim exceeds the recorded evidence. Executing the extracted helper changes matching `none`/`hidden` widths to `0px` and preserves painting styles. A release pair with `outline-style: none` and widths `0px`/`3px` consequently loses its width difference. The [engine reading:73](/home/user/scaffold/.orkestrel/veneer/engine/units/host-chromium-153-reading.md:73) records the differing button value, but not the raw styles or counterpart width. Bootstrap’s [focus rule:451](/home/user/veneer-r153/node_modules/bootstrap/dist/css/bootstrap.css:451) supports the `none` inference when its selector matches. Neither supplied log records the raw Chromium 141 widths needed to establish that its map stays unchanged. Capture each form’s styles and widths before and after normalization on the named builds to settle that remainder.
+
+3. **UNRESOLVED** — The declarations satisfy the naming, readonly-return, frozen-constant, and setup-infrastructure requirements. Their exports are pinned at [tests/setupBrowser.test.ts:919](/home/user/veneer-r153/tests/setupBrowser.test.ts:919) and [tests/setupBrowser.test.ts:960](/home/user/veneer-r153/tests/setupBrowser.test.ts:960). The doc-block assertion at [tests/setupBrowser.ts:1863](/home/user/veneer-r153/tests/setupBrowser.ts:1863), however, extends the Chromium 153 explanation to borders without a recorded border measurement. [CSS UI Level 4](https://www.w3.org/TR/css-ui-4/#outline-width) defines outline width as an absolute length; [CSS Backgrounds Level 3](https://www.w3.org/TR/css-backgrounds-3/#border-width) specifies zero computed border width for `none` or `hidden`. These specifications do not establish the claimed browser deviation. Narrow the comment to the measured outline behavior or supply the missing measurements.
+
+4. **CONFIRMED** — The [red log:34](/home/user/scaffold/.orkestrel/veneer/units/r153-instruments/r153-red.log.txt:34) records an `AssertionError`; the [green log:30](/home/user/scaffold/.orkestrel/veneer/units/r153-instruments/r153-green.log.txt:30) records the passing case. Read-only execution of the extracted helper and the case’s equality assertions independently distinguished these mutations:
+   - Identity: fails on outline `3px` and left-border `2px`.
+   - Drop `hidden`: fails on left-border `2px`.
+   - Drop all border-side mappings: fails on left-border `2px`.
+   - Zero painting widths: fails on solid top-border `1px`; an isolated `auto` mutation fails on outline `1px`.
+
+   This proves the named mutations, not every mapping independently. Removing the top, right, or bottom mapping individually survives [the assertions:1989](/home/user/veneer-r153/tests/setupBrowser.test.ts:1989). No browser or Vitest project was executed in this audit.
+
+5. **UNRESOLVED** — The sentence’s description of normalization agrees with [tests/setupBrowser.ts:1876](/home/user/veneer-r153/tests/setupBrowser.ts:1876). Its build-wide explanation at [guides/veneer.md:10771](/home/user/veneer-r153/guides/veneer.md:10771) is not established by the outline-only engine record or the synthetic helper inputs. The border generalization needs measured evidence; the standards distinguish it from outline behavior as stated in verdict 3.
+
+6. **CONFIRMED** — The missing-or-nonzero-terminal-status attack failed. Every gate-table log ends with `exit=0`: `r153-check.log.txt:30`, `r153-lint.log.txt:6`, `r153-oxfmt.log.txt:6`, `r153-vitest-setupbrowser.log.txt:35`, `r153-build-styles.log.txt:15`, `r153-vitest-styles.log.txt:128`, `r153-test-guides.log.txt:16`, and `r153-test-policy.log.txt:16`, under [/home/user/scaffold/.orkestrel/veneer/units/r153-instruments](/home/user/scaffold/.orkestrel/veneer/units/r153-instruments).
+
+Findings outside the claims: none substantiated.
+
+Attacked and held: frozen inputs remain unchanged; already-zero widths, missing-style widths, painting-style widths, and unrelated entries retain their values. Preserving `auto` widths is correct conservative behavior, not a missed normalization.
+
+VERDICT: FAIL 2, 3, 5; outside the claims: none

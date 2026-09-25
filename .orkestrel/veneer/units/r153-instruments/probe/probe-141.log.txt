@@ -1,0 +1,25 @@
+version 141.0.7390.37
+{
+ "button": {
+  "outline-style": "none",
+  "outline-width": "0px",
+  "border-top-style": "none",
+  "border-top-width": "0px",
+  "border-left-style": "hidden",
+  "border-left-width": "0px",
+  "border-right-style": "solid",
+  "border-right-width": "5px"
+ },
+ "anchor": {
+  "outline-style": "none",
+  "outline-width": "0px",
+  "border-top-style": "none",
+  "border-top-width": "0px",
+  "border-left-style": "none",
+  "border-left-width": "0px",
+  "border-right-style": "none",
+  "border-right-width": "0px"
+ }
+}
+assert: none/hidden widths compute 0px, solid keeps 5px: true
+exit=0
