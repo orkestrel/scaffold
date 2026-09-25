@@ -1,0 +1,6 @@
+./node_modules/.bin/oxfmt --config .oxfmtrc.json --check tests/setupStyles.ts
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 19ms on 1 files using 4 threads.
+exit=0

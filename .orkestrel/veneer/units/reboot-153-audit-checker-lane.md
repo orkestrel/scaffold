@@ -1,0 +1,15 @@
+1. PASS — `/home/user/veneer-r153/tests/setupBrowser.ts:1844-1865` (diff hunk `tests/setupBrowser.ts` lines 97-134 of `r153.diff`) adds `LINE_STYLES` and `normalizeLineWidths` verbatim as the brief writes them, doc blocks included, placed before `FormState`/`readFormDifferences`, i.e. "beside" the function per the brief. The diff's only other change to that file is the Item 2 call site (`r153.diff:139-155`); no other line of `tests/setupBrowser.ts` is touched.
+
+2. PASS — `r153.diff:139-155` (`/home/user/veneer-r153/tests/setupBrowser.ts:2059-2068`) wraps the object `readings.set` stores in `normalizeLineWidths(...)`, and the surrounding `readFormDifferences` body (read in full at `tests/setupBrowser.ts:2000-2069`) is otherwise identical to source.
+
+3. PASS — `r153.diff:24-46` adds `'LINE_STYLES'` and `'normalizeLineWidths'` to the export-list case (import at line 28, list rows at lines 36 and 44). `r153.diff:52-84` adds `describe('normalizeLineWidths', ...)` with exactly one case titled `reads an outline or border width whose style paints no line at 0px, and leaves every other entry unchanged`, asserting `toEqual` on exactly the two input/output object pairs the brief names, matching verbatim.
+
+4. PASS — `r153.diff:1-19` (`guides/veneer.md:10767-10777`) inserts the brief's sentence verbatim immediately after the named sentence ending "...at the same button values, under both.", and the remaining, unchanged words of the following sentence ("A counterpart cannot be `:disabled`, so it takes the release's `disabled` class where the release writes that class beside the `:disabled` state, and stays at rest where the release writes no `:disabled` rule for the class.") are reproduced with no wording changed, only re-wrapped.
+
+5. PASS — `r153-status.txt` lists exactly the three owned files: `guides/veneer.md`, `tests/setupBrowser.test.ts`, `tests/setupBrowser.ts`.
+
+6. PASS — `r153-red.log.txt:33-51` shows `FAIL ... normalizeLineWidths > reads an outline or border width...` with an `AssertionError: expected {...} to deeply equal {...}` for exactly the `normalizeLineWidths` case. Every gate log ends `exit=0`: `r153-check.log.txt:30`, `r153-lint.log.txt:6`, `r153-oxfmt.log.txt:6`, `r153-green.log.txt` (no explicit `exit=$?` echo present in this file's tail, but it ends with vitest's own success line `Test Files 1 passed (1)` / `Tests 1 passed | 100 skipped (101)`, i.e. the command's success line where the brief's logging adds no `exit=` echo), `r153-build-styles.log.txt:15`, `r153-vitest-styles.log.txt:128`, `r153-test-guides.log.txt:16`, `r153-test-policy.log.txt:16`, `r153-vitest-setupbrowser.log.txt:35`.
+
+One unreviewed item: no `r153-report.md` was found in `/home/user/scaffold/.orkestrel/veneer/units/r153-instruments/` (only `.log.txt` files, `r153.diff`, and `r153-status.txt` are present), so the brief's § Output requirement to write and return that file cannot be confirmed from the supplied evidence. This is outside the six numbered checks assigned but is worth flagging to the Orchestrator as a possible missing-artifact deviation.
+
+CHECK: PASS

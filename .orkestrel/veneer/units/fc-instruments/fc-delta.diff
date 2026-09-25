@@ -1,0 +1,10 @@
+--- tmp/units/setupStyles.ts.bak	2026-09-25 08:25:01.120025689 +0000
++++ tests/setupStyles.ts	2026-09-25 08:25:04.860758446 +0000
+@@ -7225,6 +7225,7 @@
+ 			padding: Object.freeze(['--vn-space-8', '--vn-space-6']),
+ 			color: Object.freeze(['--bs-body-color-rgb']),
+ 			border: Object.freeze(['--bs-border-width']),
++			transition: Object.freeze(['--vn-motion-feedback', '--vn-motion-feedback']),
+ 		}),
+ 	}),
+ 	Object.freeze({
