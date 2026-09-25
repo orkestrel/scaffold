@@ -1,0 +1,242 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7cc16d4..b803707 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1025,13 +1025,19 @@ must take nothing further. Each release must be resumable: run again, it finishe
+ work and repeats nothing it completed, as a snapshot's `restore` does. The static `join` method of
+ the `Lifetime` class makes a class constructed with a lifetime's `signal` one of that lifetime's
+ holdings, with the class's own `destroy` method as the release; a button joins this way. A class
+-must join right after its claim, before it runs any consumer code. The class passes its own
+-lifetime too, and the destruction of that lifetime ends the owner's holding of the class, so an
+-owner that builds a child and destroys it on every change keeps no holding of a destroyed child. A
+-signal no lifetime owns destroys the class when it aborts. A button keeps one lifetime, which
+-holds its snapshot. Its `destroy` method releases the claim once, before any restoration, and then
+-drains that lifetime on every call, so a destruction a reaction to the button's restoration starts
+-returns with the host restored, and the destruction it interrupted, resuming, writes nothing more.
++must join right after its claim, before it runs any consumer code and before its own lifetime holds
++anything. The class passes its own lifetime too, and `join` holds in it, as its oldest holding, the
++ending of the owner's holding of the class. That lifetime's drain runs the ending last, after the
++class gave everything else back, so an owner destruction nested before it still reaches the class.
++The ending runs no release, so the class's `destroy` method does not run again, and an owner that
++builds a child and destroys it on every change keeps no holding of a destroyed child. An error a
++release of the class throws propagates from the owner's destruction and from the class's own, and
++a class whose lifetime ended before it joined leaves the owner nothing. A signal no lifetime owns
++destroys the class in an abort listener when it aborts, so the platform reports an error that
++destruction throws. A button keeps one lifetime, which holds its snapshot. Its `destroy` method
++releases the claim once, before any restoration, and then drains that lifetime on every call, so a
++destruction a reaction to the button's restoration starts returns with the host restored, and the
++destruction it interrupted, resuming, writes nothing more.
+ 
+ Two doors let other code run inside an engine's write sequence: a custom element's reaction runs
+ inside each attribute, class, style, or child-list write, and a synchronous listener runs inside
+diff --git a/src/browser/Lifetime.ts b/src/browser/Lifetime.ts
+index 0abe687..dd335b2 100644
+--- a/src/browser/Lifetime.ts
++++ b/src/browser/Lifetime.ts
+@@ -39,16 +39,22 @@ export class Lifetime implements LifetimeInterface {
+ 	 *
+ 	 * @param signal - The signal the class's options carry; undefined joins nothing.
+ 	 * @param resource - The class, whose `destroy` method is the release.
+-	 * @param lifetime - The class's own lifetime, whose destruction ends the class's membership: it ends the owner's holding of the class, or removes the listener a signal no lifetime owns carries.
++	 * @param lifetime - The class's own lifetime, whose destruction ends the class's membership: its drain ends the owner's holding of the class, or its abort removes the listener a signal no lifetime owns carries.
+ 	 * @remarks
+-	 * A class must join right after its claim, before it runs any consumer code, so a destruction
+-	 * that code starts reaches it. A lifetime's signal makes the class a holding of that lifetime, so
+-	 * every destruction of it, a nested one included, destroys the class; when that destruction has
+-	 * begun, the class is destroyed inside this call. The destruction of the class's own lifetime ends
+-	 * that holding: the owner's `release` method runs the class's `destroy` method again, nested in the
+-	 * destruction that ended the lifetime, and the owner then holds nothing of the class. So an owner
+-	 * that builds a child and destroys it on every change keeps no holding of a destroyed child. Any
+-	 * other signal destroys the class when it aborts, and at once when it has aborted already.
++	 * A class must join right after its claim, before it runs any consumer code and before its own
++	 * lifetime holds anything, so a destruction that code starts reaches it. A lifetime's signal makes
++	 * the class a holding of that lifetime, so every destruction of it, a nested one included,
++	 * destroys the class; when that destruction has begun, the class is destroyed inside this call.
++	 * The class's own lifetime then holds the ending of that holding as its oldest holding, so its
++	 * drain runs the ending last, after the class gave everything else back, and an owner destruction
++	 * nested before it still reaches the class. The ending runs no release: the owner then holds
++	 * nothing of the class, and the class's `destroy` method does not run again. So an owner that
++	 * builds a child and destroys it on every change keeps no holding of a destroyed child, an error
++	 * a release of the class throws propagates from the owner's destruction and from the class's own,
++	 * and a class whose lifetime ended before it joined leaves the owner nothing. Any other signal
++	 * destroys the class when it aborts, and at once when it has aborted already. The class's
++	 * `destroy` method then runs in an abort listener, so the platform reports an error it throws and
++	 * the abort does not propagate it.
+ 	 * @example
+ 	 * ```ts
+ 	 * // A class passes the signal its options carry, itself, and its own lifetime, as a button's
+@@ -70,10 +76,12 @@ export class Lifetime implements LifetimeInterface {
+ 		const owner = Lifetime.#lifetimes.get(signal)
+ 		if (owner !== undefined) {
+ 			if (!owner.hold(resource, (held) => held.destroy())) return
+-			// The resource's own destruction ends the owner's holding, so an owner that builds and ends
+-			// a child on every change keeps a bounded ledger. The release runs the resource's `destroy`
+-			// again, nested in that destruction, and it returns with the holding ended.
+-			lifetime.signal.addEventListener('abort', () => owner.release(resource), { once: true })
++			// The resource's own lifetime ends the owner's holding in its drain, so an owner that builds
++			// and ends a child on every change keeps a bounded ledger, and a release error propagates
++			// through the drain. Held first, the ending runs last, after every other holding is given
++			// back, so an owner destruction nested before it still reaches the resource. A lifetime that
++			// has ended runs the ending at once, and the owner keeps nothing.
++			lifetime.hold({ owner, resource }, (held) => held.owner.#end(held.resource))
+ 		} else if (signal.aborted) resource.destroy()
+ 		else {
+ 			signal.addEventListener('abort', () => resource.destroy(), {
+@@ -123,6 +131,13 @@ export class Lifetime implements LifetimeInterface {
+ 		if (failure !== undefined) throw failure.error
+ 	}
+ 
++	// Ends the holding of a record without running its release. A joined resource's own lifetime calls
++	// it as its oldest holding's release, so the owner keeps the resource until the resource's drain
++	// gave everything else back. When that lifetime had ended before the join, it calls it at once.
++	#end(record: object): void {
++		this.#holdings = this.#holdings.filter((holding) => holding.record !== record)
++	}
++
+ 	// Runs one holding's release and then ends that entry, whether the release returned or threw. The
+ 	// entry stays pending while the release runs, so a nested destruction runs it again.
+ 	#give(holding: LifetimeHolding): void {
+diff --git a/tests/src/browser/Button.test.ts b/tests/src/browser/Button.test.ts
+index 9d01e3a..aacee89 100644
+--- a/tests/src/browser/Button.test.ts
++++ b/tests/src/browser/Button.test.ts
+@@ -802,6 +802,38 @@ describe('Button', () => {
+ 		expect(owner.release(button)).toBe(false)
+ 	})
+ 
++	// The owner still holds the button while the button's restoration runs, so an owner destruction a
++	// reaction to that restoration starts reaches the button and writes back the `aria-pressed` write
++	// the interrupted restoration has still to make.
++	it("returns from an owner's destroy a reaction to the button's restoration calls only after the host is restored", () => {
++		const name = 'vn-probe-owner-destroy'
++		const reactions = new WeakMap<HTMLElement, () => void>()
++		customElements.define(
++			name,
++			class extends HTMLElement {
++				static observedAttributes = ['class']
++				attributeChangedCallback() {
++					reactions.get(this)?.()
++				}
++			},
++		)
++		const host = document.createElement(name)
++		const owner = new Lifetime()
++		const button = new Button(host, { signal: owner.signal })
++		onTestFinished(() => button.destroy())
++		button.toggle()
++		const readings = createRecorder<readonly [boolean, string | null]>()
++		reactions.set(host, () => {
++			reactions.delete(host)
++			owner.destroy()
++			readings.handler(host.classList.contains('active'), host.getAttribute('aria-pressed'))
++		})
++		button.destroy()
++		expect(readings.calls).toEqual([[false, null]])
++		expect(host.hasAttribute('aria-pressed')).toBe(false)
++		expect(owner.release(button)).toBe(false)
++	})
++
+ 	it('leaves its owner no holding when a hook destroys it during its construction', () => {
+ 		const host = build('button')
+ 		const owner = new Lifetime()
+diff --git a/tests/src/browser/Lifetime.test.ts b/tests/src/browser/Lifetime.test.ts
+index 5d63acf..524f6d3 100644
+--- a/tests/src/browser/Lifetime.test.ts
++++ b/tests/src/browser/Lifetime.test.ts
+@@ -265,8 +265,8 @@ describe('Lifetime.join', () => {
+ 		}
+ 		Lifetime.join(owner.signal, resource, lifetime)
+ 		lifetime.hold({}, () => steps.handler('released'))
+-		resource.destroy()
+-		expect(steps.calls).toEqual([['destroy'], ['destroy'], ['released']])
++		expect(() => resource.destroy()).not.toThrow()
++		expect(steps.calls).toEqual([['destroy'], ['released']])
+ 		expect(owner.release(resource)).toBe(false)
+ 		steps.clear()
+ 		owner.destroy()
+@@ -281,6 +281,72 @@ describe('Lifetime.join', () => {
+ 		expect(owner.release(child)).toBe(false)
+ 	})
+ 
++	it("rethrows a joined child's release error from the owner's destruction after every other holding is given back", () => {
++		const owner = new Lifetime()
++		const child = new Lifetime()
++		const releases = createRecorder<readonly [string]>()
++		owner.hold({}, () => releases.handler('owner'))
++		Lifetime.join(owner.signal, child, child)
++		child.hold({}, () => releases.handler('child'))
++		child.hold({}, () => {
++			throw new Error('release failed')
++		})
++		expect(() => owner.destroy()).toThrow('release failed')
++		expect(releases.calls).toEqual([['child'], ['owner']])
++		expect(owner.release(child)).toBe(false)
++		expect(() => owner.destroy()).not.toThrow()
++	})
++
++	it("rethrows a joined child's release error from the child's own destruction and ends the owner's holding", () => {
++		const owner = new Lifetime()
++		const child = new Lifetime()
++		const releases = createRecorder<readonly [string]>()
++		Lifetime.join(owner.signal, child, child)
++		child.hold({}, () => releases.handler('child'))
++		child.hold({}, () => {
++			throw new Error('release failed')
++		})
++		expect(() => child.destroy()).toThrow('release failed')
++		expect(releases.calls).toEqual([['child']])
++		expect(owner.release(child)).toBe(false)
++		expect(() => owner.destroy()).not.toThrow()
++	})
++
++	it('leaves the owner no holding of a child whose lifetime ended before it joined', () => {
++		const owner = new Lifetime()
++		const child = new Lifetime()
++		child.destroy()
++		Lifetime.join(owner.signal, child, child)
++		expect(owner.release(child)).toBe(false)
++	})
++
++	it("reaches the child from an owner destruction nested in the child's drain, before the child's last holding", () => {
++		const owner = new Lifetime()
++		const child = new Lifetime()
++		const steps = createRecorder<readonly [string]>()
++		owner.hold({}, () => steps.handler('owner released'))
++		Lifetime.join(owner.signal, child, child)
++		let nested = false
++		child.hold({}, () => {
++			steps.handler('child released')
++			if (nested) return
++			nested = true
++			owner.destroy()
++			steps.handler('owner returned')
++		})
++		child.destroy()
++		expect(steps.calls).toEqual([
++			['child released'],
++			['child released'],
++			['owner released'],
++			['owner returned'],
++		])
++		expect(owner.release(child)).toBe(false)
++		owner.destroy()
++		child.destroy()
++		expect(steps.count).toBe(4)
++	})
++
+ 	it('leaves no holding behind across repeated joins of resources destroyed on their own', () => {
+ 		const owner = new Lifetime()
+ 		const destroyed = createRecorder<readonly [number]>()
+@@ -318,10 +384,10 @@ describe('Lifetime.join', () => {
+ 		lifetime.hold({}, () => steps.handler('released'))
+ 		owner.hold({}, () => steps.handler('newest'))
+ 		owner.destroy()
+-		expect(steps.calls).toEqual([['newest'], ['destroy'], ['destroy'], ['released'], ['oldest']])
++		expect(steps.calls).toEqual([['newest'], ['destroy'], ['released'], ['oldest']])
+ 		expect(owner.release(resource)).toBe(false)
+ 		owner.destroy()
+-		expect(steps.count).toBe(5)
++		expect(steps.count).toBe(4)
+ 	})
+ 
+ 	it('joins nothing for an absent signal', () => {
