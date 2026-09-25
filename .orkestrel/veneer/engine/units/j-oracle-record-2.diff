@@ -1,0 +1,2108 @@
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 3cc4086..8729960 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -22,6 +22,7 @@ import {
+ 	WORKSPACE_ROOT,
+ 	compileVeneerRuntime,
+ 	readBootstrapRuntime,
++	readPluginFixture,
+ 	recordPluginControl,
+ 	recordPluginOracle,
+ 	scanPluginFixture,
+@@ -317,7 +318,7 @@ describe('Bootstrap plugin oracle', () => {
+ 			expect(scanPluginSteps(scenario, recording)).toBeUndefined()
+ 			if (process.env.ORACLE_REFRESH === '1')
+ 				writeFileSync(path, `${JSON.stringify(recording, undefined, '\t')}\n`)
+-			expect(scanPluginFixture(recording, parseJSON(readFileSync(path, 'utf8')))).toBeUndefined()
++			expect(scanPluginFixture(recording, readPluginFixture(scenario.plugin, path))).toBeUndefined()
+ 		},
+ 	)
+ })
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index b4a880c..c579293 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1,6 +1,7 @@
+ // Proof of the server setup module: the Bootstrap identity constants and the Node-only helpers it
+ // exports, read against this workspace's own installed dependency tree.
+ 
++import type { Browser } from 'playwright'
+ import type {
+ 	CompatibilityRow,
+ 	EngineDeparture,
+@@ -9,10 +10,7 @@ import type {
+ 	OracleFixture,
+ 	OracleInventory,
+ 	OracleVocabulary,
+-	PluginFixture,
+-	PluginNode,
+-	PluginScenario,
+-	PluginState,
++	PluginRecording,
+ } from './setupServer.js'
+ import { isRecord, parseJSON } from '@orkestrel/contract'
+ import { TOKEN_NAMES } from '@src/core'
+@@ -40,11 +38,16 @@ import {
+ 	LEDGER_INVENTORY,
+ 	LEDGER_SHIPPED,
+ 	ORACLE_BINDINGS,
+-	ORACLE_OMITTED_ATTRIBUTES,
+-	ORACLE_REFERENCE_ATTRIBUTES,
+ 	ORACLE_TIMEOUT,
+ 	PLUGIN_CONTROLS,
++	PLUGIN_OMITTED_ATTRIBUTES,
+ 	PLUGIN_ORACLE_TIMEOUT,
++	PLUGIN_REFERENCE_ATTRIBUTES,
++	PLUGIN_SAMPLE_DIVERGENT,
++	PLUGIN_SAMPLE_OFFICIAL,
++	PLUGIN_SAMPLE_RECORDING,
++	PLUGIN_SAMPLE_REPORT,
++	PLUGIN_SAMPLE_SCENARIO,
+ 	PLUGIN_SCENARIOS,
+ 	LAYER_COMPONENTS,
+ 	SHARED_LONGHANDS,
+@@ -76,16 +79,16 @@ import {
+ 	compileExpandedCascade,
+ 	compileVeneerRuntime,
+ 	computeArtifactDigest,
+-	driveOracleBrowser,
+-	drivePluginAction,
+ 	filterAddedDepartures,
+ 	inferPluginState,
+ 	isPluginState,
++	launchOracleBrowser,
+ 	readBootstrapRuntime,
+ 	readBuildOutput,
+ 	readPluginFixture,
+ 	readPluginState,
+ 	recordPluginOracle,
++	reportPluginPage,
+ 	scanPluginFixture,
+ 	scanPluginSteps,
+ 	settlePluginState,
+@@ -530,11 +533,16 @@ describe('server setup', () => {
+ 			'LEDGER_INVENTORY',
+ 			'LEDGER_SHIPPED',
+ 			'ORACLE_BINDINGS',
+-			'ORACLE_OMITTED_ATTRIBUTES',
+-			'ORACLE_REFERENCE_ATTRIBUTES',
+ 			'ORACLE_TIMEOUT',
+ 			'PLUGIN_CONTROLS',
++			'PLUGIN_OMITTED_ATTRIBUTES',
+ 			'PLUGIN_ORACLE_TIMEOUT',
++			'PLUGIN_REFERENCE_ATTRIBUTES',
++			'PLUGIN_SAMPLE_DIVERGENT',
++			'PLUGIN_SAMPLE_OFFICIAL',
++			'PLUGIN_SAMPLE_RECORDING',
++			'PLUGIN_SAMPLE_REPORT',
++			'PLUGIN_SAMPLE_SCENARIO',
+ 			'PLUGIN_SCENARIOS',
+ 			'PLUGIN_SETTLE_BUDGET',
+ 			'PLUGIN_SETTLE_INTERVAL',
+@@ -570,7 +578,6 @@ describe('server setup', () => {
+ 			'describeDeparture',
+ 			'describeSite',
+ 			'describeValueCell',
+-			'driveOracleBrowser',
+ 			'drivePluginAction',
+ 			'expandConditions',
+ 			'extractSpecifiers',
+@@ -584,6 +591,7 @@ describe('server setup', () => {
+ 			'isDeparture',
+ 			'isPluginState',
+ 			'isProofFile',
++			'launchOracleBrowser',
+ 			'matchSelectorKey',
+ 			'matchShippedKey',
+ 			'matchesOracleEvents',
+@@ -617,6 +625,7 @@ describe('server setup', () => {
+ 			'recordPluginOracle',
+ 			'renderBreakpointTemplate',
+ 			'renderRuleKey',
++			'reportPluginPage',
+ 			'scanCompatibilityPresence',
+ 			'scanEscapingImport',
+ 			'scanForbiddenBuild',
+@@ -1116,38 +1125,11 @@ describe('server setup', () => {
+ 	})
+ 
+ 	describe('plugin oracle', () => {
+-		const sample: PluginScenario = {
+-			plugin: 'sample',
+-			markup: '<button id="trigger" type="button">Toggle</button><div id="panel">Panel</div>',
+-			spawned: [],
+-			setup: { bootstrap: '', veneer: '' },
+-			actions: [
+-				{ name: 'click.trigger', gesture: 'click', target: 'trigger' },
+-				{ name: 'press.trigger', gesture: 'press', target: 'trigger', key: 'Enter', refused: true },
+-			],
+-		}
+-		const closed: PluginState = {
+-			elements: { panel: { classes: ['collapse'], attributes: {}, visible: false } },
+-			focus: 'body',
+-			locked: false,
+-		}
+-		const open: PluginState = {
+-			elements: { panel: { classes: ['collapse', 'show'], attributes: {}, visible: true } },
+-			focus: 'trigger',
+-			locked: false,
+-		}
+-		const recorded: PluginFixture = {
+-			version: BOOTSTRAP_VERSION,
+-			plugin: 'sample',
+-			browser: '153.0.0.0',
+-			steps: ['', 'reduced.'].flatMap((prefix) => [
+-				{ name: `sample.${prefix}initial`, state: closed },
+-				{ name: `sample.${prefix}click.trigger`, state: open },
+-				{ name: `sample.${prefix}press.trigger`, state: open },
+-			]),
+-		}
++		const sample = PLUGIN_SAMPLE_SCENARIO
++		const recorded = PLUGIN_SAMPLE_RECORDING
++		const [closed, open] = recorded.steps
+ 
+-		it('declares one scenario for each plugin the engine drives, each action named once and each call scripted for both engines', () => {
++		it('declares one scenario for each plugin the engine drives, each action named once and each call scripted for the Bootstrap and Veneer libraries', () => {
+ 			expect(PLUGIN_SCENARIOS.map((scenario) => scenario.plugin)).toEqual([
+ 				'collapse',
+ 				'alert',
+@@ -1167,18 +1149,22 @@ describe('server setup', () => {
+ 					plugin: scenario.plugin,
+ 					names,
+ 				})
+-				for (const action of scenario.actions.filter((candidate) => candidate.gesture === 'call')) {
++				for (const action of scenario.actions.flatMap((candidate) =>
++					candidate.gesture === 'call' ? [candidate] : [],
++				)) {
+ 					expect({
+ 						action: action.name,
+-						bootstrap: action.call?.bootstrap.startsWith('bootstrap.'),
+-						veneer: action.call?.veneer.startsWith('veneer.'),
++						bootstrap: action.call.bootstrap.startsWith('bootstrap.'),
++						veneer: action.call.veneer.startsWith('veneer.'),
+ 					}).toEqual({ action: action.name, bootstrap: true, veneer: true })
+ 				}
+ 			}
+ 			expect(Object.isFrozen(PLUGIN_SCENARIOS)).toBe(true)
+ 			expect(Object.isFrozen(PLUGIN_CONTROLS)).toBe(true)
+-			expect(ORACLE_OMITTED_ATTRIBUTES).toEqual(['id', 'class', 'style'])
+-			expect(Object.isFrozen(ORACLE_REFERENCE_ATTRIBUTES)).toBe(true)
++			expect(PLUGIN_OMITTED_ATTRIBUTES).toEqual(['id', 'class', 'style'])
++			expect(Object.isFrozen(PLUGIN_OMITTED_ATTRIBUTES)).toBe(true)
++			expect(PLUGIN_REFERENCE_ATTRIBUTES).toContain('aria-describedby')
++			expect(Object.isFrozen(PLUGIN_REFERENCE_ATTRIBUTES)).toBe(true)
+ 			for (const control of PLUGIN_CONTROLS) {
+ 				expect({
+ 					control: control.name,
+@@ -1190,63 +1176,31 @@ describe('server setup', () => {
+ 			}
+ 		})
+ 
+-		it('labels authored, root, and inserted elements, and writes every id reference as the label it names', () => {
+-			const node: PluginNode = {
+-				tag: 'div',
+-				id: undefined,
+-				key: 'div',
+-				classes: ['zeta', 'alpha'],
+-				attributes: {},
+-				visible: true,
+-				focused: false,
+-			}
+-			const inferred = inferPluginState(
+-				{
+-					nodes: [
+-						{ ...node, tag: 'html', key: 'html', attributes: { lang: 'en' } },
+-						{
+-							...node,
+-							tag: 'body',
+-							key: 'body',
+-							attributes: { class: 'modal-open', style: 'overflow: hidden' },
+-						},
+-						{
+-							...node,
+-							tag: 'button',
+-							id: 'trigger',
+-							key: 'button',
+-							attributes: {
+-								id: 'trigger',
+-								'aria-describedby': 'tip-81 panel  gone',
+-								'data-bs-target': '#panel',
+-								type: 'button',
+-							},
+-							focused: true,
+-						},
+-						{ ...node, id: 'panel', attributes: { id: 'panel', 'aria-labelledby': 'trigger' } },
+-						{
+-							...node,
+-							id: 'tip-81',
+-							key: '.tooltip',
+-							attributes: { id: 'tip-81', role: 'tooltip' },
+-						},
+-						{ ...node, key: '.tooltip' },
+-						{ ...node, tag: 'span', key: 'span', visible: false },
+-					],
+-					locked: true,
+-				},
+-				['trigger', 'panel'],
+-			)
++		it('labels authored, root, and inserted elements, and reads each one own text, parent, and scroll offsets', () => {
++			const inferred = inferPluginState(PLUGIN_SAMPLE_REPORT, ['trigger', 'panel', '__proto__'])
+ 			expect(Object.keys(inferred.elements)).toEqual([
+ 				'html',
+ 				'body',
+ 				'trigger',
+ 				'panel',
++				'__proto__',
+ 				'+.tooltip[0]',
+ 				'+.tooltip[1]',
+ 				'+span[0]',
+ 			])
+-			expect(inferred.elements.trigger).toEqual({
++			expect(inferred.elements.html).toStrictEqual({
++				classes: [],
++				attributes: { lang: 'en' },
++				visible: true,
++				scroll: { top: 0, left: 0 },
++			})
++			expect(inferred.elements.body).toStrictEqual({
++				classes: ['modal-open'],
++				attributes: {},
++				visible: true,
++				parent: 'html',
++			})
++			expect(inferred.elements.trigger).toStrictEqual({
+ 				classes: ['alpha', 'zeta'],
+ 				attributes: {
+ 					'aria-describedby': '+.tooltip[0] panel ?',
+@@ -1254,117 +1208,88 @@ describe('server setup', () => {
+ 					type: 'button',
+ 				},
+ 				visible: true,
++				text: 'Toggle',
++				parent: 'body',
+ 			})
+ 			expect(Object.keys(inferred.elements.trigger?.attributes ?? {})).toEqual([
+ 				'aria-describedby',
+ 				'data-bs-target',
+ 				'type',
+ 			])
+-			expect(inferred.elements.body?.attributes).toEqual({})
+-			expect(inferred.elements.panel?.attributes).toEqual({ 'aria-labelledby': 'trigger' })
++			expect(inferred.elements.panel).toStrictEqual({
++				classes: [],
++				attributes: { 'aria-labelledby': 'trigger' },
++				visible: true,
++				text: 'Panel body',
++				parent: 'body',
++				scroll: { top: 40, left: 0 },
++			})
+ 			expect(inferred.elements['+.tooltip[0]']?.attributes).toEqual({ role: 'tooltip' })
++			expect(inferred.elements['+.tooltip[1]']).toStrictEqual({
++				classes: ['tooltip-inner'],
++				attributes: {},
++				visible: true,
++				text: 'Tip',
++				parent: '+.tooltip[0]',
++			})
+ 			expect(inferred.elements['+span[0]']?.visible).toBe(false)
++			expect(inferred.elements['+span[0]']?.parent).toBe('+.tooltip[1]')
+ 			expect(inferred.focus).toBe('trigger')
+ 			expect(inferred.locked).toBe(true)
+-			expect(
+-				inferPluginState({ nodes: [{ ...node, tag: 'body', key: 'body' }], locked: false }, [])
+-					.focus,
+-			).toBe('body')
++			const [html, body, trigger] = PLUGIN_SAMPLE_REPORT.nodes
++			if (html === undefined || body === undefined || trigger === undefined)
++				throw new Error('Missing sample report nodes')
++			expect(inferPluginState({ ...PLUGIN_SAMPLE_REPORT, nodes: [html, body] }, []).focus).toBe(
++				'body',
++			)
+ 			expect(() =>
+-				inferPluginState(
+-					{
+-						nodes: [
+-							{ ...node, id: 'panel' },
+-							{ ...node, tag: 'p', id: 'panel', key: 'p' },
+-						],
+-						locked: false,
+-					},
+-					['panel'],
+-				),
+-			).toThrow('Plugin reading labels two elements panel')
++				inferPluginState({ ...PLUGIN_SAMPLE_REPORT, nodes: [html, body, trigger, trigger] }, [
++					'trigger',
++				]),
++			).toThrow('Plugin reading labels two elements trigger')
+ 		})
+ 
+-		it('reports each differing element, class, attribute, visibility, focus, and lock, and nothing for identical recordings', () => {
+-			const official: PluginFixture = {
+-				...recorded,
+-				steps: [
+-					{
+-						name: 'sample.initial',
+-						state: {
+-							elements: {
+-								panel: {
+-									classes: ['collapse', 'show'],
+-									attributes: { 'aria-hidden': 'false', role: 'region' },
+-									visible: true,
+-								},
+-								'+div[0]': { classes: ['backdrop'], attributes: {}, visible: true },
+-							},
+-							focus: 'panel',
+-							locked: true,
+-						},
+-					},
+-				],
+-			}
+-			expect(collectEngineDepartures(official, official)).toEqual([])
+-			const own: PluginFixture = {
+-				...recorded,
+-				steps: [
+-					{
+-						name: 'sample.initial',
+-						state: {
+-							elements: {
+-								panel: {
+-									classes: ['collapse', 'open'],
+-									attributes: { role: 'group', 'data-state': 'open' },
+-									visible: false,
+-								},
+-								'+div[1]': { classes: ['backdrop'], attributes: {}, visible: true },
+-							},
+-							focus: 'body',
+-							locked: false,
+-						},
+-					},
+-				],
+-			}
++		it('keeps an authored __proto__ label as an own element through serialization', () => {
++			const inferred = inferPluginState(PLUGIN_SAMPLE_REPORT, ['trigger', 'panel', '__proto__'])
++			expect(Object.hasOwn(inferred.elements, '__proto__')).toBe(true)
++			expect(JSON.stringify(inferred)).toContain(
++				'"__proto__":{"classes":["collapse"],"attributes":{},"visible":true,"parent":"panel"}',
++			)
++		})
++
++		it('reports each differing element, class, attribute, visibility, text, parent, scroll offset, focus, and lock, and nothing for identical recordings', () => {
++			expect(collectEngineDepartures(PLUGIN_SAMPLE_OFFICIAL, PLUGIN_SAMPLE_OFFICIAL)).toEqual([])
+ 			const row = { plugin: 'sample', step: 'sample.initial' }
+-			expect(collectEngineDepartures(official, own)).toStrictEqual([
+-				{ ...row, subject: 'panel', facet: 'class', name: 'open', bootstrap: false, veneer: true },
+-				{ ...row, subject: 'panel', facet: 'class', name: 'show', bootstrap: true, veneer: false },
++			const panel = { ...row, subject: 'panel' }
++			expect(
++				collectEngineDepartures(PLUGIN_SAMPLE_OFFICIAL, PLUGIN_SAMPLE_DIVERGENT),
++			).toStrictEqual([
++				{ ...panel, facet: 'class', name: 'open', bootstrap: false, veneer: true },
++				{ ...panel, facet: 'class', name: 'show', bootstrap: true, veneer: false },
+ 				{
+-					...row,
+-					subject: 'panel',
++					...panel,
+ 					facet: 'attribute',
+ 					name: 'aria-hidden',
+ 					bootstrap: 'false',
+ 					veneer: undefined,
+ 				},
++				{ ...panel, facet: 'attribute', name: 'data-state', bootstrap: undefined, veneer: 'open' },
++				{ ...panel, facet: 'attribute', name: 'role', bootstrap: 'region', veneer: 'group' },
++				{ ...panel, facet: 'visibility', name: undefined, bootstrap: true, veneer: false },
++				{ ...panel, facet: 'text', name: undefined, bootstrap: 'Panel', veneer: 'Pane' },
++				{ ...panel, facet: 'parent', name: undefined, bootstrap: 'body', veneer: 'html' },
++				{ ...panel, facet: 'scroll', name: 'top', bootstrap: 40, veneer: 0 },
+ 				{
+ 					...row,
+-					subject: 'panel',
+-					facet: 'attribute',
+-					name: 'data-state',
+-					bootstrap: undefined,
+-					veneer: 'open',
+-				},
+-				{
+-					...row,
+-					subject: 'panel',
+-					facet: 'attribute',
+-					name: 'role',
+-					bootstrap: 'region',
+-					veneer: 'group',
+-				},
+-				{
+-					...row,
+-					subject: 'panel',
+-					facet: 'visible',
++					subject: '+div[0]',
++					facet: 'element',
+ 					name: undefined,
+ 					bootstrap: true,
+ 					veneer: false,
+ 				},
+ 				{
+ 					...row,
+-					subject: '+div[0]',
++					subject: 'constructor',
+ 					facet: 'element',
+ 					name: undefined,
+ 					bootstrap: true,
+@@ -1396,13 +1321,35 @@ describe('server setup', () => {
+ 				},
+ 			])
+ 			expect(() =>
+-				collectEngineDepartures(official, {
+-					...official,
+-					steps: [{ name: 'sample.other', state: closed }],
++				collectEngineDepartures(PLUGIN_SAMPLE_OFFICIAL, {
++					...PLUGIN_SAMPLE_OFFICIAL,
++					steps: PLUGIN_SAMPLE_OFFICIAL.steps.map((step) => ({ ...step, name: 'sample.other' })),
+ 				}),
+ 			).toThrow('Plugin recordings of sample differ in step membership')
+ 		})
+ 
++		it('reports a constructor label one side lacks as an absent element', () => {
++			const without: PluginRecording = {
++				...PLUGIN_SAMPLE_OFFICIAL,
++				steps: PLUGIN_SAMPLE_OFFICIAL.steps.map((step) => ({
++					...step,
++					state: {
++						...step.state,
++						elements: Object.fromEntries(
++							Object.entries(step.state.elements).filter(([label]) => label !== 'constructor'),
++						),
++					},
++				})),
++			}
++			const row = { plugin: 'sample', step: 'sample.initial', subject: 'constructor' }
++			expect(collectEngineDepartures(PLUGIN_SAMPLE_OFFICIAL, without)).toStrictEqual([
++				{ ...row, facet: 'element', name: undefined, bootstrap: true, veneer: false },
++			])
++			expect(collectEngineDepartures(without, PLUGIN_SAMPLE_OFFICIAL)).toStrictEqual([
++				{ ...row, facet: 'element', name: undefined, bootstrap: false, veneer: true },
++			])
++		})
++
+ 		it('filters the departures a baseline does not carry, in order', () => {
+ 			const departure: EngineDeparture = {
+ 				plugin: 'sample',
+@@ -1420,11 +1367,12 @@ describe('server setup', () => {
+ 		})
+ 
+ 		it('requires every scenario step and a state change at every step Bootstrap does not refuse', () => {
++			if (closed === undefined || open === undefined) throw new Error('Missing sample steps')
+ 			expect(scanPluginSteps(sample, recorded)).toBeUndefined()
+-			const unchanged: PluginFixture = {
++			const unchanged: PluginRecording = {
+ 				...recorded,
+ 				steps: recorded.steps.map((step) =>
+-					step.name === 'sample.reduced.click.trigger' ? { ...step, state: closed } : step,
++					step.name === 'sample.reduced.click.trigger' ? { ...step, state: closed.state } : step,
+ 				),
+ 			}
+ 			expect(scanPluginSteps(sample, unchanged)).toBe(
+@@ -1442,8 +1390,8 @@ describe('server setup', () => {
+ 		})
+ 
+ 		it('compares a saved fixture step by step, ignoring the browser build it names', () => {
+-			const saved: unknown = parseJSON(JSON.stringify(recorded))
+-			expect(scanPluginFixture(recorded, saved)).toBeUndefined()
++			if (closed === undefined) throw new Error('Missing sample steps')
++			expect(scanPluginFixture(recorded, recorded)).toBeUndefined()
+ 			expect(scanPluginFixture(recorded, { ...recorded, browser: '141.0.0.0' })).toBeUndefined()
+ 			expect(
+ 				scanPluginFixture(recorded, {
+@@ -1455,17 +1403,18 @@ describe('server setup', () => {
+ 					),
+ 				}),
+ 			).toBe('Plugin oracle differs at step sample.click.trigger')
++			expect(scanPluginFixture(recorded, { ...recorded, steps: recorded.steps.slice(0, 5) })).toBe(
++				'Plugin oracle differs at step sample.reduced.press.trigger',
++			)
+ 			expect(
+ 				scanPluginFixture(recorded, {
+ 					...recorded,
+-					steps: [...recorded.steps, { name: 'sample.extra', state: closed }],
++					steps: [...recorded.steps, { name: 'sample.extra', state: closed.state }],
+ 				}),
+ 			).toBe('Plugin oracle fixture metadata or step membership differs')
+ 			expect(scanPluginFixture(recorded, { ...recorded, plugin: 'other' })).toBe(
+ 				'Plugin oracle fixture metadata or step membership differs',
+ 			)
+-			expect(scanPluginFixture(recorded, [])).toBe('Invalid plugin oracle fixture')
+-			expect(scanPluginFixture(recorded, { steps: [] })).toBe('Invalid plugin oracle fixture')
+ 		})
+ 
+ 		it('reads a saved plugin fixture and refuses a malformed step or another plugin', () => {
+@@ -1482,6 +1431,20 @@ describe('server setup', () => {
+ 					locked: false,
+ 				}),
+ 			).toBe(false)
++			expect(
++				isPluginState({
++					elements: { panel: { classes: [], attributes: {}, visible: true, text: 1 } },
++					focus: 'body',
++					locked: false,
++				}),
++			).toBe(false)
++			expect(
++				isPluginState({
++					elements: { panel: { classes: [], attributes: {}, visible: true, scroll: { top: 1 } } },
++					focus: 'body',
++					locked: false,
++				}),
++			).toBe(false)
+ 			expect(isPluginState({ elements: {}, focus: 'body' })).toBe(false)
+ 			const scratch = createScratch()
+ 			try {
+@@ -1506,15 +1469,29 @@ describe('server setup', () => {
+ 		})
+ 
+ 		it(
+-			'compiles Veneer from source into a classic script and its cascade, and reads the pinned Bootstrap bundle',
++			'compiles Veneer from source into a classic script and its cascade, applies a passed transform, and reads the pinned Bootstrap bundle',
+ 			async () => {
+ 				const veneer = await compileVeneerRuntime()
+-				expect(veneer.engine).toBe('veneer')
++				expect(veneer.library).toBe('veneer')
+ 				expect(veneer.script.startsWith('var veneer = (function(exports) {')).toBe(true)
+ 				expect(veneer.script).toContain('var Delegate = class')
++				expect(veneer.script).toContain('"bs-popover-auto"')
++				expect(veneer.script).not.toContain('bs-popover-planted')
+ 				expect(veneer.stylesheet).toContain('.collapse:not(.show)')
++				const planted = await compileVeneerRuntime([
++					{
++						name: 'planted-token',
++						enforce: 'pre',
++						transform: (code, id) =>
++							id.replaceAll('\\', '/').endsWith('src/browser/constants.ts')
++								? code.replace("auto: 'bs-popover-auto',", "auto: 'bs-popover-planted',")
++								: null,
++					},
++				])
++				expect(planted.script).toContain('"bs-popover-planted"')
++				expect(planted.script).not.toContain('"bs-popover-auto"')
+ 				const bootstrap = readBootstrapRuntime()
+-				expect(bootstrap.engine).toBe('bootstrap')
++				expect(bootstrap.library).toBe('bootstrap')
+ 				expect(bootstrap.script).toContain('Bootstrap v5.3.8')
+ 				expect(createHash('sha256').update(bootstrap.stylesheet).digest('hex')).toBe(
+ 					BOOTSTRAP_CSS_DIGEST,
+@@ -1540,27 +1517,50 @@ describe('server setup', () => {
+ 		)
+ 
+ 		it(
+-			'reads a live page, refuses an unlabelled element, an action with no input, and a page error',
++			'reads a live page in one report, and refuses an unlabelled element and a page error',
+ 			async () => {
+-				await driveOracleBrowser(async (browser) => {
++				await launchOracleBrowser(async (browser) => {
+ 					const page = await browser.newPage()
+ 					await page.setContent(
+-						'<body style="overflow: hidden"><button id="trigger" type="button" aria-controls="panel">Toggle</button><div id="panel" hidden>Panel</div></body>',
++						'<!doctype html><body style="overflow: hidden"><button id="trigger" type="button" aria-controls="panel">Toggle</button><div id="panel" hidden>Panel</div><div id="list" style="height: 50px; overflow: auto"><p id="row" style="height: 200px; margin: 0">Row  one</p></div></body>',
+ 					)
+ 					await page.focus('#trigger')
+-					const read = await readPluginState(page, sample, ['trigger', 'panel'])
++					await page.locator('#list').evaluate((element) => {
++						element.scrollTop = 30
++					})
++					const authored = ['trigger', 'panel', 'list', 'row']
++					const report = await page.evaluate(reportPluginPage, [])
++					expect(report.animating).toBe(false)
++					expect(report.nodes.map((node) => node.tag)).toEqual([
++						'html',
++						'body',
++						'button',
++						'div',
++						'div',
++						'p',
++					])
++					const read = await readPluginState(page, [], authored)
++					expect(read).toStrictEqual(inferPluginState(report, authored))
+ 					expect(read.focus).toBe('trigger')
+ 					expect(read.locked).toBe(true)
+-					expect(read.elements.panel).toEqual({
++					expect(read.elements.html?.scroll).toEqual({ top: 0, left: 0 })
++					expect(read.elements.panel).toStrictEqual({
+ 						classes: [],
+ 						attributes: { hidden: '' },
+ 						visible: false,
++						text: 'Panel',
++						parent: 'body',
++					})
++					expect(read.elements.list?.scroll).toEqual({ top: 30, left: 0 })
++					expect(read.elements.row).toStrictEqual({
++						classes: [],
++						attributes: {},
++						visible: true,
++						text: 'Row one',
++						parent: 'list',
+ 					})
+ 					expect(read.elements.trigger?.attributes['aria-controls']).toBe('panel')
+-					expect(await settlePluginState(page, sample, ['trigger', 'panel'])).toEqual(read)
+-					await expect(
+-						drivePluginAction(page, { name: 'click.nothing', gesture: 'click' }, 'bootstrap'),
+-					).rejects.toThrow('Plugin action click.nothing names no input for its click gesture')
++					expect(await settlePluginState(page, sample, authored)).toEqual(read)
+ 				})
+ 				await expect(
+ 					recordPluginOracle(
+@@ -1581,6 +1581,25 @@ describe('server setup', () => {
+ 			},
+ 			PLUGIN_ORACLE_TIMEOUT,
+ 		)
++
++		it(
++			'removes its scratch directory and closes the browser when the drive throws',
++			async () => {
++				const held: Array<{ path: string; browser: Browser }> = []
++				await expect(
++					launchOracleBrowser(async (browser, scratch) => {
++						scratch.write('page.html', '<p>held</p>')
++						held.push({ path: scratch.path, browser })
++						throw new Error('drive failed')
++					}),
++				).rejects.toThrow('drive failed')
++				const [lease] = held
++				if (lease === undefined) throw new Error('The drive never ran')
++				expect(existsSync(lease.path)).toBe(false)
++				expect(lease.browser.isConnected()).toBe(false)
++			},
++			PLUGIN_ORACLE_TIMEOUT,
++		)
+ 	})
+ 
+ 	it('reads compatibility rows from a written guide and rejects missing columns and invalid statuses', () => {
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index bca1718..cd7dff7 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -334,71 +334,120 @@ export interface OracleInventory {
+ 	readonly media: readonly string[]
+ }
+ 
+-/** Names the runtime a plugin recording drives: Bootstrap's pinned bundle or Veneer's source. */
+-export type PluginEngine = 'bootstrap' | 'veneer'
++/** Names the library a plugin recording drives: Bootstrap's pinned bundle or Veneer's source. */
++export type PluginLibrary = 'bootstrap' | 'veneer'
+ 
+ /**
+- * Carries one runtime a plugin recording loads: its classic script and its stylesheet.
++ * Carries one library a plugin recording loads: its classic script and its stylesheet.
+  *
+  * @remarks
+- * The `script` member is classic script text that defines the runtime's global, `bootstrap` for
++ * The `script` member is classic script text that defines the library's global, `bootstrap` for
+  * the pinned bundle and `veneer` for the compiled browser entry, and the `stylesheet` member is the
+- * cascade the page links. The page loads both the same way for either engine.
++ * cascade the page links. The page loads the Bootstrap and Veneer libraries the same way.
+  */
+ export interface PluginRuntime {
+-	readonly engine: PluginEngine
++	readonly library: PluginLibrary
+ 	readonly script: string
+ 	readonly stylesheet: string
+ }
+ 
+-/** Names the trusted input one plugin action sends. */
+-export type PluginGesture = 'click' | 'press' | 'hover' | 'focus' | 'wheel' | 'point' | 'call'
++/** Describes a click, a hover, or a focus a plugin action sends to the authored element `target` names. */
++export interface PluginTargetAction {
++	readonly name: string
++	readonly gesture: 'click' | 'hover' | 'focus'
++	readonly target: string
++	readonly refused?: boolean
++}
+ 
+-/**
+- * Describes one action a plugin scenario performs, and whether Bootstrap refuses it.
+- *
+- * @remarks
+- * The `target` member names the authored id the gesture aims at. A `press` sends the `key` member to
+- * the target, or to the focused element when no target is named; a `wheel` hovers the target and
+- * scrolls by the `delta` member in pixels; a `point` clicks the viewport at the `point` member; and a
+- * `call` runs the `call` member's script for the engine being recorded, the one input that is each
+- * runtime's own API rather than a shared gesture. A `refused` action is one Bootstrap declines, so
+- * its step need not change Bootstrap's state.
+- */
+-export interface PluginAction {
++/** Describes a key press a plugin action sends to the `target` element, or to the focused element when `target` is undefined. */
++export interface PluginPressAction {
+ 	readonly name: string
+-	readonly gesture: PluginGesture
++	readonly gesture: 'press'
++	readonly key: string
+ 	readonly target?: string
+-	readonly key?: string
+-	readonly delta?: number
+-	readonly point?: { readonly x: number; readonly y: number }
+-	readonly call?: Readonly<Record<PluginEngine, string>>
++	readonly refused?: boolean
++}
++
++/** Describes a wheel scroll by `delta` pixels a plugin action sends with the pointer over the `target` element. */
++export interface PluginWheelAction {
++	readonly name: string
++	readonly gesture: 'wheel'
++	readonly target: string
++	readonly delta: number
++	readonly refused?: boolean
++}
++
++/** Describes a click a plugin action sends at the viewport coordinates `point` names. */
++export interface PluginPointAction {
++	readonly name: string
++	readonly gesture: 'point'
++	readonly point: { readonly x: number; readonly y: number }
++	readonly refused?: boolean
++}
++
++/** Describes a plugin action that runs each library's own script, the one action that is no shared gesture. */
++export interface PluginCallAction {
++	readonly name: string
++	readonly gesture: 'call'
++	readonly call: Readonly<Record<PluginLibrary, string>>
+ 	readonly refused?: boolean
+ }
+ 
+ /**
+- * Describes one plugin's recorded scenario: its markup, how each engine is set up over it, and the
+- * actions both engines receive.
++ * Describes one action a plugin scenario performs, discriminated by its `gesture`.
++ *
++ * @remarks
++ * A `refused` action is one Bootstrap declines, so its step need not change Bootstrap's state.
++ */
++export type PluginAction =
++	| PluginTargetAction
++	| PluginPressAction
++	| PluginWheelAction
++	| PluginPointAction
++	| PluginCallAction
++
++/**
++ * Describes one plugin's recorded scenario: its markup, how each library is set up over it, and the
++ * actions the Bootstrap and Veneer libraries both receive.
+  *
+  * @remarks
+  * Every element of the `markup` member carries an id, which labels it in every reading. The
+- * `spawned` member lists the selectors that label the elements an engine inserts, such as a tip or
++ * `spawned` member lists the selectors that label the elements a library inserts, such as a tip or
+  * a backdrop; an inserted element no selector matches is labelled by its tag. The `setup` member
+- * holds each engine's own construction script, run after the page loads.
++ * holds each library's own construction script, run after the page loads.
+  */
+ export interface PluginScenario {
+ 	readonly plugin: string
+ 	readonly markup: string
+ 	readonly spawned: readonly string[]
+-	readonly setup: Readonly<Record<PluginEngine, string>>
++	readonly setup: Readonly<Record<PluginLibrary, string>>
+ 	readonly actions: readonly PluginAction[]
+ }
+ 
+-/** Describes one element's settled classes, attributes, and visibility. */
++/** Describes an element's settled scroll offsets, in whole pixels. */
++export interface PluginOffset {
++	readonly top: number
++	readonly left: number
++}
++
++/**
++ * Describes one element's settled classes, attributes, visibility, own text, parent, and scroll
++ * offsets.
++ *
++ * @remarks
++ * The `text` member is the element's direct text nodes joined with their whitespace collapsed, and
++ * is undefined where that text is empty. The `parent` member is the label of the parent element, and
++ * is undefined for the root element. The `scroll` member is defined for the document's scrolling
++ * element and for each element whose content overflows it on an axis its computed overflow lets it
++ * scroll.
++ */
+ export interface PluginElement {
+ 	readonly classes: readonly string[]
+ 	readonly attributes: Readonly<Record<string, string>>
+ 	readonly visible: boolean
++	readonly text?: string
++	readonly parent?: string
++	readonly scroll?: PluginOffset
+ }
+ 
+ /**
+@@ -407,9 +456,10 @@ export interface PluginElement {
+  * @remarks
+  * An authored element's label is its id, the root and body elements are labelled `html` and
+  * `body`, and an inserted element is labelled `+`, its key, and its position among the inserted
+- * elements with that key, such as `+.tooltip[0]`. The `focus` member holds the focused element's
+- * label, `body` when nothing else holds focus, and the `locked` member reads whether the
+- * viewport's used vertical overflow is `hidden` or `clip`.
++ * elements with that key, such as `+.tooltip[0]`. Every label is an own property of the
++ * `elements` member, so a label such as `__proto__` or `constructor` reads as any other. The `focus`
++ * member holds the focused element's label, `body` when nothing else holds focus, and the `locked`
++ * member reads whether the viewport's used vertical overflow is `hidden` or `clip`.
+  */
+ export interface PluginState {
+ 	readonly elements: Readonly<Record<string, PluginElement>>
+@@ -417,21 +467,41 @@ export interface PluginState {
+ 	readonly locked: boolean
+ }
+ 
+-/** Describes one element as the page reports it, before labelling. */
++/**
++ * Describes one element as the page reports it, before labelling.
++ *
++ * @remarks
++ * The `parent` member is the position of the parent element in the report's `nodes` member, and is
++ * undefined for the root element. The `text` member is the collapsed direct text, empty where the
++ * element has none.
++ */
+ export interface PluginNode {
+ 	readonly tag: string
+ 	readonly id: string | undefined
+ 	readonly key: string
+ 	readonly classes: readonly string[]
+ 	readonly attributes: Readonly<Record<string, string>>
++	readonly text: string
++	readonly parent: number | undefined
+ 	readonly visible: boolean
+ 	readonly focused: boolean
++	readonly scroll: PluginOffset | undefined
+ }
+ 
+-/** Carries every element the page reports, in document order, and its scroll-lock reading. */
+-export interface PluginReading {
++/**
++ * Carries what one evaluation of a plugin page reports: every element in document order, the scroll
++ * lock, and the motion the settle reads.
++ *
++ * @remarks
++ * The `animating` member reads whether a finite animation runs in the document, and the `span`
++ * member is the longest `transition-duration` plus `transition-delay`, in milliseconds, that an
++ * element of the page declares.
++ */
++export interface PluginReport {
+ 	readonly nodes: readonly PluginNode[]
+ 	readonly locked: boolean
++	readonly animating: boolean
++	readonly span: number
+ }
+ 
+ /** Describes a named action and the settled state it leaves. */
+@@ -440,26 +510,46 @@ export interface PluginStep {
+ 	readonly state: PluginState
+ }
+ 
+-/** Describes one engine's recording of a plugin scenario, both motion preferences included. */
+-export interface PluginFixture {
++/**
++ * Describes one library's recording of a plugin scenario, under no motion preference and under
++ * reduced motion.
++ *
++ * @remarks
++ * The `version` member is the Bootstrap release this package tracks, the {@link BOOTSTRAP_VERSION}
++ * constant, for a recording of either library, and the `browser` member is the browser build that
++ * recorded it. A saved fixture holds Bootstrap's recording alone.
++ */
++export interface PluginRecording {
+ 	readonly version: string
+ 	readonly plugin: string
+ 	readonly browser: string
+ 	readonly steps: readonly PluginStep[]
+ }
+ 
+-/** Names the reading an engine departure differs in. */
+-export type EngineFacet = 'element' | 'class' | 'attribute' | 'visible' | 'focus' | 'lock'
++/** Names the facet of a settled state an engine departure differs in. */
++export type EngineFacet =
++	| 'element'
++	| 'class'
++	| 'attribute'
++	| 'visibility'
++	| 'text'
++	| 'parent'
++	| 'scroll'
++	| 'focus'
++	| 'lock'
+ 
+ /**
+  * Describes one measured difference between Bootstrap's and Veneer's settled state at one step.
+  *
+  * @remarks
+  * The `subject` member is the element's label, or `document` for the `focus` and `lock` facets.
+- * The `name` member is the class token or the attribute name, and undefined for the other facets.
+- * Each side's value is the attribute's value or undefined where the element lacks it, whether the
+- * token or the element is present for the `class` and `element` facets, the visibility or the lock
+- * for the `visible` and `lock` facets, and the focused label for the `focus` facet.
++ * The `name` member is the class token, the attribute name, or the scroll axis, `top` or `left`, and
++ * undefined for the other facets. Each side's value is:
++ * - whether the element or the token is present, for the `element` and `class` facets;
++ * - the attribute's value, the own text, the parent's label, or the scroll offset, each undefined
++ *   where that side has none, for the `attribute`, `text`, `parent`, and `scroll` facets;
++ * - the visibility or the lock, for the `visibility` and `lock` facets;
++ * - the focused label, for the `focus` facet.
+  */
+ export interface EngineDeparture {
+ 	readonly plugin: string
+@@ -467,8 +557,8 @@ export interface EngineDeparture {
+ 	readonly subject: string
+ 	readonly facet: EngineFacet
+ 	readonly name: string | undefined
+-	readonly bootstrap: string | boolean | undefined
+-	readonly veneer: string | boolean | undefined
++	readonly bootstrap: string | number | boolean | undefined
++	readonly veneer: string | number | boolean | undefined
+ }
+ 
+ /**
+@@ -519,17 +609,17 @@ export const PLUGIN_SETTLE_BUDGET = 5000
+ export const PLUGIN_SETTLE_INTERVAL = 50
+ 
+ /** Lists the attributes a plugin reading omits: the label, the classes read on their own, and inline style. */
+-export const ORACLE_OMITTED_ATTRIBUTES: readonly string[] = Object.freeze(['id', 'class', 'style'])
++export const PLUGIN_OMITTED_ATTRIBUTES: readonly string[] = Object.freeze(['id', 'class', 'style'])
+ 
+ /**
+  * Lists the attributes whose value is a space-separated list of element ids, which a plugin reading
+  * writes as the labels of the elements they name.
+  *
+  * @remarks
+- * A generated id differs on every run and between engines, so a reading writes each id as its
++ * A generated id differs on every run and between libraries, so a reading writes each id as its
+  * element's label, and as `?` where no element carries it.
+  */
+-export const ORACLE_REFERENCE_ATTRIBUTES: readonly string[] = Object.freeze([
++export const PLUGIN_REFERENCE_ATTRIBUTES: readonly string[] = Object.freeze([
+ 	'aria-activedescendant',
+ 	'aria-controls',
+ 	'aria-describedby',
+@@ -545,15 +635,17 @@ export const ORACLE_REFERENCE_ATTRIBUTES: readonly string[] = Object.freeze([
+ ])
+ 
+ /**
+- * Lists the plugin scenarios the oracle records, one per plugin, each driven over both engines.
++ * Lists the plugin scenarios the oracle records, one per plugin, each driven over the Bootstrap and
++ * Veneer libraries.
+  *
+  * @remarks
+  * Each scenario's markup is Bootstrap 5.3.8's documented markup for the plugin, with an id on every
+- * element and inline sizes where a layout reading decides the outcome, so both cascades lay the
+- * decisive boxes out alike. Veneer's setup constructs a `Delegate` instance and each engine no
+- * data route reaches; Bootstrap's constructs only what its data API does not. No scenario starts a
+- * timer the recording would race: toasts are recorded without autohide and carousels without a
+- * ride.
++ * element and inline sizes where a layout reading decides the outcome, so Bootstrap's and Veneer's
++ * cascades lay the decisive boxes out alike. Veneer's setup constructs a `Delegate` instance and
++ * each engine no data route reaches; Bootstrap's constructs only what its data API does not. No
++ * scenario starts a timer the recording would race: toasts are recorded without autohide and
++ * carousels without a ride. The ScrollSpy scenario turns smooth scrolling on, so each library
++ * scrolls its own root to the section a clicked link names.
+  */
+ export const PLUGIN_SCENARIOS: readonly PluginScenario[] = Object.freeze([
+ 	{
+@@ -639,7 +731,7 @@ export const PLUGIN_SCENARIOS: readonly PluginScenario[] = Object.freeze([
+ 			'<li id="second-item" class="nav-item"><a id="second-link" class="nav-link" href="#second">Second</a></li>',
+ 			'<li id="third-item" class="nav-item"><a id="third-link" class="nav-link" href="#third">Third</a></li>',
+ 			'</ul></nav>',
+-			'<div id="spy" data-bs-spy="scroll" data-bs-target="#navbar" data-bs-root-margin="0px 0px -40%" tabindex="0" style="position: relative; height: 200px; overflow-y: scroll">',
++			'<div id="spy" data-bs-spy="scroll" data-bs-target="#navbar" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" tabindex="0" style="position: relative; height: 200px; overflow-y: scroll">',
+ 			'<div id="first" style="height: 300px; margin: 0">First section</div>',
+ 			'<div id="second" style="height: 300px; margin: 0">Second section</div>',
+ 			'<div id="third" style="height: 300px; margin: 0">Third section</div>',
+@@ -940,7 +1032,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'collapse',
+ 				step: 'collapse.click.trigger',
+ 				subject: 'panel',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -949,7 +1041,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'collapse',
+ 				step: 'collapse.click.trigger',
+ 				subject: 'panel-body',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1012,7 +1104,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1021,7 +1113,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal-dialog',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1030,7 +1122,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal-content',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1039,7 +1131,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal-header',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1048,7 +1140,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal-title',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1057,7 +1149,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal-close',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1066,7 +1158,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal-body',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1075,7 +1167,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal-text',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1084,7 +1176,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal-footer',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1093,7 +1185,7 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 				plugin: 'modal',
+ 				step: 'modal.click.trigger',
+ 				subject: 'modal-cancel',
+-				facet: 'visible',
++				facet: 'visibility',
+ 				name: undefined,
+ 				bootstrap: true,
+ 				veneer: false,
+@@ -1165,6 +1257,229 @@ export const PLUGIN_CONTROLS: readonly PluginControl[] = Object.freeze([
+ 	},
+ ])
+ 
++/**
++ * Describes the planted plugin scenario the recorder and scan proofs drive: a trigger and a panel,
++ * a click Bootstrap takes, and a key press it refuses.
++ */
++export const PLUGIN_SAMPLE_SCENARIO: PluginScenario = Object.freeze<PluginScenario>({
++	plugin: 'sample',
++	markup: '<button id="trigger" type="button">Toggle</button><div id="panel">Panel</div>',
++	spawned: [],
++	setup: { bootstrap: '', veneer: '' },
++	actions: [
++		{ name: 'click.trigger', gesture: 'click', target: 'trigger' },
++		{ name: 'press.trigger', gesture: 'press', target: 'trigger', key: 'Enter', refused: true },
++	],
++})
++
++/**
++ * Records the planted scenario the way the recorder names its steps: the panel closed at each
++ * initial step, and open after the click and after the refused press.
++ */
++export const PLUGIN_SAMPLE_RECORDING: PluginRecording = Object.freeze<PluginRecording>({
++	version: BOOTSTRAP_VERSION,
++	plugin: 'sample',
++	browser: '153.0.0.0',
++	steps: ['', 'reduced.'].flatMap((prefix) => [
++		{
++			name: `sample.${prefix}initial`,
++			state: {
++				elements: { panel: { classes: ['collapse'], attributes: {}, visible: false } },
++				focus: 'body',
++				locked: false,
++			},
++		},
++		...['click.trigger', 'press.trigger'].map((action) => ({
++			name: `sample.${prefix}${action}`,
++			state: {
++				elements: { panel: { classes: ['collapse', 'show'], attributes: {}, visible: true } },
++				focus: 'trigger',
++				locked: false,
++			},
++		})),
++	]),
++})
++
++/**
++ * Reports a planted page whose markup carries the `trigger`, `panel`, and `__proto__` ids, with an
++ * inserted tip, an inserted unkeyed element, and an inserted hidden span.
++ *
++ * @remarks
++ * The trigger's `aria-describedby` value names the tip by its generated id, the panel, and an id no
++ * element carries; the body carries the omitted `class` and `style` attributes; and the panel
++ * scrolls.
++ */
++export const PLUGIN_SAMPLE_REPORT: PluginReport = Object.freeze<PluginReport>({
++	nodes: [
++		{
++			tag: 'html',
++			id: undefined,
++			key: 'html',
++			classes: [],
++			attributes: { lang: 'en' },
++			text: '',
++			parent: undefined,
++			visible: true,
++			focused: false,
++			scroll: { top: 0, left: 0 },
++		},
++		{
++			tag: 'body',
++			id: undefined,
++			key: 'body',
++			classes: ['modal-open'],
++			attributes: { class: 'modal-open', style: 'overflow: hidden' },
++			text: '',
++			parent: 0,
++			visible: true,
++			focused: false,
++			scroll: undefined,
++		},
++		{
++			tag: 'button',
++			id: 'trigger',
++			key: 'button',
++			classes: ['zeta', 'alpha'],
++			attributes: {
++				id: 'trigger',
++				'aria-describedby': 'tip-81 panel  gone',
++				'data-bs-target': '#panel',
++				type: 'button',
++			},
++			text: 'Toggle',
++			parent: 1,
++			visible: true,
++			focused: true,
++			scroll: undefined,
++		},
++		{
++			tag: 'div',
++			id: 'panel',
++			key: 'div',
++			classes: [],
++			attributes: { id: 'panel', 'aria-labelledby': 'trigger' },
++			text: 'Panel body',
++			parent: 1,
++			visible: true,
++			focused: false,
++			scroll: { top: 40, left: 0 },
++		},
++		{
++			tag: 'div',
++			id: '__proto__',
++			key: 'div',
++			classes: ['collapse'],
++			attributes: { id: '__proto__' },
++			text: '',
++			parent: 3,
++			visible: true,
++			focused: false,
++			scroll: undefined,
++		},
++		{
++			tag: 'div',
++			id: 'tip-81',
++			key: '.tooltip',
++			classes: ['tooltip'],
++			attributes: { id: 'tip-81', role: 'tooltip' },
++			text: '',
++			parent: 1,
++			visible: true,
++			focused: false,
++			scroll: undefined,
++		},
++		{
++			tag: 'div',
++			id: undefined,
++			key: '.tooltip',
++			classes: ['tooltip-inner'],
++			attributes: {},
++			text: 'Tip',
++			parent: 5,
++			visible: true,
++			focused: false,
++			scroll: undefined,
++		},
++		{
++			tag: 'span',
++			id: undefined,
++			key: 'span',
++			classes: [],
++			attributes: {},
++			text: '',
++			parent: 6,
++			visible: false,
++			focused: false,
++			scroll: undefined,
++		},
++	],
++	locked: true,
++	animating: false,
++	span: 0,
++})
++
++/**
++ * Records one planted step as Bootstrap might: a shown panel with text, a parent, and a scroll
++ * offset, an inserted backdrop, and an element labelled `constructor`.
++ */
++export const PLUGIN_SAMPLE_OFFICIAL: PluginRecording = Object.freeze<PluginRecording>({
++	version: BOOTSTRAP_VERSION,
++	plugin: 'sample',
++	browser: '153.0.0.0',
++	steps: [
++		{
++			name: 'sample.initial',
++			state: {
++				elements: {
++					panel: {
++						classes: ['collapse', 'show'],
++						attributes: { 'aria-hidden': 'false', role: 'region' },
++						visible: true,
++						text: 'Panel',
++						parent: 'body',
++						scroll: { top: 40, left: 0 },
++					},
++					'+div[0]': { classes: ['backdrop'], attributes: {}, visible: true },
++					constructor: { classes: [], attributes: {}, visible: true },
++				},
++				focus: 'panel',
++				locked: true,
++			},
++		},
++	],
++})
++
++/**
++ * Records the same planted step with every facet the comparator reads changed: the panel's classes,
++ * attributes, visibility, text, parent, and scroll offset, another backdrop, no `constructor`
++ * element, the focus, and the lock.
++ */
++export const PLUGIN_SAMPLE_DIVERGENT: PluginRecording = Object.freeze<PluginRecording>({
++	version: BOOTSTRAP_VERSION,
++	plugin: 'sample',
++	browser: '153.0.0.0',
++	steps: [
++		{
++			name: 'sample.initial',
++			state: {
++				elements: {
++					panel: {
++						classes: ['collapse', 'open'],
++						attributes: { role: 'group', 'data-state': 'open' },
++						visible: false,
++						text: 'Pane',
++						parent: 'html',
++						scroll: { top: 0, left: 0 },
++					},
++					'+div[1]': { classes: ['backdrop'], attributes: {}, visible: true },
++				},
++				focus: 'body',
++				locked: false,
++			},
++		},
++	],
++})
++
+ /**
+  * Pins the installed Bootstrap LTR stylesheet's SHA-256 digest.
+  *
+@@ -4148,7 +4463,7 @@ export function scanOracleFixture(recording: OracleFixture, fixture: unknown): s
+  * The official Button source registers click.bs.button.data-api and emits no custom events.
+  */
+ export async function recordButtonOracle(): Promise<OracleFixture> {
+-	return driveOracleBrowser(async (browser, scratch) => {
++	return launchOracleBrowser(async (browser, scratch) => {
+ 		const runtime = readBootstrapRuntime()
+ 		scratch.write('bootstrap.css', runtime.stylesheet)
+ 		scratch.write('bootstrap.bundle.js', runtime.script)
+@@ -4260,29 +4575,34 @@ export async function recordButtonOracle(): Promise<OracleFixture> {
+ }
+ 
+ /**
+- * Launches the pinned local Chromium with a scratch directory, and releases both after the drive.
++ * Launches the pinned local Chromium with a scratch directory, and releases the browser and the
++ * directory after the drive.
+  * @param drive - The work to perform with the browser and the scratch directory.
+  * @returns What `drive` resolves to.
+- * @throws When the pinned browser resolves to a remote connection, when the launch fails, or what
+- * `drive` throws; the browser closes and the scratch directory is removed in every case.
+- * @remarks Both oracle recorders launch through this helper, so both record under one browser
+- * configuration.
++ * @throws When the pinned browser resolves to a remote connection, when the scratch directory or the
++ * launch fails, or what `drive` throws. The scratch directory is removed whether the launch, the
++ * drive, or the browser's close fails, and the browser closes whether the drive fails or not.
++ * @remarks The `recordButtonOracle` and `recordPluginOracle` helpers launch through this helper, so
++ * they record under one browser configuration.
+  */
+-export async function driveOracleBrowser<T>(
++export async function launchOracleBrowser<T>(
+ 	drive: (browser: Browser, scratch: ScratchInterface) => Promise<T>,
+ ): Promise<T> {
+ 	const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+ 	if (options.connectOptions !== undefined)
+ 		throw new Error('The oracle requires a local browser executable, not a remote connection')
+-	const browser = await chromium.launch({
+-		...options.launchOptions,
+-		headless: true,
+-	})
+ 	const scratch = createScratch()
+ 	try {
+-		return await drive(browser, scratch)
++		const browser = await chromium.launch({
++			...options.launchOptions,
++			headless: true,
++		})
++		try {
++			return await drive(browser, scratch)
++		} finally {
++			await browser.close()
++		}
+ 	} finally {
+-		await browser.close()
+ 		scratch.destroy()
+ 	}
+ }
+@@ -4290,11 +4610,11 @@ export async function driveOracleBrowser<T>(
+ /**
+  * Reads the installed Bootstrap bundle and stylesheet as a plugin runtime.
+  * @returns The pinned `bootstrap.bundle.js` script and `bootstrap.css` stylesheet.
+- * @throws The filesystem error when either artifact is missing.
++ * @throws When either artifact is missing.
+  */
+ export function readBootstrapRuntime(): PluginRuntime {
+ 	return {
+-		engine: 'bootstrap',
++		library: 'bootstrap',
+ 		script: readFileSync(
+ 			resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'dist/js/bootstrap.bundle.js'),
+ 			'utf8',
+@@ -4305,8 +4625,8 @@ export function readBootstrapRuntime(): PluginRuntime {
+ 
+ /**
+  * Compiles Veneer's browser entry and styles from source, in memory, as a plugin runtime.
+- * @param plugins - Vite plugins added to the browser compile, such as a transform that plants a
+- * mutation. Default: none.
++ * @param transforms - Vite plugins added to the browser compile, such as one whose `transform` hook
++ * plants a mutation in a source module. Default: none.
+  * @returns The browser entry as one classic script defining the `veneer` global, and the compiled
+  * cascade.
+  * @throws When either compile fails or produces no script or no stylesheet.
+@@ -4317,7 +4637,7 @@ export function readBootstrapRuntime(): PluginRuntime {
+  * `dist` directory can never stand in for the source.
+  */
+ export async function compileVeneerRuntime(
+-	plugins: readonly Plugin[] = [],
++	transforms: readonly Plugin[] = [],
+ ): Promise<PluginRuntime> {
+ 	const browser = srcBrowser()
+ 	const {
+@@ -4329,7 +4649,7 @@ export async function compileVeneerRuntime(
+ 		...browser,
+ 		configFile: false,
+ 		logLevel: 'silent',
+-		plugins: [...(browser.plugins ?? []), ...plugins],
++		plugins: [...(browser.plugins ?? []), ...transforms],
+ 		build: {
+ 			...browser.build,
+ 			write: false,
+@@ -4351,7 +4671,7 @@ export async function compileVeneerRuntime(
+ 		build: { ...stylesConfig.build, write: false, emptyOutDir: false },
+ 	})
+ 	return {
+-		engine: 'veneer',
++		library: 'veneer',
+ 		script: readBuildOutput(script, '.js'),
+ 		stylesheet: readBuildOutput(stylesheet, '.css'),
+ 	}
+@@ -4381,63 +4701,123 @@ export function readBuildOutput(
+ }
+ 
+ /**
+- * Reads a plugin page's state and labels it: each element's classes, its attributes but the
+- * omitted ones, its visibility, and the focus and scroll-lock state.
+- * @param page - The page the scenario's markup is loaded in, under either engine.
+- * @param scenario - The scenario whose `spawned` selectors label the inserted elements.
++ * Reports a plugin page in one pass: every element's classes, attributes, own text, parent,
++ * visibility, focus, and scroll offsets, the scroll lock, and the motion the settle reads.
++ * @param spawned - The selectors whose first match keys an inserted element.
++ * @returns The page's report, in document order: the root, the body, and every element in the body.
++ * @remarks
++ * This function runs inside the page, passed to Playwright's `evaluate` method, so its body names
++ * only its parameter and the page's globals, never a module import or constant. An element is
++ * visible when its `checkVisibility` method, reading opacity and the `visibility` property, returns
++ * `true`. The lock reads the root's computed `overflow-y`, or the body's where the root's is
++ * `visible`, because the platform then propagates the body's to the viewport. An element reports
++ * scroll offsets when it is the document's scrolling element, or when its content overflows it on an
++ * axis whose computed overflow is `auto`, `scroll`, or `hidden`.
++ *
++ * The report stays out of these, each a limit of the oracle: the contents of shadow trees, inline
++ * styles and geometry, form state no attribute reflects, and hit testing.
++ */
++export function reportPluginPage(spawned: readonly string[]): PluginReport {
++	const elements = [document.documentElement, document.body, ...document.body.querySelectorAll('*')]
++	const positions = new Map(elements.map((element, index) => [element, index]))
++	const styles = elements.map((element) => getComputedStyle(element))
++	const root = getComputedStyle(document.documentElement).overflowY
++	const used = root === 'visible' ? getComputedStyle(document.body).overflowY : root
++	return {
++		nodes: elements.map((element, index) => {
++			const style = styles[index]
++			const scrolls =
++				element === document.scrollingElement ||
++				(['auto', 'scroll', 'hidden'].includes(style?.overflowY ?? '') &&
++					element.scrollHeight > element.clientHeight) ||
++				(['auto', 'scroll', 'hidden'].includes(style?.overflowX ?? '') &&
++					element.scrollWidth > element.clientWidth)
++			return {
++				tag: element.localName,
++				id: element.getAttribute('id') ?? undefined,
++				key: spawned.find((selector) => element.matches(selector)) ?? element.localName,
++				classes: [...element.classList],
++				attributes: Object.fromEntries(
++					[...element.attributes].map((attribute) => [attribute.name, attribute.value]),
++				),
++				text: [...element.childNodes]
++					.filter((child) => child.nodeType === Node.TEXT_NODE)
++					.map((child) => child.textContent ?? '')
++					.join('')
++					.replaceAll(/\s+/gu, ' ')
++					.trim(),
++				parent: element.parentElement === null ? undefined : positions.get(element.parentElement),
++				visible: element.checkVisibility({ opacityProperty: true, visibilityProperty: true }),
++				focused: element === document.activeElement,
++				scroll: scrolls
++					? { top: Math.round(element.scrollTop), left: Math.round(element.scrollLeft) }
++					: undefined,
++			}
++		}),
++		locked: used === 'hidden' || used === 'clip',
++		animating: document
++			.getAnimations()
++			.some(
++				(animation) =>
++					animation.playState === 'running' &&
++					animation.effect?.getComputedTiming().endTime !== Infinity,
++			),
++		span: Math.max(
++			0,
++			...styles.map((style) =>
++				[style.transitionDuration, style.transitionDelay]
++					.map((times) =>
++						Math.max(
++							...times
++								.split(',')
++								.map((time) =>
++									time.trim().endsWith('ms')
++										? Number.parseFloat(time)
++										: Number.parseFloat(time) * 1000,
++								),
++						),
++					)
++					.reduce((total, time) => total + time, 0),
++			),
++		),
++	}
++}
++
++/**
++ * Reads a plugin page's labelled state in one evaluation of the {@link reportPluginPage} function.
++ * @param page - The page the scenario's markup is loaded in, under either library.
++ * @param spawned - The selectors that label the inserted elements.
+  * @param authored - The ids the scenario's markup carries.
+  * @returns The labelled state the {@link inferPluginState} helper derives from the page's report.
+- * @remarks
+- * The page reports the root, the body, and every element in the body. An element is visible when
+- * its `checkVisibility` method, reading opacity and the `visibility` property, returns `true`.
+- * The lock reads the root's computed `overflow-y`, or the body's where the root's is `visible`,
+- * because the platform then propagates the body's to the viewport.
++ * @remarks The reading shares the report's limits: shadow trees, inline styles and geometry, form
++ * state no attribute reflects, and hit testing.
+  */
+ export async function readPluginState(
+ 	page: Page,
+-	scenario: PluginScenario,
++	spawned: readonly string[],
+ 	authored: readonly string[],
+ ): Promise<PluginState> {
+-	const reading = await page.evaluate((spawned) => {
+-		const root = getComputedStyle(document.documentElement).overflowY
+-		const used = root === 'visible' ? getComputedStyle(document.body).overflowY : root
+-		return {
+-			nodes: [document.documentElement, document.body, ...document.body.querySelectorAll('*')].map(
+-				(element) => ({
+-					tag: element.localName,
+-					id: element.getAttribute('id') ?? undefined,
+-					key: spawned.find((selector) => element.matches(selector)) ?? element.localName,
+-					classes: [...element.classList],
+-					attributes: Object.fromEntries(
+-						[...element.attributes].map((attribute) => [attribute.name, attribute.value]),
+-					),
+-					visible: element.checkVisibility({ opacityProperty: true, visibilityProperty: true }),
+-					focused: element === document.activeElement,
+-				}),
+-			),
+-			locked: used === 'hidden' || used === 'clip',
+-		}
+-	}, scenario.spawned)
+-	return inferPluginState(reading, authored)
++	return inferPluginState(await page.evaluate(reportPluginPage, spawned), authored)
+ }
+ 
+ /**
+  * Derives a plugin page's labelled state from the page's report.
+- * @param reading - The elements the page reported, in document order, and its lock reading.
++ * @param report - The elements the page reported, in document order, and its lock reading.
+  * @param authored - The ids the scenario's markup carries.
+- * @returns Each element keyed by its label, with sorted classes and attributes, the omitted
+- * attributes left out, and every id reference written as the label it names.
++ * @returns Each element keyed by its label as an own property, with sorted classes and attributes,
++ * the omitted attributes left out, every id reference written as the label it names, its own text,
++ * its parent's label, and its scroll offsets.
+  * @throws When two elements share a label, which a markup id carried twice produces.
+  * @remarks
+  * The `html` and `body` elements take their tag as their label and an element whose id the markup
+- * carries takes that id. Every other element is one an engine inserted, labelled `+`, its key, and
+- * its position among the inserted elements with that key. An id the page no element carries is
++ * carries takes that id. Every other element is one a library inserted, labelled `+`, its key, and
++ * its position among the inserted elements with that key. An id no element of the page carries is
+  * written `?`.
+  */
+-export function inferPluginState(reading: PluginReading, authored: readonly string[]): PluginState {
++export function inferPluginState(report: PluginReport, authored: readonly string[]): PluginState {
+ 	const ids = new Set(authored)
+ 	const positions = new Map<string, number>()
+-	const labels = reading.nodes.map((node) => {
++	const labels = report.nodes.map((node) => {
+ 		if (node.tag === 'html' || node.tag === 'body') return node.tag
+ 		if (node.id !== undefined && ids.has(node.id)) return node.id
+ 		const position = positions.get(node.key) ?? 0
+@@ -4445,26 +4825,27 @@ export function inferPluginState(reading: PluginReading, authored: readonly stri
+ 		return `+${node.key}[${position}]`
+ 	})
+ 	const references = new Map<string, string>()
+-	for (const [index, node] of reading.nodes.entries()) {
++	for (const [index, node] of report.nodes.entries()) {
+ 		const label = labels[index]
+ 		if (node.id !== undefined && label !== undefined && !references.has(node.id))
+ 			references.set(node.id, label)
+ 	}
+-	const elements: Record<string, PluginElement> = {}
++	const seen = new Set<string>()
++	const entries: Array<[string, PluginElement]> = []
+ 	let focus = 'body'
+-	for (const [index, node] of reading.nodes.entries()) {
++	for (const [index, node] of report.nodes.entries()) {
+ 		const label = labels[index]
+ 		if (label === undefined) continue
+-		if (Object.hasOwn(elements, label))
+-			throw new Error(`Plugin reading labels two elements ${label}`)
++		if (seen.has(label)) throw new Error(`Plugin reading labels two elements ${label}`)
++		seen.add(label)
+ 		const attributes = Object.keys(node.attributes)
+-			.filter((name) => !ORACLE_OMITTED_ATTRIBUTES.includes(name))
++			.filter((name) => !PLUGIN_OMITTED_ATTRIBUTES.includes(name))
+ 			.sort()
+ 			.map((name): [string, string] => {
+ 				const value = node.attributes[name] ?? ''
+ 				return [
+ 					name,
+-					ORACLE_REFERENCE_ATTRIBUTES.includes(name)
++					PLUGIN_REFERENCE_ATTRIBUTES.includes(name)
+ 						? value
+ 								.split(/\s+/u)
+ 								.filter((token) => token !== '')
+@@ -4473,14 +4854,21 @@ export function inferPluginState(reading: PluginReading, authored: readonly stri
+ 						: value,
+ 				]
+ 			})
+-		elements[label] = {
+-			classes: [...node.classes].sort(),
+-			attributes: Object.fromEntries(attributes),
+-			visible: node.visible,
+-		}
++		const parent = node.parent === undefined ? undefined : labels[node.parent]
++		entries.push([
++			label,
++			{
++				classes: [...node.classes].sort(),
++				attributes: Object.fromEntries(attributes),
++				visible: node.visible,
++				...(node.text === '' ? {} : { text: node.text }),
++				...(parent === undefined ? {} : { parent }),
++				...(node.scroll === undefined ? {} : { scroll: node.scroll }),
++			},
++		])
+ 		if (node.focused) focus = label
+ 	}
+-	return { elements, focus, locked: reading.locked }
++	return { elements: Object.fromEntries(entries), focus, locked: report.locked }
+ }
+ 
+ /**
+@@ -4488,13 +4876,21 @@ export function inferPluginState(reading: PluginReading, authored: readonly stri
+  * @param page - The page the scenario's markup is loaded in.
+  * @param scenario - The scenario being recorded.
+  * @param authored - The ids the scenario's markup carries.
+- * @returns The state the readings, taken {@link PLUGIN_SETTLE_INTERVAL} milliseconds apart, agree
+- * on for longer than the page's longest declared transition plus that interval, with no finite
+- * animation running and no scroll position moving.
++ * @returns The state the readings, each one evaluation of the {@link reportPluginPage} function
++ * taken {@link PLUGIN_SETTLE_INTERVAL} milliseconds apart, agree on for longer than the page's
++ * longest declared transition plus that interval, with no finite animation running.
+  * @throws When the page does not settle within the {@link PLUGIN_SETTLE_BUDGET} constant's
+  * milliseconds.
+- * @remarks No engine's own completion event is read, so the wait is the same for both engines and
+- * names no event.
++ * @remarks
++ * Each reading takes the motion check and the state from one evaluation, so no change falls between
++ * them, and the state includes every scroll offset, so a scroll in progress reads as a change. No
++ * library's own completion event is read, so the wait is the same for the Bootstrap and Veneer
++ * libraries and names no event.
++ *
++ * These sit outside the oracle's contract, and the settle does not see them: motion inside a shadow
++ * tree; engine work scheduled past the quiet interval, such as a tooltip `delay`, whose unchanged
++ * step the {@link scanPluginSteps} helper refuses; inline styles and geometry; form state no
++ * attribute reflects; and hit testing.
+  */
+ export async function settlePluginState(
+ 	page: Page,
+@@ -4507,52 +4903,17 @@ export async function settlePluginState(
+ 	await waitForCondition(
+ 		`the ${scenario.plugin} page to settle`,
+ 		async () => {
+-			const motion = await page.evaluate(() => {
+-				const elements = [...document.querySelectorAll('*')]
+-				return {
+-					animating: document
+-						.getAnimations()
+-						.some(
+-							(animation) =>
+-								animation.playState === 'running' &&
+-								animation.effect?.getComputedTiming().endTime !== Infinity,
+-						),
+-					scroll: [
+-						window.scrollX,
+-						window.scrollY,
+-						...elements.map((element) => `${element.scrollTop}:${element.scrollLeft}`),
+-					].join(),
+-					span: Math.max(
+-						0,
+-						...elements.map((element) => {
+-							const style = getComputedStyle(element)
+-							return [style.transitionDuration, style.transitionDelay]
+-								.map((times) =>
+-									Math.max(
+-										...times
+-											.split(',')
+-											.map((time) =>
+-												time.trim().endsWith('ms')
+-													? Number.parseFloat(time)
+-													: Number.parseFloat(time) * 1000,
+-											),
+-									),
+-								)
+-								.reduce((total, time) => total + time, 0)
+-						}),
+-					),
+-				}
+-			})
+-			const state = await readPluginState(page, scenario, authored)
+-			const text = `${motion.scroll}|${JSON.stringify(state)}`
++			const report = await page.evaluate(reportPluginPage, scenario.spawned)
++			const state = inferPluginState(report, authored)
++			const text = JSON.stringify(state)
+ 			const now = performance.now()
+ 			settled = state
+-			if (motion.animating || text !== previous) {
+-				previous = motion.animating ? undefined : text
++			if (report.animating || text !== previous) {
++				previous = report.animating ? undefined : text
+ 				since = now
+ 				return false
+ 			}
+-			return now - since >= motion.span + PLUGIN_SETTLE_INTERVAL
++			return now - since >= report.span + PLUGIN_SETTLE_INTERVAL
+ 		},
+ 		{ budget: PLUGIN_SETTLE_BUDGET, interval: PLUGIN_SETTLE_INTERVAL },
+ 	)
+@@ -4560,58 +4921,63 @@ export async function settlePluginState(
+ }
+ 
+ /**
+- * Sends one scenario action to a plugin page as trusted input, or runs its call for one engine.
++ * Sends one scenario action to a plugin page as trusted input, or runs its call for one library.
+  * @param page - The page the scenario's markup is loaded in.
+  * @param action - The action to send.
+- * @param engine - The engine being recorded, which selects a `call` action's script.
+- * @throws When the action names no target, key, delta, point, or call its gesture needs, or when
+- * the browser refuses the input within its timeout.
++ * @param library - The library being recorded, which selects a `call` action's script.
++ * @throws When the browser refuses the input within its timeout.
+  */
+ export async function drivePluginAction(
+ 	page: Page,
+ 	action: PluginAction,
+-	engine: PluginEngine,
++	library: PluginLibrary,
+ ): Promise<void> {
+-	const target = action.target === undefined ? undefined : page.locator(`#${action.target}`)
+-	if (action.gesture === 'press' && action.key !== undefined) {
+-		if (target === undefined) await page.keyboard.press(action.key)
+-		else await target.press(action.key)
+-	} else if (action.gesture === 'point' && action.point !== undefined) {
+-		await page.mouse.click(action.point.x, action.point.y)
+-	} else if (action.gesture === 'call' && action.call !== undefined) {
+-		await page.addScriptTag({ content: action.call[engine] })
+-	} else if (target === undefined) {
+-		throw new Error(`Plugin action ${action.name} names no input for its ${action.gesture} gesture`)
+-	} else if (action.gesture === 'click') await target.click()
+-	else if (action.gesture === 'hover') await target.hover()
+-	else if (action.gesture === 'focus') await target.focus()
+-	else if (action.gesture === 'wheel' && action.delta !== undefined) {
+-		await target.hover()
+-		await page.mouse.wheel(0, action.delta)
+-	} else
+-		throw new Error(`Plugin action ${action.name} names no input for its ${action.gesture} gesture`)
+-}
+-
+-/**
+- * Records one plugin scenario under one engine, reading the settled state each action leaves.
++	switch (action.gesture) {
++		case 'click':
++			await page.locator(`#${action.target}`).click()
++			return
++		case 'hover':
++			await page.locator(`#${action.target}`).hover()
++			return
++		case 'focus':
++			await page.locator(`#${action.target}`).focus()
++			return
++		case 'press':
++			if (action.target === undefined) await page.keyboard.press(action.key)
++			else await page.locator(`#${action.target}`).press(action.key)
++			return
++		case 'wheel':
++			await page.locator(`#${action.target}`).hover()
++			await page.mouse.wheel(0, action.delta)
++			return
++		case 'point':
++			await page.mouse.click(action.point.x, action.point.y)
++			return
++		case 'call':
++			await page.addScriptTag({ content: action.call[library] })
++	}
++}
++
++/**
++ * Records one plugin scenario under one library, reading the settled state each action leaves.
+  * @param scenario - The markup, setups, and actions to record.
+- * @param runtime - The engine's script and stylesheet: Bootstrap's pinned bundle, or Veneer
++ * @param runtime - The library's script and stylesheet: Bootstrap's pinned bundle, or Veneer
+  * compiled from source.
+  * @returns The ordered recording, under no motion preference and then under reduced motion,
+  * without writing or accepting a fixture.
+  * @throws When the markup carries an element without an id, when an action or a settle fails, or
+  * when the page reports an error.
+  * @remarks
+- * Both engines load the same page, with the runtime's stylesheet and script in its head, and
+- * receive the same trusted input, so the only difference between the two recordings is the engine.
+- * Each motion preference loads the page afresh, runs the engine's setup, reads the settled
+- * initial state, and then reads the state each action settles in.
++ * Both libraries load the same page and receive the same trusted input for every gesture. A `call`
++ * action and the setup run each library's own script, so the two recordings differ only in the
++ * library and those scripts. Each motion preference loads the page afresh, runs the library's setup,
++ * reads the settled initial state, and then reads the state each action settles in.
+  */
+ export async function recordPluginOracle(
+ 	scenario: PluginScenario,
+ 	runtime: PluginRuntime,
+-): Promise<PluginFixture> {
+-	return driveOracleBrowser(async (browser, scratch) => {
++): Promise<PluginRecording> {
++	return launchOracleBrowser(async (browser, scratch) => {
+ 		scratch.write('runtime.css', runtime.stylesheet)
+ 		scratch.write('runtime.js', runtime.script)
+ 		const path = scratch.write(
+@@ -4637,7 +5003,7 @@ export async function recordPluginOracle(
+ 					throw new Error(`Plugin markup carries a ${unlabelled.localName} element without an id`)
+ 				return [...template.content.querySelectorAll('[id]')].map((element) => element.id)
+ 			}, scenario.markup)
+-			const setup = scenario.setup[runtime.engine]
++			const setup = scenario.setup[runtime.library]
+ 			if (setup !== '') await page.addScriptTag({ content: setup })
+ 			const prefix = `${scenario.plugin}.${reduced ? 'reduced.' : ''}`
+ 			steps.push({
+@@ -4645,7 +5011,7 @@ export async function recordPluginOracle(
+ 				state: await settlePluginState(page, scenario, authored),
+ 			})
+ 			for (const action of scenario.actions) {
+-				await drivePluginAction(page, action, runtime.engine)
++				await drivePluginAction(page, action, runtime.library)
+ 				steps.push({
+ 					name: `${prefix}${action.name}`,
+ 					state: await settlePluginState(page, scenario, authored),
+@@ -4653,7 +5019,9 @@ export async function recordPluginOracle(
+ 			}
+ 		}
+ 		if (errors.length > 0)
+-			throw new Error(`The ${runtime.engine} ${scenario.plugin} page reported ${errors.join('; ')}`)
++			throw new Error(
++				`The ${runtime.library} ${scenario.plugin} page reported ${errors.join('; ')}`,
++			)
+ 		return {
+ 			version: BOOTSTRAP_VERSION,
+ 			plugin: scenario.plugin,
+@@ -4673,7 +5041,7 @@ export async function recordPluginOracle(
+  */
+ export function scanPluginSteps(
+ 	scenario: PluginScenario,
+-	recording: PluginFixture,
++	recording: PluginRecording,
+ ): string | undefined {
+ 	const expected = ['', 'reduced.'].flatMap((prefix) => [
+ 		`${scenario.plugin}.${prefix}initial`,
+@@ -4700,30 +5068,34 @@ export function scanPluginSteps(
+  * Scans a saved plugin fixture for a difference from the live recording, in the JSON form the
+  * fixture file carries.
+  * @param recording - The live Bootstrap recording.
+- * @param fixture - The saved fixture.
++ * @param fixture - The saved fixture, as the {@link readPluginFixture} helper reads it.
+  * @returns The first differing step, a metadata or membership finding, or undefined when they
+- * agree. Returns `Invalid plugin oracle fixture` when the fixture is not an object carrying a
+- * browser and a step list.
++ * agree.
+  * @remarks The browser build is required provenance and is excluded from the comparison.
+  */
+-export function scanPluginFixture(recording: PluginFixture, fixture: unknown): string | undefined {
+-	if (!isRecord(fixture) || typeof fixture.browser !== 'string' || !Array.isArray(fixture.steps))
+-		return 'Invalid plugin oracle fixture'
+-	const saved = fixture.steps
++export function scanPluginFixture(
++	recording: PluginRecording,
++	fixture: PluginRecording,
++): string | undefined {
+ 	for (const [index, step] of recording.steps.entries()) {
+-		if (!isDeepStrictEqual(parseJSON(JSON.stringify(step)), saved[index]))
++		const saved = fixture.steps[index]
++		if (
++			saved === undefined ||
++			!isDeepStrictEqual(parseJSON(JSON.stringify(step)), parseJSON(JSON.stringify(saved)))
++		)
+ 			return `Plugin oracle differs at step ${step.name}`
+ 	}
+ 	const { browser: _recordedBrowser, ...recorded } = recording
+-	const { browser: _savedBrowser, ...metadata } = fixture
+-	return isDeepStrictEqual(parseJSON(JSON.stringify(recorded)), metadata)
++	const { browser: _savedBrowser, ...saved } = fixture
++	return isDeepStrictEqual(parseJSON(JSON.stringify(recorded)), parseJSON(JSON.stringify(saved)))
+ 		? undefined
+ 		: 'Plugin oracle fixture metadata or step membership differs'
+ }
+ 
+ /**
+  * Checks whether a value is a plugin state: labelled elements with string classes, string
+- * attributes, and a visibility, beside a focus label and a lock reading.
++ * attributes, a visibility, and an optional own text, parent label, and pair of scroll offsets,
++ * beside a focus label and a lock reading.
+  * @param value - The value to check.
+  * @returns True if the value has that shape; false otherwise.
+  */
+@@ -4740,7 +5112,13 @@ export function isPluginState(value: unknown): value is PluginState {
+ 				element.classes.every((token) => typeof token === 'string') &&
+ 				isRecord(element.attributes) &&
+ 				Object.values(element.attributes).every((attribute) => typeof attribute === 'string') &&
+-				typeof element.visible === 'boolean',
++				typeof element.visible === 'boolean' &&
++				(element.text === undefined || typeof element.text === 'string') &&
++				(element.parent === undefined || typeof element.parent === 'string') &&
++				(element.scroll === undefined ||
++					(isRecord(element.scroll) &&
++						typeof element.scroll.top === 'number' &&
++						typeof element.scroll.left === 'number')),
+ 		)
+ 	)
+ }
+@@ -4757,7 +5135,7 @@ export function isPluginState(value: unknown): value is PluginState {
+ export function readPluginFixture(
+ 	plugin: string,
+ 	path: string = resolve(WORKSPACE_ROOT, `tests/fixtures/oracle/${plugin}.json`),
+-): PluginFixture {
++): PluginRecording {
+ 	const fixture = parseJSON(readFileSync(path, 'utf8'))
+ 	if (
+ 		!isRecord(fixture) ||
+@@ -4780,14 +5158,16 @@ export function readPluginFixture(
+  * @param bootstrap - Bootstrap's recording, such as a saved fixture.
+  * @param veneer - Veneer's recording of the same scenario.
+  * @returns One departure per step for each element one side lacks, each class token one side
+- * carries alone, each attribute whose value differs, each visibility that differs, and a differing
+- * focus or lock, in step order.
++ * carries alone, each attribute, own text, parent, and scroll offset whose value differs, each
++ * visibility that differs, and a differing focus or lock, in step order.
+  * @throws When the two recordings carry different step names.
+- * @remarks An element one side lacks reports that alone, not its classes or attributes.
++ * @remarks
++ * An element one side lacks reports that alone, not its other facets. Every lookup by label reads
++ * an own property, so a label such as `constructor` names an element only where a side records one.
+  */
+ export function collectEngineDepartures(
+-	bootstrap: PluginFixture,
+-	veneer: PluginFixture,
++	bootstrap: PluginRecording,
++	veneer: PluginRecording,
+ ): readonly EngineDeparture[] {
+ 	if (
+ 		!isDeepStrictEqual(
+@@ -4808,12 +5188,16 @@ export function collectEngineDepartures(
+ 			),
+ 		]
+ 		for (const label of labels) {
+-			const official = expected.state.elements[label]
+-			const own = actual.state.elements[label]
++			const official = Object.hasOwn(expected.state.elements, label)
++				? expected.state.elements[label]
++				: undefined
++			const own = Object.hasOwn(actual.state.elements, label)
++				? actual.state.elements[label]
++				: undefined
++			const subject = { ...row, subject: label }
+ 			if (official === undefined || own === undefined) {
+ 				departures.push({
+-					...row,
+-					subject: label,
++					...subject,
+ 					facet: 'element',
+ 					name: undefined,
+ 					bootstrap: official !== undefined,
+@@ -4824,8 +5208,7 @@ export function collectEngineDepartures(
+ 			for (const token of [...new Set([...official.classes, ...own.classes])].sort()) {
+ 				if (official.classes.includes(token) !== own.classes.includes(token))
+ 					departures.push({
+-						...row,
+-						subject: label,
++						...subject,
+ 						facet: 'class',
+ 						name: token,
+ 						bootstrap: official.classes.includes(token),
+@@ -4835,25 +5218,53 @@ export function collectEngineDepartures(
+ 			for (const name of [
+ 				...new Set([...Object.keys(official.attributes), ...Object.keys(own.attributes)]),
+ 			].sort()) {
+-				if (official.attributes[name] !== own.attributes[name])
++				const before = Object.hasOwn(official.attributes, name)
++					? official.attributes[name]
++					: undefined
++				const after = Object.hasOwn(own.attributes, name) ? own.attributes[name] : undefined
++				if (before !== after)
+ 					departures.push({
+-						...row,
+-						subject: label,
++						...subject,
+ 						facet: 'attribute',
+ 						name,
+-						bootstrap: official.attributes[name],
+-						veneer: own.attributes[name],
++						bootstrap: before,
++						veneer: after,
+ 					})
+ 			}
+ 			if (official.visible !== own.visible)
+ 				departures.push({
+-					...row,
+-					subject: label,
+-					facet: 'visible',
++					...subject,
++					facet: 'visibility',
+ 					name: undefined,
+ 					bootstrap: official.visible,
+ 					veneer: own.visible,
+ 				})
++			if (official.text !== own.text)
++				departures.push({
++					...subject,
++					facet: 'text',
++					name: undefined,
++					bootstrap: official.text,
++					veneer: own.text,
++				})
++			if (official.parent !== own.parent)
++				departures.push({
++					...subject,
++					facet: 'parent',
++					name: undefined,
++					bootstrap: official.parent,
++					veneer: own.parent,
++				})
++			for (const axis of ['top', 'left'] as const) {
++				if (official.scroll?.[axis] !== own.scroll?.[axis])
++					departures.push({
++						...subject,
++						facet: 'scroll',
++						name: axis,
++						bootstrap: official.scroll?.[axis],
++						veneer: own.scroll?.[axis],
++					})
++			}
+ 		}
+ 		if (expected.state.focus !== actual.state.focus)
+ 			departures.push({
+@@ -4888,14 +5299,14 @@ export function collectEngineDepartures(
+  * @throws When no scenario records the control's plugin or no action of it names the control's
+  * step, or when a recording fails.
+  * @remarks
+- * Both Veneer recordings drive the scenario's actions up to and including the control's step, so
+- * a seam that leaves the page unable to take a later action still records, and Bootstrap's
+- * recording is read at the same steps.
++ * Both Veneer recordings, under the default setup and under the control's, drive the scenario's
++ * actions up to and including the control's step, so a seam that leaves the page unable to take a
++ * later action still records, and Bootstrap's recording is read at the same steps.
+  */
+ export async function recordPluginControl(
+ 	control: PluginControl,
+ 	runtime: PluginRuntime,
+-	fixture: PluginFixture = readPluginFixture(control.plugin),
++	fixture: PluginRecording = readPluginFixture(control.plugin),
+ ): Promise<readonly EngineDeparture[]> {
+ 	const scenario = PLUGIN_SCENARIOS.find((candidate) => candidate.plugin === control.plugin)
+ 	if (scenario === undefined) throw new Error(`No plugin scenario records ${control.plugin}`)

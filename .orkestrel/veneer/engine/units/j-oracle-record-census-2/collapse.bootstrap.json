@@ -1,0 +1,3595 @@
+{
+	"version": "5.3.8",
+	"plugin": "collapse",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "collapse.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "false",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "false",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.click.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.click.link",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "false",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "false",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "link",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.press.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.click.two",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "button-two",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.click.one",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "button-one",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.click.wide",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "true",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "wide-trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.click.wide.again",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "wide-trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "false",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "false",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.reduced.click.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.reduced.click.link",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "false",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "false",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "link",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.reduced.press.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.reduced.click.two",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "button-two",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.reduced.click.one",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "button-one",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.reduced.click.wide",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "true",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "wide-trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "collapse.reduced.click.wide.again",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-target": "#panel",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle panel",
+						"parent": "body"
+					},
+					"link": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"aria-controls": "panel",
+							"aria-expanded": "true",
+							"data-bs-toggle": "collapse",
+							"href": "#panel",
+							"role": "button"
+						},
+						"visible": true,
+						"text": "Link to panel",
+						"parent": "body"
+					},
+					"panel": {
+						"classes": [
+							"collapse",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"panel-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Panel",
+						"parent": "panel"
+					},
+					"accordion": {
+						"classes": [
+							"accordion"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"item-one": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-one": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"button-one": {
+						"classes": [
+							"accordion-button"
+						],
+						"attributes": {
+							"aria-controls": "collapse-one",
+							"aria-expanded": "true",
+							"data-bs-target": "#collapse-one",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "One",
+						"parent": "header-one"
+					},
+					"collapse-one": {
+						"classes": [
+							"accordion-collapse",
+							"collapse",
+							"show"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": true,
+						"parent": "item-one"
+					},
+					"body-one": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "First",
+						"parent": "collapse-one"
+					},
+					"item-two": {
+						"classes": [
+							"accordion-item"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "accordion"
+					},
+					"header-two": {
+						"classes": [
+							"accordion-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "item-two"
+					},
+					"button-two": {
+						"classes": [
+							"accordion-button",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "collapse-two",
+							"aria-expanded": "false",
+							"data-bs-target": "#collapse-two",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Two",
+						"parent": "header-two"
+					},
+					"collapse-two": {
+						"classes": [
+							"accordion-collapse",
+							"collapse"
+						],
+						"attributes": {
+							"data-bs-parent": "#accordion"
+						},
+						"visible": false,
+						"parent": "item-two"
+					},
+					"body-two": {
+						"classes": [
+							"accordion-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Second",
+						"parent": "collapse-two"
+					},
+					"wide-trigger": {
+						"classes": [
+							"btn",
+							"btn-primary",
+							"collapsed"
+						],
+						"attributes": {
+							"aria-controls": "wide",
+							"aria-expanded": "false",
+							"data-bs-target": "#wide",
+							"data-bs-toggle": "collapse",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Toggle width",
+						"parent": "body"
+					},
+					"wide": {
+						"classes": [
+							"collapse",
+							"collapse-horizontal"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "body"
+					},
+					"wide-body": {
+						"classes": [
+							"card",
+							"card-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Wide",
+						"parent": "wide"
+					}
+				},
+				"focus": "wide-trigger",
+				"locked": false
+			}
+		}
+	]
+}

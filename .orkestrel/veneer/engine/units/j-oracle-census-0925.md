@@ -23,3 +23,11 @@ Collapse, Alert, Tab, and ScrollSpy show no departure.
 - The ScrollSpy scenario cannot tell the activation's clearing from the leave path's clearing, because each section leaves before the next activates. J-ORACLE-GATE adds a scenario in which a section enters while the previous one is still in view.
 - ScrollSpy's offset comparison across offset parents (`units/j-concerns-a-audit-objective-verdict.md`, outside the claims) follows Bootstrap's own `offsetTop` comparison (`scrollspy.js` around lines 166 to 194), so it is parity, not a Veneer defect. J-ORACLE-GATE adds that witness as a scenario. A difference between the engines there would be a departure to rule. Matching end states are parity.
 - The fixtures were recorded on Chromium 153. The styles session is asked for a Chromium 141 run before the gate.
+
+## The second reading (J-ORACLE-RECORD round 2, 2026-09-25)
+
+The reader's added facets, which are text, parent, and scroll (E28 amended), read the census again at Veneer `9ea360d` (`units/j-oracle-record-report-2.md` § Census table). Every earlier row stands, and no text or parent departure appears in any plugin. One row is added:
+
+| Plugin | Difference | Ruling | Evidence | Carrier |
+| --- | --- | --- | --- | --- |
+| ScrollSpy | after a smooth-scroll click, the spy scrolls to `600` where Bootstrap's scrolls to `544` | **Intentional departure.** Bootstrap computes the destination as `observableSection.offsetTop - this._element.offsetTop` (`scrollspy.js` around line 140). A section's `offsetTop` is already measured from the spy when the spy is positioned, as Bootstrap's own documentation requires, so subtracting the spy's own offset leaves the scroll short of the section. Veneer measures the section's box and lands on the section the link names. | the census step `scrollspy.click.third`; `ScrollSpy.ts`, `#scrollTo` | a `### Departures` row at J-ORACLE-GATE |

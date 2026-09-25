@@ -402,4 +402,18 @@ E28 amended at J-ORACLE-RECORD's audit (2026-09-25, `units/j-oracle-record-audit
 - shadow trees;
 - hit testing.
 
-**The settle reads its motion check and the state in one evaluation,** so no change can fall between them. A scenario whose engine work is scheduled past the settle's quiet interval, such as a tooltip `delay`, is outside the oracle's contract. `scanPluginSteps` refuses the unchanged step such a scenario would record.
+**The settle reads its motion check and the state in one evaluation,** so no change can fall between them. A scenario whose plugin schedules work past the settle's quiet interval, such as a tooltip `delay`, is outside the oracle's contract. "Engine" keeps Veneer's sense, so this sentence speaks of the plugin, which covers both libraries. `scanPluginSteps` refuses the unchanged step such a scenario would record.
+
+E28 amended again at J-ORACLE-RECORD round 2's audit (2026-09-25, `units/j-oracle-record-audit-2-verdict.md`). The objective lane (`analyst` on GPT-6 Astra, thread `01a0d70e-8173-7b83-888e-08a8d87fd443`) found that the first amendment's facets still let three end states pass unseen:
+- a replaced element's tag;
+- the order of siblings, which Bootstrap's dropdown navigation reads;
+- where text sits around child elements, as in a tooltip's or a popover's HTML content.
+
+It also found that scroll offsets are rounded before recording.
+
+**The reader records these facets:**
+- **each element's tag;**
+- **each element's content:** the ordered sequence of its child nodes, each text run with its whitespace collapsed and each child element by label. This replaces the own-text facet, whose text the sequence already carries.
+- **the settled scroll offsets as the platform reports them,** without rounding.
+
+The comparator reports a difference in each. The first amendment's limits stand.

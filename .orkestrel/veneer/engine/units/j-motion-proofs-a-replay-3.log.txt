@@ -1,0 +1,115 @@
+# The Orchestrator's replay of J-MOTION-PROOFS-A round 3 (2026-09-25, Chromium 153), worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/motion-proofs-a at 180d513 Say that Modal reads its dialog when each change runs (J-MOTION-PROOFS-A round 3 integration)
+format:check exit=0
+lint:check exit=0
+check exit=0
+test:guides exit=0
+test:setup:browser exit=0
+--- control: the four owned files, unmutated
+ Test Files  4 passed (4)
+      Tests  160 passed (160)
+control exit=0
+--- rows (the instrument's stdout)
+== modal-base: exit 1, restored True
+    Tests  2 failed | 59 passed (61)
+    FAIL Modal > dispatches shown and hidden after every motion its change starts on the host, the dialog, and the backdrop finishes, whichever of the host's fade and the dialog's transition lasts longer
+    FAIL Modal > settles each change and the bounce on a dialog inserted after construction
+== modal-stale-dialog: exit 1, restored True
+    Tests  1 failed | 60 passed (61)
+    FAIL Modal > settles each change and the bounce on a dialog inserted after construction
+== modal-show-dialog: exit 1, restored True
+    Tests  1 failed | 60 passed (61)
+    FAIL Modal > dispatches shown and hidden after every motion its change starts on the host, the dialog, and the backdrop finishes, whichever of the host's fade and the dialog's transition lasts longer
+== modal-hide-host: exit 1, restored True
+    Tests  2 failed | 59 passed (61)
+    FAIL Modal > dispatches shown and hidden after every motion its change starts on the host, the dialog, and the backdrop finishes, whichever of the host's fade and the dialog's transition lasts longer
+    FAIL Modal > settles each change and the bounce on a dialog inserted after construction
+== modal-show-skip: exit 1, restored True
+    Tests  6 failed | 55 passed (61)
+    FAIL Modal > displays the host after the backdrop fades in and dispatches shown with no motion running on the host, the dialog, or the backdrop
+    FAIL Modal > hides the host after its own fade settles and removes the backdrop after its fade before hidden
+    FAIL Modal > dispatches shown and hidden after every motion its change starts on the host, the dialog, and the backdrop finishes, whichever of the host's fade and the dialog's transition lasts longer
+    FAIL Modal > settles each change and the bounce on a dialog inserted after construction
+    FAIL Modal > abandons a show in flight on destruction, resolving false and restoring the host, the body, and the page
+    FAIL Modal > returns the host to the hidden state and removes the backdrop when the host drops the shown token at each door after the show writes it
+== modal-hide-skip: exit 1, restored True
+    Tests  3 failed | 58 passed (61)
+    FAIL Modal > hides the host after its own fade settles and removes the backdrop after its fade before hidden
+    FAIL Modal > dispatches shown and hidden after every motion its change starts on the host, the dialog, and the backdrop finishes, whichever of the host's fade and the dialog's transition lasts longer
+    FAIL Modal > settles each change and the bounce on a dialog inserted after construction
+== modal-backdrop-hide-skip: exit 1, restored True
+    Tests  4 failed | 57 passed (61)
+    FAIL Modal > hides the host after its own fade settles and removes the backdrop after its fade before hidden
+    FAIL Modal > dispatches shown and hidden after every motion its change starts on the host, the dialog, and the backdrop finishes, whichever of the host's fade and the dialog's transition lasts longer
+    FAIL Modal > returns the host and its backdrop to the shown state when the host takes a hide over at each door after the shown token leaves
+    FAIL Modal > shows no backdrop the hide did not write when the host takes that hide over
+== offcanvas-show-backdrop: exit 1, restored True
+    Tests  1 failed | 61 passed (62)
+    FAIL Offcanvas > fades the backdrop in and out beside the slide and dispatches each completed event after every motion its change starts finishes, whichever of the fade and the slide lasts longer
+== offcanvas-show-panel: exit 1, restored True
+    Tests  3 failed | 59 passed (62)
+    FAIL Offcanvas > slides in under the showing token and out under the hiding token, dispatching each completed event after the slide settles
+    FAIL Offcanvas > fades the backdrop in and out beside the slide and dispatches each completed event after every motion its change starts finishes, whichever of the fade and the slide lasts longer
+    FAIL Offcanvas > responsive hide > applies a resize that arrives during the slide-in after the show dispatches its completed event
+== offcanvas-hide-backdrop: exit 1, restored True
+    Tests  1 failed | 61 passed (62)
+    FAIL Offcanvas > fades the backdrop in and out beside the slide and dispatches each completed event after every motion its change starts finishes, whichever of the fade and the slide lasts longer
+== offcanvas-hide-panel: exit 1, restored True
+    Tests  2 failed | 60 passed (62)
+    FAIL Offcanvas > slides in under the showing token and out under the hiding token, dispatching each completed event after the slide settles
+    FAIL Offcanvas > fades the backdrop in and out beside the slide and dispatches each completed event after every motion its change starts finishes, whichever of the fade and the slide lasts longer
+== backdrop-show-skip: exit 1, restored True
+    Tests  4 failed | 9 passed (13)
+    FAIL Backdrop > appends an element carrying the host and fade tokens, fades it in from a layout read, fades it out on hide, and removes it only on destruction
+    FAIL Backdrop > writes, tests, and removes only the replacing tokens when every class is replaced, and waits for the fade the replacing classes carry
+    FAIL Backdrop > keeps the element for a show that takes over a hide in flight, which resolves false
+    FAIL Backdrop > removes the element at once on destruction and resolves the show in flight false
+== backdrop-hide-skip: exit 1, restored True
+    Tests  3 failed | 10 passed (13)
+    FAIL Backdrop > appends an element carrying the host and fade tokens, fades it in from a layout read, fades it out on hide, and removes it only on destruction
+    FAIL Backdrop > writes, tests, and removes only the replacing tokens when every class is replaced, and waits for the fade the replacing classes carry
+    FAIL Backdrop > keeps the element for a show that takes over a hide in flight, which resolves false
+== backdrop-literal-fade-show: exit 1, restored True
+    Tests  1 failed | 12 passed (13)
+    FAIL Backdrop > writes, tests, and removes only the replacing tokens when every class is replaced, and waits for the fade the replacing classes carry
+== backdrop-literal-fade-hide: exit 1, restored True
+    Tests  1 failed | 12 passed (13)
+    FAIL Backdrop > writes, tests, and removes only the replacing tokens when every class is replaced, and waits for the fade the replacing classes carry
+== alert-skip: exit 1, restored True
+    Tests  8 failed | 16 passed (24)
+    FAIL Alert > fades an alert carrying the fade token out, and removes the host after every motion the close starts finishes
+    FAIL Alert > dispatches closed with no running fade within one frame at a zero motion factor, and within one frame after the fade the factor lengthens finishes at a large one
+    FAIL Alert > closes an alert whose fade token runs no transition before a zero-delay timer fires, with no fallback timer
+    FAIL Alert > resolves false for a call while a close is in flight, and completes the close in flight once
+    FAIL Alert > holds no record of the shown token after a completed close, so a fresh alert on the reused host restores the token its destruction finds recorded
+    FAIL Alert > abandons the fade on destruction, resolving false with no closed event, restoring the shown token, and keeping the host in the document
+    FAIL Alert > writes, removes, and tests only the replacing class tokens when every group is replaced
+    FAIL Alert > stops when the shown token returns during the fade, keeping the host and dispatching no closed event
+== reader-seconds: exit 1, restored True
+    Tests  1 failed | 88 passed (89)
+    FAIL readDuration > returns the longest declared duration in milliseconds across a list in seconds and milliseconds
+--- rows whose log names no AssertionError
+--- unhandled errors in the row logs
+tmp/j-motion-proofs-a/mutations-3/backdrop-hide-skip.log.txt
+tmp/j-motion-proofs-a/mutations-3/backdrop-show-skip.log.txt
+tmp/j-motion-proofs-a/mutations-3/offcanvas-hide-panel.log.txt
+tmp/j-motion-proofs-a/mutations-3/offcanvas-show-panel.log.txt
+--- the plant
+planted src/styles/components/_fade.scss
+planted src/styles/components/_modal.scss
+planted src/styles/components/_offcanvas.scss
+Modal exit 0
+ Test Files  1 passed (1)
+      Tests  61 passed (61)
+Offcanvas exit 0
+ Test Files  1 passed (1)
+      Tests  62 passed (62)
+Backdrop exit 0
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+Alert exit 0
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+plant exit=0
+--- the Orchestrator's restore check
+every source restored byte for byte
+--- status after
