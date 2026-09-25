@@ -1,0 +1,19 @@
+loadavg=7.01 5.17 8.44 8/587 12449
+
+ RUN  v4.1.11 /home/user/veneer-mfac
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+6:17:13 AM [vite] (client) [optimizer] scanning dependencies...
+6:17:15 AM [vite] (client) [optimizer] bundling dependencies...
+···············································································
+
+ Test Files  2 passed (2)
+      Tests  79 passed (79)
+   Start at  06:17:12
+   Duration  19.68s (transform 0ms, setup 1.22s, import 1.07s, tests 4.76s, environment 0ms)
+
+exit=0
+loadavg=8.51 5.67 8.52 14/571 12671

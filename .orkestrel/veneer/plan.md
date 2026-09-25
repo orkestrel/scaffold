@@ -104,9 +104,12 @@ sections.
   the same browser (`readFormDifferences` in `tests/setupBrowser.ts`). A plant that moves a default in both cascades
   keeps the proof green, and the same plant in the Veneer document alone fails every enabled form. Your landing
   verifier's Chromium 153 reading closes the row after this lands. Its audit runs.
-- **E-ID-MOTION-FACTOR is writing** from `b613ae4`: the floating label, the progress bar, nav, pagination, the navbar
-  toggler, and the accordion button's transitions scale by `--vn-factor-motion`. No engine proof reads these values
-  (E32); the unit stops if its search finds one.
+- **E-ID-MOTION-FACTOR returned and its audit runs.** The floating label, progress bar, nav, pagination, navbar toggler,
+  and accordion button transitions scale by `--vn-factor-motion` and keep the release's values at a factor of `1`.
+  **One finding for your J-MOTION-PROOFS-B, which owns Tab:** `tests/src/browser/Tab.test.ts`, in the case "reads the
+  shipped nav and fade declarations the pane proofs run under", asserts the nav link's `transitionDuration` is
+  `0.15s, 0.15s, 0.15s`. That holds at a factor of `1` after FACTOR, and the Tab and ScrollSpy proofs read green over
+  it, but it pins a duration the cascade owns, which E32 forbids. Read a positive duration there instead.
 - **TOKEN-PROOFS changes § Customization's placement rule** (D51a). An override on the root element reaches every rule,
   tier, and alias that reads the token, except inside a `[data-bs-theme]` element below the root that declares it
   again. An override on a `[data-bs-theme]` element below the root reaches the tiers and aliases its mode scope derives

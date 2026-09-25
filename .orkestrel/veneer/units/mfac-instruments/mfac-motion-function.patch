@@ -1,0 +1,39 @@
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -354,6 +354,12 @@
+ 	}
+ }
+ 
++// Scales a release's own duration by the motion factor, so a transition no motion token resolves
++// to still resolves the release's duration at the resting factor and moves with the factor.
++@function motion($duration) {
++	@return calc(#{$duration} * var(--vn-factor-motion));
++}
++
+ @mixin transition($value) {
+ 	transition: $value;
+ 	@include reduced-motion {
+--- a/src/styles/components/_form-floating.scss
++++ b/src/styles/components/_form-floating.scss
+@@ -50,8 +50,8 @@
+ 		transform-origin: 0 0;
+ 		@include transition(
+ 			(
+-				opacity calc(100ms * var(--vn-factor-motion)) ease-in-out,
+-				transform calc(100ms * var(--vn-factor-motion)) ease-in-out
++				opacity motion(100ms) ease-in-out,
++				transform motion(100ms) ease-in-out
+ 			)
+ 		);
+ 	}
+--- a/src/styles/components/_progress.scss
++++ b/src/styles/components/_progress.scss
+@@ -24,7 +24,7 @@
+ 		--bs-progress-bar-bg: var(--vn-palette-blue);
+ 		// The width transition multiplies the release's `0.6s` duration by the motion factor, because
+ 		// no motion token resolves to it, and keeps the release's curve.
+-		--bs-progress-bar-transition: width calc(600ms * var(--vn-factor-motion)) ease;
++		--bs-progress-bar-transition: width #{motion(600ms)} ease;
+ 		display: flex;
+ 		height: var(--bs-progress-height);
+ 		overflow: hidden;

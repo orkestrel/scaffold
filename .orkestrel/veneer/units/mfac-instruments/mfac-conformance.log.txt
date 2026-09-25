@@ -1,0 +1,17 @@
+loadavg=16.45 16.51 13.03 15/554 18223
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-mfac
+
+··························
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  06:32:19
+   Duration  35.17s (transform 2.13s, setup 422ms, import 24.27s, tests 10.24s, environment 0ms)
+
+exit=0
+loadavg=11.38 15.31 12.77 1/126 18582

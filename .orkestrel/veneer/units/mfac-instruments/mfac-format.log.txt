@@ -1,0 +1,7 @@
+loadavg=13.59 11.38 10.07 14/544 15976
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 38814ms on 13 files using 4 threads.
+exit=0
+loadavg=15.67 12.21 10.41 9/604 16183

@@ -1,0 +1,90 @@
+loadavg=15.63 11.38 9.99 7/576 15194
+file=guides/veneer.md sha256-before=daf204efc17df2bdadf7101edb5bfbf61ad1c2d0661f7a490adbaf00de58daca
+planted-diff:
+8876d8875
+< | `navbar`  | `.navbar`                     | `--bs-navbar-toggler-transition`   | —         | `box-shadow 0.15s ease-in-out` | `box-shadow var(--vn-motion-feedback) ease-in-out`                    | tokenized |
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-mfac
+
+·······xx·············x···
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(6) ], …(1) ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "navbar | .navbar | --bs-navbar-toggler-transition",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "navbar | .navbar | --bs-navbar-toggler-transition",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:326:20
+    324|   // The component-owned dark images are a second record of the same r…
+    325|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    326|   expect(darkened).toEqual([
+       |                    ^
+    327|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    328|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "navbar | .navbar | --bs-navbar-toggler-transition | — | box-shadow 0.15s ease-in-out | box-shadow var(--vn-motion-feedback) ease-in-out | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:334:33
+    332|
+    333|  it('records every measured value difference in the guide ledger', () …
+    334|   expect(departures.unrecorded).toEqual([])
+       |                                 ^
+    335|  })
+    336|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > imports no forbidden runtime package from source, application, or tests
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:793:2
+    791|  })
+    792|
+    793|  it('imports no forbidden runtime package from source, application, or…
+       |  ^
+    794|   const files = readInventory(WORKSPACE_ROOT, ['src', 'app', 'tests'])
+    795|   for (const [path, source] of Object.entries(files)) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 23 passed (26)
+   Start at  06:24:42
+   Duration  50.95s (transform 677ms, setup 278ms, import 24.20s, tests 26.20s, environment 0ms)
+
+exit=1
+sha256-after=daf204efc17df2bdadf7101edb5bfbf61ad1c2d0661f7a490adbaf00de58daca
+restored=identical

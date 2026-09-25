@@ -1,0 +1,46 @@
+loadavg=22.03 15.86 12.07 7/709 17061
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-mfac
+
+······x···············x···
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:263:2
+    261|  })
+    262|
+    263|  it(
+       |  ^
+    264|   'records official Button behavior and matches each named fixture ste…
+    265|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > imports no forbidden runtime package from source, application, or tests
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:793:2
+    791|  })
+    792|
+    793|  it('imports no forbidden runtime package from source, application, or…
+       |  ^
+    794|   const files = readInventory(WORKSPACE_ROOT, ['src', 'app', 'tests'])
+    795|   for (const [path, source] of Object.entries(files)) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 24 passed (26)
+   Start at  06:29:20
+   Duration  127.46s (transform 3.62s, setup 756ms, import 81.80s, tests 43.51s, environment 0ms)
+
+exit=1
+loadavg=19.42 16.97 12.98 7/664 17881

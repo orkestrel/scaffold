@@ -1,0 +1,102 @@
+loadavg=8.22 5.66 8.50 7/571 12711
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-mfac
+
+·······xx··············x··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(12) ], [ …(7) ] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "accordion | .accordion | --bs-accordion-transition",
++     "form-floating | .form-floating > label | transition",
++     "nav | .nav-link | transition",
++     "navbar | .navbar | --bs-navbar-toggler-transition",
++     "pagination | .page-link | transition",
++     "progress | .progress | --bs-progress-bar-transition",
++     "progress | .progress-stacked | --bs-progress-bar-transition",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "accordion | .accordion | --bs-accordion-transition",
++     "form-floating | .form-floating > label | transition",
++     "nav | .nav-link | transition",
++     "navbar | .navbar | --bs-navbar-toggler-transition",
++     "pagination | .page-link | transition",
++     "progress | .progress | --bs-progress-bar-transition",
++     "progress | .progress-stacked | --bs-progress-bar-transition",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:326:20
+    324|   // The component-owned dark images are a second record of the same r…
+    325|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    326|   expect(darkened).toEqual([
+       |                    ^
+    327|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    328|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ …(7) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "accordion | .accordion | --bs-accordion-transition | — | color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, border-radius 0.15s ease | color var(--vn-motion-feedback) ease-in-out, background-color var(--vn-motion-feedback) ease-in-out, border-color var(--vn-motion-feedback) ease-in-out, box-shadow var(--vn-motion-feedback) ease-in-out, border-radius var(--vn-motion-feedback) ease | tokenized",
++   "form-floating | .form-floating > label | transition | — | opacity 0.1s ease-in-out, transform 0.1s ease-in-out | opacity calc(100ms * var(--vn-factor-motion)) ease-in-out, transform calc(100ms * var(--vn-factor-motion)) ease-in-out | tokenized",
++   "nav | .nav-link | transition | — | color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out | color var(--vn-motion-feedback) ease-in-out, background-color var(--vn-motion-feedback) ease-in-out, border-color var(--vn-motion-feedback) ease-in-out | tokenized",
++   "navbar | .navbar | --bs-navbar-toggler-transition | — | box-shadow 0.15s ease-in-out | box-shadow var(--vn-motion-feedback) ease-in-out | tokenized",
++   "pagination | .page-link | transition | — | color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out | color var(--vn-motion-feedback) ease-in-out, background-color var(--vn-motion-feedback) ease-in-out, border-color var(--vn-motion-feedback) ease-in-out, box-shadow var(--vn-motion-feedback) ease-in-out | tokenized",
++   "progress | .progress | --bs-progress-bar-transition | — | width 0.6s ease | width calc(600ms * var(--vn-factor-motion)) ease | tokenized",
++   "progress | .progress-stacked | --bs-progress-bar-transition | — | width 0.6s ease | width calc(600ms * var(--vn-factor-motion)) ease | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:334:33
+    332|
+    333|  it('records every measured value difference in the guide ledger', () …
+    334|   expect(departures.unrecorded).toEqual([])
+       |                                 ^
+    335|  })
+    336|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+Error: ENOENT: no such file or directory, open '/home/user/veneer-mfac/dist/src/core/index.js'
+ ❯ scanForbiddenBuild tests/setupServer.ts:1017:16
+    1015|  signatures: readonly string[],
+    1016| ): string | undefined {
+    1017|  const built = readFileSync(path, 'utf8')
+       |                ^
+    1018|  return (
+    1019|   scanForbiddenSource(built, names) ??
+ ❯ tests/conformance.test.ts:821:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 23 passed (26)
+   Start at  06:17:42
+   Duration  53.02s (transform 2.06s, setup 536ms, import 31.56s, tests 20.60s, environment 0ms)
+
+exit=1
