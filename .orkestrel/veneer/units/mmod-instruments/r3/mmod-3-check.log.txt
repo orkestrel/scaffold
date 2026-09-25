@@ -1,0 +1,31 @@
+npm run check
+
+> @orkestrel/veneer@0.0.1 check
+> tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+
+
+> @orkestrel/veneer@0.0.1 check:src
+> npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+
+
+> @orkestrel/veneer@0.0.1 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/veneer@0.0.1 check:src:browser
+> tsc --noEmit -p configs/src/tsconfig.browser.json
+
+
+> @orkestrel/veneer@0.0.1 check:src:styles
+> tsc --noEmit -p configs/src/tsconfig.styles.json
+
+
+> @orkestrel/veneer@0.0.1 check:app
+> npm run check:app:browser
+
+
+> @orkestrel/veneer@0.0.1 check:app:browser
+> vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+
+exit=0
+4.37 3.34 5.41 8/303 10525

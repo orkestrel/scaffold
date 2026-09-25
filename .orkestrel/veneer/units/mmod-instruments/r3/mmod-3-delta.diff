@@ -1,0 +1,68 @@
+--- tmp/units/guides_veneer.md.bak-3	2026-09-25 07:32:17.440241911 +0000
++++ guides/veneer.md	2026-09-25 07:33:32.908829166 +0000
+@@ -5556,9 +5556,10 @@
+ `--vn-ease-out` curve in place of the `.fade` rule's feedback duration, so the host and the dialog
+ settle together: the `.modal` rule writes that transition, and it outranks the `.fade` rule because
+ the two rules tie on specificity in the `components` layer and the barrel loads the modal partial
+-after the fade partial. On a modal without the `fade` class, an engine writes no opacity, so no
+-transition runs as the engine shows or hides that modal. The `transition` mixin writes the dialog's
+-move and the host's fade, so each resolves to no transition under the reduced-motion preference.
++after the fade partial. A modal without the `fade` class keeps its opacity as an engine adds and
++removes the `show` class, so no transition runs as the engine shows or hides it. The `transition`
++mixin writes the dialog's move and the host's fade, so each resolves to no transition under the
++reduced-motion preference.
+ 
+ Each fullscreen class fills the viewport with the dialog, drops the content's edge and corners, and
+ scrolls the body. The `.modal-fullscreen` class does so at every width, and each
+@@ -10594,7 +10595,7 @@
+ | `fs`           | `.fs-6 { font-size }`                                                                     | `@media (width >= 1200px)`                       | declaration | `var(--vn-size-3)`                                                                                                                                                                                                                                                                                                     | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.                                                        |
+ | `modal`        | `.modal { transition }`                                                                   | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The modal host fades on Elements' panel timing beside its dialog in place of the shared `.fade` rule's feedback timing, so the host and the dialog settle together.                                                             |
+ | `modal`        | `.modal { transition }`                                                                   | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+-| `modal`        | `.modal-backdrop.fade { transition }`                                                     | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop on the panel timing the modal host fades on, in place of the shared `.fade` rule's feedback timing.                                                                             |
++| `modal`        | `.modal-backdrop.fade { transition }`                                                     | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` duration on the `--vn-ease-out` curve, in place of the shared `.fade` rule's feedback timing.                                                      |
+ | `modal`        | `.modal-backdrop.fade { transition }`                                                     | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+ | `offcanvas`    | `.offcanvas-backdrop.fade { transition }`                                                 | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` duration on the `--vn-ease-out` curve, in place of the shared `.fade` rule's feedback timing.                                                      |
+ | `offcanvas`    | `.offcanvas-backdrop.fade { transition }`                                                 | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+--- tmp/units/src_styles_components__modal.scss.bak-3	2026-09-25 07:32:17.447109505 +0000
++++ src/styles/components/_modal.scss	2026-09-25 07:32:28.560830638 +0000
+@@ -50,8 +50,8 @@
+ 		// The host fades on the panel duration beside its dialog in place of the shared `.fade` rule's
+ 		// feedback duration, so the host and the dialog settle together. The barrel loads this partial
+ 		// after the fade partial, and the two rules tie on specificity, so this transition wins on a
+-		// modal carrying the `fade` class. On a modal without that class, an engine writes no opacity,
+-		// so no transition runs as the engine shows or hides that modal.
++		// modal carrying the `fade` class. A modal without that class keeps its opacity as an engine
++		// adds and removes the `show` class, so no transition runs as the engine shows or hides it.
+ 		@include transition(opacity var(--vn-motion-panel) var(--vn-ease-out));
+ 	}
+ 
+--- tmp/units/tests_src_styles_components_modal.test.ts.bak-3	2026-09-25 07:32:17.452119219 +0000
++++ tests/src/styles/components/modal.test.ts	2026-09-25 07:32:50.449490209 +0000
+@@ -478,10 +478,10 @@
+ 	// The mutations this catches are the entrance written as the release's `translate(0, -50px)`
+ 	// offset and its `0.3s ease-out` timing, read where the browser runs the move rather than where
+ 	// the rule declares it: a literal offset reports its matrix at the start, and a literal duration
+-	// or curve disagrees with the panel duration and curve a specimen resolves from the tokens apart
+-	// from the dialog's rule. A dialog left without its transition samples none, which the presence
+-	// assertion reports before any reading. The frame halfway through sits past the linear halfway
+-	// scale in the direction of travel, which only a decelerating curve produces.
++	// or curve disagrees with the panel duration and curve a specimen resolves from the tokens
++	// independently of the dialog's rule. A dialog left without its transition samples none, which
++	// the presence assertion reports before any reading. The frame halfway through sits past the
++	// linear halfway scale in the direction of travel, which only a decelerating curve produces.
+ 	it('enters the dialog from a 0.96 scale to none over the panel duration on the panel curve as the show class joins, and leaves on the same timing', () => {
+ 		const specimen = requireValue(
+ 			scene.mount(
+--- tmp/units/src_styles__mixins.scss.bak-3	2026-09-25 07:32:17.461114384 +0000
++++ src/styles/_mixins.scss	2026-09-25 07:32:54.120830053 +0000
+@@ -624,8 +624,8 @@
+ // `$zindex` stack rung in `$color`, transparent while it carries `fade` alone and at `$opacity`
+ // after the engine adds `show`, as the release writes its shared backdrop. A fading backdrop moves
+ // its opacity over the `--vn-motion-panel` duration on the `--vn-ease-out` curve in place of the
+-// shared `.fade` rule's feedback duration; the compound outranks that rule, and a backdrop without
+-// the `fade` class takes no transition, as the release's backdrop takes none.
++// shared `.fade` rule's feedback duration; the backdrop's `.fade` compound outranks that rule, and
++// a backdrop without the `fade` class takes no transition, as the release's backdrop takes none.
+ @mixin overlay-backdrop($zindex, $color, $opacity) {
+ 	position: fixed;
+ 	top: 0;
