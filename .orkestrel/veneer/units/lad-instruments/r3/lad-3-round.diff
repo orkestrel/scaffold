@@ -1,0 +1,172 @@
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1809,7 +1809,7 @@
+ /**
+  * Selects the longest key that one of a selector's classes equals or opens with.
+  *
+- * @param classes - The selector's classes, as the {@link collectSelectorClasses} helper reads them.
++ * @param classes - The selector's classes, as the {@link collectMatchingClasses} helper reads them.
+  * @param keys - The candidate component keys.
+  * @returns The longest key any class equals or opens with, or undefined where no class reaches a
+  *   key, so the `.form-switch .form-check-input` selector answers to the `form-check` key rather
+@@ -1851,8 +1851,7 @@
+ }
+ 
+ /**
+- * Collects every class a selector writes for the elements it matches, reading through `:is()` and
+- * `:where()`.
++ * Collects every class a selector writes, reading through `:is()` and `:where()` arguments.
+  * @param selector - The selector text to read.
+  * @returns Each class name, in written order: every class the {@link collectSelectorClasses}
+  *   helper returns, and every class inside an `:is()` or a `:where()` argument that no other group
+@@ -1860,29 +1859,38 @@
+  *   attribute value, is not returned.
+  *
+  * @remarks
+- * An `:is()` or a `:where()` argument matches the element the selector matches, so its classes
+- * name that element as the selector's own classes do. `:where(button.nav-link)` writes
+- * `.nav-link` at zero specificity, and the attribution this reading feeds places it where the
+- * `.nav-link` selector sits. A `:not()` argument names an element the selector excludes, and a
+- * `:has()` argument names a relative, so neither reaches this reading. The
++ * An `:is()` or `:where()` argument is part of the selector the rule matches through, while a
++ * `:not()` argument names what the rule excludes and a `:has()` argument names a relative, so this
++ * reading returns the classes an `:is()` or a `:where()` argument writes and none a `:not()` or a
++ * `:has()` argument writes. `:where(button.nav-link)` writes `.nav-link` at zero specificity, and
++ * the attribution this reading feeds places it where the `.nav-link` selector sits. A returned class
++ * can sit in any compound of the selector, so `:is(.alpha, .beta) > .gamma` returns the parent's
++ * classes beside the element's own.
++ *
++ * The reading recognizes a function by its name as the {@link readIdentifier} helper decodes it,
++ * folded to lower case, so `:WHERE(` and `:\77 here(` each open a `:where()` argument. The
+  * {@link collectSelectorClasses} helper keeps its own contract for its other callers.
+  *
+  * @example
+  * ```ts
+- * collectSubjectClasses(':where(button.nav-link):not(.disabled)') // ['nav-link']
++ * collectMatchingClasses(':where(button.nav-link):not(.disabled)') // ['nav-link']
+  * ```
+  */
+-export function collectSubjectClasses(selector: string): readonly string[] {
++export function collectMatchingClasses(selector: string): readonly string[] {
+ 	const steps = walkSelector(selector)
+ 	const readable: boolean[] = []
+ 	const classes: string[] = []
++	let colon: number | undefined
+ 	for (const step of steps) {
+ 		if (step.literal) continue
++		if (step.char === ':') colon = step.index
+ 		if (step.char === '(' || step.char === '[') {
++			const name = colon === undefined ? undefined : readIdentifier(steps, colon + 1)
+ 			readable.push(
+ 				readable.every(Boolean) &&
+ 					step.char === '(' &&
+-					/:(?:is|where)$/iu.test(selector.slice(0, step.index)),
++					name?.end === step.index &&
++					['is', 'where'].includes(name.text.toLowerCase()),
+ 			)
+ 			continue
+ 		}
+@@ -2441,7 +2449,7 @@
+  * class prefix suggests, and a selector recorded only under a key this release withholds stays
+  * outside the ledger instead. A selector the inventory records nowhere is attributed by its
+  * classes, through the {@link matchSelectorKey} helper over every shipped key. Its classes are the
+- * ones the {@link collectSubjectClasses} helper reads, so a class a `:where()` or an `:is()`
++ * ones the {@link collectMatchingClasses} helper reads, so a class a `:where()` or an `:is()`
+  * argument writes places the rule and a class a `:not()` argument writes does not.
+  *
+  * Membership answers in tiers, among the shipped keys recording the selector: first the key whose
+@@ -2461,7 +2469,7 @@
+ 	shipped: readonly string[],
+ ): string | undefined {
+ 	const keys = recording.get(selector) ?? []
+-	const classes = collectSubjectClasses(selector)
++	const classes = collectMatchingClasses(selector)
+ 	const members = keys.filter((key) => shipped.includes(key))
+ 	const member =
+ 		members
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -56,13 +56,13 @@
+ 	collectKeyframeNames,
+ 	collectLedger,
+ 	collectMandatedRelatives,
++	collectMatchingClasses,
+ 	collectMediaFeatures,
+ 	indexRecordingKeys,
+ 	collectRuleLonghands,
+ 	collectSelectorClasses,
+ 	collectSharedNames,
+ 	collectShippedComponents,
+-	collectSubjectClasses,
+ 	collectUnattributed,
+ 	collectValueGaps,
+ 	collectValueNames,
+@@ -528,12 +528,12 @@
+ 			'collectKeyframeNames',
+ 			'collectLedger',
+ 			'collectMandatedRelatives',
++			'collectMatchingClasses',
+ 			'collectMediaFeatures',
+ 			'collectRuleLonghands',
+ 			'collectSelectorClasses',
+ 			'collectSharedNames',
+ 			'collectShippedComponents',
+-			'collectSubjectClasses',
+ 			'collectUnattributed',
+ 			'collectValueGaps',
+ 			'collectValueNames',
+@@ -2912,17 +2912,22 @@
+ 	})
+ 
+ 	it("reads the classes an :is() or a :where() argument writes as the selector's own, and none a :not() or a :has() argument writes", () => {
+-		expect(collectSubjectClasses(':where(button.nav-link):not(.disabled)')).toEqual(['nav-link'])
+-		expect(collectSubjectClasses(':is(.alpha, .beta) > .gamma')).toEqual(['alpha', 'beta', 'gamma'])
+-		expect(collectSubjectClasses(':WHERE(.upper)')).toEqual(['upper'])
+-		expect(collectSubjectClasses(':where(:is(.nested))')).toEqual(['nested'])
+-		expect(collectSubjectClasses(':where(:not(.hidden)).shown')).toEqual(['shown'])
+-		expect(collectSubjectClasses(':not(:where(.hidden))')).toEqual([])
+-		expect(collectSubjectClasses('.card:has(.card-img)')).toEqual(['card'])
+-		expect(collectSubjectClasses('.item:nth-child(2 of .row)')).toEqual(['item'])
+-		expect(collectSubjectClasses(':where([title=".quoted"]) .plain')).toEqual(['plain'])
++		expect(collectMatchingClasses(':where(button.nav-link):not(.disabled)')).toEqual(['nav-link'])
++		expect(collectMatchingClasses(':is(.alpha, .beta) > .gamma')).toEqual([
++			'alpha',
++			'beta',
++			'gamma',
++		])
++		expect(collectMatchingClasses(':WHERE(.upper)')).toEqual(['upper'])
++		expect(collectMatchingClasses(':\\77 here(.nav-link)')).toEqual(['nav-link'])
++		expect(collectMatchingClasses(':where(:is(.nested))')).toEqual(['nested'])
++		expect(collectMatchingClasses(':where(:not(.hidden)).shown')).toEqual(['shown'])
++		expect(collectMatchingClasses(':not(:where(.hidden))')).toEqual([])
++		expect(collectMatchingClasses('.card:has(.card-img)')).toEqual(['card'])
++		expect(collectMatchingClasses('.item:nth-child(2 of .row)')).toEqual(['item'])
++		expect(collectMatchingClasses(':where([title=".quoted"]) .plain')).toEqual(['plain'])
+ 		// The selector's own classes read as the older reader reads them, which keeps its contract.
+-		expect(collectSubjectClasses('.btn-check[title=".x"] + .btn:not(.btn-lg)')).toEqual(
++		expect(collectMatchingClasses('.btn-check[title=".x"] + .btn:not(.btn-lg)')).toEqual(
+ 			collectSelectorClasses('.btn-check[title=".x"] + .btn:not(.btn-lg)'),
+ 		)
+ 		expect(collectSelectorClasses(':where(button.nav-link)')).toEqual([])
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -10068,12 +10068,13 @@
+ owning row's `Component` cell and the `Reason` cell are the cells no measurement fixes.
+ 
+ Attribution reads a class written inside an `:is()` or a `:where()` argument as the rule's own,
+-because that argument matches the element the rule matches. It reads no class inside a `:not()` or a
+-`:has()` argument. So each button reboot rule written on a `:where()` selector, such as
+-`:where(button.nav-link)`, answers to the component its class names, as the `.nav-link` selector
+-does. A rule that no inventory rule, no layer, and no class attributes to a shipped component is
+-owned by its `selector` row, which is then an owning row. The `.caption-bottom` class is such a
+-rule: the inventory records it under no key, and no key opens its name. The
++because an `:is()` or `:where()` argument is part of the selector the rule matches through, while a
++`:not()` argument names what the rule excludes and a `:has()` argument names a relative. It reads no
++class inside a `:not()` or a `:has()` argument. So each button reboot rule written on a `:where()`
++selector, such as `:where(button.nav-link)`, answers to the component its class names, as the
++`.nav-link` selector does. A rule that no inventory rule, no layer, and no class attributes to a
++shipped component is owned by its `selector` row, which is then an owning row. The `.caption-bottom`
++class is such a rule: the inventory records it under no key, and no key opens its name. The
+ `:where(button.page-link)` rule is another: the inventory records the `.page-link` selector under
+ the `pagination` key but records no `button.page-link` selector, and no key opens the `page-link`
+ class. The `collectLedger` function attributes an owned rule to the component its row names, at

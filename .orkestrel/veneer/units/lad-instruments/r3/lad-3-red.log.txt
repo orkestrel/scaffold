@@ -1,0 +1,37 @@
+load=0.30 0.56 2.72 6/284 31318
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+ ❯ |setup| tests/setupServer.test.ts (118 tests | 1 failed) 13293ms
+     × reads the classes an :is() or a :where() argument writes as the selector's own, and none a :not() or a :has() argument writes 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reads the classes an :is() or a :where() argument writes as the selector's own, and none a :not() or a :has() argument writes
+AssertionError: expected [] to deeply equal [ 'nav-link' ]
+
+- Expected
++ Received
+
+- [
+-   "nav-link",
+- ]
++ []
+
+ ❯ tests/setupServer.test.ts:2918:58
+    2916|   expect(collectSubjectClasses(':is(.alpha, .beta) > .gamma')).toEqual…
+    2917|   expect(collectSubjectClasses(':WHERE(.upper)')).toEqual(['upper'])
+    2918|   expect(collectSubjectClasses(':\\77 here(.nav-link)')).toEqual(['nav…
+       |                                                          ^
+    2919|   expect(collectSubjectClasses(':where(:is(.nested))')).toEqual(['nest…
+    2920|   expect(collectSubjectClasses(':where(:not(.hidden)).shown')).toEqual…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 117 passed (118)
+   Start at  05:33:01
+   Duration  15.41s (transform 950ms, setup 347ms, import 1.57s, tests 13.29s, environment 0ms)
+
+exit=1

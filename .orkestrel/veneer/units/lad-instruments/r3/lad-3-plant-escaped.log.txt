@@ -1,0 +1,45 @@
+plant=escaped file=tests/setupServer.ts
+1892,1893c1892
+< 					name?.end === step.index &&
+< 					['is', 'where'].includes(name.text.toLowerCase()),
+---
+> 					/:(?:is|where)$/iu.test(selector.slice(0, step.index)),
+load=2.02 1.13 2.68 4/171 523
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+ ❯ |setup| tests/setupServer.test.ts (118 tests | 1 failed) 17038ms
+     × reads the classes an :is() or a :where() argument writes as the selector's own, and none a :not() or a :has() argument writes 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reads the classes an :is() or a :where() argument writes as the selector's own, and none a :not() or a :has() argument writes
+AssertionError: expected [] to deeply equal [ 'nav-link' ]
+
+- Expected
++ Received
+
+- [
+-   "nav-link",
+- ]
++ []
+
+ ❯ tests/setupServer.test.ts:2918:59
+    2916|   expect(collectMatchingClasses(':is(.alpha, .beta) > .gamma')).toEqua…
+    2917|   expect(collectMatchingClasses(':WHERE(.upper)')).toEqual(['upper'])
+    2918|   expect(collectMatchingClasses(':\\77 here(.nav-link)')).toEqual(['na…
+       |                                                           ^
+    2919|   expect(collectMatchingClasses(':where(:is(.nested))')).toEqual(['nes…
+    2920|   expect(collectMatchingClasses(':where(:not(.hidden)).shown')).toEqua…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 117 passed (118)
+   Start at  05:34:58
+   Duration  19.07s (transform 852ms, setup 192ms, import 1.67s, tests 17.04s, environment 0ms)
+
+exit=1
+cmp=identical
+src diffstat: 
