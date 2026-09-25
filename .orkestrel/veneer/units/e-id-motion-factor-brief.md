@@ -19,7 +19,7 @@ is recorded as a departure, and is proved from the rendered transition. § Facto
 
 ## Context
 
-**Evidence.** Measured at the FADE landing's tree (`/home/user/veneer-mfade`, which carries the same partials):
+**Evidence.** Measured at `LANDING_HEAD`, the session branch after the E-ID-MOTION-FADE and STATES landings:
 - `src/styles/components/_form-floating.scss`, around line 49: `@include transition((opacity 0.1s ease-in-out,
   transform 0.1s ease-in-out))`.
 - `src/styles/components/_progress.scss`, around line 25: `--bs-progress-bar-transition: width 0.6s ease;`, read
@@ -29,15 +29,18 @@ is recorded as a departure, and is proved from the rendered transition. § Facto
   box-shadow at `0.15s ease-in-out`.
 - `src/styles/components/_navbar.scss`, around line 35: `--bs-navbar-toggler-transition: box-shadow 0.15s
   ease-in-out;`.
-- `src/styles/components/_accordion.scss`, around lines 17 and 18: the button's color, background-color, border-color,
-  box-shadow at `0.15s ease-in-out` and border-radius at `0.15s ease`. The chevron's
+- `src/styles/components/_accordion.scss`, around lines 16 to 18: `--bs-accordion-transition`, the button's color,
+  background-color, border-color, box-shadow at `0.15s ease-in-out` and border-radius at `0.15s ease`, read through
+  `@include transition(var(--bs-accordion-transition))` around line 62. The chevron's
   `--bs-accordion-btn-icon-transition` (around line 30) is E-ID-MOTION-COLLAPSE's, not this unit's.
-- `--vn-factor-motion` is declared in `src/styles/_tokens.scss`; `--vn-motion-feedback` is `calc(0.15s *
+- `--vn-factor-motion` is declared in `src/styles/_tokens.scss`; `--vn-motion-feedback` is `calc(150ms *
   var(--vn-factor-motion))`. `sampleTransition` in `tests/setupBrowser.ts` reads a running transition's duration and
   easing (E-ID-MOTION-FADE).
 - Re-run the search `grep -rn 's ease\|s linear\|[0-9]s)' src/styles --include=*.scss` in the worktree and own every
   literal duration it finds outside the collapse, modal, offcanvas, carousel, tooltip, popover, toast, fade, and
-  accordion-chevron rules, which other motion units own.
+  accordion-chevron rules, which other motion units own. The search also returns animations: the progress stripes
+  (`1s linear infinite`), the placeholder, and the spinner. The design verdict scopes this unit to transitions, so those
+  animations are outside it, and the placeholder and spinner partials are E-ID-MOTION-REDUCED's.
 
 **Law.** `.claude/rules/styles.md` (the `transition` mixin; tokens over literals); `.claude/rules/tests.md` (read the
 rendered transition; a plant that restores the literal reddens the proof); `.claude/rules/documentation.md` § Parity.
