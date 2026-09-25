@@ -22,7 +22,7 @@ The carried rows are in `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/ven
 
 **Installed primitives.** `@orkestrel/test` and `@orkestrel/contract`. A helper whose job an installed export or an existing `src/browser/helpers.ts` export does is a defect.
 
-**Host.** Windows 11 with Git Bash. The worktree is `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/holders` on branch `unit/holders`, cut from Veneer `main` at BASE_COMMIT. The browser is Chromium 153 through the Vitest project `src:browser`. A foreground call is capped at 10 minutes. Write each program to a file under `tmp/j-holders/` and run the file: no heredoc, no `python -`, no `node -e`.
+**Host.** Windows 11 with Git Bash. The worktree is `C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/holders` on branch `unit/holders`, cut from Veneer `main` at `4cd56a8` (the J-INTEGRATION and J-SAMEWAY landing). The browser is Chromium 153 through the Vitest project `src:browser`. A foreground call is capped at 10 minutes. Write each program to a file under `tmp/j-holders/` and run the file: no heredoc, no `python -`, no `node -e`.
 
 **Control identifiers.** H1 is Modal's `open` token. H2 is Isolation's claims. H3 is ScrollLock's holders. H4 is the named shapes. H5 is the proofs. Name each test for what it proves.
 
