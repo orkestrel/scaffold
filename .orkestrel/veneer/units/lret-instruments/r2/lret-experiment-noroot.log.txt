@@ -1,0 +1,94 @@
+experiment: the root setting removed from RESOLVER_SETTINGS, restored after
+load 5.05 4.85 4.08 6/242 7306
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+········x··xx·····················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(6) ], …(1) ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "col | .col-form-label | font-size",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "col | .col-form-label | font-size",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:253:20
+    251|   // The component-owned dark images are a second record of the same r…
+    252|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    253|   expect(darkened).toEqual([
+       |                    ^
+    254|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    255|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "col | .col-form-label | font-size | — | inherit | var(--vn-size-3) | retuned",
++ ]
+
+ ❯ tests/conformance.test.ts:281:5
+    279|     describeDeparture,
+    280|    ).unrecorded,
+    281|   ).toEqual([])
+       |     ^
+    282|  })
+    283|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "col | .col-form-label | font-size | — | inherit | var(--vn-size-3) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:291:5
+    289|     describeDeparture,
+    290|    ).stale,
+    291|   ).toEqual([])
+       |     ^
+    292|  })
+    293|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 31 passed (34)
+   Start at  08:39:35
+   Duration  58.78s (transform 708ms, setup 216ms, import 31.86s, tests 26.30s, environment 0ms)
+
+exit=1
+restored=byte-identical

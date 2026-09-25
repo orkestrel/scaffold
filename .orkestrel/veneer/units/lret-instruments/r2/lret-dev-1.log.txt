@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+ ❯ |setup| tests/setupServer.test.ts (146 tests | 1 failed | 126 skipped) 2170ms
+     × resolves each side in its own stylesheet, a custom property through the first typed probe both values parse 60ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed | 126 skipped (146)
+   Start at  08:37:11
+   Duration  4.49s (transform 1.04s, setup 262ms, import 1.89s, tests 2.17s, environment 0ms)
+

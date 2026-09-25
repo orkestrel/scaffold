@@ -1,0 +1,110 @@
+
+ RUN  v4.1.11 /home/user/veneer-r153
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+8:47:37 AM [vite] (client) [optimizer] scanning dependencies...
+8:47:38 AM [vite] (client) [optimizer] bundling dependencies...
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+8:47:55 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |setup:browser (chromium)| tests/setupBrowser.test.ts (101 tests | 4 failed | 96 skipped) 847ms
+     × reads no difference between two alike forms, and exactly a planted longhand in the state it is planted in 269ms
+     × reads the rest state with motion allowed and every later state with motion reduced, and releases the staging 216ms
+     × enters the disabled state through the disabled class on a paired counterpart, and leaves an unpaired counterpart at rest 171ms
+     × refuses a form that does not enter a state, naming each element and state it missed 186ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1876:2 > readFormDifferences > reads no difference between two alike forms, and exactly a planted longhand in the state it is planted in
+Error: LINE-WIDTH-PROBE changed veneer button rest
+ ❯ tests/setupBrowser.ts:2064:13
+    2062|       const settled = { ...normalizeLineWidths(raw), 'outline-width': …
+    2063|       if (JSON.stringify(settled) !== JSON.stringify(raw))
+    2064|        throw new Error(`LINE-WIDTH-PROBE changed ${key} ${state}`)
+       |             ^
+    2065|       return settled
+    2066|      })(
+ ❯ readFormDifferences tests/setupBrowser.ts:2067:6
+ ❯ tests/setupBrowser.test.ts:1897:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1907:2 > readFormDifferences > reads the rest state with motion allowed and every later state with motion reduced, and releases the staging
+Error: LINE-WIDTH-PROBE changed veneer button rest
+ ❯ tests/setupBrowser.ts:2064:13
+    2062|       const settled = { ...normalizeLineWidths(raw), 'outline-width': …
+    2063|       if (JSON.stringify(settled) !== JSON.stringify(raw))
+    2064|        throw new Error(`LINE-WIDTH-PROBE changed ${key} ${state}`)
+       |             ^
+    2065|       return settled
+    2066|      })(
+ ❯ readFormDifferences tests/setupBrowser.ts:2067:6
+ ❯ tests/setupBrowser.test.ts:1917:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1924:2 > readFormDifferences > enters the disabled state through the disabled class on a paired counterpart, and leaves an unpaired counterpart at rest
+Error: LINE-WIDTH-PROBE changed veneer button disabled
+ ❯ tests/setupBrowser.ts:2064:13
+    2062|       const settled = { ...normalizeLineWidths(raw), 'outline-width': …
+    2063|       if (JSON.stringify(settled) !== JSON.stringify(raw))
+    2064|        throw new Error(`LINE-WIDTH-PROBE changed ${key} ${state}`)
+       |             ^
+    2065|       return settled
+    2066|      })(
+ ❯ readFormDifferences tests/setupBrowser.ts:2067:6
+ ❯ tests/setupBrowser.test.ts:1935:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:1948:2 > readFormDifferences > refuses a form that does not enter a state, naming each element and state it missed
+AssertionError: expected a thrown error to be Error: The unfocusable forms did not ente…
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  Error {[22m
+[32m-   "message": "The unfocusable forms did not enter every state: veneer counterpart focused, release counterpart focused",[39m
+[31m+   "message": "LINE-WIDTH-PROBE changed veneer button rest",[39m
+[2m  }[22m
+
+ ❯ tests/setupBrowser.test.ts:1957:70
+    1955|    paired: false,
+    1956|   }
+    1957|   await expect(readFormDifferences(subject, ['rest', 'focused'], '')).…
+       |                                                                      ^
+    1958|    new Error(
+    1959|     'The unfocusable forms did not enter every state: veneer counterpa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed | 96 skipped (101)
+   Start at  08:47:36
+   Duration  20.78s (transform 0ms, setup 1.16s, import 4.34s, tests 847ms, environment 0ms)
+
+exit=1

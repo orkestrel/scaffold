@@ -1,0 +1,451 @@
+command: npx vitest run --config vite.config.ts --no-cache --project setup tests/setupServer.test.ts tests/setupStyles.test.ts
+load 3.72 2.58 3.09 1/410 26479
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+ ❯ |setup| tests/setupServer.test.ts (146 tests | 14 failed) 22995ms
+     × declares the identity constants, the specifier walk, the guide and ledger readers, the stylesheet reader, and the helpers the conformance proof measures with 54ms
+     × types a custom property through each probe syntax an input no syntax tried before it parses 2ms
+     × decides a pair alike only where both sides compute alike in every context their terms read 22ms
+     × names undecided a pair whose term reads a context the resolver cannot vary 8ms
+     × reads the mode from the target and its ancestors, never from a sibling 1ms
+     × builds one element per compound that matches it, nested or beside the one before it 1ms
+     × writes the part of a compound an element must match, without its state or its pseudo-elements 0ms
+     × reads every variable at an element that matches its compound, and names a compound it cannot build undecided 12ms
+     × names a planted unrecorded departure, a planted stale row, and each planted difference it cannot decide 11ms
+     × normalizes a color only where it stands as a color value, never inside a string or a URL 2ms
+     × names a canonical token whose declaration resolves apart from its reference cell, at every site that declares it 29ms
+     × compares a declaration outside every mode scope with the cell of each mode, and one inside a scope with that mode alone 11ms
+     × compares the written text of a canonical token and its cell where both resolve to nothing 18ms
+     × names each bootstrap token no departure row reads at the release value, by the token alone 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > declares the identity constants, the specifier walk, the guide and ledger readers, the stylesheet reader, and the helpers the conformance proof measures with
+AssertionError: expected [ 'ABSENT_CELL', …(119) ] to deeply equal [ 'ABSENT_CELL', …(120) ]
+
+- Expected
++ Received
+
+@@ -63,22 +63,21 @@
+    "describeDeparture",
+    "describeSite",
+    "describeValueCell",
+    "describeValueGap",
+    "expandConditions",
+-   "extractMatchedCompound",
+    "extractSpecifiers",
+    "extractStringArgument",
+    "filterComparableBlocks",
+    "findDuplication",
+    "indexRecordingKeys",
+-   "inferScopeMode",
+    "isAdditionCategory",
+    "isDeparture",
+    "isProofFile",
+    "matchSelectorKey",
+    "matchShippedKey",
++   "matchesDarkScope",
+    "matchesOracleEvents",
+    "matchesOracleToggle",
+    "matchesReceipt",
+    "matchesRecording",
+    "matchesSignature",
+
+ ❯ tests/setupServer.test.ts:521:37
+    519| describe('server setup', () => {
+    520|  it('declares the identity constants, the specifier walk, the guide an…
+    521|   expect(Object.keys(setup).sort()).toEqual([
+       |                                     ^
+    522|    'ABSENT_CELL',
+    523|    'BOOTSTRAP_BUNDLE_DIGEST',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > types a custom property through each probe syntax an input no syntax tried before it parses
+AssertionError: expected [ '<number>#', …(4) ] to deeply equal [ '<length>', '<number>', …(9) ]
+
+- Expected
++ Received
+
+  [
+-   "<length>",
+-   "<number>",
+-   "<percentage>",
+-   "<length-percentage>",
++   "<number>#",
++   "<length-percentage>+",
+    "<time>",
+    "<angle>",
+    "<color>",
+-   "<number>#",
+-   "<length>+",
+-   "<length-percentage>+",
+-   "<custom-ident>",
+  ]
+
+ ❯ tests/setupServer.test.ts:3908:31
+    3906|    '<color>': ['#ff0000', 'red', 'rgb(255, 0, 0)'],
+    3907|   }
+    3908|   expect(Object.keys(inputs)).toEqual(Object.keys(PROBE_SYNTAXES))
+       |                               ^
+    3909|   const reader = requireValue(resolver, 'No resolver launched')
+    3910|   const read = await reader.resolve(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > decides a pair alike only where both sides compute alike in every context their terms read
+AssertionError: expected [ { recorded: '8px', …(1) }, …(12) ] to deeply equal [ { recorded: '8px', …(1) }, …(12) ]
+
+- Expected
++ Received
+
+@@ -3,52 +3,52 @@
+      "emitted": "8px",
+      "recorded": "8px",
+    },
+    {
+      "emitted": "16px",
+-     "recorded": "20px",
++     "recorded": "16px",
+    },
+    {
+      "emitted": "500px",
+-     "recorded": "200px",
++     "recorded": "500px",
+    },
+    {
+      "emitted": "499px",
+-     "recorded": "199px",
++     "recorded": "499px",
+    },
+    {
+      "emitted": "rgb(255, 0, 0)",
+      "recorded": "rgb(0, 0, 0)",
+    },
+    {
+      "emitted": "rgb(0, 0, 0)",
+-     "recorded": "rgb(1, 2, 3)",
++     "recorded": "rgb(0, 0, 0)",
+    },
+    {
+      "emitted": "20px",
+      "recorded": "16px",
+    },
+    {
+      "emitted": "16px",
+-     "recorded": "20px",
++     "recorded": "16px",
+    },
+    {
+      "emitted": "normal",
+-     "recorded": "1px",
++     "recorded": "normal",
+    },
+    {
+      "emitted": "left",
+-     "recorded": "right",
++     "recorded": "left",
+    },
+    {
+      "emitted": "16px",
+-     "recorded": "20px",
++     "recorded": "16px",
+    },
+    {
+      "emitted": "12.8px",
+-     "recorded": "8px",
++     "recorded": "12.8px",
+    },
+    {
+      "emitted": "16px",
+-     "recorded": "20px",
++     "recorded": "16px",
+    },
+  ]
+
+ ❯ tests/setupServer.test.ts:3963:16
+    3961|   // size, the containing block, the color, the parent's value, the di…
+    3962|   // size, or the viewport. The brief's inputs that differ in the base…
+    3963|   expect(read).toEqual([
+       |                ^
+    3964|    { recorded: '8px', emitted: '8px' },
+    3965|    { recorded: '20px', emitted: '16px' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > names undecided a pair whose term reads a context the resolver cannot vary
+AssertionError: expected [ { recorded: '0px', …(1) }, …(2) ] to deeply equal [ undefined, undefined, { …(2) } ]
+
+- Expected
++ Received
+
+  [
+-   undefined,
+-   undefined,
++   {
++     "emitted": "0px",
++     "recorded": "0px",
++   },
++   {
++     "emitted": "normal",
++     "recorded": "normal",
++   },
+    {
+      "emitted": "0px",
+      "recorded": "0px",
+    },
+  ]
+
+ ❯ tests/setupServer.test.ts:3998:16
+    3996|    { selector: '.btn', property: 'padding-top', recorded: ['0px'], emi…
+    3997|   ])
+    3998|   expect(read).toEqual([undefined, undefined, { recorded: '0px', emitt…
+       |                ^
+    3999|  })
+    4000|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > reads the mode from the target and its ancestors, never from a sibling
+TypeError: undefined is not a function
+ ❯ tests/setupServer.test.ts:4008:20
+    4006|    '[data-bs-theme=dark] > .btn',
+    4007|   ]
+    4008|   expect(selectors.map(inferScopeMode)).toEqual([undefined, undefined,…
+       |                    ^
+    4009|   expect(inferScopeMode('[data-bs-theme=dark] [data-bs-theme=light] .b…
+    4010|   expect(inferScopeMode('[data-bs-theme=light] [data-bs-theme=dark]'))…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > builds one element per compound that matches it, nested or beside the one before it
+AssertionError: expected [ { tag: 'div', …(3) }, …(2) ] to deeply equal [ { tag: 'div', …(4) }, …(2) ]
+
+- Expected
++ Received
+
+@@ -2,24 +2,21 @@
+    {
+      "attributes": [],
+      "classes": [
+        "form-floating",
+      ],
+-     "compound": ".form-floating",
+-     "nested": true,
++     "sibling": false,
+      "tag": "div",
+    },
+    {
+      "attributes": [],
+      "classes": [],
+-     "compound": "textarea",
+-     "nested": true,
++     "sibling": false,
+      "tag": "textarea",
+    },
+    {
+      "attributes": [],
+      "classes": [],
+-     "compound": "label",
+-     "nested": false,
++     "sibling": true,
+      "tag": "label",
+    },
+  ]
+
+ ❯ tests/setupServer.test.ts:4031:84
+    4029|
+    4030|  it('builds one element per compound that matches it, nested or beside…
+    4031|   expect(collectContextElements('.form-floating > textarea:focus ~ lab…
+       |                                                                                    ^
+    4032|    {
+    4033|     tag: 'div',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > writes the part of a compound an element must match, without its state or its pseudo-elements
+TypeError: extractMatchedCompound is not a function
+ ❯ tests/setupServer.test.ts:4090:10
+    4088|
+    4089|  it('writes the part of a compound an element must match, without its …
+    4090|   expect(extractMatchedCompound('.btn:hover::after')).toBe('.btn')
+       |          ^
+    4091|   expect(extractMatchedCompound('a:not([href]):not([class])')).toBe('a…
+    4092|   expect(extractMatchedCompound(':where(button.page-link):focus-visibl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > reads every variable at an element that matches its compound, and names a compound it cannot build undecided
+AssertionError: expected [ { recorded: '3px', …(1) }, …(3) ] to deeply equal [ { recorded: '3px', …(1) }, …(3) ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "emitted": "3px",
++     "emitted": "0px",
+      "recorded": "3px",
+    },
+    {
+-     "emitted": "5px",
++     "emitted": "0px",
+      "recorded": "5px",
+    },
+-   undefined,
+-   undefined,
++   {
++     "emitted": "2px",
++     "recorded": "1px",
++   },
++   {
++     "emitted": "2px",
++     "recorded": "1px",
++   },
+  ]
+
+ ❯ tests/setupServer.test.ts:4125:16
+    4123|    },
+    4124|   ])
+    4125|   expect(read).toEqual([
+       |                ^
+    4126|    { recorded: '3px', emitted: '3px' },
+    4127|    { recorded: '5px', emitted: '5px' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > names a planted unrecorded departure, a planted stale row, and each planted difference it cannot decide
+AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+
+- Expected
++ Received
+
+  [
+    "btn | .btn | opacity | — | 0.65 | var(--bs-btn-disabled-opacity) | aliased",
+    "btn | .btn | padding | @media (width >= 576px) | 1rem | 0 | retuned",
+-   "reboot | body | text-align | — | var(--bs-body-text-align) | var(--bs-body-text-align, start) | retuned",
++   "reboot | body | text-align | — | var(--bs-body-text-align) | var(--bs-body-text-align, start) | fallback",
+    "reboot | body | color | — | #000 | red | retuned",
+    "table | .caption-top | caption-side | — | top | — | dropped",
+  ]
+
+ ❯ tests/setupServer.test.ts:4144:31
+    4142|    // The release's `var()` names a variable it never declares, so its…
+    4143|    // `unset` and inherits a parent the cascade's `start` fallback doe…
+    4144|    expect(carried.unrecorded).toEqual([
+       |                               ^
+    4145|     'btn | .btn | opacity | — | 0.65 | var(--bs-btn-disabled-opacity) …
+    4146|     'btn | .btn | padding | @media (width >= 576px) | 1rem | 0 | retun…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > normalizes a color only where it stands as a color value, never inside a string or a URL
+AssertionError: expected '"rgb(255, 0, 0)"' to be '"color(srgb 1 0 0)"' // Object.is equality
+
+Expected: ""color(srgb 1 0 0)""
+Received: ""rgb(255, 0, 0)""
+
+ ❯ tests/setupServer.test.ts:4171:58
+    4169|
+    4170|  it('normalizes a color only where it stands as a color value, never i…
+    4171|   expect(normalizeResolvedColors('"color(srgb 1 0 0)"')).toBe('"color(…
+       |                                                          ^
+    4172|   expect(normalizeResolvedColors("'rgba(0, 0, 0, 0.5)' color(srgb 1 0 …
+    4173|    "'rgba(0, 0, 0, 0.5)' rgb(255, 0, 0)",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > names a canonical token whose declaration resolves apart from its reference cell, at every site that declares it
+AssertionError: expected [ Array(1) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "--vn-radius-base | .btn | — | calc(0.375rem * var(--vn-factor-radius)) | 1rem | 6px | 16px",
+-   "--vn-radius-base | [data-bs-theme=dark] .btn | — | calc(0.375rem * var(--vn-factor-radius)) | 1rem | 6px | 16px",
+  ]
+
+ ❯ tests/setupServer.test.ts:4234:83
+    4232|    '--vn-radius-base | [data-bs-theme=dark] | — | calc(0.375rem * var(…
+    4233|   ])
+    4234|   expect(await scanCanonicalValues(readCascadeBlocks(sited), reference…
+       |                                                                                   ^
+    4235|    '--vn-radius-base | .btn | — | calc(0.375rem * var(--vn-factor-radi…
+    4236|    '--vn-radius-base | [data-bs-theme=dark] .btn | — | calc(0.375rem *…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > compares a declaration outside every mode scope with the cell of each mode, and one inside a scope with that mode alone
+AssertionError: expected [] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+- [
+-   "--vn-text-body-base | [data-bs-theme=dark] .btn | — | blue | red | rgb(0, 0, 255) | rgb(255, 0, 0)",
+- ]
++ []
+
+ ❯ tests/setupServer.test.ts:4255:5
+    4253|     reader,
+    4254|    ),
+    4255|   ).toEqual([
+       |     ^
+    4256|    '--vn-text-body-base | [data-bs-theme=dark] .btn | — | blue | red |…
+    4257|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > compares the written text of a canonical token and its cell where both resolve to nothing
+AssertionError: expected [] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+- [
+-   "--vn-text-heading | :root | — | inherit | initial | (empty) | (empty)",
+-   "--vn-text-heading | [data-bs-theme=dark] | — | inherit | initial | (empty) | (empty)",
+- ]
++ []
+
+ ❯ tests/setupServer.test.ts:4287:5
+    4285|     reader,
+    4286|    ),
+    4287|   ).toEqual([
+       |     ^
+    4288|    '--vn-text-heading | :root | — | inherit | initial | (empty) | (emp…
+    4289|    '--vn-text-heading | [data-bs-theme=dark] | — | inherit | initial |…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > ValueResolver > names each bootstrap token no departure row reads at the release value, by the token alone
+AssertionError: expected [ '--vn-gray-200', '--vn-gray-300' ] to deeply equal [ '--vn-gray-200', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "--vn-gray-200",
+    "--vn-gray-300",
+-   "--vn-radius-pill",
+  ]
+
+ ❯ tests/setupServer.test.ts:4342:5
+    4340|     requireValue(resolver, 'No resolver launched'),
+    4341|    ),
+    4342|   ).toEqual(['--vn-gray-200', '--vn-gray-300', '--vn-radius-pill'])
+       |     ^
+    4343|  })
+    4344| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  14 failed | 285 passed (299)
+   Start at  08:31:34
+   Duration  26.40s (transform 2.75s, setup 437ms, import 6.44s, tests 35.24s, environment 0ms)
+
+exit=1
