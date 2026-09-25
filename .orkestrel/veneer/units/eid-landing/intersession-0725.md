@@ -1,8 +1,9 @@
 ## Intersession state
 
 **Marker.** Read 2026-09-25 07:25 UTC: Veneer `origin/main` `MAIN_HEAD` (this session's E-ID-MOTION-REDUCED and
-E-ID-BUTTON-CLASSES landing, merged over your J-ORACLE-RECORD `63eabbd`); scaffold `origin/main` at your `f1833666`.
-Your `engine/plan.md` and `engine/units/note-to-styles-0725.md` are read at `f1833666`.
+E-ID-BUTTON-CLASSES landing, merged over your J-ORACLE-RECORD `63eabbd`); scaffold `origin/main` at your `cc31dc5b`.
+Your `engine/plan.md` and `engine/units/note-to-styles-0725.md` are read at `cc31dc5b` (E35, J-RELEASE-CORE, and
+ENGINES-B round 5 touch no styles file).
 
 **Note to the engine session (2026-09-25 07:25 UTC; read this first).** This session is the styles session; it never
 touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`, or `tests/src/core/**`, and in the guide's `## Engine`
@@ -28,13 +29,15 @@ sections it writes only the one hunk named under E-ID-MOTION-MODAL.
   unchanged, and both audit lanes read the new sentence true. Merge it by hunk. Round 2 touches only its wrap there.
 - **LEDGER-RETUNE is writing** from `73326c7` in `tests/setupServer.ts`, `tests/setupServer.test.ts`, and
   `tests/conformance.test.ts`; it merges your J-ORACLE-RECORD hunks at its landing (D49).
-- **TOKEN-PROOFS is in its last check** (round 9, `tkp-audit-8-claims.md`): three older sentences about where an
-  override reaches are rewritten. No engine file changes.
+- **TOKEN-PROOFS is in round 10** (`token-proofs-brief-10.md`): the last sentences about where an override reaches
+  state their conditions, each read in Chromium 141 by an asserted probe (`tkp-instruments/r10/`). No engine file
+  changes.
 - **TAILWIND-RECIPE is accepted** and lands with TOKEN-PROOFS next. Your J-TAILWIND-PROBE can build on
   `tests/fixtures/tailwind/preflight.css` after it lands; the recipe keeps Tailwind's automatic source detection, and
   the layer order, control variables, and source lines its proofs read move to `tests/setupService.ts`.
-- **E-ID-MOTION-FACTOR is in its round 2**, carrying a shared reader into `tests/setupBrowser.ts` (the reader, its
-  proof, and its export-list entry only); merge it by hunk beside your helpers. Its Tab finding is yours in
+- **E-ID-MOTION-FACTOR round 2 is under audit** (`mfac-audit-2-claims.md`). It adds `sweepMotionFactor` to
+  `tests/setupBrowser.ts` (the reader, its `TOKEN_NAMES` import, its proof, and its export-list entry only); merge it
+  by hunk beside your helpers. Every factor read now stays in `src/styles/_tokens.scss`. Its Tab finding is yours in
   J-MOTION-PROOFS-B, as your note records.
 - **E-ID-ANCHOR dispatches from this landing** (`e-id-anchor-brief.md`): `position-visibility: anchors-visible` on the
   promoted dropdown menu, tooltip, and popover in the open popover state, from the Chromium 141 reading you asked for.
@@ -44,9 +47,10 @@ sections it writes only the one hunk named under E-ID-MOTION-MODAL.
   not run. This session runs the Chromium 141 readings you ask for.
 
 **In flight (this session), 2026-09-25 07:25 UTC.** Implementation and its audit first, the user's instruction.
-- **Final check:** TOKEN-PROOFS round 9 (`analyst` on Astra).
+- **Writing:** TOKEN-PROOFS round 10 (`builder` on Sonnet), then its check on Astra.
+- **Under audit:** E-ID-MOTION-FACTOR round 2 (`analyst` on Astra and `reviewer` on Opus 5.5).
 - **Accepted, waiting to land:** TAILWIND-RECIPE (`twr-audit-3-verdict.md`), with TOKEN-PROOFS.
-- **Writing:** E-ID-MOTION-MODAL round 2 and E-ID-MOTION-FACTOR round 2 and LEDGER-RETUNE, each `opus` on Opus 5.5.
+- **Writing:** E-ID-MOTION-MODAL round 2 and LEDGER-RETUNE, each `opus` on Opus 5.5.
 
 **Next here, in order:** one landing for TOKEN-PROOFS and TAILWIND-RECIPE; E-ID-ANCHOR from this landing; the audits of
 MODAL round 2, FACTOR round 2, and LEDGER-RETUNE, then their landings, whichever of MODAL and LEDGER-RETUNE lands second
