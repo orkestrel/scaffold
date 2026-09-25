@@ -1,0 +1,540 @@
+=== scaffold HEAD e570a685 npm 11.19.1 node v22.22.2
+=== scaffold pack (prepack builds) (05:14:56)
+
+> @orkestrel/scaffold@0.0.77 prepack
+> npm run build
+
+
+> @orkestrel/scaffold@0.0.77 build
+> npm run clean && npm run build:src && npm run build:host && npm run build:inventory
+
+
+> @orkestrel/scaffold@0.0.77 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/scaffold@0.0.77 build:src
+> npm run build:src:core && npm run build:src:server && npm run build:src:bin
+
+
+> @orkestrel/scaffold@0.0.77 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  271.82 kB │ gzip: 73.20 kB │ map: 365.53 kB
+
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  280.29 kB │ gzip: 73.95 kB │ map: 368.06 kB
+
+✓ built in 724ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/scaffold@0.0.77 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+> @orkestrel/scaffold@0.0.77 build:src:server
+> vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+vite v8.3.0 building client environment for production...
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  183.86 kB │ gzip: 47.99 kB │ map: 296.98 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  193.30 kB │ gzip: 48.51 kB │ map: 303.09 kB
+
+✓ built in 302ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/scaffold@0.0.77 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+> @orkestrel/scaffold@0.0.77 build:src:bin
+> vite build --config configs/src/vite.bin.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/bin/main.js  89.52 kB │ gzip: 23.18 kB │ map: 163.19 kB
+
+✓ built in 41ms
+
+> @orkestrel/scaffold@0.0.77 build:host
+> node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+
+Inventory Surface baseline: /home/user/scaffold/host.json
+build-host: staged 175 file(s) into dist/host
+
+> @orkestrel/scaffold@0.0.77 build:inventory
+> node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+
+build-inventory: staged 175 file(s) into host.json
+npm notice
+npm notice package: @orkestrel/scaffold@0.0.77
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 3.2kB README.md
+npm notice 89.5kB dist/bin/main.js
+npm notice 163.2kB dist/bin/main.js.map
+npm notice 18.0kB dist/host/AGENTS.md
+npm notice 76.6kB dist/host/agents/orchestration.md
+npm notice 249B dist/host/agents/skills/enterprise-bootstrap/agents/openai.yaml
+npm notice 57.9kB dist/host/agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
+npm notice 26.6kB dist/host/agents/skills/enterprise-bootstrap/references/color-modes.md
+npm notice 46.8kB dist/host/agents/skills/enterprise-bootstrap/references/components.md
+npm notice 21.6kB dist/host/agents/skills/enterprise-bootstrap/references/frontend-design.md
+npm notice 24.9kB dist/host/agents/skills/enterprise-bootstrap/references/inputs.md
+npm notice 21.7kB dist/host/agents/skills/enterprise-bootstrap/references/inspection.md
+npm notice 16.0kB dist/host/agents/skills/enterprise-bootstrap/references/responsive-layout.md
+npm notice 25.7kB dist/host/agents/skills/enterprise-bootstrap/references/utilities.md
+npm notice 29.9kB dist/host/agents/skills/enterprise-bootstrap/SKILL.md
+npm notice 230B dist/host/agents/skills/orkestrel-align-packages/agents/openai.yaml
+npm notice 2.2kB dist/host/agents/skills/orkestrel-align-packages/references/fleet.md
+npm notice 2.9kB dist/host/agents/skills/orkestrel-align-packages/references/integration.md
+npm notice 4.0kB dist/host/agents/skills/orkestrel-align-packages/SKILL.md
+npm notice 231B dist/host/agents/skills/orkestrel-build-application/agents/openai.yaml
+npm notice 7.8kB dist/host/agents/skills/orkestrel-build-application/SKILL.md
+npm notice 295B dist/host/agents/skills/orkestrel-debrief/agents/openai.yaml
+npm notice 5.4kB dist/host/agents/skills/orkestrel-debrief/references/field-testing.md
+npm notice 6.6kB dist/host/agents/skills/orkestrel-debrief/references/instruction-audit.md
+npm notice 7.5kB dist/host/agents/skills/orkestrel-debrief/references/retention.md
+npm notice 6.7kB dist/host/agents/skills/orkestrel-debrief/SKILL.md
+npm notice 314B dist/host/agents/skills/orkestrel-falsify/agents/openai.yaml
+npm notice 8.1kB dist/host/agents/skills/orkestrel-falsify/references/brief.md
+npm notice 8.9kB dist/host/agents/skills/orkestrel-falsify/references/reconcile.md
+npm notice 15.9kB dist/host/agents/skills/orkestrel-falsify/SKILL.md
+npm notice 242B dist/host/agents/skills/orkestrel-harden-package/agents/openai.yaml
+npm notice 4.7kB dist/host/agents/skills/orkestrel-harden-package/references/centralization.md
+npm notice 2.9kB dist/host/agents/skills/orkestrel-harden-package/references/contract.md
+npm notice 5.6kB dist/host/agents/skills/orkestrel-harden-package/references/hardening.md
+npm notice 2.9kB dist/host/agents/skills/orkestrel-harden-package/references/research.md
+npm notice 7.1kB dist/host/agents/skills/orkestrel-harden-package/SKILL.md
+npm notice 263B dist/host/agents/skills/orkestrel-polish-surface/agents/openai.yaml
+npm notice 6.4kB dist/host/agents/skills/orkestrel-polish-surface/references/capture-harness.md
+npm notice 7.1kB dist/host/agents/skills/orkestrel-polish-surface/SKILL.md
+npm notice 353B dist/host/agents/skills/orkestrel-prove-journey/agents/openai.yaml
+npm notice 7.2kB dist/host/agents/skills/orkestrel-prove-journey/references/captures.md
+npm notice 5.0kB dist/host/agents/skills/orkestrel-prove-journey/references/decide.md
+npm notice 26.2kB dist/host/agents/skills/orkestrel-prove-journey/references/layer.md
+npm notice 13.3kB dist/host/agents/skills/orkestrel-prove-journey/references/statechart.md
+npm notice 9.4kB dist/host/agents/skills/orkestrel-prove-journey/references/styles.md
+npm notice 26.9kB dist/host/agents/skills/orkestrel-prove-journey/SKILL.md
+npm notice 328B dist/host/agents/skills/orkestrel-publish/agents/openai.yaml
+npm notice 9.9kB dist/host/agents/skills/orkestrel-publish/references/wave.md
+npm notice 12.9kB dist/host/agents/skills/orkestrel-publish/references/window.md
+npm notice 4.8kB dist/host/agents/skills/orkestrel-publish/SKILL.md
+npm notice 8.4kB dist/host/agents/templates/brief.md
+npm notice 2.6kB dist/host/agents/transports/claude.md
+npm notice 10.3kB dist/host/agents/transports/codex.md
+npm notice 4.5kB dist/host/agents/transports/cursor.md
+npm notice 3.7kB dist/host/CLAUDE.md
+npm notice 3.8kB dist/host/claude/agents/analyst.md
+npm notice 2.0kB dist/host/claude/agents/application.md
+npm notice 2.2kB dist/host/claude/agents/builder.md
+npm notice 3.4kB dist/host/claude/agents/checker.md
+npm notice 2.0kB dist/host/claude/agents/distiller.md
+npm notice 2.3kB dist/host/claude/agents/grok.md
+npm notice 2.2kB dist/host/claude/agents/opus.md
+npm notice 28.8kB dist/host/claude/agents/orkestrel.md
+npm notice 3.1kB dist/host/claude/agents/planner.md
+npm notice 2.1kB dist/host/claude/agents/researcher.md
+npm notice 5.9kB dist/host/claude/agents/reviewer.md
+npm notice 1.7kB dist/host/claude/agents/scout.md
+npm notice 3.3kB dist/host/claude/agents/sol.md
+npm notice 2.2kB dist/host/claude/agents/verifier.md
+npm notice 3.4kB dist/host/claude/rules/application.md
+npm notice 21.4kB dist/host/claude/rules/architecture.md
+npm notice 1.1kB dist/host/claude/rules/browser.md
+npm notice 9.5kB dist/host/claude/rules/documentation.md
+npm notice 14.2kB dist/host/claude/rules/names.md
+npm notice 7.4kB dist/host/claude/rules/patterns.md
+npm notice 5.0kB dist/host/claude/rules/portability.md
+npm notice 18.8kB dist/host/claude/rules/quality.md
+npm notice 4.2kB dist/host/claude/rules/styles.md
+npm notice 24.7kB dist/host/claude/rules/tests.md
+npm notice 5.0kB dist/host/claude/rules/typescript.md
+npm notice 24.3kB dist/host/claude/rules/workspace.md
+npm notice 9.2kB dist/host/claude/rules/writing.md
+npm notice 37.1kB dist/host/claude/settings.json
+npm notice 1.4kB dist/host/claude/skills/enterprise-bootstrap/SKILL.md
+npm notice 877B dist/host/claude/skills/orkestrel-align-packages/SKILL.md
+npm notice 972B dist/host/claude/skills/orkestrel-build-application/SKILL.md
+npm notice 816B dist/host/claude/skills/orkestrel-debrief/SKILL.md
+npm notice 866B dist/host/claude/skills/orkestrel-falsify/SKILL.md
+npm notice 1.1kB dist/host/claude/skills/orkestrel-harden-package/SKILL.md
+npm notice 883B dist/host/claude/skills/orkestrel-polish-surface/SKILL.md
+npm notice 1.4kB dist/host/claude/skills/orkestrel-prove-journey/SKILL.md
+npm notice 730B dist/host/claude/skills/orkestrel-publish/SKILL.md
+npm notice 2.4kB dist/host/codex/agents/analyst.toml
+npm notice 1.5kB dist/host/codex/agents/application.toml
+npm notice 1.6kB dist/host/codex/agents/builder.toml
+npm notice 2.0kB dist/host/codex/agents/checker.toml
+npm notice 1.8kB dist/host/codex/agents/distiller.toml
+npm notice 2.4kB dist/host/codex/agents/grok.toml
+npm notice 1.8kB dist/host/codex/agents/opus.toml
+npm notice 1.9kB dist/host/codex/agents/orkestrel.toml
+npm notice 2.4kB dist/host/codex/agents/planner.toml
+npm notice 1.6kB dist/host/codex/agents/researcher.toml
+npm notice 2.3kB dist/host/codex/agents/reviewer.toml
+npm notice 1.4kB dist/host/codex/agents/scout.toml
+npm notice 1.3kB dist/host/codex/agents/sol.toml
+npm notice 1.0kB dist/host/codex/agents/verifier.toml
+npm notice 1.6kB dist/host/codex/config.toml
+npm notice 39.7kB dist/host/configs/helpers.ts
+npm notice 49.6kB dist/host/configs/policy.ts
+npm notice 263B dist/host/cursor/mcp.json
+npm notice 1.5kB dist/host/cursor/rules/orchestration.mdc
+npm notice 249B dist/host/dotfiles/editorconfig
+npm notice 95B dist/host/dotfiles/gitattributes
+npm notice 761B dist/host/dotfiles/gitignore
+npm notice 192B dist/host/dotfiles/mcp.json
+npm notice 358B dist/host/dotfiles/oxfmtrc.json
+npm notice 157B dist/host/dotfiles/oxlintignore
+npm notice 17.2kB dist/host/dotfiles/oxlintrc.json
+npm notice 647B dist/host/dotfiles/prettierignore
+npm notice 16.9kB dist/host/guides/abort.md
+npm notice 306.1kB dist/host/guides/agent.md
+npm notice 87.1kB dist/host/guides/brief.md
+npm notice 253.7kB dist/host/guides/browser.md
+npm notice 21.0kB dist/host/guides/budget.md
+npm notice 39.6kB dist/host/guides/codec.md
+npm notice 150.7kB dist/host/guides/console.md
+npm notice 206.7kB dist/host/guides/contract.md
+npm notice 56.7kB dist/host/guides/csv.md
+npm notice 190.4kB dist/host/guides/database.md
+npm notice 16.2kB dist/host/guides/emitter.md
+npm notice 118.3kB dist/host/guides/form.md
+npm notice 165.5kB dist/host/guides/guide.md
+npm notice 95.6kB dist/host/guides/html.md
+npm notice 54.6kB dist/host/guides/indexeddb.md
+npm notice 84.8kB dist/host/guides/interpret.md
+npm notice 48.0kB dist/host/guides/lsp.md
+npm notice 163.2kB dist/host/guides/markdown.md
+npm notice 678.1kB dist/host/guides/mcp.md
+npm notice 111.8kB dist/host/guides/middleware.md
+npm notice 98.8kB dist/host/guides/msg.md
+npm notice 8.8kB dist/host/guides/ndjson.md
+npm notice 55.1kB dist/host/guides/ollama.md
+npm notice 17.0kB dist/host/guides/pool.md
+npm notice 104.8kB dist/host/guides/probe.md
+npm notice 124.4kB dist/host/guides/process.md
+npm notice 57.8kB dist/host/guides/program.md
+npm notice 41.8kB dist/host/guides/qualifier.md
+npm notice 42.7kB dist/host/guides/queue.md
+npm notice 22.4kB dist/host/guides/rater.md
+npm notice 4.3kB dist/host/guides/README.md
+npm notice 166.9kB dist/host/guides/reason.md
+npm notice 35.2kB dist/host/guides/relation.md
+npm notice 77.8kB dist/host/guides/router.md
+npm notice 177.5kB dist/host/guides/scaffold.md
+npm notice 42.8kB dist/host/guides/sea.md
+npm notice 65.6kB dist/host/guides/server.md
+npm notice 27.4kB dist/host/guides/sqlite.md
+npm notice 15.0kB dist/host/guides/sse.md
+npm notice 408.1kB dist/host/guides/supervisor.md
+npm notice 110.0kB dist/host/guides/table.md
+npm notice 23.8kB dist/host/guides/template.md
+npm notice 145.5kB dist/host/guides/terminal.md
+npm notice 319.5kB dist/host/guides/test.md
+npm notice 13.6kB dist/host/guides/timeout.md
+npm notice 34.3kB dist/host/guides/tool.md
+npm notice 173.2kB dist/host/guides/toolbox.md
+npm notice 31.3kB dist/host/guides/websocket.md
+npm notice 41.8kB dist/host/guides/worker.md
+npm notice 230.5kB dist/host/guides/workflow.md
+npm notice 47.7kB dist/host/guides/workspace.md
+npm notice 1.1kB dist/host/LICENSE
+npm notice 50.1kB dist/host/manifest.json
+npm notice 1.3kB dist/host/scripts/codex.sh
+npm notice 1.4kB dist/host/scripts/cursor.sh
+npm notice 1.8kB dist/host/scripts/deps.sh
+npm notice 10.1kB dist/host/scripts/ollama.sh
+npm notice 104.1kB dist/host/tests/config.test.ts
+npm notice 30.3kB dist/host/tests/policy.test.ts
+npm notice 124.2kB dist/host/tests/setupPolicy.ts
+npm notice 280.3kB dist/src/core/index.cjs
+npm notice 368.1kB dist/src/core/index.cjs.map
+npm notice 246.3kB dist/src/core/index.d.cts
+npm notice 246.3kB dist/src/core/index.d.ts
+npm notice 271.8kB dist/src/core/index.js
+npm notice 365.5kB dist/src/core/index.js.map
+npm notice 193.3kB dist/src/server/index.cjs
+npm notice 303.1kB dist/src/server/index.cjs.map
+npm notice 142.5kB dist/src/server/index.d.cts
+npm notice 142.5kB dist/src/server/index.d.ts
+npm notice 183.9kB dist/src/server/index.js
+npm notice 297.0kB dist/src/server/index.js.map
+npm notice 5.3kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/scaffold
+npm notice version: 0.0.77
+npm notice filename: orkestrel-scaffold-0.0.77.tgz
+npm notice package size: 2.5 MB
+npm notice unpacked size: 10.3 MB
+npm notice shasum: 21c9de9071ba0990cf2b474035219ea84f010e49
+npm notice integrity: sha512-dUCPM4S08YhZ8[...]0/zlrR40O2pJQ==
+npm notice total files: 193
+npm notice
+orkestrel-scaffold-0.0.77.tgz
+=== scaffold pack (prepack builds) exit=0
+=== tarball orkestrel-scaffold-0.0.77.tgz sha256 70ecf14c29049c8c
+=== tarball entries: 193
+=== worktree at origin/main (05:15:12)
+Preparing worktree (detached HEAD d3ad3ab)
+HEAD is now at d3ad3ab Merge branch 'main' into unit/concerns-a
+=== worktree at origin/main exit=0
+=== veneer HEAD d3ad3ab; scaffold range ^0.0.77
+=== npm ci (05:15:12)
+
+added 215 packages in 4s
+=== npm ci exit=0
+=== registry copy installed: 0.0.77
+=== install the packed tarball without saving (05:15:16)
+
+changed 1 package in 1s
+=== install the packed tarball without saving exit=0
+=== installed core bundle equals scaffold's build (05:15:18)
+=== installed core bundle equals scaffold's build exit=0
+=== installed vendored orchestration file equals scaffold's (05:15:18)
+=== installed vendored orchestration file equals scaffold's exit=0
+=== package.json and lockfile unchanged: []
+=== scaffold repair (05:15:18)
+guides: The mirror at guides/scaffold.md differs from the hosted guide. Run catalog to refresh it.
+0 of 49 planned paths drifted from the plan. Audit compared bytes at 29, existence at 5, and nothing at 15.
+vite.config.ts replaced (10 lines added).
+tests/config.test.ts replaced (14 lines added).
+scripts/codex.sh replaced (0-line delta).
+3 written, 47 unchanged, 0 removed in ..
+=== scaffold repair exit=0
+=== status after repair: [ M scripts/codex.sh  M tests/config.test.ts  M vite.config.ts ]
+ scripts/codex.sh     |   4 +-
+ tests/config.test.ts | 102 +++++++++++++++++++++++++++++----------------------
+ vite.config.ts       |  14 ++++++-
+ 3 files changed, 72 insertions(+), 48 deletions(-)
+=== vite.config.ts diff lines: 32
+=== check (05:15:20)
+
+> @orkestrel/veneer@0.0.1 check
+> tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+
+
+> @orkestrel/veneer@0.0.1 check:src
+> npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+
+
+> @orkestrel/veneer@0.0.1 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/veneer@0.0.1 check:src:browser
+> tsc --noEmit -p configs/src/tsconfig.browser.json
+
+
+> @orkestrel/veneer@0.0.1 check:src:styles
+> tsc --noEmit -p configs/src/tsconfig.styles.json
+
+
+> @orkestrel/veneer@0.0.1 check:app
+> npm run check:app:browser
+
+
+> @orkestrel/veneer@0.0.1 check:app:browser
+> vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+
+=== check exit=0
+=== test:config (05:15:48)
+
+> @orkestrel/veneer@0.0.1 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/veneer-rmv
+
+···········································································································································································-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  05:15:50
+   Duration  5.55s (transform 661ms, setup 255ms, import 1.41s, tests 3.71s, environment 0ms)
+
+=== test:config exit=0
+=== test:policy (05:15:55)
+
+> @orkestrel/veneer@0.0.1 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/veneer-rmv
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  05:15:56
+   Duration  2.94s (transform 295ms, setup 157ms, import 424ms, tests 2.20s, environment 0ms)
+
+=== test:policy exit=0
+=== build (05:15:59)
+
+> @orkestrel/veneer@0.0.1 build
+> npm run clean && npm run build:src && npm run build:app
+
+
+> @orkestrel/veneer@0.0.1 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/veneer@0.0.1 build:src
+> npm run build:src:core && npm run build:src:browser && npm run build:src:styles
+
+
+> @orkestrel/veneer@0.0.1 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  9.78 kB │ gzip: 2.63 kB │ map: 15.17 kB
+
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  9.94 kB │ gzip: 2.70 kB │ map: 15.19 kB
+
+✓ built in 66ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/veneer@0.0.1 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+> @orkestrel/veneer@0.0.1 build:src:browser
+> vite build --config configs/src/vite.browser.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 29 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  319.19 kB │ gzip: 71.95 kB │ map: 591.82 kB
+
+✓ built in 601ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.87 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.95s
+
+> @orkestrel/veneer@0.0.1 build:app
+> npm run build:app:browser
+
+
+> @orkestrel/veneer@0.0.1 build:app:browser
+> vite build --config configs/app/vite.browser.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 100 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/app/browser/index.html                   0.35 kB │ gzip:  0.25 kB
+dist/app/browser/assets/index-CVHf3pxL.css  289.37 kB │ gzip: 34.52 kB
+dist/app/browser/assets/index--vdZwhDz.js   346.35 kB │ gzip: 77.35 kB
+
+✓ built in 2.51s
+=== build exit=0
+=== test:distribution (ordinary) (05:16:16)
+
+> @orkestrel/veneer@0.0.1 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution
+
+
+ RUN  v4.1.11 /home/user/veneer-rmv
+
+·········-··----··
+
+ Test Files  1 passed (1)
+      Tests  13 passed | 5 skipped (18)
+   Start at  05:16:17
+   Duration  18.67s (transform 590ms, setup 161ms, import 3.54s, tests 14.81s, environment 0ms)
+
+=== test:distribution (ordinary) exit=0
+=== test:distribution --mode release (05:16:36)
+
+> @orkestrel/veneer@0.0.1 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+
+ RUN  v4.1.11 /home/user/veneer-rmv
+
+·········x··----··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > release host > holds a passing receipt on the channel, platform, and build this run launched
+AssertionError: The release gate requires a passing receipt in guides/veneer.md § Hosts naming this run's host values: Channel chromium, Build 141.0.7390.37, Platform linux, Kernel 6.18.44-fc-v37, Node 22.22.2, npm 11.19.1. The Date, Revision, and Commands cells come from the run that writes the row: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/distribution.test.ts:1231:61
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed | 4 skipped (18)
+   Start at  05:16:37
+   Duration  19.68s (transform 621ms, setup 149ms, import 3.14s, tests 16.23s, environment 0ms)
+
+=== test:distribution --mode release exit=1
+=== status at end: [ M scripts/codex.sh  M tests/config.test.ts  M vite.config.ts ] (05:16:57)
+=== rm-veneer done

@@ -1,0 +1,11 @@
+# LEDGER-ADDITIONS audit round 2 — objective lane on GPT-6 Astra
+
+`analyst` route on GPT-6 Astra (`gpt-6-astra`), `codex exec --sandbox read-only` rooted at `/home/user/veneer-lad`. You are the engine behind the CLI: perform the audit directly and spawn nothing. You hold the **objective** lane over the numbered claims in `/home/user/scaffold/.orkestrel/veneer/units/lad-audit-2-claims.md`. The subject was written by `opus` on Opus 5.5, so you are an auditor engine that did not write it; the subjective lane (`reviewer` on Opus 5.5) runs blind beside you. Bound: rule within 30 minutes.
+
+Law: `/home/user/veneer-lad/AGENTS.md`; `/home/user/scaffold/.claude/rules/{styles,tests,names,typescript,documentation,writing,quality}.md`; the falsification law in `/home/user/scaffold/.claude/rules/quality.md`; the skill `/home/user/scaffold/.agents/skills/orkestrel-falsify/SKILL.md` and its references (the verdict shape); Veneer's `ROADMAP.md` § Tenets in the worktree. Evidence, all read-only: the claims file and every file it names under `/home/user/scaffold/.orkestrel/veneer/units/`. The worktree holds the change uncommitted over `2376710`: read its files, never edit them; `git -C /home/user/veneer-lad diff 2376710` reads the live change. The shipped partials are under `src/styles/`.
+
+Standing conditions: the sandbox runs no browser and no Vitest project, and denies the network. Rule every proof claim from the test's assertions, the shipped partials, and the retained plant logs, naming for each mutation whether the assertions distinguish it from the passing case, and say which log you read. Rule each claim from the live worktree, the retained logs, and the inventory at `tests/fixtures/oracle/inventory.json`. Never edit the worktree. Never read `.env*`, `.npmrc`, `auth.json`, or any credential file.
+
+Rule every claim, and rule the Orchestrator's claims wrong where the evidence says so.
+
+Output: the `orkestrel-falsify` verdict shape and nothing else — numbered verdicts (CONFIRMED, BROKEN, UNRESOLVED, or NOT-EVIDENCED) with `file:line` (for a CONFIRMED verdict, the attack that failed; for a claim about a proof, the mutation and whether the assertions distinguish it), findings outside the claims to the `BROKEN` standard, and one terminal line `VERDICT: PASS` or `VERDICT: FAIL <numbers>; outside the claims: <names or none>`.

@@ -1,0 +1,163 @@
+
+> @orkestrel/veneer@0.0.1 test:probe
+> vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe tmp/probe/lad-2-sweep.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+stdout | tmp/probe/lad-2-sweep.test.ts > sweeps the functional-list selectors
+SWEEP
+ATTRIBUTE | components | :where(button.dropdown-item) | — | selector=dropdown | measured=dropdown | owned=dropdown
+ATTRIBUTE | components | :where(button.nav-link) | — | selector=nav | measured=nav | owned=nav
+ATTRIBUTE | components | :where(button.navbar-toggler) | — | selector=navbar | measured=navbar | owned=navbar
+ATTRIBUTE | components | :where(button.accordion-button) | — | selector=accordion | measured=accordion | owned=accordion
+ATTRIBUTE | components | :where(button.page-link) | — | selector=(none) | measured=(none) | owned=pagination
+ATTRIBUTE | components | :where(button.list-group-item) | — | selector=list-group | measured=list-group | owned=list-group
+ATTRIBUTE | components | :where(button.btn-close) | — | selector=btn-close | measured=btn-close | owned=btn-close
+ATTRIBUTE | components | :where(button.carousel-control-prev, button.carousel-control-next) | — | selector=carousel | measured=carousel | owned=carousel
+ATTRIBUTE | components | :where(.carousel-indicators [data-bs-target]) | — | selector=carousel | measured=carousel | owned=carousel
+ADDITION | dropdown | :where(button.dropdown-item) | — | selector | —
+ADDITION | dropdown | :where(button.dropdown-item) { padding } | — | declaration | revert
+ADDITION | dropdown | :where(button.dropdown-item) { font-family } | — | declaration | inherit
+ADDITION | dropdown | :where(button.dropdown-item) { font-size } | — | declaration | inherit
+ADDITION | dropdown | :where(button.dropdown-item) { font-weight } | — | declaration | revert
+ADDITION | dropdown | :where(button.dropdown-item) { line-height } | — | declaration | inherit
+ADDITION | dropdown | :where(button.dropdown-item) { color } | — | declaration | revert
+ADDITION | dropdown | :where(button.dropdown-item) { background-color } | — | declaration | revert
+ADDITION | dropdown | :where(button.dropdown-item) { border } | — | declaration | revert
+ADDITION | dropdown | :where(button.dropdown-item) { border-radius } | — | declaration | 0
+ADDITION | dropdown | :where(button.dropdown-item) { outline } | — | declaration | revert
+ADDITION | dropdown | :where(button.dropdown-item) { box-shadow } | — | declaration | revert
+ADDITION | dropdown | :where(button.dropdown-item) { opacity } | — | declaration | revert
+ADDITION | dropdown | :where(button.dropdown-item) { pointer-events } | — | declaration | revert
+ADDITION | dropdown | :where(button.dropdown-item) { transition } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) | — | selector | —
+ADDITION | nav | :where(button.nav-link) { padding } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) { font-family } | — | declaration | inherit
+ADDITION | nav | :where(button.nav-link) { font-size } | — | declaration | inherit
+ADDITION | nav | :where(button.nav-link) { font-weight } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) { line-height } | — | declaration | inherit
+ADDITION | nav | :where(button.nav-link) { color } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) { background-color } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) { border } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) { border-radius } | — | declaration | 0
+ADDITION | nav | :where(button.nav-link) { outline } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) { box-shadow } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) { opacity } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) { pointer-events } | — | declaration | revert
+ADDITION | nav | :where(button.nav-link) { transition } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) | — | selector | —
+ADDITION | navbar | :where(button.navbar-toggler) { padding } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) { font-family } | — | declaration | inherit
+ADDITION | navbar | :where(button.navbar-toggler) { font-size } | — | declaration | inherit
+ADDITION | navbar | :where(button.navbar-toggler) { font-weight } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) { line-height } | — | declaration | inherit
+ADDITION | navbar | :where(button.navbar-toggler) { color } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) { background-color } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) { border } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) { border-radius } | — | declaration | 0
+ADDITION | navbar | :where(button.navbar-toggler) { outline } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) { box-shadow } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) { opacity } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) { pointer-events } | — | declaration | revert
+ADDITION | navbar | :where(button.navbar-toggler) { transition } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) | — | selector | —
+ADDITION | accordion | :where(button.accordion-button) { padding } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) { font-family } | — | declaration | inherit
+ADDITION | accordion | :where(button.accordion-button) { font-size } | — | declaration | inherit
+ADDITION | accordion | :where(button.accordion-button) { font-weight } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) { line-height } | — | declaration | inherit
+ADDITION | accordion | :where(button.accordion-button) { color } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) { background-color } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) { border } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) { border-radius } | — | declaration | 0
+ADDITION | accordion | :where(button.accordion-button) { outline } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) { box-shadow } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) { opacity } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) { pointer-events } | — | declaration | revert
+ADDITION | accordion | :where(button.accordion-button) { transition } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) | — | selector | —
+ADDITION | pagination | :where(button.page-link) { padding } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) { font-family } | — | declaration | inherit
+ADDITION | pagination | :where(button.page-link) { font-size } | — | declaration | inherit
+ADDITION | pagination | :where(button.page-link) { font-weight } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) { line-height } | — | declaration | inherit
+ADDITION | pagination | :where(button.page-link) { color } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) { background-color } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) { border } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) { border-radius } | — | declaration | 0
+ADDITION | pagination | :where(button.page-link) { outline } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) { box-shadow } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) { opacity } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) { pointer-events } | — | declaration | revert
+ADDITION | pagination | :where(button.page-link) { transition } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) | — | selector | —
+ADDITION | list-group | :where(button.list-group-item) { padding } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) { font-family } | — | declaration | inherit
+ADDITION | list-group | :where(button.list-group-item) { font-size } | — | declaration | inherit
+ADDITION | list-group | :where(button.list-group-item) { font-weight } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) { line-height } | — | declaration | inherit
+ADDITION | list-group | :where(button.list-group-item) { color } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) { background-color } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) { border } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) { border-radius } | — | declaration | 0
+ADDITION | list-group | :where(button.list-group-item) { outline } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) { box-shadow } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) { opacity } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) { pointer-events } | — | declaration | revert
+ADDITION | list-group | :where(button.list-group-item) { transition } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) | — | selector | —
+ADDITION | btn-close | :where(button.btn-close) { padding } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) { font-family } | — | declaration | inherit
+ADDITION | btn-close | :where(button.btn-close) { font-size } | — | declaration | inherit
+ADDITION | btn-close | :where(button.btn-close) { font-weight } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) { line-height } | — | declaration | inherit
+ADDITION | btn-close | :where(button.btn-close) { color } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) { background-color } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) { border } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) { border-radius } | — | declaration | 0
+ADDITION | btn-close | :where(button.btn-close) { outline } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) { box-shadow } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) { opacity } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) { pointer-events } | — | declaration | revert
+ADDITION | btn-close | :where(button.btn-close) { transition } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) | — | selector | —
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { padding } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { font-family } | — | declaration | inherit
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { font-size } | — | declaration | inherit
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { font-weight } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { line-height } | — | declaration | inherit
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { color } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { background-color } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { border } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { border-radius } | — | declaration | 0
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { outline } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { box-shadow } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { opacity } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { pointer-events } | — | declaration | revert
+ADDITION | carousel | :where(button.carousel-control-prev, button.carousel-control-next) { transition } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) | — | selector | —
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { padding } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { font-family } | — | declaration | inherit
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { font-size } | — | declaration | inherit
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { font-weight } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { line-height } | — | declaration | inherit
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { color } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { background-color } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { border } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { border-radius } | — | declaration | 0
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { outline } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { box-shadow } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { opacity } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { pointer-events } | — | declaration | revert
+ADDITION | carousel | :where(.carousel-indicators [data-bs-target]) { transition } | — | declaration | revert
+END
+
+ ✓ |probe| tmp/probe/lad-2-sweep.test.ts > sweeps the functional-list selectors 10001ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  05:04:13
+   Duration  11.85s (transform 712ms, setup 202ms, import 1.45s, tests 10.00s, environment 0ms)
+
+exit=0

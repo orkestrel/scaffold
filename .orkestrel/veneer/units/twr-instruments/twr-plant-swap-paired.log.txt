@@ -1,0 +1,177 @@
+plant=swap-paired
+planted swap-paired
+--- tmp/units/twr-plant-backup-guide.md	2026-09-25 05:05:42.233780946 +0000
++++ guides/veneer.md	2026-09-25 05:08:46.033027855 +0000
+@@ -3390,7 +3390,7 @@
+ under Veneer's element treatment rather than over it.
+ 
+ ```css
+-@layer theme, reset, base, elements, components, utilities;
++@layer theme, reset, elements, base, components, utilities;
+ @import 'tailwindcss';
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+--- tmp/units/twr-plant-backup-fixture.css	2026-09-25 05:05:42.241771749 +0000
++++ tests/fixtures/tailwind/consumer-preflight.css	2026-09-25 05:08:46.037148990 +0000
+@@ -1,4 +1,4 @@
+-@layer theme, reset, base, elements, components, utilities;
++@layer theme, reset, elements, base, components, utilities;
+ @import 'tailwindcss';
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+command=npm run test:service
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+·········xxx············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > compiles to the order the cascade puts the document in, with Tailwind's reset in its base layer
+AssertionError: expected [ Array(7) ] to deeply equal [ Array(7) ]
+
+- Expected
++ Received
+
+  [
+    "properties",
+    "theme",
+    "reset",
+-   "base",
+    "elements",
++   "base",
+    "components",
+    "utilities",
+  ]
+
+ ❯ tests/service/tailwind/consumer.test.ts:411:26
+    409|   // The recipe's order line is the one the cascade's own layers follo…
+    410|   // narrower order merges into it and its generated properties layer …
+    411|   expect(compiled.order).toEqual(['properties', ...cascade.order])
+       |                          ^
+    412|   // The cascade import resolved: Veneer's token namespace is in the `…
+    413|   // component rules are in the `components` block.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > keeps every longhand a component rule declares where the cascade alone resolves it, and moves one when the order line is dropped
+AssertionError: expected [ …(16) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   ".table > :not(caption) > * > * | border-top-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-right-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-bottom-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-left-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-top-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-right-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-bottom-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-left-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-top-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-right-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-bottom-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-left-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-top-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-right-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-bottom-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++   ".table > :not(caption) > * > * | border-left-color: oklch(0.869 0.022 252.894) became rgb(0, 0, 0)",
++ ]
+
+ ❯ tests/service/tailwind/consumer.test.ts:510:18
+    508|     ),
+    509|    ).toEqual([])
+    510|    expect(moved).toEqual([])
+       |                  ^
+    511|    // The same reading sees every floor class move on the control page…
+    512|    // holds is one this reading could have refused.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > leaves every shared name resolving, on the recipe alone, what the cascade resolves over Tailwind's reset
+AssertionError: expected [ …(50) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "container block-size: 920.75px became 872.75px",
++   "container height: 920.75px became 872.75px",
++   "container perspective-origin: 570px 460.375px became 570px 436.375px",
++   "container transform-origin: 570px 460.375px became 570px 436.375px",
++   "table block-size: 72.375px became 56.375px",
++   "table height: 72.375px became 56.375px",
++   "table perspective-origin: 558px 36.1875px became 558px 28.1875px",
++   "table transform-origin: 558px 36.1875px became 558px 28.1875px",
++   "table block-size: 72.375px became 56.375px",
++   "table height: 72.375px became 56.375px",
++   "table perspective-origin: 558px 36.1875px became 558px 28.1875px",
++   "table transform-origin: 558px 36.1875px became 558px 28.1875px",
++   "caption-bottom block-size: 34.375px became 18.375px",
++   "caption-bottom height: 34.375px became 18.375px",
++   "caption-bottom padding-block-end: 8px became 0px",
++   "caption-bottom padding-block-start: 8px became 0px",
++   "caption-bottom padding-bottom: 8px became 0px",
++   "caption-bottom padding-inline-end: 12px became 0px",
++   "caption-bottom padding-inline-start: 12px became 0px",
++   "caption-bottom padding-left: 12px became 0px",
++   "caption-bottom padding-right: 12px became 0px",
++   "caption-bottom padding-top: 8px became 0px",
++   "caption-bottom perspective-origin: 558px 17.1875px became 558px 9.1875px",
++   "caption-bottom transform-origin: 558px 17.1875px became 558px 9.1875px",
++   "caption-top block-size: 34.375px became 18.375px",
++   "caption-top height: 34.375px became 18.375px",
++   "caption-top padding-block-end: 8px became 0px",
++   "caption-top padding-block-start: 8px became 0px",
++   "caption-top padding-bottom: 8px became 0px",
++   "caption-top padding-inline-end: 12px became 0px",
++   "caption-top padding-inline-start: 12px became 0px",
++   "caption-top padding-left: 12px became 0px",
++   "caption-top padding-right: 12px became 0px",
++   "caption-top padding-top: 8px became 0px",
++   "caption-top perspective-origin: 558px 17.1875px became 558px 9.1875px",
++   "caption-top transform-origin: 558px 17.1875px became 558px 9.1875px",
++   "text-center margin-block-end: 16px became 0px",
++   "text-center margin-bottom: 16px became 0px",
++   "text-end margin-block-end: 16px became 0px",
++   "text-end margin-bottom: 16px became 0px",
++   "text-start margin-block-end: 16px became 0px",
++   "text-start margin-bottom: 16px became 0px",
++   "text-nowrap margin-block-end: 16px became 0px",
++   "text-nowrap margin-bottom: 16px became 0px",
++   "text-wrap margin-block-end: 16px became 0px",
++   "text-wrap margin-bottom: 16px became 0px",
++   "text-black margin-block-end: 16px became 0px",
++   "text-black margin-bottom: 16px became 0px",
++   "text-white margin-block-end: 16px became 0px",
++   "text-white margin-bottom: 16px became 0px",
++ ]
+
+ ❯ tests/service/tailwind/consumer.test.ts:548:5
+    546|     )
+    547|    }),
+    548|   ).toEqual([])
+       |     ^
+    549|  })
+    550| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  3 failed | 21 passed (24)
+   Start at  05:08:47
+   Duration  36.66s (transform 1.03s, setup 4.92s, import 1.85s, tests 29.28s, environment 0ms)
+
+exit=1
+restored guide byte-identical
+restored fixture byte-identical
+git diff --stat unchanged from before the plant
+loadavg=7.13 7.51 8.41 4/277 9337

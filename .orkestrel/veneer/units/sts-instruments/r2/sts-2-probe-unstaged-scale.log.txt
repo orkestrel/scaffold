@@ -1,0 +1,19 @@
+Probe: an element shot without stagePane, compared with the element's box in device pixels.
+Columns: [viewport set, innerWidth, devicePixelRatio, box width, box height, decoded shot width, decoded shot height, runner window innerWidth]
+describe('probe', () => {
+	it('probe scaling', async () => {
+		const host = scene.mount(`<div style="width: 200px">${FORM_RANGE_MARKUP}</div>`)
+		const element = requireValue(host.querySelector('input'), 'none')
+		const whole = { x: 0, y: 0, width: Number.MAX_SAFE_INTEGER, height: Number.MAX_SAFE_INTEGER }
+		for (const size of [undefined, [1600, 900], [390, 844]] as const) {
+			if (size !== undefined) await page.viewport(size[0], size[1])
+			const shot = await readImageRegion(await page.screenshot({ element, save: false }), whole)
+			const box = readRegion(element, element)
+			console.log('PROBE', JSON.stringify([size, window.innerWidth, window.devicePixelRatio, box.width, box.height, shot.width, shot.height, window.top?.innerWidth]))
+		}
+	})
+})
+PROBE [null,414,1,200,24,77,10,800]
+PROBE [[1600,900],1600,1,200,24,20,3,800]
+PROBE [[390,844],390,1,200,24,81,10,800]
+      Tests  1 passed | 10 skipped (11)

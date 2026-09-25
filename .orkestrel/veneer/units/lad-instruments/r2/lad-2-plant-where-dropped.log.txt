@@ -1,0 +1,90 @@
+plant=where-dropped file=tests/setupServer.ts
+1885c1885
+< 					/:(?:is|where)$/iu.test(selector.slice(0, step.index)),
+---
+> 					/:(?:is)$/iu.test(selector.slice(0, step.index)),
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+ ❯ |setup| tests/setupServer.test.ts (118 tests | 1 failed) 15478ms
+     × reads the classes an :is() or a :where() argument writes as the selector's own, and none a :not() or a :has() argument writes 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reads the classes an :is() or a :where() argument writes as the selector's own, and none a :not() or a :has() argument writes
+AssertionError: expected [] to deeply equal [ 'nav-link' ]
+
+- Expected
++ Received
+
+- [
+-   "nav-link",
+- ]
++ []
+
+ ❯ tests/setupServer.test.ts:2915:75
+    2913|
+    2914|  it("reads the classes an :is() or a :where() argument writes as the s…
+    2915|   expect(collectSubjectClasses(':where(button.nav-link):not(.disabled)…
+       |                                                                           ^
+    2916|   expect(collectSubjectClasses(':is(.alpha, .beta) > .gamma')).toEqual…
+    2917|   expect(collectSubjectClasses(':WHERE(.upper)')).toEqual(['upper'])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 117 passed (118)
+   Start at  05:12:49
+   Duration  17.60s (transform 936ms, setup 222ms, import 1.72s, tests 15.48s, environment 0ms)
+
+exit=1
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+···············x·············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > places by measurement every emitted rule but the ones a recorded selector row owns
+AssertionError: expected [ …(10) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "components | .caption-bottom | —",
++   "components | :where(button.dropdown-item) | —",
++   "components | :where(button.nav-link) | —",
++   "components | :where(button.navbar-toggler) | —",
++   "components | :where(button.accordion-button) | —",
+    "components | :where(button.page-link) | —",
++   "components | :where(button.list-group-item) | —",
++   "components | :where(button.btn-close) | —",
++   "components | :where(button.carousel-control-prev, button.carousel-control-next) | —",
++   "components | :where(.carousel-indicators [data-bs-target]) | —",
+  ]
+
+ ❯ tests/conformance.test.ts:247:83
+    245|   // exactly the rules § Additions names as owned stay unplaced. A rea…
+    246|   // rule by its classes adds that rule here, even though its row woul…
+    247|   expect(collectUnattributed(readCascadeBlocks(cascade), inventory, sh…
+       |                                                                                   ^
+    248|    'components | .caption-bottom | —',
+    249|    'components | :where(button.page-link) | —',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 28 passed (29)
+   Start at  05:13:08
+   Duration  32.12s (transform 644ms, setup 163ms, import 20.78s, tests 11.01s, environment 0ms)
+
+exit=1
+cmp=identical
+src diffstat: 

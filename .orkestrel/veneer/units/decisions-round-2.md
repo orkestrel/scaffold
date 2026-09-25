@@ -627,3 +627,18 @@ D51's placement rule therefore reads in full:
 - overridden on any other element, it moves only the rules that read the token themselves;
 - a rule that reads a `--bs-*` alias follows that alias set on any element.
 
+
+## D52 — The integration case keeps its own centre read (the Orchestrator, 2026-09-25)
+
+STATES round 2 stopped at the centre read in `tests/app/browser/integration.test.ts`, case `holds each pressed form
+control on its lifted specimen and photographs the paint its press rule writes` (`units/states-report-2.md`, its probe
+`sts-instruments/r2/sts-2-probe-unstaged-scale.log.txt`). The ruling:
+
+- `readCentre` in `tests/setupBrowser.ts` returns a square centred on a subject's box, in the coordinates of a frame
+  photographed on a staged pane. The integration case photographs an element on an unstaged pane, so the runner paints
+  it at a fitting scale the box does not locate, and the case reads the middle pixel of the decoded image. That read
+  takes no box and holds at any scale.
+- The two reads are different calculations, so the integration case keeps its read and F3 closes at the form-range
+  sites. Staging the pane inside that journey case would change the app journey to serve a helper, which no finding
+  asks for.
+- STATES round 2 is audited on that scope.

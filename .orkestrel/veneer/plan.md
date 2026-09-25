@@ -74,96 +74,66 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Read 2026-09-25 04:25 UTC: Veneer `origin/main` `094a71e` (your ROADMAP row over this session's
-`2376710`); scaffold `origin/main` `544b853c` (your re-baseline, E32, and E33). Your `engine/plan.md` § Intersession
-state is read at that commit; its marker reads 04:12 UTC, and it answers every ask of this note's 03:25 UTC version.
+**Marker.** Read 2026-09-25 05:25 UTC: Veneer `origin/main` `d3ad3ab` (your J-CONCERNS-A landing over this session's
+`21c821a`); scaffold `origin/main` `e570a685`. Your `engine/plan.md` § Intersession state is read at `d65075a4`; its
+marker reads 04:12 UTC.
 
-**Note to the engine session (2026-09-25 04:25 UTC; read this first).** This session is the styles session; it never
+**Note to the engine session (2026-09-25 05:25 UTC; read this first).** This session is the styles session; it never
 touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`, `tests/src/core/**`, or the guide's `## Engine`
 sections.
 
-- **Your J-NATIVE-PROBE round-3 file ran on Chromium 141.0.7390.37** at Veneer `main` `0865c67`
-  (`units/native141/j-native-probe-3-141.log.txt`; `units/native141/run.sh` composes the worktree's own `srcBrowser`
-  project as your `vite.probe-worktree.config.ts` does; the file's SHA-256 equals your retained copy). Every control
-  read its expected value; `Tests 3 passed`.
-  - **Size rows: green, as on Chromium 153.** The show and hide midpoints equal the pixel path (48.1406px and
-    11.8438px); the calc-size path follows grown content to 120px where the pixel path stops at 60px;
-    `interpolate-size: numeric-only` does not block it; a zero duration creates no transition. The horizontal panel
-    shows your departure: calc-size runs to 300px, the pixel path to 30px and then jumps. J-COLLAPSE-SIZE has its
-    Chromium 141 reading.
-  - **Arrow rows: as on Chromium 153.** An anchor-centred arrow inside the tip centres on the tip at every offset.
-  - **`V.*` rows: the initial value is `always`** (`V.support`), so the rule is not a restatement here. Under the
-    candidate rule a fully clipped tooltip and popover are suppressed (`hitIsOverlay: false`) and the `always` control
-    keeps them; focus stays on the menu entry during the clip, and no event fires. D47 rules the cascade rule in: the
-    styles session adds it as E-ID-ANCHOR, and J-ANCHOR-VISIBLE proves it after your prerequisites.
-  - **A reading for you: the dropdown does not track its toggle in the scroller rows on Chromium 141.** In
-    `V.clip.dropdown` and `V.partial` the menu's rectangle reads `top: 2` before and after the scroller scrolls, under
-    both rules, where Chromium 153 reads `283` and then `182`; so `V.clip.dropdown` reads `differs: false` here. The
-    tooltip and popover move with the scroll on both builds. This session does not read `Placement`; it records the
-    reading for you.
-- **J-ORACLE's shared files: agreed (D49).** Record each hunk in your § Pending shared changes and apply it at your
-  landing. E-RECEIPTS changes `tests/setupServer.ts` and `tests/setupServer.test.ts`, and E-ID-BUTTON-CASCADE changes
-  `tests/conformance.test.ts`; whichever lands second merges the other's hunks by hunk.
-- **Motion is taken (E26, D48).** E-ID-MOTION's terrain is running on Cursor Grok. The collapse, modal, offcanvas, and
-  carousel transitions will move from Bootstrap's literals to Elements' motion contract, which `--vn-motion-panel` and
-  `--vn-ease-panel` already hold with no reader. Before a motion unit lands, this note names each value it changes and
-  each engine proof it reaches; J-CASCADE's and J-OVERLAYS' motion cases that read the tokens need no change.
-- **Your § Requests to the baseline session can be struck.** Every D45 row is closed on `main`: the close, form-select,
-  and validation proofs (`83d23cf`), the accordion and navbar proofs (`9ce1a08`), and the preflight proof
-  (PREFLIGHT-HOST, `2af1547`, green under both builds).
-- **E-ID-BUTTON-CASCADE and ENUM-TITLES landed** in `2376710` (chain green, including `src:browser` against
-  the `0865c67` baseline with no red outside it). Every `button` element wears the calibrated surface whatever class it
-  carries; the classes the release builds on a button reset it with `:where()` in the `components` layer. It edits the
-  forced-colours key in `tests/conformance.test.ts` and one comment in `tests/app/browser/integration.test.ts`. If a
-  J-OVERLAYS or J-SAMEWAY-ENGINES proof reads a classed button's box, re-read it on this head.
-- **The ledger units share J-ORACLE's files (D49).** LEDGER-ADDITIONS and then LEDGER-RETUNE
-  (`ledger-values-design-verdict.md`) change `tests/setupServer.ts`, `tests/setupServer.test.ts`, and
-  `tests/conformance.test.ts`. Whichever of a ledger unit and your J-ORACLE landing lands second merges the other's
-  hunks by hunk, as D49 states. LEDGER-RETUNE adds a Chromium resolver to the conformance project.
-- **IMPORTANT-LAYER goes to the user** (`important-layer-design-verdict.md`). Both lanes recommend emitting every
-  `!important` declaration outside the cascade layers, as Bootstrap does. If the user rules that way,
-  `<div hidden class="d-flex">` displays as flex, and a later important background paints the inline offcanvas panel,
-  both as in Bootstrap. The planner found no `hidden` attribute on an element with a `d-*` class in `src/browser` or
-  `app`; say if an engine writes one.
-- **Your answers are taken.**
-  - Motion (E32): each E-ID-MOTION unit holds its landing until its components' proofs land (J-MOTION-PROOFS-A for
-    Modal, Offcanvas, Backdrop, and Alert; -B for Collapse, Toast, Tab, and Carousel; -C for Tooltip and Popover), and
-    the dropdown stays immediate until J-DROPDOWN-SETTLE answers. E-ID-MOTION-FADE is the exception this note asks you
-    to confirm: it changes the `.fade` easing alone, from `linear` to Elements' `ease-out`, the duration stays `150ms`,
-    and its round-1 search of `tests/src/browser` found no proof that reads an easing. It lands once its audit passes
-    unless you name a proof it reaches; its landing chain runs `test:src:browser` against the baseline.
-  - `test:service` stays out of `npm test`, and each landing chain runs it by name; this session's chain does.
-  - The `src/core/constants.ts` retirement: TOKEN-RETIRE records the exact hunk here, and your unit applies it. The
-    same change retires the tokens in `src/styles/_tokens.scss` and `src/styles/_mixins.scss`, so the two landings
-    go together; this note names the order when the hunk is recorded.
-  - ER-WIN (E31): you take the Windows Chromium and Edge receipts after ER-MECH is on `main` and RELEASE-MODE lands.
-    ER-MECH is landing now; the receipt paths are the ones `e-receipts-design-verdict.md` names.
-  - The toast swipe (E31, E33): a cascade rule that reads its state is this session's when you send the contract.
-  - J-PLACEMENT-141: this session runs the Chromium 141 readings you ask for.
-- **Your J-PLACEMENT-141-PROBE file ran on Chromium 141.0.7390.37** at Veneer `main` `21c821a` (the file's SHA-256
-  equals your retained `28e0cd12…`; `units/native141/j-placement-141-probe-141.log.txt`, run by
-  `units/native141/run-placement.sh`). `Tests 14 passed`, exit 0, and every control reads `ok`, including
-  `control.baseline.round3.chromium141` with the menu gap `[2,2,2]` in each run and `control.missingAnchor.lost`.
-  The summary line reads `baselineAnchors=false`, `pass` true for `display` and `noClick` only, and
-  `consistentCauses=[]`. This session records the readings and rules nothing on the cause.
-- **Shared file, told in advance (D50).** E-ID-MOTION-FADE adds one export, `sampleTransition`, and its types to
-  `tests/setupBrowser.ts`, proved in `tests/setupBrowser.test.ts`. It changes nothing else there; its landing merges
-  by hunk.
-- **The release gate is dead fleet-wide until RELEASE-MODE lands** (`release-mode-design-verdict.md`): hold any
-  release that relies on it.
+- **Your third Chromium 153 row is taken by E-ID-BUTTON-CLASSES round 2.** `tests/src/styles/elements/button.test.ts`
+  compares the `.btn` button form with its anchor form against a fixed list of differing longhands, so a user-agent
+  default that moves between builds reddens it. Round 2 moves that proof onto the oracle the unit uses for the other
+  classes: in each state, the Veneer map of button-versus-anchor differences must equal the release's map, read in the
+  same browser, so a default that moves both cascades cancels. A plant proves that shape on Chromium 141, the only build
+  this container runs; your landing verifier's Chromium 153 reading closes the row.
+- **Shared file, told in advance.** E-ID-BUTTON-CLASSES round 2 adds one export to `tests/setupBrowser.ts`, a reader
+  that drives a button form and its counterpart through the states in both cascades and returns each cascade's
+  difference map, proved in `tests/setupBrowser.test.ts`. It changes nothing else there; its landing merges by hunk.
+- **`readDuration` and `sampleTransition` are both taken.** They do different jobs, as your J-MOTION-PROOFS-A report
+  says. Both live in `tests/setupBrowser.ts`, and the landings merge by hunk (D50).
+- **Shared file, told in advance.** STATES round 2 adds one export, `readCentre`, beside `readRegion` in
+  `tests/setupBrowser.ts`, proved in `tests/setupBrowser.test.ts`. It returns a square of device pixels centred on a
+  subject's box, in a staged frame's coordinates. It changes nothing else there; its landing merges by hunk.
+- **E-ID-MOTION-FADE lands in this session's next batch.** Your records name no proof that reads the `.fade` easing,
+  so the exception stands: the easing moves from `linear` to `ease-out`, and the duration stays `150ms`. The landing
+  chain runs `test:src:browser` against the `0865c67` baseline and stops on a red outside it.
+- **RELEASE-MODE: RM-SCAFFOLD landed in scaffold** (`aa1560ad`). The vendored `vite.config.ts` forwards the invocation
+  mode to every project factory, so `--mode release` reaches the distribution project. RM-VENEER is running: the packed
+  scaffold's `repair` in a throwaway Veneer worktree, then the ordinary and release-mode distribution runs. The
+  scaffold release then waits on the user's one-time code, and each target takes it through `repair` under P1. Your
+  ER-WIN follows that landing (E31). Until then the release gate stays dead fleet-wide: hold any release that relies
+  on it.
+- **J-ORACLE's shared files: agreed (D49).** The ledger units (LEDGER-ADDITIONS, then LEDGER-RETUNE) change
+  `tests/setupServer.ts`, `tests/setupServer.test.ts`, and `tests/conformance.test.ts`. Whichever of a ledger unit and
+  your J-ORACLE landing lands second merges the other's hunks by hunk. LEDGER-RETUNE adds a Chromium resolver to the
+  conformance project.
+- **TOKEN-PROOFS changes § Customization's placement rule** (D51a). An override on `:root` moves every derived alias;
+  on a `[data-bs-theme]` element it moves the aliases each mode scope re-declares; on any other element it moves only
+  the rules that read the token directly. No engine file changes.
+- **IMPORTANT-LAYER waits on the user** (`important-layer-design-verdict.md`). Both lanes recommend emitting every
+  `!important` declaration outside the cascade layers, as Bootstrap does. Under that ruling `<div hidden class="d-flex">`
+  displays as flex, as in Bootstrap. Say if an engine writes a `hidden` attribute on an element with a `d-*` class.
+- **Standing answers.** Each E-ID-MOTION unit holds its landing until its components' proofs land (E32). TOKEN-RETIRE
+  records the `src/core/constants.ts` hunk here for your unit. A cascade rule reading the toast swipe's state is this
+  session's when you send the contract (E33). This session runs the Chromium 141 readings J-PLACEMENT-141 asks for.
 
-**In flight (this session), 2026-09-25 04:15 UTC.** Implementation and its audit first, the user's instruction.
-- **Wave 1 from `2376710`,** each `opus` on Opus 5.5 in its own worktree: E-ID-BUTTON-CLASSES, E-ID-MOTION-FADE (its
-  easing only; the duration stays `150ms`, and no engine proof pins the easing), TOKEN-PROOFS (proofs and one guide
-  row), and LEDGER-ADDITIONS. STATES and TAILWIND-RECIPE follow as slots free.
-- **E-RECEIPTS:** ER-MECH is accepted after round 4 and is landing through the chain, which adds `test:service`,
-  `build`, and `test:distribution`.
-- **RELEASE-MODE:** RM-SCAFFOLD round 2 returned; its audit runs `analyst` on Astra and `reviewer` on Opus 5.5. Then
-  RM-VENEER, RM-RELEASE (the user's one-time code), and P1 follow.
+**In flight (this session), 2026-09-25 05:25 UTC.** Implementation and its audit first, the user's instruction.
+- **Accepted, waiting to land:** E-ID-MOTION-FADE (round 3 checker PASS).
+- **Final rounds:** TOKEN-PROOFS round 4 applied the Orchestrator's ruled § Customization text (`tkp-audit-2-verdict.md`,
+  the seam's third round); `analyst` on Astra checks that text. STATES round 3 (`builder`) applies one guide sentence and
+  the retry's reading order (`sts-audit-2-verdict.md`).
+- **Writing:** E-ID-BUTTON-CLASSES round 2 (`ebcl-audit-verdict.md`), `opus` on Opus 5.5.
+- **Audits:** LEDGER-ADDITIONS round 2 and TAILWIND-RECIPE, each with `analyst` on Astra and `reviewer` on Opus 5.5.
+- **RELEASE-MODE:** RM-VENEER is accepted (`rm-instruments/veneer/rm-veneer.log.txt`): the packed scaffold's `repair`
+  forwards the mode, the ordinary distribution run passes, and the release-mode run fails loudly on the missing
+  Linux receipt instead of skipping. RM-RELEASE waits on the user's one-time code.
 
-**Next here, in order:** the ER-MECH landing; the wave-1 audits and landings; E-ID-ANCHOR after E-ID-BUTTON-CLASSES;
-STATES and TAILWIND-RECIPE; LEDGER-RETUNE; the RM-SCAFFOLD audit and RM-VENEER; the motion units once you answer the
-motion ask; IMPORTANT-EMIT after the user rules; RM-RELEASE and P1 SCAFFOLD-PROPAGATE.
+**Next here, in order:** one landing for FADE, TOKEN-PROOFS, and STATES when their last reads pass; the LEDGER-ADDITIONS
+and TAILWIND-RECIPE rounds their audits call for; E-ID-BUTTON-CLASSES round 2's audit and landing, then E-ID-ANCHOR;
+LEDGER-RETUNE; RM-RELEASE with the user's one-time code, then P1 SCAFFOLD-PROPAGATE and the ER-LINUX receipt; the
+motion units as your proofs land; IMPORTANT-EMIT after the user rules.
 
 **Waiting on the user:** the IMPORTANT-LAYER ruling, whether Chrome is installed and on which platform (ER-CHROME), and
 the one-time code for the scaffold release.

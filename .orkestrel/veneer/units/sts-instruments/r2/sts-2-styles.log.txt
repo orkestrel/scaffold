@@ -1,0 +1,167 @@
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.87 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 2.53s
+
+ RUN  v4.1.11 /home/user/veneer-sts
+
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:46:2 > form range classes > strips the native slider chrome and sizes the host over the whole line 48ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:66:2 > form range classes > reads the host height from the space token, the density factor, and a direct override 50ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:91:2 > form range classes > clears the control outline under keyboard focus and leaves the ring to the thumb 402ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:128:2 > form range classes > paints the focused thumb hairline white in the light and the dark mode, as the release compiles it 47ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:161:2 > form range classes > outlines the focused host at the focus width under forced colors, where its thumb ring is not painted 135ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:183:2 > form range classes > paints the held thumb with the blue palette entry mixed three tenths over white 554ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:223:2 > form range classes > lets the pointer through the disabled host and paints its thumb with the secondary text color 494ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:261:2 > form range classes > keeps the WebKit part rules in the cascade and reports the host style for a part pseudo 83ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:301:2 > form range classes > runs the thumb fill transition with motion allowed and lands each fill at once under reduced motion 1197ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:388:2 > form range classes > retunes the thumb fill and the track fill with the color mode and with a direct override 54ms
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the primary label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in light mode 594ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the primary label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in dark mode 449ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the secondary label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in light mode 419ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the secondary label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in dark mode 449ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the tertiary label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in light mode 401ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the tertiary label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in dark mode 432ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the success label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in light mode 445ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the success label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in dark mode 423ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the info label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in light mode 415ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the info label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in dark mode 387ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the warning label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in light mode 457ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the warning label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in dark mode 439ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the danger label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in light mode 401ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the danger label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in dark mode 399ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the light label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in light mode 409ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the light label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in dark mode 428ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the dark label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in light mode 399ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:49:2 > button classes > keeps the dark label legible at the filled rest, hover, active, and disabled states and the outline hover, active, and checked states in dark mode 400ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the primary hover and active fills in light mode the way its white label and shade direction name 382ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the primary hover and active fills in dark mode the way its black label and tint direction name 415ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the secondary hover and active fills in light mode the way its white label and shade direction name 386ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the secondary hover and active fills in dark mode the way its white label and shade direction name 388ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the tertiary hover and active fills in light mode the way its white label and shade direction name 409ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the tertiary hover and active fills in dark mode the way its white label and shade direction name 402ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the success hover and active fills in light mode the way its white label and shade direction name 399ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the success hover and active fills in dark mode the way its white label and shade direction name 382ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the info hover and active fills in light mode the way its white label and shade direction name 401ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the info hover and active fills in dark mode the way its white label and shade direction name 414ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the warning hover and active fills in light mode the way its white label and shade direction name 408ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the warning hover and active fills in dark mode the way its white label and shade direction name 382ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the danger hover and active fills in light mode the way its white label and shade direction name 385ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the danger hover and active fills in dark mode the way its white label and shade direction name 382ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the light hover and active fills in light mode the way its black label and shade direction name 404ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the light hover and active fills in dark mode the way its black label and shade direction name 429ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the dark hover and active fills in light mode the way its white label and tint direction name 415ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:85:2 > button classes > moves the dark hover and active fills in dark mode the way its white label and tint direction name 417ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:137:2 > button classes > reads the primary label in the island the button sits in 84ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:151:2 > button classes > reads the black primary label on a root-level button after the root takes the dark attribute 77ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:171:2 > button classes > reads the primary label and hover and active fills a 'declared' consumer scheme gives it, and keeps the resting fill 387ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:171:2 > button classes > reads the primary label and hover and active fills a 'lowered' consumer scheme gives it, and keeps the resting fill 389ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:201:2 > button classes > steps the bare class veil in a dark island by at least the least hover step 142ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints primary in light mode across rest, focus, hover, active, pressed, and disabled states 269ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints primary in dark mode across rest, focus, hover, active, pressed, and disabled states 287ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints secondary in light mode across rest, focus, hover, active, pressed, and disabled states 309ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints secondary in dark mode across rest, focus, hover, active, pressed, and disabled states 268ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints tertiary in light mode across rest, focus, hover, active, pressed, and disabled states 313ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints tertiary in dark mode across rest, focus, hover, active, pressed, and disabled states 270ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints success in light mode across rest, focus, hover, active, pressed, and disabled states 301ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints success in dark mode across rest, focus, hover, active, pressed, and disabled states 296ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints info in light mode across rest, focus, hover, active, pressed, and disabled states 285ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints info in dark mode across rest, focus, hover, active, pressed, and disabled states 254ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints warning in light mode across rest, focus, hover, active, pressed, and disabled states 295ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints warning in dark mode across rest, focus, hover, active, pressed, and disabled states 269ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints danger in light mode across rest, focus, hover, active, pressed, and disabled states 298ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints danger in dark mode across rest, focus, hover, active, pressed, and disabled states 250ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints light in light mode across rest, focus, hover, active, pressed, and disabled states 316ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints light in dark mode across rest, focus, hover, active, pressed, and disabled states 250ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints dark in light mode across rest, focus, hover, active, pressed, and disabled states 253ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:217:2 > button classes > paints dark in dark mode across rest, focus, hover, active, pressed, and disabled states 296ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:271:2 > button classes > reads each outline button outside the neutral roles at or above the contrast bar against the page at rest in light mode 71ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:271:2 > button classes > reads each outline button outside the neutral roles at or above the contrast bar against the page at rest in dark mode 65ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline primary in light mode across rest, hover, active, focus, and disabled states 248ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline secondary in light mode across rest, hover, active, focus, and disabled states 250ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline tertiary in light mode across rest, hover, active, focus, and disabled states 250ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline success in light mode across rest, hover, active, focus, and disabled states 269ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline info in light mode across rest, hover, active, focus, and disabled states 268ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline warning in light mode across rest, hover, active, focus, and disabled states 265ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline danger in light mode across rest, hover, active, focus, and disabled states 265ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline light in light mode across rest, hover, active, focus, and disabled states 272ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline dark in light mode across rest, hover, active, focus, and disabled states 244ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline primary in dark mode across rest, hover, active, focus, and disabled states 250ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline secondary in dark mode across rest, hover, active, focus, and disabled states 252ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline tertiary in dark mode across rest, hover, active, focus, and disabled states 252ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline success in dark mode across rest, hover, active, focus, and disabled states 246ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline info in dark mode across rest, hover, active, focus, and disabled states 253ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline warning in dark mode across rest, hover, active, focus, and disabled states 282ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline danger in dark mode across rest, hover, active, focus, and disabled states 257ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline light in dark mode across rest, hover, active, focus, and disabled states 243ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:301:2 > button classes > paints outline dark in dark mode across rest, hover, active, focus, and disabled states 251ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:351:2 > button classes > resolves the sm size on the direct class and the group child 42ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:351:2 > button classes > resolves the lg size on the direct class and the group child 53ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:365:2 > button classes > keeps the link surface transparent and follows link colors 209ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:382:2 > button classes > dims a disabled link button and its anchor twin to the secondary text and lets the pointer through 40ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:407:2 > button classes > keeps an unchecked label at its resting fill while the pointer is held 213ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:423:2 > button classes > paints the checked label, carries keyboard focus to it, and refuses disabled label paint 253ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:450:2 > button classes > toggles the checkbox from the keyboard and keeps the label focus paint 168ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:472:2 > button classes > applies disabled paint to native, class, fieldset, and ARIA anchor hosts 86ms
+ ✓ |[object Object] (chromium)| tests/src/styles/components/button.test.ts:486:2 > button classes > consumes compatible overrides and collapses the feedback transition under reduced motion 102ms
+
+ Test Files  2 passed (2)
+      Tests  98 passed (98)
+   Start at  05:09:44
+   Duration  46.89s (transform 0ms, setup 2.31s, import 151ms, tests 30.09s, environment 0ms)
+
+exit=0

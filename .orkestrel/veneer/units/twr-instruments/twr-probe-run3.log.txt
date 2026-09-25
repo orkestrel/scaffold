@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  05:00:34
+   Duration  24.04s (transform 554ms, setup 1.75s, import 995ms, tests 21.13s, environment 0ms)
+

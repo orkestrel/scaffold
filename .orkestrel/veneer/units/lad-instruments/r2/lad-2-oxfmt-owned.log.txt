@@ -1,0 +1,6 @@
+load=4.22 4.60 6.66 10/356 21469
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 20621ms on 4 files using 4 threads.
+exit=0

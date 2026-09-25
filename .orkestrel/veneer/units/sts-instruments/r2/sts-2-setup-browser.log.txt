@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/veneer-sts
+
+
+ Test Files  1 passed (1)
+      Tests  89 passed (89)
+   Start at  05:10:32
+   Duration  27.32s (transform 0ms, setup 398ms, import 972ms, tests 18.33s, environment 0ms)
+
+exit=0

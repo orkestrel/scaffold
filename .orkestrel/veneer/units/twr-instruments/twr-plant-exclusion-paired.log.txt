@@ -1,0 +1,201 @@
+plant=exclusion-paired
+planted exclusion-paired
+--- tmp/units/twr-plant-backup-guide.md	2026-09-25 05:05:42.233780946 +0000
++++ guides/veneer.md	2026-09-25 05:09:59.998101878 +0000
+@@ -3395,7 +3395,6 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none border-1 border-2 border-3 border-4 border-5 text-wrap text-nowrap mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");
+ ```
+ 
+ The workspace compiles both recipes as written. The `tests/fixtures/tailwind/consumer.css` fixture
+--- tmp/units/twr-plant-backup-fixture.css	2026-09-25 05:05:42.241771749 +0000
++++ tests/fixtures/tailwind/consumer-preflight.css	2026-09-25 05:09:59.999213225 +0000
+@@ -3,4 +3,3 @@
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './markup.html';
+-@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 collapse container table end-0 end-50 end-100 start-0 start-50 start-100 shadow shadow-sm shadow-lg shadow-none border-1 border-2 border-3 border-4 border-5 text-wrap text-nowrap mx-0 mx-1 mx-2 mx-3 mx-4 mx-5 mx-auto my-0 my-1 my-2 my-3 my-4 my-5 my-auto me-0 me-1 me-2 me-3 me-4 me-5 me-auto ms-0 ms-1 ms-2 ms-3 ms-4 ms-5 ms-auto px-0 px-1 px-2 px-3 px-4 px-5 py-0 py-1 py-2 py-3 py-4 py-5 pe-0 pe-1 pe-2 pe-3 pe-4 pe-5 ps-0 ps-1 ps-2 ps-3 ps-4 ps-5");
+command=npm run test:service
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+···········x············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/tailwind/consumer.test.ts > the preflight recipe > leaves every shared name resolving, on the recipe alone, what the cascade resolves over Tailwind's reset
+AssertionError: expected [ …(139) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "collapse inline-size: 1116px became 1256px",
++   "collapse perspective-origin: 558px 10.5px became 628px 10.5px",
++   "collapse transform-origin: 558px 10.5px became 628px 10.5px",
++   "collapse visibility: visible became collapse",
++   "collapse width: 1116px became 1256px",
++   "col-1 grid-column-start: auto became 1",
++   "col-1 inline-size: 94.9844px became 106.656px",
++   "col-1 perspective-origin: 47.4844px 10.5px became 53.3281px 10.5px",
++   "col-1 transform-origin: 47.4922px 10.5px became 53.3281px 10.5px",
++   "col-1 width: 94.9844px became 106.656px",
++   "col-2 grid-column-start: auto became 2",
++   "col-2 inline-size: 190px became 213.328px",
++   "col-2 perspective-origin: 95px 10.5px became 106.656px 10.5px",
++   "col-2 transform-origin: 95px 10.5px became 106.664px 10.5px",
++   "col-2 width: 190px became 213.328px",
++   "col-3 grid-column-start: auto became 3",
++   "col-3 inline-size: 285px became 320px",
++   "col-3 perspective-origin: 142.5px 10.5px became 160px 10.5px",
++   "col-3 transform-origin: 142.5px 10.5px became 160px 10.5px",
++   "col-3 width: 285px became 320px",
++   "col-4 grid-column-start: auto became 4",
++   "col-4 inline-size: 379.984px became 426.656px",
++   "col-4 perspective-origin: 189.984px 10.5px became 213.328px 10.5px",
++   "col-4 transform-origin: 189.992px 10.5px became 213.328px 10.5px",
++   "col-4 width: 379.984px became 426.656px",
++   "col-5 grid-column-start: auto became 5",
++   "col-5 inline-size: 475px became 533.328px",
++   "col-5 perspective-origin: 237.5px 10.5px became 266.656px 10.5px",
++   "col-5 transform-origin: 237.5px 10.5px became 266.664px 10.5px",
++   "col-5 width: 475px became 533.328px",
++   "col-6 grid-column-start: auto became 6",
++   "col-6 inline-size: 570px became 640px",
++   "col-6 perspective-origin: 285px 10.5px became 320px 10.5px",
++   "col-6 transform-origin: 285px 10.5px became 320px 10.5px",
++   "col-6 width: 570px became 640px",
++   "col-7 grid-column-start: auto became 7",
++   "col-7 inline-size: 664.984px became 746.656px",
++   "col-7 perspective-origin: 332.484px 10.5px became 373.328px 10.5px",
++   "col-7 transform-origin: 332.492px 10.5px became 373.328px 10.5px",
++   "col-7 width: 664.984px became 746.656px",
++   "col-8 grid-column-start: auto became 8",
++   "col-8 inline-size: 760px became 853.328px",
++   "col-8 perspective-origin: 380px 10.5px became 426.656px 10.5px",
++   "col-8 transform-origin: 380px 10.5px became 426.664px 10.5px",
++   "col-8 width: 760px became 853.328px",
++   "col-9 grid-column-start: auto became 9",
++   "col-9 inline-size: 855px became 960px",
++   "col-9 perspective-origin: 427.5px 10.5px became 480px 10.5px",
++   "col-9 transform-origin: 427.5px 10.5px became 480px 10.5px",
++   "col-9 width: 855px became 960px",
++   "col-10 grid-column-start: auto became 10",
++   "col-10 inline-size: 949.984px became 1066.66px",
++   "col-10 perspective-origin: 474.984px 10.5px became 533.328px 10.5px",
++   "col-10 transform-origin: 474.992px 10.5px became 533.328px 10.5px",
++   "col-10 width: 949.984px became 1066.66px",
++   "col-11 grid-column-start: auto became 11",
++   "col-11 inline-size: 1045px became 1173.33px",
++   "col-11 perspective-origin: 522.5px 10.5px became 586.656px 10.5px",
++   "col-11 transform-origin: 522.5px 10.5px became 586.664px 10.5px",
++   "col-11 width: 1045px became 1173.33px",
++   "col-12 grid-column-start: auto became 12",
++   "col-12 inline-size: 1140px became 1280px",
++   "col-12 perspective-origin: 570px 10.5px became 640px 10.5px",
++   "col-12 transform-origin: 570px 10.5px became 640px 10.5px",
++   "col-12 width: 1140px became 1280px",
++   "container inline-size: 1140px became 1280px",
++   "container margin-inline-end: 70px became 0px",
++   "container margin-inline-start: 70px became 0px",
++   "container margin-left: 70px became 0px",
++   "container margin-right: 70px became 0px",
++   "container max-inline-size: 1140px became 1280px",
++   "container max-width: 1140px became 1280px",
++   "container perspective-origin: 570px 460.375px became 640px 460.375px",
++   "container transform-origin: 570px 460.375px became 640px 460.375px",
++   "container width: 1140px became 1280px",
++   "table inline-size: 1116px became 1256px",
++   "table perspective-origin: 558px 36.1875px became 628px 36.1875px",
++   "table transform-origin: 558px 36.1875px became 628px 36.1875px",
++   "table width: 1116px became 1256px",
++   "table inline-size: 1116px became 1256px",
++   "table perspective-origin: 558px 36.1875px became 628px 36.1875px",
++   "table transform-origin: 558px 36.1875px became 628px 36.1875px",
++   "table width: 1116px became 1256px",
++   "flex-grow-1 inline-size: 1043.64px became 1183.64px",
++   "flex-grow-1 perspective-origin: 521.812px 10.5px became 591.812px 10.5px",
++   "flex-grow-1 transform-origin: 521.82px 10.5px became 591.82px 10.5px",
++   "flex-grow-1 width: 1043.64px became 1183.64px",
++   "caption-bottom inline-size: 1116px became 1256px",
++   "caption-bottom perspective-origin: 558px 17.1875px became 628px 17.1875px",
++   "caption-bottom transform-origin: 558px 17.1875px became 628px 17.1875px",
++   "caption-bottom width: 1116px became 1256px",
++   "caption-top inline-size: 1116px became 1256px",
++   "caption-top perspective-origin: 558px 17.1875px became 628px 17.1875px",
++   "caption-top transform-origin: 558px 17.1875px became 628px 17.1875px",
++   "caption-top width: 1116px became 1256px",
++   "flex-row inline-size: 1116px became 1256px",
++   "flex-row perspective-origin: 558px 10.5px became 628px 10.5px",
++   "flex-row transform-origin: 558px 10.5px became 628px 10.5px",
++   "flex-row width: 1116px became 1256px",
++   "flex-row-reverse inline-size: 1116px became 1256px",
++   "flex-row-reverse perspective-origin: 558px 10.5px became 628px 10.5px",
++   "flex-row-reverse transform-origin: 558px 10.5px became 628px 10.5px",
++   "flex-row-reverse width: 1116px became 1256px",
++   "flex-nowrap inline-size: 1116px became 1256px",
++   "flex-nowrap perspective-origin: 558px 10.5px became 628px 10.5px",
++   "flex-nowrap transform-origin: 558px 10.5px became 628px 10.5px",
++   "flex-nowrap width: 1116px became 1256px",
++   "flex-wrap inline-size: 1116px became 1256px",
++   "flex-wrap perspective-origin: 558px 10.5px became 628px 10.5px",
++   "flex-wrap transform-origin: 558px 10.5px became 628px 10.5px",
++   "flex-wrap width: 1116px became 1256px",
++   "flex-wrap-reverse inline-size: 1116px became 1256px",
++   "flex-wrap-reverse perspective-origin: 558px 10.5px became 628px 10.5px",
++   "flex-wrap-reverse transform-origin: 558px 10.5px became 628px 10.5px",
++   "flex-wrap-reverse width: 1116px became 1256px",
++   "gap-0 inline-size: 1140px became 1280px",
++   "gap-0 perspective-origin: 570px 21px became 640px 21px",
++   "gap-0 transform-origin: 570px 21px became 640px 21px",
++   "gap-0 width: 1140px became 1280px",
++   "gap-1 inline-size: 1140px became 1280px",
++   "gap-1 perspective-origin: 570px 23px became 640px 23px",
++   "gap-1 transform-origin: 570px 23px became 640px 23px",
++   "gap-1 width: 1140px became 1280px",
++   "gap-2 inline-size: 1140px became 1280px",
++   "gap-2 perspective-origin: 570px 25px became 640px 25px",
++   "gap-2 transform-origin: 570px 25px became 640px 25px",
++   "gap-2 width: 1140px became 1280px",
++   "gap-3 inline-size: 1140px became 1280px",
++   "gap-3 perspective-origin: 570px 29px became 640px 29px",
++   "gap-3 transform-origin: 570px 29px became 640px 29px",
++   "gap-3 width: 1140px became 1280px",
++   "gap-4 inline-size: 1140px became 1280px",
++   "gap-4 perspective-origin: 570px 33px became 640px 33px",
++   "gap-4 transform-origin: 570px 33px became 640px 33px",
++   "gap-4 width: 1140px became 1280px",
++   "gap-5 inline-size: 1140px became 1280px",
++   "gap-5 perspective-origin: 570px 45px became 640px 45px",
++   "gap-5 transform-origin: 570px 45px became 640px 45px",
++   "gap-5 width: 1140px became 1280px",
++ ]
+
+ ❯ tests/service/tailwind/consumer.test.ts:548:5
+    546|     )
+    547|    }),
+    548|   ).toEqual([])
+       |     ^
+    549|  })
+    550| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 23 passed (24)
+   Start at  05:10:01
+   Duration  36.93s (transform 1.04s, setup 4.93s, import 2.21s, tests 29.27s, environment 0ms)
+
+exit=1
+restored guide byte-identical
+restored fixture byte-identical
+git diff --stat unchanged from before the plant
+loadavg=6.15 7.15 8.22 2/365 11741

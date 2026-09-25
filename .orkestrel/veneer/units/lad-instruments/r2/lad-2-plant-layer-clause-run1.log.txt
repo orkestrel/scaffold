@@ -1,0 +1,44 @@
+plant=layer-clause file=tests/setupServer.ts
+2669,2670c2669
+< 		!recording.has(block.selector) &&
+< 		(block.layer === undefined || LAYER_COMPONENTS[block.layer] === undefined)
+---
+> 		!recording.has(block.selector)
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+ ❯ |setup| tests/setupServer.test.ts (118 tests | 1 failed) 16006ms
+     × names each emitted rule no shipped component measures, and measures one its recorded selector row owns 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > names each emitted rule no shipped component measures, and measures one its recorded selector row owns
+AssertionError: expected [] to deeply equal [ 'elements | .audit-unrecorded | —' ]
+
+- Expected
++ Received
+
+- [
+-   "elements | .audit-unrecorded | —",
+- ]
++ []
+
+ ❯ tests/setupServer.test.ts:2567:5
+    2565|   expect(
+    2566|    collectLedger(layered, LEDGER_INVENTORY, ['btn', 'table'], [owner])…
+    2567|   ).toEqual(['elements | .audit-unrecorded | —'])
+       |     ^
+    2568|  })
+    2569|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 117 passed (118)
+   Start at  05:10:59
+   Duration  18.06s (transform 735ms, setup 167ms, import 1.63s, tests 16.01s, environment 0ms)
+
+exit=1
+cmp=identical
+src diffstat: 

@@ -1,0 +1,204 @@
+plant=name-dedupe file=tests/setupServer.ts
+2788c2788,2791
+< 				name: `${block.selector} { ${property} }`,
+---
+> 				name:
+> 					property.startsWith("--") && !vocabulary.properties.includes(property)
+> 						? property
+> 						: `${block.selector} { ${property} }`,
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+ ❯ |setup| tests/setupServer.test.ts (118 tests | 7 failed) 13720ms
+     × reports a planted selector, declaration, and custom property the inventory lacks, and no recorded animation 6ms
+     × names each declaration an added selector writes, and a custom property its vocabulary lacks as a property 2ms
+     × records a registry name a recorded selector declares, and names the planted name beside it 340ms
+     × records a registry name an added selector declares, and names the planted name beside it 338ms
+     × names a planted unrecorded difference, a planted stale row, and a planted unrecorded name 4ms
+     × names one custom property declared at two selectors once at each selector 2ms
+     × reports an addition whose recorded value differs from the emitted one, both unrecorded and stale 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reports a planted selector, declaration, and custom property the inventory lacks, and no recorded animation
+AssertionError: expected [ …(7) ] to deeply equal [ …(7) ]
+
+- Expected
++ Received
+
+  [
+    "reboot | body { margin } | — | declaration | 0",
+-   "btn | .btn { --vn-btn-lift } | — | property | 1px",
++   "btn | --vn-btn-lift | — | property | 1px",
+    "btn | .btn-tertiary | — | selector | —",
+    "btn | .btn-tertiary { color } | — | declaration | green",
+-   "btn | .btn-tertiary { --vn-btn-tertiary-face } | — | property | blue",
++   "btn | --vn-btn-tertiary-face | — | property | blue",
+    "btn | .btn { color } | @media print | declaration | blue",
+    "table | .caption-top { color } | — | declaration | teal",
+  ]
+
+ ❯ tests/setupServer.test.ts:2191:5
+    2189|     [],
+    2190|    ).map(describeAddition),
+    2191|   ).toEqual([
+       |     ^
+    2192|    'reboot | body { margin } | — | declaration | 0',
+    2193|    'btn | .btn { --vn-btn-lift } | — | property | 1px',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > names each declaration an added selector writes, and a custom property its vocabulary lacks as a property
+AssertionError: expected [ …(4) ] to deeply equal [ …(4) ]
+
+- Expected
++ Received
+
+  [
+    "btn | .btn-tertiary | — | selector | —",
+-   "btn | .btn-tertiary { --vn-btn-tertiary-face } | — | property | blue",
++   "btn | --vn-btn-tertiary-face | — | property | blue",
+    "btn | .btn-tertiary { --bs-btn-close-filter } | — | declaration | none",
+    "btn | .btn-tertiary { color } | — | declaration | green",
+  ]
+
+ ❯ tests/setupServer.test.ts:2348:5
+    2346|     LEDGER_SHIPPED,
+    2347|    ).additions.map(describeAddition),
+    2348|   ).toEqual([
+       |     ^
+    2349|    'btn | .btn-tertiary | — | selector | —',
+    2350|    'btn | .btn-tertiary { --vn-btn-tertiary-face } | — | property | bl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > records a registry name a recorded selector declares, and names the planted name beside it
+AssertionError: expected [ Array(1) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+-   "theme | :root { --vn-planted } | — | property | 0",
++   "theme | --vn-planted | — | property | 0",
+  ]
+
+ ❯ tests/setupServer.test.ts:2363:88
+    2361|   const planted = `@layer theme { :root { ${TOKEN_NAMES.palette.blue}:…
+    2362|   const inventory = readOracleInventory()
+    2363|   expect(collectLedger(planted, inventory, ['theme']).additions.map(de…
+       |                                                                                        ^
+    2364|    'theme | :root { --vn-planted } | — | property | 0',
+    2365|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > records a registry name an added selector declares, and names the planted name beside it
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "btn | .btn-planted | — | selector | —",
+-   "btn | .btn-planted { --vn-planted } | — | property | 0",
++   "btn | --vn-planted | — | property | 0",
+  ]
+
+ ❯ tests/setupServer.test.ts:2383:86
+    2381|   const planted = `@layer components { .btn-planted { ${TOKEN_NAMES.pa…
+    2382|   const inventory = readOracleInventory()
+    2383|   expect(collectLedger(planted, inventory, ['btn']).additions.map(desc…
+       |                                                                                      ^
+    2384|    'btn | .btn-planted | — | selector | —',
+    2385|    'btn | .btn-planted { --vn-planted } | — | property | 0',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > names a planted unrecorded difference, a planted stale row, and a planted unrecorded name
+AssertionError: expected [ …(7) ] to deeply equal [ …(7) ]
+
+- Expected
++ Received
+
+  [
+    "reboot | body { margin } | — | declaration | 0",
+-   "btn | .btn { --vn-btn-lift } | — | property | 1px",
++   "btn | --vn-btn-lift | — | property | 1px",
+    "btn | .btn-tertiary | — | selector | —",
+    "btn | .btn-tertiary { color } | — | declaration | green",
+-   "btn | .btn-tertiary { --vn-btn-tertiary-face } | — | property | blue",
++   "btn | --vn-btn-tertiary-face | — | property | blue",
+    "btn | .btn { color } | @media print | declaration | blue",
+    "table | .caption-top { color } | — | declaration | teal",
+  ]
+
+ ❯ tests/setupServer.test.ts:2426:29
+    2424|    const named = scanLedgerDrift(measured.additions, readAdditions(pat…
+    2425|    expect(named.stale).toEqual(['btn | .btn-quaternary | — | selector …
+    2426|    expect(named.unrecorded).toEqual([
+       |                             ^
+    2427|     'reboot | body { margin } | — | declaration | 0',
+    2428|     'btn | .btn { --vn-btn-lift } | — | property | 1px',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > names one custom property declared at two selectors once at each selector
+AssertionError: expected [ …(2) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+  [
+-   "btn | .btn { --vn-shared } | — | property | 1px",
++   "btn | --vn-shared | — | property | 1px",
+    "btn | .btn-tertiary | — | selector | —",
+-   "btn | .btn-tertiary { --vn-shared } | — | property | 1px",
+  ]
+
+ ❯ tests/setupServer.test.ts:2447:5
+    2445|     LEDGER_SHIPPED,
+    2446|    ).additions.map(describeAddition),
+    2447|   ).toEqual([
+       |     ^
+    2448|    'btn | .btn { --vn-shared } | — | property | 1px',
+    2449|    'btn | .btn-tertiary | — | selector | —',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reports an addition whose recorded value differs from the emitted one, both unrecorded and stale
+AssertionError: expected { unrecorded: [ …(2) ], …(1) } to deeply equal { unrecorded: [ …(2) ], …(1) }
+
+- Expected
++ Received
+
+@@ -3,8 +3,8 @@
+      "btn | .btn { letter-spacing } | — | declaration | 2px",
+      "btn | .btn-tertiary { --vn-btn-tertiary-face } | — | property | —",
+    ],
+    "unrecorded": [
+      "btn | .btn { letter-spacing } | — | declaration | 1px",
+-     "btn | .btn-tertiary { --vn-btn-tertiary-face } | — | property | (empty)",
++     "btn | --vn-btn-tertiary-face | — | property | (empty)",
+    ],
+  }
+
+ ❯ tests/setupServer.test.ts:2496:5
+    2494|     describeAddition,
+    2495|    ),
+    2496|   ).toEqual({
+       |     ^
+    2497|    unrecorded: [
+    2498|     'btn | .btn { letter-spacing } | — | declaration | 1px',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 111 passed (118)
+   Start at  05:11:18
+   Duration  15.58s (transform 739ms, setup 188ms, import 1.50s, tests 13.72s, environment 0ms)
+
+exit=1
+cmp=identical
+src diffstat: 

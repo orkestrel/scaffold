@@ -1,0 +1,58 @@
+plant=not-read file=tests/setupServer.ts
+1885c1885
+< 					/:(?:is|where)$/iu.test(selector.slice(0, step.index)),
+---
+> 					/:(?:is|where|not)$/iu.test(selector.slice(0, step.index)),
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+ ❯ |setup| tests/setupServer.test.ts (118 tests | 1 failed) 15106ms
+     × reads the classes an :is() or a :where() argument writes as the selector's own, and none a :not() or a :has() argument writes 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reads the classes an :is() or a :where() argument writes as the selector's own, and none a :not() or a :has() argument writes
+AssertionError: expected [ 'nav-link', 'disabled' ] to deeply equal [ 'nav-link' ]
+
+- Expected
++ Received
+
+  [
+    "nav-link",
++   "disabled",
+  ]
+
+ ❯ tests/setupServer.test.ts:2915:75
+    2913|
+    2914|  it("reads the classes an :is() or a :where() argument writes as the s…
+    2915|   expect(collectSubjectClasses(':where(button.nav-link):not(.disabled)…
+       |                                                                           ^
+    2916|   expect(collectSubjectClasses(':is(.alpha, .beta) > .gamma')).toEqual…
+    2917|   expect(collectSubjectClasses(':WHERE(.upper)')).toEqual(['upper'])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 117 passed (118)
+   Start at  05:13:41
+   Duration  16.95s (transform 704ms, setup 254ms, import 1.44s, tests 15.11s, environment 0ms)
+
+exit=1
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+·····························
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  05:14:00
+   Duration  32.58s (transform 969ms, setup 278ms, import 21.51s, tests 10.63s, environment 0ms)
+
+exit=0
+cmp=identical
+src diffstat: 

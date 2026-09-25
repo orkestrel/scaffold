@@ -1,0 +1,94 @@
+diff --git a/src/styles/components/_form-range.scss b/src/styles/components/_form-range.scss
+index cce8193..19e8747 100644
+--- a/src/styles/components/_form-range.scss
++++ b/src/styles/components/_form-range.scss
+@@ -58,13 +58,13 @@ $engines: (
+ 			background-color: var(--vn-palette-blue);
+ 			border: 0;
+ 			border-radius: var(--vn-radius-xlarge);
+-			@include transition(
+-				(
+-					background-color var(--vn-motion-feedback) var(--vn-ease-standard),
+-					border-color var(--vn-motion-feedback) var(--vn-ease-standard),
+-					box-shadow var(--vn-motion-feedback) var(--vn-ease-standard)
+-				)
+-			);
++			transition:
++				background-color var(--vn-motion-feedback) var(--vn-ease-standard),
++				border-color var(--vn-motion-feedback) var(--vn-ease-standard),
++				box-shadow var(--vn-motion-feedback) var(--vn-ease-standard);
++			@include reduced-motion {
++				transition: box-shadow 7.5s ease;
++			}
+ 		}
+ 
+ 		// The held thumb lightens to three tenths of the blue palette entry over the white one,
+plant twin-other in src/styles/components/_form-range.scss
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.89 kB │ gzip: 34.30 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 2.48s
+exit=0
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/components/form-range.test.ts -t runs the thumb fill transition with motion allowed and lands each fill at once under reduced motion
+
+ RUN  v4.1.11 /home/user/veneer-sts
+
+ ❯ |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts (10 tests | 1 failed | 9 skipped) 1599ms
+     × runs the thumb fill transition with motion allowed and lands each fill at once under reduced motion 1597ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/components/form-range.test.ts:301:2 > form range classes > runs the thumb fill transition with motion allowed and lands each fill at once under reduced motion
+AssertionError: expected 'box-shadow' to be 'none' // Object.is equality
+
+Expected: [32m"none"[39m
+Received: [31m"box-shadow"[39m
+
+ ❯ tests/src/styles/components/form-range.test.ts:384:63
+    382|   // would pass them. The release writes `transition: none` under the …
+    383|   // expanded longhands are what refuse any surviving transition.
+    384|   expect(declarations.getPropertyValue('transition-property')).toBe('n…
+       |                                                               ^
+    385|   expect(declarations.getPropertyValue('transition-duration')).toBe('0…
+    386|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 skipped (10)
+   Start at  05:07:58
+   Duration  13.41s (transform 0ms, setup 1.64s, import 85ms, tests 1.60s, environment 0ms)
+
+exit=1
+$ cmp /home/user/veneer-sts/tmp/units/sts-2-plant-twin-other.backup.scss src/styles/components/_form-range.scss
+
+exit=0
+$ git diff --stat -- src
+
+exit=0
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.87 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 2.48s
+exit=0

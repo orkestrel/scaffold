@@ -1,0 +1,448 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3afa3ac..08cd7b9 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -4226,17 +4226,36 @@ The range proof reads the resolved treatment in the browser, and each limit that
+ proof can claim is recorded there beside the reading it bounds; see [the range
+ classes](../tests/src/styles/components/form-range.test.ts). Chromium answers a computed-style
+ request for a slider part with the host's own resolved style rather than the part's, so the thumb's
+-geometry, paint, and transition have no resolved reading. Chromium discards a selector naming a
++geometry has no resolved reading, and its fill is read off the paint instead: a shot of the control,
++whose centre is where the thumb of a mid-track value sits. Chromium discards a selector naming a
+ Gecko pseudo-element at parse time, so no reading taken in that browser reaches the Gecko half at
+ all. The hairline's paint is resolved on a gauge carrying the thumb's own declaration in each color
+ mode, and it reads white in the light and the dark mode. A pointer hold through the installed
+ `driveHold` function lands on the control's centre, where the thumb of a mid-track value sits, so it
+-enters the thumb's `:active` state without moving the value. The capture journey holds the `Range`
+-specimen that way on its lifted specimen, reads the pixel at the control's centre with the control
+-focused and then held, so the readings differ by the press alone, and writes the `range-active`
+-element frame while the hold lasts. A disabled range cannot hold focus in Chromium: the browser
+-refuses focus to a disabled control and moves focus off a focused control that becomes disabled, so
+-the rule for a range both focused and disabled has no reachable state and no frame. The styles setup
++enters the thumb's `:active` state without moving the value.
++
++The proof reads each thumb state from those shots:
++
++- **Held.** With the motion factor at zero, the held thumb paints the resolved mix of the blue
++  palette entry over the white one, which is the official `#b6d4fe`, and the resting thumb paints
++  the blue entry.
++- **Disabled.** The disabled host resolves `pointer-events: none`, and the hit test at its centre
++  passes through it to the element underneath. Its thumb paints what a gauge range paints when a
++  consumer sheet fills that gauge's thumb with `--bs-secondary-color`.
++- **Transition.** Chromium lists no animation for the thumb in `document.getAnimations()`, so the
++  transition is read off frames shot during a press, with the motion factor stretching it to
++  `7.5s`. With motion allowed the fill moves between shots and has not reached the held fill. Under
++  a staged reduced-motion preference the running transition is cancelled, and each later press and
++  release lands its fill at once. The frames read the fill alone, so the gated rule is read as
++  well: it declares `transition: none` and no other property, and its `transition-property: none`
++  refuses a transition surviving on another thumb property.
++
++The capture journey holds the `Range` specimen through the `driveHold` function on its lifted
++specimen, reads the pixel at the control's centre with the control focused and then held, so the
++readings differ by the press alone, and writes the `range-active` element frame while the hold
++lasts. A disabled range cannot hold focus in Chromium: the browser refuses focus to a disabled
++control and moves focus off a focused control that becomes disabled, so the rule for a range both
++focused and disabled has no reachable state and no frame. The styles setup
+ proof reads the declarations both halves carry out of the compiled cascade; see [the styles setup
+ proof](../tests/setupStyles.test.ts). The focus frame the capture journey writes, shot on a padded
+ wrapper around the lifted specimen, shows the rendered thumb, its ring, and the rendered track. The
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 16d3c4b..5936de2 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -19,9 +19,11 @@ import {
+ 	readName,
+ 	readRules,
+ 	readStates,
++	releasePane,
+ 	releasePointer,
+ 	render,
+ 	resolveAccessible,
++	stagePane,
+ 	traverseAccessible,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+@@ -60,6 +62,7 @@ import {
+ 	PROBE_CASCADE,
+ 	pressOracleKeys,
+ 	readCascadeSheet,
++	readCentre,
+ 	readElement,
+ 	readImageRegion,
+ 	recordCalls,
+@@ -547,6 +550,36 @@ describe('browser setup', () => {
+ 			height: 20 * ratio,
+ 		})
+ 	})
++	it('reads a square at an off-centre subject centre, in the coordinates of the frame it is photographed inside', async () => {
++		const host = scene.mount(
++			'<div style="position:fixed;left:40px;top:30px;width:200px;height:100px;background:white"><span style="position:absolute;left:130px;top:60px;width:20px;height:20px;background:red"></span></div>',
++		)
++		const frame = requireValue(host.querySelector('div'), 'No frame specimen')
++		const subject = requireValue(frame.querySelector('span'), 'No subject specimen')
++		const ratio = window.devicePixelRatio
++		onTestFinished(releasePane)
++		await stagePane(window.innerWidth, window.innerHeight)
++		const centre = readCentre(subject, 4, frame)
++		// The frame's own centre is the control: a square read there instead, or one read around the
++		// subject's origin rather than its centre, would sit off the subject.
++		const control = readCentre(frame, 4, frame)
++		expect(centre).toStrictEqual({ x: 140 * ratio - 2, y: 70 * ratio - 2, width: 4, height: 4 })
++		expect(control).toStrictEqual({ x: 100 * ratio - 2, y: 50 * ratio - 2, width: 4, height: 4 })
++		// A page frame puts the square at the subject's centre in the scrolled document.
++		expect(readCentre(subject, 4)).toStrictEqual({
++			x: (180 + window.scrollX) * ratio - 2,
++			y: (100 + window.scrollY) * ratio - 2,
++			width: 4,
++			height: 4,
++		})
++		// The shot is what the square is read against: the subject paints red alone under it, and the
++		// frame's centre paints none of that red.
++		const shot = await page.screenshot({ element: frame, save: false })
++		expect([
++			await measureVariation(shot, centre, 'rgb(255, 0, 0)'),
++			await measureVariation(shot, control, 'rgb(255, 0, 0)'),
++		]).toEqual([0, 1])
++	})
+ 	it('resolves a capture subject through a specimen label, a region name, or a rendered host', async () => {
+ 		const mounted = await mountShowcase()
+ 		try {
+@@ -918,6 +951,7 @@ describe('browser setup', () => {
+ 				'pressOracleKeys',
+ 				'readButton',
+ 				'readCascadeSheet',
++				'readCentre',
+ 				'readElement',
+ 				'readImageRegion',
+ 				'readMenuContainment',
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index bd8f1c7..1b85253 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -255,6 +255,36 @@ export function readRegion(subject: Element, frame?: Element): FrameRegion {
+ 	}
+ }
+ 
++/**
++ * Reads a square region at one element's centre in the coordinates of the frame it is photographed
++ * inside.
++ *
++ * @param subject - The element whose centre the region sits on.
++ * @param size - The square's side, in the frame's own device pixels.
++ * @param frame - The element the frame covers. Omit it for a page frame, whose origin is the
++ *   document's own.
++ * @returns The square, centred on the subject's box in the frame's device pixels.
++ *
++ * @remarks
++ * The box is the {@link readRegion} function's, so the same staging rule binds: read the region
++ * while the pane is staged at the geometry the shot uses. A shot taken with the pane unstaged is
++ * painted at the runner's fitting scale, so its pixels do not sit where the element's box says.
++ *
++ * @example
++ * ```ts
++ * const centre = readCentre(control, 4, control)
++ * ```
++ */
++export function readCentre(subject: Element, size: number, frame?: Element): FrameRegion {
++	const box = readRegion(subject, frame)
++	return {
++		x: box.x + box.width / 2 - size / 2,
++		y: box.y + box.height / 2 - size / 2,
++		width: size,
++		height: size,
++	}
++}
++
+ /** Resizes the tester viewport to one size in CSS pixels, the way the installed page verb does. */
+ export type ViewportHandler = (width: number, height: number) => Promise<void>
+ 
+diff --git a/tests/src/styles/components/button.test.ts b/tests/src/styles/components/button.test.ts
+index ff9a57c..2a2fd5a 100644
+--- a/tests/src/styles/components/button.test.ts
++++ b/tests/src/styles/components/button.test.ts
+@@ -1,3 +1,4 @@
++import { TOKEN_NAMES } from '@src/core'
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	CANVAS_COLOR,
+@@ -10,6 +11,7 @@ import {
+ 	pressKeys,
+ 	readBackdrop,
+ 	readContrast,
++	readHit,
+ 	readPixels,
+ 	readStyle,
+ 	readToken,
+@@ -377,6 +379,31 @@ describe('button classes', () => {
+ 		expect(matchesColor(readStyle(button, 'background-color'), 'transparent')).toBe(true)
+ 	})
+ 
++	it('dims a disabled link button and its anchor twin to the secondary text and lets the pointer through', () => {
++		const host = scene.mount(
++			`<div><button class="btn btn-link">Enabled link</button><button class="btn btn-link" disabled>Disabled link</button><a class="btn btn-link disabled">Disabled anchor</a><span style="color: var(${TOKEN_NAMES.text.secondary})"></span></div>`,
++		)
++		const wrapper = requireValue(host.firstElementChild, 'No link wrapper')
++		const [enabled, ...disabled] = [...wrapper.querySelectorAll('.btn')]
++		const secondary = readStyle(requireValue(wrapper.querySelector('span'), 'No gauge'), 'color')
++		// The token spells the opacity `.65`, and the computed style writes the same number as `0.65`.
++		const dimmed = String(Number(readToken(wrapper, TOKEN_NAMES.button.opacity)))
++		// The hit test at each control's centre lands on the enabled link, and passes through each
++		// disabled one to the wrapper underneath it.
++		expect(
++			[requireValue(enabled, 'No enabled link'), ...disabled].map((control) => ({
++				secondary: matchesColor(readStyle(control, 'color'), secondary),
++				opacity: readStyle(control, 'opacity'),
++				pointer: readStyle(control, 'pointer-events'),
++				hit: readHit(control),
++			})),
++		).toEqual([
++			{ secondary: false, opacity: '1', pointer: 'auto', hit: enabled },
++			{ secondary: true, opacity: dimmed, pointer: 'none', hit: wrapper },
++			{ secondary: true, opacity: dimmed, pointer: 'none', hit: wrapper },
++		])
++	})
++
+ 	it('keeps an unchecked label at its resting fill while the pointer is held', async () => {
+ 		const container = scene.mount(
+ 			'<input class="btn-check" type="checkbox" id="unchecked-button"><label class="btn btn-primary" for="unchecked-button" role="button" tabindex="0" style="--bs-btn-active-shadow: 0 0 0 5px rebeccapurple">Unchecked specimen</label>',
+diff --git a/tests/src/styles/components/form-range.test.ts b/tests/src/styles/components/form-range.test.ts
+index 6c26d67..67242db 100644
+--- a/tests/src/styles/components/form-range.test.ts
++++ b/tests/src/styles/components/form-range.test.ts
+@@ -1,19 +1,32 @@
+ import { TOKEN_NAMES } from '@src/core'
+-import { requireValue } from '@orkestrel/test'
++import { requireValue, retryUntil } from '@orkestrel/test'
+ import {
+ 	findRule,
++	holdAccessible,
+ 	matchesColor,
++	readHit,
+ 	readPixels,
+ 	readRing,
+ 	readRules,
+ 	readStyle,
+ 	readToken,
+ 	releaseMedia,
++	releasePane,
++	releasePointer,
+ 	stageMedia,
++	stagePane,
+ 	traverseAccessible,
+ } from '@orkestrel/test/browser'
++import { page } from 'vitest/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
++import {
++	collectLayer,
++	collectMediaConditions,
++	measureDifference,
++	measureVariation,
++	readCentre,
++	scene,
++} from '../../../setupBrowser.js'
+ import {
+ 	FORM_RANGE_CASES,
+ 	FORM_RANGE_HAIRLINE_CASES,
+@@ -22,7 +35,10 @@ import {
+ } from '../../../setupStyles.js'
+ 
+ afterEach(async () => {
++	await releasePointer()
++	await releasePane()
+ 	await releaseMedia()
++	document.documentElement.style.removeProperty(TOKEN_NAMES.factor.motion)
+ 	scene.clear()
+ })
+ 
+@@ -162,6 +178,86 @@ describe('form range classes', () => {
+ 		expect(readStyle(element, 'outline-style')).toBe('none')
+ 	})
+ 
++	// Chromium withholds the thumb's computed style, so each thumb state is read off the paint: a shot
++	// of the control, whose centre is where the thumb of a mid-track value sits.
++	it('paints the held thumb with the blue palette entry mixed three tenths over white', async () => {
++		const host = scene.mount(
++			`<div style="width: 200px">${FORM_RANGE_MARKUP}<i data-gauge="rest" style="background-color: var(${TOKEN_NAMES.palette.blue})"></i><i data-gauge="held" style="background-color: color-mix(in srgb, var(${TOKEN_NAMES.palette.blue}) 30%, var(${TOKEN_NAMES.palette.white.base}))"></i></div>`,
++		)
++		// The first input the markup carries is the enabled range control.
++		const element = requireValue(host.querySelector('input'), 'No range control')
++		const rest = readStyle(
++			requireValue(host.querySelector('[data-gauge="rest"]'), 'No rest gauge'),
++			'background-color',
++		)
++		const held = readStyle(
++			requireValue(host.querySelector('[data-gauge="held"]'), 'No held gauge'),
++			'background-color',
++		)
++		// A zero motion factor collapses the thumb transition through the published retune, so each shot
++		// reads a state rather than a frame of the change between two, and this case stays apart from
++		// the reduced-motion twin the motion case reads.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.motion, '0')
++		await stagePane(window.innerWidth, window.innerHeight)
++		const centre = readCentre(element, 4, element)
++		const resting = await page.screenshot({ element, save: false })
++		// The hold lands on the control's centre, where the thumb sits, so it enters the thumb's
++		// `:active` state without moving the value; the pointer stays held while the shot is taken.
++		await holdAccessible('Range value')
++		expect([element.matches(':active'), element.value]).toEqual([true, '50'])
++		const pressed = await page.screenshot({ element, save: false })
++		await releasePointer()
++		await releasePane()
++		// Each reading is the fraction of the centre's pixels that differ from one color: zero where the
++		// thumb paints that color alone. The held fill is read against the resolved mix, against
++		// `#b6d4fe`, which is the literal the release bakes for `$form-range-thumb-active-bg`, and against
++		// the resting fill, which is the reading that separates a press from no change at all.
++		expect([
++			await measureVariation(resting, centre, rest),
++			await measureVariation(pressed, centre, held),
++			await measureVariation(pressed, centre, 'rgb(182, 212, 254)'),
++			await measureVariation(pressed, centre, rest),
++		]).toEqual([0, 0, 0, 1])
++	})
++
++	it('lets the pointer through the disabled host and paints its thumb with the secondary text color', async () => {
++		// The gauge is a range whose thumb a consumer sheet paints with the token, so it shows the
++		// token's value composited over the same track by the same painter: the token is translucent,
++		// and a thumb and a plain box round that composite a channel step apart. The sheet arrives
++		// before the gauge mounts, so the gauge's thumb starts at that fill rather than moving to it.
++		scene.load(
++			'.form-range[data-gauge]::-webkit-slider-thumb { background-color: var(--bs-secondary-color) }',
++		)
++		const host = scene.mount(
++			`<div style="width: 200px">${FORM_RANGE_MARKUP}<input class="form-range" data-gauge type="range" aria-label="Gauge range value" min="0" max="100" value="50"></div>`,
++		)
++		const wrapper = requireValue(host.firstElementChild, 'No range wrapper')
++		const element = requireValue(host.querySelector('.form-range:enabled'), 'No range control')
++		const disabled = requireValue(host.querySelector('.form-range:disabled'), 'No disabled control')
++		const gauge = requireValue(host.querySelector('[data-gauge]'), 'No gauge range')
++		expect([readStyle(element, 'pointer-events'), readStyle(disabled, 'pointer-events')]).toEqual([
++			'auto',
++			'none',
++		])
++		// The hit test at each host's centre lands on the enabled control, and passes through the
++		// disabled one to the wrapper underneath it.
++		expect(readHit(element)).toBe(element)
++		expect(readHit(disabled)).toBe(wrapper)
++		await stagePane(window.innerWidth, window.innerHeight)
++		const centre = readCentre(disabled, 4, disabled)
++		const enabled = await page.screenshot({ element, save: false })
++		const dimmed = await page.screenshot({ element: disabled, save: false })
++		const painted = await page.screenshot({ element: gauge, save: false })
++		await releasePane()
++		// The disabled centre paints one color, and it is the gauge's. The enabled thumb is the control:
++		// its blue differs from the gauge at every centre pixel.
++		expect([
++			await measureVariation(dimmed, centre),
++			await measureDifference(dimmed, painted, centre),
++			await measureDifference(enabled, painted, centre),
++		]).toEqual([0, 0, 1])
++	})
++
+ 	it('keeps the WebKit part rules in the cascade and reports the host style for a part pseudo', () => {
+ 		const host = scene.mount(`<div>${FORM_RANGE_MARKUP}</div>`)
+ 		const element = requireValue(host.querySelector('.form-range'), 'No range control')
+@@ -202,9 +298,69 @@ describe('form range classes', () => {
+ 		expect(readPixels(element, 'width', '::-webkit-slider-thumb')).toBe(host.clientWidth)
+ 	})
+ 
+-	it('gates the thumb transition on the reduced-motion preference and reads it from the motion tokens', async () => {
+-		const host = scene.mount(`<div>${FORM_RANGE_MARKUP}</div>`)
++	it('runs the thumb fill transition with motion allowed and lands each fill at once under reduced motion', async () => {
++		const host = scene.mount(`<div style="width: 200px">${FORM_RANGE_MARKUP}</div>`)
+ 		const element = requireValue(host.querySelector('.form-range'), 'No range control')
++		// The end fills are shot first with the motion factor at zero, so each lands at once without the
++		// reduced-motion twin; the press case reads what those fills are, and this case reads only how
++		// the thumb travels between them.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.motion, '0')
++		await stagePane(window.innerWidth, window.innerHeight)
++		const centre = readCentre(element, 4, element)
++		const rest = await page.screenshot({ element, save: false })
++		await holdAccessible('Range value')
++		const held = await page.screenshot({ element, save: false })
++		await releasePointer()
++		// The published motion factor stretches the transition to 7.5s, and a shot of the control
++		// takes about 100ms on an idle host, so the change stays on screen across many shots. The
++		// retry keeps the first frame that has left the shot taken as the press began and has not
++		// reached the held fill, and the assertions read that same frame: a transition that ran to
++		// its end is never the frame read. The retry's budget of 3s bounds only the refusal, which
++		// names a transition that ended before any shot caught it.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.motion, '50')
++		await holdAccessible('Range value')
++		const started = await page.screenshot({ element, save: false })
++		const moving = await retryUntil(
++			'a held thumb frame between the started and the held fill',
++			async () => {
++				const frame = await page.screenshot({ element, save: false })
++				return {
++					started: await measureDifference(frame, started, centre),
++					held: await measureDifference(frame, held, centre),
++					frame,
++				}
++			},
++			(reading) => reading.started === 1 && reading.held === 1,
++			{ budget: 3000 },
++		)
++		// Chromium lists no animation for the thumb part while its fill changes, which is why the
++		// transition is read off frames. This assertion is what reports an engine that starts listing
++		// the thumb's transition, so the reading can move to the document's animations.
++		expect(document.getAnimations()).toEqual([])
++		await releasePointer()
++		// The staged preference cancels the transition the release started, and the next press and
++		// release each land at their end at once, at the same stretched factor.
++		await stageMedia({ motion: false })
++		const settled = await page.screenshot({ element, save: false })
++		await holdAccessible('Range value')
++		const collapsed = await page.screenshot({ element, save: false })
++		await releasePointer()
++		const returned = await page.screenshot({ element, save: false })
++		await releasePane()
++		// Each reading is the fraction of the centre's pixels that differ between two shots. The moving
++		// frame is the one the retry accepted: it has left the resting fill, has not reached the held
++		// one, and differs from the shot taken as the press began.
++		expect({
++			ends: await measureDifference(held, rest, centre),
++			started: await measureDifference(started, held, centre),
++			moving: [moving.started, await measureDifference(moving.frame, rest, centre), moving.held],
++			settled: await measureDifference(settled, rest, centre),
++			collapsed: await measureDifference(collapsed, held, centre),
++			returned: await measureDifference(returned, rest, centre),
++		}).toEqual({ ends: 1, started: 1, moving: [1, 1, 1], settled: 0, collapsed: 0, returned: 0 })
++		// The rendered reading covers the thumb's fill alone. The gated rule is read for what the frames
++		// cannot show: that the preference is the thumb's only media gate, and that the twin declares
++		// nothing beyond the transition, so no other thumb property moves with the preference.
+ 		const rules = collectLayer('components')
+ 		expect(collectMediaConditions(rules, '.form-range::-webkit-slider-thumb')).toEqual([
+ 			REDUCED_MOTION,
+@@ -221,28 +377,12 @@ describe('form range classes', () => {
+ 		)
+ 		const declarations = requireValue(gated[0], 'No gated thumb rule')
+ 		expect(gated).toHaveLength(1)
+-		// The shorthand arrives expanded, so this names the axis the collapse acts on rather than
+-		// the text the source wrote: a gated rule declaring anything beyond the transition longhands
+-		// would report here.
+ 		expect([...declarations].filter((name) => !name.startsWith('transition-'))).toEqual([])
++		// The frames read the fill alone, so a twin that kept a transition on another thumb property
++		// would pass them. The release writes `transition: none` under the condition, and the
++		// expanded longhands are what refuse any surviving transition.
+ 		expect(declarations.getPropertyValue('transition-property')).toBe('none')
+ 		expect(declarations.getPropertyValue('transition-duration')).toBe('0s')
+-		// The staged preference is read through the condition the gated rule keys on, because the
+-		// transition itself sits on a part whose computed style this engine does not expose: the
+-		// resolved collapse is unreachable here and the preceding declaration is what carries it.
+-		expect(matchMedia(REDUCED_MOTION).matches).toBe(false)
+-		await stageMedia({ motion: false })
+-		expect(matchMedia(REDUCED_MOTION).matches).toBe(true)
+-		await releaseMedia()
+-		expect(matchMedia(REDUCED_MOTION).matches).toBe(false)
+-		// The resting duration reads the motion token, so the published factor rescales it.
+-		expect(readToken(element, TOKEN_NAMES.motion.feedback)).toBe('calc(.15s * 1)')
+-		document.documentElement.style.setProperty(TOKEN_NAMES.factor.motion, '2')
+-		try {
+-			expect(readToken(element, TOKEN_NAMES.motion.feedback)).toBe('calc(.15s * 2)')
+-		} finally {
+-			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.motion)
+-		}
+ 	})
+ 
+ 	it('retunes the thumb fill and the track fill with the color mode and with a direct override', () => {

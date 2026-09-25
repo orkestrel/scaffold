@@ -1,0 +1,32 @@
+plant=order against the 21c821a proofs
+planted order
+--- tmp/units/twr-plant-backup-guide.md	2026-09-25 05:13:39.721840422 +0000
++++ guides/veneer.md	2026-09-25 05:13:39.797021136 +0000
+@@ -3390,7 +3390,6 @@
+ under Veneer's element treatment rather than over it.
+ 
+ ```css
+-@layer theme, reset, base, elements, components, utilities;
+ @import 'tailwindcss';
+ @import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+command=npm run test:service
+
+> @orkestrel/veneer@0.0.1 test:service
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+
+ RUN  v4.1.11 /home/user/veneer-twr
+
+·····················
+
+ Test Files  3 passed (3)
+      Tests  21 passed (21)
+   Start at  05:13:41
+   Duration  25.62s (transform 770ms, setup 4.43s, import 1.10s, tests 19.60s, environment 0ms)
+
+exit=0
+restored guide byte-identical
+restored consumer.test.ts byte-identical
+git diff --stat unchanged from before the plant
+loadavg=3.80 5.28 7.25 2/273 16970

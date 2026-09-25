@@ -1,0 +1,21 @@
+load=3.45 4.47 6.64 2/284 20845
+
+> @orkestrel/veneer@0.0.1 test:probe
+> vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe tmp/probe/lad-2-table-writer.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer-lad
+
+stdout | tmp/probe/lad-2-table-writer.test.ts > writes the additions table from the measurement
+MEASURED 352
+MISSING []
+UNCARRIED []
+
+ ✓ |probe| tmp/probe/lad-2-table-writer.test.ts > writes the additions table from the measurement 6378ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  05:16:33
+   Duration  8.23s (transform 704ms, setup 262ms, import 1.40s, tests 6.38s, environment 0ms)
+
+exit=0
