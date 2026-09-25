@@ -110,27 +110,28 @@ restarted. At 10:39 UTC a bounded round trip came back from each bench (a native
 resumed in their worktrees with their contexts intact. LEDGER landed as `51f002e` and RAMP-DOWN as
 `015fc90` on this session's branch.
 
-**In flight (this session), 2026-09-25 01:40 UTC.** Implementation first, the user's instruction.
-- **Veneer `main` is `dbc7e0f`**, pushed: E-ID-RECORD `6c26b14`, E-ID-LAYOUT `dd4300a`, E-ID-CODE `4edb3c6`, E-ID-FLOW
-  `b4825e0`, J-FIXTURES `e07b3a6`, the roadmap fold, and this session's merge of your J-SNAPSHOT-SHARED (`6dd5034`).
-  The landing chain over `6d27028` read format, lint, types, and build green; styles 1495, setup 321, conformance 26,
-  guides, policy 109 with 1 skipped, `app:browser` 223, `setup:browser` 88, and the journey 252 with capture and 252
-  without. The merge over your landing read format, lint, types, conformance, guides, policy, `src:browser` 926 with 2
-  skipped, and `setup:browser` 88 green (`units/eid-landing/`). The landings change `src/styles/**`,
-  `tests/src/styles/**`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `app/browser/constants.ts`,
-  `tests/app/browser/sections/ContentSection.test.ts`, and the guide's style rows; J-FIXTURES changes the three lookups
-  and adds `requireMatch`, `MatchMessages`, and `SAMPLE_MESSAGES` in `tests/setupBrowser.ts` and its test.
-- **Your fixture-lookups row closes:** J-FIXTURES landed as `e07b3a6` (`units/jf-audit-2-verdict.md`); the roadmap's
-  row reads closed.
-- **In flight here:** E-ID-FLOW-2 (Bootstrap's reboot margins on `dl`, `pre`, `hr`, and `figure`) and
-  E-ID-BUTTON-CASCADE (`e-id-button-design-verdict.md`: the button surface sits on the `button` tag whatever class it
-  carries, and each class the release builds on a button, among them `.btn-close`, `.navbar-toggler`,
-  `.accordion-button`, `.dropdown-item`, `.nav-link`, `.list-group-item`, `.page-link`, and the carousel controls and
-  indicators, resets it on its button form at zero specificity in the `components` layer), both from `e07b3a6`. They
-  change `src/styles/**`, the matching style and app tests, the setup style tables, and the guide, and no engine file.
-  E-ID-BUTTON-CLASSES follows CASCADE.
+**In flight (this session), 2026-09-25 02:05 UTC.** Implementation first, the user's instruction.
+- **Veneer `main`:** this session last pushed `dbc7e0f` (the E-ID landing). Your `4cd56a8` is read; the next landing
+  here merges it into the session branch before any unit lands.
+- **In audit here, landing next in this order:** E-ID-FLOW-2 (`dl`, `pre`, `hr`, and `figure` take Bootstrap's reboot
+  margins through `--vn-space-8`; the `box-reset` mixin retires into `_fieldset.scss`) and E-ID-BUTTON-CASCADE
+  (`e-id-button-design-verdict.md`). Each round runs `analyst` on Astra, `reviewer` on Opus 5.5, and `checker` on
+  Sonnet, on `units/flow2-audit-claims.md` and `units/ebc-audit-claims.md`. Your replay rule binds both: a mutation
+  counts as a kill only when the failure names an assertion.
+- **What E-ID-BUTTON-CASCADE changes for you.** Every `button` element wears the calibrated surface and its states,
+  whatever class it carries; the `:not([class], [data-bs-target])` scope is gone. A button in your fixtures that carries
+  a class no component resets now reads the surface's padding, type, colour, corner, shadow, and transition, where
+  before it read the reboot alone. The classes the release builds on a button (`.btn-close`, `.navbar-toggler`,
+  `.accordion-button`, `.dropdown-item`, `.nav-link`, `.list-group-item`, `.page-link`, the carousel controls, and the
+  carousel indicators) reset it on their button form with `:where()` in the `components` layer, and `.btn` writes every
+  surface property itself. The unit also edits one comment in `tests/app/browser/integration.test.ts` (the hover-mix
+  comment near the frame shot says "button surface" for "bare-button treatment") and the forced-colours key in
+  `tests/conformance.test.ts` (`button:focus-visible @media (forced-colors: active)`). If J-CASCADE or J-HOLDERS reads a
+  classed button's box, re-read it after this lands.
+- **Next here:** E-ID-BUTTON-CLASSES (each class's button form read at rest and in every state against the release;
+  the ledger's selector reader learns to read a class inside `:where()`), then E-RECEIPTS and P1 SCAFFOLD-PROPAGATE.
+  E-VUE waits on the user's ruling.
 - **Motion:** still with the user; neither session changes motion before the ruling.
-- **Next here:** E-RECEIPTS and P1 SCAFFOLD-PROPAGATE. E-VUE waits on the user's ruling.
 
 ## Landing procedure
 
