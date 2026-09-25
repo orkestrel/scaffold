@@ -1,0 +1,24 @@
+# The Orchestrator's red reading of the J-SNAPSHOT-SHARED round-3 cases on round 2's sources (2026-09-25, Chromium 153.0.8010.12)
+Preparing worktree (new branch 'red/snapshot-shared-3')
+HEAD is now at e3167f7 Key a snapshot record by the name the platform resolves, release what a failed construction claimed, and state the shared record
+npm ci exit=0
+ M tests/src/browser/ColorMode.test.ts
+ M tests/src/browser/HostSnapshot.test.ts
+ M tests/src/browser/Placement.test.ts
+ M tests/src/browser/ScrollLock.test.ts
+--- the four files on round 2's sources
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/ColorMode.test.ts:28:2 > ColorMode > puts the root back when persisting the stored mode throws during construction
+AssertionError: expected true to be false // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1275:2 > HostSnapshot > joins one record for two spellings of an attribute name on an HTML element in an HTML document loaded as plain text
+AssertionError: expected 'original' to be 'second' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/HostSnapshot.test.ts:1303:2 > HostSnapshot > releases the record it joined when its host moves into an XML document after the save
+AssertionError: expected 'live' to be 'changed' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Placement.test.ts:87:2 > Placement > writes nothing when reading a fallback entry throws during construction
+AssertionError: expected true to be false // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollLock.test.ts:21:2 > ScrollLock > refuses a document with no body before it holds the lock, so a later lock locks the document
+AssertionError: expected '' to be 'hidden' // Object.is equality
+      Tests  5 failed | 90 passed (95)
+worktree remove exit=0
+Deleted branch red/snapshot-shared-3 (was e3167f7).
+branch delete exit=0

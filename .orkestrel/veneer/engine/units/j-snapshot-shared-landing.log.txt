@@ -1,0 +1,44 @@
+--- the fast-forward
+Updating 6d27028..6dd5034
+Fast-forward
+ guides/veneer.md                       | 173 ++++++++-------
+ src/browser/Alert.ts                   |  46 ++--
+ src/browser/Button.ts                  |  31 +--
+ src/browser/Carousel.ts                |  90 ++++----
+ src/browser/Collapse.ts                |  27 ++-
+ src/browser/ColorMode.ts               |  21 +-
+ src/browser/Dropdown.ts                |  39 ++--
+ src/browser/HostSnapshot.ts            | 351 ++++++++++++++++--------------
+ src/browser/Placement.ts               |  41 ++--
+ src/browser/ScrollLock.ts              |  13 +-
+ src/browser/ScrollSpy.ts               |  42 ++--
+ src/browser/Tab.ts                     | 100 +++++----
+ src/browser/Toast.ts                   |  41 ++--
+ src/browser/Tooltip.ts                 |  67 ++++--
+ src/browser/types.ts                   |  93 +++++---
+ tests/src/browser/Alert.test.ts        |  40 ++++
+ tests/src/browser/Button.test.ts       |  24 ++-
+ tests/src/browser/Carousel.test.ts     |  65 ++++++
+ tests/src/browser/Collapse.test.ts     |  18 ++
+ tests/src/browser/ColorMode.test.ts    |  17 ++
+ tests/src/browser/Delegate.test.ts     |  26 +++
+ tests/src/browser/Dropdown.test.ts     |  22 ++
+ tests/src/browser/HostSnapshot.test.ts | 380 +++++++++++++++++++++++++++++++--
+ tests/src/browser/Placement.test.ts    |  43 ++++
+ tests/src/browser/Popover.test.ts      |  29 +++
+ tests/src/browser/ScrollLock.test.ts   |  15 ++
+ tests/src/browser/ScrollSpy.test.ts    |  17 ++
+ tests/src/browser/Swipe.test.ts        |  24 ++-
+ tests/src/browser/Tab.test.ts          |  79 +++++++
+ tests/src/browser/Toast.test.ts        |  18 ++
+ tests/src/browser/Tooltip.test.ts      | 102 +++++++++
+ 31 files changed, 1593 insertions(+), 501 deletions(-)
+main ff to unit/snapshot-shared exit=0
+worktree remove exit=0
+Deleted branch unit/snapshot-shared (was 6dd5034).
+branch delete exit=0
+6dd5034 Merge branch 'main' into unit/snapshot-shared
+43637c1 Fix a snapshot record's key at the save, and read every construction prerequisite before the first claim
+e3167f7 Key a snapshot record by the name the platform resolves, release what a failed construction claimed, and state the shared record
+3b3b4a9 Give every saved target one record across snapshots, written back by its last holder
+## main...origin/main [ahead 4]

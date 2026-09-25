@@ -1,0 +1,34 @@
+instrument C:\Users\mikes\WebstormProjects\veneer\tmp\worktrees\snapshot-shared\tmp\j-snapshot-shared\mutations-3.py
+instrument exit=0
+ok | failed | Swipe keeps the pointer token while a carousel or a swipe on the same host lives, and remo | AssertionError: expected [ 'carousel', 'pointer-event' ] to deeply equal [ 'carousel' ]
+ok | failed | HostSnapshot writes a target two snapshots share back only at the last holder restoration, | AssertionError: expected 'original' to be 'second' // Object.is equality
+ok | failed | Carousel keeps the pointer token of a touch replacement a reaction to an item restoration  | AssertionError: expected false to be true // Object.is equality
+ok | failed | HostSnapshot leaves a shared target to the holder a reaction restores, which writes the re | AssertionError: expected [] to deeply equal [ [ 'later' ] ]
+ok | failed | HostSnapshot relinquishes its holdings on clear without writing, so the last remaining hol | AssertionError: expected 'live' to be 'original' // Object.is equality
+ok | failed | HostSnapshot writes nothing more, removing no emptied class attribute, for an interrupted  | AssertionError: expected 'original' to be 'changed' // Object.is equality
+ok | failed | Alert holds no record of the shown token after a completed close, so a fresh alert on the  | AssertionError: expected [ 'alert', 'fade' ] to deeply equal [ 'alert', 'fade', 'show' ]
+ok | failed | Tab keeps the roles and states of a live sibling tab when another tab of its list is destr | AssertionError: expected null to be 'tablist' // Object.is equality
+ok | failed | Tooltip names only live tips in aria-describedby after it is destroyed while a popover on  | AssertionError: expected 'help vn-tooltip-86 vn-popover-87' to be 'help vn-popover-87' // Object.is equality
+ok | failed | HostSnapshot joins one record for an attribute or a property saved under two spellings of  | AssertionError: expected 'original' to be 'second' // Object.is equality
+ok | failed | HostSnapshot joins the record a restoration still owns when a reaction saves the attribute | AssertionError: expected 'original' to be 'live' // Object.is equality
+ok | failed | HostSnapshot keeps attribute names that differ in case apart on an SVG element and on an H | AssertionError: expected true to be false // Object.is equality
+ok | failed | HostSnapshot keeps attribute names that differ in case apart on an SVG element and on an H | AssertionError: expected true to be false // Object.is equality
+ok | failed | HostSnapshot keeps attribute names that differ in case apart on an SVG element and on an H | AssertionError: expected '1px' to be '' // Object.is equality
+ok | failed | Button releases its claim and its records when an option read throws during construction | AssertionError: expected Button{} to be undefined
+ok | failed | Collapse releases its claim when an option read throws during construction | AssertionError: expected Collapse{} to be undefined
+ok | failed | Alert releases its claim when an option read throws during construction | AssertionError: expected Alert{} to be undefined
+ok | failed | Toast releases its claim when an option read throws during construction | AssertionError: expected Toast{} to be undefined
+ok | failed | ScrollSpy releases its claim when an option read throws during construction | AssertionError: expected ScrollSpy{} to be undefined
+ok | failed | Dropdown releases its claim and its listeners when an option read throws during constructi | AssertionError: expected Dropdown{} to be undefined
+ok | failed | Tab releases its claim and writes nothing when an option read throws during construction | AssertionError: expected Tab{} to be undefined
+ok | failed | Carousel releases its claim and restores the pointer token when an option read throws duri | AssertionError: expected Carousel{} to be undefined
+ok | failed | Tooltip releases its claim and restores the title and label it moved when an option read t | AssertionError: expected Tooltip{} to be undefined
+ok | failed | Placement writes nothing when an option read throws during construction | AssertionError: expected '\n\t\t\t<button type="button" id="ref…' to be '\n\t\t\t<button type="button" id="ref…' // Object.is equality
+ok | failed | Tooltip takes its tip id out when a closing beforetoggle listener destroys it inside a hid | AssertionError: expected [ Array(1) ] to deeply equal [ [ 'help vn-popover-90' ] ]
+ok | failed | HostSnapshot releases the record it joined when its host moves into an XML document after  | AssertionError: expected 'live' to be 'changed' // Object.is equality
+ok | failed | HostSnapshot joins one record for two spellings of an attribute name on an HTML element in | AssertionError: expected 'original' to be 'second' // Object.is equality
+ok | failed | Placement writes nothing when reading a fallback entry throws during construction | AssertionError: expected true to be false // Object.is equality
+ok | failed | ScrollLock refuses a document with no body before it holds the lock, so a later lock locks | AssertionError: expected '' to be 'hidden' // Object.is equality
+ok | failed | ColorMode puts the root back when persisting the stored mode throws during construction | AssertionError: expected true to be false // Object.is equality
+ok | passed | HostSnapshot writes an overlapping target back from its record at the last holder restorat | 
+broken 0
