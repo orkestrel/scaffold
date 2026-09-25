@@ -1,0 +1,550 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index bacd7eb..24e36a1 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -929,13 +929,17 @@ the last engine holding them is destroyed, in whatever order the engines are des
+ whose tabs are destroyed one by one does. An engine whose lifetime ends without a restoration, such
+ as an alert whose close completed, clears its snapshot with the `clear` method, which relinquishes
+ its targets without writing, so the last remaining holder of each record it shared writes that
+-record back, and a later save reads a record it held alone from the host. A construction that
+-throws after the engine claims its host, such as one whose option getter throws, destroys the
+-engine before the error propagates: it releases the claim and the listeners and writes back what it
+-saved, so a failed construction holds no record. A placement reads every option before its first
+-write. A target is named as the platform reads it: an attribute of an HTML element in an HTML
+-document, and an inline property other than a custom property, match in any ASCII case, so
+-`data-state` and `DATA-STATE` share one record.
++record back, and a later save reads a record it held alone from the host. No construction leaves a
++holder behind: every class of the browser entry reads all its options, and every platform
++prerequisite its first claim or save needs, before that claim or save, or it releases what it
++claimed and saved before the error propagates. So a placement reads each fallback entry before it
++promotes the element, a scroll lock refuses a document with no body before it holds the lock, and
++an engine whose option getter throws after its claim is destroyed, releasing the claim and the
++listeners and writing back what it saved. A target is named as the platform reads it: an attribute of an HTML element in an HTML
++document, whatever the document's content type, and an inline property other than a custom
++property, match in any ASCII case, so `data-state` and `DATA-STATE` share one record. The name
++resolves once, at the save, and every release of the target reads the record that save joined,
++even after the element moves into another document.
+ 
+ Every snapshot that saves a class token on an element also shares one presence record of whether
+ the element carried a `class` attribute, and every snapshot that saves an inline property shares one
+diff --git a/src/browser/ColorMode.ts b/src/browser/ColorMode.ts
+index fe4c065..14ce9a8 100644
+--- a/src/browser/ColorMode.ts
++++ b/src/browser/ColorMode.ts
+@@ -14,11 +14,12 @@ import { isAttributeName, isColorModeState } from './validators.js'
+  * @remarks
+  * The `attributes` group names the attribute the controller reads and writes, and construction
+  * validates and copies it. Construction captures the root's own color-mode attribute, or its
+- * absence, and destruction puts that reading back and releases the root. Applying a mode writes
+- * the attribute for either mode, so a root nested inside an island of the other mode opens its own
+- * island rather than inheriting the one around it. After destruction, applying a mode writes
+- * neither the root nor storage, and a `toggle` call writes nothing and returns the mode the root
+- * carries.
++ * absence, and destruction puts that reading back and releases the root. A construction that
++ * applies a stored mode and whose storage write then throws puts the reading back before the error
++ * propagates. Applying a mode writes the attribute for either mode, so a root nested inside an
++ * island of the other mode opens its own island rather than inheriting the one around it. After
++ * destruction, applying a mode writes neither the root nor storage, and a `toggle` call writes
++ * nothing and returns the mode the root carries.
+  *
+  * @example
+  * ```ts
+@@ -49,7 +50,15 @@ export class ColorMode implements ColorModeInterface {
+ 		this.#storage = options?.storage
+ 		this.#original = this.#root.getAttribute(this.#attributes.theme)
+ 		const stored = this.#storage?.getItem(COLOR_MODE_KEY)
+-		if (isColorModeState(stored)) this.apply(stored)
++		if (!isColorModeState(stored)) return
++		// Persisting the stored mode is a call that can throw after the root's write, which ends the
++		// construction, so the controller then puts the root back before the error propagates.
++		try {
++			this.apply(stored)
++		} catch (error) {
++			this.destroy()
++			throw error
++		}
+ 	}
+ 
+ 	get root(): HTMLElement {
+diff --git a/src/browser/HostSnapshot.ts b/src/browser/HostSnapshot.ts
+index 260f813..c772aa1 100644
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -9,9 +9,11 @@ import type { HostSnapshotInterface, HostSnapshotTarget } from './types.js'
+  * attribute, class token, or inline property of one element shares one record of it: the first save
+  * made while no snapshot holds the target and no restoration has it still to write back reads the
+  * element, and every later save joins the record. A target is named as the platform reads it: an
+- * attribute of an HTML element in an HTML document, and an inline property other than a custom
+- * property, match in any ASCII case, so every spelling of one name joins one record, while another
+- * element's attribute names, custom property names, and class tokens keep their case.
++ * attribute of an HTML element in an HTML document, whatever the document's content type, and an
++ * inline property other than a custom property, match in any ASCII case, so every spelling of one
++ * name joins one record, while another element's attribute names, custom property names, and
++ * class tokens keep their case. The name resolves once, at the save, and every release of the
++ * target reads the record that save joined, even after the element moves into another document.
+  *
+  * A restoration relinquishes every target its snapshot holds before its first write, writes nothing
+  * for a target another snapshot still holds, and writes back each target it held last from the
+@@ -76,6 +78,9 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			}
+ 		>
+ 	>()
++	// Whether each document folds the attribute names of its HTML elements to ASCII lowercase, as
++	// an HTML document does whatever its content type, read once from the platform per document.
++	static readonly #folding = new WeakMap<Document, boolean>()
+ 	// The presence record per element and attribute, `class` for tokens and `style` for properties:
+ 	// whether the element carried the attribute when the first snapshot holding it saved, and every
+ 	// snapshot that still holds it.
+@@ -86,11 +91,12 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			{ readonly present: boolean; readonly holders: ReadonlySet<HostSnapshot> }
+ 		>
+ 	>()
+-	// The targets this snapshot holds, in save order.
+-	#targets: readonly HostSnapshotTarget[] = []
++	// The targets this snapshot holds, in save order, each under the name the platform resolved and
++	// the key its save fixed; every release reads that key and never derives it again.
++	#targets: ReadonlyArray<{ readonly target: HostSnapshotTarget; readonly key: string }> = []
+ 	// Every target this snapshot's restorations in progress own, which a restoration nested in one of
+ 	// them writes back as well.
+-	#owned: readonly HostSnapshotTarget[] = []
++	#owned: ReadonlyArray<{ readonly target: HostSnapshotTarget; readonly key: string }> = []
+ 	// The presence records this snapshot holds: those its saves joined since its last restoration
+ 	// began, and those a restoration in progress leaves after its token or property writes.
+ 	#joined: ReadonlyArray<{ readonly element: HTMLElement; readonly attribute: 'class' | 'style' }> =
+@@ -101,10 +107,11 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	}> = []
+ 
+ 	save(target: HostSnapshotTarget): void {
+-		const { category, element, name } = target
+-		const key = HostSnapshot.#key(target)
++		const resolved = HostSnapshot.#resolve(target)
++		const { category, element, name } = resolved
++		const key = `${category}:${name}`
+ 		const held = this.#targets.some(
+-			(saved) => saved.element === element && HostSnapshot.#key(saved) === key,
++			(saved) => saved.target.element === element && saved.key === key,
+ 		)
+ 		if (held) return
+ 		const records =
+@@ -148,7 +155,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		HostSnapshot.#records.set(element, records)
+ 		if (category === 'token') this.#join(element, 'class')
+ 		if (category === 'property') this.#join(element, 'style')
+-		this.#targets = [...this.#targets, { category, element, name }]
++		this.#targets = [...this.#targets, { target: resolved, key }]
+ 	}
+ 
+ 	restore(): void {
+@@ -164,9 +171,10 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		// those writes can rejoin one, and the call still removes the attribute left empty.
+ 		const held = this.#leaving
+ 		try {
+-			for (const target of targets) {
++			for (const entry of targets) {
++				const { target } = entry
+ 				if (target.category !== 'token') continue
+-				HostSnapshot.#writeBack(target, this, (value) =>
++				HostSnapshot.#writeBack(entry, this, (value) =>
+ 					target.element.classList.toggle(target.name, value !== undefined),
+ 				)
+ 			}
+@@ -174,9 +182,10 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 				if (attribute !== 'class' || !this.#absent(element, attribute)) continue
+ 				if (element.classList.length === 0) element.removeAttribute('class')
+ 			}
+-			for (const target of targets) {
++			for (const entry of targets) {
++				const { target } = entry
+ 				if (target.category !== 'property') continue
+-				HostSnapshot.#writeBack(target, this, (value, priority) => {
++				HostSnapshot.#writeBack(entry, this, (value, priority) => {
+ 					if (value === undefined) target.element.style.removeProperty(target.name)
+ 					else target.element.style.setProperty(target.name, value, priority)
+ 				})
+@@ -188,17 +197,16 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 					element.removeAttribute('style')
+ 				}
+ 			}
+-			for (const target of targets) {
++			for (const entry of targets) {
++				const { target } = entry
+ 				if (target.category !== 'attribute') continue
+-				HostSnapshot.#writeBack(target, this, (value) => {
++				HostSnapshot.#writeBack(entry, this, (value) => {
+ 					if (value === undefined) target.element.removeAttribute(target.name)
+ 					else target.element.setAttribute(target.name, value)
+ 				})
+ 			}
+ 		} finally {
+-			for (const target of targets) {
+-				HostSnapshot.#withdraw(target.element, HostSnapshot.#key(target), this)
+-			}
++			for (const { target, key } of targets) HostSnapshot.#withdraw(target.element, key, this)
+ 			for (const { element, attribute } of this.#leaving) this.#leave(element, attribute)
+ 			this.#owned = []
+ 		}
+@@ -206,9 +214,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 
+ 	clear(): void {
+ 		this.#relinquish(false)
+-		for (const target of this.#owned) {
+-			HostSnapshot.#withdraw(target.element, HostSnapshot.#key(target), this)
+-		}
++		for (const { target, key } of this.#owned) HostSnapshot.#withdraw(target.element, key, this)
+ 		this.#owned = []
+ 		// Leaving every presence record without reading it judges no removal, so a restoration this
+ 		// clear interrupts finds none left to judge.
+@@ -221,12 +227,14 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	// value and its other holders; a record this snapshot held last passes to its restoration when
+ 	// `restoring` is true, and is forgotten when it is false. Returns the targets whose records pass
+ 	// to the restoration.
+-	#relinquish(restoring: boolean): readonly HostSnapshotTarget[] {
++	#relinquish(
++		restoring: boolean,
++	): ReadonlyArray<{ readonly target: HostSnapshotTarget; readonly key: string }> {
+ 		const targets = this.#targets
+ 		this.#targets = []
+-		const passed: HostSnapshotTarget[] = []
+-		for (const target of targets) {
+-			const key = HostSnapshot.#key(target)
++		const passed: Array<{ readonly target: HostSnapshotTarget; readonly key: string }> = []
++		for (const entry of targets) {
++			const { target, key } = entry
+ 			const records = HostSnapshot.#records.get(target.element)
+ 			const record = records?.get(key)
+ 			if (records === undefined || record === undefined) continue
+@@ -234,7 +242,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			if (holders.size > 0) records.set(key, { ...record, holders })
+ 			else if (restoring) {
+ 				records.set(key, { ...record, holders, owner: this, written: false })
+-				passed.push(target)
++				passed.push(entry)
+ 			} else {
+ 				records.delete(key)
+ 				if (records.size === 0) HostSnapshot.#records.delete(target.element)
+@@ -312,30 +320,44 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		return HostSnapshot.#presence.get(element)?.get(attribute)?.present === false
+ 	}
+ 
+-	// Names a target inside its element's records by the name the platform resolves, so every
+-	// spelling of one name keys one record. The attribute accessors of an element in the HTML
+-	// namespace whose node document is an HTML document, and the inline style accessors for a
+-	// property that is not a custom property, read and write the name in ASCII lowercase; every other
+-	// name, and every class token, keeps its case.
+-	static #key({ category, element, name }: HostSnapshotTarget): string {
++	// Returns the target under the name the platform resolves when it is saved, so every spelling of
++	// one name keys one record. The attribute accessors of an element in the HTML namespace whose
++	// node document is an HTML document, and the inline style accessors for a property that is not
++	// a custom property, read and write the name in ASCII lowercase; every other name, and every
++	// class token, keeps its case.
++	static #resolve(target: HostSnapshotTarget): HostSnapshotTarget {
++		const { category, element, name } = target
+ 		const folded =
+ 			(category === 'attribute' &&
+ 				element.namespaceURI === 'http://www.w3.org/1999/xhtml' &&
+-				element.ownerDocument.contentType === 'text/html') ||
++				HostSnapshot.#folds(element.ownerDocument)) ||
+ 			(category === 'property' && !name.startsWith('--'))
+-		return `${category}:${folded ? name.replace(/[A-Z]/g, (letter) => letter.toLowerCase()) : name}`
++		if (!folded) return { category, element, name }
++		return { category, element, name: name.replace(/[A-Z]/g, (letter) => letter.toLowerCase()) }
++	}
++
++	// Reports whether a document is an HTML document, whose HTML elements fold attribute names, by
++	// the platform's own reading: its `createElement` lowercases a name exactly there, whatever the
++	// document's content type. The prototype's method is called, so a method the document carries
++	// of its own changes nothing, and the reading is kept per document, whose type never changes.
++	static #folds(owner: Document): boolean {
++		const known = HostSnapshot.#folding.get(owner)
++		if (known !== undefined) return known
++		const folds = Document.prototype.createElement.call(owner, 'A').localName === 'a'
++		HostSnapshot.#folding.set(owner, folds)
++		return folds
+ 	}
+ 
+ 	// Runs one write back of a target the snapshot owns and no restoration has started writing, with
+ 	// the record's value, then withdraws the target. A restoration a reaction runs inside the write
+ 	// finds the target written and leaves it.
+ 	static #writeBack(
+-		target: HostSnapshotTarget,
++		entry: { readonly target: HostSnapshotTarget; readonly key: string },
+ 		owner: HostSnapshot,
+ 		write: (value: string | undefined, priority: string) => void,
+ 	): void {
++		const { target, key } = entry
+ 		const { element } = target
+-		const key = HostSnapshot.#key(target)
+ 		const records = HostSnapshot.#records.get(element)
+ 		const record = records?.get(key)
+ 		if (records === undefined || record === undefined || record.owner !== owner || record.written) {
+diff --git a/src/browser/Placement.ts b/src/browser/Placement.ts
+index ffd9c21..109559c 100644
+--- a/src/browser/Placement.ts
++++ b/src/browser/Placement.ts
+@@ -99,14 +99,24 @@ export class Placement implements PlacementInterface {
+ 		this.#reference = reference
+ 		this.#element = element
+ 		this.#arrow = arrow
+-		// Every option and input member is read before the first save, so a read that throws leaves
+-		// nothing recorded, promoted, or written.
++		// Every option and input member, each fallback entry included, is read before the first save,
++		// so a read that throws leaves nothing recorded, promoted, or written. The `owned` option is
++		// the one exception: it is read after the promotion, inside a step that restores what the
++		// placement wrote before the error propagates.
+ 		const popover = input.popover ?? 'manual'
+ 		const area = PLACEMENT_AREAS[options?.position ?? PLACEMENT_DEFAULTS.position]
+ 		const side = area.split(' ')[0]
+ 		const vertical = side === 'top' || side === 'bottom'
+ 		const [skid, distance] = options?.offset ?? PLACEMENT_DEFAULTS.offset
+ 		const fallbacks = options?.fallbacks
++		const tries =
++			fallbacks === undefined
++				? vertical
++					? 'flip-block'
++					: 'flip-inline'
++				: fallbacks.length === 0
++					? 'none'
++					: fallbacks.map((fallback) => PLACEMENT_AREAS[fallback]).join(', ')
+ 		const signal = options?.signal
+ 		signal?.addEventListener('abort', () => this.destroy(), {
+ 			once: true,
+@@ -162,17 +172,7 @@ export class Placement implements PlacementInterface {
+ 		this.#write(element, 'margin-left', `${side === 'right' ? distance : vertical ? skid : 0}px`)
+ 		this.#write(element, 'position-anchor', anchor)
+ 		this.#write(element, 'position-area', area)
+-		this.#write(
+-			element,
+-			'position-try-fallbacks',
+-			fallbacks === undefined
+-				? vertical
+-					? 'flip-block'
+-					: 'flip-inline'
+-				: fallbacks.length === 0
+-					? 'none'
+-					: fallbacks.map((fallback) => PLACEMENT_AREAS[fallback]).join(', '),
+-		)
++		this.#write(element, 'position-try-fallbacks', tries)
+ 		this.#write(element, 'position-try-order', 'normal')
+ 		const names = getComputedStyle(reference).getPropertyValue('anchor-name')
+ 		this.#write(reference, 'anchor-name', names === 'none' ? anchor : `${names}, ${anchor}`)
+diff --git a/src/browser/ScrollLock.ts b/src/browser/ScrollLock.ts
+index 8c19872..815959a 100644
+--- a/src/browser/ScrollLock.ts
++++ b/src/browser/ScrollLock.ts
+@@ -1,4 +1,5 @@
+ import type { ScrollLockInterface, ScrollLockOptions } from './types.js'
++import { AppError } from '@src/core'
+ import { instanceOf } from '@orkestrel/contract'
+ import { SCROLL_LOCK_SELECTORS } from './constants.js'
+ import { readScrollbarWidth, resolveVocabulary } from './helpers.js'
+@@ -43,7 +44,7 @@ export class ScrollLock implements ScrollLockInterface {
+ 	 * Takes one reference to the document's scroll lock, locking the document when it holds no other.
+ 	 *
+ 	 * @param options - The document to lock, the selectors to compensate, and the lifetime.
+-	 * @throws Thrown when a `selectors` value is not a selector, as an `AppError` carrying the `SCROLL_LOCK_OPTION_INVALID` code.
++	 * @throws Thrown when a `selectors` value is not a selector, as an `AppError` carrying the `SCROLL_LOCK_OPTION_INVALID` code, and when the lock would be the document's first and the document has no body, as an `AppError` carrying the `SCROLL_LOCK_BODY_MISSING` code, before it holds anything.
+ 	 */
+ 	constructor(options?: ScrollLockOptions) {
+ 		const selectors = resolveVocabulary(
+@@ -67,9 +68,15 @@ export class ScrollLock implements ScrollLockInterface {
+ 			held.holders.add(this)
+ 			return
+ 		}
++		// The body is read before the lock publishes its holder, so a document without one refuses the
++		// lock and leaves no holder behind that a later lock would join without locking.
++		const { body, defaultView } = this.#document
++		if (body === null) {
++			this.#controller.abort()
++			throw new AppError('ScrollLock requires a document with a body', 'SCROLL_LOCK_BODY_MISSING')
++		}
+ 		const snapshot = new HostSnapshot()
+ 		ScrollLock.#locks.set(this.#document, { holders: new Set([this]), snapshot })
+-		const { body, defaultView } = this.#document
+ 		const width = readScrollbarWidth(this.#document)
+ 		snapshot.save({ category: 'property', element: body, name: 'overflow' })
+ 		body.style.setProperty('overflow', 'hidden')
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 5d91644..d2bb890 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -354,9 +354,11 @@ export interface HostSnapshotInterface {
+ 	 * joins that record rather than reading the half-restored element, and the restoration leaves the
+ 	 * target to the saving snapshot. A later save of a target the snapshot already holds changes
+ 	 * nothing. A target is named as the platform reads it: an attribute of an HTML element in an HTML
+-	 * document, and an inline property other than a custom property, match in any ASCII case, so
+-	 * `data-state` and `DATA-STATE` name one record, while another element's attribute names, custom
+-	 * property names, and class tokens keep their case.
++	 * document, whatever the document's content type, and an inline property other than a custom
++	 * property, match in any ASCII case, so `data-state` and `DATA-STATE` name one record, while
++	 * another element's attribute names, custom property names, and class tokens keep their case. The
++	 * name resolves once, at the save, and every release of the target reads the record that save
++	 * joined, even after the element moves into another document.
+ 	 * @example
+ 	 * ```ts
+ 	 * snapshot.save({ category: 'attribute', element: host, name: 'aria-expanded' })
+diff --git a/tests/src/browser/ColorMode.test.ts b/tests/src/browser/ColorMode.test.ts
+index f410a83..e69d83f 100644
+--- a/tests/src/browser/ColorMode.test.ts
++++ b/tests/src/browser/ColorMode.test.ts
+@@ -25,6 +25,23 @@ describe('ColorMode', () => {
+ 		expect(root.getAttribute('data-bs-theme')).toBe('dark')
+ 	})
+ 
++	it('puts the root back when persisting the stored mode throws during construction', () => {
++		const root = build('div')
++		const storage: Storage = {
++			length: 1,
++			clear: () => {},
++			getItem: () => 'dark',
++			key: () => COLOR_MODE_KEY,
++			removeItem: () => {},
++			setItem: () => {
++				throw new Error('stop')
++			},
++		}
++		const failed = attempt(() => new ColorMode({ root, storage }))
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(root.hasAttribute('data-bs-theme')).toBe(false)
++	})
++
+ 	it('toggles, persists, and writes the light attribute', () => {
+ 		const root = build('div')
+ 		const controller = new ColorMode({ root, storage: sessionStorage })
+diff --git a/tests/src/browser/HostSnapshot.test.ts b/tests/src/browser/HostSnapshot.test.ts
+index ee1e0b0..1f27411 100644
+--- a/tests/src/browser/HostSnapshot.test.ts
++++ b/tests/src/browser/HostSnapshot.test.ts
+@@ -1,6 +1,6 @@
+ import { Button, Collapse, Dropdown, HostSnapshot } from '@src/browser'
+ import { attempt } from '@orkestrel/contract'
+-import { createRecorder, requireValue } from '@orkestrel/test'
++import { createRecorder, requireValue, waitForEvent } from '@orkestrel/test'
+ import { build } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import { scene } from '../../setupBrowser.js'
+@@ -1272,6 +1272,64 @@ describe('HostSnapshot', () => {
+ 		expect(host.hasAttribute('style')).toBe(false)
+ 	})
+ 
++	it('joins one record for two spellings of an attribute name on an HTML element in an HTML document loaded as plain text', async () => {
++		const frame = document.createElement('iframe')
++		const loaded = waitForEvent<readonly [Event]>((listener) => {
++			frame.addEventListener('load', listener, { once: true })
++		}, 'the plain text document loads')
++		const source = URL.createObjectURL(new Blob(['plain'], { type: 'text/plain' }))
++		onTestFinished(() => URL.revokeObjectURL(source))
++		frame.src = source
++		document.body.append(frame)
++		onTestFinished(() => frame.remove())
++		await loaded
++		const owner = requireValue(frame.contentDocument, 'No plain text document')
++		expect(owner.contentType).toBe('text/plain')
++		const host = owner.createElement('div')
++		owner.body.append(host)
++		host.setAttribute('data-state', 'original')
++		const first = new HostSnapshot()
++		first.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'first')
++		const second = new HostSnapshot()
++		second.save({ category: 'attribute', element: host, name: 'DATA-STATE' })
++		host.setAttribute('DATA-STATE', 'second')
++		first.restore()
++		expect(host.getAttribute('data-state')).toBe('second')
++		second.restore()
++		expect(host.getAttribute('data-state')).toBe('original')
++	})
++
++	it('releases the record it joined when its host moves into an XML document after the save', () => {
++		const host = build('div')
++		const first = new HostSnapshot()
++		first.save({ category: 'attribute', element: host, name: 'DATA-STATE' })
++		host.setAttribute('data-state', 'changed')
++		const xml = document.implementation.createDocument(null, 'root')
++		xml.adoptNode(host)
++		first.clear()
++		const second = new HostSnapshot()
++		second.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'live')
++		second.restore()
++		expect(host.getAttribute('data-state')).toBe('changed')
++	})
++
++	it('treats a second spelling of an attribute name it already saved as the same target', () => {
++		const host = build('div', { attributes: { 'data-state': 'original' } })
++		const snapshot = new HostSnapshot()
++		snapshot.save({ category: 'attribute', element: host, name: 'data-state' })
++		host.setAttribute('data-state', 'first')
++		snapshot.save({ category: 'attribute', element: host, name: 'DATA-STATE' })
++		host.setAttribute('data-state', 'second')
++		const observer = new MutationObserver(() => {})
++		onTestFinished(() => observer.disconnect())
++		observer.observe(host, { attributes: true })
++		snapshot.restore()
++		expect(observer.takeRecords().map((record) => record.attributeName)).toEqual(['data-state'])
++		expect(host.getAttribute('data-state')).toBe('original')
++	})
++
+ 	it('keeps one record of a target it saves twice, holding the value the first save read', () => {
+ 		const host = build('button', { attributes: { 'aria-pressed': 'mixed' } })
+ 		const snapshot = new HostSnapshot()
+diff --git a/tests/src/browser/Placement.test.ts b/tests/src/browser/Placement.test.ts
+index 3047de8..2a778d8 100644
+--- a/tests/src/browser/Placement.test.ts
++++ b/tests/src/browser/Placement.test.ts
+@@ -1,3 +1,4 @@
++import type { PlacementPosition } from '@src/browser'
+ import {
+ 	Placement,
+ 	PLACEMENT_AREAS,
+@@ -83,6 +84,25 @@ describe('Placement', () => {
+ 		expect(placement.side).toBeUndefined()
+ 	})
+ 
++	it('writes nothing when reading a fallback entry throws during construction', () => {
++		const root = scene.mount(`
++			<button type="button" id="reference">Reference</button>
++			<div id="element">Element</div>`)
++		const markup = root.innerHTML
++		const reference = requireValue(root.querySelector<HTMLElement>('#reference'), 'No reference')
++		const element = requireValue(root.querySelector<HTMLElement>('#element'), 'No element')
++		const fallbacks: PlacementPosition[] = []
++		Object.defineProperty(fallbacks, 0, {
++			get(): never {
++				throw new Error('stop')
++			},
++		})
++		const failed = attempt(() => new Placement({ reference, element }, { fallbacks }))
++		expect(failed).toMatchObject({ success: false, error: { message: 'stop' } })
++		expect(element.matches(':popover-open')).toBe(false)
++		expect(root.innerHTML).toBe(markup)
++	})
++
+ 	it('writes nothing when an option read throws during construction', () => {
+ 		const root = scene.mount(`
+ 			<button type="button" id="reference">Reference</button>
+diff --git a/tests/src/browser/ScrollLock.test.ts b/tests/src/browser/ScrollLock.test.ts
+index 539f3b8..8ff9643 100644
+--- a/tests/src/browser/ScrollLock.test.ts
++++ b/tests/src/browser/ScrollLock.test.ts
+@@ -18,6 +18,21 @@ describe('ScrollLock', () => {
+ 		<div class="sticky-top" id="sticky"></div>
+ 		<div class="is-fixed" id="fixed"></div>`
+ 
++	it('refuses a document with no body before it holds the lock, so a later lock locks the document', () => {
++		const owner = document.implementation.createHTMLDocument('Detached')
++		const body = owner.body
++		body.remove()
++		const failed = attempt(() => new ScrollLock({ document: owner }))
++		expect(failed).toMatchObject({ success: false })
++		owner.documentElement.append(body)
++		const lock = new ScrollLock({ document: owner })
++		onTestFinished(() => lock.destroy())
++		expect(body.style.getPropertyValue('overflow')).toBe('hidden')
++		lock.destroy()
++		expect(body.hasAttribute('style')).toBe(false)
++		expect(failed).toMatchObject({ error: { code: 'SCROLL_LOCK_BODY_MISSING' } })
++	})
++
+ 	it('publishes a frozen default table naming Bootstrap fixed and sticky selectors', () => {
+ 		expect(SCROLL_LOCK_SELECTORS).toStrictEqual({
+ 			fixed: '.fixed-top, .fixed-bottom, .is-fixed',
