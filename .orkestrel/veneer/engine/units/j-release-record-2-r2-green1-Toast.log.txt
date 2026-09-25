@@ -1,0 +1,11 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Toast.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+
+ Test Files  1 passed (1)
+      Tests  49 passed (49)
+   Start at  06:01:02
+   Duration  8.58s (transform 0ms, setup 745ms, import 486ms, tests 6.14s, environment 0ms)
+

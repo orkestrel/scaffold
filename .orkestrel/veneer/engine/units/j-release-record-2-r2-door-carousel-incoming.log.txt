@@ -1,0 +1,37 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Carousel.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+ ❯ |src:browser (chromium)| tests/src/browser/Carousel.test.ts (77 tests | 1 failed) 22142ms
+     × writes nothing more after a reaction to its incoming direction removal destroys it, keeping an order token added then 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1945:2 > Carousel > writes nothing more after a reaction to its incoming direction removal destroys it, keeping an order token added then
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Carousel.test.ts:1987:63
+    1985|    ['carousel-item carousel-item-next'],
+    1986|   ])
+    1987|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    1988|   expect(Array.from(incoming.classList)).toEqual(['carousel-item', 'ca…
+    1989|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 76 passed (77)
+   Start at  06:04:54
+   Duration  23.99s (transform 0ms, setup 488ms, import 332ms, tests 22.14s, environment 0ms)
+

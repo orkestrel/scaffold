@@ -1,0 +1,35 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tab.test.ts -t sibling blur
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+ ❯ |src:browser (chromium)| tests/src/browser/Tab.test.ts (54 tests | 1 failed | 51 skipped) 15ms
+     × restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:806:2 > Tab > restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Tab.test.ts:826:45
+    824|   expect(item.getAttribute('aria-expanded')).toBe('false')
+    825|   tab.destroy()
+    826|   expect(item.hasAttribute('aria-expanded')).toBe(false)
+       |                                             ^
+    827|  })
+    828|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed | 51 skipped (54)
+   Start at  06:06:05
+   Duration  1.88s (transform 0ms, setup 535ms, import 327ms, tests 15ms, environment 0ms)
+

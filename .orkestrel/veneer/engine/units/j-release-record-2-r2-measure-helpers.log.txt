@@ -1,0 +1,15 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/helpers.test.ts -t in the call and in the snapshot
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 106 skipped (107)
+   Start at  05:57:17
+   Duration  1.79s (transform 0ms, setup 577ms, import 50ms, tests 5ms, environment 0ms)
+

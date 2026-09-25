@@ -1,0 +1,55 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tab.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+ ❯ |src:browser (chromium)| tests/src/browser/Tab.test.ts (54 tests | 2 failed) 1626ms
+     × restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown 4ms
+     × closes the dropdown a listener to the sibling blur forms around the sibling, as Bootstrap reads it after the blur 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:806:2 > Tab > restores every write its swap made when a listener to the sibling blur makes the sibling wrapper a dropdown
+AssertionError: expected null to be 'false' // Object.is equality
+
+[32m- Expected:[39m
+"false"
+
+[31m+ Received:[39m
+null
+
+ ❯ tests/src/browser/Tab.test.ts:824:45
+    822|   expect(await tab.show()).toBe(true)
+    823|   expect(item.classList.contains('dropdown')).toBe(true)
+    824|   expect(item.getAttribute('aria-expanded')).toBe('false')
+       |                                             ^
+    825|   tab.destroy()
+    826|   expect(item.hasAttribute('aria-expanded')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:831:2 > Tab > closes the dropdown a listener to the sibling blur forms around the sibling, as Bootstrap reads it after the blur
+AssertionError: expected null to be 'false' // Object.is equality
+
+[32m- Expected:[39m
+"false"
+
+[31m+ Received:[39m
+null
+
+ ❯ tests/src/browser/Tab.test.ts:852:45
+    850|   onTestFinished(() => tab.destroy())
+    851|   expect(await tab.show()).toBe(true)
+    852|   expect(item.getAttribute('aria-expanded')).toBe('false')
+       |                                             ^
+    853|   expect(menu.classList.contains('show')).toBe(false)
+    854|   expect(sibling.getAttribute('aria-selected')).toBe('false')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 52 passed (54)
+   Start at  06:06:00
+   Duration  3.46s (transform 0ms, setup 489ms, import 351ms, tests 1.63s, environment 0ms)
+

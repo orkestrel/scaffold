@@ -1,0 +1,6 @@
+npm notice run @orkestrel/veneer@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 17620ms on 491 files using 16 threads.

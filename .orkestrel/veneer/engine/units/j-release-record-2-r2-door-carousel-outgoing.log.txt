@@ -1,0 +1,68 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Carousel.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+ ❯ |src:browser (chromium)| tests/src/browser/Carousel.test.ts (77 tests | 2 failed) 22130ms
+     × writes nothing more after a reaction to its outgoing active removal destroys it, keeping an order token added then 4ms
+     × returns a slide whose outgoing removal a reaction answers by removing the incoming active token, reactivating the outgoing item and its indicator 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:1994:2 > Carousel > writes nothing more after a reaction to its outgoing active removal destroys it, keeping an order token added then
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Carousel.test.ts:2028:63
+    2026|   })
+    2027|   expect(await carousel.next()).toBe(false)
+    2028|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    2029|   expect(Array.from(outgoing.classList)).toEqual([
+    2030|    'carousel-item',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2659:2 > Carousel > returns a slide whose outgoing removal a reaction answers by removing the incoming active token, reactivating the outgoing item and its indicator
+AssertionError: expected [ [ 'one', 'class', …(1) ], …(5) ] to deeply equal [ [ 'one', 'class', …(1) ], …(5) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -5,11 +5,11 @@[39m
+[2m      "carousel-item carousel-item-start",[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      "one",[22m
+[2m      "class",[22m
+[32m-     "carousel-item carousel-item-start active",[39m
+[31m+     "carousel-item",[39m
+[2m    ],[22m
+[2m    [[22m
+[2m      "second",[22m
+[2m      "aria-current",[22m
+[2m      "true",[22m
+
+ ❯ tests/src/browser/Carousel.test.ts:2706:4
+    2704|     record.oldValue,
+    2705|    ]),
+    2706|   ).toEqual([
+       |    ^
+    2707|    ['one', 'class', 'carousel-item carousel-item-start'],
+    2708|    ['one', 'class', 'carousel-item carousel-item-start active'],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 75 passed (77)
+   Start at  06:05:19
+   Duration  23.97s (transform 0ms, setup 498ms, import 335ms, tests 22.13s, environment 0ms)
+

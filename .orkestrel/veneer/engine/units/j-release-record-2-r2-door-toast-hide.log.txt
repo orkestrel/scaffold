@@ -1,0 +1,37 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Toast.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+ ❯ |src:browser (chromium)| tests/src/browser/Toast.test.ts (49 tests | 1 failed) 6121ms
+     × removes no shown token after a reaction to its transition token removal destroys it, leaving the toast shown 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1048:2 > Toast > removes no shown token after a reaction to its transition token removal destroys it, leaving the toast shown
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Toast.test.ts:1080:63
+    1078|   expect(await toast.hide()).toBe(false)
+    1079|   expect(seen.calls).toEqual([['toast show showing'], ['toast show']])
+    1080|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    1081|   expect(Array.from(host.classList)).toEqual(['toast', 'show'])
+    1082|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  06:04:38
+   Duration  8.00s (transform 0ms, setup 544ms, import 319ms, tests 6.12s, environment 0ms)
+

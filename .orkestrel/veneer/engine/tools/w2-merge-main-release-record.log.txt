@@ -1,0 +1,57 @@
+# J-RELEASE-RECORD landing: the merge of main into unit/release-record (2026-09-24)
+d3a3969 Read Tab's selection after the blur as Bootstrap does, and bind each split-write door (J-RELEASE-RECORD round 2)
+a1041bd Integrate J-RELEASE-RECORD's shared DROPDOWN_WRITE_BACKS row
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+92ca407 Merge remote-tracking branch 'origin/main' into unit/oracle-fix-offcanvas-merge
+Auto-merging guides/veneer.md
+Auto-merging src/browser/helpers.ts
+Auto-merging tests/setupBrowser.ts
+Auto-merging tests/src/browser/Dropdown.test.ts
+Auto-merging tests/src/browser/helpers.test.ts
+Merge made by the 'ort' strategy.
+ ROADMAP.md                                        |   4 +-
+ guides/veneer.md                                  | 550 ++++++++++++++--------
+ src/browser/Isolation.ts                          |   4 +
+ src/browser/Offcanvas.ts                          |  47 +-
+ src/browser/helpers.ts                            |  24 +
+ src/browser/types.ts                              |   2 +
+ src/styles/_mixins.scss                           |  19 +-
+ src/styles/components/_accordion.scss             |  14 +-
+ src/styles/components/_dropdown.scss              |   8 +
+ src/styles/components/_form-floating.scss         |  12 +-
+ src/styles/components/_modal.scss                 |  20 +-
+ src/styles/components/_nav.scss                   |  13 +-
+ src/styles/components/_navbar.scss                |   4 +-
+ src/styles/components/_pagination.scss            |  14 +-
+ src/styles/components/_popover.scss               |   7 +
+ src/styles/components/_progress.scss              |   5 +-
+ src/styles/components/_tooltip.scss               |   7 +
+ tests/setupBrowser.test.ts                        | 143 ++++++
+ tests/setupBrowser.ts                             | 100 +++-
+ tests/setupStyles.ts                              |   1 +
+ tests/src/browser/Dropdown.test.ts                |  73 +++
+ tests/src/browser/Isolation.test.ts               |  31 ++
+ tests/src/browser/Offcanvas.test.ts               | 528 +++++++++++++++++++++
+ tests/src/browser/Popover.test.ts                 | 136 ++++++
+ tests/src/browser/helpers.test.ts                 |  84 ++++
+ tests/src/browser/index.test.ts                   |   1 +
+ tests/src/styles/components/accordion.test.ts     |  40 ++
+ tests/src/styles/components/dropdown.test.ts      |  50 +-
+ tests/src/styles/components/fade.test.ts          |  30 +-
+ tests/src/styles/components/form-floating.test.ts |  58 ++-
+ tests/src/styles/components/modal.test.ts         | 286 +++++++++--
+ tests/src/styles/components/nav.test.ts           |  30 ++
+ tests/src/styles/components/navbar.test.ts        |  25 +
+ tests/src/styles/components/offcanvas.test.ts     |  85 ++++
+ tests/src/styles/components/pagination.test.ts    |  32 ++
+ tests/src/styles/components/popover.test.ts       |  48 +-
+ tests/src/styles/components/progress.test.ts      |  49 +-
+ tests/src/styles/components/tooltip.test.ts       |  48 +-
+ tests/src/styles/mixins.test.ts                   |  83 +++-
+ 39 files changed, 2407 insertions(+), 308 deletions(-)
+merge main into unit/release-record exit=0
+conflicts: none

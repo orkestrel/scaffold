@@ -1,0 +1,37 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Toast.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/release-record
+
+ ❯ |src:browser (chromium)| tests/src/browser/Toast.test.ts (49 tests | 1 failed) 6144ms
+     × writes no transition token after a reaction to its shown token write destroys it, leaving the toast restored 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1014:2 > Toast > writes no transition token after a reaction to its shown token write destroys it, leaving the toast restored
+AssertionError: expected [ MutationRecord{} ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   MutationRecord {},[39m
+[31m+ ][39m
+
+ ❯ tests/src/browser/Toast.test.ts:1042:63
+    1040|   })
+    1041|   expect(await toast.show()).toBe(false)
+    1042|   expect([...writes.calls.flat(2), ...observer.takeRecords()]).toEqual…
+       |                                                               ^
+    1043|   expect(Array.from(host.classList)).toEqual(['toast'])
+    1044|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  06:04:29
+   Duration  7.99s (transform 0ms, setup 499ms, import 324ms, tests 6.14s, environment 0ms)
+
