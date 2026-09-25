@@ -1,0 +1,12 @@
+5.63 6.98 8.14 8/364 11950
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 112 skipped (113)
+   Start at  05:10:55
+   Duration  6.84s (transform 966ms, setup 330ms, import 1.75s, tests 4.58s, environment 0ms)
+
+exit=0
+5.77 6.97 8.12 5/382 12369

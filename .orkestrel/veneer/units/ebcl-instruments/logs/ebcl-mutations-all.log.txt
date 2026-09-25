@@ -1,0 +1,42 @@
+== close
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+== navbar
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+== accordion
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+== dropdown
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+== nav
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+== list-group
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+== pagination
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+== carousel-controls
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+== carousel-indicators
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+== minifier
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
+mutations done
+exit=0

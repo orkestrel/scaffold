@@ -1,0 +1,41 @@
+{
+ "name": "dropdown-item",
+ "veneer": {
+  "rest": {
+   "appearance": "button"
+  },
+  "hovered": {
+   "appearance": "button"
+  },
+  "pressed": {
+   "appearance": "button"
+  },
+  "focused": {
+   "appearance": "button",
+   "outline-offset": "0px"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default"
+  }
+ },
+ "release": {
+  "rest": {
+   "appearance": "button"
+  },
+  "hovered": {
+   "appearance": "button"
+  },
+  "pressed": {
+   "appearance": "button"
+  },
+  "focused": {
+   "appearance": "button",
+   "outline-offset": "0px"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default"
+  }
+ }
+}

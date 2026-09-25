@@ -1,0 +1,72 @@
+[
+ {
+  "name": "btn-close",
+  "target": ".btn-close",
+  "button": "<button type=\"button\" class=\"btn-close\" aria-label=\"Close\"></button>",
+  "other": "<div class=\"btn-close\" tabindex=\"0\"></div>",
+  "paired": true
+ },
+ {
+  "name": "navbar-toggler",
+  "target": ".navbar-toggler",
+  "button": "<nav class=\"navbar\"><div class=\"container-fluid\"><button class=\"navbar-toggler\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#harborNav\" aria-controls=\"harborNav\" aria-expanded=\"false\" aria-label=\"Toggle navigation\"><span class=\"navbar-toggler-icon\"></span></button></div></nav>",
+  "other": "<nav class=\"navbar\"><div class=\"container-fluid\"><div class=\"navbar-toggler\" tabindex=\"0\"><span class=\"navbar-toggler-icon\"></span></div></div></nav>",
+  "paired": false
+ },
+ {
+  "name": "accordion-button",
+  "target": ".accordion-button",
+  "button": "<div class=\"accordion\"><div class=\"accordion-item\"><h2 class=\"accordion-header\"><button class=\"accordion-button\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#harborOne\" aria-expanded=\"true\" aria-controls=\"harborOne\">Harbor schedule</button></h2></div></div>",
+  "other": "<div class=\"accordion\"><div class=\"accordion-item\"><h2 class=\"accordion-header\"><div class=\"accordion-button\" tabindex=\"0\">Harbor schedule</div></h2></div></div>",
+  "paired": false
+ },
+ {
+  "name": "dropdown-item",
+  "target": ".dropdown-item",
+  "button": "<div class=\"dropdown\"><ul class=\"dropdown-menu show\" style=\"position: static\"><li><button class=\"dropdown-item\" type=\"button\">Harbor action</button></li></ul></div>",
+  "other": "<div class=\"dropdown\"><ul class=\"dropdown-menu show\" style=\"position: static\"><li><a class=\"dropdown-item\" href=\"#\">Harbor action</a></li></ul></div>",
+  "paired": true
+ },
+ {
+  "name": "nav-link",
+  "target": ".nav-link",
+  "button": "<ul class=\"nav nav-tabs\" role=\"tablist\"><li class=\"nav-item\" role=\"presentation\"><button class=\"nav-link\" id=\"harbor-tab\" data-bs-toggle=\"tab\" data-bs-target=\"#harbor-pane\" type=\"button\" role=\"tab\" aria-controls=\"harbor-pane\" aria-selected=\"false\">Harbor profile</button></li></ul>",
+  "other": "<ul class=\"nav nav-tabs\"><li class=\"nav-item\"><a class=\"nav-link\" href=\"#\">Harbor profile</a></li></ul>",
+  "paired": true
+ },
+ {
+  "name": "list-group-item",
+  "target": ".list-group-item",
+  "button": "<div class=\"list-group\"><button type=\"button\" class=\"list-group-item list-group-item-action\">Harbor entry</button></div>",
+  "other": "<div class=\"list-group\"><a href=\"#\" class=\"list-group-item list-group-item-action\">Harbor entry</a></div>",
+  "paired": true
+ },
+ {
+  "name": "page-link",
+  "target": ".page-item:nth-child(2) .page-link",
+  "button": "<ul class=\"pagination\"><li class=\"page-item\"><button class=\"page-link\" type=\"button\">1</button></li><li class=\"page-item\"><button class=\"page-link\" type=\"button\">2</button></li><li class=\"page-item\"><button class=\"page-link\" type=\"button\">3</button></li></ul>",
+  "other": "<ul class=\"pagination\"><li class=\"page-item\"><a class=\"page-link\" href=\"#\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"#\">2</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"#\">3</a></li></ul>",
+  "paired": false
+ },
+ {
+  "name": "carousel-control-prev",
+  "target": ".carousel-control-prev",
+  "button": "<div class=\"carousel slide\" style=\"height: 120px\"><button class=\"carousel-control-prev\" type=\"button\" data-bs-target=\"#harborCarousel\" data-bs-slide=\"prev\"><span class=\"carousel-control-prev-icon\" aria-hidden=\"true\"></span><span class=\"visually-hidden\">Previous</span></button></div>",
+  "other": "<div class=\"carousel slide\" style=\"height: 120px\"><div class=\"carousel-control-prev\" tabindex=\"0\"><span class=\"carousel-control-prev-icon\" aria-hidden=\"true\"></span><span class=\"visually-hidden\">Previous</span></div></div>",
+  "paired": false
+ },
+ {
+  "name": "carousel-control-next",
+  "target": ".carousel-control-next",
+  "button": "<div class=\"carousel slide\" style=\"height: 120px\"><button class=\"carousel-control-next\" type=\"button\" data-bs-target=\"#harborCarousel\" data-bs-slide=\"next\"><span class=\"carousel-control-next-icon\" aria-hidden=\"true\"></span><span class=\"visually-hidden\">Next</span></button></div>",
+  "other": "<div class=\"carousel slide\" style=\"height: 120px\"><div class=\"carousel-control-next\" tabindex=\"0\"><span class=\"carousel-control-next-icon\" aria-hidden=\"true\"></span><span class=\"visually-hidden\">Next</span></div></div>",
+  "paired": false
+ },
+ {
+  "name": "carousel indicator",
+  "target": ".carousel-indicators [data-bs-slide-to=\"1\"]",
+  "button": "<div class=\"carousel slide\" style=\"height: 120px\"><div class=\"carousel-indicators\"><button type=\"button\" data-bs-target=\"#harborCarousel\" data-bs-slide-to=\"0\" class=\"active\" aria-current=\"true\" aria-label=\"Slide 1\"></button><button type=\"button\" data-bs-target=\"#harborCarousel\" data-bs-slide-to=\"1\" aria-label=\"Slide 2\"></button></div></div>",
+  "other": "<div class=\"carousel slide\" style=\"height: 120px\"><div class=\"carousel-indicators\"><div data-bs-target=\"#harborCarousel\" data-bs-slide-to=\"0\" class=\"active\" tabindex=\"0\"></div><div data-bs-target=\"#harborCarousel\" data-bs-slide-to=\"1\" tabindex=\"0\"></div></div></div>",
+  "paired": false
+ }
+]

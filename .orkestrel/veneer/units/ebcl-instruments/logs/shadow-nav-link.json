@@ -1,0 +1,49 @@
+{
+ "name": "nav-link",
+ "veneer": {
+  "rest": {
+   "appearance": "button",
+   "text-align": "center"
+  },
+  "hovered": {
+   "appearance": "button",
+   "text-align": "center"
+  },
+  "pressed": {
+   "appearance": "button",
+   "text-align": "center"
+  },
+  "focused": {
+   "appearance": "button",
+   "outline-offset": "0px",
+   "text-align": "center"
+  },
+  "disabled": {
+   "appearance": "button",
+   "text-align": "center"
+  }
+ },
+ "release": {
+  "rest": {
+   "appearance": "button",
+   "text-align": "center"
+  },
+  "hovered": {
+   "appearance": "button",
+   "text-align": "center"
+  },
+  "pressed": {
+   "appearance": "button",
+   "text-align": "center"
+  },
+  "focused": {
+   "appearance": "button",
+   "outline-offset": "0px",
+   "text-align": "center"
+  },
+  "disabled": {
+   "appearance": "button",
+   "text-align": "center"
+  }
+ }
+}

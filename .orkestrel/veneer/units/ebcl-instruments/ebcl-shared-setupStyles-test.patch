@@ -1,0 +1,14 @@
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 2a0852e..3b15598 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -374,7 +374,9 @@ describe('styles setup', () => {
+ 				'BUTTON_LABEL_CASES',
+ 				'BUTTON_MODES',
+ 				'BUTTON_OUTLINE_CASES',
++				'BUTTON_REBOOT_CASES',
+ 				'BUTTON_REBOOT_SELECTORS',
++				'BUTTON_RETUNED_HOLDER_STYLE',
+ 				'BUTTON_SCHEME_CASES',
+ 				'BUTTON_SIZE_CASES',
+ 				'BUTTON_SURFACE_CASES',

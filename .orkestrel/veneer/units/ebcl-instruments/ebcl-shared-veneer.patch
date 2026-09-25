@@ -1,0 +1,33 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3afa3ac..478efff 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -10252,12 +10252,22 @@ paint them. The tooltip paints its hint surface from the release's `--bs-emphasi
+ never writes reaches neither table here nor § Deferred selectors, whose rows must sit in the pinned
+ inventory the `scanCompatibilityPresence` function reads.
+ 
+-The button reboot rules come after those names. Each class the release builds on a button writes
+-the reboot on a `:where()` selector, such as `:where(button.nav-link)`, and the
+-`collectSelectorClasses` function reads no class inside a functional argument, so no shipped
+-component claims the rule and the ledger measures none of them. The `tests/src/styles/mixins.test.ts`
+-proof holds each rule's longhands equal to the longhands the button surface writes, and
+-[the button proof](../tests/src/styles/elements/button.test.ts) reads a `button.nav-link` element at
++The button reboot rules come after those names. Each class the release builds on a button writes the
++reboot on a `:where()` selector, such as `:where(button.nav-link)`, and the `collectSelectorClasses`
++function reads no class inside a functional argument, so no shipped component claims the rule and
++the ledger measures none of them. The styles proofs read the resets instead. The
++`tests/src/styles/mixins.test.ts` proof holds each rule's longhands equal to the longhands the
++button surface writes, and it reads the built cascade to hold every reset declaration that names
++`revert` at `revert` alone, because the minifier folds a longhand written after a `revert` shorthand
++into a shorthand the browser drops. [The button proof](../tests/src/styles/elements/button.test.ts)
++mounts each class's button form beside the class's counterpart that is no button, the anchor where
++the release builds the class on one and a focusable `div` otherwise, under a holder that retunes
++every token the button surface reads. It reads both forms at rest, hovered, pressed, under keyboard
++focus, and disabled, once under this package's cascade and once under the release's stylesheet, and
++the button form must resolve apart from its counterpart on the same longhands, at the same button
++values, under both. A counterpart cannot be disabled, so it takes the release's `disabled` class
++where the release writes that class beside the `:disabled` state, and stays at rest where the
++release writes no disabled rule for the class. The same file reads a `button.nav-link` element at
+ the release's corner, type, and shadow.
+ 
+ The Elements behaviors this package does not copy close the list. Elements' disclosure interpolates

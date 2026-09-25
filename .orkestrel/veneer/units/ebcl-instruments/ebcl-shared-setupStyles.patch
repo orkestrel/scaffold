@@ -1,0 +1,136 @@
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 968647b..6c7b8dc 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -3244,6 +3244,131 @@ export const BUTTON_REBOOT_SELECTORS = Object.freeze([
+ 	':where(.carousel-indicators [data-bs-target])',
+ ])
+ 
++/**
++ * Holds the inline style of the holder the button reboot proofs mount each class's forms in.
++ *
++ * @remarks
++ * It extends {@link BUTTON_HOLDER_STYLE} with every other token the button surface reads at rest or
++ * in a state: the padding, the face, the size, the line height, the text, the fill, the corner,
++ * the disabled opacity, the state mixers, the motion, and the focus ring. A surface declaration
++ * that reaches a class's button form then reads a value that neither this package's cascade nor
++ * the release's writes on the class, so it shows as a longhand the button form resolves apart
++ * from the class's other form, or as a value the release's button form never takes. The forced
++ * colors highlight is left alone, because no proof reads a button under forced colors.
++ */
++export const BUTTON_RETUNED_HOLDER_STYLE = `${BUTTON_HOLDER_STYLE}; --vn-space-3: 5px; --vn-space-6: 13px; --vn-font-sans: fantasy; --vn-size-2: 17px; --vn-line-body: 1.9; --vn-text-body-base: var(--vn-palette-teal); --vn-button-transparent: var(--vn-palette-yellow); --vn-radius-base: 7px; --vn-button-opacity: 0.37; --vn-state-mixer: var(--vn-palette-pink); --vn-state-hover: 41%; --vn-state-active: 63%; --vn-motion-feedback: 370ms; --vn-ease-standard: linear; --vn-focus-width: 5px; --vn-focus-color: var(--vn-palette-orange)`
++
++/**
++ * Lists each class the release builds on a `button` element, with the release's documented markup
++ * for the class's button form, the class's counterpart that is no button, the selector that finds
++ * the class's element in each, and whether the counterpart reads its disabled state through the
++ * `disabled` class.
++ *
++ * @remarks
++ * The counterpart is the anchor where the release builds the class on one, and a focusable `div`
++ * otherwise, so it takes hover, press, and keyboard focus the way the button form does. Each
++ * markup sits inside the container the release's own selectors read, and the pagination strip
++ * carries three pages so the reading is the middle one, which no end-of-strip corner rule reaches.
++ * The carousel carries a height in place of its slides, so its controls and indicators have a box
++ * the pointer can reach.
++ *
++ * A counterpart cannot be `:disabled`. Where the `paired` field is `true`, the release writes the
++ * class's `:disabled` rule beside a `.disabled` rule, so the counterpart reads its disabled state
++ * with the `disabled` class and the `aria-disabled` attribute, the release's documented disabled
++ * markup for a link. Where it is `false`, the release writes no `:disabled` rule for the class,
++ * so the counterpart is read at rest beside the disabled button.
++ */
++export const BUTTON_REBOOT_CASES = Object.freeze([
++	Object.freeze({
++		name: 'btn-close',
++		selector: '.btn-close',
++		button: '<button type="button" class="btn-close" aria-label="Close"></button>',
++		counterpart: '<div class="btn-close" tabindex="0"></div>',
++		paired: true,
++	}),
++	Object.freeze({
++		name: 'navbar-toggler',
++		selector: '.navbar-toggler',
++		button:
++			'<nav class="navbar"><div class="container-fluid"><button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#harborNav" aria-controls="harborNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></nav>',
++		counterpart:
++			'<nav class="navbar"><div class="container-fluid"><div class="navbar-toggler" tabindex="0"><span class="navbar-toggler-icon"></span></div></div></nav>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'accordion-button',
++		selector: '.accordion-button',
++		button:
++			'<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#harborOne" aria-expanded="true" aria-controls="harborOne">Harbor schedule</button></h2></div></div>',
++		counterpart:
++			'<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><div class="accordion-button" tabindex="0">Harbor schedule</div></h2></div></div>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'dropdown-item',
++		selector: '.dropdown-item',
++		button:
++			'<div class="dropdown"><ul class="dropdown-menu show" style="position: static"><li><button class="dropdown-item" type="button">Harbor action</button></li></ul></div>',
++		counterpart:
++			'<div class="dropdown"><ul class="dropdown-menu show" style="position: static"><li><a class="dropdown-item" href="#">Harbor action</a></li></ul></div>',
++		paired: true,
++	}),
++	Object.freeze({
++		name: 'nav-link',
++		selector: '.nav-link',
++		button:
++			'<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><button class="nav-link" id="harbor-tab" data-bs-toggle="tab" data-bs-target="#harbor-pane" type="button" role="tab" aria-controls="harbor-pane" aria-selected="false">Harbor profile</button></li></ul>',
++		counterpart:
++			'<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link" href="#">Harbor profile</a></li></ul>',
++		paired: true,
++	}),
++	Object.freeze({
++		name: 'list-group-item',
++		selector: '.list-group-item',
++		button:
++			'<div class="list-group"><button type="button" class="list-group-item list-group-item-action">Harbor entry</button></div>',
++		counterpart:
++			'<div class="list-group"><a href="#" class="list-group-item list-group-item-action">Harbor entry</a></div>',
++		paired: true,
++	}),
++	Object.freeze({
++		name: 'page-link',
++		selector: '.page-item:nth-child(2) .page-link',
++		button:
++			'<ul class="pagination"><li class="page-item"><button class="page-link" type="button">1</button></li><li class="page-item"><button class="page-link" type="button">2</button></li><li class="page-item"><button class="page-link" type="button">3</button></li></ul>',
++		counterpart:
++			'<ul class="pagination"><li class="page-item"><a class="page-link" href="#">1</a></li><li class="page-item"><a class="page-link" href="#">2</a></li><li class="page-item"><a class="page-link" href="#">3</a></li></ul>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'carousel-control-prev',
++		selector: '.carousel-control-prev',
++		button:
++			'<div class="carousel slide" style="height: 120px"><button class="carousel-control-prev" type="button" data-bs-target="#harborCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button></div>',
++		counterpart:
++			'<div class="carousel slide" style="height: 120px"><div class="carousel-control-prev" tabindex="0"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></div></div>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'carousel-control-next',
++		selector: '.carousel-control-next',
++		button:
++			'<div class="carousel slide" style="height: 120px"><button class="carousel-control-next" type="button" data-bs-target="#harborCarousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button></div>',
++		counterpart:
++			'<div class="carousel slide" style="height: 120px"><div class="carousel-control-next" tabindex="0"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></div></div>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'carousel indicator',
++		selector: '.carousel-indicators [data-bs-slide-to="1"]',
++		button:
++			'<div class="carousel slide" style="height: 120px"><div class="carousel-indicators"><button type="button" data-bs-target="#harborCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button><button type="button" data-bs-target="#harborCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button></div></div>',
++		counterpart:
++			'<div class="carousel slide" style="height: 120px"><div class="carousel-indicators"><div data-bs-target="#harborCarousel" data-bs-slide-to="0" class="active" tabindex="0"></div><div data-bs-target="#harborCarousel" data-bs-slide-to="1" tabindex="0"></div></div></div>',
++		paired: false,
++	}),
++])
++
+ /**
+  * Holds the role and mode readings for the filled-button interaction cases.
+  *

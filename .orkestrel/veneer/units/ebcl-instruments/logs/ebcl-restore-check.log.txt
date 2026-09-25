@@ -1,0 +1,11 @@
+## git diff --stat -- src
+diff-stat exit=0
+cmp src/styles/_mixins.scss IDENTICAL to 2376710
+cmp src/styles/components/_close.scss IDENTICAL to 2376710
+cmp src/styles/components/_navbar.scss IDENTICAL to 2376710
+cmp src/styles/components/_accordion.scss IDENTICAL to 2376710
+cmp src/styles/components/_dropdown.scss IDENTICAL to 2376710
+cmp src/styles/components/_nav.scss IDENTICAL to 2376710
+cmp src/styles/components/_list-group.scss IDENTICAL to 2376710
+cmp src/styles/components/_pagination.scss IDENTICAL to 2376710
+cmp src/styles/components/_carousel.scss IDENTICAL to 2376710

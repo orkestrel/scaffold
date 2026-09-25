@@ -1,0 +1,51 @@
+{
+ "name": "list-group-item",
+ "veneer": {
+  "rest": {
+   "appearance": "button",
+   "font-weight": "400"
+  },
+  "hovered": {
+   "appearance": "button",
+   "font-weight": "400"
+  },
+  "pressed": {
+   "appearance": "button",
+   "font-weight": "400"
+  },
+  "focused": {
+   "appearance": "button",
+   "font-weight": "400",
+   "outline-offset": "0px"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default",
+   "font-weight": "400"
+  }
+ },
+ "release": {
+  "rest": {
+   "appearance": "button",
+   "font-weight": "400"
+  },
+  "hovered": {
+   "appearance": "button",
+   "font-weight": "400"
+  },
+  "pressed": {
+   "appearance": "button",
+   "font-weight": "400"
+  },
+  "focused": {
+   "appearance": "button",
+   "font-weight": "400",
+   "outline-offset": "0px"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default",
+   "font-weight": "400"
+  }
+ }
+}

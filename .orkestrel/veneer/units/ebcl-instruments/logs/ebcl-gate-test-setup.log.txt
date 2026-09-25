@@ -1,0 +1,52 @@
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+································································stderr | tests/setupService.test.ts > compileProfile > refuses a profile whose import resolves to nothing
+Error: Can't resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-bg4qwW'
+    at finishWithoutResolve (/home/user/veneer-ebcl/node_modules/enhanced-resolve/lib/Resolver.js:957:18)
+    at /home/user/veneer-ebcl/node_modules/enhanced-resolve/lib/Resolver.js:1053:13
+    at /home/user/veneer-ebcl/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ebcl/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ebcl/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ebcl/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:16:1)
+    at /home/user/veneer-ebcl/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ebcl/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1)
+    at /home/user/veneer-ebcl/node_modules/enhanced-resolve/lib/Resolver.js:1137:5
+    at eval (eval at create (/home/user/veneer-ebcl/node_modules/tapable/lib/HookCodeFactory.js:31:10), <anonymous>:15:1) {
+  details: "resolve 'absent-profile-package/missing.css' in '/tmp/orkestrel-test-bg4qwW'\n" +
+    '  Parsed request is a module\n' +
+    '  No description file found in /tmp/orkestrel-test-bg4qwW or above\n' +
+    '  resolve as module\n' +
+    "    /tmp/orkestrel-test-bg4qwW/node_modules doesn't exist or is not a directory\n" +
+    "    /tmp/node_modules doesn't exist or is not a directory\n" +
+    "    /node_modules doesn't exist or is not a directory"
+}
+
+······················································································x··········································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > records and reads official control state and rejects contradicted or absent obligation steps
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/setupServer.test.ts:672:2
+    670|  })
+    671|
+    672|  it(
+       |  ^
+    673|   'records and reads official control state and rejects contradicted o…
+    674|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 320 passed (321)
+   Start at  05:06:33
+   Duration  34.95s (transform 6.57s, setup 901ms, import 20.47s, tests 56.37s, environment 0ms)
+
+exit=1

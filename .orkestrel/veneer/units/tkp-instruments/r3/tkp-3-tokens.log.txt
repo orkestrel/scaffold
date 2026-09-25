@@ -1,0 +1,100 @@
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.87 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 6.40s
+[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 6.2s of this 6.2s build (99%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:css transform (98%, 6.1s, 1 call)
+Additional hook time came from hooks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+Port 63315 is in use, trying another one...
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:49:2 > token cascade > declares the canonical registry and the compatibility list at the document scope 14ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:75:2 > token cascade > resolves every value the reference map states to the value its own token carries, in each mode 690ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:143:2 > token cascade > re-declares every theme-dependent name inside each mode scope 14ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:160:2 > token cascade > resolves each calibrated role tier to the color Elements renders for it 9ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:176:2 > token cascade > resolves each channel triplet to the color its own token paints, in each mode 5ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:207:2 > token cascade > resolves every retained color token to the value Bootstrap declares for its alias 3ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:215:2 > token cascade > resolves every retained length token to the length Bootstrap declares for its alias 3ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:245:2 > token cascade > moves the md breakpoint alias with a token override, and holds the condition the ramp compiled 184ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:287:2 > token cascade > resolves the focus ring to the calibrated ring color in each mode 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:302:2 > token cascade > resolves a consumer of the compatibility radius alias to the calibrated radius 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:309:2 > token cascade > resolves a consumer of the compatibility elevation alias to the calibrated dialog shadow 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:327:2 > token cascade > resolves the inset shadow to the retained inset geometry, and rescales it with the elevation factor 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:351:2 > token cascade > rescales every consumer when the density factor is set on the document element 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:365:2 > token cascade > continues the space ramp at its index law, and rescales both new steps with the density factor 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:389:2 > token cascade > resolves each display size to the retained Bootstrap step, and leaves it outside the density scale 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:426:2 > token cascade > resolves the stripe percentage to the retained Bootstrap tint in each mode 8ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:453:2 > token cascade > rescales a radius consumer when the radius factor is set on the document element 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:468:2 > token cascade > rescales an elevation consumer when the elevation factor is set on the document element 2ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:498:2 > token cascade > rescales a motion consumer when the motion factor is set on the document element 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:513:2 > token cascade > falls back to the factor initial value when the document element is given an invalid factor 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:526:2 > token cascade > drops a consumer of an unregistered token the document element declares invalidly 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:539:2 > token cascade > rescales a subtree that re-declares the scale beside the factor, and holds one that sets the factor alone 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:551:2 > token cascade > resolves a cyclic token reference to the guaranteed-invalid value 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:561:2 > token cascade > returns a light island nested inside a dark island to the light body color 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:579:2 > token cascade > holds an important utility against an unlayered override and yields to one in its own layer 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:593:21 > code calibration tokens > resolves text and surface to the code-inline record in light mode 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:593:21 > code calibration tokens > resolves text and surface to the code-inline record in dark mode 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:620:2 > content calibration tokens > resolves the muted text and the raised surface to the content record in light mode 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:620:2 > content calibration tokens > resolves the muted text and the raised surface to the content record in dark mode 1ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:647:2 > content calibration tokens > leaves the dark role border tiers on the anchor the raised surface no longer carries 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:667:2 > content calibration tokens > resolves the shorter monospace stack and the code block rhythm in light mode 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:667:2 > content calibration tokens > resolves the shorter monospace stack and the code block rhythm in dark mode 0ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:694:2 > ancestor token overrides > repaints a link and a link button inside an ancestor that overrides the link color, and leaves a twin on the rest color 66ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:716:2 > ancestor token overrides > repaints a hovered link and link button inside an ancestor that overrides the link hover color, and leaves a hovered twin on the rest hover color 593ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:747:2 > ancestor token overrides > redecorates a link and a link button at rest and under hover inside an ancestor that overrides the link decoration, and leaves a twin underlined 586ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:780:2 > ancestor token overrides > recolors the border and the feedback of a valid control inside a mode scope that overrides the valid color, and leaves a twin on the rest color 55ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:810:2 > ancestor token overrides > recolors the border and the feedback of an invalid control inside a mode scope that overrides the invalid color, and leaves a twin on the rest color 49ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:837:2 > ancestor token overrides > holds the validation paint on the rest color under a plain ancestor that overrides the form tokens, and moves it under a mode scope that does 49ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:893:2 > ancestor token overrides > recolors the border and the feedback of a valid control inside a plain ancestor that sets the validation aliases, and leaves a twin on the rest color 51ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:927:2 > ancestor token overrides > moves a mode-scope alias and holds the root-only aliases under a mode scope that overrides their tokens, and moves all of them from the document element outside a mode scope that re-declares the token 53ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:964:2 > ancestor token overrides > deepens the hover fill of a button inside an ancestor that overrides the hover mix, and leaves a hovered twin on the rest mix 270ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:991:2 > ancestor token overrides > deepens the pressed fill of a button inside an ancestor that overrides the active mix, and leaves a pressed twin on the rest mix 270ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:1019:2 > ancestor token overrides > retints the hover fill of a button inside an ancestor that overrides the state mixer, and leaves a hovered twin on the rest mixer 214ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:1041:2 > ancestor token overrides > fades a disabled button inside an ancestor that overrides the button opacity, and leaves a disabled twin at the rest opacity 51ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:1053:2 > ancestor token overrides > reweights a description term inside an ancestor that overrides the heading weight, and leaves a twin at the rest weight 41ms
+ ✓ |[object Object] (chromium)| tests/src/styles/tokens.test.ts:1065:2 > ancestor token overrides > retimes the transitions of a button inside an ancestor that overrides the standard easing, and leaves a twin on the rest easing 50ms
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  05:06:20
+   Duration  15.50s (transform 0ms, setup 2.62s, import 323ms, tests 3.35s, environment 0ms)
+
+exit=0
+12.22 7.93 8.68 9/408 4087

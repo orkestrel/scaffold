@@ -1,0 +1,67 @@
+{
+ "name": "carousel-control-prev",
+ "veneer": {
+  "rest": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  },
+  "hovered": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  },
+  "pressed": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  },
+  "focused": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  }
+ },
+ "release": {
+  "rest": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  },
+  "hovered": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  },
+  "pressed": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  },
+  "focused": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default",
+   "font-weight": "400",
+   "unicode-bidi": "normal"
+  }
+ }
+}

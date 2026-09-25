@@ -1,0 +1,87 @@
+{
+ "name": "btn-close",
+ "veneer": {
+  "rest": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  },
+  "hovered": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  },
+  "pressed": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  },
+  "focused": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  }
+ },
+ "release": {
+  "rest": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  },
+  "hovered": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  },
+  "pressed": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  },
+  "focused": {
+   "appearance": "button",
+   "cursor": "pointer",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default",
+   "display": "inline-block",
+   "font-weight": "400",
+   "text-align": "center",
+   "unicode-bidi": "normal"
+  }
+ }
+}

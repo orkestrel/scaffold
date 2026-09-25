@@ -1,0 +1,109 @@
+plant held: src/styles/_theme.scss
+occurrences of the include line: 1 (expected 1)
+
+$ git diff -- src/styles/_theme.scss
+diff --git a/src/styles/_theme.scss b/src/styles/_theme.scss
+index 8fb2fb5..b844397 100644
+--- a/src/styles/_theme.scss
++++ b/src/styles/_theme.scss
+@@ -19,6 +19,7 @@
+ 		[data-bs-theme='#{$mode}'] {
+ 			color-scheme: $mode;
+ 			@include theme-tokens(tokens.$roles, tokens.$aliased, $values, tokens.$retuned);
++			--vn-color-primary-base: inherit;
+ 		}
+ 	}
+ }
+exit=0
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.85 kB │ gzip: 34.27 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 3.57s
+[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 3.5s of this 3.5s build (99%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:css transform (98%, 3.4s, 1 call)
+Additional hook time came from hooks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+exit=0
+
+$ npx vitest run --config configs/src/vite.styles.config.ts tests/src/styles/tokens.test.ts -t 'holds the root-only aliases under a mode scope'
+
+ RUN  v4.1.11 /home/user/veneer-tkp
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+ ❯ |[object Object] (chromium)| tests/src/styles/tokens.test.ts (46 tests | 1 failed | 45 skipped) 102ms
+     × moves a mode-scope alias and holds the root-only aliases under a mode scope that overrides their tokens, and moves all of them from the document element outside a mode scope that re-declares the token 99ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/tokens.test.ts:927:2 > ancestor token overrides > moves a mode-scope alias and holds the root-only aliases under a mode scope that overrides their tokens, and moves all of them from the document element outside a mode scope that re-declares the token
+AssertionError: expected 'rgb(4, 5, 6)' to be 'oklch(48% .255 264)' // Object.is equality
+
+Expected: [32m"[7moklch(48% .255 264[27m)"[39m
+Received: [31m"[7mrgb(4, 5, 6[27m)"[39m
+
+ ❯ tests/src/styles/tokens.test.ts:957:43
+    955|    expect(readToken(outside, '--bs-success')).toBe('rgb(1, 2, 3)')
+    956|    expect(readToken(outside, '--bs-border-radius')).toBe('20px')
+    957|    expect(readToken(held, '--bs-primary')).toBe(primary)
+       |                                           ^
+    958|   } finally {
+    959|    document.documentElement.style.removeProperty(TOKEN_NAMES.color.pri…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 45 skipped (46)
+   Start at  05:04:30
+   Duration  9.58s (transform 0ms, setup 3.36s, import 185ms, tests 102ms, environment 0ms)
+
+exit=1
+
+$ cat /proc/loadavg
+11.86 6.22 8.32 24/505 1865
+exit=0
+
+$ cmp /home/user/veneer-tkp/tmp/units/tkp-3-backup/_theme-held.scss src/styles/_theme.scss && echo restored-byte-identical
+restored-byte-identical
+exit=0
+
+$ git diff --stat -- src; echo "src-diffstat-lines=$(git diff --stat -- src | wc -l)"
+src-diffstat-lines=0
+exit=0
+
+$ npm run build:src:styles
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  288.87 kB │ gzip: 34.29 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 3.38s
+[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 3.3s of this 3.4s build (99%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:css transform (97%, 3.3s, 1 call)
+Additional hook time came from hooks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+exit=0
+

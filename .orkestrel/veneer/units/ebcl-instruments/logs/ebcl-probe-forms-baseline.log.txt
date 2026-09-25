@@ -1,0 +1,365 @@
+## close
+- rest: release {appearance, cursor, display, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    display: release inline-block | block ;; veneer inline-block | block
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- hovered: release {appearance, cursor, display, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    display: release inline-block | block ;; veneer inline-block | block
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- pressed: release {appearance, cursor, display, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    display: release inline-block | block ;; veneer inline-block | block
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- focused: release {appearance, cursor, display, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    display: release inline-block | block ;; veneer inline-block | block
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- disabled: release {appearance, cursor, display, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release default | auto ;; veneer default | auto
+    display: release inline-block | block ;; veneer inline-block | block
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+## toggler
+- rest: release {appearance, cursor, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- hovered: release {appearance, cursor, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- pressed: release {appearance, cursor, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- focused: release {appearance, cursor, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- disabled: release {appearance, cursor, font-weight, text-align, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release default | auto ;; veneer default | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+## accordion
+- rest: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- hovered: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- pressed: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- focused: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- disabled: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release default | auto ;; veneer default | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+## accordion-collapsed
+- rest: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- hovered: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- pressed: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- focused: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- disabled: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release default | auto ;; veneer default | auto
+    font-weight: release 400 | 500 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+## dropdown
+- rest: release {appearance} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+- hovered: release {--bs-link-color-rgb, appearance} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+- pressed: release {--bs-link-color-rgb, appearance} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+- focused: release {appearance, outline-offset} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    outline-offset: release 0px | 1px ;; veneer 0px | 1px
+- disabled: release {appearance, cursor} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release default | pointer ;; veneer default | pointer
+## nav
+- rest: release {appearance, text-align} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    text-align: release center | start ;; veneer center | start
+- hovered: release {--bs-link-color-rgb, appearance, text-align} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+    text-align: release center | start ;; veneer center | start
+- pressed: release {--bs-link-color-rgb, appearance, text-align} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+    text-align: release center | start ;; veneer center | start
+- focused: release {appearance, outline-offset, text-align} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    outline-offset: release 0px | 1px ;; veneer 0px | 1px
+    text-align: release center | start ;; veneer center | start
+- disabled: release {appearance, text-align} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    text-align: release center | start ;; veneer center | start
+## nav-plain
+- rest: release {appearance, text-align} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    text-align: release center | start ;; veneer center | start
+- hovered: release {--bs-link-color-rgb, appearance, text-align} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+    text-align: release center | start ;; veneer center | start
+- pressed: release {--bs-link-color-rgb, appearance, text-align} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+    text-align: release center | start ;; veneer center | start
+- focused: release {appearance, outline-offset, text-align} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    outline-offset: release 0px | 1px ;; veneer 0px | 1px
+    text-align: release center | start ;; veneer center | start
+- disabled: release {appearance, text-align} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    text-align: release center | start ;; veneer center | start
+## list
+- rest: release {appearance, font-weight} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+- hovered: release {--bs-link-color-rgb, appearance, font-weight} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+- pressed: release {--bs-link-color-rgb, appearance, font-weight} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+- focused: release {appearance, font-weight, outline-offset} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    outline-offset: release 0px | 1px ;; veneer 0px | 1px
+- disabled: release {appearance, cursor, font-weight} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release default | pointer ;; veneer default | pointer
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+## page
+- rest: release {appearance, font-weight, text-align} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+- hovered: release {--bs-link-color-rgb, appearance, font-weight, text-align} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+- pressed: release {--bs-link-color-rgb, appearance, font-weight, text-align} DIFFERENT SETS
+    --bs-link-color-rgb: release 13, 110, 253 | 10, 88, 202 ;; veneer (equal)
+    appearance: release button | none ;; veneer button | none
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+- focused: release {appearance, font-weight, outline-offset, text-align} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    outline-offset: release 0px | 1px ;; veneer 0px | 1px
+    text-align: release center | start ;; veneer center | start
+- disabled: release {-webkit-text-fill-color, -webkit-text-stroke-color, appearance, background-color, caret-color, color, column-rule-color, cursor, font-weight, outline-color, pointer-events, text-align, text-decoration-color, text-emphasis-color} EQUAL SETS
+    -webkit-text-fill-color: release rgb(13, 110, 253) | rgba(33, 37, 41, 0.75) ;; veneer oklab(0.3984 -0.019591 -0.190088) | color(srgb 0.0571957 0.0900803 0.168835 / 0.75)
+    -webkit-text-stroke-color: release rgb(13, 110, 253) | rgba(33, 37, 41, 0.75) ;; veneer oklab(0.3984 -0.019591 -0.190088) | color(srgb 0.0571957 0.0900803 0.168835 / 0.75)
+    appearance: release button | none ;; veneer button | none
+    background-color: release rgb(255, 255, 255) | rgb(233, 236, 239) ;; veneer rgb(255, 255, 255) | rgb(233, 236, 239)
+    caret-color: release rgb(13, 110, 253) | rgba(33, 37, 41, 0.75) ;; veneer oklab(0.3984 -0.019591 -0.190088) | color(srgb 0.0571957 0.0900803 0.168835 / 0.75)
+    color: release rgb(13, 110, 253) | rgba(33, 37, 41, 0.75) ;; veneer oklab(0.3984 -0.019591 -0.190088) | color(srgb 0.0571957 0.0900803 0.168835 / 0.75)
+    column-rule-color: release rgb(13, 110, 253) | rgba(33, 37, 41, 0.75) ;; veneer oklab(0.3984 -0.019591 -0.190088) | color(srgb 0.0571957 0.0900803 0.168835 / 0.75)
+    cursor: release default | pointer ;; veneer default | pointer
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    outline-color: release rgb(13, 110, 253) | rgba(33, 37, 41, 0.75) ;; veneer oklab(0.3984 -0.019591 -0.190088) | color(srgb 0.0571957 0.0900803 0.168835 / 0.75)
+    pointer-events: release auto | none ;; veneer auto | none
+    text-align: release center | start ;; veneer center | start
+    text-decoration-color: release rgb(13, 110, 253) | rgba(33, 37, 41, 0.75) ;; veneer oklab(0.3984 -0.019591 -0.190088) | color(srgb 0.0571957 0.0900803 0.168835 / 0.75)
+    text-emphasis-color: release rgb(13, 110, 253) | rgba(33, 37, 41, 0.75) ;; veneer oklab(0.3984 -0.019591 -0.190088) | color(srgb 0.0571957 0.0900803 0.168835 / 0.75)
+## control-prev
+- rest: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- hovered: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- pressed: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- focused: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- disabled: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release default | auto ;; veneer default | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+## control-next
+- rest: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- hovered: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- pressed: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- focused: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release pointer | auto ;; veneer pointer | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- disabled: release {appearance, cursor, font-weight, unicode-bidi} EQUAL SETS
+    appearance: release button | none ;; veneer button | none
+    cursor: release default | auto ;; veneer default | auto
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+## indicator
+- rest: release {-webkit-text-fill-color, -webkit-text-stroke-color, appearance, border-inline-end-color, border-inline-start-color, border-left-color, border-right-color, caret-color, color, column-rule-color, font-weight, outline-color, text-align, text-decoration-color, text-emphasis-color, unicode-bidi} EQUAL SETS
+    -webkit-text-fill-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    -webkit-text-stroke-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    appearance: release button | none ;; veneer button | none
+    border-inline-end-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-inline-start-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-left-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-right-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    caret-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    column-rule-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    outline-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    text-align: release center | start ;; veneer center | start
+    text-decoration-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    text-emphasis-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- hovered: release {-webkit-text-fill-color, -webkit-text-stroke-color, appearance, border-inline-end-color, border-inline-start-color, border-left-color, border-right-color, caret-color, color, column-rule-color, font-weight, outline-color, text-align, text-decoration-color, text-emphasis-color, unicode-bidi} EQUAL SETS
+    -webkit-text-fill-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    -webkit-text-stroke-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    appearance: release button | none ;; veneer button | none
+    border-inline-end-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-inline-start-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-left-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-right-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    caret-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    column-rule-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    outline-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    text-align: release center | start ;; veneer center | start
+    text-decoration-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    text-emphasis-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- pressed: release {-webkit-text-fill-color, -webkit-text-stroke-color, appearance, border-inline-end-color, border-inline-start-color, border-left-color, border-right-color, caret-color, color, column-rule-color, font-weight, outline-color, text-align, text-decoration-color, text-emphasis-color, unicode-bidi} EQUAL SETS
+    -webkit-text-fill-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    -webkit-text-stroke-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    appearance: release button | none ;; veneer button | none
+    border-inline-end-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-inline-start-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-left-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-right-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    caret-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    column-rule-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    outline-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    text-align: release center | start ;; veneer center | start
+    text-decoration-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    text-emphasis-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- focused: release {-webkit-text-fill-color, -webkit-text-stroke-color, appearance, border-inline-end-color, border-inline-start-color, border-left-color, border-right-color, caret-color, color, column-rule-color, font-weight, text-align, text-decoration-color, text-emphasis-color, unicode-bidi} EQUAL SETS
+    -webkit-text-fill-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    -webkit-text-stroke-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    appearance: release button | none ;; veneer button | none
+    border-inline-end-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-inline-start-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-left-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    border-right-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    caret-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    column-rule-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    text-align: release center | start ;; veneer center | start
+    text-decoration-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    text-emphasis-color: release rgb(0, 0, 0) | rgb(33, 37, 41) ;; veneer rgb(0, 0, 0) | oklch(0.208 0.042 265.755)
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+- disabled: release {-webkit-text-fill-color, -webkit-text-stroke-color, appearance, border-inline-end-color, border-inline-start-color, border-left-color, border-right-color, caret-color, color, column-rule-color, font-weight, outline-color, text-align, text-decoration-color, text-emphasis-color, unicode-bidi} EQUAL SETS
+    -webkit-text-fill-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    -webkit-text-stroke-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    appearance: release button | none ;; veneer button | none
+    border-inline-end-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    border-inline-start-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    border-left-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    border-right-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    caret-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    column-rule-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    font-weight: release 400 | 600 ;; veneer 400 | 600
+    outline-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    text-align: release center | start ;; veneer center | start
+    text-decoration-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    text-emphasis-color: release rgba(16, 16, 16, 0.3) | rgb(33, 37, 41) ;; veneer rgba(16, 16, 16, 0.3) | oklch(0.208 0.042 265.755)
+    unicode-bidi: release normal | isolate ;; veneer normal | isolate
+exit=0

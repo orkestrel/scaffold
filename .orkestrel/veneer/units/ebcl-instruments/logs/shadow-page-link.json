@@ -1,0 +1,61 @@
+{
+ "name": "page-link",
+ "veneer": {
+  "rest": {
+   "appearance": "button",
+   "font-weight": "400",
+   "text-align": "center"
+  },
+  "hovered": {
+   "appearance": "button",
+   "font-weight": "400",
+   "text-align": "center"
+  },
+  "pressed": {
+   "appearance": "button",
+   "font-weight": "400",
+   "text-align": "center"
+  },
+  "focused": {
+   "appearance": "button",
+   "font-weight": "400",
+   "outline-offset": "0px",
+   "text-align": "center"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default",
+   "font-weight": "400",
+   "text-align": "center"
+  }
+ },
+ "release": {
+  "rest": {
+   "appearance": "button",
+   "font-weight": "400",
+   "text-align": "center"
+  },
+  "hovered": {
+   "appearance": "button",
+   "font-weight": "400",
+   "text-align": "center"
+  },
+  "pressed": {
+   "appearance": "button",
+   "font-weight": "400",
+   "text-align": "center"
+  },
+  "focused": {
+   "appearance": "button",
+   "font-weight": "400",
+   "outline-offset": "0px",
+   "text-align": "center"
+  },
+  "disabled": {
+   "appearance": "button",
+   "cursor": "default",
+   "font-weight": "400",
+   "text-align": "center"
+  }
+ }
+}

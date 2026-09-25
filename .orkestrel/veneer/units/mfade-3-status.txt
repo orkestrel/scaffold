@@ -1,0 +1,11 @@
+On branch unit/mfade
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   guides/veneer.md
+	modified:   src/styles/components/_fade.scss
+	modified:   tests/setupBrowser.test.ts
+	modified:   tests/setupBrowser.ts
+	modified:   tests/src/styles/components/fade.test.ts
+
+no changes added to commit (use "git add" and/or "git commit -a")

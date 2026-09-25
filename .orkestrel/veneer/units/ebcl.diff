@@ -1,0 +1,374 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3afa3ac..478efff 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -10252,12 +10252,22 @@ paint them. The tooltip paints its hint surface from the release's `--bs-emphasi
+ never writes reaches neither table here nor § Deferred selectors, whose rows must sit in the pinned
+ inventory the `scanCompatibilityPresence` function reads.
+ 
+-The button reboot rules come after those names. Each class the release builds on a button writes
+-the reboot on a `:where()` selector, such as `:where(button.nav-link)`, and the
+-`collectSelectorClasses` function reads no class inside a functional argument, so no shipped
+-component claims the rule and the ledger measures none of them. The `tests/src/styles/mixins.test.ts`
+-proof holds each rule's longhands equal to the longhands the button surface writes, and
+-[the button proof](../tests/src/styles/elements/button.test.ts) reads a `button.nav-link` element at
++The button reboot rules come after those names. Each class the release builds on a button writes the
++reboot on a `:where()` selector, such as `:where(button.nav-link)`, and the `collectSelectorClasses`
++function reads no class inside a functional argument, so no shipped component claims the rule and
++the ledger measures none of them. The styles proofs read the resets instead. The
++`tests/src/styles/mixins.test.ts` proof holds each rule's longhands equal to the longhands the
++button surface writes, and it reads the built cascade to hold every reset declaration that names
++`revert` at `revert` alone, because the minifier folds a longhand written after a `revert` shorthand
++into a shorthand the browser drops. [The button proof](../tests/src/styles/elements/button.test.ts)
++mounts each class's button form beside the class's counterpart that is no button, the anchor where
++the release builds the class on one and a focusable `div` otherwise, under a holder that retunes
++every token the button surface reads. It reads both forms at rest, hovered, pressed, under keyboard
++focus, and disabled, once under this package's cascade and once under the release's stylesheet, and
++the button form must resolve apart from its counterpart on the same longhands, at the same button
++values, under both. A counterpart cannot be disabled, so it takes the release's `disabled` class
++where the release writes that class beside the `:disabled` state, and stays at rest where the
++release writes no disabled rule for the class. The same file reads a `button.nav-link` element at
+ the release's corner, type, and shadow.
+ 
+ The Elements behaviors this package does not copy close the list. Elements' disclosure interpolates
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 2a0852e..3b15598 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -374,7 +374,9 @@ describe('styles setup', () => {
+ 				'BUTTON_LABEL_CASES',
+ 				'BUTTON_MODES',
+ 				'BUTTON_OUTLINE_CASES',
++				'BUTTON_REBOOT_CASES',
+ 				'BUTTON_REBOOT_SELECTORS',
++				'BUTTON_RETUNED_HOLDER_STYLE',
+ 				'BUTTON_SCHEME_CASES',
+ 				'BUTTON_SIZE_CASES',
+ 				'BUTTON_SURFACE_CASES',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 968647b..6c7b8dc 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -3244,6 +3244,131 @@ export const BUTTON_REBOOT_SELECTORS = Object.freeze([
+ 	':where(.carousel-indicators [data-bs-target])',
+ ])
+ 
++/**
++ * Holds the inline style of the holder the button reboot proofs mount each class's forms in.
++ *
++ * @remarks
++ * It extends {@link BUTTON_HOLDER_STYLE} with every other token the button surface reads at rest or
++ * in a state: the padding, the face, the size, the line height, the text, the fill, the corner,
++ * the disabled opacity, the state mixers, the motion, and the focus ring. A surface declaration
++ * that reaches a class's button form then reads a value that neither this package's cascade nor
++ * the release's writes on the class, so it shows as a longhand the button form resolves apart
++ * from the class's other form, or as a value the release's button form never takes. The forced
++ * colors highlight is left alone, because no proof reads a button under forced colors.
++ */
++export const BUTTON_RETUNED_HOLDER_STYLE = `${BUTTON_HOLDER_STYLE}; --vn-space-3: 5px; --vn-space-6: 13px; --vn-font-sans: fantasy; --vn-size-2: 17px; --vn-line-body: 1.9; --vn-text-body-base: var(--vn-palette-teal); --vn-button-transparent: var(--vn-palette-yellow); --vn-radius-base: 7px; --vn-button-opacity: 0.37; --vn-state-mixer: var(--vn-palette-pink); --vn-state-hover: 41%; --vn-state-active: 63%; --vn-motion-feedback: 370ms; --vn-ease-standard: linear; --vn-focus-width: 5px; --vn-focus-color: var(--vn-palette-orange)`
++
++/**
++ * Lists each class the release builds on a `button` element, with the release's documented markup
++ * for the class's button form, the class's counterpart that is no button, the selector that finds
++ * the class's element in each, and whether the counterpart reads its disabled state through the
++ * `disabled` class.
++ *
++ * @remarks
++ * The counterpart is the anchor where the release builds the class on one, and a focusable `div`
++ * otherwise, so it takes hover, press, and keyboard focus the way the button form does. Each
++ * markup sits inside the container the release's own selectors read, and the pagination strip
++ * carries three pages so the reading is the middle one, which no end-of-strip corner rule reaches.
++ * The carousel carries a height in place of its slides, so its controls and indicators have a box
++ * the pointer can reach.
++ *
++ * A counterpart cannot be `:disabled`. Where the `paired` field is `true`, the release writes the
++ * class's `:disabled` rule beside a `.disabled` rule, so the counterpart reads its disabled state
++ * with the `disabled` class and the `aria-disabled` attribute, the release's documented disabled
++ * markup for a link. Where it is `false`, the release writes no `:disabled` rule for the class,
++ * so the counterpart is read at rest beside the disabled button.
++ */
++export const BUTTON_REBOOT_CASES = Object.freeze([
++	Object.freeze({
++		name: 'btn-close',
++		selector: '.btn-close',
++		button: '<button type="button" class="btn-close" aria-label="Close"></button>',
++		counterpart: '<div class="btn-close" tabindex="0"></div>',
++		paired: true,
++	}),
++	Object.freeze({
++		name: 'navbar-toggler',
++		selector: '.navbar-toggler',
++		button:
++			'<nav class="navbar"><div class="container-fluid"><button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#harborNav" aria-controls="harborNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div></nav>',
++		counterpart:
++			'<nav class="navbar"><div class="container-fluid"><div class="navbar-toggler" tabindex="0"><span class="navbar-toggler-icon"></span></div></div></nav>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'accordion-button',
++		selector: '.accordion-button',
++		button:
++			'<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#harborOne" aria-expanded="true" aria-controls="harborOne">Harbor schedule</button></h2></div></div>',
++		counterpart:
++			'<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><div class="accordion-button" tabindex="0">Harbor schedule</div></h2></div></div>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'dropdown-item',
++		selector: '.dropdown-item',
++		button:
++			'<div class="dropdown"><ul class="dropdown-menu show" style="position: static"><li><button class="dropdown-item" type="button">Harbor action</button></li></ul></div>',
++		counterpart:
++			'<div class="dropdown"><ul class="dropdown-menu show" style="position: static"><li><a class="dropdown-item" href="#">Harbor action</a></li></ul></div>',
++		paired: true,
++	}),
++	Object.freeze({
++		name: 'nav-link',
++		selector: '.nav-link',
++		button:
++			'<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><button class="nav-link" id="harbor-tab" data-bs-toggle="tab" data-bs-target="#harbor-pane" type="button" role="tab" aria-controls="harbor-pane" aria-selected="false">Harbor profile</button></li></ul>',
++		counterpart:
++			'<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link" href="#">Harbor profile</a></li></ul>',
++		paired: true,
++	}),
++	Object.freeze({
++		name: 'list-group-item',
++		selector: '.list-group-item',
++		button:
++			'<div class="list-group"><button type="button" class="list-group-item list-group-item-action">Harbor entry</button></div>',
++		counterpart:
++			'<div class="list-group"><a href="#" class="list-group-item list-group-item-action">Harbor entry</a></div>',
++		paired: true,
++	}),
++	Object.freeze({
++		name: 'page-link',
++		selector: '.page-item:nth-child(2) .page-link',
++		button:
++			'<ul class="pagination"><li class="page-item"><button class="page-link" type="button">1</button></li><li class="page-item"><button class="page-link" type="button">2</button></li><li class="page-item"><button class="page-link" type="button">3</button></li></ul>',
++		counterpart:
++			'<ul class="pagination"><li class="page-item"><a class="page-link" href="#">1</a></li><li class="page-item"><a class="page-link" href="#">2</a></li><li class="page-item"><a class="page-link" href="#">3</a></li></ul>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'carousel-control-prev',
++		selector: '.carousel-control-prev',
++		button:
++			'<div class="carousel slide" style="height: 120px"><button class="carousel-control-prev" type="button" data-bs-target="#harborCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button></div>',
++		counterpart:
++			'<div class="carousel slide" style="height: 120px"><div class="carousel-control-prev" tabindex="0"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></div></div>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'carousel-control-next',
++		selector: '.carousel-control-next',
++		button:
++			'<div class="carousel slide" style="height: 120px"><button class="carousel-control-next" type="button" data-bs-target="#harborCarousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button></div>',
++		counterpart:
++			'<div class="carousel slide" style="height: 120px"><div class="carousel-control-next" tabindex="0"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></div></div>',
++		paired: false,
++	}),
++	Object.freeze({
++		name: 'carousel indicator',
++		selector: '.carousel-indicators [data-bs-slide-to="1"]',
++		button:
++			'<div class="carousel slide" style="height: 120px"><div class="carousel-indicators"><button type="button" data-bs-target="#harborCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button><button type="button" data-bs-target="#harborCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button></div></div>',
++		counterpart:
++			'<div class="carousel slide" style="height: 120px"><div class="carousel-indicators"><div data-bs-target="#harborCarousel" data-bs-slide-to="0" class="active" tabindex="0"></div><div data-bs-target="#harborCarousel" data-bs-slide-to="1" tabindex="0"></div></div></div>',
++		paired: false,
++	}),
++])
++
+ /**
+  * Holds the role and mode readings for the filled-button interaction cases.
+  *
+diff --git a/tests/src/styles/elements/button.test.ts b/tests/src/styles/elements/button.test.ts
+index 80e2880..0d8af36 100644
+--- a/tests/src/styles/elements/button.test.ts
++++ b/tests/src/styles/elements/button.test.ts
+@@ -1,7 +1,9 @@
+ import { requireValue } from '@orkestrel/test'
+ import {
++	build,
+ 	CANVAS_COLOR,
+ 	clickAccessible,
++	driveHold,
+ 	holdAccessible,
+ 	hoverAccessible,
+ 	matchesColor,
+@@ -15,6 +17,7 @@ import {
+ 	stageMedia,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
++import { commands, userEvent } from 'vitest/browser'
+ import { scene } from '../../../setupBrowser.js'
+ import {
+ 	BUTTON_SURFACE_CASES,
+@@ -23,6 +26,8 @@ import {
+ 	BUTTON_FORM_CASES,
+ 	BUTTON_FORM_DIFFERENCES,
+ 	BUTTON_HOLDER_STYLE,
++	BUTTON_REBOOT_CASES,
++	BUTTON_RETUNED_HOLDER_STYLE,
+ 	BUTTON_SURFACE_LONGHANDS,
+ 	BUTTON_TAG_CASES,
+ 	extractShadowLayers,
+@@ -320,6 +325,112 @@ describe('button', () => {
+ 			weight: '600',
+ 		})
+ 	})
++	it.each(BUTTON_REBOOT_CASES)(
++		'resolves the $name button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled',
++		async ({ name, selector, button, counterpart, paired }) => {
++			// The holder retunes every token the surface reads, so a surface declaration that reaches
++			// the button form shows as a longhand the two forms resolve apart where the release's
++			// forms agree, or as a button value the release's button form never takes. A value the
++			// class writes resolves alike on both forms, so the calibrated values drop out and only
++			// the button's own treatment is compared. The release's forms are read inside a shadow
++			// root holding its stylesheet alone, under the same holder, so they inherit the same page
++			// and none of this package's rules reach them. The release declares its root variables on
++			// the light theme attribute as well as on the root, which a shadow tree does not match.
++			// The stylesheet is read as a file, the way the recorded Button oracle reads it, and never
++			// imported, so no release module enters the test graph.
++			const markup = `<div style="${BUTTON_RETUNED_HOLDER_STYLE}"><div data-form="button">${button}</div><div data-form="counterpart">${counterpart}</div></div>`
++			const shelf = scene.mount('')
++			const shadow = shelf.attachShadow({ mode: 'open' })
++			shadow.append(
++				build('style', {
++					text: await commands.readFile('node_modules/bootstrap/dist/css/bootstrap.css'),
++				}),
++				scene.mount(`<div data-bs-theme="light">${markup}</div>`),
++			)
++			const roots = [
++				['veneer', scene.mount(markup)],
++				['release', shadow],
++			] as const
++			const elements = roots.flatMap(([cascade, root]) =>
++				(['button', 'counterpart'] as const).map((form) => ({
++					key: `${cascade} ${form}`,
++					element: requireValue(
++						root.querySelector<HTMLElement>(`[data-form="${form}"] ${selector}`),
++						`No ${cascade} ${form} ${name}`,
++					),
++				})),
++			)
++			// Each state names the selector its element matches once driven into it, and the universal
++			// selector stands for a state no drive enters.
++			const states = [
++				['rest', '*'],
++				['hovered', ':hover'],
++				['pressed', ':active'],
++				['focused', ':focus-visible'],
++				['disabled', '*'],
++			] as const
++			const readings = new Map<string, Record<string, string>>()
++			const missed: string[] = []
++			for (const [state, entered] of states) {
++				// Every state is read with motion reduced, so no reading lands partway through a
++				// transition, and the resting reading is taken before it, so a transition the
++				// surface writes shows. Each element is driven into a state on its own, and the
++				// pointer release parks the pointer outside the page, so no later reading carries a
++				// hover or a press.
++				if (state === 'hovered') await stageMedia({ motion: false })
++				for (const { key, element } of elements) {
++					if (state === 'hovered') {
++						await userEvent.hover(element)
++					} else if (state === 'pressed') {
++						await driveHold(() => element, `${key} ${name}`)
++					} else if (state === 'focused') {
++						element.blur()
++						element.focus()
++						await pressKeys('{ArrowRight}')
++					} else if (state === 'disabled') {
++						element.blur()
++						if (element instanceof HTMLButtonElement) element.disabled = true
++						else if (paired) {
++							element.classList.add('disabled')
++							element.setAttribute('aria-disabled', 'true')
++						}
++					}
++					if (!element.matches(entered)) missed.push(`${key} ${state}`)
++					readings.set(
++						`${key} ${state}`,
++						Object.fromEntries(
++							Array.from(getComputedStyle(element))
++								.filter((longhand) => !longhand.startsWith('--'))
++								.map((longhand) => [longhand, readStyle(element, longhand)]),
++						),
++					)
++					await releasePointer()
++				}
++			}
++			expect(missed).toEqual([])
++			// Each state's difference is every longhand the button form resolves apart from its
++			// counterpart, with the value the button form takes there.
++			const [veneer, release] = roots.map(([cascade]) =>
++				Object.fromEntries(
++					states.map(([state]) => {
++						const values = requireValue(readings.get(`${cascade} button ${state}`), 'No reading')
++						const twin = requireValue(readings.get(`${cascade} counterpart ${state}`), 'No reading')
++						return [
++							state,
++							Object.fromEntries(
++								Object.entries(values).filter(([longhand, value]) => twin[longhand] !== value),
++							),
++						]
++					}),
++				),
++			)
++			// A reading that told no button from its counterpart would pass by agreeing on nothing,
++			// and the button appearance separates the two in every state on the release's page.
++			for (const difference of Object.values(requireValue(release, 'No release reading')))
++				expect(Object.keys(difference)).toContain('appearance')
++			expect({ name, differences: veneer }).toEqual({ name, differences: release })
++		},
++	)
+ 	it.each(BUTTON_SURFACE_CASES)(
+ 		'resolves the calibrated geometry and interaction paint in %s mode',
+ 		async (mode, color, hover, active, focus) => {
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index 88eac6f..f301297 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -13,7 +13,9 @@ import {
+ 	stageMedia,
+ } from '@orkestrel/test/browser'
+ import { TOKEN_NAMES } from '@src/core'
++import { parse } from 'postcss'
+ import { afterEach, describe, expect, it } from 'vitest'
++import cascade from '../../../dist/src/styles/index.css?raw'
+ import { normalizeSelectorText } from '../../setup.js'
+ import { collectLayer, collectMediaConditions, scene, visitBreakpoint } from '../../setupBrowser.js'
+ import {
+@@ -227,6 +229,32 @@ describe('declaration mixins', () => {
+ 			),
+ 		).toEqual([])
+ 	})
++	it('writes every reset declaration in the built cascade that names revert with revert as its whole value, on each class the release builds on a button', () => {
++		// The build's minifier folds a longhand written after a `revert` shorthand in the same rule
++		// into that shorthand, and a shorthand holding `revert` beside another value is invalid, so
++		// the browser drops the whole declaration and the property keeps the surface's value. The
++		// reading is the shipped text, because the dropped declaration never reaches the CSSOM. The
++		// minifier also drops the space after each comma in a selector list, which is put back before
++		// the selector is compared with its authored spelling.
++		const declarations: Array<{ selector: string; declaration: string }> = []
++		parse(cascade).walkAtRules('layer', (layer) => {
++			if (layer.params !== 'components') return
++			layer.walkRules((rule) => {
++				if (!rule.selector.startsWith(':where(')) return
++				rule.walkDecls((declaration) => {
++					if (/\brevert\b/u.test(declaration.value))
++						declarations.push({
++							selector: normalizeSelectorText(rule.selector.replaceAll(',', ', ')),
++							declaration: `${declaration.prop}: ${declaration.value}`,
++						})
++				})
++			})
++		})
++		expect([...new Set(declarations.map(({ selector }) => selector))].sort()).toEqual(
++			[...BUTTON_REBOOT_SELECTORS].sort(),
++		)
++		expect(declarations.filter(({ declaration }) => !declaration.endsWith(': revert'))).toEqual([])
++	})
+ 	it('resets every text treatment the tip rules reset, over a treatment staged beneath it', () => {
+ 		// The staged treatment sits in a layer, and the fixture's own rule sits in none, so the reset
+ 		// outranks it wherever the mixin declares the property. A declaration the mixin dropped leaves

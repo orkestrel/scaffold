@@ -1,0 +1,645 @@
+# mutation minifier on src/styles/_mixins.scss
+## applied diff
+148a149
+> 	transition-delay: 1s;
+## build
+build exit=0
+## compiled transition declarations in the resets
+      9 transition:revert 0s 1s
+## run
+
+ RUN  v4.1.11 /home/user/veneer-ebcl
+
+Port 63315 is in use, trying another one...
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+13 │ @import 'bootstrap/scss/functions';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 13:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+14 │ @import 'bootstrap/scss/variables';
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    tests/src/styles/fixtures/contrast.scss 14:9  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:55  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 58:30  @import
+    tests/src/styles/fixtures/contrast.scss 13:9       root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 177:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 191:13  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 217:11  @import
+    tests/src/styles/fixtures/contrast.scss 13:9        root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+     ╷
+1753 │ @import "variables-dark"; // TODO: can be removed safely in v6, only here to avoid breaking changes in v5.3
+     │         ^^^^^^^^^^^^^^^^
+     ╵
+    node_modules/bootstrap/scss/_variables.scss 1753:9  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 207:11  tint-color()
+    node_modules/bootstrap/scss/_variables.scss 79:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 212:11  shade-color()
+    node_modules/bootstrap/scss/_variables.scss 84:12   @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_variables.scss 342:27  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:30  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 11:51  -assert-ascending()
+    node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    tests/src/styles/fixtures/contrast.scss 14:9       root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 185:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 186:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules/bootstrap/scss/_functions.scss 187:10  luminance()
+    node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:11   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules/bootstrap/scss/_functions.scss 37:24   to-rgb()
+    node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    tests/src/styles/fixtures/contrast.scss 14:9        root stylesheet
+
+WARNING: 35 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:46:2 > declaration mixins > paints the calibrated focus ring on its mounted element caller 242ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:63:2 > declaration mixins > emits the calibrated feedback duration and easing, and collapses it under reduced motion 44ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:75:2 > declaration mixins > applies a reduced-motion block to a treatment that carries no transition 56ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:86:2 > declaration mixins > applies a forced-colors treatment only while the engine reports forced colors 43ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:109:2 > declaration mixins > covers the whole of its containing block on every physical edge 16ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:125:2 > declaration mixins > paints the subtle, emphasis, and border tiers at the percentages it was given 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:154:2 > declaration mixins > paints the backdrop at its stacking level and fill, transparent while fading and at its opacity when shown 25ms
+ × |[object Object] (chromium)| tests/src/styles/mixins.test.ts:197:2 > declaration mixins > writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important 25ms
+   → expected { …(2) } to deeply equal { …(2) }
+ × |[object Object] (chromium)| tests/src/styles/mixins.test.ts:232:2 > declaration mixins > writes every reset declaration in the built cascade that names revert with revert as its whole value, on each class the release builds on a button 50ms
+   → expected [ { …(2) }, { …(2) }, { …(2) }, …(6) ] to deeply equal []
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:258:2 > declaration mixins > resets every text treatment the tip rules reset, over a treatment staged beneath it 24ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:288:2 > value functions > returns the size token each heading level names, from the largest level down 25ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:306:2 > font size mixin > applies the responsive rule to a 3 rem size against a 16 px root below the 1200px boundary and caps it at the size from the boundary 151ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:306:2 > font size mixin > applies the responsive rule to a 1 rem size against a 16 px root below the 1200px boundary and caps it at the size from the boundary 150ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:306:2 > font size mixin > applies the responsive rule to a 2.25 rem size against a 20 px root below the 1200px boundary and caps it at the size from the boundary 150ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:349:2 > breakpoint mixins > emits each condition at the width its own published token resolves to 32ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:379:2 > breakpoint mixins > applies the up content at and above each boundary, and the down content below it 517ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:444:2 > breakpoint mixins > walks the ramp down, emitting the zero entry unwrapped and each named entry below its own boundary 517ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:538:2 > utility mixins > names each class from its class, infix, key, and state, with no hyphen where the class or the key is absent 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:597:2 > utility mixins > gates each responsive class at the width its own infix names, and gates no static class 33ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:645:2 > utility mixins > writes every utility property important and every local and custom property normal 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's primary fill in light mode 19ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's primary fill in dark mode 15ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's secondary fill in light mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's secondary fill in dark mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's tertiary fill in light mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's tertiary fill in dark mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's success fill in light mode 19ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's success fill in dark mode 14ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's info fill in light mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's info fill in dark mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's warning fill in light mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's warning fill in dark mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's danger fill in light mode 19ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's danger fill in dark mode 14ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's light fill in light mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's light fill in dark mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's dark fill in light mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:692:2 > contrast functions > picks the label the release's own function picks against Veneer's dark fill in dark mode 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:706:2 > contrast functions > picks the foreground the release records against its own 'primary' fill 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:706:2 > contrast functions > picks the foreground the release records against its own 'secondary' fill 19ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:706:2 > contrast functions > picks the foreground the release records against its own 'success' fill 14ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:706:2 > contrast functions > picks the foreground the release records against its own 'info' fill 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:706:2 > contrast functions > picks the foreground the release records against its own 'warning' fill 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:706:2 > contrast functions > picks the foreground the release records against its own 'danger' fill 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:706:2 > contrast functions > picks the foreground the release records against its own 'light' fill 17ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:706:2 > contrast functions > picks the foreground the release records against its own 'dark' fill 20ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:715:2 > contrast functions > picks white on the release primary, whose white ratio sits at the 4.5 to 1 boundary 13ms
+ ✓ |[object Object] (chromium)| tests/src/styles/mixins.test.ts:725:2 > contrast functions > writes one value for a pair that agrees and a light-dark pair for one that differs 17ms
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+stderr | unknown test
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:44:21 > button > removes the outline for pointer focus in light mode 162ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:44:21 > button > removes the outline for pointer focus in dark mode 117ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:61:21 > button > retains the Reboot button affordances in light mode 50ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:61:21 > button > retains the Reboot button affordances in dark mode 50ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:81:2 > button > shows the pointer over an enabled button and the default cursor over a disabled one 50ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:89:2 > button > paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface 956ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:173:2 > button > lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value 44ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:203:2 > button > resolves every .btn form on a button as the same form resolves on an anchor at rest, and every enabled form under hover, press, and keyboard focus, apart from the button appearance and the user agent's focus offset on a link 2109ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:306:2 > button > writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow 41ms
+ × |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'btn-close' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1295ms
+   → expected { name: 'btn-close', …(1) } to deeply equal { name: 'btn-close', …(1) }
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'navbar-toggler' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1302ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'accordion-button' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1314ms
+ × |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'dropdown-item' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1337ms
+   → expected { name: 'dropdown-item', …(1) } to deeply equal { name: 'dropdown-item', …(1) }
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'nav-link' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1311ms
+ × |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'list-group-item' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1351ms
+   → expected { name: 'list-group-item', …(1) } to deeply equal { name: 'list-group-item', …(1) }
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'page-link' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1300ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'carousel-control-prev' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1317ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'carousel-control-next' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1335ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'carousel indicator' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled 1304ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:435:2 > button > resolves the calibrated geometry and interaction paint in light mode 262ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:435:2 > button > resolves the calibrated geometry and interaction paint in dark mode 231ms
+ ✓ |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:480:2 > button > steps the surface veil in a dark island by at least the least hover step 133ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:197:2 > declaration mixins > writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -35,13 +35,8 @@[39m
+[2m      "padding-bottom",[22m
+[2m      "padding-left",[22m
+[2m      "padding-right",[22m
+[2m      "padding-top",[22m
+[2m      "pointer-events",[22m
+[32m-     "transition-behavior",[39m
+[32m-     "transition-delay",[39m
+[32m-     "transition-duration",[39m
+[32m-     "transition-property",[39m
+[32m-     "transition-timing-function",[39m
+[2m    ],[22m
+[2m    "selector": ":where(button.dropdown-item)",[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/mixins.test.ts:219:85
+    217|   )
+    218|   for (const rule of resets)
+    219|    expect({ selector: rule.selectorText, longhands: Array.from(rule.st…
+       |                                                                                     ^
+    220|     selector: rule.selectorText,
+    221|     longhands: written.filter((longhand) => !BUTTON_KEPT_LONGHANDS.inc…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/mixins.test.ts:232:2 > declaration mixins > writes every reset declaration in the built cascade that names revert with revert as its whole value, on each class the release builds on a button
+AssertionError: expected [ { …(2) }, { …(2) }, { …(2) }, …(6) ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "declaration": "transition: revert 0s 1s",[39m
+[31m+     "selector": ":where(button.dropdown-item)",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "declaration": "transition: revert 0s 1s",[39m
+[31m+     "selector": ":where(button.nav-link)",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "declaration": "transition: revert 0s 1s",[39m
+[31m+     "selector": ":where(button.navbar-toggler)",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "declaration": "transition: revert 0s 1s",[39m
+[31m+     "selector": ":where(button.accordion-button)",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "declaration": "transition: revert 0s 1s",[39m
+[31m+     "selector": ":where(button.page-link)",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "declaration": "transition: revert 0s 1s",[39m
+[31m+     "selector": ":where(button.list-group-item)",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "declaration": "transition: revert 0s 1s",[39m
+[31m+     "selector": ":where(button.btn-close)",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "declaration": "transition: revert 0s 1s",[39m
+[31m+     "selector": ":where(button.carousel-control-prev, button.carousel-control-next)",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "declaration": "transition: revert 0s 1s",[39m
+[31m+     "selector": ":where(.carousel-indicators [data-bs-target])",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+ ❯ tests/src/styles/mixins.test.ts:256:86
+    254|    [...BUTTON_REBOOT_SELECTORS].sort(),
+    255|   )
+    256|   expect(declarations.filter(({ declaration }) => !declaration.endsWit…
+       |                                                                                      ^
+    257|  })
+    258|  it('resets every text treatment the tip rules reset, over a treatment…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'btn-close' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled
+AssertionError: expected { name: 'btn-close', …(1) } to deeply equal { name: 'btn-close', …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -4,42 +4,51 @@[39m
+[2m        "appearance": "button",[22m
+[2m        "cursor": "default",[22m
+[2m        "display": "inline-block",[22m
+[2m        "font-weight": "400",[22m
+[2m        "text-align": "center",[22m
+[31m+       "transition-property": "none",[39m
+[2m        "unicode-bidi": "normal",[22m
+[2m      },[22m
+[2m      "focused": {[22m
+[2m        "appearance": "button",[22m
+[2m        "cursor": "pointer",[22m
+[2m        "display": "inline-block",[22m
+[2m        "font-weight": "400",[22m
+[2m        "text-align": "center",[22m
+[31m+       "transition-property": "none",[39m
+[2m        "unicode-bidi": "normal",[22m
+[2m      },[22m
+[2m      "hovered": {[22m
+[2m        "appearance": "button",[22m
+[2m        "cursor": "pointer",[22m
+[2m        "display": "inline-block",[22m
+[2m        "font-weight": "400",[22m
+[2m        "text-align": "center",[22m
+[31m+       "transition-property": "none",[39m
+[2m        "unicode-bidi": "normal",[22m
+[2m      },[22m
+[2m      "pressed": {[22m
+[2m        "appearance": "button",[22m
+[2m        "cursor": "pointer",[22m
+[2m        "display": "inline-block",[22m
+[2m        "font-weight": "400",[22m
+[2m        "text-align": "center",[22m
+[31m+       "transition-property": "none",[39m
+[2m        "unicode-bidi": "normal",[22m
+[2m      },[22m
+[2m      "rest": {[22m
+[2m        "appearance": "button",[22m
+[2m        "cursor": "pointer",[22m
+[2m        "display": "inline-block",[22m
+[2m        "font-weight": "400",[22m
+[2m        "text-align": "center",[22m
+[31m+       "transition-behavior": "normal, normal, normal, normal, normal",[39m
+[31m+       "transition-delay": "0s, 0s, 0s, 0s, 0s",[39m
+[31m+       "transition-duration": "0.37s, 0.37s, 0.37s, 0.37s, 0.37s",[39m
+[31m+       "transition-property": "color, background-color, border-color, box-shadow, opacity",[39m
+[31m+       "transition-timing-function": "linear, linear, linear, linear, linear",[39m
+[2m        "unicode-bidi": "normal",[22m
+[2m      },[22m
+[2m    },[22m
+[2m    "name": "btn-close",[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:431:41
+    429|    for (const difference of Object.values(requireValue(release, 'No re…
+    430|     expect(Object.keys(difference)).toContain('appearance')
+    431|    expect({ name, differences: veneer }).toEqual({ name, differences: …
+       |                                         ^
+    432|   },
+    433|  )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'dropdown-item' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled
+AssertionError: expected { name: 'dropdown-item', …(1) } to deeply equal { name: 'dropdown-item', …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "differences": {[22m
+[2m      "disabled": {[22m
+[2m        "appearance": "button",[22m
+[2m        "cursor": "default",[22m
+[31m+       "transition-property": "none",[39m
+[2m      },[22m
+[2m      "focused": {[22m
+[2m        "appearance": "button",[22m
+[2m        "outline-offset": "0px",[22m
+[31m+       "transition-property": "none",[39m
+[2m      },[22m
+[2m      "hovered": {[22m
+[2m        "appearance": "button",[22m
+[31m+       "transition-property": "none",[39m
+[2m      },[22m
+[2m      "pressed": {[22m
+[2m        "appearance": "button",[22m
+[31m+       "transition-property": "none",[39m
+[2m      },[22m
+[2m      "rest": {[22m
+[2m        "appearance": "button",[22m
+[31m+       "transition-behavior": "normal, normal, normal, normal, normal",[39m
+[31m+       "transition-delay": "0s, 0s, 0s, 0s, 0s",[39m
+[31m+       "transition-duration": "0.37s, 0.37s, 0.37s, 0.37s, 0.37s",[39m
+[31m+       "transition-property": "color, background-color, border-color, box-shadow, opacity",[39m
+[31m+       "transition-timing-function": "linear, linear, linear, linear, linear",[39m
+[2m      },[22m
+[2m    },[22m
+[2m    "name": "dropdown-item",[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:431:41
+    429|    for (const difference of Object.values(requireValue(release, 'No re…
+    430|     expect(Object.keys(difference)).toContain('appearance')
+    431|    expect({ name, differences: veneer }).toEqual({ name, differences: …
+       |                                         ^
+    432|   },
+    433|  )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |[object Object] (chromium)| tests/src/styles/elements/button.test.ts:329:2 > button > resolves the 'list-group-item' button form apart from its counterpart on the same longhands, at the same button values, as the release does, at rest, hovered, pressed, under keyboard focus, and disabled
+AssertionError: expected { name: 'list-group-item', …(1) } to deeply equal { name: 'list-group-item', …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -2,26 +2,35 @@[39m
+[2m    "differences": {[22m
+[2m      "disabled": {[22m
+[2m        "appearance": "button",[22m
+[2m        "cursor": "default",[22m
+[2m        "font-weight": "400",[22m
+[31m+       "transition-property": "none",[39m
+[2m      },[22m
+[2m      "focused": {[22m
+[2m        "appearance": "button",[22m
+[2m        "font-weight": "400",[22m
+[2m        "outline-offset": "0px",[22m
+[31m+       "transition-property": "none",[39m
+[2m      },[22m
+[2m      "hovered": {[22m
+[2m        "appearance": "button",[22m
+[2m        "font-weight": "400",[22m
+[31m+       "transition-property": "none",[39m
+[2m      },[22m
+[2m      "pressed": {[22m
+[2m        "appearance": "button",[22m
+[2m        "font-weight": "400",[22m
+[31m+       "transition-property": "none",[39m
+[2m      },[22m
+[2m      "rest": {[22m
+[2m        "appearance": "button",[22m
+[2m        "font-weight": "400",[22m
+[31m+       "transition-behavior": "normal, normal, normal, normal, normal",[39m
+[31m+       "transition-delay": "0s, 0s, 0s, 0s, 0s",[39m
+[31m+       "transition-duration": "0.37s, 0.37s, 0.37s, 0.37s, 0.37s",[39m
+[31m+       "transition-property": "color, background-color, border-color, box-shadow, opacity",[39m
+[31m+       "transition-timing-function": "linear, linear, linear, linear, linear",[39m
+[2m      },[22m
+[2m    },[22m
+[2m    "name": "list-group-item",[22m
+[2m  }[22m
+
+ ❯ tests/src/styles/elements/button.test.ts:431:41
+    429|    for (const difference of Object.values(requireValue(release, 'No re…
+    430|     expect(Object.keys(difference)).toContain('appearance')
+    431|    expect({ name, differences: veneer }).toEqual({ name, differences: …
+       |                                         ^
+    432|   },
+    433|  )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 65 passed (70)
+   Start at  05:00:51
+   Duration  32.44s (transform 0ms, setup 1.27s, import 840ms, tests 19.99s, environment 0ms)
+
+JSON report written to /home/user/veneer-ebcl/tmp/units/logs/ebcl-mutation-minifier.json
+run exit=1
+## restore: before e74acd3830cef2fcd727bfb97f922e0aafc8e9d9a2240c6f2fb51a0b62e2bafe after e74acd3830cef2fcd727bfb97f922e0aafc8e9d9a2240c6f2fb51a0b62e2bafe IDENTICAL
+cmp: restored file equals its backup
+git diff --stat -- src: []
+rebuild exit=0
