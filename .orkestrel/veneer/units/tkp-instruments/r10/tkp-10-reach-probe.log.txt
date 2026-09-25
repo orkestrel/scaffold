@@ -1,0 +1,14 @@
+{"bareBefore":"1px","tokenBelow":"1px","tokenScope":"1px","aliasBelow":"4px","rootRadius":"calc(.375rem * 1)","nested":"calc(.375rem * 1)","nestedAncestor":"20px","nestedSelf":"20px","rootStripe":"5%","stripeDefault":"5%","stripeBelow":"5%","bareAfterRoot":"4px","tokenScopeAfterRoot":"4px"}
+ok   bareBefore = 1px (want 1px)
+ok   tokenBelow = 1px (want 1px)
+ok   tokenScope = 1px (want 1px)
+ok   aliasBelow = 4px (want 4px)
+ok   bareAfterRoot = 4px (want 4px)
+ok   tokenScopeAfterRoot = 4px (want 4px)
+ok   nestedAncestor = 20px (want 20px)
+ok   nestedSelf = 20px (want 20px)
+ok   stripeDefault = 5% (want 5%)
+ok   stripeBelow = 5% (want 5%)
+nested reads the root value: true
+exit=0
+2026-09-25T07:22:44Z
