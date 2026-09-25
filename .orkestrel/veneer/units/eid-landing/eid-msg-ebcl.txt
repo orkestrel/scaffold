@@ -1,0 +1,21 @@
+Compare each button form with the release's through one reader, in its partial's proof (E-ID-BUTTON-CLASSES)
+
+readFormDifferences in tests/setupBrowser.ts mounts a class's button form and
+its counterpart in the Veneer document and in a shadow root holding the
+release's stylesheet, drives each state with real input, checks each state's
+entry, and returns each cascade's map of differing longhands. It refuses a state
+list that reads rest after another state or disabled before one. The .btn proof
+and every button-reboot proof compare the Veneer map with the release map, so a
+user-agent default that moves both cascades cancels (the Chromium 153 row's
+shape), and each reboot case sits in the test file of the partial that writes
+its include. BUTTON_FORM_DIFFERENCES is retired, the holder is
+BUTTON_REBOOT_HOLDER_STYLE, and a case pins the reboot case table to the reboot
+selectors.
+
+Written by opus on Opus 5.5 (rounds 1 and 2) and builder on Sonnet (round 3);
+audited by analyst on GPT-6 Astra, reviewer on Opus 5.5, and checker on Sonnet
+(scaffold .orkestrel/veneer/units/ebcl-audit-verdict.md, ebcl-audit-2-verdict.md,
+and ebcl-audit-3-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

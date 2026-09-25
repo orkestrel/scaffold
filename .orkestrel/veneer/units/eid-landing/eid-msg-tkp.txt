@@ -1,0 +1,24 @@
+Prove each documented token group moves a shipped consumer from an ancestor override (TOKEN-PROOFS)
+
+The ancestor token overrides block in tests/src/styles/tokens.test.ts gives
+each token group guide § Tokens documents without an override proof one case:
+it overrides the token on an ancestor, reads a shipped class or tag consumer's
+resolved property move, and holds a twin outside the override on the rest
+value. The cases read the link, hover, and decoration tokens, the validation
+colors under a plain ancestor and under a mode scope, the button state mixes
+and mixer, the disabled opacity, the heading weight, and the standard easing.
+The scope case reads which aliases a mode scope derives and which only the
+root derives. Guide § Customization states where an override reaches: from the
+root element it reaches every rule, tier, and alias that reads the token,
+except inside a [data-bs-theme] element below the root that declares it again;
+from a [data-bs-theme] element below the root it reaches the tiers and aliases
+its mode scope derives and every rule inside it that reads the token (D51a).
+The duplicate stacking rows in § Tokens merge into one.
+
+Written by opus on Opus 5.5 (rounds 1 to 6) and builder on Sonnet (rounds 7
+and 8); audited by analyst on GPT-6 Astra, reviewer on Opus 5.5, and checker on
+Sonnet (scaffold .orkestrel/veneer/units/tkp-audit-verdict.md through
+tkp-audit-7-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

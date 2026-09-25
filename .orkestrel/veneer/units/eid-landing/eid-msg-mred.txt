@@ -1,0 +1,15 @@
+Stop the placeholder and spinner animations under reduced motion (E-ID-MOTION-REDUCED)
+
+Under the reduced-motion preference, .placeholder-glow and .placeholder-wave run
+no animation, and the border and grow spinners run no animation, where the
+release only slows the spinners to 1.5s. The grow spinner rests as a whole disc
+at opacity 1 with no scale and keeps its visually hidden label rendered. Each
+state is read from the rendered page with and without the preference, and the
+guide records the departures and states what a still spinner keeps.
+
+Written by opus on Opus 5.5 (round 1) and builder on Sonnet (round 2); audited
+by analyst on GPT-6 Astra, reviewer on Opus 5.5, and checker on Sonnet (scaffold
+.orkestrel/veneer/units/mred-audit-verdict.md and mred-2-checker-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

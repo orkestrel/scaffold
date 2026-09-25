@@ -1,0 +1,21 @@
+Hold the preflight recipe to a compiled fixture and read the component classes under it (TAILWIND-RECIPE)
+
+tests/fixtures/tailwind/consumer-preflight.css is the executed copy of the
+guide's preflight recipe, and a case holds the guide fence to it line for line.
+The consumer proof compiles each recipe with its @source line and reads a
+utility the markup names, and a recipe without that line fails the reading.
+The component proof reads every Veneer component class that shares a longhand
+with Tailwind's preflight, and each resolves the same under the recipe as under
+the cascade alone. collectMovedLonghands in tests/setupServer.ts reports every
+moved longhand of each reading, and the layer order, control variables, and
+source lines the proofs read live in tests/setupService.ts. Guide § Tailwind
+states that each recipe's import leaves automatic source detection on, and that
+only the workspace compile roots it at an empty directory.
+
+Written by opus on Opus 5.5 (rounds 1 and 2) and builder on Sonnet (round 3);
+audited by analyst on GPT-6 Astra, reviewer on Opus 5.5, and checker on Sonnet
+(scaffold .orkestrel/veneer/units/twr-audit-verdict.md, twr-audit-2-verdict.md,
+and twr-audit-3-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

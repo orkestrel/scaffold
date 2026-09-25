@@ -1,0 +1,62 @@
+--- tmp/units/tokens.test.ts.bak-9	2026-09-25 07:08:08.599999697 +0000
++++ tests/src/styles/tokens.test.ts	2026-09-25 07:08:11.708863959 +0000
+@@ -425,9 +425,9 @@
+ 	})
+ 	it('resolves the stripe percentage to the retained Bootstrap tint in each mode', () => {
+ 		const sheet = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
+-		// A mode island inherits the `:root` value, so a reading taken on the island holds wherever
+-		// the stripe is declared. Each mode's own declaration list is what places the stripe
+-		// beside the hover and active percentages.
++		// Each mode scope declares the stripe again, with the declaration the `:root` selector
++		// writes, so a reading on an island cannot tell where its value was declared. Each mode's
++		// own declaration list is what places the stripe beside the hover and active percentages.
+ 		expect(
+ 			collectScopeProperties(collectNestedRules(sheet.cssRules), "[data-bs-theme='light']"),
+ 		).toContain(TOKEN_NAMES.state.stripe)
+--- tmp/units/veneer.md.bak-9	2026-09-25 07:08:08.630240752 +0000
++++ guides/veneer.md	2026-09-25 07:08:51.228863055 +0000
+@@ -6215,14 +6215,16 @@
+ 
+ The `.border` class draws the `--bs-border-width`, `--bs-border-style`, and `--bs-border-color`
+ aliases. Those read the `--vn-border-width` token, the `--vn-border-style` token, and the border
+-color the theme re-declares in each mode, so a retuned width token widens every default border and
+-a dark island draws the dark border color. Each side class sets the physical side the release sets:
+-the `.border-end` class sets the `border-right` property and the `.border-start` class the
+-`border-left` property. The side entries follow the `border` entry in the release's map, so an
+-element carrying the `.border` and `.border-top-0` classes draws every side but the top, whatever
+-order the classes are written in. A border color reads its role's channel alias at the alpha the
+-`--bs-border-opacity` local holds, as a background fill reads its own, and an opacity step sets that
+-alpha. The widths stay literal, because no published Veneer token carries them.
++color the theme re-declares in each mode, so the width token retuned on the root element widens
++every default border, and a dark island draws the dark border color. The `:root` selector alone
++declares the `--bs-border-width` alias, so the width token retuned on an element below the root
++moves no border; retune the alias on that element instead. Each side class sets the physical side
++the release sets: the `.border-end` class sets the `border-right` property and the `.border-start`
++class the `border-left` property. The side entries follow the `border` entry in the release's map,
++so an element carrying the `.border` and `.border-top-0` classes draws every side but the top,
++whatever order the classes are written in. A border color reads its role's channel alias at the
++alpha the `--bs-border-opacity` local holds, as a background fill reads its own, and an opacity step
++sets that alpha. The widths stay literal, because no published Veneer token carries them.
+ 
+ The rounded steps read the `--bs-border-radius-*` aliases, which read the `--vn-radius-*` tokens, so
+ the `--vn-factor-radius` token scales the `.rounded` class and the `1` to `5` steps: the `2` factor
+@@ -9754,13 +9756,12 @@
+ 
+ #### `theme`
+ 
+-The `theme` key records the document scope, the light and dark scopes, the breakpoint aliases,
+-the smooth-scroll rule, and the dark component rules, and each row sits where the release writes
+-the declaration, whatever partial writes it here. The `dropped` rows are the names the release
+-repeats in its light scope although no mode changes them. Veneer declares each of them at the
+-`:root` selector alone, and a light island inherits each one from that selector through every island
+-around it, so a
+-light island nested in a dark one reads the document value; the
++The `theme` key records the document scope, the light and dark scopes, the breakpoint aliases, the
++smooth-scroll rule, and the dark component rules, and each row sits where the release writes the
++declaration, whatever partial writes it here. The `dropped` rows are the names the release repeats
++in its light scope although no mode changes them. Veneer declares each of them at the `:root`
++selector alone, and an island inherits each one from its parent, so a light island nested in a dark
++one reads the document value unless an ancestor below the root overrides the name; the
+ `tests/src/styles/theme.test.ts` proof reads every such name there. The dark component rules the
+ form select, form check, navbar, and accordion partials write match the release and carry no row.
+ 

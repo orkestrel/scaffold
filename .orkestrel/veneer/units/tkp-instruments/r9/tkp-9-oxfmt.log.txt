@@ -1,0 +1,4 @@
+./node_modules/.bin/oxfmt --config .oxfmtrc.json tests/src/styles/tokens.test.ts guides/veneer.md
+Finished in 71031ms on 2 files using 4 threads.
+exit=0
+16.86 13.40 9.70 7/708 16076
