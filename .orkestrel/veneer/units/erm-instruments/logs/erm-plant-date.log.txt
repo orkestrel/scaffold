@@ -1,0 +1,99 @@
+plant=date file=guides/veneer.md
+command=npm run test:guides
+
+> @orkestrel/veneer@0.0.1 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/veneer-erm[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[31mx[39m[33m[39m[31mx[39m[33m[39m[31mx[39m[33m[39m[31mx[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 6 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mnames a supported host in every receipt
+[31m[1mError[22m: Receipt row 1: invalid Date 2026-02-30[39m
+[36m [2m❯[22m readReceipts tests/setupServer.ts:[2m1317:11[22m[39m
+    [90m1315|[39m     day.toISOString().slice(0, 10) !== date
+    [90m1316|[39m    )
+    [90m1317|[39m     throw new Error(`${label}: invalid Date ${date}`)
+    [90m   |[39m           [31m^[39m
+    [90m1318|[39m    if (!/^[0-9a-f]{7,40}$/u.test(revision))
+    [90m1319|[39m     throw new Error(`${label}: invalid Revision ${revision}`)
+[90m [2m❯[22m tests/guides.test.ts:[2m84:23[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds a passing receipt for every supported host that names no owner
+[31m[1mError[22m: Receipt row 1: invalid Date 2026-02-30[39m
+[36m [2m❯[22m readReceipts tests/setupServer.ts:[2m1317:11[22m[39m
+    [90m1315|[39m     day.toISOString().slice(0, 10) !== date
+    [90m1316|[39m    )
+    [90m1317|[39m     throw new Error(`${label}: invalid Date ${date}`)
+    [90m   |[39m           [31m^[39m
+    [90m1318|[39m    if (!/^[0-9a-f]{7,40}$/u.test(revision))
+    [90m1319|[39m     throw new Error(`${label}: invalid Revision ${revision}`)
+[90m [2m❯[22m tests/guides.test.ts:[2m93:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mnames no owner on a supported host that holds a passing receipt
+[31m[1mError[22m: Receipt row 1: invalid Date 2026-02-30[39m
+[36m [2m❯[22m readReceipts tests/setupServer.ts:[2m1317:11[22m[39m
+    [90m1315|[39m     day.toISOString().slice(0, 10) !== date
+    [90m1316|[39m    )
+    [90m1317|[39m     throw new Error(`${label}: invalid Date ${date}`)
+    [90m   |[39m           [31m^[39m
+    [90m1318|[39m    if (!/^[0-9a-f]{7,40}$/u.test(revision))
+    [90m1319|[39m     throw new Error(`${label}: invalid Revision ${revision}`)
+[90m [2m❯[22m tests/guides.test.ts:[2m109:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds every receipt at or above the package.json Node and npm floors
+[31m[1mError[22m: Receipt row 1: invalid Date 2026-02-30[39m
+[36m [2m❯[22m readReceipts tests/setupServer.ts:[2m1317:11[22m[39m
+    [90m1315|[39m     day.toISOString().slice(0, 10) !== date
+    [90m1316|[39m    )
+    [90m1317|[39m     throw new Error(`${label}: invalid Date ${date}`)
+    [90m   |[39m           [31m^[39m
+    [90m1318|[39m    if (!/^[0-9a-f]{7,40}$/u.test(revision))
+    [90m1319|[39m     throw new Error(`${label}: invalid Revision ${revision}`)
+[90m [2m❯[22m tests/guides.test.ts:[2m141:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mnames a package.json script in every receipt command
+[31m[1mError[22m: Receipt row 1: invalid Date 2026-02-30[39m
+[36m [2m❯[22m readReceipts tests/setupServer.ts:[2m1317:11[22m[39m
+    [90m1315|[39m     day.toISOString().slice(0, 10) !== date
+    [90m1316|[39m    )
+    [90m1317|[39m     throw new Error(`${label}: invalid Date ${date}`)
+    [90m   |[39m           [31m^[39m
+    [90m1318|[39m    if (!/^[0-9a-f]{7,40}$/u.test(revision))
+    [90m1319|[39m     throw new Error(`${label}: invalid Revision ${revision}`)
+[90m [2m❯[22m tests/guides.test.ts:[2m155:19[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds each supported host and each receipt once
+[31m[1mError[22m: Receipt row 1: invalid Date 2026-02-30[39m
+[36m [2m❯[22m readReceipts tests/setupServer.ts:[2m1317:11[22m[39m
+    [90m1315|[39m     day.toISOString().slice(0, 10) !== date
+    [90m1316|[39m    )
+    [90m1317|[39m     throw new Error(`${label}: invalid Date ${date}`)
+    [90m   |[39m           [31m^[39m
+    [90m1318|[39m    if (!/^[0-9a-f]{7,40}$/u.test(revision))
+    [90m1319|[39m     throw new Error(`${label}: invalid Revision ${revision}`)
+[90m [2m❯[22m tests/guides.test.ts:[2m167:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m20 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 02:50:35
+[2m   Duration [22m 4.45s[2m (transform 822ms, setup 109ms, import 2.57s, tests 1.61s, environment 0ms)[22m
+
+exit=1
+restore before=e1127d095edf42e278e9450737035e7722d31120ebddbd3580069c0164f23ef1 after=e1127d095edf42e278e9450737035e7722d31120ebddbd3580069c0164f23ef1 equal=True

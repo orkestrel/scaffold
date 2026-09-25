@@ -1,0 +1,37 @@
+plant=runtime-build file=tests/setupServer.ts
+command=npm run test:setup -- tests/setupServer.test.ts -t readRuntime
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupServer.test.ts -t readRuntime
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+-------------------------------------------------------------------------------------------------------------------x·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > readRuntime > reads the build the launched browser reports and the Node and platform npm reports
+AssertionError: expected '141.0.7390.0' to be '141.0.7390.37' // Object.is equality
+
+Expected: "141.0.7390.37"
+Received: "141.0.7390.0"
+
+ ❯ tests/setupServer.test.ts:3332:26
+    3330|    const { product } = await session.send('Browser.getVersion')
+    3331|    expect(runtime.build).toMatch(BUILD_PATTERN)
+    3332|    expect(runtime.build).toBe(product.slice(product.indexOf('/') + 1))
+       |                          ^
+    3333|    const page = await launched.newPage()
+    3334|    const agent = await page.evaluate(() => navigator.userAgent)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 115 skipped (117)
+   Start at  02:51:43
+   Duration  1.82s (transform 511ms, setup 119ms, import 1.32s, tests 225ms, environment 0ms)
+
+exit=1
+restore before=89128b18ae416ee07785c0c46d8358c9c5840f6dda0cd804946125b8b952b2c5 after=89128b18ae416ee07785c0c46d8358c9c5840f6dda0cd804946125b8b952b2c5 equal=True

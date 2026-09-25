@@ -1,0 +1,367 @@
+src/browser/helpers.ts:148: * by default. The target attribute wins unless it is empty or a bare `#`; the platform's `href`
+src/styles/components/_offcanvas.scss:7:// classes clear the slide and show the panel. The bare panel and each responsive panel below its
+src/styles/components/_offcanvas.scss:137:	// The bare panel is fixed at every width. The partial keeps its own walk rather than the
+src/styles/components/_offcanvas.scss:139:	// and at-and-above blocks together, one name at a time, and writes the bare panel after all of
+src/styles/components/_offcanvas.scss:141:	// entries, so it cannot reproduce that order. The bare panel is written here from the same maps.
+src/styles/components/_list-group.scss:115:	// walk emits the bare name at the zero boundary and the suffixed name at each one after it.
+src/styles/components/_button.scss:135:	// tokens name as an end of the gray ramp, so every state keeps the label legible. The bare
+src/styles/components/_navbar.scss:194:		// reduced-motion twin beside a reset, so the declaration is written bare.
+src/styles/components/_ratio.scss:27:	// bare: Sass emits ten decimal places, which is the precision the official cascade carries for
+src/styles/components/_card.scss:10:		// to the same empty declaration a bare `--slot: ;` compiles to, and it states that the
+src/styles/components/_form-floating.scss:126:	// The release writes the class-qualified twin beside the bare disabled rule, and both ship. The
+src/styles/_mixins.scss:545:// value keyed `null` emits the bare class. An empty `$class` drops the infix's leading hyphen, so a
+src/styles/_tokens.scss:368:		// what the user agent paints a bare `mark` with and what Elements binds its own mark tokens
+tests/setupStyles.test.ts:878:	it('splits a bare slash into its own token, and keeps a parenthesized slash inside its token', () => {
+tests/setupStyles.test.ts:2021:		// Each picture's source draws it at the sizes the fixture names and leaves the bare share of
+tests/setupStyles.test.ts:2023:		const { box, bare, pictures, regions } = OBJECT_FIT_FIXTURE
+tests/setupStyles.test.ts:2027:				`d='M${String(width * bare)} 0H${String(width)}V${String(height)}H${String(width * bare)}Z'`,
+tests/setupStyles.test.ts:2045:				const left = (box - width * across) / 2 + width * across * bare
+tests/setupStyles.test.ts:2110:		// A host whose link carries the helper reaches the link at every corner; a bare host reaches
+tests/setupStyles.test.ts:2304:		// then each read property's recorded value, with the clip's bare zeros written as the lengths
+tests/setupStyles.test.ts:2453:		// A subtle tier is a bare `var()` function over the role's subtle alias of that tier.
+tests/setupStyles.test.ts:2481:		// A side entry's bare class draws one physical side with the border shorthand's value.
+tests/setupStyles.test.ts:2499:		// The radius steps are the `rounded` entry's own; its bare class writes the `2` step's value.
+tests/setupStyles.test.ts:2509:		// Each side entry's bare class rounds its corners in the order the release writes them, and
+tests/setupStyles.test.ts:3372:	it('carries the classed pair, the disabled control, and the bare control in the range markup', () => {
+tests/setupStyles.test.ts:3373:		// The markup is the proof's own fixture, so the classed pair and the bare control are held
+tests/setupStyles.test.ts:3379:		expect(FORM_RANGE_MARKUP).toContain('aria-label="Bare range value"')
+tests/setupStyles.test.ts:3462:	it('names every case subject once in the text-control markup, beside the bare controls', () => {
+tests/setupStyles.test.ts:3467:		expect(FORM_CONTROL_MARKUP).toContain('aria-label="Bare entry"')
+tests/setupStyles.test.ts:3468:		expect(FORM_CONTROL_MARKUP).toContain('aria-label="Bare file entry"')
+tests/setupStyles.test.ts:4327:		const bare = oracle.components.offcanvas.selectors.filter(
+tests/setupStyles.test.ts:4330:		// Each placement's row is read back from the bare panel's recorded rule for that placement:
+tests/setupStyles.test.ts:4333:		const placed = bare.flatMap(({ selector, declarations }) => {
+tests/setupStyles.test.ts:4354:		// Each state row is read back from the bare panel's recorded state rules: a state paints where
+tests/setupStyles.test.ts:4357:		const states = bare.flatMap(({ selector, declarations: written }) => {
+tests/setupStyles.test.ts:4486:		expect(FORM_CHECK_MARKUP).toContain('aria-label="Bare box"')
+tests/setupStyles.test.ts:4840:		expect(FORM_LABEL_MARKUP).toContain('<legend>Bare legend</legend>')
+tests/setupStyles.test.ts:4901:	it('carries every floated host, the disabled select, and the bare pair in the floating markup', () => {
+tests/setupStyles.test.ts:4904:		// twin, the plaintext control, and the bare pair outside the container.
+tests/setupStyles.test.ts:4913:			'<div><input type="text" class="form-control" id="bare-entry"',
+tests/setupStyles.test.ts:5005:	it('carries every recorded select form, a single-row control, and a bare control in the markup', () => {
+tests/setupStyles.test.ts:5017:		expect(FORM_SELECT_MARKUP).toContain('<select aria-label="Bare choice">')
+tests/setupStyles.test.ts:5018:		// The plain select opens the markup, so the bare class selector resolves to it first.
+tests/setupStyles.test.ts:5095:			// A painted side is a bare solid border in the toggle's color, a cleared side a solid
+tests/setup.ts:471: * @typeParam S - The declared name to reduce. Default: every declared subject, so the bare type is
+tests/setup.ts:603: * and several specimens of one component answer to the component's bare class. So a row beyond a
+tests/setup.ts:2898: * The element rule for a bare link repaints its color under the pointer too, so a moved color does
+tests/setup.ts:2933: * - The Button hosts render bare in the Buttons region, whose resting paint the Button journeys read
+tests/src/browser/HostSnapshot.test.ts:44:		const bare = build('div')
+tests/src/browser/HostSnapshot.test.ts:48:		for (const element of [bare, edited, empty]) {
+tests/src/browser/HostSnapshot.test.ts:54:		expect(bare.hasAttribute('class')).toBe(false)
+tests/src/browser/HostSnapshot.test.ts:76:		const bare = build('div')
+tests/src/browser/HostSnapshot.test.ts:80:		for (const element of [bare, empty, edited]) {
+tests/src/browser/HostSnapshot.test.ts:86:		expect(bare.hasAttribute('style')).toBe(false)
+tests/src/browser/Modal.test.ts:448:		const bare = new Modal(host, {
+tests/src/browser/Modal.test.ts:452:		onTestFinished(() => bare.destroy())
+tests/src/browser/Modal.test.ts:453:		expect(await bare.show()).toBe(true)
+tests/src/browser/Modal.test.ts:456:		expect(bare.shown).toBe(true)
+tests/src/browser/Modal.test.ts:488:			<div id="bare" class="modal" data-bs-backdrop="0"><div class="modal-dialog"></div></div>`)
+tests/src/browser/Modal.test.ts:490:		const bare = requireValue(root.querySelector<HTMLElement>('#bare'), 'No bare modal')
+tests/src/browser/Modal.test.ts:527:		const unshaded = new Modal(bare)
+tests/src/browser/Modal.test.ts:532:		const lifted = new Modal(bare, { backdrop: true })
+tests/src/browser/Swipe.test.ts:96:			<div id="bare"></div>
+tests/src/browser/Swipe.test.ts:99:		const bare = requireValue(root.querySelector<HTMLElement>('#bare'), 'No bare host')
+tests/src/browser/Swipe.test.ts:103:		const swipes = [bare, classed, marked].map(
+tests/src/browser/Swipe.test.ts:109:		expect(Array.from(bare.classList)).toEqual(['pointer-event'])
+tests/src/browser/Swipe.test.ts:114:		expect(bare.hasAttribute('class')).toBe(false)
+tests/src/browser/Swipe.test.ts:117:		bare.dispatchEvent(createPointerEvent('pointerdown', { pointerType: 'touch', clientX: 200 }))
+tests/src/browser/Swipe.test.ts:118:		bare.dispatchEvent(createPointerEvent('pointerup', { pointerType: 'touch', clientX: 20 }))
+tests/src/browser/Swipe.test.ts:121:		expect(bare.hasAttribute('class')).toBe(false)
+tests/src/browser/Carousel.test.ts:1984:				<div class="slide is-current"><img id="bare" alt="Bare"></div>
+tests/src/browser/Carousel.test.ts:2041:			requireValue(root.querySelector('#bare'), 'No bare image').dispatchEvent(
+tests/src/browser/Offcanvas.test.ts:673:			<div id="bare" class="offcanvas offcanvas-end" tabindex="-1" data-bs-backdrop="0"></div>`)
+tests/src/browser/Offcanvas.test.ts:675:		const bare = requireValue(root.querySelector<HTMLElement>('#bare'), 'No bare panel')
+tests/src/browser/Offcanvas.test.ts:712:		const unshaded = new Offcanvas(bare)
+tests/src/browser/Offcanvas.test.ts:717:		const lifted = new Offcanvas(bare, { backdrop: true })
+tests/src/browser/Offcanvas.test.ts:964:			<div id="bare" class="offcanvas offcanvas-start" tabindex="-1"></div>`
+tests/src/browser/Offcanvas.test.ts:966:		it('hides a shown responsive panel when a resize leaves it in the flow, and keeps a bare panel shown', async () => {
+tests/src/browser/Offcanvas.test.ts:970:			const plain = requireValue(root.querySelector<HTMLElement>('#bare'), 'No bare panel')
+tests/src/browser/Dropdown.test.ts:353:				<a href="#" id="bare" disabled data-bs-toggle="dropdown">Bare</a>
+tests/src/browser/Dropdown.test.ts:364:		const bare = requireValue(root.querySelector<HTMLElement>('#bare'), 'No bare toggle')
+tests/src/browser/Dropdown.test.ts:375:		const refused = new Dropdown(bare)
+tests/src/browser/Dropdown.test.ts:386:		expect(bare.hasAttribute('aria-expanded')).toBe(false)
+tests/src/browser/helpers.test.ts:304:	it('falls back to the href fragment when the target is absent or a bare hash', () => {
+tests/src/browser/Placement.test.ts:282:				<div id="bare">Bare</div>
+tests/src/browser/Placement.test.ts:297:		for (const selector of ['#menu', '#bare', '#scroll']) {
+tests/src/styles/elements/dl.test.ts:86:	// A bare list keeps the two-column grid when terms share a description or a term carries
+tests/src/styles/mixins.test.ts:423:				'<div id="ramp-bare" class="vn-fixture-ramp"></div>',
+tests/src/styles/mixins.test.ts:484:		const bare = requireValue(container.querySelector('#ramp-bare'), 'No unsuffixed ramp specimen')
+tests/src/styles/mixins.test.ts:494:					bare: readPixels(bare, 'padding-top'),
+tests/src/styles/mixins.test.ts:496:				const expected = { named: reading < width ? 1 : 0, bare: 1 }
+tests/src/styles/mixins.test.ts:497:				if (applied.named !== expected.named || applied.bare !== expected.bare) {
+tests/src/styles/mixins.test.ts:553:		// A list-valued entry keys each member by itself, and a `null` key names the bare class.
+tests/src/styles/components/image.test.ts:17:			'<div><span class="img-fluid">Fluid host</span><span>Bare host</span></div>',
+tests/src/styles/components/image.test.ts:20:		const bare = requireValue(host.querySelector('span:not(.img-fluid)'), 'No bare host')
+tests/src/styles/components/image.test.ts:23:		expect(readStyle(bare, 'max-width')).toBe('none')
+tests/src/styles/components/image.test.ts:40:				`<div data-bs-theme="${mode}"><span class="img-thumbnail">Framed</span><figure class="figure"><span class="figure-img">Framed image</span><figcaption class="figure-caption">Caption</figcaption></figure><figure><figcaption>Bare caption</figcaption></figure></div>`,
+tests/src/styles/components/image.test.ts:46:			const bare = requireValue(
+tests/src/styles/components/image.test.ts:48:				'No bare caption',
+tests/src/styles/components/image.test.ts:64:			// The bare caption keeps the muted token its own partial gives it, so the classed one
+tests/src/styles/components/image.test.ts:67:			expect(matchesColor(readStyle(bare, 'color'), readStyle(element, 'color'))).toBe(false)
+tests/src/styles/components/form-check.test.ts:95:		const bare = requireValue(
+tests/src/styles/components/form-check.test.ts:97:			'No bare box',
+tests/src/styles/components/form-check.test.ts:121:		// The bare checkbox is what tells the class apart from the control the browser already paints.
+tests/src/styles/components/form-check.test.ts:122:		expect(readStyle(bare, 'appearance')).toBe('auto')
+tests/src/styles/components/form-select.test.ts:47:			// the container and the plain select opens each island, so the bare class reaches the
+tests/src/styles/components/form-select.test.ts:104:		const bare = requireValue(
+tests/src/styles/components/form-select.test.ts:105:			container.querySelector('[aria-label="Bare choice"]'),
+tests/src/styles/components/form-select.test.ts:106:			'No bare select',
+tests/src/styles/components/form-select.test.ts:108:		// The bare select is what tells the class apart from the control a browser already paints: it
+tests/src/styles/components/form-select.test.ts:110:		expect(readStyle(bare, 'appearance')).not.toBe('none')
+tests/src/styles/components/form-select.test.ts:111:		expect(readStyle(bare, 'background-image')).toBe('none')
+tests/src/styles/components/form-select.test.ts:112:		// The bare select keeps the user agent's own ring, which is what `outline: 0` removes.
+tests/src/styles/components/form-select.test.ts:113:		expect(await traverseAccessible('Bare choice')).toBe(bare)
+tests/src/styles/components/form-select.test.ts:114:		expect(readStyle(bare, 'outline-style')).toBe('auto')
+tests/src/styles/components/form-select.test.ts:115:		expect(readStyle(bare, 'box-shadow')).toBe('none')
+tests/src/styles/components/popover.test.ts:34:	// attribute value in quotes and the release records it bare, so the quotes are dropped before
+tests/src/styles/components/ratio.test.ts:45:		const unnamed = requireValue(host.querySelector('.ratio:not(.ratio-4x3)'), 'No bare ratio')
+tests/src/styles/components/carousel.test.ts:223:	// The mutation this catches is a transition written without the `transition` mixin: the bare
+tests/src/styles/components/input-group.test.ts:36:		const bare = requireValue(host.querySelector(':scope > div > .form-control'), 'No bare control')
+tests/src/styles/components/input-group.test.ts:64:		// scoped to the group's children, so the bare control takes the full width the
+tests/src/styles/components/input-group.test.ts:66:		expect(readStyle(bare, 'position')).toBe('static')
+tests/src/styles/components/input-group.test.ts:67:		expect(bare.getBoundingClientRect().width).toBe(600)
+tests/src/styles/components/input-group.test.ts:245:		const [, bare] = [...requireValue(unchecked, 'No unchecked group').children]
+tests/src/styles/components/input-group.test.ts:248:				readPixels(requireValue(bare, 'No unchecked addon'), corner),
+tests/src/styles/components/input-group.test.ts:326:			`<div class="input-group">${INPUT_GROUP_MARKUP}</div><span>Bare addon</span>`,
+tests/src/styles/components/input-group.test.ts:329:		const bare = requireValue(host.querySelector(':scope > span'), 'No bare span')
+tests/src/styles/components/input-group.test.ts:359:		expect(readStyle(bare, 'display')).toBe('inline')
+tests/src/styles/components/input-group.test.ts:360:		expect(readPixels(bare, 'border-top-width')).toBe(0)
+tests/src/styles/components/input-group.test.ts:361:		expect(matchesColor(readStyle(bare, 'background-color'), 'transparent')).toBe(true)
+tests/src/styles/components/type.test.ts:233:	// the treatment onto anything else. The case mounts the class on a span beside the bare tag and
+tests/src/styles/components/type.test.ts:237:		'renders the mark class as the bare mark tag renders in $mode mode',
+tests/src/styles/components/type.test.ts:256:	// A resolved color agrees with the token's value and with the bare system keyword of the same
+tests/src/styles/components/stretched-link.test.ts:18:	it('answers a pointer at every corner of its positioned ancestor with the link, where a bare link leaves the corner', () => {
+tests/src/styles/components/stretched-link.test.ts:99:		// what a bare host's corner reads.
+tests/src/styles/components/form-floating.test.ts:79:		// The bare pair sits outside any container, so it keeps the control's intrinsic height and a
+tests/src/styles/components/form-floating.test.ts:82:		const bare = requireValue(host.querySelector('#bare-entry'), 'No bare control')
+tests/src/styles/components/form-floating.test.ts:83:		const label = requireValue(host.querySelector('label[for="bare-entry"]'), 'No bare label')
+tests/src/styles/components/form-floating.test.ts:84:		expect(readStyle(requireValue(bare.parentElement, 'No bare wrapper'), 'position')).toBe(
+tests/src/styles/components/form-floating.test.ts:87:		expect(readPixels(bare, 'height')).not.toBe(58)
+tests/src/styles/components/form-floating.test.ts:139:		const bare = requireValue(host.querySelector('#bare-entry'), 'No bare control')
+tests/src/styles/components/form-floating.test.ts:140:		expect(readStyle(bare, 'color', '::placeholder')).not.toBe('rgba(0, 0, 0, 0)')
+tests/src/styles/components/form-floating.test.ts:297:		// The select carries no `.form-control`, so its label answers to the bare disabled rule
+tests/src/styles/components/form-floating.test.ts:306:		// The class-qualified twin paints what the bare rule already paints, so no resolved reading
+tests/src/styles/components/form-label.test.ts:142:		const bare = requireValue(host.querySelector('#label-bare legend'), 'No bare legend')
+tests/src/styles/components/form-label.test.ts:143:		// The bare legend keeps the elements layer's trailing margin and larger type, which is what the
+tests/src/styles/components/form-label.test.ts:145:		expect(readPixels(bare, 'margin-bottom')).toBe(8)
+tests/src/styles/components/form-label.test.ts:146:		expect(readPixels(bare, 'font-size')).toBeGreaterThan(readPixels(control, 'font-size'))
+tests/src/styles/components/table.test.ts:63:	it('resolves the divider, borderless override, and caption independently of the bare caption default', () => {
+tests/src/styles/components/table.test.ts:97:		// on the block axis under `vertical-rl` and leave the side edges bare.
+tests/src/styles/components/clearfix.test.ts:6:// Each host holds one floated child taller than anything else in it, and a bare twin beside it
+tests/src/styles/components/clearfix.test.ts:15:	it('stretches its host around its floated children, where a bare host collapses', () => {
+tests/src/styles/components/clearfix.test.ts:17:			`<div class="clearfix">${FLOATED}</div><p class="after">After the cleared host</p><div class="bare">${FLOATED}</div>`,
+tests/src/styles/components/clearfix.test.ts:20:		const bare = requireValue(host.querySelector('.bare'), 'No bare host')
+tests/src/styles/components/clearfix.test.ts:23:		expect(bare.getBoundingClientRect().height).toBe(0)
+tests/src/styles/components/fade.test.ts:79:	// full strength, and written as a bare `.fade` rule it hides the shown element as well. The
+tests/src/styles/components/navbar.test.ts:441:		const [plain, bare, icon, island, light] = [
+tests/src/styles/components/navbar.test.ts:456:		expect(bare).toBe('')
+tests/src/styles/components/navbar.test.ts:544:		// The offcanvas reset is a bare declaration the release gates on no condition.
+tests/src/styles/components/card.test.ts:63:		// The bare paragraph carries no bottom margin in this cascade, so the guard is read against
+tests/src/styles/components/alert.test.ts:120:	it('paints the heading in the alert text color where a bare heading reads the heading slot', () => {
+tests/src/styles/components/alert.test.ts:126:		const bare = requireValue(alert.querySelector('h4:not(.alert-heading)'), 'No bare heading')
+tests/src/styles/components/alert.test.ts:127:		// The bare heading is the control: it reads the retuned heading slot, so a heading class that
+tests/src/styles/components/alert.test.ts:129:		expect(readStyle(bare, 'color')).toBe('rgb(1, 2, 3)')
+tests/src/styles/components/alert.test.ts:140:		const bare = requireValue(alert.querySelector('a:not(.alert-link)'), 'No bare link')
+tests/src/styles/components/alert.test.ts:142:		expect(readStyle(bare, 'font-weight')).not.toBe('700')
+tests/src/styles/components/alert.test.ts:144:		// where a bare anchor beside it paints the link color.
+tests/src/styles/components/alert.test.ts:146:		expect(matchesColor(readStyle(bare, 'color'), 'rgb(10, 20, 30)')).toBe(false)
+tests/src/styles/components/alert.test.ts:267:		// against the bare alert class would lift this control out of flow as well.
+tests/src/styles/components/list.test.ts:12:	// The bare list tag carries the start padding and the marker its own partial gives it, so each
+tests/src/styles/components/list.test.ts:20:		const bare = requireValue(host.querySelector(`ul:not(.${name})`), 'No bare list')
+tests/src/styles/components/list.test.ts:26:		expect(readStyle(bare, 'padding-left')).toBe('32px')
+tests/src/styles/components/list.test.ts:27:		expect(readStyle(bare, 'list-style-type')).toBe('disc')
+tests/src/styles/components/vr.test.ts:21:		const bare = requireValue(host.lastElementChild, 'No bare control')
+tests/src/styles/components/vr.test.ts:32:		// The bare host carries neither, so the readings belong to the class rather than to the
+tests/src/styles/components/vr.test.ts:34:		expect(readStyle(bare, 'align-self')).toBe('auto')
+tests/src/styles/components/vr.test.ts:35:		expect(readPixels(bare, 'min-height')).toBe(0)
+tests/src/styles/components/vr.test.ts:67:		const bare = requireValue(host.lastElementChild, 'No bare control')
+tests/src/styles/components/vr.test.ts:70:		// taken against the color the host set. The bare control paints nothing, which is what tells
+tests/src/styles/components/vr.test.ts:76:		expect(readStyle(bare, 'background-color')).toBe('rgba(0, 0, 0, 0)')
+tests/src/styles/components/vr.test.ts:77:		expect(readStyle(bare, 'opacity')).toBe('1')
+tests/src/styles/components/quote.test.ts:15:		const bare = requireValue(host.querySelector('div:not(.blockquote)'), 'No bare specimen')
+tests/src/styles/components/quote.test.ts:18:		expect(readStyle(bare, 'font-size')).toBe('14px')
+tests/src/styles/components/quote.test.ts:19:		expect(readStyle(bare, 'margin-bottom')).toBe('0px')
+tests/src/styles/components/quote.test.ts:26:			'<blockquote class="blockquote"><p>A quotation</p></blockquote><blockquote>Bare</blockquote>',
+tests/src/styles/components/quote.test.ts:29:		const bare = requireValue(
+tests/src/styles/components/quote.test.ts:31:			'No bare quotation',
+tests/src/styles/components/quote.test.ts:36:		expect(readStyle(bare, 'border-left-width')).toBe('4px')
+tests/src/styles/components/quote.test.ts:37:		expect(readStyle(bare, 'padding-left')).toBe('16px')
+tests/src/styles/components/quote.test.ts:38:		expect(readStyle(bare, 'font-style')).toBe('italic')
+tests/src/styles/components/toast.test.ts:36:	// combinator written against the bare toast class reads as both.
+tests/src/styles/components/toast.test.ts:198:		const toast = requireValue(host.querySelector('.rung > .toast'), 'No bare toast')
+tests/src/styles/components/toast.test.ts:275:	// The mutation this catches is the combinator written against the bare toast class, which
+tests/src/styles/components/icon-link.test.ts:34:		const bare = requireValue(host.querySelector('a:not(.icon-link)'), 'No bare anchor')
+tests/src/styles/components/icon-link.test.ts:50:		// The bare anchor carries none of these, so each reading belongs to the class rather than to
+tests/src/styles/components/icon-link.test.ts:52:		expect(readStyle(bare, 'display')).toBe('inline')
+tests/src/styles/components/icon-link.test.ts:53:		expect(readStyle(bare, 'backface-visibility')).toBe('visible')
+tests/src/styles/components/icon-link.test.ts:54:		expect(matchesColor(readStyle(bare, 'text-decoration-color'), `rgba(${triplet}, 0.5)`)).toBe(
+tests/src/styles/components/form-range.test.ts:33:		const bare = requireValue(host.querySelector('input:not(.form-range)'), 'No bare control')
+tests/src/styles/components/form-range.test.ts:40:		// The bare control is what tells the class apart from the slider a browser already paints:
+tests/src/styles/components/form-range.test.ts:43:		// bare reading here.
+tests/src/styles/components/form-range.test.ts:44:		expect(readStyle(bare, 'appearance')).toBe('auto')
+tests/src/styles/components/form-range.test.ts:45:		expect(readPixels(bare, 'height')).not.toBe(24)
+tests/src/styles/components/form-range.test.ts:46:		expect(readPixels(bare, 'width')).toBeLessThan(host.clientWidth)
+tests/src/styles/components/form-range.test.ts:47:		expect(readStyle(bare, 'background-color')).not.toBe('rgba(0, 0, 0, 0)')
+tests/src/styles/components/form-range.test.ts:78:		const bare = requireValue(host.querySelector('input:not(.form-range)'), 'No bare control')
+tests/src/styles/components/form-range.test.ts:89:		// The bare control keeps the user agent's own ring, which is what the `outline: 0`
+tests/src/styles/components/form-range.test.ts:91:		const bareReached = await traverseAccessible('Bare range value')
+tests/src/styles/components/form-range.test.ts:92:		expect(bareReached).toBe(bare)
+tests/src/styles/components/form-range.test.ts:93:		expect(readStyle(bare, 'outline-style')).toBe('auto')
+tests/src/styles/components/progress.test.ts:47:		// The bare tag stays in the elements layer, so the class family reaches no `progress`
+tests/src/styles/components/progress.test.ts:242:		const bare = requireValue(host.querySelector('.progress'), 'No bare track')
+tests/src/styles/components/progress.test.ts:243:		expect(readStyle(bare, 'overflow')).toBe('hidden')
+tests/src/styles/components/form-control.test.ts:117:		// unobservable in the computed style: the bare file control reads the same `clip`.
+tests/src/styles/components/form-control.test.ts:119:		const bare = requireValue(host.querySelector('[aria-label="Bare file entry"]'), 'No bare file')
+tests/src/styles/components/form-control.test.ts:120:		expect(readStyle(file, 'overflow-x')).toBe(readStyle(bare, 'overflow-x'))
+tests/src/styles/components/form-control.test.ts:141:		const bare = requireValue(host.querySelector('[aria-label="Bare entry"]'), 'No bare entry')
+tests/src/styles/components/form-control.test.ts:146:		// The control spans its container where the bare control keeps its intrinsic width.
+tests/src/styles/components/form-control.test.ts:148:		expect(readPixels(bare, 'width')).toBeLessThan(host.clientWidth)
+tests/src/styles/components/form-control.test.ts:417:	it('points the cursor at an enabled file or color control and at no disabled, readonly, or bare one', () => {
+tests/src/styles/components/form-control.test.ts:424:				'Bare file entry',
+tests/src/styles/components/form-control.test.ts:441:			'Bare file entry',
+tests/src/styles/components/placeholder.test.ts:75:	// the bare placeholder is the control, and it carries no generated content at all.
+tests/src/styles/components/placeholder.test.ts:76:	it('gives a button-shaped placeholder an empty box and leaves a bare one without one', () => {
+tests/src/styles/components/placeholder.test.ts:79:		// The bare placeholder is the span in a paragraph carrying no wrapper class: the glow and
+tests/src/styles/components/placeholder.test.ts:82:		const bare = requireValue(
+tests/src/styles/components/placeholder.test.ts:84:			'No bare placeholder',
+tests/src/styles/components/placeholder.test.ts:88:		expect(readStyle(bare, 'content', '::before')).toBe('none')
+tests/src/styles/components/placeholder.test.ts:94:	// inside it, and a glow reaching a placeholder no wrapper holds: the bare placeholder is the
+tests/src/styles/components/placeholder.test.ts:97:	it('pulses every placeholder inside the glow wrapper and leaves the wrapper and a bare one still', () => {
+tests/src/styles/components/placeholder.test.ts:101:		const bare = requireValue(
+tests/src/styles/components/placeholder.test.ts:103:			'No bare placeholder',
+tests/src/styles/components/placeholder.test.ts:106:		expect(bare.getAnimations()).toEqual([])
+tests/src/styles/components/placeholder.test.ts:154:				requireValue(host.querySelector('p:not([class]) > span.placeholder'), 'No bare'),
+tests/src/styles/components/tooltip.test.ts:34:	// attribute value in quotes and the release records it bare, so the quotes are dropped before
+tests/src/styles/components/tooltip.test.ts:73:	// transparent opacity the bare class writes.
+tests/src/styles/components/offcanvas.test.ts:311:	// The mutation this catches is the bare panel written under a width condition: it is fixed at
+tests/src/styles/components/offcanvas.test.ts:313:	it('keeps the bare panel fixed at every width', async () => {
+tests/src/styles/components/offcanvas.test.ts:373:			`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas offcanvas-end show"><div class="offcanvas-header"><h5 class="offcanvas-title" data-probe>Harbor routes</h5><button type="button" class="btn-close" aria-label="Close" data-control="header"></button></div><div class="offcanvas-body"><p>North pier and south pier.</p></div></div></div><h5 data-heading data-probe>Bare heading</h5>`,
+tests/src/styles/components/offcanvas.test.ts:377:		const bare = requireValue(host.querySelector('[data-heading]'), 'No bare heading')
+tests/src/styles/components/offcanvas.test.ts:381:		// The bare heading is the control: it keeps the margin the probe gives it.
+tests/src/styles/components/offcanvas.test.ts:382:		expect(readPixels(bare, 'margin-bottom')).toBeGreaterThan(0)
+tests/src/styles/components/offcanvas.test.ts:436:	// the bare declaration keeps its duration under the reduced-motion preference, and the mixin
+tests/src/styles/components/offcanvas.test.ts:437:	// collapses it, on the bare panel and on a responsive panel below its boundary alike.
+tests/src/styles/components/offcanvas.test.ts:443:			requireValue(host.querySelector('.offcanvas'), 'No bare panel'),
+tests/src/styles/components/button.test.ts:199:	it('steps the bare class veil in a dark island by at least the least hover step', async () => {
+tests/src/styles/utilities/position.test.ts:70:			`<div class="probe" dir="rtl" style="${PLACEMENT_CONTAINER}"><div class="position-absolute start-0" style="${PLACEMENT_BOX}"></div><div class="position-absolute end-0" style="${PLACEMENT_BOX}"></div><div class="position-absolute bare" style="${PLACEMENT_BOX}"></div></div>`,
+tests/src/styles/utilities/position.test.ts:77:			['.start-0', '.end-0', '.bare'].map((selector) => {
+tests/src/styles/utilities/shadow.test.ts:36:			// element carrying one keeps its resting shadow on both sides of the boundary. The bare
+tests/app/browser/sections/ButtonGroupSection.test.ts:55:			// because a boolean attribute written bare comes back with an empty value and a
+tests/app/browser/sections/ContentSection.test.ts:244:			const bare = requireValue(
+tests/app/browser/sections/ContentSection.test.ts:246:				'No bare code specimen',
+tests/app/browser/sections/ContentSection.test.ts:265:				readPixels(bare, 'border-top-left-radius'),
+tests/app/browser/sections/ContentSection.test.ts:269:				readPixels(bare, 'padding-left') / readPixels(bare, 'font-size'),
+tests/app/browser/sections/ContentSection.test.ts:272:				readPixels(bare, 'padding-top') / readPixels(bare, 'font-size'),
+tests/app/browser/integration.test.ts:3125:		// important in the utilities layer, so the bare link's element rule cannot move this color:
+tests/app/browser/integration.test.ts:3436:		// rather than an empty file: the capped container is a bare div.
+tests/fixtures/tailwind/preflight.css:1:/* The `preflight` profile: the `tailwind` profile with the bare import in place of the two
+tests/setupPolicy.ts:109: * @param names - The bare names the guide claims.
+tests/setupPolicy.ts:2245: * requires exactly one bare `./index.scss` import.
+tests/distribution.test.ts:650:<table id="bare"><tbody><tr><td id="bare-cell">Oak</td></tr></tbody></table>
+tests/distribution.test.ts:699:	['bare', 'bare', 'vertical-align'],
+tests/distribution.test.ts:701:	['bare-cell', 'bare-cell', 'padding-left'],
+tests/distribution.test.ts:1071:			expect(readReading(readings, 'bare')).toBe('baseline')
+tests/distribution.test.ts:1072:			// The packed cascade pads a bare cell from its elements layer and the component's own
+tests/distribution.test.ts:1076:			expect(Number.parseFloat(readReading(readings, 'bare-cell'))).toBeGreaterThan(0)
+tests/distribution.test.ts:1077:			expect(readReading(readings, 'cell')).not.toBe(readReading(readings, 'bare-cell'))
+tests/distribution.test.ts:1144:	// carried, and a bare specifier there resolves only where the consumer happens to declare that
+tests/setupBrowser.ts:605: * specimens as bare hosts announcing their own names, and a region carries its accessible name. A
+tests/setup.test.ts:133:		// by one state word. A bare stem is the resting frame under a second name, the `rest` state is
+tests/setup.test.ts:199:		// that carries it, as the `legend.col-form-label` selector is. A bare element selector such as
+tests/setup.test.ts:351:	it('reports a bare name as one node at the path it was given', () => {
+tests/service/tailwind/profiles.test.ts:61:		// for the variables they read. The `preflight` profile takes the bare import, which fills
+tests/service/tailwind/profiles.test.ts:227:		// The `preflight` profile is the one that differs, and the bare import is the difference.
+tests/service/tailwind/consumer.test.ts:64:		// them apart: the `preflight` recipe takes the bare import instead. Reading the fences
+tests/config.test.ts:1307:				name: 'rejects a bare collection constant [membership: declarations in constants.ts with a direct array or object literal]',
+tests/setupStyles.ts:98: *   letting the tracked parenthesis depth go below zero, and emitting a bare `/` (outside
+tests/setupStyles.ts:1643: * The release documents the quotation bare, centered, and end-aligned, and an alignment class
+tests/setupStyles.ts:1648:	Object.freeze({ holder: 'a bare figure', attribute: '' }),
+tests/setupStyles.ts:1662:	Object.freeze({ holder: 'a bare figure', attribute: '' }),
+tests/setupStyles.ts:2539: * leaves the left share of its width that the `bare` field names unpainted and paints the rest in
+tests/setupStyles.ts:2549:	bare: 0.25,
+tests/setupStyles.ts:2580: * from the fixture's sizes. The `fill` value stretches the picture to the box, so the bare share
+tests/setupStyles.ts:2582: * centers it, which crops the bare share away; the `contain` value scales it until it fits and
+tests/setupStyles.ts:2666: * corner reaches the link; a bare link covers nothing, so a top corner reaches the paragraph and a
+tests/setupStyles.ts:2818: * The bare class of each entry precedes these in the map and writes the value the `2` step writes.
+tests/setupStyles.ts:3018: * the class a consumer brings rather than one this package defines. The bare anchor and the bare
+tests/setupStyles.ts:3025:	'<a href="#main">Bare anchor</a>' +
+tests/setupStyles.ts:3631: * with the bare keyword of the same value, so a treatment asserted against its default alone reads
+tests/setupStyles.ts:3779: * A rule in the `elements` layer normally selects one bare tag, because a second bare tag in the
+tests/setupStyles.ts:4961: * Supplies the progress specimens the resolved readings are taken on: a bare bar, a striped bar, an
+tests/setupStyles.ts:5122: * Supplies the placeholder specimens the resolved readings are taken on: a bare placeholder, a
+tests/setupStyles.ts:5126: * The bare placeholder sits outside the glow wrapper, so the resting opacity is read on an element
+tests/setupStyles.ts:5329:/** Holds the range markup the proofs mount: the class under test beside the bare control. */
+tests/setupStyles.ts:5333:	'<input type="range" aria-label="Bare range value" min="0" max="100" value="50">'
+tests/setupStyles.ts:6458: * The release writes each placement and state rule for the bare panel and again for each
+tests/setupStyles.ts:6737: * check, an inline pair, a switch, and a reverse switch, each labelled, beside a bare checkbox.
+tests/setupStyles.ts:6740: * The bare checkbox is what tells the class apart from the control a browser already paints: it
+tests/setupStyles.ts:6755:	'<input type="checkbox" aria-label="Bare box">'
+tests/setupStyles.ts:7035: * paints what the bare disabled rule already paints. A false row is read as the declaration the
+tests/setupStyles.ts:7236: * beside a bare control and label pair outside the container.
+tests/setupStyles.ts:7242: * focuses and fills; the disabled select is the host that separates the bare disabled label rule
+tests/setupStyles.ts:7255:	'<div><input type="text" class="form-control" id="bare-entry" placeholder="Bare"><label for="bare-entry">Bare entry</label></div>'
+tests/setupStyles.ts:7398: * The plain select comes first, so the bare `.form-select` selector resolves to it. The single-row
+tests/setupStyles.ts:7400: * caret a rule matching any `[size]` would strip. The bare select carries no class and keeps the
+tests/setupStyles.ts:7412:	['', 'Bare choice'],
+tests/setupStyles.ts:7509: * horizontal group whose legend labels its text control, beside a bare legend the class never
+tests/setupStyles.ts:7525:	'<fieldset id="label-bare"><legend>Bare legend</legend></fieldset>'
+tests/setupStyles.ts:7529: * accessible name of its own, beside a bare text control and a bare file control the class never
+tests/setupStyles.ts:7561:	'<input type="text" aria-label="Bare entry">' +
+tests/setupStyles.ts:7562:	'<input type="file" aria-label="Bare file entry">' +
+tests/setupStyles.ts:8599: * Each markup carries a list whose items hold links and a bare row of links, because the release
+tests/setupBrowser.test.ts:595:		const bare = requireValue(host.querySelector('div'), 'No bare specimen')
+tests/setupBrowser.test.ts:596:		const body = describeSubject(bare, {
+app/browser/constants.ts:2673: * The filled and justified rows each render their items twice, once as list items and once as bare
+guides/guide.md:96:| `EXTERNAL_SCHEMES` | const | `['http:', 'https:', 'mailto:', 'tel:']`              | Lists the link `href` schemes a guides-parity link check skips as external — a link with one of these prefixes (or a bare `#` anchor, handled separately in `isExternalLink`) is never resolved against the filesystem.                                                                                       |
+guides/guide.md:139:| `buildComment`          | function | `(lines: readonly string[], indent: string) => string`                                                                   | Builds one genuine JSDoc span from its content lines — the inverse of `unwrapComment`. Each line is emitted at `indent` behind a continuation marker, an empty line as the bare marker so no line carries trailing whitespace, and the leading and trailing empty lines are dropped because the opener and the closer take those physical lines.                                                                                                                                                                                                                                                                                                                          |
+guides/guide.md:160:| `isExternalLink`        | function | `(href: string) => boolean`                                                                                              | Checks whether a guides-parity link check skips a link `href` — an external scheme (`EXTERNAL_SCHEMES`) or a bare in-document `#` anchor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+guides/guide.md:164:| `normalizeIdentifier`   | function | `(code: string) => string`                                                                                               | Returns the identifier prefix of a code-span text — everything before its first `<`, trimmed. Guide cells and headings may annotate a generic-parameterized name (`MarkdownHandler<TNode, T>`) for readability, but the bijection key is the bare identifier the source scanner captures, so both sides must normalize the same way.                                                                                                                                                                                                                                                                                                                                      |
+guides/guide.md:197:| `selectGuidePitch`   | function | `(entries: readonly ManifestEntry[], name: string \| undefined) => string \| undefined` | Selects the indexed guide matching a package's bare name.                               |
+guides/guide.md:214:| `parsePackageName`    | function | `(manifest: string) => string \| undefined`                 | Reads the bare package name from package manifest JSON.                                         |
+guides/guide.md:338:[`SourceManager.ts`](../src/core/sources/SourceManager.ts). It answers one question a bare `Source`
+guides/guide.md:439:→ `WidgetInterface`) so the bijection key is always the bare name. `extractLinks` walks the
+guides/guide.md:541:closes an expression or a statement/declaration block, slash immediately after bare `}` is
+guides/guide.md:671:- **EX — Examples presence.** A documented symbol "has an example" when its bare name
+guides/veneer.md:903:attribute is absent, empty, or a bare `#`. The `readTarget` and `readTargets` functions take the
+guides/veneer.md:2434:classes states, so a resize past the breakpoint hides it. A bare `offcanvas` panel is fixed at every
+guides/veneer.md:3218:| `preflight`  | The order line, the bare import, the cascade, then the source rules.        | `theme`, `base`, and `utilities`.         | `tailwindcss`                                           | [stylesheet profiles](../tests/service/tailwind/profiles.test.ts) and [the preflight pairing](../tests/service/tailwind/preflight.test.ts) |
+guides/veneer.md:3223:fills no layer at all. The bare import differs, because preflight is not generated from your
+guides/veneer.md:3264:The following recipe is the `preflight` profile, which takes the bare import so Tailwind's own reset
+guides/veneer.md:3743:The class restores inherited cell alignment and border color over the bare-cell treatment: header
+guides/veneer.md:3745:Class padding overrides the bare cell's density spacing.
+guides/veneer.md:3808:transitions. The rules keyed to a bare element or a bare part stay in the elements layer — the
+guides/veneer.md:4059:the thumb transition. No rule keyed to the bare `[type=range]` attribute ships with it, so a slider
+guides/veneer.md:4194:rules here rather than framing them. The class-qualified disabled label rule paints what the bare
+guides/veneer.md:4707:reduced-motion rule the release records beside it is emitted with it. The offcanvas reset is a bare
+guides/veneer.md:5039:heading and the link beside a bare heading and a bare link, each role against its own aliases in
+guides/veneer.md:5047:bare tag, which this family never selects.
+guides/veneer.md:5663:release records beside it, for the bare panel and for each responsive panel below its breakpoint, is
+guides/veneer.md:5707:it, the bare panel at every width, an important background utility over the inline and the fixed
+guides/veneer.md:5798:box beside a bare link, and reads the generated box, the nearest positioned ancestor, the stacking
+guides/veneer.md:5889:beside a bare host that collapses, the generated box, a dark island, and the helper's layer beneath
+guides/veneer.md:6740:- **The canonical file carries the composable imports, and the bare import sits in a fixture.** The
+guides/veneer.md:6745:  `tests/fixtures/tailwind/preflight.css` file carries the bare import, and the
+guides/veneer.md:6936:paints a bare `mark` with, which is what Elements binds its own mark tokens to. They carry one
+guides/veneer.md:9984:| `reboot`       | `td { padding }`                                              | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+guides/veneer.md:9985:| `reboot`       | `td { border-bottom }`                                        | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+guides/veneer.md:9986:| `reboot`       | `td { vertical-align }`                                       | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+guides/veneer.md:9987:| `reboot`       | `td { text-align }`                                           | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+guides/veneer.md:9988:| `reboot`       | `th { padding }`                                              | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+guides/veneer.md:9989:| `reboot`       | `th { border-bottom }`                                        | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+guides/veneer.md:9990:| `reboot`       | `th { vertical-align }`                                       | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+guides/veneer.md:9991:| `reboot`       | `th { font-weight }`                                          | —                                                | declaration | Elements gives a bare table cell its own rhythm, end border, and alignment.                                                                                                 |
+guides/veneer.md:10393:| offcanvas        | variable       | Every official `--bs-offcanvas-*` custom property is declared on the bare panel and on each responsive panel, which redeclares the `--bs-offcanvas-height` and `--bs-offcanvas-border-width` variables at and above its boundary as the release does; the `tests/src/styles/components/offcanvas.test.ts` proof reads each variable a rule applies beside the property it drives.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | —                                   | shipped  |
+guides/veneer.md:10450:The compatibility claim excludes contextual Reboot selectors that combine bare tags: nested
+guides/scaffold.md:126:| `DEPENDENCY_NAME_PATTERN`         | const | Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.                    |
+guides/scaffold.md:150:| `MAX_NAME_LENGTH`                 | const | Caps the bare workspace name length.                                                                   |
+guides/scaffold.md:159:| `NAME_PATTERN`                    | const | Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first.             |
+guides/scaffold.md:430:| `readSurfaceCollisions`   | function | Reads bare Surface names claimed by distinct package guides.                           |
+guides/scaffold.md:884:that reports its accepted candidates rather than a bare `false`. So a blueprint naming
+guides/scaffold.md:1181:`tests/setup*.ts` exports with the hosted guides. It matches bare names case-sensitively across
+guides/scaffold.md:1233:manifest's own bare name selects,
+guides/scaffold.md:1378:knew rather than a bare `major.0.0`. A `Blueprint.peers` row is written during creation into a
+guides/scaffold.md:1519:each staged guide's `## Surface` names and reports every bare name distinct guides claim.
+guides/scaffold.md:1675:  bare specifier, because `vite.config.ts` derives its `alias` record from these entries in order and
+guides/scaffold.md:1676:  a bare specifier also matches its own subpaths. An `app` environment publishes nothing and maps no
+exit=0

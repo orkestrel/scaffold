@@ -1,0 +1,102 @@
+
+> @orkestrel/scaffold@0.0.77 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution -t fails the release run of a generated distribution proof
+
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+---x-----
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > fails the release run of a generated distribution proof on a refusing registry and skips the ordinary run
+AssertionError: expected [ { expired: false, …(4) }, …(3) ] to not deep equally contain { expired: false, signal: null, …(3) }
+
+- Expected:
+{
+  "code": 1,
+  "expired": false,
+  "files": [
+    {
+      "message": "The release gate requires a reachable npm registry, and npm ping did not answer",
+      "proof": true,
+      "status": "failed",
+      "statuses": [],
+    },
+  ],
+  "pinged": 1,
+  "signal": null,
+}
+
++ Received:
+[
+  {
+    "code": 1,
+    "expired": false,
+    "files": [
+      {
+        "message": "The release gate requires a reachable npm registry, and npm ping did not answer",
+        "proof": true,
+        "status": "failed",
+        "statuses": [],
+      },
+    ],
+    "pinged": 1,
+    "signal": null,
+  },
+  {
+    "code": 1,
+    "expired": false,
+    "files": [
+      {
+        "message": "Cannot find module './absent-module.js' imported from /tmp/scaffold-release-mode-KOGHHo/generated/tests/distribution.test.ts",
+        "proof": true,
+        "status": "failed",
+        "statuses": [],
+      },
+    ],
+    "pinged": 0,
+    "signal": null,
+  },
+  {
+    "code": 1,
+    "expired": false,
+    "files": [
+      {
+        "message": "",
+        "proof": true,
+        "status": "failed",
+        "statuses": [
+          "failed",
+        ],
+      },
+    ],
+    "pinged": 0,
+    "signal": null,
+  },
+  {
+    "code": null,
+    "expired": true,
+    "files": undefined,
+    "pinged": 0,
+    "signal": "SIGTERM",
+  },
+]
+
+ ❯ tests/distribution.test.ts:853:59
+    851|    })
+    852|    const rivals = ['malformed', 'collection', 'assertion', 'timeout']
+    853|    expect(rivals.map((label) => readings.get(label))).not.toContainEqu…
+       |                                                           ^
+    854|   } finally {
+    855|    await refusal.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  03:28:39
+   Duration  7.77s (transform 739ms, setup 440ms, import 1.06s, tests 6.10s, environment 0ms)
+
+exit=1

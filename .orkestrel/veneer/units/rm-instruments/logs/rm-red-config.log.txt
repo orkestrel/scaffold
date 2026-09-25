@@ -1,0 +1,97 @@
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+ ❯ |config| tests/config.test.ts (173 tests | 1 failed | 172 skipped) 20ms
+     × runs every project in the mode Vitest was invoked with 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > root configuration > runs every project in the mode Vitest was invoked with
+AssertionError: expected [ { name: 'srcCore', …(3) }, …(8) ] to strictly equal [ { name: 'srcCore', …(3) }, …(8) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "srcCore",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "srcServer",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "srcBin",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "policy",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "config",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "setup",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "guides",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "distribution",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "probe",
+    },
+  ]
+
+ ❯ tests/config.test.ts:416:46
+    414|   })
+    415|   const forwarded = { callable: true, mode: 'sentinel-mode', leaked: […
+    416|   expect(readings.slice(0, projects.length)).toStrictEqual(
+       |                                              ^
+    417|    projects.map((entry) => ({
+    418|     name: typeof entry === 'function' ? entry.name : undefined,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 172 skipped (173)
+   Start at  03:29:19
+   Duration  1.40s (transform 837ms, setup 537ms, import 673ms, tests 20ms, environment 0ms)
+
+exit=1

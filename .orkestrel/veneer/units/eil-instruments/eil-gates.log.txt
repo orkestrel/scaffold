@@ -1,6 +1,0 @@
-format:check=0
-lint:check=0
-check=0
-test:setup=1
-test:conformance=0
-test:guides=0

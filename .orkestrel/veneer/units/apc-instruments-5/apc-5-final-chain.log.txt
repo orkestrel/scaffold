@@ -1,5 +1,0 @@
-scoped color exit=0
-format:check exit=0
-lint:check exit=0
-check exit=0
-test:src:styles exit=0

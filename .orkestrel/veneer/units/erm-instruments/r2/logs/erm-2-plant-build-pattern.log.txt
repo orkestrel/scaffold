@@ -1,0 +1,40 @@
+plant=build-pattern files=tests/setupServer.ts expect=1
+command=npm run test:setup -- tests/setupServer.test.ts -t BUILD_PATTERN
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupServer.test.ts -t BUILD_PATTERN
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+-----------------------------------------------------------------------------------------------------------------------x--
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > BUILD_PATTERN > matches a four-part numeric build and refuses a three-part, five-part, or lettered one
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/setupServer.test.ts:3409:44
+    3407|   expect(BUILD_PATTERN.test('141.0.7390.37')).toBe(true)
+    3408|   expect(BUILD_PATTERN.test('0.0.0.0')).toBe(true)
+    3409|   expect(BUILD_PATTERN.test('141.0.7390')).toBe(false)
+       |                                            ^
+    3410|   expect(BUILD_PATTERN.test('141.0.7390.37.1')).toBe(false)
+    3411|   expect(BUILD_PATTERN.test('141.0.7390.x')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 121 skipped (122)
+   Start at  03:20:04
+   Duration  1.61s (transform 500ms, setup 116ms, import 1.32s, tests 14ms, environment 0ms)
+
+exit=1
+restore tests/setupServer.ts before=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 after=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 equal=True

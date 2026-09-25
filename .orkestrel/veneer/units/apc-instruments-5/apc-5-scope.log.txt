@@ -1,4 +1,0 @@
-files in status: 15
-equal to round 3: guides/veneer.md src/styles/_tokens.scss src/styles/components/_button.scss src/styles/utilities/_color.scss src/styles/utilities/_link.scss tests/setup.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/button.test.ts tests/src/styles/components/validation.test.ts tests/src/styles/elements/a.test.ts tests/src/styles/theme.test.ts tests/src/styles/utilities/color-bg.test.ts tests/src/styles/utilities/link.test.ts
-differ from round 3: tests/src/styles/utilities/color.test.ts
-control (color.test.ts differs): True

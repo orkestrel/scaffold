@@ -1,0 +1,3 @@
+{"classes":"btn btn-primary","buttonColor":"rgb(255, 255, 255)","buttonBackground":"oklch(0.48 0.255 264)","bodyText":"oklch(0.208 0.042 265.755)","colorIsBodyText":false,"cellBackground":"rgb(33, 37, 41)","cellShadow":"rgba(0, 0, 0, 0) 0px 0px 0px 9999px inset","badgeColor":"rgb(255, 255, 255)","badgeBackground":"rgba(0, 0, 0, 0)"}
+{"classes":"btn","buttonColor":"oklch(0.208 0.042 265.755)","buttonBackground":"rgba(0, 0, 0, 0)","bodyText":"oklch(0.208 0.042 265.755)","colorIsBodyText":true,"cellBackground":"rgb(33, 37, 41)","cellShadow":"rgba(0, 0, 0, 0) 0px 0px 0px 9999px inset","badgeColor":"rgb(255, 255, 255)","badgeBackground":"rgba(0, 0, 0, 0)"}
+exit=0

@@ -1,0 +1,54 @@
+
+> @orkestrel/scaffold@0.0.77 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+·····xxx-
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > installs the packed scaffold and passes one generated core/server workspace through prepublish [requires a reachable npm registry]
+Error: The distribution release gate requires a reachable npm registry.
+ ❯ tests/distribution.test.ts:1010:11
+    1008|   () => {
+    1009|    if (!registry) {
+    1010|     throw new Error('The distribution release gate requires a reachabl…
+       |           ^
+    1011|    }
+    1012|    const workspace = createScratch({ prefix: 'scaffold-e4-install-' })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > installs the packed scaffold and passes one generated app-only workspace through its gates [requires a reachable npm registry]
+Error: The distribution release gate requires a reachable npm registry.
+ ❯ tests/distribution.test.ts:1110:11
+    1108|   () => {
+    1109|    if (!registry) {
+    1110|     throw new Error('The distribution release gate requires a reachabl…
+       |           ^
+    1111|    }
+    1112|    const workspace = createScratch({ prefix: 'scaffold-e4-app-install-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > renders a Vue SFC through the generated browser setup project [requires a reachable npm registry]
+Error: The distribution release gate requires a reachable npm registry.
+ ❯ tests/distribution.test.ts:1169:11
+    1167|   () => {
+    1168|    if (!registry) {
+    1169|     throw new Error('The distribution release gate requires a reachabl…
+       |           ^
+    1170|    }
+    1171|    const workspace = createScratch({ prefix: 'scaffold-vue-setup-insta…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 5 passed | 1 skipped (9)
+   Start at  03:30:20
+   Duration  10.40s (transform 549ms, setup 354ms, import 837ms, tests 9.03s, environment 0ms)
+
+exit=1

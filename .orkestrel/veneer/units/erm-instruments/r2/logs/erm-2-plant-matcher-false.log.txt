@@ -1,0 +1,40 @@
+plant=matcher-false files=tests/setupServer.ts expect=1
+command=npm run test:setup -- tests/setupServer.test.ts -t matchesReceipt
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupServer.test.ts -t matchesReceipt
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+------------------------------------------------------------------------------------------------------------------------x·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > matchesReceipt > matches a passing receipt on the channel, platform, and build and ignores kernel, Node, and npm
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/setupServer.test.ts:3434:44
+    3432|
+    3433|  it('matches a passing receipt on the channel, platform, and build and…
+    3434|   expect(matchesReceipt(receipt, runtime)).toBe(true)
+       |                                            ^
+    3435|   expect(
+    3436|    matchesReceipt({ ...receipt, kernel: '6.1.0', node: '24.0.0', npm: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 120 skipped (122)
+   Start at  03:20:07
+   Duration  1.81s (transform 721ms, setup 226ms, import 1.41s, tests 16ms, environment 0ms)
+
+exit=1
+restore tests/setupServer.ts before=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 after=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 equal=True

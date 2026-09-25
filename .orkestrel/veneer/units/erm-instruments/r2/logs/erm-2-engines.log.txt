@@ -1,0 +1,19 @@
+npm=11.19.1 node=v22.22.2 engine-strict=false
+--- engines: {"name":"engines-probe","version":"0.0.0","private":true,"engines":{"node":">=99"},"scripts":{"hello":"echo script ran"}}
+
+> engines-probe@0.0.0 hello
+> echo script ran
+
+script ran
+exit=0
+--- devengines: {"name":"devengines-probe","version":"0.0.0","private":true,"devEngines":{"packageManager":{"name":"npm","version":">=99.0.0","onFail":"error"}},"scripts":{"hello":"echo script ran"}}
+npm error code EBADDEVENGINES
+npm error EBADDEVENGINES The developer of this package has specified the following through devEngines
+npm error EBADDEVENGINES Invalid devEngines.packageManager
+npm error EBADDEVENGINES Invalid semver version ">=99.0.0" does not match "11.19.1" for "packageManager"
+npm error EBADDEVENGINES {
+npm error EBADDEVENGINES   current: { name: 'npm', version: '11.19.1' },
+npm error EBADDEVENGINES   required: { name: 'npm', version: '>=99.0.0', onFail: 'error' }
+npm error EBADDEVENGINES }
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-09-25T03_11_23_123Z-debug-0.log
+exit=1

@@ -1,6 +1,0 @@
-veneer @1280 {"display":"flex","gap":"normal","columns":"none","boxes":["dt x=70 y=0 w=285","dd x=355 y=0 w=855","dt x=70 y=29 w=285","dd x=355 y=29 w=855"]}
-bootstrap @1280 {"display":"flex","gap":"normal","columns":"none","boxes":["dt x=70 y=0 w=285","dd x=355 y=0 w=855","dt x=70 y=32 w=285","dd x=355 y=32 w=855"]}
-veneer @576 {"display":"flex","gap":"normal","columns":"none","boxes":["dt x=18 y=0 w=135","dd x=153 y=0 w=405","dt x=18 y=29 w=135","dd x=153 y=29 w=405"]}
-bootstrap @576 {"display":"flex","gap":"normal","columns":"none","boxes":["dt x=18 y=0 w=135","dd x=153 y=0 w=405","dt x=18 y=32 w=135","dd x=153 y=32 w=405"]}
-veneer @575 {"display":"flex","gap":"normal","columns":"none","boxes":["dt x=0 y=0 w=575","dd x=0 y=21 w=575","dt x=0 y=50 w=575","dd x=0 y=71 w=575"]}
-bootstrap @575 {"display":"flex","gap":"normal","columns":"none","boxes":["dt x=0 y=0 w=575","dd x=0 y=24 w=575","dt x=0 y=56 w=575","dd x=0 y=80 w=575"]}

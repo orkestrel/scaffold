@@ -1,0 +1,46 @@
+plant=release-match files=guides/veneer.md,tests/distribution.test.ts expect=0
+command=npm run test:distribution -- --reporter=verbose -t release host
+
+> @orkestrel/veneer@0.0.1 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --reporter=verbose -t release host
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+- ↓ |distribution| tests/distribution.test.ts > distribution classifiers > classifies synthetic export mappings without a registry stage
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > loads standalone styles with the declared cascade order [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > packs one archive and installs it in isolation [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > ships every relative target its exports map names [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > declares types for every module it publishes [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > ships only relative or Orkestrel module specifiers [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > refuses a subpath its exports map does not name [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > compiles a consumer under every module resolution [requires the registry]
+· ✓ |distribution| tests/distribution.test.ts > release host > holds a passing receipt on the channel, platform, and build this run launched 501ms
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node import, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node require, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > drives the published button engine and its delegation in a real browser [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a real browser, and no more [requires a browser]
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node import, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node require, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > drives the published button engine and its delegation in a real browser [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a real browser, and no more [requires a browser]
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 17 skipped (18)
+   Start at  03:20:15
+   Duration  3.93s (transform 606ms, setup 236ms, import 3.03s, tests 510ms, environment 0ms)
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 17 skipped (18)
+   Start at  03:20:15
+   Duration  3.93s (transform 606ms, setup 236ms, import 3.03s, tests 510ms, environment 0ms)
+
+exit=0
+restore guides/veneer.md before=342d4bd85f9a9b2a3de437f9ed3aab1050c0afea9a47c77143d98132113be892 after=342d4bd85f9a9b2a3de437f9ed3aab1050c0afea9a47c77143d98132113be892 equal=True
+restore tests/distribution.test.ts before=cb1268ef95727489e567fde9a39046a3fdd1b842f13704f910fe82525a4cbe1c after=cb1268ef95727489e567fde9a39046a3fdd1b842f13704f910fe82525a4cbe1c equal=True

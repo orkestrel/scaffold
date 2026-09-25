@@ -1,0 +1,81 @@
+
+> @orkestrel/veneer@0.0.1 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --reporter=verbose
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+· ✓ |distribution| tests/distribution.test.ts > distribution classifiers > classifies synthetic export mappings without a registry stage 4ms
+· ✓ |distribution| tests/distribution.test.ts > installed package consumer > loads standalone styles with the declared cascade order [requires the registry] 880ms
+x × |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry] 531ms
+   → expected 'color(srgb 0.0510206 0.212902 0.67272…' to be 'rgb(8, 65, 234)' // Object.is equality
+· ✓ |distribution| tests/distribution.test.ts > installed package consumer > packs one archive and installs it in isolation [requires the registry] 1ms
+· ✓ |distribution| tests/distribution.test.ts > installed package consumer > ships every relative target its exports map names [requires the registry] 0ms
+· ✓ |distribution| tests/distribution.test.ts > installed package consumer > declares types for every module it publishes [requires the registry] 1ms
+· ✓ |distribution| tests/distribution.test.ts > installed package consumer > ships only relative or Orkestrel module specifiers [requires the registry] 127ms
+· ✓ |distribution| tests/distribution.test.ts > installed package consumer > refuses a subpath its exports map does not name [requires the registry] 52ms
+· ✓ |distribution| tests/distribution.test.ts > installed package consumer > compiles a consumer under every module resolution [requires the registry] 6564ms
+- ↓ |distribution| tests/distribution.test.ts > release host > holds a passing receipt on the channel, platform, and build this run launched 448ms [No receipt matched. The row needs a passing receipt in guides/veneer.md § Hosts naming this run: Channel chromium, Build 141.0.7390.37, Platform linux, Kernel 6.18.44-fc-v37, Node 22.22.2, npm 11.19.1]
+· ✓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node import, and no more 1586ms
+· ✓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node require, and no more 1586ms
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > drives the published button engine and its delegation in a real browser [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a real browser, and no more [requires a browser]
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node import, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node require, and no more
+· ✓ |distribution| tests/distribution.test.ts > installed entry ./browser > drives the published button engine and its delegation in a real browser [requires the registry] 632ms
+· ✓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a real browser, and no more [requires a browser] 1113ms
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry]
+AssertionError: expected 'color(srgb 0.0510206 0.212902 0.67272…' to be 'rgb(8, 65, 234)' // Object.is equality
+
+Expected: "rgb(8, 65, 234)"
+Received: "color(srgb 0.0510206 0.212902 0.672726)"
+
+ ❯ tests/distribution.test.ts:1094:42
+    1092|     .map((channel) => channel.trim())
+    1093|    expect(channels).toHaveLength(3)
+    1094|    expect(readReading(readings, 'link')).toBe(`rgb(${channels.join(', …
+       |                                          ^
+    1095|    expect(readReading(readings, 'link')).not.toBe(readReading(readings…
+    1096|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed | 5 skipped (18)
+   Start at  02:52:10
+   Duration  16.86s (transform 479ms, setup 160ms, import 3.00s, tests 13.54s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry]
+AssertionError: expected 'color(srgb 0.0510206 0.212902 0.67272…' to be 'rgb(8, 65, 234)' // Object.is equality
+
+Expected: "rgb(8, 65, 234)"
+Received: "color(srgb 0.0510206 0.212902 0.672726)"
+
+ ❯ tests/distribution.test.ts:1094:42
+    1092|     .map((channel) => channel.trim())
+    1093|    expect(channels).toHaveLength(3)
+    1094|    expect(readReading(readings, 'link')).toBe(`rgb(${channels.join(', …
+       |                                          ^
+    1095|    expect(readReading(readings, 'link')).not.toBe(readReading(readings…
+    1096|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed | 5 skipped (18)
+   Start at  02:52:10
+   Duration  16.89s (transform 479ms, setup 160ms, import 3.00s, tests 13.54s, environment 0ms)
+
+exit=1

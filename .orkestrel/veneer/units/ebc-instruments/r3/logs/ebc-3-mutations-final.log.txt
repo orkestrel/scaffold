@@ -1,0 +1,53 @@
+=== class
+kills:
+KILL | tests/src/styles/mixins.test.ts > declaration mixins writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important | AssertionError: expected { …(2) } to deeply equal { …(2) }
+KILL | tests/src/styles/elements/button.test.ts > button paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface | AssertionError: expected { name: 'Emptied control', …(1) } to deeply equal { name: 'Emptied control', …(1) }
+KILL | tests/src/styles/elements/button.test.ts > button lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value | AssertionError: expected { …(2) } to deeply equal { …(2) }
+KILL | tests/service/tailwind/consumer.test.ts > the consumer pairing keeps the button surface on a button carrying a utility alone, and lets the utility win the padding it declares | AssertionError: expected { 'padding-top': '1px', …(18) } to deeply equal { 'padding-top': '6px', …(18) }
+restore: byte-identical 94711449d6374bb70487e1e687f863c088d357767d0f650864aead2ef8b6c82f
+rebuild exit=0
+=== target
+kills:
+KILL | tests/src/styles/mixins.test.ts > declaration mixins writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important | AssertionError: expected { …(2) } to deeply equal { …(2) }
+KILL | tests/src/styles/elements/button.test.ts > button paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface | AssertionError: expected { name: 'Targeted control', …(1) } to deeply equal { name: 'Targeted control', …(1) }
+restore: byte-identical 94711449d6374bb70487e1e687f863c088d357767d0f650864aead2ef8b6c82f
+rebuild exit=0
+=== important
+kills:
+KILL | tests/src/styles/mixins.test.ts > declaration mixins writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important | AssertionError: expected [ Array(4) ] to deeply equal []
+KILL | tests/src/styles/elements/button.test.ts > button paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface | AssertionError: expected { name: 'Spaced control', …(1) } to deeply equal { name: 'Spaced control', …(1) }
+KILL | tests/src/styles/elements/button.test.ts > button lets a consumer class win the padding and the corner, unlayered and inside the components layer, and keeps every other surface value | AssertionError: expected { …(2) } to deeply equal { …(2) }
+KILL | tests/src/styles/elements/button.test.ts > button resolves every .btn form on a button as the same form resolves on an anchor, apart from the button appearance | AssertionError: expected [ { form: 'filled', …(1) }, …(6) ] to deeply equal [ { form: 'filled', …(1) }, …(6) ]
+KILL | tests/service/tailwind/consumer.test.ts > the consumer pairing overrides a component declaration with a utility Tailwind alone generates | AssertionError: expected [ '12px', '12px' ] to deeply equal [ '32px', '32px' ]
+KILL | tests/service/tailwind/consumer.test.ts > the consumer pairing keeps the button surface on a button carrying a utility alone, and lets the utility win the padding it declares | AssertionError: expected { 'padding-top': '6px', …(18) } to deeply equal { 'padding-top': '6px', …(18) }
+restore: byte-identical 94711449d6374bb70487e1e687f863c088d357767d0f650864aead2ef8b6c82f
+rebuild exit=0
+=== spacing
+kills:
+KILL | tests/src/styles/mixins.test.ts > declaration mixins writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important | AssertionError: expected { …(2) } to deeply equal { …(2) }
+KILL | tests/src/styles/elements/button.test.ts > button resolves every .btn form on a button as the same form resolves on an anchor, apart from the button appearance | AssertionError: expected [ { form: 'filled', …(1) }, …(6) ] to deeply equal [ { form: 'filled', …(1) }, …(6) ]
+restore: byte-identical 94711449d6374bb70487e1e687f863c088d357767d0f650864aead2ef8b6c82f
+rebuild exit=0
+=== nav
+kills:
+KILL | tests/src/styles/mixins.test.ts > declaration mixins writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important | AssertionError: expected [ …(8) ] to deeply equal [ …(9) ]
+KILL | tests/src/styles/elements/button.test.ts > button writes the button reboot back on a plain nav link's button form, which takes the release's corner, type, and shadow | AssertionError: expected { radius: 6, …(5) } to deeply equal { radius: +0, shadow: 'none', …(4) }
+restore: byte-identical f5b495417ef9ab7e38aec042d629fc1dd8a46ce083b788ee7ca6cb69e3564fbe
+rebuild exit=0
+=== state-spacing
+kills:
+KILL | tests/src/styles/mixins.test.ts > declaration mixins writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important | AssertionError: expected { …(2) } to deeply equal { …(2) }
+restore: byte-identical 94711449d6374bb70487e1e687f863c088d357767d0f650864aead2ef8b6c82f
+rebuild exit=0
+=== no-surface
+kills:
+KILL | tests/src/styles/mixins.test.ts > declaration mixins paints the calibrated focus ring on its mounted element caller | AssertionError: expected 'auto' to be 'none' // Object.is equality
+KILL | tests/src/styles/mixins.test.ts > declaration mixins writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important | AssertionError: expected { …(2) } to deeply equal { …(2) }
+KILL | tests/src/styles/elements/button.test.ts > button paints an empty-class, a utility-class, a consumer-class, and a target-attribute button with the surface a classless button wears, at rest and in every state, apart from the longhands a utility class writes over the surface | AssertionError: expected '400' to be '700' // Object.is equality
+KILL | tests/src/styles/elements/button.test.ts > button resolves the calibrated geometry and interaction paint in light mode | AssertionError: expected 1 to be 6 // Object.is equality
+KILL | tests/src/styles/elements/button.test.ts > button resolves the calibrated geometry and interaction paint in dark mode | AssertionError: expected 1 to be 6 // Object.is equality
+KILL | tests/src/styles/elements/button.test.ts > button steps the surface veil in a dark island by at least the least hover step | AssertionError: expected 1 to be greater than or equal to 1.4
+KILL | tests/service/tailwind/consumer.test.ts > the consumer pairing keeps the button surface on a button carrying a utility alone, and lets the utility win the padding it declares | AssertionError: expected { top: '1px', left: '6px', …(1) } to deeply equal { top: '6px', left: '12px', …(1) }
+restore: byte-identical 94711449d6374bb70487e1e687f863c088d357767d0f650864aead2ef8b6c82f
+rebuild exit=0
+mutations done

@@ -1,0 +1,40 @@
+plant=reader-platform files=tests/setupServer.ts expect=1
+command=npm run test:setup -- tests/setupServer.test.ts -t Hosts subsection
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupServer.test.ts -t Hosts subsection
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+--------------------------------------x-·---------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reads supported hosts only within their Hosts subsection and refuses a missing column, a missing cell, and a platform Node never reports
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/setupServer.test.ts:1272:44
+    1270|      `${header}| \`chromium\` | \`linux\` | — |\n| \`chromium\` | ${pl…
+    1271|     )
+    1272|     expect(() => readSupportedHosts(path)).toThrow(
+       |                                            ^
+    1273|      `Supported host row 2: invalid Platform ${platform.slice(1, -1)}`,
+    1274|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 120 skipped (122)
+   Start at  03:19:47
+   Duration  1.80s (transform 611ms, setup 149ms, import 1.44s, tests 36ms, environment 0ms)
+
+exit=1
+restore tests/setupServer.ts before=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 after=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 equal=True

@@ -1,0 +1,111 @@
+
+> @orkestrel/scaffold@0.0.77 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+··x···stdout | tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+host-inventory: entries=175
+
+····································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > root configuration > runs every project in the mode Vitest was invoked with
+AssertionError: expected [ { name: 'srcCore', …(3) }, …(8) ] to strictly equal [ { name: 'srcCore', …(3) }, …(8) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "srcCore",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "srcServer",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "srcBin",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "policy",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "config",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "setup",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "guides",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "distribution",
+    },
+    {
+      "callable": true,
+      "leaked": [],
+-     "mode": "sentinel-mode",
++     "mode": undefined,
+      "name": "probe",
+    },
+  ]
+
+ ❯ tests/config.test.ts:416:46
+    414|   })
+    415|   const forwarded = { callable: true, mode: 'sentinel-mode', leaked: […
+    416|   expect(readings.slice(0, projects.length)).toStrictEqual(
+       |                                              ^
+    417|    projects.map((entry) => ({
+    418|     name: typeof entry === 'function' ? entry.name : undefined,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 171 passed | 1 skipped (173)
+   Start at  03:29:38
+   Duration  6.38s (transform 566ms, setup 351ms, import 566ms, tests 5.30s, environment 0ms)
+
+exit=1

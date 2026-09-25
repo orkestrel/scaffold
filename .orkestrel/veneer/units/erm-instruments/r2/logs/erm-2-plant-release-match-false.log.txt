@@ -1,0 +1,81 @@
+plant=release-match-false files=guides/veneer.md,tests/distribution.test.ts expect=1
+command=npm run test:distribution -- --reporter=verbose -t release host
+
+> @orkestrel/veneer@0.0.1 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --reporter=verbose -t release host
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+- ↓ |distribution| tests/distribution.test.ts > distribution classifiers > classifies synthetic export mappings without a registry stage
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > loads standalone styles with the declared cascade order [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > packs one archive and installs it in isolation [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > ships every relative target its exports map names [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > declares types for every module it publishes [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > ships only relative or Orkestrel module specifiers [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > refuses a subpath its exports map does not name [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > compiles a consumer under every module resolution [requires the registry]
+x × |distribution| tests/distribution.test.ts > release host > holds a passing receipt on the channel, platform, and build this run launched 527ms
+   → The release gate requires a passing receipt in guides/veneer.md § Hosts naming this run's host values: Channel chromium, Build 141.0.7390.37, Platform linux, Kernel 6.18.44-fc-v37, Node 22.22.2, npm 11.19.1. The Date, Revision, and Commands cells come from the run that writes the row: expected false to be true // Object.is equality
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node import, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node require, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > drives the published button engine and its delegation in a real browser [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a real browser, and no more [requires a browser]
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node import, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node require, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > drives the published button engine and its delegation in a real browser [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a real browser, and no more [requires a browser]
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > release host > holds a passing receipt on the channel, platform, and build this run launched
+AssertionError: The release gate requires a passing receipt in guides/veneer.md § Hosts naming this run's host values: Channel chromium, Build 141.0.7390.37, Platform linux, Kernel 6.18.44-fc-v37, Node 22.22.2, npm 11.19.1. The Date, Revision, and Commands cells come from the run that writes the row: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/distribution.test.ts:1231:61
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  03:20:21
+   Duration  4.15s (transform 579ms, setup 164ms, import 3.29s, tests 534ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > release host > holds a passing receipt on the channel, platform, and build this run launched
+AssertionError: The release gate requires a passing receipt in guides/veneer.md § Hosts naming this run's host values: Channel chromium, Build 141.0.7390.37, Platform linux, Kernel 6.18.44-fc-v37, Node 22.22.2, npm 11.19.1. The Date, Revision, and Commands cells come from the run that writes the row: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/distribution.test.ts:1231:61
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  03:20:21
+   Duration  4.17s (transform 579ms, setup 164ms, import 3.29s, tests 534ms, environment 0ms)
+
+exit=1
+restore guides/veneer.md before=342d4bd85f9a9b2a3de437f9ed3aab1050c0afea9a47c77143d98132113be892 after=342d4bd85f9a9b2a3de437f9ed3aab1050c0afea9a47c77143d98132113be892 equal=True
+restore tests/distribution.test.ts before=cb1268ef95727489e567fde9a39046a3fdd1b842f13704f910fe82525a4cbe1c after=cb1268ef95727489e567fde9a39046a3fdd1b842f13704f910fe82525a4cbe1c equal=True

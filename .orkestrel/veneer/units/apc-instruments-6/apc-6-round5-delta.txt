@@ -1,4 +1,0 @@
-33c33
-< 		'resolves each text color to the value the release records, and each role outside the neutral roles to its on-canvas tier, in %s mode',
----
-> 		'resolves each role outside the neutral roles to its on-canvas tier rather than the value the release records, and every other text color to that value, in %s mode',

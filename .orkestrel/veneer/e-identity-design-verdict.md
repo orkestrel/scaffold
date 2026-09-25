@@ -47,7 +47,7 @@ land after APPEARANCE, serially, with the shared patches applied three-way. Each
   test that pins it: E-ID-CODE owns `tests/app/browser/sections/ContentSection.test.ts`, and E-ID-LAYOUT owns
   `tests/app/browser/sections/TypeSection.test.ts`.
 - **Command.** The styles project lives in `configs/src/vite.styles.config.ts`, not in the root `vite.config.ts`
-  that `e-id-common.md` named; both units found it and used it.
+  that `units/e-id-common.md` (pruned 2026-09-25, read from history the same way) named; both units found it and used it.
 
 ## Addendum 2: realigned on the tenets (2026-09-24, after the user's pointer to them)
 
@@ -82,12 +82,12 @@ Ruled on the round-3 and E-ID-FLOW audit evidence, against the same two tenets a
   keeps a child's margins inside the figure. Under Bootstrap's attributed quotation, the flex figure encloses the
   footer's 1rem end margin, so the figure box reads 63.14px against Bootstrap's 51px, and once `figure` takes its
   reboot margin the following content would sit 16px lower than Bootstrap places it
-  (`units/eil-instruments/r3/eil-3-probe.log.txt`; the E-ID-LAYOUT round-3 subjective lane, claim 3). A block figure
+  (`units/eil-instruments/r3/eil-3-probe.log.txt`, pruned 2026-09-25 and read with `git show` from the commit before the prune that `git log --grep=Prune -- .orkestrel/veneer/units/eil-instruments` names; the E-ID-LAYOUT round-3 subjective lane, claim 3). A block figure
   gives the same 8px caption space (`figure.test.ts`, the `d-block` holder). `figure` drops `display: flex` and
   `flex-direction`, and `figcaption` keeps its top margin. E-ID-LAYOUT round 4.
 - **Nested lists keep their margin.** Bootstrap zeroes an inner list's bottom margin with `ol ol, ul ul, ol ul, ul ol`,
   a rule that changes a tag by the tag around it, so it stays Excluded. An inner list keeps the list's 1rem bottom
-  margin, and `.mb-0` removes it (`units/flow-instruments/orchestrator-components-probe.log.txt`: every other
+  margin, and `.mb-0` removes it (`units/flow-instruments/orchestrator-components-probe.log.txt`, pruned 2026-09-25 and read the same way: every other
   documented component margin under E-ID-FLOW equals Bootstrap's).
 - **The bare `button` rule contradicts Addendum 2.** `button:not([class], [data-bs-target])` strips the bare default
   whenever any class appears, which Addendum 2 rules out for `dl` and `blockquote`, and this verdict's house rule cites

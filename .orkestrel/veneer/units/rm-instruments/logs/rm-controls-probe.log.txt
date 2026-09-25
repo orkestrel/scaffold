@@ -1,0 +1,81 @@
+
+> @orkestrel/scaffold@0.0.77 test:probe
+> vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe tmp/probe/release-controls.test.ts
+
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+stdout | tmp/probe/release-controls.test.ts > refuses every rival failure as the release failure
+{
+  "none": {
+    "expired": false,
+    "signal": null,
+    "reading": {
+      "code": 1,
+      "files": [
+        {
+          "proof": true,
+          "status": "failed",
+          "message": "The release gate requires a reachable npm registry, and npm ping did not answer",
+          "statuses": []
+        }
+      ]
+    }
+  },
+  "malformed": {
+    "expired": false,
+    "signal": null,
+    "reading": {
+      "code": 1,
+      "report": "absent"
+    }
+  },
+  "collection": {
+    "expired": false,
+    "signal": null,
+    "reading": {
+      "code": 1,
+      "files": [
+        {
+          "proof": true,
+          "status": "failed",
+          "message": "Cannot find module './absent-module.js' imported from /tmp/rm-control-XIAf2p/generated/tests/distribution.test.ts",
+          "statuses": []
+        }
+      ]
+    }
+  },
+  "assertion": {
+    "expired": false,
+    "signal": null,
+    "reading": {
+      "code": 1,
+      "files": [
+        {
+          "proof": true,
+          "status": "failed",
+          "message": "",
+          "statuses": [
+            "failed"
+          ]
+        }
+      ]
+    }
+  },
+  "timeout": {
+    "expired": true,
+    "signal": "SIGTERM",
+    "reading": {
+      "code": null,
+      "report": "absent"
+    }
+  }
+}
+
+ ✓ |probe| tmp/probe/release-controls.test.ts > refuses every rival failure as the release failure 4706ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  03:27:16
+   Duration  5.91s (transform 756ms, setup 456ms, import 585ms, tests 4.71s, environment 0ms)
+

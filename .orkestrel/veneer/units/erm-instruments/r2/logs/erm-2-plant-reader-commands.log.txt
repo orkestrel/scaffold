@@ -1,0 +1,40 @@
+plant=reader-commands files=tests/setupServer.ts expect=1
+command=npm run test:setup -- tests/setupServer.test.ts -t Hosts subsection
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupServer.test.ts -t Hosts subsection
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+--------------------------------------·-x---------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reads receipts only within their Hosts subsection and refuses each malformed cell
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/setupServer.test.ts:1347:38
+    1345|    ] as const) {
+    1346|     scratch.write('guide.md', `${header}${row.replace(written, replace…
+    1347|     expect(() => readReceipts(path)).toThrow(refusal)
+       |                                      ^
+    1348|    }
+    1349|    scratch.write('guide.md', `${header}${row.replace('| Pass |', '| |'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 120 skipped (122)
+   Start at  03:19:43
+   Duration  2.11s (transform 801ms, setup 243ms, import 1.62s, tests 47ms, environment 0ms)
+
+exit=1
+restore tests/setupServer.ts before=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 after=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 equal=True

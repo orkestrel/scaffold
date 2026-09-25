@@ -1,0 +1,42 @@
+plant=floor file=guides/veneer.md
+command=npm run test:guides
+
+> @orkestrel/veneer@0.0.1 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/veneer-erm[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds every receipt at or above the package.json Node and npm floors
+[31m[1mAssertionError[22m: expected [ Array(1) ] to deeply equal [][39m
+
+- Expected
++ Received
+
+- []
++ [
++   "2026-09-25 873f715: Node 20.0.0 under 22.18.0",
++ ]
+
+[36m [2m❯[22m tests/guides.test.ts:[2m149:17[22m[39m
+    [90m147|[39m     [33m:[39m [])[33m,[39m
+    [90m148|[39m   ])
+    [90m149|[39m   [34mexpect[39m(below)[33m.[39m[34mtoEqual[39m([])
+    [90m   |[39m                 [31m^[39m
+    [90m150|[39m  })
+    [90m151|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m25 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 02:51:04
+[2m   Duration [22m 4.65s[2m (transform 849ms, setup 118ms, import 2.55s, tests 1.84s, environment 0ms)[22m
+
+exit=1
+restore before=e1127d095edf42e278e9450737035e7722d31120ebddbd3580069c0164f23ef1 after=e1127d095edf42e278e9450737035e7722d31120ebddbd3580069c0164f23ef1 equal=True

@@ -1,0 +1,42 @@
+plant=floor-npm files=guides/veneer.md expect=1
+command=npm run test:guides
+
+> @orkestrel/veneer@0.0.1 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/veneer-erm[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds every receipt at or above the package.json Node and npm floors and refuses a floor not in the >=x.y.z form
+[31m[1mAssertionError[22m: expected [ Array(1) ] to deeply equal [][39m
+
+- Expected
++ Received
+
+- []
++ [
++   "2026-09-25 873f715: npm 11.5.0 under 11.6.0",
++ ]
+
+[36m [2m❯[22m tests/guides.test.ts:[2m149:17[22m[39m
+    [90m147|[39m     [33m:[39m [])[33m,[39m
+    [90m148|[39m   ])
+    [90m149|[39m   [34mexpect[39m(below)[33m.[39m[34mtoEqual[39m([])
+    [90m   |[39m                 [31m^[39m
+    [90m150|[39m  })
+    [90m151|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m25 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 03:19:50
+[2m   Duration [22m 4.37s[2m (transform 605ms, setup 125ms, import 2.28s, tests 1.80s, environment 0ms)[22m
+
+exit=1
+restore guides/veneer.md before=342d4bd85f9a9b2a3de437f9ed3aab1050c0afea9a47c77143d98132113be892 after=342d4bd85f9a9b2a3de437f9ed3aab1050c0afea9a47c77143d98132113be892 equal=True

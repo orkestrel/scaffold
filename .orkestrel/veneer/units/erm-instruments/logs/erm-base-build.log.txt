@@ -1,0 +1,104 @@
+
+> @orkestrel/veneer@0.0.1 build
+> npm run clean && npm run build:src && npm run build:app
+
+
+> @orkestrel/veneer@0.0.1 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/veneer@0.0.1 build:src
+> npm run build:src:core && npm run build:src:browser && npm run build:src:styles
+
+
+> @orkestrel/veneer@0.0.1 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  9.78 kB │ gzip: 2.63 kB │ map: 15.17 kB
+
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  9.94 kB │ gzip: 2.70 kB │ map: 15.19 kB
+
+✓ built in 156ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/veneer@0.0.1 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+> @orkestrel/veneer@0.0.1 build:src:browser
+> vite build --config configs/src/vite.browser.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 29 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  319.40 kB │ gzip: 71.92 kB │ map: 592.49 kB
+
+✓ built in 441ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/veneer@0.0.1 build:src:styles
+> vite build --config configs/src/vite.styles.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css  286.65 kB │ gzip: 34.15 kB
+dist/src/styles/index.js     0.00 kB │ gzip:  0.02 kB
+
+✓ built in 1.52s
+
+> @orkestrel/veneer@0.0.1 build:app
+> npm run build:app:browser
+
+
+> @orkestrel/veneer@0.0.1 build:app:browser
+> vite build --config configs/app/vite.browser.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 99 modules transformed.
+✗ Build failed in 1.85s
+error during build:
+Build failed with 21 errors:
+
+[plugin orkestrel-environment-boundary]
+RolldownError: Resolved dependencies must remain inside their physical package root
+    at error (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/logs-DmYCAKcW.mjs:159:24)
+    at PluginContextImpl.error (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/bindingify-input-options-D4l624og.mjs:111:10)
+    at PluginContextImpl.resolveId (file:///home/user/veneer-erm/node_modules/.vite-temp/vite.browser.config.ts.timestamp-1790304006372-5be7a4d9479d4.mjs:482:96)
+    at async plugin (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/bindingify-input-options-D4l624og.mjs:1460:16)
+    at async plugin.<computed> (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/bindingify-input-options-D4l624og.mjs:2128:12)
+[plugin orkestrel-environment-boundary]
+RolldownError: Resolved dependencies must remain inside their physical package root
+    ... collapsed 21 duplicate lines matching above 7 lines 3 times...
+    at error (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/logs-DmYCAKcW.mjs:159:24)
+    at PluginContextImpl.error (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/bindingify-input-options-D4l624og.mjs:111:10)
+    at PluginContextImpl.resolveId (file:///home/user/veneer-erm/node_modules/.vite-temp/vite.browser.config.ts.timestamp-1790304006372-5be7a4d9479d4.mjs:482:96)
+    at async plugin (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/bindingify-input-options-D4l624og.mjs:1460:16)
+    at async plugin.<computed> (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/bindingify-input-options-D4l624og.mjs:2128:12)
+...
+    at aggregateBindingErrorsIntoJsError (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/error-CGhV1ebk.mjs:48:18)
+    at unwrapBindingResult (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/error-CGhV1ebk.mjs:18:128)
+    at #build (file:///home/user/veneer-erm/node_modules/rolldown/dist/shared/rolldown-Ld3ZGGCt.mjs:133:34)
+    at async buildEnvironment (file:///home/user/veneer-erm/node_modules/vite/dist/node/chunks/node.js:34082:66)
+    at async Object.build (file:///home/user/veneer-erm/node_modules/vite/dist/node/chunks/node.js:34503:19)
+    at async Object.buildApp (file:///home/user/veneer-erm/node_modules/vite/dist/node/chunks/node.js:34500:153)
+    at async CAC.<anonymous> (file:///home/user/veneer-erm/node_modules/vite/dist/node/cli.js:780:3) {
+  errors: [Getter/Setter]
+}

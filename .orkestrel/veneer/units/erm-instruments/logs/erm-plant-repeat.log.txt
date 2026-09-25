@@ -1,0 +1,42 @@
+plant=repeat file=guides/veneer.md
+command=npm run test:guides
+
+> @orkestrel/veneer@0.0.1 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/veneer-erm[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds each supported host and each receipt once
+[31m[1mAssertionError[22m: expected [ Array(1) ] to deeply equal [][39m
+
+- Expected
++ Received
+
+- []
++ [
++   "{\"date\":\"2026-09-25\",\"revision\":\"873f715\",\"channel\":\"chromium\",\"build\":\"141.0.7390.37\",\"platform\":\"linux\",\"kernel\":\"6.18.44-fc-v37\",\"node\":\"22.22.2\",\"npm\":\"11.19.1\",\"commands\":[\"test:guides\"],\"passed\":false}",
++ ]
+
+[36m [2m❯[22m tests/guides.test.ts:[2m170:76[22m[39m
+    [90m168|[39m   [34mexpect[39m(hosts[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)
+    [90m169|[39m   expect(hosts.filter((row, index) => hosts.indexOf(row) !== index)).t…
+    [90m170|[39m   expect(receipts.filter((row, index) => receipts.indexOf(row) !== ind…
+    [90m   |[39m                                                                            [31m^[39m
+    [90m171|[39m  })
+    [90m172|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m25 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 02:51:16
+[2m   Duration [22m 4.70s[2m (transform 808ms, setup 152ms, import 2.49s, tests 1.89s, environment 0ms)[22m
+
+exit=1
+restore before=e1127d095edf42e278e9450737035e7722d31120ebddbd3580069c0164f23ef1 after=e1127d095edf42e278e9450737035e7722d31120ebddbd3580069c0164f23ef1 equal=True

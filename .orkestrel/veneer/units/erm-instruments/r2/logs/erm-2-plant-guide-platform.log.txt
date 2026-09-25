@@ -1,0 +1,73 @@
+plant=guide-platform files=guides/veneer.md expect=1
+command=npm run test:guides
+
+> @orkestrel/veneer@0.0.1 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/veneer-erm[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[31mx[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mnames a supported host in every receipt
+[31m[1mError[22m: Supported host row 1: invalid Platform Linux[39m
+[36m [2m❯[22m readSupportedHosts tests/setupServer.ts:[2m1261:11[22m[39m
+    [90m1259|[39m    // receipt, and the gates would name the missing receipt rather tha…
+    [90m1260|[39m    if (platform !== ABSENT_CELL && !NODE_PLATFORMS.some((value) => val…
+    [90m1261|[39m     throw new Error(`Supported host row ${String(position + 1)}: inval…
+    [90m   |[39m           [31m^[39m
+    [90m1262|[39m    hosts.push({
+    [90m1263|[39m     channel,
+[90m [2m❯[22m tests/guides.test.ts:[2m82:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds a passing receipt for every supported host that names no owner
+[31m[1mError[22m: Supported host row 1: invalid Platform Linux[39m
+[36m [2m❯[22m readSupportedHosts tests/setupServer.ts:[2m1261:11[22m[39m
+    [90m1259|[39m    // receipt, and the gates would name the missing receipt rather tha…
+    [90m1260|[39m    if (platform !== ABSENT_CELL && !NODE_PLATFORMS.some((value) => val…
+    [90m1261|[39m     throw new Error(`Supported host row ${String(position + 1)}: inval…
+    [90m   |[39m           [31m^[39m
+    [90m1262|[39m    hosts.push({
+    [90m1263|[39m     channel,
+[90m [2m❯[22m tests/guides.test.ts:[2m94:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mnames no owner on a supported host that holds a passing receipt
+[31m[1mError[22m: Supported host row 1: invalid Platform Linux[39m
+[36m [2m❯[22m readSupportedHosts tests/setupServer.ts:[2m1261:11[22m[39m
+    [90m1259|[39m    // receipt, and the gates would name the missing receipt rather tha…
+    [90m1260|[39m    if (platform !== ABSENT_CELL && !NODE_PLATFORMS.some((value) => val…
+    [90m1261|[39m     throw new Error(`Supported host row ${String(position + 1)}: inval…
+    [90m   |[39m           [31m^[39m
+    [90m1262|[39m    hosts.push({
+    [90m1263|[39m     channel,
+[90m [2m❯[22m tests/guides.test.ts:[2m110:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds each supported host and each receipt once
+[31m[1mError[22m: Supported host row 1: invalid Platform Linux[39m
+[36m [2m❯[22m readSupportedHosts tests/setupServer.ts:[2m1261:11[22m[39m
+    [90m1259|[39m    // receipt, and the gates would name the missing receipt rather tha…
+    [90m1260|[39m    if (platform !== ABSENT_CELL && !NODE_PLATFORMS.some((value) => val…
+    [90m1261|[39m     throw new Error(`Supported host row ${String(position + 1)}: inval…
+    [90m   |[39m           [31m^[39m
+    [90m1262|[39m    hosts.push({
+    [90m1263|[39m     channel,
+[90m [2m❯[22m tests/guides.test.ts:[2m164:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m22 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 03:19:37
+[2m   Duration [22m 4.60s[2m (transform 730ms, setup 129ms, import 2.56s, tests 1.75s, environment 0ms)[22m
+
+exit=1
+restore guides/veneer.md before=342d4bd85f9a9b2a3de437f9ed3aab1050c0afea9a47c77143d98132113be892 after=342d4bd85f9a9b2a3de437f9ed3aab1050c0afea9a47c77143d98132113be892 equal=True

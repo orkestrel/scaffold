@@ -1,6 +1,0 @@
-#!/bin/bash
-# E-IDENTITY design round, objective lane: `analyst` on GPT-6 Astra, read-only, rooted at /home/user/veneer-read. The cap is 1800 s (comparable design lanes ran 10 to 20 min, plus slack).
-# Brief: .orkestrel/veneer/units/e-identity-design-brief.md  Journal: tmp/codex/e-identity-design-analyst.jsonl  Last message: tmp/codex/e-identity-design-analyst-last.md
-cd /home/user/scaffold || exit 1
-timeout 1800 codex exec --json -C /home/user/veneer-read --sandbox read-only --model gpt-6-astra -c "model_reasoning_effort=\"high\"" --output-last-message /home/user/scaffold/tmp/codex/e-identity-design-analyst-last.md "Your working directory is /home/user/veneer-read. Read and execute the brief at /home/user/scaffold/.orkestrel/veneer/units/e-identity-design-brief.md exactly. You hold the objective lane of this design round: correctness, constraints, and what the code and Bootstrap's contracts permit. Make your final message the output the brief's Output section specifies, and nothing else." < /dev/null > /home/user/scaffold/tmp/codex/e-identity-design-analyst.jsonl 2> /home/user/scaffold/tmp/codex/e-identity-design-analyst.err
-echo "exit=$?" >> /home/user/scaffold/tmp/codex/e-identity-design-analyst.err

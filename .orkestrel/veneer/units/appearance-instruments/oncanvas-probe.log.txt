@@ -1,4 +1,0 @@
-{"mode":"dark","role":"danger","canvas":"#14191e","raw":"#c10007","rawContrast":2.75,"onCanvas":"#d46459","onCanvasContrast":4.86}
-{"mode":"dark","role":"information","canvas":"#14191e","raw":"#0069a8","rawContrast":3.02,"onCanvas":"#578fbf","onCanvasContrast":5.13}
-{"mode":"light","role":"danger","canvas":"#ffffff","raw":"#c10007","rawContrast":6.42,"onCanvas":"#892124","onCanvasContrast":9.1}
-{"mode":"light","role":"information","canvas":"#ffffff","raw":"#0069a8","rawContrast":5.86,"onCanvas":"#114f80","onCanvasContrast":8.56}

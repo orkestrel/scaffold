@@ -1,3 +1,0 @@
-status-equals-round-4
-files outside color.test.ts equal to round 3 (unchanged since rounds 3 and 4): True files: 14
-control, color.test.ts equal to round 3 (expected False): False

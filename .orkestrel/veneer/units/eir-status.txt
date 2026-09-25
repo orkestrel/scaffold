@@ -1,6 +1,0 @@
- M guides/veneer.md
- M src/styles/components/_button.scss
- M src/styles/elements/_hr.scss
- M src/styles/elements/_tr.scss
- M tests/src/styles/components/button.test.ts
- M tests/src/styles/elements/hr.test.ts

@@ -1,0 +1,56 @@
+
+> @orkestrel/scaffold@0.0.77 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution -t fails the release run of a generated distribution proof
+
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+---x-----
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > fails the release run of a generated distribution proof on a refusing registry and skips the ordinary run
+AssertionError: expected { expired: false, signal: null, …(3) } to strictly equal { expired: false, signal: null, …(3) }
+
+- Expected
++ Received
+
+  {
+-   "code": 1,
++   "code": 0,
+    "expired": false,
+    "files": [
+      {
+-       "message": "The release gate requires a reachable npm registry, and npm ping did not answer",
++       "message": "",
+        "proof": true,
+-       "status": "failed",
+-       "statuses": [],
++       "status": "passed",
++       "statuses": [
++         "passed",
++         "skipped",
++       ],
+      },
+    ],
+    "pinged": 1,
+    "signal": null,
+  }
+
+ ❯ tests/distribution.test.ts:844:36
+    842|     ],
+    843|    }
+    844|    expect(readings.get('release')).toStrictEqual(failed)
+       |                                    ^
+    845|    expect(readings.get('ordinary')).toStrictEqual({
+    846|     expired: false,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 skipped (9)
+   Start at  03:29:21
+   Duration  6.54s (transform 528ms, setup 320ms, import 962ms, tests 5.11s, environment 0ms)
+
+exit=1

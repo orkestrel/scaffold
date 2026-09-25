@@ -1,0 +1,84 @@
+plant=link-swatch-rgb files=tests/distribution.test.ts expect=1
+command=npm run test:distribution -- --reporter=verbose -t packed-CSS page
+
+> @orkestrel/veneer@0.0.1 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --reporter=verbose -t packed-CSS page
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+- ↓ |distribution| tests/distribution.test.ts > distribution classifiers > classifies synthetic export mappings without a registry stage
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > loads standalone styles with the declared cascade order [requires the registry]
+x × |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry] 618ms
+   → expected 'color(srgb 0.0510206 0.212902 0.67272…' to be 'rgb(8, 65, 234)' // Object.is equality
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > packs one archive and installs it in isolation [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > ships every relative target its exports map names [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > declares types for every module it publishes [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > ships only relative or Orkestrel module specifiers [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > refuses a subpath its exports map does not name [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed package consumer > compiles a consumer under every module resolution [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > release host > holds a passing receipt on the channel, platform, and build this run launched
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node import, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a Node require, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > drives the published button engine and its delegation in a real browser [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed entry . > publishes what it declares to a real browser, and no more [requires a browser]
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node import, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a Node require, and no more
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > drives the published button engine and its delegation in a real browser [requires the registry]
+- ↓ |distribution| tests/distribution.test.ts > installed entry ./browser > publishes what it declares to a real browser, and no more [requires a browser]
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry]
+AssertionError: expected 'color(srgb 0.0510206 0.212902 0.67272…' to be 'rgb(8, 65, 234)' // Object.is equality
+
+Expected: "rgb(8, 65, 234)"
+Received: "color(srgb 0.0510206 0.212902 0.672726)"
+
+ ❯ tests/distribution.test.ts:1096:42
+    1094|    // text color, and reddens here.
+    1095|    expect(readReading(readings, 'token').trim()).not.toBe('')
+    1096|    expect(readReading(readings, 'link')).toBe(readReading(readings, 's…
+       |                                          ^
+    1097|    expect(readReading(readings, 'link')).not.toBe(readReading(readings…
+    1098|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  03:20:26
+   Duration  3.81s (transform 475ms, setup 113ms, import 2.92s, tests 625ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry]
+AssertionError: expected 'color(srgb 0.0510206 0.212902 0.67272…' to be 'rgb(8, 65, 234)' // Object.is equality
+
+Expected: "rgb(8, 65, 234)"
+Received: "color(srgb 0.0510206 0.212902 0.672726)"
+
+ ❯ tests/distribution.test.ts:1096:42
+    1094|    // text color, and reddens here.
+    1095|    expect(readReading(readings, 'token').trim()).not.toBe('')
+    1096|    expect(readReading(readings, 'link')).toBe(readReading(readings, 's…
+       |                                          ^
+    1097|    expect(readReading(readings, 'link')).not.toBe(readReading(readings…
+    1098|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  03:20:26
+   Duration  3.83s (transform 475ms, setup 113ms, import 2.92s, tests 625ms, environment 0ms)
+
+exit=1
+restore tests/distribution.test.ts before=cb1268ef95727489e567fde9a39046a3fdd1b842f13704f910fe82525a4cbe1c after=cb1268ef95727489e567fde9a39046a3fdd1b842f13704f910fe82525a4cbe1c equal=True

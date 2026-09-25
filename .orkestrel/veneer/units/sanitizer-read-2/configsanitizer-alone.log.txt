@@ -1,9 +1,0 @@
-
- RUN  v4.1.11 /home/user/veneer-read
-
-
- Test Files  1 passed (1)
-      Tests  70 passed | 2 skipped (72)
-   Start at  00:31:11
-   Duration  7.86s (transform 0ms, setup 524ms, import 34ms, tests 112ms, environment 0ms)
-

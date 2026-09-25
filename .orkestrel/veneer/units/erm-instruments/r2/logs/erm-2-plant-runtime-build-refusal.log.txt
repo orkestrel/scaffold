@@ -1,0 +1,40 @@
+plant=runtime-build-refusal files=tests/setupServer.ts expect=1
+command=npm run test:setup -- tests/setupServer.test.ts -t readRuntime
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupServer.test.ts -t readRuntime
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+--------------------------------------------------------------------------------------------------------------------··x---
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > readRuntime > refuses a browser that reports a build other than four numeric parts
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/setupServer.test.ts:3395:78
+    3393|   const environment = { npm_config_user_agent: 'npm/11.19.1 node/v22.2…
+    3394|   for (const build of ['141.0.7390', '141.0.7390.37.1', '141.0.7390.x'…
+    3395|    expect(() => readRuntime({ version: () => build }, options, environ…
+       |                                                                              ^
+    3396|     `Runtime: invalid build ${build}`,
+    3397|    )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed | 119 skipped (122)
+   Start at  03:20:01
+   Duration  1.93s (transform 494ms, setup 128ms, import 1.27s, tests 364ms, environment 0ms)
+
+exit=1
+restore tests/setupServer.ts before=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 after=5256174ae88a5caf30a36f014ca80205ad3623a70e2da0793cd78ebcc4cb36a5 equal=True

@@ -25,9 +25,11 @@ prune commit's message is the promotion record for what that commit removed.
 - A live or unlanded unit's brief, report, audit claims, lane briefs, lane verdicts, round verdicts,
   launchers, diffs, status files, instruments, and logs sit under `units/` by unit prefix until the
   unit lands on Veneer `main`, and the prune commit after the landing removes them. Live on
-  2026-09-24: APPEARANCE (`ap-color-*`, `apc-*`, `ap-type-*`, `apt-*`, `appearance-*`, and
-  `audit-launchers/`), E-IDENTITY (`e-identity-*`), the Chromium 141 and release readings
-  (`sanitizer-read/`, `receipts-read/`), and X-RETENTION's carry (`x-retention-carry-2-*`). Each prune
+  2026-09-25: the E-IDENTITY design round (`e-identity-*`) and E-ID-BUTTON (`e-id-button-*`, `ebc-*`, `enum-*`,
+  `eid-landing/`), E-RECEIPTS (`e-receipts-*`, `er-mech-*`, `erm-*`), RELEASE-MODE (`release-mode-*`, `rm-*`),
+  E-ID-MOTION (`e-id-motion-*`), E-ID-ANCHOR (`e-id-anchor-*`), the Chromium 141 probe (`native141/`), the tenet
+  audit (`tenets-styles/`), the IMPORTANT-LAYER and LEDGER-VALUES design rounds, and X-RETENTION's carry
+  (`x-retention-carry-2-*`). Each prune
   commit's message is the promotion record for what it removed; read a pruned record with
   `git show <prune commit>~1:.orkestrel/veneer/units/<file>`, and find the commit with
   `git log --grep='Prune'`.

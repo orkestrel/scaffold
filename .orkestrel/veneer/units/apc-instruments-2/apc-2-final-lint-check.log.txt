@@ -1,6 +1,0 @@
-=== npm run lint:check (21:49:59) HEAD 712ae72
-
-> @orkestrel/veneer@0.0.1 lint:check
-> oxlint --config .oxlintrc.json --deny-warnings .
-
-=== exit=0 (21:50:01)

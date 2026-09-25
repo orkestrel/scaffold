@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/scaffold-rm
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 172 skipped (173)
+   Start at  03:29:28
+   Duration  1.09s (transform 542ms, setup 381ms, import 529ms, tests 8ms, environment 0ms)
+
+exit=0

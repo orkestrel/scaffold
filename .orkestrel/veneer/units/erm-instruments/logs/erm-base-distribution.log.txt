@@ -1,0 +1,33 @@
+
+> @orkestrel/veneer@0.0.1 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution
+
+
+ RUN  v4.1.11 /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/erm-base
+
+··x········----··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry]
+AssertionError: expected 'color(srgb 0.0510206 0.212902 0.67272…' to be 'rgb(8, 65, 234)' // Object.is equality
+
+Expected: "rgb(8, 65, 234)"
+Received: "color(srgb 0.0510206 0.212902 0.672726)"
+
+ ❯ tests/distribution.test.ts:1094:42
+    1092|     .map((channel) => channel.trim())
+    1093|    expect(channels).toHaveLength(3)
+    1094|    expect(readReading(readings, 'link')).toBe(`rgb(${channels.join(', …
+       |                                          ^
+    1095|    expect(readReading(readings, 'link')).not.toBe(readReading(readings…
+    1096|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed | 4 skipped (17)
+   Start at  02:40:09
+   Duration  16.65s (transform 596ms, setup 141ms, import 3.14s, tests 13.21s, environment 0ms)
+

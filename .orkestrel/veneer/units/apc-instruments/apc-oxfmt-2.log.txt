@@ -1,3 +1,0 @@
-=== npx oxfmt --config .oxfmtrc.json --write tests/src/styles/utilities/color.test.ts tests/src/styles/utilities/link.test.ts (21:09:10) HEAD 712ae72
-Finished in 216ms on 2 files using 4 threads.
-=== exit=0 (21:09:12)

@@ -1,0 +1,67 @@
+close
+
+toggler
+
+accordion
+  rest color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  rest outline-color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  pointer color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  pointer outline-color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  pointer box-shadow: veneer color(srgb 0.0509804 0.431373 0.992157 / 0.25) 0px 0px 0px 4px | release rgba(13, 110, 253, 0.25) 0px 0px 0px 4px
+  keyboard color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  keyboard outline-color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  keyboard box-shadow: veneer color(srgb 0.0509804 0.431373 0.992157 / 0.25) 0px 0px 0px 4px | release rgba(13, 110, 253, 0.25) 0px 0px 0px 4px
+  disabled color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  disabled outline-color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+dropdown
+  rest font-weight: veneer 700 | release 400
+  rest color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  rest outline-color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  pointer font-weight: veneer 700 | release 400
+  pointer color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  pointer outline-color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  keyboard font-weight: veneer 700 | release 400
+  keyboard color: veneer oklch(0.208 0.042 265.755) | release rgb(33, 37, 41)
+  disabled font-weight: veneer 700 | release 400
+  disabled color: veneer color(srgb 0.0571957 0.0900803 0.168835 / 0.5) | release rgba(33, 37, 41, 0.5)
+  disabled outline-color: veneer color(srgb 0.0571957 0.0900803 0.168835 / 0.5) | release rgba(33, 37, 41, 0.5)
+nav
+  rest color: veneer oklab(0.3984 -0.019591 -0.190088) | release rgb(13, 110, 253)
+  rest outline-color: veneer oklab(0.3984 -0.019591 -0.190088) | release rgb(13, 110, 253)
+  pointer color: veneer color(srgb 0.0331634 0.138386 0.437272) | release rgb(10, 88, 202)
+  pointer outline-color: veneer color(srgb 0.0331634 0.138386 0.437272) | release rgb(10, 88, 202)
+  keyboard color: veneer color(srgb 0.0331634 0.138386 0.437272) | release rgb(10, 88, 202)
+  keyboard outline-color: veneer color(srgb 0.0331634 0.138386 0.437272) | release rgb(10, 88, 202)
+  keyboard box-shadow: veneer color(srgb 0.0509804 0.431373 0.992157 / 0.25) 0px 0px 0px 4px | release rgba(13, 110, 253, 0.25) 0px 0px 0px 4px
+  disabled color: veneer color(srgb 0.0571957 0.0900803 0.168835 / 0.75) | release rgba(33, 37, 41, 0.75)
+  disabled outline-color: veneer color(srgb 0.0571957 0.0900803 0.168835 / 0.75) | release rgba(33, 37, 41, 0.75)
+list
+  rest color: veneer color(srgb 0.0571957 0.0900803 0.168835 / 0.75) | release rgba(33, 37, 41, 0.75)
+  rest outline-color: veneer color(srgb 0.0571957 0.0900803 0.168835 / 0.75) | release rgba(33, 37, 41, 0.75)
+  disabled color: veneer color(srgb 0.0571957 0.0900803 0.168835 / 0.75) | release rgba(33, 37, 41, 0.75)
+  disabled outline-color: veneer color(srgb 0.0571957 0.0900803 0.168835 / 0.75) | release rgba(33, 37, 41, 0.75)
+page
+  rest color: veneer oklab(0.3984 -0.019591 -0.190088) | release rgb(13, 110, 253)
+  rest outline-color: veneer oklab(0.3984 -0.019591 -0.190088) | release rgb(13, 110, 253)
+  pointer color: veneer color(srgb 0.0331634 0.138386 0.437272) | release rgb(10, 88, 202)
+  pointer outline-color: veneer color(srgb 0.0331634 0.138386 0.437272) | release rgb(10, 88, 202)
+  pointer box-shadow: veneer color(srgb 0.0509804 0.431373 0.992157 / 0.25) 0px 0px 0px 4px | release rgba(13, 110, 253, 0.25) 0px 0px 0px 4px
+  keyboard color: veneer color(srgb 0.0331634 0.138386 0.437272) | release rgb(10, 88, 202)
+  keyboard outline-color: veneer color(srgb 0.0331634 0.138386 0.437272) | release rgb(10, 88, 202)
+  keyboard box-shadow: veneer color(srgb 0.0509804 0.431373 0.992157 / 0.25) 0px 0px 0px 4px | release rgba(13, 110, 253, 0.25) 0px 0px 0px 4px
+  disabled color: veneer oklab(0.3984 -0.019591 -0.190088) | release rgb(13, 110, 253)
+  disabled outline-color: veneer oklab(0.3984 -0.019591 -0.190088) | release rgb(13, 110, 253)
+control
+
+indicator
+
+close | rest reduced: true / true | pointer focus: true false / true false | keyboard focus: true true / true true | rest font-weight: 400 / 400 | keyboard outline-style: none / none | pointer outline-style: none / none | rest transition-property: all / all | rest transition-duration: 0s / 0s | disabled pointer-events: none / none | rest color: rgb(0, 0, 0) / rgb(0, 0, 0)
+toggler | rest reduced: true / true | pointer focus: true false / true false | keyboard focus: true true / true true | rest font-weight: 400 / 400 | keyboard outline-style: none / none | pointer outline-style: none / none | rest transition-property: none / none | rest transition-duration: 0s / 0s | disabled pointer-events: auto / auto | rest color: rgba(0, 0, 0, 0.65) / rgba(0, 0, 0, 0.65)
+accordion | rest reduced: true / true | pointer focus: true false / true false | keyboard focus: true true / true true | rest font-weight: 400 / 400 | keyboard outline-style: none / none | pointer outline-style: none / none | rest transition-property: none / none | rest transition-duration: 0s / 0s | disabled pointer-events: auto / auto | rest color: oklch(0.208 0.042 265.755) / rgb(33, 37, 41)
+dropdown | rest reduced: true / true | pointer focus: true false / true false | keyboard focus: true true / true true | rest font-weight: 700 / 400 | keyboard outline-style: auto / auto | pointer outline-style: none / none | rest transition-property: all / all | rest transition-duration: 0s / 0s | disabled pointer-events: none / none | rest color: oklch(0.208 0.042 265.755) / rgb(33, 37, 41)
+nav | rest reduced: true / true | pointer focus: true false / true false | keyboard focus: true true / true true | rest font-weight: 600 / 600 | keyboard outline-style: none / none | pointer outline-style: none / none | rest transition-property: none / none | rest transition-duration: 0s / 0s | disabled pointer-events: none / none | rest color: oklab(0.3984 -0.019591 -0.190088) / rgb(13, 110, 253)
+list | rest reduced: true / true | pointer focus: true false / true false | keyboard focus: true true / true true | rest font-weight: 400 / 400 | keyboard outline-style: auto / auto | pointer outline-style: none / none | rest transition-property: all / all | rest transition-duration: 0s / 0s | disabled pointer-events: none / none | rest color: color(srgb 0.0571957 0.0900803 0.168835 / 0.75) / rgba(33, 37, 41, 0.75)
+page | rest reduced: true / true | pointer focus: true false / true false | keyboard focus: true true / true true | rest font-weight: 400 / 400 | keyboard outline-style: none / none | pointer outline-style: none / none | rest transition-property: none / none | rest transition-duration: 0s / 0s | disabled pointer-events: auto / auto | rest color: oklab(0.3984 -0.019591 -0.190088) / rgb(13, 110, 253)
+control | rest reduced: true / true | pointer focus: true false / true false | keyboard focus: true true / true true | rest font-weight: 400 / 400 | keyboard outline-style: none / none | pointer outline-style: none / none | rest transition-property: none / none | rest transition-duration: 0s / 0s | disabled pointer-events: auto / auto | rest color: rgb(255, 255, 255) / rgb(255, 255, 255)
+indicator | rest reduced: true / true | pointer focus: true false / true false | keyboard focus: true true / true true | rest font-weight: 400 / 400 | keyboard outline-style: auto / auto | pointer outline-style: none / none | rest transition-property: none / none | rest transition-duration: 0s / 0s | disabled pointer-events: auto / auto | rest color: rgb(0, 0, 0) / rgb(0, 0, 0)
+exit=0

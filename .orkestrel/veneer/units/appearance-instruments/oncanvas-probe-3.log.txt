@@ -1,4 +1,0 @@
-dark  secondaryDark   raw #6c757d  3.77  mix70 #8e969e   5.9  mix80 #828b93  5.11
-dark  secondaryLight  raw #45556c  2.33  mix70 #717e92   4.3  mix80 #627085  3.52
-light secondaryDark   raw #6c757d  4.69  mix70 #4d5763  7.35  mix80 #57616c   6.3
-light secondaryLight  raw #45556c  7.58  mix70 #344158 10.28  mix80 #39485e  9.28

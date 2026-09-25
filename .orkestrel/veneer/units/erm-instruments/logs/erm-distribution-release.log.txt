@@ -1,0 +1,34 @@
+
+> @orkestrel/veneer@0.0.1 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+··x······-··----··
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > resolves the container, row, table, and link keys on a packed-CSS page [requires the registry]
+AssertionError: expected 'color(srgb 0.0510206 0.212902 0.67272…' to be 'rgb(8, 65, 234)' // Object.is equality
+
+Expected: "rgb(8, 65, 234)"
+Received: "color(srgb 0.0510206 0.212902 0.672726)"
+
+ ❯ tests/distribution.test.ts:1094:42
+    1092|     .map((channel) => channel.trim())
+    1093|    expect(channels).toHaveLength(3)
+    1094|    expect(readReading(readings, 'link')).toBe(`rgb(${channels.join(', …
+       |                                          ^
+    1095|    expect(readReading(readings, 'link')).not.toBe(readReading(readings…
+    1096|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed | 5 skipped (18)
+   Start at  02:52:28
+   Duration  17.19s (transform 630ms, setup 167ms, import 3.10s, tests 13.75s, environment 0ms)
+
+exit=1

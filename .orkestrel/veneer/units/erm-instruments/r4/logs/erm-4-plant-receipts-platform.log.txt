@@ -1,0 +1,35 @@
+before=a6bd5bbf6970a09b103784e0985891748102a08423ff03c2dcc058758df4e11a
+
+ RUN  v4.1.11 /home/user/veneer-erm
+
+ ❯ |setup| tests/setupServer.test.ts (122 tests | 1 failed | 121 skipped) 23ms
+     × reads receipts only within their Hosts subsection and refuses each malformed cell 20ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > server setup > reads receipts only within their Hosts subsection and refuses each malformed cell
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/setupServer.test.ts:1344:38
+    1342|    ] as const) {
+    1343|     scratch.write('guide.md', `${header}${row.replace(written, replace…
+    1344|     expect(() => readReceipts(path)).toThrow(refusal)
+       |                                      ^
+    1345|    }
+    1346|    scratch.write('guide.md', `${header}${row.replace('| Pass |', '| |'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 121 skipped (122)
+   Start at  03:51:18
+   Duration  1.84s (transform 728ms, setup 176ms, import 1.46s, tests 23ms, environment 0ms)
+
+after=a6bd5bbf6970a09b103784e0985891748102a08423ff03c2dcc058758df4e11a

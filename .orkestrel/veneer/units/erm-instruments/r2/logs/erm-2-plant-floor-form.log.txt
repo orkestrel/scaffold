@@ -1,0 +1,33 @@
+plant=floor-form files=tests/guides.test.ts expect=1
+command=npm run test:guides
+
+> @orkestrel/veneer@0.0.1 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/veneer-erm[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mholds every receipt at or above the package.json Node and npm floors and refuses a floor not in the >=x.y.z form
+[31m[1mAssertionError[22m: engines.node ^22.18.0 states no >=x.y.z floor: expected undefined to be defined[39m
+[36m [2m❯[22m tests/guides.test.ts:[2m136:77[22m[39m
+    [90m134|[39m     [33m?[39m npm[33m.[39m[34mslice[39m([34m2[39m)
+    [90m135|[39m     [33m:[39m undefined
+    [90m136|[39m   expect(nodeFloor, `engines.node ${String(node)} states no >=x.y.z fl…
+    [90m   |[39m                                                                             [31m^[39m
+    [90m137|[39m   [34mexpect[39m(
+    [90m138|[39m    npmFloor[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m25 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 03:19:55
+[2m   Duration [22m 4.77s[2m (transform 1.00s, setup 119ms, import 2.77s, tests 1.72s, environment 0ms)[22m
+
+exit=1
+restore tests/guides.test.ts before=ae9b6997ebbdb61b938ff10a0a701bf5ace4f7831aa04122bb2734eaac961599 after=ae9b6997ebbdb61b938ff10a0a701bf5ace4f7831aa04122bb2734eaac961599 equal=True
