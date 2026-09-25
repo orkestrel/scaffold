@@ -1,0 +1,1139 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index ce381d1..4fd318b 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -4406,6 +4406,11 @@ These are the key's recorded departures.
+   Sass flattens the nested `calc()` call in the height to one sum, which computes the same length.
+ - **The disabled label reads the gray token.** The release compiles `#6c757d`; the partial writes
+   `var(--vn-gray-600)`, which resolves to that color and holds it in both modes.
++- **The label transition scales with the motion factor.** The release writes the
++  `opacity 0.1s ease-in-out, transform 0.1s ease-in-out` value; the partial writes each duration as
++  `calc(var(--vn-motion-feedback) / 1.5)`, because the label's lift is feedback to the control's own
++  input. The transition resolves to the release's value at a factor of `1`, rescales with the factor
++  through the token, and keeps the release's `ease-in-out` curve.
+ 
+ The transform and its origin are the release's own bytes in the source, so the comparison records no
+ difference there. The build spells the trailing `translateX(0.15rem)` as the equivalent
+@@ -4420,7 +4425,10 @@ positioning, each control's height and insets at rest, under keyboard focus, and
+ label's position, fade, transform, and origin in each of those states, the backdrop's geometry and
+ its `disabled` surface, the plaintext label's border, the disabled label's gray, the end padding a
+ valid or invalid control keeps for its state icon, and the transition at rest and under the staged
+-reduced-motion preference. It also reads the height and every inset at a doubled density factor, the
++reduced-motion preference. It reads the transform transition the browser runs as a value lifts the
++label: the release's duration and curve at the resting motion factor, twice that duration at a
++doubled factor, no transition at a zero factor, and the root's duration inside a wrapper that sets a
++doubled factor alone. It also reads the height and every inset at a doubled density factor, the
+ backdrop radius at a doubled radius factor, the label and the backdrop in each color mode, and the
+ declarations under an ancestor retune of each `--bs-*` variable the family reads. Each limit that
+ bounds what the proof can claim is recorded in the
+@@ -4875,9 +4883,11 @@ render wherever a template puts them, and no rule here sets or clears one. The T
+ behaviors that move those classes from a click or from the scroll position are engine obligations
+ § Compatibility records under the J-ENGINE owner.
+ 
+-The link transition carries Bootstrap's own `0.15s ease-in-out` rather than the motion tokens the
+-Button family reads, because this family ships the release's recorded surface. It is written through
+-the `transition` mixin, so the reduced-motion rule the release records beside it is emitted with it.
++The link transition's duration reads the `--vn-motion-feedback` token, which resolves to the
++release's `0.15s` value at a factor of `1` and rescales with the `--vn-factor-motion` factor. Its
++curve stays the release's `ease-in-out`, which no `--vn-ease-*` token resolves to. The transition is
++written through the `transition` mixin, so the reduced-motion rule the release records beside it is
++emitted with it.
+ 
+ The `tests/src/styles/components/nav.test.ts` proof reads each resolved treatment in the browser: the
+ row layout, the inherited type size and weight, each published property beside the property it
+@@ -4886,7 +4896,9 @@ forced-colors outline, the refused pointer on each disabled spelling, the hover
+ pointer, each tab's overlap with the strip as painted geometry, the shown link against the active
+ one, the menu's squared corners, the filled and justified widths, the panes, the tabs inside a card
+ header, the density factor, the light and dark modes, and the transition collapse under the staged
+-preference.
++preference. It also reads the transitions the browser runs as a tab becomes the active one: the
++release's duration and curve at the resting motion factor, twice that duration at a doubled factor,
++and no transition at a zero factor.
+ 
+ ### Navbar classes
+ 
+@@ -4951,8 +4963,10 @@ The toggler's focus ring is the recorded shadow in the toggler's own text color,
+ `--bs-navbar-toggler-focus-width` spread, and it answers to the `:focus` pseudo-class as the release
+ writes it. Under forced colors the same rule also writes an outline in the system highlight color
+ through the `forced-ring` mixin, because forced colors paint no shadow ring. The toggler's
+-`box-shadow 0.15s ease-in-out` transition is written through the `transition` mixin, so the
+-reduced-motion rule the release records beside it is emitted with it. The offcanvas reset is a bare
++`box-shadow` transition runs over the `--vn-motion-feedback` token on the release's `ease-in-out`
++curve, so it resolves to the release's `0.15s` value at a factor of `1` and rescales with the
++`--vn-factor-motion` factor. It is written through the `transition` mixin, so the reduced-motion
++rule the release records beside it is emitted with it. The offcanvas reset is a bare
+ `transition: none` declaration, as the release writes it, and carries no reduced-motion rule.
+ 
+ The state classes are set in markup. The `collapsed` class on the toggler, the `show` class on the
+@@ -4981,7 +4995,10 @@ expand step at its boundary and one pixel below it, the always-expanded bar at t
+ the steps the journey's widths expand, the opened content and its menu in the column's flow, the
+ expanded offcanvas panel against an inline hidden state, the scrolling list's clamp, each dark
+ spelling's retunes, the dark icon's scope, the toggler's ring, its forced-colors outline, and its
+-transition under the staged preference, the density factor, and the light and dark modes.
++transition under the staged preference, the density factor, and the light and dark modes. It also
++reads the ring transition the browser runs as the toggler takes focus: the release's duration and
++curve at the resting motion factor, twice that duration at a doubled factor, and no transition at a
++zero factor.
+ 
+ ### Card classes
+ 
+@@ -5090,11 +5107,11 @@ selector on the button's pseudo-element, where it outranks the light value the a
+ The dark theme scope declares neither chevron. Like the release's rule, the dark rule matches any
+ button under a dark scope, so a light island nested inside a dark one keeps the dark chevrons.
+ 
+-The button transition and the chevron transition carry Bootstrap's own `0.15s` and `0.2s` timings
+-rather than the motion tokens the Button family reads, because this family ships the release's
+-recorded surface. Each is written through the `transition` mixin, so the reduced-motion rule the
+-release records beside it is emitted with it, and each duration resolves to a `0s` duration under
+-that preference.
++The button transition's durations read the `--vn-motion-feedback` token on the release's own
++curves, so they resolve to the release's `0.15s` value at a factor of `1` and rescale with the
++`--vn-factor-motion` factor. The chevron transition carries Bootstrap's own `0.2s` timing. Each is
++written through the `transition` mixin, so the reduced-motion rule the release records beside it is
++emitted with it, and each duration resolves to a `0s` duration under that preference.
+ 
+ These are the key's recorded departures.
+ 
+@@ -5107,6 +5124,10 @@ These are the key's recorded departures.
+ - **The focus ring mixes the palette blue.** The release writes the ring's color as a literal, and
+   the `--bs-accordion-btn-focus-box-shadow` property mixes the `--vn-palette-blue` token, which
+   carries that literal, at the same quarter strength.
++- **The button transition scales with the motion factor.** The release writes each duration in the
++  `--bs-accordion-transition` property as `0.15s`; the partial writes each as the
++  `--vn-motion-feedback` token, which resolves to that value at a factor of `1`, and keeps the
++  release's `ease-in-out` curves and the `ease` curve on the radius.
+ 
+ The Accordion region renders the release's own arrangement, the same group with its last item
+ expanded, and a flush accordion whose middle item is expanded. The release's arrangement expands its
+@@ -5121,7 +5142,10 @@ property it drives and retuned from the accordion itself, the expanded and colla
+ inset line and the turned chevron, each state's own chevron, the boundary corners and the shared
+ borders with a last item opened in markup, the flush group, the focus ring and the hover and focus
+ lifts, the forced-colors outline, the dark chevrons against an empty theme scope, the light and dark
+-modes, the density factor, and each transition at rest and under the staged preference.
++modes, the density factor, and each transition at rest and under the staged preference. It also
++reads the button transitions the browser runs as the last item collapses: the release's durations
++and curves at the resting motion factor, twice those durations at a doubled factor, and no
++transition at a zero factor.
+ 
+ ### Breadcrumb classes
+ 
+@@ -5190,16 +5214,19 @@ The state classes read the same on a page link and on its item: `.page-link.acti
+ `.active > .page-link` carry one treatment, and so do `.page-link.disabled` and
+ `.disabled > .page-link`. A template can carry either class wherever its own markup puts it.
+ 
+-The link transition carries Bootstrap's own `0.15s ease-in-out` rather than the motion tokens the
+-Button family reads, because this family ships the release's recorded surface and no published token
+-resolves to that easing. It is written through the `transition` mixin, so the reduced-motion rule the
+-release records beside it is emitted with it and the transition collapses under that preference.
++The link transition's duration reads the `--vn-motion-feedback` token, which resolves to the
++release's `0.15s` value at a factor of `1` and rescales with the `--vn-factor-motion` factor. Its
++curve stays the release's `ease-in-out`, which no `--vn-ease-*` token resolves to. It is written
++through the `transition` mixin, so the reduced-motion rule the release records beside it is
++emitted with it and the transition collapses under that preference.
+ 
+ The `tests/src/styles/components/pagination.test.ts` proof reads each resolved treatment in the
+ browser: the size geometry, the collapsed borders as painted boxes, the stacking under a real
+ pointer and real keyboard focus, the focus ring through the installed ring reader, the twin state
+ spellings, the refused pointer, the density and radius factors, a consumer's own override, and the
+-transition collapse under the staged preference.
++transition collapse under the staged preference. It also reads the transitions the browser runs as a
++page takes focus and the active class: the release's duration and curve at the resting motion
++factor, twice that duration at a doubled factor, and no transition at a zero factor.
+ 
+ ### Badge classes
+ 
+@@ -5305,7 +5332,10 @@ The stacked track is the same closure on another name. Each segment inside it is
+ overflow is released, so its own bar fills the width the segment was given and the rounding stays on
+ the outer track.
+ 
+-The bar's width transition is written through the `transition` mixin, so the reduced-motion
++The bar's width transition reads four times the `--vn-motion-feedback` token, because the fill's
++width change is feedback to the value the bar reports. It resolves to the release's value at a
++factor of `1`, rescales with the `--vn-factor-motion` factor through the token, and keeps the
++release's `ease` curve. It is written through the `transition` mixin, so the reduced-motion
+ preference collapses it; the stripe animation stops under the same preference. Both collapses are
+ Bootstrap's own recorded behavior rather than an addition here.
+ 
+@@ -5319,9 +5349,16 @@ These are the key's recorded departures.
+ - **The stripe tints through the white channel triplet.** The recorded gradient writes
+   `rgba(255, 255, 255, 0.15)` at each stop, and Veneer writes
+   `rgba(var(--vn-palette-white-rgb), 0.15)`, which resolves to the same color.
++- **The width transition scales with the motion factor.** The release writes the `width 0.6s ease`
++  value in the `--bs-progress-bar-transition` property; the partial writes
++  `width calc(var(--vn-motion-feedback) * 4) ease`, which resolves to the release's value at a factor
++  of `1` and rescales with the factor through the token.
+ 
+ The `tests/src/styles/components/progress.test.ts` proof reads the resolved track, bar, stripe,
+-transition, and animation in the browser, under each motion preference and in each color mode.
++transition, and animation in the browser, under each motion preference and in each color mode. It
++also reads the width transition the browser runs as the bar's width moves: the release's duration
++and curve at the resting motion factor, twice that duration at a doubled factor, no transition at a
++zero factor, and the root's duration inside a wrapper that sets a doubled factor alone.
+ 
+ ### List group classes
+ 
+@@ -7066,6 +7103,14 @@ no `Source` column.
+ | `--vn-factor-elevation` | `1`   | none  |
+ | `--vn-factor-motion`    | `1`   | none  |
+ 
++The motion factor scales every transition duration the cascade writes except the collapse, modal
++dialog, offcanvas panel, carousel slide and indicator, and accordion chevron timings, which keep the
++release's literals as their own sections record. A scaled duration reads a `--vn-motion-*` token or
++a multiple of one, so it doubles from its own resting value at a factor of `2` and starts no
++transition at a factor of `0`. At a factor of `1`, a scaled duration that keeps the release's timing
++resolves to the release's value, and one § Departures records against the release, such as the
++`.icon-link` transform's, resolves to its token's value.
++
+ A factor takes effect where the scale it multiplies is declared. Veneer declares the scales on the
+ `:root` selector, so a factor set on the root element rescales the document. A subtree that sets a
+ factor alone keeps the root's lengths, because a custom property carries its `var()` references
+@@ -7550,12 +7595,13 @@ declaration.
+ 
+ #### `accordion`
+ 
+-| Component   | Selector            | Property                              | Condition | Bootstrap 5.3.8                          | Veneer                                                                      | Departure |
+-| ----------- | ------------------- | ------------------------------------- | --------- | ---------------------------------------- | --------------------------------------------------------------------------- | --------- |
+-| `accordion` | `.accordion`        | `--bs-accordion-btn-padding-y`        | —         | `1rem`                                   | `var(--vn-space-8)`                                                         | tokenized |
+-| `accordion` | `.accordion`        | `--bs-accordion-btn-focus-box-shadow` | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)` | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)` | tokenized |
+-| `accordion` | `.accordion`        | `--bs-accordion-body-padding-y`       | —         | `1rem`                                   | `var(--vn-space-8)`                                                         | tokenized |
+-| `accordion` | `.accordion-button` | `font-size`                           | —         | `1rem`                                   | `var(--vn-size-3)`                                                          | tokenized |
++| Component   | Selector            | Property                              | Condition | Bootstrap 5.3.8                                                                                                                                       | Veneer                                                                                                                                                                                                                                                    | Departure |
++| ----------- | ------------------- | ------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
++| `accordion` | `.accordion`        | `--bs-accordion-transition`           | —         | `color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, border-radius 0.15s ease` | `color var(--vn-motion-feedback) ease-in-out, background-color var(--vn-motion-feedback) ease-in-out, border-color var(--vn-motion-feedback) ease-in-out, box-shadow var(--vn-motion-feedback) ease-in-out, border-radius var(--vn-motion-feedback) ease` | tokenized |
++| `accordion` | `.accordion`        | `--bs-accordion-btn-padding-y`        | —         | `1rem`                                                                                                                                                | `var(--vn-space-8)`                                                                                                                                                                                                                                       | tokenized |
++| `accordion` | `.accordion`        | `--bs-accordion-btn-focus-box-shadow` | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                                                                                                              | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)`                                                                                                                                                                               | tokenized |
++| `accordion` | `.accordion`        | `--bs-accordion-body-padding-y`       | —         | `1rem`                                                                                                                                                | `var(--vn-space-8)`                                                                                                                                                                                                                                       | tokenized |
++| `accordion` | `.accordion-button` | `font-size`                           | —         | `1rem`                                                                                                                                                | `var(--vn-size-3)`                                                                                                                                                                                                                                        | tokenized |
+ 
+ #### `alert`
+ 
+@@ -8206,36 +8252,37 @@ declaration.
+ 
+ #### `form-floating`
+ 
+-| Component       | Selector                                                           | Property         | Condition | Bootstrap 5.3.8                                   | Veneer                                                       | Departure |
+-| --------------- | ------------------------------------------------------------------ | ---------------- | --------- | ------------------------------------------------- | ------------------------------------------------------------ | --------- |
+-| `form-floating` | `.form-floating > .form-control`                                   | `height`         | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)` | tokenized |
+-| `form-floating` | `.form-floating > .form-control`                                   | `min-height`     | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)` | tokenized |
+-| `form-floating` | `.form-floating > .form-control-plaintext`                         | `height`         | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)` | tokenized |
+-| `form-floating` | `.form-floating > .form-control-plaintext`                         | `min-height`     | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)` | tokenized |
+-| `form-floating` | `.form-floating > .form-select`                                    | `height`         | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)` | tokenized |
+-| `form-floating` | `.form-floating > .form-select`                                    | `min-height`     | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))` | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)` | tokenized |
+-| `form-floating` | `.form-floating > label`                                           | `padding`        | —         | `1rem 0.75rem`                                    | `var(--vn-space-8) var(--vn-space-6)`                        | tokenized |
+-| `form-floating` | `.form-floating > .form-control`                                   | `padding`        | —         | `1rem 0.75rem`                                    | `var(--vn-space-8) var(--vn-space-6)`                        | tokenized |
+-| `form-floating` | `.form-floating > .form-control-plaintext`                         | `padding`        | —         | `1rem 0.75rem`                                    | `var(--vn-space-8) var(--vn-space-6)`                        | tokenized |
+-| `form-floating` | `.form-floating > .form-control:focus`                             | `padding-top`    | —         | `1.625rem`                                        | `calc(var(--vn-space-8) * 1.625)`                            | tokenized |
+-| `form-floating` | `.form-floating > .form-control:focus`                             | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                                          | tokenized |
+-| `form-floating` | `.form-floating > .form-control:not(:placeholder-shown)`           | `padding-top`    | —         | `1.625rem`                                        | `calc(var(--vn-space-8) * 1.625)`                            | tokenized |
+-| `form-floating` | `.form-floating > .form-control:not(:placeholder-shown)`           | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                                          | tokenized |
+-| `form-floating` | `.form-floating > .form-control-plaintext:focus`                   | `padding-top`    | —         | `1.625rem`                                        | `calc(var(--vn-space-8) * 1.625)`                            | tokenized |
+-| `form-floating` | `.form-floating > .form-control-plaintext:focus`                   | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                                          | tokenized |
+-| `form-floating` | `.form-floating > .form-control-plaintext:not(:placeholder-shown)` | `padding-top`    | —         | `1.625rem`                                        | `calc(var(--vn-space-8) * 1.625)`                            | tokenized |
+-| `form-floating` | `.form-floating > .form-control-plaintext:not(:placeholder-shown)` | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                                          | tokenized |
+-| `form-floating` | `.form-floating > .form-control:-webkit-autofill`                  | `padding-top`    | —         | `1.625rem`                                        | `calc(var(--vn-space-8) * 1.625)`                            | tokenized |
+-| `form-floating` | `.form-floating > .form-control:-webkit-autofill`                  | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                                          | tokenized |
+-| `form-floating` | `.form-floating > .form-control-plaintext:-webkit-autofill`        | `padding-top`    | —         | `1.625rem`                                        | `calc(var(--vn-space-8) * 1.625)`                            | tokenized |
+-| `form-floating` | `.form-floating > .form-control-plaintext:-webkit-autofill`        | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                                          | tokenized |
+-| `form-floating` | `.form-floating > .form-select`                                    | `padding-top`    | —         | `1.625rem`                                        | `calc(var(--vn-space-8) * 1.625)`                            | tokenized |
+-| `form-floating` | `.form-floating > .form-select`                                    | `padding-bottom` | —         | `0.625rem`                                        | `var(--vn-space-5)`                                          | tokenized |
+-| `form-floating` | `.form-floating > .form-select`                                    | `padding-left`   | —         | `0.75rem`                                         | `var(--vn-space-6)`                                          | tokenized |
+-| `form-floating` | `.form-floating > textarea:focus ~ label::after`                   | `inset`          | —         | `1rem 0.375rem`                                   | `var(--vn-space-8) var(--vn-space-3)`                        | tokenized |
+-| `form-floating` | `.form-floating > textarea:not(:placeholder-shown) ~ label::after` | `inset`          | —         | `1rem 0.375rem`                                   | `var(--vn-space-8) var(--vn-space-3)`                        | tokenized |
+-| `form-floating` | `.form-floating > :disabled ~ label`                               | `color`          | —         | `#6c757d`                                         | `var(--vn-gray-600)`                                         | tokenized |
+-| `form-floating` | `.form-floating > .form-control:disabled ~ label`                  | `color`          | —         | `#6c757d`                                         | `var(--vn-gray-600)`                                         | tokenized |
++| Component       | Selector                                                           | Property         | Condition | Bootstrap 5.3.8                                        | Veneer                                                                                                                   | Departure |
++| --------------- | ------------------------------------------------------------------ | ---------------- | --------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | --------- |
++| `form-floating` | `.form-floating > .form-control`                                   | `height`         | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))`      | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)`                                                             | tokenized |
++| `form-floating` | `.form-floating > .form-control`                                   | `min-height`     | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))`      | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)`                                                             | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext`                         | `height`         | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))`      | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)`                                                             | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext`                         | `min-height`     | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))`      | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)`                                                             | tokenized |
++| `form-floating` | `.form-floating > .form-select`                                    | `height`         | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))`      | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)`                                                             | tokenized |
++| `form-floating` | `.form-floating > .form-select`                                    | `min-height`     | —         | `calc(3.5rem + calc(var(--bs-border-width) * 2))`      | `calc(var(--vn-space-8) * 3.5 + var(--bs-border-width) * 2)`                                                             | tokenized |
++| `form-floating` | `.form-floating > label`                                           | `padding`        | —         | `1rem 0.75rem`                                         | `var(--vn-space-8) var(--vn-space-6)`                                                                                    | tokenized |
++| `form-floating` | `.form-floating > label`                                           | `transition`     | —         | `opacity 0.1s ease-in-out, transform 0.1s ease-in-out` | `opacity calc(var(--vn-motion-feedback) / 1.5) ease-in-out, transform calc(var(--vn-motion-feedback) / 1.5) ease-in-out` | tokenized |
++| `form-floating` | `.form-floating > .form-control`                                   | `padding`        | —         | `1rem 0.75rem`                                         | `var(--vn-space-8) var(--vn-space-6)`                                                                                    | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext`                         | `padding`        | —         | `1rem 0.75rem`                                         | `var(--vn-space-8) var(--vn-space-6)`                                                                                    | tokenized |
++| `form-floating` | `.form-floating > .form-control:focus`                             | `padding-top`    | —         | `1.625rem`                                             | `calc(var(--vn-space-8) * 1.625)`                                                                                        | tokenized |
++| `form-floating` | `.form-floating > .form-control:focus`                             | `padding-bottom` | —         | `0.625rem`                                             | `var(--vn-space-5)`                                                                                                      | tokenized |
++| `form-floating` | `.form-floating > .form-control:not(:placeholder-shown)`           | `padding-top`    | —         | `1.625rem`                                             | `calc(var(--vn-space-8) * 1.625)`                                                                                        | tokenized |
++| `form-floating` | `.form-floating > .form-control:not(:placeholder-shown)`           | `padding-bottom` | —         | `0.625rem`                                             | `var(--vn-space-5)`                                                                                                      | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext:focus`                   | `padding-top`    | —         | `1.625rem`                                             | `calc(var(--vn-space-8) * 1.625)`                                                                                        | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext:focus`                   | `padding-bottom` | —         | `0.625rem`                                             | `var(--vn-space-5)`                                                                                                      | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext:not(:placeholder-shown)` | `padding-top`    | —         | `1.625rem`                                             | `calc(var(--vn-space-8) * 1.625)`                                                                                        | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext:not(:placeholder-shown)` | `padding-bottom` | —         | `0.625rem`                                             | `var(--vn-space-5)`                                                                                                      | tokenized |
++| `form-floating` | `.form-floating > .form-control:-webkit-autofill`                  | `padding-top`    | —         | `1.625rem`                                             | `calc(var(--vn-space-8) * 1.625)`                                                                                        | tokenized |
++| `form-floating` | `.form-floating > .form-control:-webkit-autofill`                  | `padding-bottom` | —         | `0.625rem`                                             | `var(--vn-space-5)`                                                                                                      | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext:-webkit-autofill`        | `padding-top`    | —         | `1.625rem`                                             | `calc(var(--vn-space-8) * 1.625)`                                                                                        | tokenized |
++| `form-floating` | `.form-floating > .form-control-plaintext:-webkit-autofill`        | `padding-bottom` | —         | `0.625rem`                                             | `var(--vn-space-5)`                                                                                                      | tokenized |
++| `form-floating` | `.form-floating > .form-select`                                    | `padding-top`    | —         | `1.625rem`                                             | `calc(var(--vn-space-8) * 1.625)`                                                                                        | tokenized |
++| `form-floating` | `.form-floating > .form-select`                                    | `padding-bottom` | —         | `0.625rem`                                             | `var(--vn-space-5)`                                                                                                      | tokenized |
++| `form-floating` | `.form-floating > .form-select`                                    | `padding-left`   | —         | `0.75rem`                                              | `var(--vn-space-6)`                                                                                                      | tokenized |
++| `form-floating` | `.form-floating > textarea:focus ~ label::after`                   | `inset`          | —         | `1rem 0.375rem`                                        | `var(--vn-space-8) var(--vn-space-3)`                                                                                    | tokenized |
++| `form-floating` | `.form-floating > textarea:not(:placeholder-shown) ~ label::after` | `inset`          | —         | `1rem 0.375rem`                                        | `var(--vn-space-8) var(--vn-space-3)`                                                                                    | tokenized |
++| `form-floating` | `.form-floating > :disabled ~ label`                               | `color`          | —         | `#6c757d`                                              | `var(--vn-gray-600)`                                                                                                     | tokenized |
++| `form-floating` | `.form-floating > .form-control:disabled ~ label`                  | `color`          | —         | `#6c757d`                                              | `var(--vn-gray-600)`                                                                                                     | tokenized |
+ 
+ #### `form-range`
+ 
+@@ -8809,43 +8856,45 @@ declaration.
+ 
+ #### `nav`
+ 
+-| Component | Selector                  | Property                           | Condition | Bootstrap 5.3.8                          | Veneer                                                                      | Departure |
+-| --------- | ------------------------- | ---------------------------------- | --------- | ---------------------------------------- | --------------------------------------------------------------------------- | --------- |
+-| `nav`     | `.nav`                    | `--bs-nav-link-padding-x`          | —         | `1rem`                                   | `var(--vn-space-8)`                                                         | tokenized |
+-| `nav`     | `.nav`                    | `--bs-nav-link-padding-y`          | —         | `0.5rem`                                 | `var(--vn-space-4)`                                                         | tokenized |
+-| `nav`     | `.nav-link:focus-visible` | `box-shadow`                       | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)` | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)` | tokenized |
+-| `nav`     | `.nav-pills`              | `--bs-nav-pills-link-active-color` | —         | `#fff`                                   | `var(--vn-palette-white-base)`                                              | tokenized |
+-| `nav`     | `.nav-pills`              | `--bs-nav-pills-link-active-bg`    | —         | `#0d6efd`                                | `var(--vn-palette-blue)`                                                    | tokenized |
+-| `nav`     | `.nav-underline`          | `--bs-nav-underline-gap`           | —         | `1rem`                                   | `var(--vn-space-8)`                                                         | tokenized |
++| Component | Selector                  | Property                           | Condition | Bootstrap 5.3.8                                                                               | Veneer                                                                                                                                                    | Departure |
++| --------- | ------------------------- | ---------------------------------- | --------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
++| `nav`     | `.nav`                    | `--bs-nav-link-padding-x`          | —         | `1rem`                                                                                        | `var(--vn-space-8)`                                                                                                                                       | tokenized |
++| `nav`     | `.nav`                    | `--bs-nav-link-padding-y`          | —         | `0.5rem`                                                                                      | `var(--vn-space-4)`                                                                                                                                       | tokenized |
++| `nav`     | `.nav-link`               | `transition`                       | —         | `color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out` | `color var(--vn-motion-feedback) ease-in-out, background-color var(--vn-motion-feedback) ease-in-out, border-color var(--vn-motion-feedback) ease-in-out` | tokenized |
++| `nav`     | `.nav-link:focus-visible` | `box-shadow`                       | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                                                      | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)`                                                                               | tokenized |
++| `nav`     | `.nav-pills`              | `--bs-nav-pills-link-active-color` | —         | `#fff`                                                                                        | `var(--vn-palette-white-base)`                                                                                                                            | tokenized |
++| `nav`     | `.nav-pills`              | `--bs-nav-pills-link-active-bg`    | —         | `#0d6efd`                                                                                     | `var(--vn-palette-blue)`                                                                                                                                  | tokenized |
++| `nav`     | `.nav-underline`          | `--bs-nav-underline-gap`           | —         | `1rem`                                                                                        | `var(--vn-space-8)`                                                                                                                                       | tokenized |
+ 
+ #### `navbar`
+ 
+-| Component | Selector                      | Property                           | Condition | Bootstrap 5.3.8             | Veneer                                                                | Departure |
+-| --------- | ----------------------------- | ---------------------------------- | --------- | --------------------------- | --------------------------------------------------------------------- | --------- |
+-| `navbar`  | `.navbar`                     | `--bs-navbar-padding-y`            | —         | `0.5rem`                    | `var(--vn-space-4)`                                                   | tokenized |
+-| `navbar`  | `.navbar`                     | `--bs-navbar-brand-margin-end`     | —         | `1rem`                      | `var(--vn-space-8)`                                                   | tokenized |
+-| `navbar`  | `.navbar`                     | `--bs-navbar-brand-font-size`      | —         | `1.25rem`                   | `var(--vn-size-5)`                                                    | tokenized |
+-| `navbar`  | `.navbar`                     | `--bs-navbar-nav-link-padding-x`   | —         | `0.5rem`                    | `var(--vn-space-4)`                                                   | tokenized |
+-| `navbar`  | `.navbar`                     | `--bs-navbar-toggler-padding-y`    | —         | `0.25rem`                   | `var(--vn-space-2)`                                                   | tokenized |
+-| `navbar`  | `.navbar`                     | `--bs-navbar-toggler-padding-x`    | —         | `0.75rem`                   | `var(--vn-space-6)`                                                   | tokenized |
+-| `navbar`  | `.navbar`                     | `--bs-navbar-toggler-font-size`    | —         | `1.25rem`                   | `var(--vn-size-5)`                                                    | tokenized |
+-| `navbar`  | `.navbar-nav`                 | `--bs-nav-link-padding-y`          | —         | `0.5rem`                    | `var(--vn-space-4)`                                                   | tokenized |
+-| `navbar`  | `.navbar-text`                | `padding-top`                      | —         | `0.5rem`                    | `var(--vn-space-4)`                                                   | tokenized |
+-| `navbar`  | `.navbar-text`                | `padding-bottom`                   | —         | `0.5rem`                    | `var(--vn-space-4)`                                                   | tokenized |
+-| `navbar`  | `.navbar-dark`                | `--bs-navbar-color`                | —         | `rgba(255, 255, 255, 0.55)` | `color-mix(in srgb, var(--vn-palette-white-base) 55%, transparent)`   | tokenized |
+-| `navbar`  | `.navbar-dark`                | `--bs-navbar-hover-color`          | —         | `rgba(255, 255, 255, 0.75)` | `color-mix(in srgb, var(--vn-palette-white-base) 75%, transparent)`   | tokenized |
+-| `navbar`  | `.navbar-dark`                | `--bs-navbar-disabled-color`       | —         | `rgba(255, 255, 255, 0.25)` | `color-mix(in srgb, var(--vn-palette-white-base) 25%, transparent)`   | tokenized |
+-| `navbar`  | `.navbar-dark`                | `--bs-navbar-active-color`         | —         | `#fff`                      | `var(--vn-palette-white-base)`                                        | tokenized |
+-| `navbar`  | `.navbar-dark`                | `--bs-navbar-brand-color`          | —         | `#fff`                      | `var(--vn-palette-white-base)`                                        | tokenized |
+-| `navbar`  | `.navbar-dark`                | `--bs-navbar-brand-hover-color`    | —         | `#fff`                      | `var(--vn-palette-white-base)`                                        | tokenized |
+-| `navbar`  | `.navbar-dark`                | `--bs-navbar-toggler-border-color` | —         | `rgba(255, 255, 255, 0.1)`  | `color-mix( in srgb, var(--vn-palette-white-base) 10%, transparent )` | tokenized |
+-| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-color`                | —         | `rgba(255, 255, 255, 0.55)` | `color-mix(in srgb, var(--vn-palette-white-base) 55%, transparent)`   | tokenized |
+-| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-hover-color`          | —         | `rgba(255, 255, 255, 0.75)` | `color-mix(in srgb, var(--vn-palette-white-base) 75%, transparent)`   | tokenized |
+-| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-disabled-color`       | —         | `rgba(255, 255, 255, 0.25)` | `color-mix(in srgb, var(--vn-palette-white-base) 25%, transparent)`   | tokenized |
+-| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-active-color`         | —         | `#fff`                      | `var(--vn-palette-white-base)`                                        | tokenized |
+-| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-brand-color`          | —         | `#fff`                      | `var(--vn-palette-white-base)`                                        | tokenized |
+-| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-brand-hover-color`    | —         | `#fff`                      | `var(--vn-palette-white-base)`                                        | tokenized |
+-| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-toggler-border-color` | —         | `rgba(255, 255, 255, 0.1)`  | `color-mix( in srgb, var(--vn-palette-white-base) 10%, transparent )` | tokenized |
++| Component | Selector                      | Property                           | Condition | Bootstrap 5.3.8                | Veneer                                                                | Departure |
++| --------- | ----------------------------- | ---------------------------------- | --------- | ------------------------------ | --------------------------------------------------------------------- | --------- |
++| `navbar`  | `.navbar`                     | `--bs-navbar-padding-y`            | —         | `0.5rem`                       | `var(--vn-space-4)`                                                   | tokenized |
++| `navbar`  | `.navbar`                     | `--bs-navbar-brand-margin-end`     | —         | `1rem`                         | `var(--vn-space-8)`                                                   | tokenized |
++| `navbar`  | `.navbar`                     | `--bs-navbar-brand-font-size`      | —         | `1.25rem`                      | `var(--vn-size-5)`                                                    | tokenized |
++| `navbar`  | `.navbar`                     | `--bs-navbar-nav-link-padding-x`   | —         | `0.5rem`                       | `var(--vn-space-4)`                                                   | tokenized |
++| `navbar`  | `.navbar`                     | `--bs-navbar-toggler-padding-y`    | —         | `0.25rem`                      | `var(--vn-space-2)`                                                   | tokenized |
++| `navbar`  | `.navbar`                     | `--bs-navbar-toggler-padding-x`    | —         | `0.75rem`                      | `var(--vn-space-6)`                                                   | tokenized |
++| `navbar`  | `.navbar`                     | `--bs-navbar-toggler-font-size`    | —         | `1.25rem`                      | `var(--vn-size-5)`                                                    | tokenized |
++| `navbar`  | `.navbar`                     | `--bs-navbar-toggler-transition`   | —         | `box-shadow 0.15s ease-in-out` | `box-shadow var(--vn-motion-feedback) ease-in-out`                    | tokenized |
++| `navbar`  | `.navbar-nav`                 | `--bs-nav-link-padding-y`          | —         | `0.5rem`                       | `var(--vn-space-4)`                                                   | tokenized |
++| `navbar`  | `.navbar-text`                | `padding-top`                      | —         | `0.5rem`                       | `var(--vn-space-4)`                                                   | tokenized |
++| `navbar`  | `.navbar-text`                | `padding-bottom`                   | —         | `0.5rem`                       | `var(--vn-space-4)`                                                   | tokenized |
++| `navbar`  | `.navbar-dark`                | `--bs-navbar-color`                | —         | `rgba(255, 255, 255, 0.55)`    | `color-mix(in srgb, var(--vn-palette-white-base) 55%, transparent)`   | tokenized |
++| `navbar`  | `.navbar-dark`                | `--bs-navbar-hover-color`          | —         | `rgba(255, 255, 255, 0.75)`    | `color-mix(in srgb, var(--vn-palette-white-base) 75%, transparent)`   | tokenized |
++| `navbar`  | `.navbar-dark`                | `--bs-navbar-disabled-color`       | —         | `rgba(255, 255, 255, 0.25)`    | `color-mix(in srgb, var(--vn-palette-white-base) 25%, transparent)`   | tokenized |
++| `navbar`  | `.navbar-dark`                | `--bs-navbar-active-color`         | —         | `#fff`                         | `var(--vn-palette-white-base)`                                        | tokenized |
++| `navbar`  | `.navbar-dark`                | `--bs-navbar-brand-color`          | —         | `#fff`                         | `var(--vn-palette-white-base)`                                        | tokenized |
++| `navbar`  | `.navbar-dark`                | `--bs-navbar-brand-hover-color`    | —         | `#fff`                         | `var(--vn-palette-white-base)`                                        | tokenized |
++| `navbar`  | `.navbar-dark`                | `--bs-navbar-toggler-border-color` | —         | `rgba(255, 255, 255, 0.1)`     | `color-mix( in srgb, var(--vn-palette-white-base) 10%, transparent )` | tokenized |
++| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-color`                | —         | `rgba(255, 255, 255, 0.55)`    | `color-mix(in srgb, var(--vn-palette-white-base) 55%, transparent)`   | tokenized |
++| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-hover-color`          | —         | `rgba(255, 255, 255, 0.75)`    | `color-mix(in srgb, var(--vn-palette-white-base) 75%, transparent)`   | tokenized |
++| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-disabled-color`       | —         | `rgba(255, 255, 255, 0.25)`    | `color-mix(in srgb, var(--vn-palette-white-base) 25%, transparent)`   | tokenized |
++| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-active-color`         | —         | `#fff`                         | `var(--vn-palette-white-base)`                                        | tokenized |
++| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-brand-color`          | —         | `#fff`                         | `var(--vn-palette-white-base)`                                        | tokenized |
++| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-brand-hover-color`    | —         | `#fff`                         | `var(--vn-palette-white-base)`                                        | tokenized |
++| `navbar`  | `.navbar[data-bs-theme=dark]` | `--bs-navbar-toggler-border-color` | —         | `rgba(255, 255, 255, 0.1)`     | `color-mix( in srgb, var(--vn-palette-white-base) 10%, transparent )` | tokenized |
+ 
+ #### `object-fit`
+ 
+@@ -9200,21 +9249,22 @@ declaration.
+ 
+ #### `pagination`
+ 
+-| Component    | Selector         | Property                              | Condition | Bootstrap 5.3.8                          | Veneer                                                                      | Departure |
+-| ------------ | ---------------- | ------------------------------------- | --------- | ---------------------------------------- | --------------------------------------------------------------------------- | --------- |
+-| `pagination` | `.pagination`    | `--bs-pagination-padding-x`           | —         | `0.75rem`                                | `var(--vn-space-6)`                                                         | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-padding-y`           | —         | `0.375rem`                               | `var(--vn-space-3)`                                                         | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-font-size`           | —         | `1rem`                                   | `var(--vn-size-3)`                                                          | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-focus-box-shadow`    | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)` | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)` | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-active-color`        | —         | `#fff`                                   | `var(--vn-palette-white-base)`                                              | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-active-bg`           | —         | `#0d6efd`                                | `var(--vn-palette-blue)`                                                    | tokenized |
+-| `pagination` | `.pagination`    | `--bs-pagination-active-border-color` | —         | `#0d6efd`                                | `var(--vn-palette-blue)`                                                    | tokenized |
+-| `pagination` | `.pagination-lg` | `--bs-pagination-padding-x`           | —         | `1.5rem`                                 | `var(--vn-space-12)`                                                        | tokenized |
+-| `pagination` | `.pagination-lg` | `--bs-pagination-padding-y`           | —         | `0.75rem`                                | `var(--vn-space-6)`                                                         | tokenized |
+-| `pagination` | `.pagination-lg` | `--bs-pagination-font-size`           | —         | `1.25rem`                                | `var(--vn-size-5)`                                                          | tokenized |
+-| `pagination` | `.pagination-sm` | `--bs-pagination-padding-x`           | —         | `0.5rem`                                 | `var(--vn-space-4)`                                                         | tokenized |
+-| `pagination` | `.pagination-sm` | `--bs-pagination-padding-y`           | —         | `0.25rem`                                | `var(--vn-space-2)`                                                         | tokenized |
+-| `pagination` | `.pagination-sm` | `--bs-pagination-font-size`           | —         | `0.875rem`                               | `var(--vn-size-2)`                                                          | tokenized |
++| Component    | Selector         | Property                              | Condition | Bootstrap 5.3.8                                                                                                             | Veneer                                                                                                                                                                                                      | Departure |
++| ------------ | ---------------- | ------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
++| `pagination` | `.pagination`    | `--bs-pagination-padding-x`           | —         | `0.75rem`                                                                                                                   | `var(--vn-space-6)`                                                                                                                                                                                         | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-padding-y`           | —         | `0.375rem`                                                                                                                  | `var(--vn-space-3)`                                                                                                                                                                                         | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-font-size`           | —         | `1rem`                                                                                                                      | `var(--vn-size-3)`                                                                                                                                                                                          | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-focus-box-shadow`    | —         | `0 0 0 0.25rem rgba(13, 110, 253, 0.25)`                                                                                    | `0 0 0 0.25rem color-mix(in srgb, var(--vn-palette-blue) 25%, transparent)`                                                                                                                                 | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-active-color`        | —         | `#fff`                                                                                                                      | `var(--vn-palette-white-base)`                                                                                                                                                                              | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-active-bg`           | —         | `#0d6efd`                                                                                                                   | `var(--vn-palette-blue)`                                                                                                                                                                                    | tokenized |
++| `pagination` | `.pagination`    | `--bs-pagination-active-border-color` | —         | `#0d6efd`                                                                                                                   | `var(--vn-palette-blue)`                                                                                                                                                                                    | tokenized |
++| `pagination` | `.page-link`     | `transition`                          | —         | `color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out` | `color var(--vn-motion-feedback) ease-in-out, background-color var(--vn-motion-feedback) ease-in-out, border-color var(--vn-motion-feedback) ease-in-out, box-shadow var(--vn-motion-feedback) ease-in-out` | tokenized |
++| `pagination` | `.pagination-lg` | `--bs-pagination-padding-x`           | —         | `1.5rem`                                                                                                                    | `var(--vn-space-12)`                                                                                                                                                                                        | tokenized |
++| `pagination` | `.pagination-lg` | `--bs-pagination-padding-y`           | —         | `0.75rem`                                                                                                                   | `var(--vn-space-6)`                                                                                                                                                                                         | tokenized |
++| `pagination` | `.pagination-lg` | `--bs-pagination-font-size`           | —         | `1.25rem`                                                                                                                   | `var(--vn-size-5)`                                                                                                                                                                                          | tokenized |
++| `pagination` | `.pagination-sm` | `--bs-pagination-padding-x`           | —         | `0.5rem`                                                                                                                    | `var(--vn-space-4)`                                                                                                                                                                                         | tokenized |
++| `pagination` | `.pagination-sm` | `--bs-pagination-padding-y`           | —         | `0.25rem`                                                                                                                   | `var(--vn-space-2)`                                                                                                                                                                                         | tokenized |
++| `pagination` | `.pagination-sm` | `--bs-pagination-font-size`           | —         | `0.875rem`                                                                                                                  | `var(--vn-size-2)`                                                                                                                                                                                          | tokenized |
+ 
+ #### `pb`
+ 
+@@ -9302,13 +9352,15 @@ declaration.
+ 
+ #### `progress`
+ 
+-| Component  | Selector                | Property                  | Condition | Bootstrap 5.3.8                                                                                                                                                                       | Veneer                                                                                                                                                                                                                          | Departure |
+-| ---------- | ----------------------- | ------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+-| `progress` | `.progress`             | `--bs-progress-bar-color` | —         | `#fff`                                                                                                                                                                                | `var(--vn-palette-white-base)`                                                                                                                                                                                                  | tokenized |
+-| `progress` | `.progress`             | `--bs-progress-bar-bg`    | —         | `#0d6efd`                                                                                                                                                                             | `var(--vn-palette-blue)`                                                                                                                                                                                                        | tokenized |
+-| `progress` | `.progress-stacked`     | `--bs-progress-bar-color` | —         | `#fff`                                                                                                                                                                                | `var(--vn-palette-white-base)`                                                                                                                                                                                                  | tokenized |
+-| `progress` | `.progress-stacked`     | `--bs-progress-bar-bg`    | —         | `#0d6efd`                                                                                                                                                                             | `var(--vn-palette-blue)`                                                                                                                                                                                                        | tokenized |
+-| `progress` | `.progress-bar-striped` | `background-image`        | —         | `linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent)` | `linear-gradient(45deg, rgba(var(--vn-palette-white-rgb), 0.15) 25%, transparent 25%, transparent 50%, rgba(var(--vn-palette-white-rgb), 0.15) 50%, rgba(var(--vn-palette-white-rgb), 0.15) 75%, transparent 75%, transparent)` | tokenized |
++| Component  | Selector                | Property                       | Condition | Bootstrap 5.3.8                                                                                                                                                                       | Veneer                                                                                                                                                                                                                          | Departure |
++| ---------- | ----------------------- | ------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
++| `progress` | `.progress`             | `--bs-progress-bar-color`      | —         | `#fff`                                                                                                                                                                                | `var(--vn-palette-white-base)`                                                                                                                                                                                                  | tokenized |
++| `progress` | `.progress`             | `--bs-progress-bar-bg`         | —         | `#0d6efd`                                                                                                                                                                             | `var(--vn-palette-blue)`                                                                                                                                                                                                        | tokenized |
++| `progress` | `.progress`             | `--bs-progress-bar-transition` | —         | `width 0.6s ease`                                                                                                                                                                     | `width calc(var(--vn-motion-feedback) * 4) ease`                                                                                                                                                                                | tokenized |
++| `progress` | `.progress-stacked`     | `--bs-progress-bar-color`      | —         | `#fff`                                                                                                                                                                                | `var(--vn-palette-white-base)`                                                                                                                                                                                                  | tokenized |
++| `progress` | `.progress-stacked`     | `--bs-progress-bar-bg`         | —         | `#0d6efd`                                                                                                                                                                             | `var(--vn-palette-blue)`                                                                                                                                                                                                        | tokenized |
++| `progress` | `.progress-stacked`     | `--bs-progress-bar-transition` | —         | `width 0.6s ease`                                                                                                                                                                     | `width calc(var(--vn-motion-feedback) * 4) ease`                                                                                                                                                                                | tokenized |
++| `progress` | `.progress-bar-striped` | `background-image`             | —         | `linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent)` | `linear-gradient(45deg, rgba(var(--vn-palette-white-rgb), 0.15) 25%, transparent 25%, transparent 50%, rgba(var(--vn-palette-white-rgb), 0.15) 50%, rgba(var(--vn-palette-white-rgb), 0.15) 75%, transparent 75%, transparent)` | tokenized |
+ 
+ #### `ps`
+ 
+diff --git a/src/styles/components/_accordion.scss b/src/styles/components/_accordion.scss
+index 3428767..98dad16 100644
+--- a/src/styles/components/_accordion.scss
++++ b/src/styles/components/_accordion.scss
+@@ -13,9 +13,13 @@
+ 	.accordion {
+ 		--bs-accordion-color: var(--bs-body-color);
+ 		--bs-accordion-bg: var(--bs-body-bg);
++		// The button's durations read the feedback token, which resolves to the release's `0.15s`
++		// value and scales with the motion factor; each curve stays the release's.
+ 		--bs-accordion-transition:
+-			color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
+-			box-shadow 0.15s ease-in-out, border-radius 0.15s ease;
++			color var(--vn-motion-feedback) ease-in-out,
++			background-color var(--vn-motion-feedback) ease-in-out,
++			border-color var(--vn-motion-feedback) ease-in-out,
++			box-shadow var(--vn-motion-feedback) ease-in-out, border-radius var(--vn-motion-feedback) ease;
+ 		--bs-accordion-border-color: var(--bs-border-color);
+ 		--bs-accordion-border-width: var(--bs-border-width);
+ 		--bs-accordion-border-radius: var(--bs-border-radius);
+@@ -43,9 +47,9 @@
+ 		@include button-reboot;
+ 	}
+ 
+-	// The timing is the release's own rather than the motion tokens the `.btn` class reads, because
+-	// this key ships the release's recorded surface. The `transition` mixin emits the reduced-motion
+-	// twin the release records beside the button's transition and beside the chevron's.
++	// The button's transition reads the `--bs-accordion-transition` property, whose durations are the
++	// `--vn-motion-feedback` token. The `transition` mixin emits the reduced-motion twin the release
++	// records beside the button's transition and beside the chevron's.
+ 	.accordion-button {
+ 		position: relative;
+ 		display: flex;
+diff --git a/src/styles/components/_form-floating.scss b/src/styles/components/_form-floating.scss
+index 35c478e..9f9afd9 100644
+--- a/src/styles/components/_form-floating.scss
++++ b/src/styles/components/_form-floating.scss
+@@ -6,10 +6,12 @@
+ 	// inset, which no token carries, multiply `--vn-space-8` by the release's own ratio to its 1rem,
+ 	// so each resolves the release's length at the resting factor and the height and the insets
+ 	// scale together. The backdrop's `em` height and the `1.25` line height are relative to the text
+-	// already, and the stacking, the transform, and its origin are the release's own bytes. Every
+-	// value the release writes as a `--bs-*` variable reads that variable, so a consumer retuning the
+-	// border width, the body color, the body or secondary surface, or the base radius moves this
+-	// family with the rest of the cascade.
++	// already, and the stacking, the transform, and its origin are the release's own bytes. The label's
++	// lift is feedback to the control's own input, so its transition reads the feedback token scaled
++	// by the release's own ratio to it, the way the height reads a multiple of a space token, and the
++	// motion factor reaches it only through that token. Every value the release writes as a `--bs-*`
++	// variable reads that variable, so a consumer retuning the border width, the body color, the body
++	// or secondary surface, or the base radius moves this family with the rest of the cascade.
+ 	//
+ 	// The control's own border and paint are `.form-control` and `.form-select` rules; this partial
+ 	// writes only the geometry the floating container changes about them. The validation partial
+@@ -46,7 +48,12 @@
+ 		pointer-events: none;
+ 		border: var(--bs-border-width) solid transparent;
+ 		transform-origin: 0 0;
+-		@include transition((opacity 0.1s ease-in-out, transform 0.1s ease-in-out));
++		@include transition(
++			(
++				opacity calc(var(--vn-motion-feedback) / 1.5) ease-in-out,
++				transform calc(var(--vn-motion-feedback) / 1.5) ease-in-out
++			)
++		);
+ 	}
+ 
+ 	.form-floating > .form-control,
+diff --git a/src/styles/components/_nav.scss b/src/styles/components/_nav.scss
+index 343fd83..bae7e89 100644
+--- a/src/styles/components/_nav.scss
++++ b/src/styles/components/_nav.scss
+@@ -31,11 +31,16 @@
+ 		text-decoration: none;
+ 		background: none;
+ 		border: 0;
+-		// The timing is Bootstrap's own rather than the motion tokens the `.btn` class reads, because
+-		// this key ships the release's recorded surface. The mixin emits the reduced-motion twin the
+-		// release records beside it.
++		// The duration reads the feedback token, which resolves to the release's `0.15s` value and
++		// scales with the motion factor; the curve stays the release's `ease-in-out`, which no
++		// `--vn-ease-*` token resolves to. The mixin emits the reduced-motion twin the release records
++		// beside it.
+ 		@include transition(
+-			(color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out)
++			(
++				color var(--vn-motion-feedback) ease-in-out,
++				background-color var(--vn-motion-feedback) ease-in-out,
++				border-color var(--vn-motion-feedback) ease-in-out
++			)
+ 		);
+ 	}
+ 
+diff --git a/src/styles/components/_navbar.scss b/src/styles/components/_navbar.scss
+index 1bbbcc1..85ca0c2 100644
+--- a/src/styles/components/_navbar.scss
++++ b/src/styles/components/_navbar.scss
+@@ -32,7 +32,9 @@
+ 		--bs-navbar-toggler-border-radius: var(--bs-border-radius);
+ 		// The ring width stays the release's literal: the published focus width is a narrower ring.
+ 		--bs-navbar-toggler-focus-width: 0.25rem;
+-		--bs-navbar-toggler-transition: box-shadow 0.15s ease-in-out;
++		// The ring's duration reads the feedback token, which resolves to the release's `0.15s` value
++		// and scales with the motion factor; the curve stays the release's.
++		--bs-navbar-toggler-transition: box-shadow var(--vn-motion-feedback) ease-in-out;
+ 		position: relative;
+ 		display: flex;
+ 		flex-wrap: wrap;
+diff --git a/src/styles/components/_pagination.scss b/src/styles/components/_pagination.scss
+index 6110a29..157d19e 100644
+--- a/src/styles/components/_pagination.scss
++++ b/src/styles/components/_pagination.scss
+@@ -55,16 +55,16 @@ $sizes: (
+ 		text-decoration: none;
+ 		background-color: var(--bs-pagination-bg);
+ 		border: var(--bs-pagination-border-width) solid var(--bs-pagination-border-color);
+-		// The timing is Bootstrap's own rather than the motion tokens `.btn` reads: this family
+-		// ships the release's recorded surface, and `--vn-ease-standard` resolves to `ease` where
+-		// the release records `ease-in-out`. The mixin emits the reduced-motion twin the release
+-		// records beside it.
++		// The duration reads the feedback token, which resolves to the release's `0.15s` value and
++		// scales with the motion factor. The curve stays the release's `ease-in-out`, because
++		// `--vn-ease-standard` resolves to `ease`. The mixin emits the reduced-motion twin the
++		// release records beside it.
+ 		@include transition(
+ 			(
+-				color 0.15s ease-in-out,
+-				background-color 0.15s ease-in-out,
+-				border-color 0.15s ease-in-out,
+-				box-shadow 0.15s ease-in-out
++				color var(--vn-motion-feedback) ease-in-out,
++				background-color var(--vn-motion-feedback) ease-in-out,
++				border-color var(--vn-motion-feedback) ease-in-out,
++				box-shadow var(--vn-motion-feedback) ease-in-out
+ 			)
+ 		);
+ 	}
+diff --git a/src/styles/components/_progress.scss b/src/styles/components/_progress.scss
+index 7b368b9..b935ae3 100644
+--- a/src/styles/components/_progress.scss
++++ b/src/styles/components/_progress.scss
+@@ -22,7 +22,10 @@
+ 		--bs-progress-box-shadow: var(--bs-box-shadow-inset);
+ 		--bs-progress-bar-color: var(--vn-palette-white-base);
+ 		--bs-progress-bar-bg: var(--vn-palette-blue);
+-		--bs-progress-bar-transition: width 0.6s ease;
++		// The fill's width change is feedback to the value the bar reports, so its transition reads
++		// the feedback token scaled by the release's own ratio to it, and keeps the release's curve;
++		// the motion factor reaches it only through that token.
++		--bs-progress-bar-transition: width calc(var(--vn-motion-feedback) * 4) ease;
+ 		display: flex;
+ 		height: var(--bs-progress-height);
+ 		overflow: hidden;
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 58c1a39..9895a46 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -1,4 +1,5 @@
+ import { BUTTON_SPECIMENS } from '@app/browser'
++import { TOKEN_NAMES } from '@src/core'
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	build,
+@@ -83,6 +84,7 @@ import {
+ 	sampleTransition,
+ 	SPECIMEN_ATTRIBUTE,
+ 	scene,
++	sweepMotionFactor,
+ 	visitBreakpoint,
+ } from './setupBrowser.js'
+ 
+@@ -972,6 +974,7 @@ describe('browser setup', () => {
+ 				'scanPositionalPairs',
+ 				'scene',
+ 				'shadowSetHTML',
++				'sweepMotionFactor',
+ 				'visitBreakpoint',
+ 			].sort(),
+ 		)
+@@ -2027,3 +2030,81 @@ describe('sampleTransition', () => {
+ 		)
+ 	})
+ })
++
++describe('sweepMotionFactor', () => {
++	// The fixture's transition reads the feedback token, which the published cascade declares on the
++	// `:root` selector over the motion factor, and the control's transition writes a literal beside
++	// it. A sweep that set the factor anywhere but the document element reads the fixture unscaled,
++	// and the control reads the same at every factor whatever the sweep sets, so only the fixture
++	// tells the factors apart. Each drive also reads the factor the document element declares and
++	// which of the sweep's hosts are still on the page.
++	it('runs the drive at the resting, doubled, and zero motion factor on the document element, and clears the factor and the scene after each', async () => {
++		await import('../src/styles/index.scss')
++		const style = document.documentElement.style
++		const hosts: HTMLElement[] = []
++		const readings = sweepMotionFactor(() => {
++			const host = scene.mount(
++				`<div style="transition: opacity var(${TOKEN_NAMES.motion.feedback}) linear">Tide table</div><div style="transition: opacity 150ms linear">Tide table</div>`,
++			)
++			hosts.push(host)
++			const [fixture, control] = host.querySelectorAll('div')
++			const scaled = requireValue(fixture, 'No fixture element')
++			const fixed = requireValue(control, 'No control element')
++			readStyle(scaled, 'opacity')
++			readStyle(fixed, 'opacity')
++			scaled.style.opacity = '0'
++			fixed.style.opacity = '0'
++			return {
++				factor: style.getPropertyValue(TOKEN_NAMES.factor.motion),
++				mounted: hosts.map((mounted) => mounted.isConnected),
++				fixture: sampleTransition(scaled, 'opacity')?.duration,
++				control: sampleTransition(fixed, 'opacity')?.duration,
++			}
++		})
++		expect(readings.map((reading) => [reading.factor, reading.mounted])).toEqual([
++			['1', [true]],
++			['2', [false, true]],
++			['0', [false, false, true]],
++		])
++		const [resting, doubled, zeroed] = readings.map((reading) => reading.fixture)
++		const base = requireValue(resting, 'No fixture transition at the resting factor')
++		expect(base).toBeGreaterThan(0)
++		expect([doubled, zeroed]).toEqual([base * 2, undefined])
++		expect(readings.map((reading) => reading.control)).toEqual([150, 150, 150])
++		expect(style.getPropertyValue(TOKEN_NAMES.factor.motion)).toBe('')
++		expect(hosts.map((host) => host.isConnected)).toEqual([false, false, false])
++	})
++
++	// The document element declares its own important factor before each sweep, and the second
++	// sweep's drive throws at the resting factor, so a sweep that removed the factor rather than
++	// restoring it, dropped its priority, or skipped the restore when the drive threw leaves another
++	// factor declared here.
++	it('restores the factor and priority the document element held, and clears the scene, after a drive that returns and after one that throws', () => {
++		const style = document.documentElement.style
++		const name = TOKEN_NAMES.factor.motion
++		style.setProperty(name, '3', 'important')
++		onTestFinished(() => {
++			style.removeProperty(name)
++		})
++		expect(sweepMotionFactor(() => style.getPropertyValue(name))).toEqual(['1', '2', '0'])
++		expect([style.getPropertyValue(name), style.getPropertyPriority(name)]).toEqual([
++			'3',
++			'important',
++		])
++		const hosts: HTMLElement[] = []
++		const factors: string[] = []
++		expect(() =>
++			sweepMotionFactor(() => {
++				factors.push(style.getPropertyValue(name))
++				hosts.push(scene.mount('<div>Squall warning</div>'))
++				throw new Error('The drive failed at the resting factor')
++			}),
++		).toThrow('The drive failed at the resting factor')
++		expect(factors).toEqual(['1'])
++		expect([style.getPropertyValue(name), style.getPropertyPriority(name)]).toEqual([
++			'3',
++			'important',
++		])
++		expect(hosts.map((host) => host.isConnected)).toEqual([false])
++	})
++})
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 5f6ce27..d950b4e 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -41,6 +41,7 @@ import {
+ } from '@orkestrel/test/browser'
+ import { commands, page, userEvent } from 'vitest/browser'
+ import { Delegate, SANITIZER_ALLOWLIST, TOOLTIP_TEMPLATE } from '@src/browser'
++import { TOKEN_NAMES } from '@src/core'
+ import oracle from './fixtures/oracle/button.json'
+ import {
+ 	computeCroppedEdges,
+@@ -1948,6 +1949,56 @@ export function sampleTransition(element: Element, property: string): Transition
+ 	return { transition, duration, easing, start, midpoint }
+ }
+ 
++/**
++ * Runs one drive at the resting, the doubled, and the zero motion factor, set on the document
++ * element, and returns what the drive read at each.
++ *
++ * @param drive - The reading to take at each factor: it mounts its own nodes through {@link scene},
++ *   starts the change, and returns what it read, such as the {@link sampleTransition} result. It
++ *   runs synchronously.
++ * @returns Each factor's reading, in the order of the factors `1`, `2`, and `0`.
++ * @throws Thrown when the drive throws, with the drive's own error, after the factor and the scene
++ *   are restored.
++ *
++ * @remarks
++ * The factor is set on the document element because Veneer declares the motion tokens on the `:root`
++ * selector, so a token substitutes the factor there once and every subtree inherits the result. A
++ * transition that reads a motion token therefore doubles at `2` and starts nothing at `0`, while a
++ * literal duration reads the same at each factor.
++ *
++ * After each drive, including one that throws, the document element's own factor returns to the
++ * value and priority it held before the call, or is removed when it held none, and {@link scene} is
++ * cleared, so the next factor's drive starts on an empty scene. Clearing removes every node the scene
++ * recorded, so mount nothing a later reading needs before the call.
++ *
++ * @example
++ * ```ts
++ * const [resting, doubled, zeroed] = sweepMotionFactor(() => {
++ * 	const host = scene.mount(PROGRESS_MARKUP)
++ * 	const bar = requireValue(host.querySelector<HTMLElement>('.progress-bar'), 'No bar')
++ * 	readStyle(bar, 'width')
++ * 	bar.style.width = '75%'
++ * 	return sampleTransition(bar, 'width')
++ * })
++ * ```
++ */
++export function sweepMotionFactor<T>(drive: () => T): readonly T[] {
++	const style = document.documentElement.style
++	const name = TOKEN_NAMES.factor.motion
++	const value = style.getPropertyValue(name)
++	const priority = style.getPropertyPriority(name)
++	return ['1', '2', '0'].map((factor) => {
++		style.setProperty(name, factor)
++		try {
++			return drive()
++		} finally {
++			if (value === '') style.removeProperty(name)
++			else style.setProperty(name, value, priority)
++			scene.clear()
++		}
++	})
++}
++
+ /**
+  * Reads the stylesheet the shipped cascade was loaded into.
+  *
+diff --git a/tests/src/styles/components/accordion.test.ts b/tests/src/styles/components/accordion.test.ts
+index a70f74f..841ca90 100644
+--- a/tests/src/styles/components/accordion.test.ts
++++ b/tests/src/styles/components/accordion.test.ts
+@@ -12,7 +12,13 @@ import {
+ 	waitForAnimations,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
++import {
++	collectLayer,
++	collectMediaConditions,
++	sampleTransition,
++	scene,
++	sweepMotionFactor,
++} from '../../../setupBrowser.js'
+ import {
+ 	ACCORDION_COLOR_CASES,
+ 	ACCORDION_LENGTH_CASES,
+@@ -502,4 +508,42 @@ describe('accordion classes', () => {
+ 		for (const selector of ['.accordion-button', '.accordion-button::after'])
+ 			expect(collectMediaConditions(rules, selector)).toEqual([REDUCED_MOTION])
+ 	})
++
++	// The mutation this catches is the release's literal duration written where the motion factor
++	// scales the button's own transition: the reading is each transition the browser starts as the
++	// lone item's button takes the collapsed class, at the resting, the doubled, and the zero factor.
++	// The lone item is the last one, so collapsing it rounds the button's bottom corners, and the
++	// radius is read on one bottom corner, the longhand the browser runs on the release's `ease`
++	// curve. The doubled durations are read as ratios to the resting ones, and a zero factor starts
++	// no transition, which a literal duration still would.
++	it('runs the button paint, line, and corner over the release durations and curves at the resting motion factor, twice as long at a doubled factor, and not at all at a zero factor', () => {
++		const properties = ['color', 'background-color', 'box-shadow', 'border-bottom-left-radius']
++		const [resting = [], doubled = [], zeroed = []] = sweepMotionFactor(() => {
++			const host = scene.mount(
++				'<div class="accordion"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" type="button" aria-expanded="true" aria-controls="panel-customs">Customs</button></h2><div class="accordion-collapse collapse show" id="panel-customs"><div class="accordion-body">Declarations close at noon.</div></div></div></div>',
++			)
++			const button = requireValue(host.querySelector('.accordion-button'), 'No button')
++			readStyle(button, 'color')
++			button.classList.add('collapsed')
++			return properties.map((property) => sampleTransition(button, property))
++		})
++		expect(resting.map((sample) => [sample?.duration, sample?.easing])).toEqual([
++			[150, 'ease-in-out'],
++			[150, 'ease-in-out'],
++			[150, 'ease-in-out'],
++			[150, 'ease'],
++		])
++		expect(
++			doubled.map((sample, index) => [
++				(sample?.duration ?? Number.NaN) / (resting[index]?.duration ?? Number.NaN),
++				sample?.easing,
++			]),
++		).toEqual([
++			[2, 'ease-in-out'],
++			[2, 'ease-in-out'],
++			[2, 'ease-in-out'],
++			[2, 'ease'],
++		])
++		expect(zeroed).toEqual(properties.map(() => undefined))
++	})
+ })
+diff --git a/tests/src/styles/components/fade.test.ts b/tests/src/styles/components/fade.test.ts
+index e7aa897..8821c71 100644
+--- a/tests/src/styles/components/fade.test.ts
++++ b/tests/src/styles/components/fade.test.ts
+@@ -7,6 +7,7 @@ import {
+ 	collectMediaConditions,
+ 	sampleTransition,
+ 	scene,
++	sweepMotionFactor,
+ } from '../../../setupBrowser.js'
+ import {
+ 	FADE_COMPONENT_CASES,
+@@ -196,21 +197,19 @@ describe('fade classes', () => {
+ 	// and the reduced-motion preference starts none either. Each hidden element is read at rest
+ 	// after the change, so a change that landed with nothing running reads as the hidden opacity.
+ 	it('doubles the running duration at a doubled motion factor, and runs no transition at a zero factor or under the reduced-motion preference', async () => {
+-		const readings: Array<readonly [number | undefined, string]> = []
+-		for (const factor of ['1', '2', '0']) {
+-			document.documentElement.style.setProperty(TOKEN_NAMES.factor.motion, factor)
+-			const element = requireValue(
+-				scene.mount('<div class="fade show">Quay notice</div>').firstElementChild,
+-				'No fading element',
+-			)
+-			readStyle(element, 'opacity')
+-			element.classList.remove('show')
+-			const sample = sampleTransition(element, 'opacity')
+-			sample?.transition.finish()
+-			readings.push([sample?.duration, readStyle(element, 'opacity')])
+-			scene.clear()
+-		}
+-		document.documentElement.style.removeProperty(TOKEN_NAMES.factor.motion)
++		const readings = [
++			...sweepMotionFactor((): readonly [number | undefined, string] => {
++				const element = requireValue(
++					scene.mount('<div class="fade show">Quay notice</div>').firstElementChild,
++					'No fading element',
++				)
++				readStyle(element, 'opacity')
++				element.classList.remove('show')
++				const sample = sampleTransition(element, 'opacity')
++				sample?.transition.finish()
++				return [sample?.duration, readStyle(element, 'opacity')]
++			}),
++		]
+ 		await stageMedia({ motion: false })
+ 		const element = requireValue(
+ 			scene.mount('<div class="fade show">Quay notice</div>').firstElementChild,
+diff --git a/tests/src/styles/components/form-floating.test.ts b/tests/src/styles/components/form-floating.test.ts
+index a555048..e2bc60e 100644
+--- a/tests/src/styles/components/form-floating.test.ts
++++ b/tests/src/styles/components/form-floating.test.ts
+@@ -14,7 +14,13 @@ import {
+ 	waitForAnimations,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
++import {
++	collectLayer,
++	collectMediaConditions,
++	sampleTransition,
++	scene,
++	sweepMotionFactor,
++} from '../../../setupBrowser.js'
+ import { normalizeSelectorText } from '../../../setup.js'
+ import {
+ 	FORM_FLOATING_CASES,
+@@ -364,6 +370,54 @@ describe('form floating motion', () => {
+ 		await releaseMedia()
+ 		expect(readStyle(label, 'transition-duration')).toBe('0.1s, 0.1s')
+ 	})
++
++	// The mutation this catches is the release's literal duration written where the motion factor
++	// scales it: the reading is the transform transition the browser starts as a value lifts the
++	// label, at the resting, the doubled, and the zero factor. The doubled duration is read as a
++	// ratio to the resting one, and a zero factor starts no transition, which a literal duration
++	// still would. The resting duration is a fraction of the feedback token, which the browser holds
++	// in seconds, so it is compared with the release's within floating-point rounding.
++	it('runs the label transform over the release duration and curve at the resting motion factor, twice as long at a doubled factor, and not at all at a zero factor', () => {
++		const [resting, doubled, zeroed] = sweepMotionFactor(() => {
++			const host = scene.mount(
++				'<div class="form-floating"><input type="email" class="form-control" id="floating-harbor" placeholder="harbor@example.com"><label for="floating-harbor">Harbor address</label></div>',
++			)
++			const control = requireValue(host.querySelector('input'), 'No control')
++			const label = requireValue(host.querySelector('label'), 'No label')
++			readStyle(label, 'transform')
++			control.value = 'harbor@example.com'
++			return sampleTransition(label, 'transform')
++		})
++		const base = requireValue(resting, 'No transition at the resting factor')
++		expect([base.duration, base.easing]).toEqual([expect.closeTo(100, 6), 'ease-in-out'])
++		const slowed = requireValue(doubled, 'No transition at the doubled factor')
++		expect([slowed.duration / base.duration, slowed.easing]).toEqual([
++			expect.closeTo(2, 6),
++			'ease-in-out',
++		])
++		expect(zeroed).toBeUndefined()
++	})
++
++	// The mutation this catches is the motion factor read on the label rather than in the tokens:
++	// a factor the label reads itself follows a wrapper that sets it alone, while the feedback token
++	// carries the value the root substituted into every subtree. The reading is the transform
++	// transition the browser starts as a value lifts a label inside a wrapper declaring a doubled
++	// factor, beside the same lift in a wrapper declaring none, and the two must be equal.
++	it('keeps the label transform at the root duration inside a subtree that sets the motion factor alone', () => {
++		const durations = ['', `${TOKEN_NAMES.factor.motion}: 2`].map((style, index) => {
++			const host = scene.mount(
++				`<div style="${style}"><div class="form-floating"><input type="email" class="form-control" id="floating-berth-${index}" placeholder="berth@example.com"><label for="floating-berth-${index}">Berth address</label></div></div>`,
++			)
++			const control = requireValue(host.querySelector('input'), 'No control')
++			const label = requireValue(host.querySelector('label'), 'No label')
++			readStyle(label, 'transform')
++			control.value = 'berth@example.com'
++			return requireValue(sampleTransition(label, 'transform'), 'No label transition').duration
++		})
++		const [root, subtree] = durations
++		expect(root).toBeCloseTo(100, 6)
++		expect(subtree).toBe(root)
++	})
+ })
+ 
+ describe('form floating tokens', () => {
+diff --git a/tests/src/styles/components/nav.test.ts b/tests/src/styles/components/nav.test.ts
+index c4118f2..89955d5 100644
+--- a/tests/src/styles/components/nav.test.ts
++++ b/tests/src/styles/components/nav.test.ts
+@@ -14,7 +14,13 @@ import {
+ 	waitForAnimations,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
++import {
++	collectLayer,
++	collectMediaConditions,
++	sampleTransition,
++	scene,
++	sweepMotionFactor,
++} from '../../../setupBrowser.js'
+ import {
+ 	extractShadowLayers,
+ 	NAV_COLOR_CASES,
+@@ -516,4 +522,32 @@ describe('nav classes', () => {
+ 		expect([...declarations].filter((name) => !name.startsWith('transition-'))).toEqual([])
+ 		expect(declarations.getPropertyValue('transition-property')).toBe('none')
+ 	})
++
++	// The mutation this catches is the release's literal duration written where the motion factor
++	// scales it: the reading is each transition the browser starts as a tab becomes the active one,
++	// at the resting, the doubled, and the zero factor. The border color is read on its top side,
++	// the longhand the browser runs. The doubled durations are read as ratios to the resting ones,
++	// and a zero factor starts no transition, which a literal duration still would.
++	it('runs the tab paint over the release duration and curve at the resting motion factor, twice as long at a doubled factor, and not at all at a zero factor', () => {
++		const properties = ['color', 'background-color', 'border-top-color']
++		const [resting = [], doubled = [], zeroed = []] = sweepMotionFactor(() => {
++			const host = scene.mount(
++				'<nav class="nav nav-tabs"><a class="nav-link" href="#harbor">Harbor</a></nav>',
++			)
++			const link = requireValue(host.querySelector('.nav-link'), 'No link')
++			readStyle(link, 'color')
++			link.classList.add('active')
++			return properties.map((property) => sampleTransition(link, property))
++		})
++		expect(resting.map((sample) => [sample?.duration, sample?.easing])).toEqual(
++			properties.map(() => [150, 'ease-in-out']),
++		)
++		expect(
++			doubled.map((sample, index) => [
++				(sample?.duration ?? Number.NaN) / (resting[index]?.duration ?? Number.NaN),
++				sample?.easing,
++			]),
++		).toEqual(properties.map(() => [2, 'ease-in-out']))
++		expect(zeroed).toEqual(properties.map(() => undefined))
++	})
+ })
+diff --git a/tests/src/styles/components/navbar.test.ts b/tests/src/styles/components/navbar.test.ts
+index 6a4f24a..7c7e0fa 100644
+--- a/tests/src/styles/components/navbar.test.ts
++++ b/tests/src/styles/components/navbar.test.ts
+@@ -16,7 +16,9 @@ import { normalizeSelectorText } from '../../../setup.js'
+ import {
+ 	collectLayer,
+ 	collectMediaConditions,
++	sampleTransition,
+ 	scene,
++	sweepMotionFactor,
+ 	visitBreakpoint,
+ } from '../../../setupBrowser.js'
+ import {
+@@ -545,6 +547,27 @@ describe('navbar classes', () => {
+ 		expect(collectMediaConditions(rules, '.navbar-expand .offcanvas')).toEqual([])
+ 	})
+ 
++	// The mutation this catches is the release's literal duration written where the motion factor
++	// scales it: the reading is the ring transition the browser starts as the toggler takes focus,
++	// at the resting, the doubled, and the zero factor. The doubled duration is read as a ratio to
++	// the resting one, and a zero factor starts no transition, which a literal duration still would.
++	it('runs the toggler ring over the release duration and curve at the resting motion factor, twice as long at a doubled factor, and not at all at a zero factor', () => {
++		const [resting, doubled, zeroed] = sweepMotionFactor(() => {
++			const host = scene.mount(
++				'<nav class="navbar"><button class="navbar-toggler" type="button" aria-label="Show the harbor menu"><span class="navbar-toggler-icon"></span></button></nav>',
++			)
++			const toggler = requireValue(host.querySelector<HTMLElement>('.navbar-toggler'), 'No toggler')
++			readStyle(toggler, 'box-shadow')
++			toggler.focus()
++			return sampleTransition(toggler, 'box-shadow')
++		})
++		const base = requireValue(resting, 'No transition at the resting factor')
++		expect([base.duration, base.easing]).toEqual([150, 'ease-in-out'])
++		const slowed = requireValue(doubled, 'No transition at the doubled factor')
++		expect([slowed.duration / base.duration, slowed.easing]).toEqual([2, 'ease-in-out'])
++		expect(zeroed).toBeUndefined()
++	})
++
+ 	it('drives the bar, link, text, and toggler insets from the density factor and leaves the brand inset fixed', () => {
+ 		const host = scene.mount(
+ 			`<nav class="navbar navbar-expand" data-bar="expanded">${NAVBAR_MARKUP}</nav><nav class="navbar" data-bar="collapsed">${NAVBAR_MARKUP}</nav>`,
+diff --git a/tests/src/styles/components/pagination.test.ts b/tests/src/styles/components/pagination.test.ts
+index 000ea5d..7a0655e 100644
+--- a/tests/src/styles/components/pagination.test.ts
++++ b/tests/src/styles/components/pagination.test.ts
+@@ -18,7 +18,9 @@ import {
+ 	collectLayer,
+ 	collectMediaConditions,
+ 	mountPagination,
++	sampleTransition,
+ 	scene,
++	sweepMotionFactor,
+ } from '../../../setupBrowser.js'
+ import {
+ 	extractShadowLayers,
+@@ -391,4 +393,34 @@ describe('pagination classes', () => {
+ 		expect([...declarations].filter((name) => !name.startsWith('transition-'))).toEqual([])
+ 		expect(declarations.getPropertyValue('transition-property')).toBe('none')
+ 	})
++
++	// The mutation this catches is the release's literal duration written where the motion factor
++	// scales it: the reading is each transition the browser starts as a page takes focus and the
++	// active class together, at the resting, the doubled, and the zero factor. The border color is
++	// read on its top side, the longhand the browser runs. The doubled durations are read as ratios
++	// to the resting ones, and a zero factor starts no transition, which a literal duration still
++	// would.
++	it('runs the page paint and ring over the release duration and curve at the resting motion factor, twice as long at a doubled factor, and not at all at a zero factor', () => {
++		const properties = ['color', 'background-color', 'border-top-color', 'box-shadow']
++		const [resting = [], doubled = [], zeroed = []] = sweepMotionFactor(() => {
++			const list = mountPagination(
++				'<li class="page-item"><a class="page-link" href="#ledger-2">2</a></li>',
++			)
++			const link = requireValue(list.querySelector<HTMLElement>('.page-link'), 'No page link')
++			readStyle(link, 'color')
++			link.focus()
++			link.classList.add('active')
++			return properties.map((property) => sampleTransition(link, property))
++		})
++		expect(resting.map((sample) => [sample?.duration, sample?.easing])).toEqual(
++			properties.map(() => [150, 'ease-in-out']),
++		)
++		expect(
++			doubled.map((sample, index) => [
++				(sample?.duration ?? Number.NaN) / (resting[index]?.duration ?? Number.NaN),
++				sample?.easing,
++			]),
++		).toEqual(properties.map(() => [2, 'ease-in-out']))
++		expect(zeroed).toEqual(properties.map(() => undefined))
++	})
+ })
+diff --git a/tests/src/styles/components/progress.test.ts b/tests/src/styles/components/progress.test.ts
+index b6cc224..28218c1 100644
+--- a/tests/src/styles/components/progress.test.ts
++++ b/tests/src/styles/components/progress.test.ts
+@@ -10,7 +10,13 @@ import {
+ 	stageMedia,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { collectLayer, collectMediaConditions, scene } from '../../../setupBrowser.js'
++import {
++	collectLayer,
++	collectMediaConditions,
++	sampleTransition,
++	scene,
++	sweepMotionFactor,
++} from '../../../setupBrowser.js'
+ import {
+ 	normalizeComplexSelector,
+ 	parseMediaWidth,
+@@ -194,6 +200,45 @@ describe('progress classes', () => {
+ 		])
+ 	})
+ 
++	// The mutation this catches is the release's literal duration written where the motion factor
++	// scales it: the reading is the width transition the browser starts as the bar's width moves, at
++	// the resting, the doubled, and the zero factor. The doubled duration is read as a ratio to the
++	// resting one, and a zero factor starts no transition, which a literal duration still would.
++	it('runs the bar width over the release duration and curve at the resting motion factor, twice as long at a doubled factor, and not at all at a zero factor', () => {
++		const [resting, doubled, zeroed] = sweepMotionFactor(() => {
++			const host = scene.mount(
++				'<div class="progress" role="progressbar" aria-label="Parcel upload" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: 25%"></div></div>',
++			)
++			const bar = requireValue(host.querySelector<HTMLElement>('.progress-bar'), 'No bar')
++			readStyle(bar, 'width')
++			bar.style.width = '75%'
++			return sampleTransition(bar, 'width')
++		})
++		const base = requireValue(resting, 'No transition at the resting factor')
++		expect([base.duration, base.easing]).toEqual([600, 'ease'])
++		const slowed = requireValue(doubled, 'No transition at the doubled factor')
++		expect([slowed.duration / base.duration, slowed.easing]).toEqual([2, 'ease'])
++		expect(zeroed).toBeUndefined()
++	})
++
++	// The mutation this catches is the motion factor read on the track rather than in the tokens: a
++	// factor the track reads itself follows a wrapper that sets it alone, while the feedback token
++	// carries the value the root substituted into every subtree. The reading is the width transition
++	// the browser starts as the bar's width moves inside a wrapper declaring a doubled factor, beside
++	// the same move in a wrapper declaring none.
++	it('keeps the bar width at the root duration inside a subtree that sets the motion factor alone', () => {
++		const durations = ['', `${TOKEN_NAMES.factor.motion}: 2`].map((style) => {
++			const host = scene.mount(
++				`<div style="${style}"><div class="progress" role="progressbar" aria-label="Manifest upload" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: 25%"></div></div></div>`,
++			)
++			const bar = requireValue(host.querySelector<HTMLElement>('.progress-bar'), 'No bar')
++			readStyle(bar, 'width')
++			bar.style.width = '75%'
++			return requireValue(sampleTransition(bar, 'width'), 'No width transition').duration
++		})
++		expect(durations).toEqual([600, 600])
++	})
++
+ 	// The mutation this catches is an animation the preference leaves running: the reading is taken
+ 	// from the timeline rather than from the declaration, so an animation the browser never started
+ 	// reports as absent rather than as declared.

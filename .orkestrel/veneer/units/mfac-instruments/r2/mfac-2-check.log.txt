@@ -1,0 +1,32 @@
++ npm run check
+loadavg=14.70 14.61 11.09 1/127 17708
+
+> @orkestrel/veneer@0.0.1 check
+> tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app
+
+
+> @orkestrel/veneer@0.0.1 check:src
+> npm run check:src:core && npm run check:src:browser && npm run check:src:styles
+
+
+> @orkestrel/veneer@0.0.1 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/veneer@0.0.1 check:src:browser
+> tsc --noEmit -p configs/src/tsconfig.browser.json
+
+
+> @orkestrel/veneer@0.0.1 check:src:styles
+> tsc --noEmit -p configs/src/tsconfig.styles.json
+
+
+> @orkestrel/veneer@0.0.1 check:app
+> npm run check:app:browser
+
+
+> @orkestrel/veneer@0.0.1 check:app:browser
+> vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+
+exit=0
+10.20 13.56 10.84 2/128 18220

@@ -1,0 +1,8 @@
++ ./node_modules/.bin/oxfmt --config .oxfmtrc.json --check guides/veneer.md src/styles/components/_form-floating.scss src/styles/components/_progress.scss src/styles/components/_nav.scss src/styles/components/_pagination.scss src/styles/components/_navbar.scss src/styles/components/_accordion.scss tests/src/styles/components/form-floating.test.ts tests/src/styles/components/progress.test.ts tests/src/styles/components/nav.test.ts tests/src/styles/components/pagination.test.ts tests/src/styles/components/navbar.test.ts tests/src/styles/components/accordion.test.ts tests/src/styles/components/fade.test.ts tests/setupBrowser.ts tests/setupBrowser.test.ts
+loadavg=17.14 15.01 11.14 4/550 17565
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 16806ms on 16 files using 4 threads.
+exit=0
+14.70 14.61 11.09 1/127 17706

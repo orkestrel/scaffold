@@ -1,0 +1,8 @@
++ npm run lint:check
+loadavg=10.20 13.56 10.84 1/128 18222
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+exit=0
+9.94 13.45 10.82 1/128 18255

@@ -1,0 +1,93 @@
+loadavg=14.38 13.96 10.44 14/568 16850
+file=tests/setupBrowser.ts sha256-before=efb15d6ad502d63b8308eb859f08518d42344409e043098f447c608ba9c42a42
+planted-diff:
+1995,1996d1994
+< 			if (value === '') style.removeProperty(name)
+< 			else style.setProperty(name, value, priority)
++ npx vitest run --config vite.config.ts --no-cache --project setup:browser tests/setupBrowser.test.ts -t sweepMotionFactor
+
+ RUN  v4.1.11 /home/user/veneer-mfac
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.fileURLToPath" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.existsSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.readFileSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "fs" has been externalized for browser compatibility. Cannot access "fs.realpathSync" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.isAbsolute" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.join" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.dirname" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.relative" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.resolve" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "path" has been externalized for browser compatibility. Cannot access "path.sep" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapConsumer" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "source-map-js" has been externalized for browser compatibility. Cannot access "source-map-js.SourceMapGenerator" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+7:12:48 AM [vite] (client) [console.warn] Module "url" has been externalized for browser compatibility. Cannot access "url.pathToFileURL" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+ ❯ |setup:browser (chromium)| tests/setupBrowser.test.ts (94 tests | 2 failed | 92 skipped) 9385ms
+     × runs the drive at the resting, doubled, and zero motion factor on the document element, and clears the factor and the scene after each 9378ms
+     × restores the factor and priority the document element held, and clears the scene, after a drive that returns and after one that throws 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:2041:2 > sweepMotionFactor > runs the drive at the resting, doubled, and zero motion factor on the document element, and clears the factor and the scene after each
+AssertionError: expected '0' to be '' // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[31m+ 0[39m
+
+ ❯ tests/setupBrowser.test.ts:2074:60
+    2072|   expect([doubled, zeroed]).toEqual([base * 2, undefined])
+    2073|   expect(readings.map((reading) => reading.control)).toEqual([150, 150…
+    2074|   expect(style.getPropertyValue(TOKEN_NAMES.factor.motion)).toBe('')
+       |                                                            ^
+    2075|   expect(hosts.map((host) => host.isConnected)).toEqual([false, false,…
+    2076|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:2082:2 > sweepMotionFactor > restores the factor and priority the document element held, and clears the scene, after a drive that returns and after one that throws
+AssertionError: expected [ '0', '' ] to deeply equal [ '3', 'important' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "3",[39m
+[32m-   "important",[39m
+[31m+   "0",[39m
+[31m+   "",[39m
+[2m  ][22m
+
+ ❯ tests/setupBrowser.test.ts:2090:74
+    2088|   })
+    2089|   expect(sweepMotionFactor(() => style.getPropertyValue(name))).toEqua…
+    2090|   expect([style.getPropertyValue(name), style.getPropertyPriority(name…
+       |                                                                          ^
+    2091|    '3',
+    2092|    'important',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 92 skipped (94)
+   Start at  07:12:30
+   Duration  26.96s (transform 0ms, setup 1.42s, import 2.43s, tests 9.38s, environment 0ms)
+
+exit=1
+sha256-after=efb15d6ad502d63b8308eb859f08518d42344409e043098f447c608ba9c42a42
+restored=identical
