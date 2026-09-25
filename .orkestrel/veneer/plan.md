@@ -74,9 +74,9 @@ session's side of it.
 
 ## Intersession state
 
-**Marker.** Read 2026-09-25 06:15 UTC: Veneer `origin/main` `b613ae4` (this session's E-ID-MOTION-FADE and STATES
-landing over your `3058570`); scaffold `origin/main` `ff87083a`. Your `engine/plan.md` § Intersession state is read at
-`a2256ea9`; its marker reads 04:12 UTC.
+**Marker.** Read 2026-09-25 06:40 UTC: Veneer `origin/main` `73326c7` (this session's LEDGER-ADDITIONS landing merged
+over your J-MOTION-PROOFS-A `1290162`); scaffold `origin/main` at your `5c718fdd`. Your `engine/plan.md` § Intersession
+state is read at `5c718fdd`.
 
 **Note to the engine session (2026-09-25 06:15 UTC; read this first).** This session is the styles session; it never
 touches `src/browser/**`, `src/core/**`, `tests/src/browser/**`, `tests/src/core/**`, or the guide's `## Engine`
@@ -86,10 +86,19 @@ sections.
   `ease-out` at `150ms`. `tests/setupBrowser.ts` gains `sampleTransition` and `readCentre`; merge them by hunk beside
   your `readDuration`. The chain read every gate green, `src:browser` with no red outside the `0865c67` baseline and
   both journeys at 252 passed (`units/eid-landing/logs/eid-land-7-summary.log.txt`).
-- **LEDGER-ADDITIONS is in its landing chain** (`f855924`, with the guide merge `2d3224b`). It changes
-  `tests/setupServer.ts`, `tests/setupServer.test.ts`, and `tests/conformance.test.ts`: `Addition` gains a `value`
-  member, the ledger gains `unattributed`, and `collectAttributionClasses` reads the classes inside `:is()` and
-  `:where()` arguments. Your J-ORACLE landing merges these by hunk if it lands second (D49).
+- **LEDGER-ADDITIONS is on `main`** (`f855924`, guide merge `2d3224b`, fold `809504c`, merged over your
+  J-MOTION-PROOFS-A as `73326c7`; the merged tree read `test:conformance`, `test:setup`, `setup:browser`, and
+  `app:browser` green). It changes `tests/setupServer.ts`, `tests/setupServer.test.ts`, and `tests/conformance.test.ts`:
+  `Addition` gains a `value` member, the ledger gains `unattributed`, and `collectAttributionClasses` reads the classes
+  inside `:is()` and `:where()` arguments. Your J-ORACLE-RECORD landing merges these by hunk (D49).
+- **LEDGER-RETUNE is writing** from `73326c7`, in the same three files: `retuned` joins `Departure`, `declared` becomes
+  `restated`, a Chromium resolver decides each departure pair, the ledger gates canonical values, and a witness scan
+  names each `bootstrap` token no row witnesses. It launches Chromium through the same `chromium.launch` your oracle
+  recorder uses. Whichever of it and J-ORACLE-RECORD lands second merges the other by hunk.
+- **E-ID-MOTION-MODAL is writing** from `73326c7`, now that J-MOTION-PROOFS-A holds E32 for Modal and Backdrop: the
+  dialog enters from `scale(0.96)` over `--vn-motion-panel` on `--vn-ease-panel`, and the host fade and both backdrops
+  move opacity over `--vn-motion-panel` on `--vn-ease-out` through the one `overlay-backdrop` mixin. Its acceptance
+  runs your `Modal`, `Backdrop`, and `Offcanvas` proofs and `npm run test:app`, per your completion-timing rule.
 - **E-ID-BUTTON-CLASSES round 2 closes your third Chromium 153 row in its shape.** Every `.btn` form and every
   button-reboot class now compares the Veneer map of button-versus-anchor differences with the release's map, read in
   the same browser (`readFormDifferences` in `tests/setupBrowser.ts`). A plant that moves a default in both cascades
@@ -111,17 +120,17 @@ sections.
   the `src/core/constants.ts` hunk here for your unit. This session runs the Chromium 141 readings J-PLACEMENT-141 asks
   for.
 
-**In flight (this session), 2026-09-25 06:15 UTC.** Implementation and its audit first, the user's instruction.
-- **Landing:** LEDGER-ADDITIONS (checker PASS, `lad-4-checker-verdict.md`).
-- **Audits:** TOKEN-PROOFS round 6 (`analyst` on Astra checks the Orchestrator's text, `tkp-audit-5-claims.md`);
-  E-ID-BUTTON-CLASSES round 2 (`analyst` on Astra and `reviewer` on Opus 5.5, `ebcl-audit-2-claims.md`);
-  E-ID-MOTION-REDUCED round 2 (`checker`, `mred-2-checker-brief.md`).
-- **Writing:** TAILWIND-RECIPE round 2 and E-ID-MOTION-FACTOR, each `opus` on Opus 5.5.
+**In flight (this session), 2026-09-25 06:40 UTC.** Implementation and its audit first, the user's instruction.
+- **Accepted, waiting to land:** E-ID-MOTION-REDUCED (`mred-2-checker-verdict.md`).
+- **Final checks:** E-ID-BUTTON-CLASSES round 3 (`analyst` on Astra on the refusal; `checker` PASS on the rename);
+  TOKEN-PROOFS round 7 (`analyst` on Astra sweeps every sentence about where an override stops); TAILWIND-RECIPE round
+  3 (`analyst` on Astra on the consumer-scan prose; `checker` on the moves).
+- **Writing:** E-ID-MOTION-FACTOR, E-ID-MOTION-MODAL, and LEDGER-RETUNE, each `opus` on Opus 5.5.
 
-**Next here, in order:** land TOKEN-PROOFS, E-ID-MOTION-REDUCED, and E-ID-BUTTON-CLASSES as their reads pass;
-TAILWIND-RECIPE's audit; E-ID-ANCHOR after E-ID-BUTTON-CLASSES lands; LEDGER-RETUNE after LEDGER-ADDITIONS lands;
-RM-RELEASE with the user's one-time code, then P1 SCAFFOLD-PROPAGATE and the ER-LINUX receipt; the motion panel units as
-your proofs land; IMPORTANT-EMIT after the user rules.
+**Next here, in order:** one landing for E-ID-MOTION-REDUCED, E-ID-BUTTON-CLASSES, TOKEN-PROOFS, and TAILWIND-RECIPE
+as their checks pass; E-ID-ANCHOR after E-ID-BUTTON-CLASSES lands; the audits of FACTOR, MODAL, and LEDGER-RETUNE;
+E-ID-MOTION-OFFCANVAS after MODAL lands; RM-RELEASE with the user's one-time code, then P1 SCAFFOLD-PROPAGATE and the
+ER-LINUX receipt; the remaining motion units as your J-MOTION-PROOFS-B and C land; IMPORTANT-EMIT after the user rules.
 
 **Waiting on the user:** the IMPORTANT-LAYER ruling, whether Chrome is installed and on which platform (ER-CHROME), and
 the one-time code for the scaffold release.

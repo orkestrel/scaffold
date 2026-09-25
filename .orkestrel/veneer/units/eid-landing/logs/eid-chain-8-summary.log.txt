@@ -1,0 +1,48 @@
+=== head 2d3224b
+=== format:check (06:07:26)
+=== format:check exit=0
+=== lint:check (06:07:44)
+=== lint:check exit=0
+=== check (06:07:46)
+=== check exit=0
+=== build:src (06:08:15)
+=== build:src exit=0
+=== test:src:styles (06:08:26)
+      Tests  1510 passed (1510)
+=== test:src:styles exit=0
+=== test:setup (06:11:05)
+      Tests  335 passed (335)
+=== test:setup exit=0
+=== test:conformance (06:11:24)
+      Tests  29 passed (29)
+=== test:conformance exit=0
+=== test:guides (06:11:57)
+=== test:guides exit=0
+=== test:policy (06:12:03)
+      Tests  109 passed | 1 skipped (110)
+=== test:policy exit=0
+=== src:browser against the 0865c67 baseline (06:12:07)
+=== src:browser exit=0;  Tests 1033 passed | 2 skipped (1035)
+=== src:browser: no red outside the baseline
+=== test:service (06:14:07)
+      Tests  21 passed (21)
+=== test:service exit=0
+=== build (06:14:31)
+=== build exit=0
+=== test:distribution (06:14:46)
+      Tests  13 passed | 5 skipped (18)
+=== test:distribution exit=0
+=== app:browser (06:15:05)
+      Tests  223 passed (223)
+=== app:browser exit=0
+=== setup:browser (06:15:51)
+      Tests  92 passed (92)
+=== setup:browser exit=0
+=== journey, CAPTURE=1 (06:16:20)
+      Tests  252 passed (252)
+=== journey, CAPTURE=1 exit=0
+=== journey, CAPTURE unset (06:24:50)
+      Tests  252 passed (252)
+=== journey, CAPTURE unset exit=0
+=== status after chain: [] (06:32:27)
+=== eid chain 8 done
