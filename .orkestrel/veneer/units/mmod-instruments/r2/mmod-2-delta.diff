@@ -1,0 +1,297 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2598,8 +2598,8 @@
+ 
+ The shipped cascade slides the panel through a `transform` transition of `0.3s`, and the
+ `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` token, so each wait lasts
+-as long as the longer of the two. Under reduced motion the cascade writes `transition: none` on both, and each call completes in
+-a microtask.
++as long as the longer of the two. Under reduced motion the cascade writes `transition: none` on
++both, and each call completes in a microtask.
+ 
+ Escape on the host hides the panel when `dismiss.escape` is `true`, and a press on the backdrop hides
+ it when `dismiss.backdrop` is `true`. When `dismiss.escape` is `false`, Escape on the shown panel
+@@ -5528,14 +5528,15 @@
+ treatment.
+ 
+ The backdrop is fixed across the viewport and paints the `--vn-palette-black-base` token. It is
+-transparent while it carries the `fade` class alone, and it paints at its `0.5` opacity when it
+-also carries the `show` class, which is the pair an engine writes as it fades the backdrop in. The
+-fade moves the opacity from `0` to `0.5` over the `--vn-motion-panel` token on the `--vn-ease-out`
+-curve, the host's own timing, in place of the `.fade` rule's feedback duration, and it paints no
+-blur. The `overlay-backdrop` mixin in the `src/styles/_mixins.scss` file writes that treatment from
+-the stacking level, the fill, and the opacity it is given, and writes the fade's transition on the
+-`.modal-backdrop.fade` compound through the `transition` mixin, so the offcanvas backdrop takes the
+-same motion and neither backdrop moves under the reduced-motion preference.
++transparent while it carries the `fade` class alone, and it paints at its `0.5` opacity when it also
++carries the `show` class, which is the pair an engine writes as it fades the backdrop in. The fade
++moves the opacity from `0` to `0.5` over the `--vn-motion-panel` token on the `--vn-ease-out` curve
++in place of the `.fade` rule's feedback duration, and it paints no blur. The `overlay-backdrop`
++mixin in the `src/styles/_mixins.scss` file writes that treatment from the stacking level, the fill,
++and the opacity it is given, and writes the fade's transition on the backdrop's `.fade` compound
++through the `transition` mixin, so the backdrop runs no transition under the reduced-motion
++preference. The offcanvas backdrop includes the same mixin, so it takes the same motion and runs no
++transition under that preference either.
+ 
+ The `.modal` rule sets the `--bs-modal-zindex` variable to the `--vn-stack-dialog-base` token and
+ applies it as the modal's `z-index` property. The `.modal-backdrop` rule sets the
+@@ -5550,14 +5551,14 @@
+ transforms the dialog over the `--vn-motion-panel` token on the `--vn-ease-panel` curve, Elements'
+ panel motion, so the duration resolves to `250ms` at a factor of `1` and rescales with the
+ `--vn-factor-motion` factor. The `modal-static` class, which an engine sets for a moment when a
+-dialog refuses to close, scales the dialog to a `1.02` factor on the same transition, so the bounce
++dialog refuses to close, grows the dialog to a `1.02` scale on the same transition, so the bounce
+ takes the same timing. The modal host fades its opacity over the `--vn-motion-panel` token on the
+ `--vn-ease-out` curve in place of the `.fade` rule's feedback duration, so the host and the dialog
+ settle together: the `.modal` rule writes that transition, and it outranks the `.fade` rule because
+-the barrel loads the modal partial after the fade partial at one specificity. A modal without the
+-`fade` class holds its opacity, so no transition runs on it. The `transition` mixin writes the
+-dialog's move and the host's fade, so each resolves to no transition under the reduced-motion
+-preference.
++the two rules tie on specificity in the `components` layer and the barrel loads the modal partial
++after the fade partial. On a modal without the `fade` class, an engine writes no opacity, so no
++transition runs as the engine shows or hides that modal. The `transition` mixin writes the dialog's
++move and the host's fade, so each resolves to no transition under the reduced-motion preference.
+ 
+ Each fullscreen class fills the viewport with the dialog, drops the content's edge and corners, and
+ scrolls the body. The `.modal-fullscreen` class does so at every width, and each
+@@ -5980,11 +5981,11 @@
+ browser: the written selectors, each placement's edge, span, border, and slide, the shown state
+ beside the engine's showing and hiding classes, the stacking levels and a retuned rung, the backdrop
+ fading and shown and its fade under each motion factor and the reduced-motion preference, each
+-responsive panel one pixel below its breakpoint, at it, and one pixel above
+-it, the bare panel at every width, an important background utility over the inline and the fixed
+-`.offcanvas-lg` panel, the header's close control beside a control outside the header, the title and
+-the body, the density factor, the light and dark modes, the transition under the staged
+-reduced-motion preference, and a shown and a resting panel inside each expanded navbar step.
++responsive panel one pixel below its breakpoint, at it, and one pixel above it, the bare panel at
++every width, an important background utility over the inline and the fixed `.offcanvas-lg` panel,
++the header's close control beside a control outside the header, the title and the body, the density
++factor, the light and dark modes, the transition under the staged reduced-motion preference, and a
++shown and a resting panel inside each expanded navbar step.
+ 
+ ### Placeholder classes
+ 
+@@ -10595,7 +10596,7 @@
+ | `modal`        | `.modal { transition }`                                                                   | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+ | `modal`        | `.modal-backdrop.fade { transition }`                                                     | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop on the panel timing the modal host fades on, in place of the shared `.fade` rule's feedback timing.                                                                             |
+ | `modal`        | `.modal-backdrop.fade { transition }`                                                     | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+-| `offcanvas`    | `.offcanvas-backdrop.fade { transition }`                                                 | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop on the panel timing the modal host fades on, in place of the shared `.fade` rule's feedback timing.                                                                             |
++| `offcanvas`    | `.offcanvas-backdrop.fade { transition }`                                                 | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` duration on the `--vn-ease-out` curve, in place of the shared `.fade` rule's feedback timing.                                                      |
+ | `offcanvas`    | `.offcanvas-backdrop.fade { transition }`                                                 | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+ 
+ ### Outside the ledger
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -623,9 +623,9 @@
+ // Paints the viewport-sized backdrop a modal or an offcanvas panel places behind itself, at the
+ // `$zindex` stack rung in `$color`, transparent while it carries `fade` alone and at `$opacity`
+ // after the engine adds `show`, as the release writes its shared backdrop. A fading backdrop moves
+-// its opacity over the panel duration on the ease-out curve, the timing the modal host fades on, in
+-// place of the shared `.fade` rule's feedback duration; the compound outranks that rule, and a
+-// backdrop without the `fade` class takes no transition, as the release's backdrop takes none.
++// its opacity over the `--vn-motion-panel` duration on the `--vn-ease-out` curve in place of the
++// shared `.fade` rule's feedback duration; the compound outranks that rule, and a backdrop without
++// the `fade` class takes no transition, as the release's backdrop takes none.
+ @mixin overlay-backdrop($zindex, $color, $opacity) {
+ 	position: fixed;
+ 	top: 0;
+--- a/src/styles/components/_modal.scss
++++ b/src/styles/components/_modal.scss
+@@ -50,8 +50,8 @@
+ 		// The host fades on the panel duration beside its dialog in place of the shared `.fade` rule's
+ 		// feedback duration, so the host and the dialog settle together. The barrel loads this partial
+ 		// after the fade partial, and the two rules tie on specificity, so this transition wins on a
+-		// modal carrying the `fade` class. A modal without that class holds its opacity, so the
+-		// transition runs on no other modal.
++		// modal carrying the `fade` class. On a modal without that class, an engine writes no opacity,
++		// so no transition runs as the engine shows or hides that modal.
+ 		@include transition(opacity var(--vn-motion-panel) var(--vn-ease-out));
+ 	}
+ 
+--- a/tests/src/styles/components/modal.test.ts
++++ b/tests/src/styles/components/modal.test.ts
+@@ -478,9 +478,10 @@
+ 	// The mutations this catches are the entrance written as the release's `translate(0, -50px)`
+ 	// offset and its `0.3s ease-out` timing, read where the browser runs the move rather than where
+ 	// the rule declares it: a literal offset reports its matrix at the start, and a literal duration
+-	// or curve disagrees with the panel tokens resolved on a specimen, a second reading that could
+-	// disagree with it. The frame halfway through sits past the linear halfway scale in the direction
+-	// of travel, which only a decelerating curve produces.
++	// or curve disagrees with the panel duration and curve a specimen resolves from the tokens apart
++	// from the dialog's rule. A dialog left without its transition samples none, which the presence
++	// assertion reports before any reading. The frame halfway through sits past the linear halfway
++	// scale in the direction of travel, which only a decelerating curve produces.
+ 	it('enters the dialog from a 0.96 scale to none over the panel duration on the panel curve as the show class joins, and leaves on the same timing', () => {
+ 		const specimen = requireValue(
+ 			scene.mount(
+@@ -499,7 +500,9 @@
+ 		const entrance = 'matrix(0.96, 0, 0, 0.96, 0, 0)'
+ 		expect(readStyle(dialog, 'transform')).toBe(entrance)
+ 		modal.classList.add('show')
+-		const entering = requireValue(sampleTransition(dialog, 'transform'), 'No entering transition')
++		const entry = sampleTransition(dialog, 'transform')
++		expect(entry).toBeDefined()
++		const entering = requireValue(entry, 'No entering transition')
+ 		expect(dialog.getAnimations()).toEqual([entering.transition])
+ 		expect([entering.duration, entering.easing, entering.start]).toEqual([panel, curve, entrance])
+ 		const growing = new DOMMatrix(entering.midpoint)
+@@ -510,7 +513,9 @@
+ 		entering.transition.finish()
+ 		expect(readStyle(dialog, 'transform')).toBe('none')
+ 		modal.classList.remove('show')
+-		const leaving = requireValue(sampleTransition(dialog, 'transform'), 'No leaving transition')
++		const exit = sampleTransition(dialog, 'transform')
++		expect(exit).toBeDefined()
++		const leaving = requireValue(exit, 'No leaving transition')
+ 		expect([leaving.duration, leaving.easing]).toEqual([panel, curve])
+ 		leaving.transition.finish()
+ 		expect(readStyle(dialog, 'transform')).toBe(entrance)
+@@ -519,7 +524,9 @@
+ 	// The mutation this catches is the static bounce written on a timing of its own, or on the
+ 	// release's `0.3s ease-out`: the bounce an engine gives a dialog that refuses to close runs on the
+ 	// dialog's own transition, so it grows from the settled dialog to the `1.02` scale over the panel
+-	// duration on the panel curve, and it settles there while the class stays.
++	// duration on the panel curve, and it settles there while the class stays. A dropped static rule
++	// or a dialog left without its transition starts no bounce, which the presence assertion reports
++	// before any reading.
+ 	it('bounces a shown dialog to a 1.02 scale over the panel duration on the panel curve as the static class joins', () => {
+ 		const specimen = requireValue(
+ 			scene.mount(
+@@ -537,7 +544,9 @@
+ 		const dialog = requireValue(modal.firstElementChild, 'No dialog')
+ 		expect(readStyle(dialog, 'transform')).toBe('none')
+ 		modal.classList.add('modal-static')
+-		const bouncing = requireValue(sampleTransition(dialog, 'transform'), 'No bounce transition')
++		const bounce = sampleTransition(dialog, 'transform')
++		expect(bounce).toBeDefined()
++		const bouncing = requireValue(bounce, 'No bounce transition')
+ 		expect([bouncing.duration, bouncing.easing]).toEqual([panel, curve])
+ 		expect(new DOMMatrix(bouncing.start).a).toBe(1)
+ 		const midpoint = new DOMMatrix(bouncing.midpoint).a
+@@ -585,7 +594,8 @@
+ 		expect([hiding.duration, hiding.easing, hiding.start]).toEqual([panel, curve, '1'])
+ 		hiding.transition.finish()
+ 		expect(readStyle(modal, 'opacity')).toBe('0')
+-		// A modal without the `fade` class holds its opacity, so the host's transition runs on none.
++		// A modal without the `fade` class holds its opacity as the `show` class joins, so no transition
++		// runs on it.
+ 		const plain = requireValue(
+ 			scene.mount('<div class="modal d-block"><div class="modal-dialog"></div></div>')
+ 				.firstElementChild,
+@@ -602,7 +612,9 @@
+ 	// and the backdrop as an engine shows them, and the doubled reading is compared with the resting
+ 	// one of the same element as a ratio. A zero factor starts no transition, because the browser
+ 	// starts none at a zero duration, and each element is read at rest after the change, so a change
+-	// that landed with nothing running reads as the shown value.
++	// that landed with nothing running reads as the shown value. An element left without its
++	// transition samples none at the resting or the doubled factor, which the presence assertions
++	// report before any ratio is read.
+ 	it('doubles the running duration of the host, the dialog, and the backdrop at a doubled motion factor, and runs none at a zero factor or under the reduced-motion preference', async () => {
+ 		const readings: Array<ReadonlyArray<readonly [number | undefined, string]>> = []
+ 		const conditions = [
+@@ -640,6 +652,8 @@
+ 		}
+ 		const settled = ['1', 'none', MODAL_GEOMETRY.opacity]
+ 		const [resting, doubled, stopped, still] = readings
++		expect(resting?.map(([duration]) => duration)).not.toContain(undefined)
++		expect(doubled?.map(([duration]) => duration)).not.toContain(undefined)
+ 		const base = requireValue(resting, 'No resting reading').map(([duration]) =>
+ 			requireValue(duration, 'No transition at the resting factor'),
+ 		)
+--- a/tests/src/styles/components/offcanvas.test.ts
++++ b/tests/src/styles/components/offcanvas.test.ts
+@@ -133,11 +133,14 @@
+ 	// The mutations this catches are the backdrop left on the shared `.fade` rule's feedback timing,
+ 	// a duration written as a literal, and a transition written without the `transition` mixin. The
+ 	// offcanvas backdrop takes its motion from the `overlay-backdrop` mixin the modal backdrop shares,
+-	// so the reading is the transition the browser runs on it as an engine adds the `show` class:
+-	// the panel duration and the ease-out curve resolved on a specimen, from transparent toward the
+-	// release opacity with no blur, a doubled duration at a doubled motion factor read as a ratio,
+-	// and no transition at a zero factor or under the reduced-motion preference.
+-	it('fades the backdrop in over the panel duration on the ease-out curve, rescaled by the motion factor and still under the reduced-motion preference', async () => {
++	// so each reading is the transition the browser runs on it as an engine adds the `show` class,
++	// beside the opacity it holds before the class joins and the opacity it settles at after. The
++	// resting reading is compared with the panel duration and the ease-out curve resolved on a
++	// specimen, the doubled duration with the panel duration as a ratio, and a zero factor or the
++	// reduced-motion preference starts no transition, so its duration, easing, and midpoint read as
++	// absent while the backdrop still lands at its shown opacity. The filters are read in their own
++	// collection, and the backdrop paints no blur under any condition.
++	it('fades the backdrop in over the panel duration on the ease-out curve, doubles it at a doubled motion factor, and runs none at a zero factor or under the reduced-motion preference', async () => {
+ 		const specimen = requireValue(
+ 			scene.mount(
+ 				`<div style="transition: opacity var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.out})"></div>`,
+@@ -146,7 +149,14 @@
+ 		)
+ 		const panel = readDuration(specimen)
+ 		const curve = readStyle(specimen, 'transition-timing-function')
+-		const readings: Array<readonly [number | undefined, string, string]> = []
++		const readings: Array<{
++			readonly hidden: string
++			readonly duration: number | undefined
++			readonly easing: string | undefined
++			readonly midpoint: string | undefined
++			readonly settled: string
++		}> = []
++		const filters: Array<readonly [string, string]> = []
+ 		const conditions = [
+ 			{ factor: '1', reduced: false },
+ 			{ factor: '2', reduced: false },
+@@ -167,35 +177,36 @@
+ 			const hidden = readStyle(backdrop, 'opacity')
+ 			backdrop.classList.add('show')
+ 			const sample = sampleTransition(backdrop, 'opacity')
+-			readings.push([sample?.duration, sample?.easing ?? hidden, sample?.midpoint ?? hidden])
+ 			sample?.transition.finish()
+-			readings.push([
+-				undefined,
+-				readStyle(backdrop, 'opacity'),
+-				`${readStyle(backdrop, 'backdrop-filter')} ${readStyle(backdrop, 'filter')}`,
+-			])
++			readings.push({
++				hidden,
++				duration: sample?.duration,
++				easing: sample?.easing,
++				midpoint: sample?.midpoint,
++				settled: readStyle(backdrop, 'opacity'),
++			})
++			filters.push([readStyle(backdrop, 'backdrop-filter'), readStyle(backdrop, 'filter')])
+ 			await releaseMedia()
+ 			scene.clear()
+ 		}
+ 		const opacity = OFFCANVAS_GEOMETRY.opacity
+-		const [showing, resting, doubling, doubled, ...rest] = readings
+-		expect(showing?.slice(0, 2)).toEqual([panel, curve])
+-		const midpoint = Number.parseFloat(requireValue(showing?.[2], 'No midpoint'))
++		const [resting, doubled, stopped, still] = readings
++		expect(readings.map(({ hidden, settled }) => [hidden, settled])).toEqual(
++			conditions.map(() => ['0', opacity]),
++		)
++		expect([resting?.duration, resting?.easing]).toEqual([panel, curve])
++		const midpoint = Number.parseFloat(requireValue(resting?.midpoint, 'No midpoint'))
+ 		expect(midpoint).toBeGreaterThan(Number.parseFloat(opacity) / 2)
+ 		expect(midpoint).toBeLessThan(Number.parseFloat(opacity))
+-		expect(requireValue(doubling?.[0], 'No transition at the doubled factor') / panel).toBe(2)
+-		expect([resting, doubled]).toEqual([
+-			[undefined, opacity, 'none none'],
+-			[undefined, opacity, 'none none'],
+-		])
+-		// A zero factor and the reduced-motion preference start nothing: the sample reads the hidden
+-		// opacity in place of an easing and a midpoint, and the backdrop lands at its shown opacity.
+-		expect(rest).toEqual([
+-			[undefined, '0', '0'],
+-			[undefined, opacity, 'none none'],
+-			[undefined, '0', '0'],
+-			[undefined, opacity, 'none none'],
++		expect(doubled?.easing).toBe(curve)
++		expect(requireValue(doubled?.duration, 'No transition at the doubled factor') / panel).toBe(2)
++		expect(
++			[stopped, still].map((reading) => [reading?.duration, reading?.easing, reading?.midpoint]),
++		).toEqual([
++			[undefined, undefined, undefined],
++			[undefined, undefined, undefined],
+ 		])
++		expect(filters).toEqual(conditions.map(() => ['none', 'none']))
+ 		expect(collectMediaConditions(collectLayer('components'), '.offcanvas-backdrop.fade')).toEqual([
+ 			REDUCED_MOTION,
+ 		])

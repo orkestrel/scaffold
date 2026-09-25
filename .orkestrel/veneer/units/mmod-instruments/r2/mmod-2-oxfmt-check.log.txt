@@ -1,0 +1,7 @@
++ ./node_modules/.bin/oxfmt --config .oxfmtrc.json --check guides/veneer.md src/styles/_mixins.scss src/styles/components/_modal.scss tests/src/styles/components/modal.test.ts tests/src/styles/components/offcanvas.test.ts tests/src/styles/mixins.test.ts
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 21634ms on 6 files using 4 threads.
+exit=0
+5.45 6.76 8.47 22/327 31415

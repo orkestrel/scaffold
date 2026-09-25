@@ -1,0 +1,780 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index c984662..ce1bb0c 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -2596,10 +2596,10 @@ end and before the call dispatched its completed event. A listener to the comple
+ or shows the panel starts a change of its own, so a hide a `shown.vn.offcanvas` hook completes
+ leaves the show's `true` in place. The `shown` property reads the `shown` token on every access.
+ 
+-The shipped cascade slides the panel through a `transform` transition of `0.3s`, and the fade
+-partial fades the backdrop through its `.fade` rule, so each wait lasts as long as the longer of the
+-two. Under reduced motion the cascade writes `transition: none` on both, and each call completes in
+-a microtask.
++The shipped cascade slides the panel through a `transform` transition of `0.3s`, and the
++`overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` token, so each wait lasts
++as long as the longer of the two. Under reduced motion the cascade writes `transition: none` on
++both, and each call completes in a microtask.
+ 
+ Escape on the host hides the panel when `dismiss.escape` is `true`, and a press on the backdrop hides
+ it when `dismiss.backdrop` is `true`. When `dismiss.escape` is `false`, Escape on the shown panel
+@@ -5528,10 +5528,15 @@ class, so a close control in the body keeps its own box. § Close classes gives
+ treatment.
+ 
+ The backdrop is fixed across the viewport and paints the `--vn-palette-black-base` token. It is
+-transparent while it carries the `fade` class alone, and it paints at its `0.5` opacity when it
+-also carries the `show` class, which is the pair an engine writes as it fades the backdrop in. The
+-`overlay-backdrop` mixin in the `src/styles/_mixins.scss` file writes that treatment from the
+-stacking level, the fill, and the opacity it is given.
++transparent while it carries the `fade` class alone, and it paints at its `0.5` opacity when it also
++carries the `show` class, which is the pair an engine writes as it fades the backdrop in. The fade
++moves the opacity from `0` to `0.5` over the `--vn-motion-panel` token on the `--vn-ease-out` curve
++in place of the `.fade` rule's feedback duration, and it paints no blur. The `overlay-backdrop`
++mixin in the `src/styles/_mixins.scss` file writes that treatment from the stacking level, the fill,
++and the opacity it is given, and writes the fade's transition on the backdrop's `.fade` compound
++through the `transition` mixin, so the backdrop runs no transition under the reduced-motion
++preference. The offcanvas backdrop includes the same mixin, so it takes the same motion and runs no
++transition under that preference either.
+ 
+ The `.modal` rule sets the `--bs-modal-zindex` variable to the `--vn-stack-dialog-base` token and
+ applies it as the modal's `z-index` property. The `.modal-backdrop` rule sets the
+@@ -5541,12 +5546,19 @@ moves every modal, and a retuned backdrop rung moves every backdrop.
+ 
+ The `.modal-dialog-scrollable` class holds the dialog to the modal's height less its margins, and
+ the body scrolls between the header and the footer. The `.modal-dialog-centered` class centers the
+-dialog in the modal. A dialog inside a modal carrying the `fade` class rests at a `50px` offset
+-above its place, and it moves into place when the modal also carries the `show` class. The move
+-takes the release's literal `0.3s` duration, because no published motion token resolves to it, and
+-the `transition` mixin writes it, so the move resolves to no transition under the reduced-motion
+-preference. The `modal-static` class, which an engine sets for a moment when a dialog refuses to
+-close, scales the dialog to a `1.02` factor.
++dialog in the modal. A dialog inside a modal carrying the `fade` class rests at a `0.96` scale in
++its place, and it grows to its full size when the modal also carries the `show` class. The move
++transforms the dialog over the `--vn-motion-panel` token on the `--vn-ease-panel` curve, Elements'
++panel motion, so the duration resolves to `250ms` at a factor of `1` and rescales with the
++`--vn-factor-motion` factor. The `modal-static` class, which an engine sets for a moment when a
++dialog refuses to close, grows the dialog to a `1.02` scale on the same transition, so the bounce
++takes the same timing. The modal host fades its opacity over the `--vn-motion-panel` token on the
++`--vn-ease-out` curve in place of the `.fade` rule's feedback duration, so the host and the dialog
++settle together: the `.modal` rule writes that transition, and it outranks the `.fade` rule because
++the two rules tie on specificity in the `components` layer and the barrel loads the modal partial
++after the fade partial. On a modal without the `fade` class, an engine writes no opacity, so no
++transition runs as the engine shows or hides that modal. The `transition` mixin writes the dialog's
++move and the host's fade, so each resolves to no transition under the reduced-motion preference.
+ 
+ Each fullscreen class fills the viewport with the dialog, drops the content's edge and corners, and
+ scrolls the body. The `.modal-fullscreen` class does so at every width, and each
+@@ -5567,6 +5579,14 @@ These are the key's recorded departures.
+   `var(--vn-line-body)` value, which resolves to the same number.
+ - **The backdrop paints the black token.** The recorded `#000` value becomes the
+   `var(--vn-palette-black-base)` value, which holds the same bytes.
++- **The dialog enters on Elements' panel motion.** The release writes the `translate(0, -50px)`
++  entrance and the `transform 0.3s ease-out` transition; Veneer writes the `scale(0.96)` entrance and
++  the `transform var(--vn-motion-panel) var(--vn-ease-panel)` transition, which resolves to a
++  `250ms` duration on the `cubic-bezier(0.32, 0.72, 0, 1)` curve at a factor of `1`.
++
++The host's fade and the backdrop's fade are additions rather than departures, because the release
++writes no transition on the `.modal` rule or on the `.modal-backdrop.fade` compound; § Additions
++records each with its reduced-motion pair.
+ 
+ The showcase's Modal region renders a shown dialog over its backdrop, the static bounce, a
+ scrollable and a centered dialog, each dialog size, and each fullscreen class, each inside the
+@@ -5585,8 +5605,9 @@ them, each space slot and the density factor, the content's column and its paint
+ inside a dark island, the header's close control beside a control in the body and under a retune
+ of the header's inset, each dialog cap one pixel below and at each boundary, each fullscreen class
+ below and at its boundary, the centered and the scrollable dialogs, the entrance and the settled
+-dialog under the staged reduced-motion preference, the static bounce, and the backdrop's fading and
+-shown opacity.
++dialog as the browser runs its move, the static bounce on the same timing, the host's fade, each
++duration under a doubled and a zero motion factor and the staged reduced-motion preference, and the
++backdrop's fading and shown opacity and the fade between them.
+ 
+ ### Tooltip classes
+ 
+@@ -5883,8 +5904,10 @@ slides back past its edge. Under the `backdrop` option the script appends the ba
+ panel's parent carrying the `fade` class and then adds the `show` class. The `.offcanvas-backdrop`
+ rule covers the viewport from the corner of its containing block in the `--vn-palette-black-base`
+ token, transparent while it carries the `fade` class alone and at the release's `0.5` opacity after
+-the `show` class arrives. The `overlay-backdrop` mixin in the `src/styles/_mixins.scss` partial
+-writes that backdrop.
++the `show` class arrives. The fade between them moves the opacity over the `--vn-motion-panel`
++token on the `--vn-ease-out` curve, with no blur, as the modal backdrop's does. The
++`overlay-backdrop` mixin in the `src/styles/_mixins.scss` partial writes that backdrop and its
++fade, and § Modal classes states the motion both backdrops share.
+ 
+ Each panel class declares the `--bs-offcanvas-zindex` variable over the `--vn-stack-drawer-base`
+ token, and the fixed panel's `z-index` property reads that variable. The backdrop's `z-index`
+@@ -5957,11 +5980,12 @@ proof reads its inline state at the breakpoint instead.
+ The `tests/src/styles/components/offcanvas.test.ts` proof reads each resolved treatment in the
+ browser: the written selectors, each placement's edge, span, border, and slide, the shown state
+ beside the engine's showing and hiding classes, the stacking levels and a retuned rung, the backdrop
+-fading and shown, each responsive panel one pixel below its breakpoint, at it, and one pixel above
+-it, the bare panel at every width, an important background utility over the inline and the fixed
+-`.offcanvas-lg` panel, the header's close control beside a control outside the header, the title and
+-the body, the density factor, the light and dark modes, the transition under the staged
+-reduced-motion preference, and a shown and a resting panel inside each expanded navbar step.
++fading and shown and its fade under each motion factor and the reduced-motion preference, each
++responsive panel one pixel below its breakpoint, at it, and one pixel above it, the bare panel at
++every width, an important background utility over the inline and the fixed `.offcanvas-lg` panel,
++the header's close control beside a control outside the header, the title and the body, the density
++factor, the light and dark modes, the transition under the staged reduced-motion preference, and a
++shown and a resting panel inside each expanded navbar step.
+ 
+ ### Placeholder classes
+ 
+@@ -9790,43 +9814,45 @@ declaration.
+ 
+ #### `toast`
+ 
+-| Component | Selector           | Property                        | Condition | Bootstrap 5.3.8       | Veneer                                | Departure |
+-| --------- | ------------------ | ------------------------------- | --------- | --------------------- | ------------------------------------- | --------- |
+-| `toast`   | `.toast`           | `--bs-toast-zindex`             | —         | `1090`                | `var(--vn-stack-toast)`               | tokenized |
+-| `toast`   | `.toast`           | `--bs-toast-padding-x`          | —         | `0.75rem`             | `var(--vn-space-6)`                   | tokenized |
+-| `toast`   | `.toast`           | `--bs-toast-padding-y`          | —         | `0.5rem`              | `var(--vn-space-4)`                   | tokenized |
+-| `toast`   | `.toast`           | `--bs-toast-spacing`            | —         | `1.5rem`              | `var(--vn-gutter-x)`                  | tokenized |
+-| `toast`   | `.toast`           | `--bs-toast-font-size`          | —         | `0.875rem`            | `var(--vn-size-2)`                    | tokenized |
+-| `toast`   | `.toast-container` | `--bs-toast-zindex`             | —         | `1090`                | `var(--vn-stack-toast)`               | tokenized |
+-| `toast`   | `.toast-container` | `width`                         | —         | `-webkit-max-content` | `max-content`                         | declared  |
+-| `toast`   | `.toast-container` | `width`                         | —         | `-moz-max-content`    | `max-content`                         | declared  |
+-| `modal`   | `.modal`           | `--bs-modal-zindex`             | —         | `1055`                | `var(--vn-stack-dialog-base)`         | tokenized |
+-| `modal`   | `.modal`           | `--bs-modal-padding`            | —         | `1rem`                | `var(--vn-space-8)`                   | tokenized |
+-| `modal`   | `.modal`           | `--bs-modal-margin`             | —         | `0.5rem`              | `var(--vn-space-4)`                   | tokenized |
+-| `modal`   | `.modal`           | `--bs-modal-header-padding-x`   | —         | `1rem`                | `var(--vn-space-8)`                   | tokenized |
+-| `modal`   | `.modal`           | `--bs-modal-header-padding-y`   | —         | `1rem`                | `var(--vn-space-8)`                   | tokenized |
+-| `modal`   | `.modal`           | `--bs-modal-header-padding`     | —         | `1rem 1rem`           | `var(--vn-space-8) var(--vn-space-8)` | tokenized |
+-| `modal`   | `.modal`           | `--bs-modal-title-line-height`  | —         | `1.5`                 | `var(--vn-line-body)`                 | tokenized |
+-| `modal`   | `.modal`           | `--bs-modal-footer-gap`         | —         | `0.5rem`              | `var(--vn-space-4)`                   | tokenized |
+-| `modal`   | `.modal-backdrop`  | `--bs-backdrop-zindex`          | —         | `1050`                | `var(--vn-stack-dialog-backdrop)`     | tokenized |
+-| `modal`   | `.modal-backdrop`  | `--bs-backdrop-bg`              | —         | `#000`                | `var(--vn-palette-black-base)`        | tokenized |
+-| `tooltip` | `.tooltip`         | `--bs-tooltip-zindex`           | —         | `1080`                | `var(--vn-stack-hint)`                | tokenized |
+-| `tooltip` | `.tooltip`         | `--bs-tooltip-padding-x`        | —         | `0.5rem`              | `var(--vn-space-4)`                   | tokenized |
+-| `tooltip` | `.tooltip`         | `--bs-tooltip-padding-y`        | —         | `0.25rem`             | `var(--vn-space-2)`                   | tokenized |
+-| `tooltip` | `.tooltip`         | `--bs-tooltip-font-size`        | —         | `0.875rem`            | `var(--vn-size-2)`                    | tokenized |
+-| `tooltip` | `.tooltip`         | `font-weight`                   | —         | `400`                 | `var(--vn-weight-body)`               | tokenized |
+-| `tooltip` | `.tooltip`         | `line-height`                   | —         | `1.5`                 | `var(--vn-line-body)`                 | tokenized |
+-| `tooltip` | `.tooltip`         | `text-align`                    | —         | `left`                | `start`                               | declared  |
+-| `popover` | `.popover`         | `--bs-popover-zindex`           | —         | `1070`                | `var(--vn-stack-popover)`             | tokenized |
+-| `popover` | `.popover`         | `--bs-popover-font-size`        | —         | `0.875rem`            | `var(--vn-size-2)`                    | tokenized |
+-| `popover` | `.popover`         | `--bs-popover-header-padding-x` | —         | `1rem`                | `var(--vn-space-8)`                   | tokenized |
+-| `popover` | `.popover`         | `--bs-popover-header-padding-y` | —         | `0.5rem`              | `var(--vn-space-4)`                   | tokenized |
+-| `popover` | `.popover`         | `--bs-popover-header-font-size` | —         | `1rem`                | `var(--vn-size-3)`                    | tokenized |
+-| `popover` | `.popover`         | `--bs-popover-body-padding-x`   | —         | `1rem`                | `var(--vn-space-8)`                   | tokenized |
+-| `popover` | `.popover`         | `--bs-popover-body-padding-y`   | —         | `1rem`                | `var(--vn-space-8)`                   | tokenized |
+-| `popover` | `.popover`         | `font-weight`                   | —         | `400`                 | `var(--vn-weight-body)`               | tokenized |
+-| `popover` | `.popover`         | `line-height`                   | —         | `1.5`                 | `var(--vn-line-body)`                 | tokenized |
+-| `popover` | `.popover`         | `text-align`                    | —         | `left`                | `start`                               | declared  |
++| Component | Selector                    | Property                        | Condition | Bootstrap 5.3.8           | Veneer                                                  | Departure |
++| --------- | --------------------------- | ------------------------------- | --------- | ------------------------- | ------------------------------------------------------- | --------- |
++| `toast`   | `.toast`                    | `--bs-toast-zindex`             | —         | `1090`                    | `var(--vn-stack-toast)`                                 | tokenized |
++| `toast`   | `.toast`                    | `--bs-toast-padding-x`          | —         | `0.75rem`                 | `var(--vn-space-6)`                                     | tokenized |
++| `toast`   | `.toast`                    | `--bs-toast-padding-y`          | —         | `0.5rem`                  | `var(--vn-space-4)`                                     | tokenized |
++| `toast`   | `.toast`                    | `--bs-toast-spacing`            | —         | `1.5rem`                  | `var(--vn-gutter-x)`                                    | tokenized |
++| `toast`   | `.toast`                    | `--bs-toast-font-size`          | —         | `0.875rem`                | `var(--vn-size-2)`                                      | tokenized |
++| `toast`   | `.toast-container`          | `--bs-toast-zindex`             | —         | `1090`                    | `var(--vn-stack-toast)`                                 | tokenized |
++| `toast`   | `.toast-container`          | `width`                         | —         | `-webkit-max-content`     | `max-content`                                           | declared  |
++| `toast`   | `.toast-container`          | `width`                         | —         | `-moz-max-content`        | `max-content`                                           | declared  |
++| `modal`   | `.modal`                    | `--bs-modal-zindex`             | —         | `1055`                    | `var(--vn-stack-dialog-base)`                           | tokenized |
++| `modal`   | `.modal`                    | `--bs-modal-padding`            | —         | `1rem`                    | `var(--vn-space-8)`                                     | tokenized |
++| `modal`   | `.modal`                    | `--bs-modal-margin`             | —         | `0.5rem`                  | `var(--vn-space-4)`                                     | tokenized |
++| `modal`   | `.modal`                    | `--bs-modal-header-padding-x`   | —         | `1rem`                    | `var(--vn-space-8)`                                     | tokenized |
++| `modal`   | `.modal`                    | `--bs-modal-header-padding-y`   | —         | `1rem`                    | `var(--vn-space-8)`                                     | tokenized |
++| `modal`   | `.modal`                    | `--bs-modal-header-padding`     | —         | `1rem 1rem`               | `var(--vn-space-8) var(--vn-space-8)`                   | tokenized |
++| `modal`   | `.modal`                    | `--bs-modal-title-line-height`  | —         | `1.5`                     | `var(--vn-line-body)`                                   | tokenized |
++| `modal`   | `.modal`                    | `--bs-modal-footer-gap`         | —         | `0.5rem`                  | `var(--vn-space-4)`                                     | tokenized |
++| `modal`   | `.modal-backdrop`           | `--bs-backdrop-zindex`          | —         | `1050`                    | `var(--vn-stack-dialog-backdrop)`                       | tokenized |
++| `modal`   | `.modal-backdrop`           | `--bs-backdrop-bg`              | —         | `#000`                    | `var(--vn-palette-black-base)`                          | tokenized |
++| `modal`   | `.modal.fade .modal-dialog` | `transform`                     | —         | `translate(0, -50px)`     | `scale(0.96)`                                           | declared  |
++| `modal`   | `.modal.fade .modal-dialog` | `transition`                    | —         | `transform 0.3s ease-out` | `transform var(--vn-motion-panel) var(--vn-ease-panel)` | tokenized |
++| `tooltip` | `.tooltip`                  | `--bs-tooltip-zindex`           | —         | `1080`                    | `var(--vn-stack-hint)`                                  | tokenized |
++| `tooltip` | `.tooltip`                  | `--bs-tooltip-padding-x`        | —         | `0.5rem`                  | `var(--vn-space-4)`                                     | tokenized |
++| `tooltip` | `.tooltip`                  | `--bs-tooltip-padding-y`        | —         | `0.25rem`                 | `var(--vn-space-2)`                                     | tokenized |
++| `tooltip` | `.tooltip`                  | `--bs-tooltip-font-size`        | —         | `0.875rem`                | `var(--vn-size-2)`                                      | tokenized |
++| `tooltip` | `.tooltip`                  | `font-weight`                   | —         | `400`                     | `var(--vn-weight-body)`                                 | tokenized |
++| `tooltip` | `.tooltip`                  | `line-height`                   | —         | `1.5`                     | `var(--vn-line-body)`                                   | tokenized |
++| `tooltip` | `.tooltip`                  | `text-align`                    | —         | `left`                    | `start`                                                 | declared  |
++| `popover` | `.popover`                  | `--bs-popover-zindex`           | —         | `1070`                    | `var(--vn-stack-popover)`                               | tokenized |
++| `popover` | `.popover`                  | `--bs-popover-font-size`        | —         | `0.875rem`                | `var(--vn-size-2)`                                      | tokenized |
++| `popover` | `.popover`                  | `--bs-popover-header-padding-x` | —         | `1rem`                    | `var(--vn-space-8)`                                     | tokenized |
++| `popover` | `.popover`                  | `--bs-popover-header-padding-y` | —         | `0.5rem`                  | `var(--vn-space-4)`                                     | tokenized |
++| `popover` | `.popover`                  | `--bs-popover-header-font-size` | —         | `1rem`                    | `var(--vn-size-3)`                                      | tokenized |
++| `popover` | `.popover`                  | `--bs-popover-body-padding-x`   | —         | `1rem`                    | `var(--vn-space-8)`                                     | tokenized |
++| `popover` | `.popover`                  | `--bs-popover-body-padding-y`   | —         | `1rem`                    | `var(--vn-space-8)`                                     | tokenized |
++| `popover` | `.popover`                  | `font-weight`                   | —         | `400`                     | `var(--vn-weight-body)`                                 | tokenized |
++| `popover` | `.popover`                  | `line-height`                   | —         | `1.5`                     | `var(--vn-line-body)`                                   | tokenized |
++| `popover` | `.popover`                  | `text-align`                    | —         | `left`                    | `start`                                                 | declared  |
+ 
+ #### `transition`
+ 
+@@ -10566,6 +10592,12 @@ leaving both ledgers unread.
+ | `focus-ring`   | `.focus-ring:focus { outline }`                                                           | `@media (forced-colors: active)`                 | declaration | `var(--vn-focus-width) solid var(--vn-focus-highlight)`                                                                                                                                                                                                                                                                | Under forced colors the ring is drawn as a system-color outline, because the shadow it is drawn with elsewhere is not painted there.                                                                                            |
+ | `fs`           | `.fs-5 { font-size }`                                                                     | `@media (width >= 1200px)`                       | declaration | `var(--vn-size-4)`                                                                                                                                                                                                                                                                                                     | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.                                                        |
+ | `fs`           | `.fs-6 { font-size }`                                                                     | `@media (width >= 1200px)`                       | declaration | `var(--vn-size-3)`                                                                                                                                                                                                                                                                                                     | The responsive rule scales the size when a retune lifts it above 1.25rem, so the size caps at its token from 1200px; the release caps only the sizes its defaults scale.                                                        |
++| `modal`        | `.modal { transition }`                                                                   | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The modal host fades on Elements' panel timing beside its dialog in place of the shared `.fade` rule's feedback timing, so the host and the dialog settle together.                                                             |
++| `modal`        | `.modal { transition }`                                                                   | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
++| `modal`        | `.modal-backdrop.fade { transition }`                                                     | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop on the panel timing the modal host fades on, in place of the shared `.fade` rule's feedback timing.                                                                             |
++| `modal`        | `.modal-backdrop.fade { transition }`                                                     | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
++| `offcanvas`    | `.offcanvas-backdrop.fade { transition }`                                                 | —                                                | declaration | `opacity var(--vn-motion-panel) var(--vn-ease-out)`                                                                                                                                                                                                                                                                    | The `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` duration on the `--vn-ease-out` curve, in place of the shared `.fade` rule's feedback timing.                                                      |
++| `offcanvas`    | `.offcanvas-backdrop.fade { transition }`                                                 | `@media (prefers-reduced-motion: reduce)`        | declaration | `none`                                                                                                                                                                                                                                                                                                                 | The release declares no transition here, and the `transition` mixin writes this one with its reduced-motion pair.                                                                                                               |
+ 
+ ### Outside the ledger
+ 
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index 5c42799..75a0a7c 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -622,7 +622,10 @@
+ 
+ // Paints the viewport-sized backdrop a modal or an offcanvas panel places behind itself, at the
+ // `$zindex` stack rung in `$color`, transparent while it carries `fade` alone and at `$opacity`
+-// after the engine adds `show`, as the release writes its shared backdrop.
++// after the engine adds `show`, as the release writes its shared backdrop. A fading backdrop moves
++// its opacity over the `--vn-motion-panel` duration on the `--vn-ease-out` curve in place of the
++// shared `.fade` rule's feedback duration; the compound outranks that rule, and a backdrop without
++// the `fade` class takes no transition, as the release's backdrop takes none.
+ @mixin overlay-backdrop($zindex, $color, $opacity) {
+ 	position: fixed;
+ 	top: 0;
+@@ -634,6 +637,7 @@
+ 
+ 	&.fade {
+ 		opacity: 0;
++		@include transition(opacity var(--vn-motion-panel) var(--vn-ease-out));
+ 	}
+ 
+ 	&.show {
+diff --git a/src/styles/components/_modal.scss b/src/styles/components/_modal.scss
+index 3b9a6a0..ae3840b 100644
+--- a/src/styles/components/_modal.scss
++++ b/src/styles/components/_modal.scss
+@@ -2,7 +2,7 @@
+ 
+ @layer components {
+ 	// The modal ships Bootstrap's recorded surface. Every state is a class set in markup: the `show`
+-	// class settles the dialog, the `fade` class starts it from its entrance offset, and the
++	// class settles the dialog, the `fade` class starts it from its entrance scale, and the
+ 	// `modal-static` class is the bounce an engine gives a dialog that refuses to close. No rule here
+ 	// shows the modal: an engine writes its display inline, and the `.modal` rule keeps it hidden
+ 	// otherwise. No rule reads the `modal-open` class; an engine sets it on the document body while a
+@@ -47,6 +47,12 @@
+ 		overflow-x: hidden;
+ 		overflow-y: auto;
+ 		outline: 0;
++		// The host fades on the panel duration beside its dialog in place of the shared `.fade` rule's
++		// feedback duration, so the host and the dialog settle together. The barrel loads this partial
++		// after the fade partial, and the two rules tie on specificity, so this transition wins on a
++		// modal carrying the `fade` class. On a modal without that class, an engine writes no opacity,
++		// so no transition runs as the engine shows or hides that modal.
++		@include transition(opacity var(--vn-motion-panel) var(--vn-ease-out));
+ 	}
+ 
+ 	// The dialog lets the pointer through to the modal around it, so a press outside the content lands
+@@ -58,12 +64,14 @@
+ 		pointer-events: none;
+ 	}
+ 
+-	// The entrance offset and the move that settles it are written through the `transition` mixin, so
+-	// the move resolves to no transition under the reduced-motion preference. The duration is the
+-	// release's literal, because no published motion token resolves to the `0.3s` duration.
++	// The dialog enters on Elements' panel motion in place of the release's slide: a fading dialog
++	// rests at a `0.96` scale, and the `show` class grows it to its place over the panel duration on
++	// the panel curve. The static bounce runs on the same transition, so it takes the same timing.
++	// The `transition` mixin writes the move, so it resolves to no transition under the
++	// reduced-motion preference, and the duration reads the motion factor.
+ 	.modal.fade .modal-dialog {
+-		transform: translate(0, -50px);
+-		@include transition(transform 0.3s ease-out);
++		transform: scale(0.96);
++		@include transition(transform var(--vn-motion-panel) var(--vn-ease-panel));
+ 	}
+ 
+ 	.modal.show .modal-dialog {
+diff --git a/tests/src/styles/components/modal.test.ts b/tests/src/styles/components/modal.test.ts
+index dda5a16..b8bd101 100644
+--- a/tests/src/styles/components/modal.test.ts
++++ b/tests/src/styles/components/modal.test.ts
+@@ -13,6 +13,8 @@ import { afterEach, describe, expect, it } from 'vitest'
+ import {
+ 	collectLayer,
+ 	collectMediaConditions,
++	readDuration,
++	sampleTransition,
+ 	scene,
+ 	visitBreakpoint,
+ } from '../../../setupBrowser.js'
+@@ -35,6 +37,7 @@ import {
+ afterEach(async () => {
+ 	await releaseMedia()
+ 	document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++	document.documentElement.style.removeProperty(TOKEN_NAMES.factor.motion)
+ 	scene.clear()
+ })
+ 
+@@ -472,60 +475,206 @@ describe('modal dialog placement', () => {
+ })
+ 
+ describe('modal motion', () => {
+-	// The mutations this catches are the entrance offset dropped, the shown state failing to settle
+-	// it, and the transition written without the `transition` mixin, which keeps its duration under
+-	// the reduced-motion preference where the mixin collapses it.
+-	it('starts a fading dialog from its entrance offset and settles it when shown, with no motion under the reduced-motion preference', async () => {
+-		const host = scene.mount(
+-			'<div class="modal fade d-block" data-state="fading"><div class="modal-dialog"></div></div>' +
+-				'<div class="modal fade show d-block" data-state="shown"><div class="modal-dialog"></div></div>' +
+-				'<div class="modal d-block" data-state="plain"><div class="modal-dialog"></div></div>',
++	// The mutations this catches are the entrance written as the release's `translate(0, -50px)`
++	// offset and its `0.3s ease-out` timing, read where the browser runs the move rather than where
++	// the rule declares it: a literal offset reports its matrix at the start, and a literal duration
++	// or curve disagrees with the panel duration and curve a specimen resolves from the tokens apart
++	// from the dialog's rule. A dialog left without its transition samples none, which the presence
++	// assertion reports before any reading. The frame halfway through sits past the linear halfway
++	// scale in the direction of travel, which only a decelerating curve produces.
++	it('enters the dialog from a 0.96 scale to none over the panel duration on the panel curve as the show class joins, and leaves on the same timing', () => {
++		const specimen = requireValue(
++			scene.mount(
++				`<div style="transition: transform var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.panel})"></div>`,
++			).firstElementChild,
++			'No motion specimen',
+ 		)
+-		const dialogs = ['fading', 'shown', 'plain'].map((state) =>
+-			requireValue(
+-				host.querySelector(`[data-state="${state}"] .modal-dialog`),
+-				`No ${state} dialog`,
+-			),
++		const panel = readDuration(specimen)
++		const curve = readStyle(specimen, 'transition-timing-function')
++		const modal = requireValue(
++			scene.mount('<div class="modal fade d-block"><div class="modal-dialog"></div></div>')
++				.firstElementChild,
++			'No modal',
+ 		)
+-		const readings: Array<ReadonlyArray<readonly string[]>> = []
+-		for (const motion of [true, false]) {
+-			await stageMedia({ motion })
+-			readings.push(
+-				dialogs.map((dialog) => [
+-					readStyle(dialog, 'transform'),
+-					readStyle(dialog, 'transition-property'),
+-					readStyle(dialog, 'transition-duration'),
+-					readStyle(dialog, 'transition-timing-function'),
+-				]),
+-			)
+-		}
+-		const offset = 'matrix(1, 0, 0, 1, 0, -50)'
+-		expect(readings).toEqual([
+-			[
+-				[offset, 'transform', '0.3s', 'ease-out'],
+-				['none', 'transform', '0.3s', 'ease-out'],
+-				['none', 'all', '0s', 'ease'],
+-			],
+-			[
+-				[offset, 'none', '0s', 'ease'],
+-				['none', 'none', '0s', 'ease'],
+-				['none', 'all', '0s', 'ease'],
+-			],
+-		])
+-		expect(collectMediaConditions(collectLayer('components'), '.modal.fade .modal-dialog')).toEqual(
+-			[REDUCED_MOTION],
++		const dialog = requireValue(modal.firstElementChild, 'No dialog')
++		const entrance = 'matrix(0.96, 0, 0, 0.96, 0, 0)'
++		expect(readStyle(dialog, 'transform')).toBe(entrance)
++		modal.classList.add('show')
++		const entry = sampleTransition(dialog, 'transform')
++		expect(entry).toBeDefined()
++		const entering = requireValue(entry, 'No entering transition')
++		expect(dialog.getAnimations()).toEqual([entering.transition])
++		expect([entering.duration, entering.easing, entering.start]).toEqual([panel, curve, entrance])
++		const growing = new DOMMatrix(entering.midpoint)
++		expect(growing.a).toBe(growing.d)
++		expect(growing.a).toBeGreaterThan(0.98)
++		expect(growing.a).toBeLessThan(1)
++		expect([growing.e, growing.f]).toEqual([0, 0])
++		entering.transition.finish()
++		expect(readStyle(dialog, 'transform')).toBe('none')
++		modal.classList.remove('show')
++		const exit = sampleTransition(dialog, 'transform')
++		expect(exit).toBeDefined()
++		const leaving = requireValue(exit, 'No leaving transition')
++		expect([leaving.duration, leaving.easing]).toEqual([panel, curve])
++		leaving.transition.finish()
++		expect(readStyle(dialog, 'transform')).toBe(entrance)
++	})
++
++	// The mutation this catches is the static bounce written on a timing of its own, or on the
++	// release's `0.3s ease-out`: the bounce an engine gives a dialog that refuses to close runs on the
++	// dialog's own transition, so it grows from the settled dialog to the `1.02` scale over the panel
++	// duration on the panel curve, and it settles there while the class stays. A dropped static rule
++	// or a dialog left without its transition starts no bounce, which the presence assertion reports
++	// before any reading.
++	it('bounces a shown dialog to a 1.02 scale over the panel duration on the panel curve as the static class joins', () => {
++		const specimen = requireValue(
++			scene.mount(
++				`<div style="transition: transform var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.panel})"></div>`,
++			).firstElementChild,
++			'No motion specimen',
++		)
++		const panel = readDuration(specimen)
++		const curve = readStyle(specimen, 'transition-timing-function')
++		const modal = requireValue(
++			scene.mount('<div class="modal fade show d-block"><div class="modal-dialog"></div></div>')
++				.firstElementChild,
++			'No modal',
+ 		)
++		const dialog = requireValue(modal.firstElementChild, 'No dialog')
++		expect(readStyle(dialog, 'transform')).toBe('none')
++		modal.classList.add('modal-static')
++		const bounce = sampleTransition(dialog, 'transform')
++		expect(bounce).toBeDefined()
++		const bouncing = requireValue(bounce, 'No bounce transition')
++		expect([bouncing.duration, bouncing.easing]).toEqual([panel, curve])
++		expect(new DOMMatrix(bouncing.start).a).toBe(1)
++		const midpoint = new DOMMatrix(bouncing.midpoint).a
++		expect(midpoint).toBeGreaterThan(1.01)
++		expect(midpoint).toBeLessThan(1.02)
++		bouncing.transition.finish()
++		expect(readStyle(dialog, 'transform')).toBe('matrix(1.02, 0, 0, 1.02, 0, 0)')
+ 	})
+ 
+-	// The mutation this catches is the static rule dropped: the bounce an engine gives a dialog that
+-	// refuses to close scales it over the settled dialog, which otherwise holds no transform.
+-	it('scales a static dialog over the settled one', () => {
+-		const host = scene.mount(
+-			'<div class="modal fade show modal-static d-block"><div class="modal-dialog"></div></div><div class="modal fade show d-block"><div class="modal-dialog"></div></div>',
++	// The mutation this catches is the host left on the shared `.fade` rule: that rule fades opacity
++	// over the feedback duration, so the host would finish its fade before the dialog settles. The
++	// reading is the opacity transition the browser runs on the host itself as the `show` class
++	// joins and leaves, compared with the panel duration and the ease-out curve resolved on a
++	// specimen, and the specimen's feedback duration differs from it so the two rules read apart. A
++	// modal without the `fade` class is the control: it starts no transition.
++	it('fades the modal host over the panel duration on the ease-out curve in place of the feedback timing of the fade rule', () => {
++		const specimen = requireValue(
++			scene.mount(
++				`<div style="transition: opacity var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.out}), color var(${TOKEN_NAMES.motion.feedback})"></div>`,
++			).firstElementChild,
++			'No motion specimen',
++		)
++		const [panel, feedback] = readStyle(specimen, 'transition-duration')
++			.split(',')
++			.map((time) => Number.parseFloat(time) * 1000)
++		const [curve] = readStyle(specimen, 'transition-timing-function').split(',')
++		expect(panel).not.toBe(feedback)
++		const modal = requireValue(
++			scene.mount('<div class="modal fade d-block"><div class="modal-dialog"></div></div>')
++				.firstElementChild,
++			'No modal',
++		)
++		expect(readStyle(modal, 'opacity')).toBe('0')
++		modal.classList.add('show')
++		const showing = requireValue(sampleTransition(modal, 'opacity'), 'No showing transition')
++		expect(modal.getAnimations()).toEqual([showing.transition])
++		expect([showing.duration, showing.easing, showing.start]).toEqual([panel, curve, '0'])
++		const shown = Number.parseFloat(showing.midpoint)
++		expect(shown).toBeGreaterThan(0.5)
++		expect(shown).toBeLessThan(1)
++		showing.transition.finish()
++		expect(readStyle(modal, 'opacity')).toBe('1')
++		modal.classList.remove('show')
++		const hiding = requireValue(sampleTransition(modal, 'opacity'), 'No hiding transition')
++		expect([hiding.duration, hiding.easing, hiding.start]).toEqual([panel, curve, '1'])
++		hiding.transition.finish()
++		expect(readStyle(modal, 'opacity')).toBe('0')
++		// A modal without the `fade` class holds its opacity as the `show` class joins, so no transition
++		// runs on it.
++		const plain = requireValue(
++			scene.mount('<div class="modal d-block"><div class="modal-dialog"></div></div>')
++				.firstElementChild,
++			'No plain modal',
++		)
++		expect(readStyle(plain, 'opacity')).toBe('1')
++		plain.classList.add('show')
++		expect([readStyle(plain, 'opacity'), plain.getAnimations()]).toEqual(['1', []])
++	})
++
++	// The mutations this catches are a duration written as a literal, which a doubled factor leaves
++	// in place, and a transition written without the `transition` mixin, which keeps running under
++	// the reduced-motion preference. Each reading is the running duration on the host, the dialog,
++	// and the backdrop as an engine shows them, and the doubled reading is compared with the resting
++	// one of the same element as a ratio. A zero factor starts no transition, because the browser
++	// starts none at a zero duration, and each element is read at rest after the change, so a change
++	// that landed with nothing running reads as the shown value. An element left without its
++	// transition samples none at the resting or the doubled factor, which the presence assertions
++	// report before any ratio is read.
++	it('doubles the running duration of the host, the dialog, and the backdrop at a doubled motion factor, and runs none at a zero factor or under the reduced-motion preference', async () => {
++		const readings: Array<ReadonlyArray<readonly [number | undefined, string]>> = []
++		const conditions = [
++			{ factor: '1', reduced: false },
++			{ factor: '2', reduced: false },
++			{ factor: '0', reduced: false },
++			{ factor: '1', reduced: true },
++		]
++		for (const { factor, reduced } of conditions) {
++			document.documentElement.style.setProperty(TOKEN_NAMES.factor.motion, factor)
++			await stageMedia({ motion: !reduced })
++			const host = scene.mount(
++				'<div class="modal fade d-block"><div class="modal-dialog"></div></div><div class="modal-backdrop fade"></div>',
++			)
++			const modal = requireValue(host.querySelector('.modal'), 'No modal')
++			const dialog = requireValue(host.querySelector('.modal-dialog'), 'No dialog')
++			const backdrop = requireValue(host.querySelector('.modal-backdrop'), 'No backdrop')
++			const moves = [
++				[modal, 'opacity'],
++				[dialog, 'transform'],
++				[backdrop, 'opacity'],
++			] as const
++			for (const [element, property] of moves) readStyle(element, property)
++			modal.classList.add('show')
++			backdrop.classList.add('show')
++			readings.push(
++				moves.map(([element, property]) => {
++					const sample = sampleTransition(element, property)
++					sample?.transition.finish()
++					return [sample?.duration, readStyle(element, property)] as const
++				}),
++			)
++			await releaseMedia()
++			scene.clear()
++		}
++		const settled = ['1', 'none', MODAL_GEOMETRY.opacity]
++		const [resting, doubled, stopped, still] = readings
++		expect(resting?.map(([duration]) => duration)).not.toContain(undefined)
++		expect(doubled?.map(([duration]) => duration)).not.toContain(undefined)
++		const base = requireValue(resting, 'No resting reading').map(([duration]) =>
++			requireValue(duration, 'No transition at the resting factor'),
+ 		)
++		for (const duration of base) expect(duration).toBeGreaterThan(0)
++		expect(resting?.map(([, value]) => value)).toEqual(settled)
+ 		expect(
+-			[...host.querySelectorAll('.modal-dialog')].map((dialog) => readStyle(dialog, 'transform')),
+-		).toEqual(['matrix(1.02, 0, 0, 1.02, 0, 0)', 'none'])
++			requireValue(doubled, 'No doubled reading').map(
++				([duration], index) =>
++					requireValue(duration, 'No transition at the doubled factor') /
++					requireValue(base[index], 'No resting duration'),
++			),
++		).toEqual([2, 2, 2])
++		expect(doubled?.map(([, value]) => value)).toEqual(settled)
++		expect(stopped).toEqual(settled.map((value) => [undefined, value]))
++		expect(still).toEqual(settled.map((value) => [undefined, value]))
++		const components = collectLayer('components')
++		expect(collectMediaConditions(components, '.modal.fade .modal-dialog')).toEqual([
++			REDUCED_MOTION,
++		])
++		expect(collectMediaConditions(components, '.modal')).toContain(REDUCED_MOTION)
++		expect(collectMediaConditions(components, '.modal-backdrop.fade')).toEqual([REDUCED_MOTION])
+ 	})
+ })
+ 
+@@ -565,4 +714,47 @@ describe('modal backdrop', () => {
+ 		backdrop.setAttribute('style', '--bs-backdrop-bg: rgb(10, 20, 30)')
+ 		expect(readStyle(backdrop, 'background-color')).toBe('rgb(10, 20, 30)')
+ 	})
++
++	// The mutation this catches is the backdrop left on the shared `.fade` rule's feedback timing:
++	// the `overlay-backdrop` mixin writes the backdrop's own opacity transition, so the reading is the
++	// transition the browser runs on the backdrop as an engine adds and removes the `show` class,
++	// compared with the panel duration and the ease-out curve resolved on a specimen. The backdrop
++	// travels from transparent to its `0.5` opacity and back, and paints no blur on the way.
++	it('fades the backdrop from transparent to its opacity over the panel duration on the ease-out curve, with no blur', () => {
++		const specimen = requireValue(
++			scene.mount(
++				`<div style="transition: opacity var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.out})"></div>`,
++			).firstElementChild,
++			'No motion specimen',
++		)
++		const panel = readDuration(specimen)
++		const curve = readStyle(specimen, 'transition-timing-function')
++		const backdrop = requireValue(
++			scene.mount('<div class="modal-backdrop fade"></div>').firstElementChild,
++			'No backdrop',
++		)
++		expect(readStyle(backdrop, 'opacity')).toBe('0')
++		backdrop.classList.add('show')
++		const showing = requireValue(sampleTransition(backdrop, 'opacity'), 'No showing transition')
++		expect(backdrop.getAnimations()).toEqual([showing.transition])
++		expect([showing.duration, showing.easing, showing.start]).toEqual([panel, curve, '0'])
++		const shown = Number.parseFloat(showing.midpoint)
++		expect(shown).toBeGreaterThan(Number.parseFloat(MODAL_GEOMETRY.opacity) / 2)
++		expect(shown).toBeLessThan(Number.parseFloat(MODAL_GEOMETRY.opacity))
++		showing.transition.finish()
++		expect(readStyle(backdrop, 'opacity')).toBe(MODAL_GEOMETRY.opacity)
++		expect([readStyle(backdrop, 'backdrop-filter'), readStyle(backdrop, 'filter')]).toEqual([
++			'none',
++			'none',
++		])
++		backdrop.classList.remove('show')
++		const hiding = requireValue(sampleTransition(backdrop, 'opacity'), 'No hiding transition')
++		expect([hiding.duration, hiding.easing, hiding.start]).toEqual([
++			panel,
++			curve,
++			MODAL_GEOMETRY.opacity,
++		])
++		hiding.transition.finish()
++		expect(readStyle(backdrop, 'opacity')).toBe('0')
++	})
+ })
+diff --git a/tests/src/styles/components/offcanvas.test.ts b/tests/src/styles/components/offcanvas.test.ts
+index 4f42454..15e096d 100644
+--- a/tests/src/styles/components/offcanvas.test.ts
++++ b/tests/src/styles/components/offcanvas.test.ts
+@@ -14,6 +14,8 @@ import { afterEach, describe, expect, it } from 'vitest'
+ import {
+ 	collectLayer,
+ 	collectMediaConditions,
++	readDuration,
++	sampleTransition,
+ 	scene,
+ 	visitBreakpoint,
+ } from '../../../setupBrowser.js'
+@@ -36,6 +38,7 @@ import {
+ afterEach(async () => {
+ 	await releaseMedia()
+ 	document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++	document.documentElement.style.removeProperty(TOKEN_NAMES.factor.motion)
+ 	scene.clear()
+ })
+ 
+@@ -126,6 +129,88 @@ describe('offcanvas classes', () => {
+ 		)
+ 		expect(readStyle(shown, 'background-color')).toBe('rgb(9, 8, 7)')
+ 	})
++
++	// The mutations this catches are the backdrop left on the shared `.fade` rule's feedback timing,
++	// a duration written as a literal, and a transition written without the `transition` mixin. The
++	// offcanvas backdrop takes its motion from the `overlay-backdrop` mixin the modal backdrop shares,
++	// so each reading is the transition the browser runs on it as an engine adds the `show` class,
++	// beside the opacity it holds before the class joins and the opacity it settles at after. The
++	// resting reading is compared with the panel duration and the ease-out curve resolved on a
++	// specimen, the doubled duration with the panel duration as a ratio, and a zero factor or the
++	// reduced-motion preference starts no transition, so its duration, easing, and midpoint read as
++	// absent while the backdrop still lands at its shown opacity. The filters are read in their own
++	// collection, and the backdrop paints no blur under any condition.
++	it('fades the backdrop in over the panel duration on the ease-out curve, doubles it at a doubled motion factor, and runs none at a zero factor or under the reduced-motion preference', async () => {
++		const specimen = requireValue(
++			scene.mount(
++				`<div style="transition: opacity var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.out})"></div>`,
++			).firstElementChild,
++			'No motion specimen',
++		)
++		const panel = readDuration(specimen)
++		const curve = readStyle(specimen, 'transition-timing-function')
++		const readings: Array<{
++			readonly hidden: string
++			readonly duration: number | undefined
++			readonly easing: string | undefined
++			readonly midpoint: string | undefined
++			readonly settled: string
++		}> = []
++		const filters: Array<readonly [string, string]> = []
++		const conditions = [
++			{ factor: '1', reduced: false },
++			{ factor: '2', reduced: false },
++			{ factor: '0', reduced: false },
++			{ factor: '1', reduced: true },
++		]
++		for (const { factor, reduced } of conditions) {
++			document.documentElement.style.setProperty(TOKEN_NAMES.factor.motion, factor)
++			await stageMedia({ motion: !reduced })
++			const backdrop = requireValue(
++				scene
++					.mount(
++						`<div data-frame style="${OFFCANVAS_FRAME}"><div class="offcanvas-backdrop fade"></div></div>`,
++					)
++					.querySelector('.offcanvas-backdrop'),
++				'No backdrop',
++			)
++			const hidden = readStyle(backdrop, 'opacity')
++			backdrop.classList.add('show')
++			const sample = sampleTransition(backdrop, 'opacity')
++			sample?.transition.finish()
++			readings.push({
++				hidden,
++				duration: sample?.duration,
++				easing: sample?.easing,
++				midpoint: sample?.midpoint,
++				settled: readStyle(backdrop, 'opacity'),
++			})
++			filters.push([readStyle(backdrop, 'backdrop-filter'), readStyle(backdrop, 'filter')])
++			await releaseMedia()
++			scene.clear()
++		}
++		const opacity = OFFCANVAS_GEOMETRY.opacity
++		const [resting, doubled, stopped, still] = readings
++		expect(readings.map(({ hidden, settled }) => [hidden, settled])).toEqual(
++			conditions.map(() => ['0', opacity]),
++		)
++		expect([resting?.duration, resting?.easing]).toEqual([panel, curve])
++		const midpoint = Number.parseFloat(requireValue(resting?.midpoint, 'No midpoint'))
++		expect(midpoint).toBeGreaterThan(Number.parseFloat(opacity) / 2)
++		expect(midpoint).toBeLessThan(Number.parseFloat(opacity))
++		expect(doubled?.easing).toBe(curve)
++		expect(requireValue(doubled?.duration, 'No transition at the doubled factor') / panel).toBe(2)
++		expect(
++			[stopped, still].map((reading) => [reading?.duration, reading?.easing, reading?.midpoint]),
++		).toEqual([
++			[undefined, undefined, undefined],
++			[undefined, undefined, undefined],
++		])
++		expect(filters).toEqual(conditions.map(() => ['none', 'none']))
++		expect(collectMediaConditions(collectLayer('components'), '.offcanvas-backdrop.fade')).toEqual([
++			REDUCED_MOTION,
++		])
++	})
+ })
+ 
+ describe('offcanvas placements', () => {
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index 88eac6f..b736408 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -15,7 +15,14 @@ import {
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { normalizeSelectorText } from '../../setup.js'
+-import { collectLayer, collectMediaConditions, scene, visitBreakpoint } from '../../setupBrowser.js'
++import {
++	collectLayer,
++	collectMediaConditions,
++	readDuration,
++	sampleTransition,
++	scene,
++	visitBreakpoint,
++} from '../../setupBrowser.js'
+ import {
+ 	BREAKPOINT_CASES,
+ 	BUTTON_LABEL_CASES,
+@@ -192,6 +199,37 @@ describe('declaration mixins', () => {
+ 			).toBe(true)
+ 		}
+ 	})
++	// The mutations this catches are the mixin writing no transition of its own, which leaves a
++	// backdrop on the shared `.fade` rule's feedback timing, and the transition written on the base
++	// rule, which would move a backdrop carrying no `fade` class. The fixture includes the mixin
++	// alone, so the reading is the mixin's: the transition the browser runs as the `show` class joins
++	// a fading backdrop, compared with the panel duration and the ease-out curve resolved on a
++	// specimen, toward the opacity the fixture passes.
++	it('fades a fading backdrop to its opacity over the panel duration on the ease-out curve, and leaves a backdrop without the fade class still', () => {
++		const specimen = requireValue(
++			scene.mount(
++				`<div style="transition: opacity var(${TOKEN_NAMES.motion.panel}) var(${TOKEN_NAMES.ease.out})"></div>`,
++			).firstElementChild,
++			'No motion specimen',
++		)
++		const panel = readDuration(specimen)
++		const curve = readStyle(specimen, 'transition-timing-function')
++		const host = scene.mount(
++			'<div class="vn-fixture-backdrop fade"></div><div class="vn-fixture-backdrop"></div>',
++		)
++		const [fading, plain] = [...host.children]
++		const backdrop = requireValue(fading, 'No fading backdrop')
++		const still = requireValue(plain, 'No plain backdrop')
++		expect([readStyle(backdrop, 'opacity'), readStyle(still, 'opacity')]).toEqual(['0', '1'])
++		expect(readDuration(still)).toBe(0)
++		backdrop.classList.add('show')
++		still.classList.add('show')
++		const showing = requireValue(sampleTransition(backdrop, 'opacity'), 'No showing transition')
++		expect([showing.duration, showing.easing, showing.start]).toEqual([panel, curve, '0'])
++		expect(still.getAnimations()).toEqual([])
++		showing.transition.finish()
++		expect([readStyle(backdrop, 'opacity'), readStyle(still, 'opacity')]).toEqual(['0.25', '0.25'])
++	})
+ 	it('writes the button reboot back on every longhand the button surface writes, on each class the release builds on a button, and the surface writes none of them important', () => {
+ 		// The surface's rules sit in the elements layer beside the release's own reboot on every
+ 		// button, whose longhands the button reboot never writes back because the element and the
