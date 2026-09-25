@@ -1,8 +1,9 @@
 #!/bin/bash
-# Lands E-ID-MOTION-MODAL on Veneer's session branch.
+# Lands E-ID-MOTION-MODAL and E-ID-MOTION-FACTOR on Veneer's session branch.
 # Successor to eid-land-11.sh, which landed TOKEN-PROOFS and TAILWIND-RECIPE. What changed: the unit list (mmod cut
-# from 73326c7), the scratch directory (land12), the log names, and the done line; the stop after a line union and the
-# chain are unchanged. The mechanism is unchanged: it commits
+# from 73326c7, mfac cut from b613ae4), the scratch directory (land12), the log names, the done line, and an
+# unconditional stop after integration, so the Orchestrator applies MODAL's § Factors strike to FACTOR's paragraph and
+# reads any union before running eid-chain-12.sh; the chain itself is unchanged. The mechanism is unchanged: it commits
 # the worktree on its unit branch, merges origin/main into the session branch (the merge carries the trailers), then
 # integrates the unit as its own commit: every changed file merges three-way (base: the unit's cut; ours: the session
 # tree; theirs: the unit's committed file) with git merge-file --diff3, a conflict resolves through resolve-diff3.py, and
@@ -15,7 +16,7 @@ export PATH="$S/npm11/node_modules/.bin:$PATH" PLAYWRIGHT_BROWSERS_PATH=/opt/pw-
 TRAILER="Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK"
 step() { local name=$1; shift; echo "=== $name ($(date -u +%H:%M:%S))" >> $LOG; "$@" >> $LOG 2>&1; local code=$?; echo "=== $name exit=$code" >> $LOG; [ $code -eq 0 ] || { echo "=== stopped at $name" >> $LOG; exit $code; }; }
-UNITS="mmod:73326c7"
+UNITS="mmod:73326c7 mfac:b613ae4"
 for spec in $UNITS; do U=${spec%%:*}; [ -s $S/eid-msg-$U.txt ] || { echo "=== no message for $U; refusing" >> $LOG; exit 2; }; done
 cd /home/user/veneer || exit 1
 [ -z "$(git status --porcelain)" ] || { echo "=== session tree dirty; refusing" >> $LOG; exit 2; }
@@ -50,7 +51,7 @@ for spec in $UNITS; do U=${spec%%:*}; B=${spec##*:}; W=/home/user/veneer-$U; T=$
   git commit -q -F $S/eid-msg-$U.txt >> $LOG 2>&1 || { echo "=== session commit failed for $U; stopped" >> $LOG; exit 3; }
   echo "=== landed $U as $(git rev-parse --short HEAD)" >> $LOG
 done
-if [ -n "$union" ]; then echo "=== stopped after integration: a line union needs reading" >> $LOG; exit 6; fi
+echo "=== stopped after integration: apply the § Factors strike (union=${union:-none}), then run eid-chain-12.sh" >> $LOG; exit 6
 rm -rf node_modules/.vite
 step "format:check" npm run format:check
 step "lint:check" npm run lint:check

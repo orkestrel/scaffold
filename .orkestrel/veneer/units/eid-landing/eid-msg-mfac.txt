@@ -1,0 +1,19 @@
+Scale every transition that kept a release literal through the motion tokens (E-ID-MOTION-FACTOR)
+
+The floating label reads the feedback token divided by 1.5 and the progress
+bar four times it, each on the release's curve, and nav, pagination, the
+navbar toggler, and the accordion button read the feedback token, so every
+factor read stays in src/styles/_tokens.scss and a subtree that sets the
+factor alone keeps the root's durations. sweepMotionFactor in
+tests/setupBrowser.ts runs a drive at the motion factors 1, 2, and 0 on the
+document element, restores the factor and clears the scene after each, and
+every motion-factor case runs through it, asserting each reading present
+before narrowing it. Guide § Factors names the timings that keep a release
+literal and states what a scaled duration resolves to at each factor.
+
+Written by opus on Opus 5.5 (rounds 1 and 2) and builder on Sonnet (rounds 3
+and 4); audited by analyst on GPT-6 Astra and reviewer on Opus 5.5 (scaffold
+.orkestrel/veneer/units/mfac-audit-verdict.md through mfac-audit-4-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
