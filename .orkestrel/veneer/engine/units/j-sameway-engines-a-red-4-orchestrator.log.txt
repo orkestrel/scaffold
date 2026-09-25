@@ -1,0 +1,19 @@
+# The Orchestrator's red reading of J-SAMEWAY-ENGINES-A round 4's cases on dc2a1a7's sources (2026-09-25, Chromium 153.0.8010.12), tests at 3f62d64 Say that Collapse's return writes the inline size back with its priority (J-SAMEWAY-ENGINES-A round 4 integration)
+······························································································································································xxxx···············································12:32:49 AM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+12:32:49 AM [vite] (client) [console.error] Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+[Error: Uncaught SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.]
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1608:2 > Collapse > returns a show whose completing token write a reaction answers by removing the shown token to the inline size and priority held before the show
+AssertionError: expected [ '12px', '' ] to deeply equal [ '12px', 'important' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1642:2 > Collapse > returns a hide of a panel without the host token, whose completing host-token write a reaction answers by adding the shown token, removing the host token again
+AssertionError: expected [ 'collapse', 'show' ] to deeply equal [ 'show' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1675:2 > Collapse > returns a show whose size writes change nothing and whose size clearing a reaction answers by removing the shown token, writing the zero size back
+AssertionError: expected '' to be '0px' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1710:2 > Collapse > returns a hide whose size write changes nothing and whose size clearing a reaction answers by adding the shown token, writing the zero size back
+AssertionError: expected '' to be '0px' // Object.is equality
+      Tests  4 failed | 253 passed (257)
+restored byte for byte (the Orchestrator's digest)
+--- the tip, the same files, for the unhandled-error reading
+·················································································································································································································12:33:22 AM [vite] (client) [Unhandled error] SyntaxError: Failed to execute 'toggle' on 'DOMTokenList': The token provided must not be empty.
+ Test Files  5 passed (5)
+      Tests  257 passed (257)

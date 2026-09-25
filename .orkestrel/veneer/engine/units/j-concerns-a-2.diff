@@ -1,0 +1,303 @@
+diff --git a/tests/src/browser/Button.test.ts b/tests/src/browser/Button.test.ts
+index fbf37ce..93058ce 100644
+--- a/tests/src/browser/Button.test.ts
++++ b/tests/src/browser/Button.test.ts
+@@ -2,10 +2,14 @@ import type { ButtonDetail, ButtonInterface } from '@src/browser'
+ import { Button, BUTTON_CLASSES, BUTTON_EVENTS, BUTTON_SELECTORS, HostSnapshot } from '@src/browser'
+ import { isAppError } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+-import { createRecorder } from '@orkestrel/test'
++import { createRecorder, requireValue } from '@orkestrel/test'
+ import { build } from '@orkestrel/test/browser'
+-import { describe, expect, it, onTestFinished } from 'vitest'
+-import { BUTTON_RESTORATIONS, recordEvents } from '../../setupBrowser.js'
++import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
++import tokensCascade from '../../../src/styles/_tokens.scss?inline'
++import buttonCascade from '../../../src/styles/components/_button.scss?inline'
++import { BUTTON_RESTORATIONS, recordEvents, scene } from '../../setupBrowser.js'
++
++afterEach(() => scene.clear())
+ 
+ describe('Button', () => {
+ 	it('releases its claim and its records when an option read throws during construction', () => {
+@@ -473,6 +477,63 @@ describe('Button', () => {
+ 		expect(events.calls).toEqual([[event, true, 'true']])
+ 	})
+ 
++	it('leaves focus where it is at each toggle, on its host or on another control', () => {
++		const root = scene.mount(
++			'<button type="button">Bold</button><button type="button">Italic</button>',
++		)
++		const [host, other] = Array.from(root.querySelectorAll('button'))
++		const bold = requireValue(host, 'No host')
++		const italic = requireValue(other, 'No other control')
++		const focus = createRecorder<readonly [Element | null]>()
++		const button = new Button(bold, { on: { toggle: () => focus.handler(document.activeElement) } })
++		onTestFinished(() => button.destroy())
++		bold.focus()
++		expect(button.toggle()).toBe(true)
++		expect(document.activeElement).toBe(bold)
++		italic.focus()
++		expect(button.toggle()).toBe(false)
++		expect(document.activeElement).toBe(italic)
++		expect(focus.calls).toEqual([[bold], [italic]])
++	})
++
++	// Bootstrap's toggle writes the token and the attribute and returns, waiting on no transition the
++	// cascade starts, and the same holds here.
++	it('completes a toggle and dispatches its event while the shipped cascade still transitions the host', () => {
++		scene.load(tokensCascade)
++		scene.load(buttonCascade)
++		const root = scene.mount('<button type="button" class="btn">Bold</button>')
++		const host = requireValue(root.querySelector('button'), 'No host')
++		// Reading the animations computes the host's resting style, so the token write transitions
++		// from it, and the host runs no motion before the toggle.
++		expect(host.getAnimations()).toEqual([])
++		const events = createRecorder<readonly [boolean, boolean, string | null, readonly number[]]>()
++		const button: ButtonInterface = new Button(host, {
++			on: {
++				toggle: (event) =>
++					events.handler(
++						event.detail.pressed,
++						button.pressed,
++						host.getAttribute('aria-pressed'),
++						host
++							.getAnimations()
++							.filter((animation) => animation.playState === 'running')
++							.map((animation) => {
++								const duration = animation.effect?.getComputedTiming().duration
++								return typeof duration === 'number' ? duration : 0
++							}),
++					),
++			},
++		})
++		onTestFinished(() => button.destroy())
++		expect(button.toggle()).toBe(true)
++		expect(
++			events.calls.map(([detail, pressed, attribute]) => [detail, pressed, attribute]),
++		).toEqual([[true, true, 'true']])
++		const durations = events.calls[0]?.[3] ?? []
++		expect(durations).not.toEqual([])
++		expect(durations.every((duration) => duration > 0)).toBe(true)
++	})
++
+ 	it('releases hooks and leaves later toggles inert while reading the live host', () => {
+ 		const host = build('button')
+ 		const hooks = createRecorder<readonly [CustomEvent<ButtonDetail>]>()
+diff --git a/tests/src/browser/ScrollSpy.test.ts b/tests/src/browser/ScrollSpy.test.ts
+index 2e283ab..8a3e70d 100644
+--- a/tests/src/browser/ScrollSpy.test.ts
++++ b/tests/src/browser/ScrollSpy.test.ts
+@@ -10,10 +10,17 @@ import {
+ import { isAppError } from '@src/core'
+ import { attempt, isInstance } from '@orkestrel/contract'
+ import { createRecorder, requireValue, waitForCondition, waitForEvent } from '@orkestrel/test'
+-import { clickAccessible, waitForAnimations } from '@orkestrel/test/browser'
++import {
++	clickAccessible,
++	pressKeys,
++	releaseMedia,
++	stageMedia,
++	traverseAccessible,
++	waitForAnimations,
++} from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import navCascade from '../../../src/styles/components/_nav.scss?inline'
+-import { recordCalls, scene } from '../../setupBrowser.js'
++import { mountTraversalStart, recordCalls, scene } from '../../setupBrowser.js'
+ 
+ afterEach(() => scene.clear())
+ 
+@@ -154,6 +161,91 @@ describe('ScrollSpy', () => {
+ 		expect(events.calls).toEqual([['activate.vn.scrollspy']])
+ 	})
+ 
++	// Bootstrap builds its activate event cancelable and never reads a prevention from it, so a
++	// prevention changes nothing there; here the event is not cancelable, and the end state matches.
++	it('activates every entering link of a delivery when a listener prevents each activate event, reading none as prevented', async () => {
++		const root = scene.mount(`
++			<nav id="spy-nav" class="nav">
++				<a class="nav-link" href="#spy-one">One</a>
++				<a class="nav-link" href="#spy-two">Two</a>
++				<a class="nav-link" href="#spy-three">Three</a>
++			</nav>
++			<div id="spy-host" style="position: relative; height: 100px; overflow-y: auto">
++				<section id="spy-one" style="height: 100px"></section>
++				<section id="spy-two" style="height: 30px"></section>
++				<section id="spy-three" style="height: 30px"></section>
++				<div style="height: 400px"></div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#spy-host'), 'No host')
++		const nav = requireValue(root.querySelector<HTMLElement>('#spy-nav'), 'No navigation')
++		const one = requireValue(nav.querySelector('[href="#spy-one"]'), 'No first link')
++		const two = requireValue(nav.querySelector('[href="#spy-two"]'), 'No second link')
++		const three = requireValue(nav.querySelector('[href="#spy-three"]'), 'No third link')
++		const events = createRecorder<readonly [HTMLElement, boolean, boolean]>()
++		const spy = new ScrollSpy(host, {
++			target: nav,
++			on: {
++				activate: (event) => {
++					event.preventDefault()
++					events.handler(event.detail.relatedTarget, event.cancelable, event.defaultPrevented)
++				},
++			},
++		})
++		onTestFinished(() => spy.destroy())
++		const frames = createRecorder<readonly [number]>()
++		const barrier = new IntersectionObserver(() => frames.handler(host.scrollTop), {
++			root: host,
++			threshold: [0.5],
++		})
++		onTestFinished(() => barrier.disconnect())
++		await waitForCondition('the first link activates', () => spy.link === one)
++		barrier.observe(requireValue(host.querySelector('#spy-three'), 'No third section'))
++		await waitForCondition('the barrier observes', () => frames.count === 1)
++		host.scrollTop = 105
++		await waitForCondition('the third section enters', () => frames.count === 2)
++		expect(events.calls).toEqual([
++			[one, false, false],
++			[two, false, false],
++			[three, false, false],
++		])
++		expect(spy.link).toBe(three)
++		expect(Array.from(nav.querySelectorAll('.active'), (node) => node.textContent)).toEqual([
++			'Three',
++		])
++	})
++
++	it('leaves focus on the element that held it when a scroll activates another link', async () => {
++		const root = scene.mount(`
++			<nav id="spy-nav" class="nav">
++				<a class="nav-link" href="#spy-one">One</a>
++				<a class="nav-link" href="#spy-two">Two</a>
++			</nav>
++			<div id="spy-host" style="position: relative; height: 100px; overflow-y: auto">
++				<section id="spy-one" style="height: 100px"></section>
++				<section id="spy-two" style="height: 100px"></section>
++				<div style="height: 100px"></div>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#spy-host'), 'No host')
++		const nav = requireValue(root.querySelector<HTMLElement>('#spy-nav'), 'No navigation')
++		const one = requireValue(nav.querySelector<HTMLElement>('[href="#spy-one"]'), 'No first link')
++		const two = requireValue(nav.querySelector('[href="#spy-two"]'), 'No second link')
++		const focus = createRecorder<readonly [HTMLElement, Element | null]>()
++		const spy = new ScrollSpy(host, {
++			target: nav,
++			on: {
++				activate: (event) => focus.handler(event.detail.relatedTarget, document.activeElement),
++			},
++		})
++		onTestFinished(() => spy.destroy())
++		await waitForCondition('the first link activates', () => spy.link === one)
++		one.focus()
++		expect(document.activeElement).toBe(one)
++		host.scrollTop = 110
++		await waitForCondition('the second link activates', () => spy.link === two)
++		expect(focus.calls.at(-1)).toEqual([two, one])
++		expect(document.activeElement).toBe(one)
++	})
++
+ 	it('observes a link whose disabled attribute reads false', async () => {
+ 		const root = scene.mount(`
+ 			<nav id="spy-nav" class="nav">
+@@ -433,6 +525,10 @@ describe('ScrollSpy', () => {
+ 			},
+ 			{ signal: controller.signal },
+ 		)
++		const positions = createRecorder<readonly [number]>()
++		window.addEventListener('scroll', () => positions.handler(window.scrollY), {
++			signal: controller.signal,
++		})
+ 		const spy = new ScrollSpy(host, { target: nav, smooth: true })
+ 		onTestFinished(() => spy.destroy())
+ 		const expected = section.getBoundingClientRect().top + window.scrollY
+@@ -445,6 +541,89 @@ describe('ScrollSpy', () => {
+ 		expect(clicks.calls).toEqual([[true]])
+ 		expect(host.scrollTop).toBe(0)
+ 		expect(window.scrollY).toBeCloseTo(expected, 0)
++		expect(positions.calls.some(([top]) => top > 1 && top < expected - 1)).toBe(true)
++	})
++
++	// The fragment navigation the smooth scroll prevents moves focus off the link, which the link
++	// outside the host shows, because the scrollspy leaves its click alone.
++	it('keeps focus on the link a keyboard activation of the smooth scroll pressed, where the fragment navigation it prevents moves it', async () => {
++		onTestFinished(() =>
++			history.replaceState(history.state, '', location.pathname + location.search),
++		)
++		onTestFinished(() => window.scrollTo({ top: 0, behavior: 'instant' }))
++		mountTraversalStart()
++		const root = scene.mount(`
++			<nav id="spy-nav" class="nav">
++				<a class="nav-link" href="#spy-one">One</a>
++				<a class="nav-link" href="#spy-four">Four</a>
++				<a class="nav-link" href="#spy-outside">Outside</a>
++			</nav>
++			<section id="spy-outside" style="height: 10px"></section>
++			<div id="spy-host" style="position: relative; height: 100px; overflow-y: auto">
++				<section id="spy-one" style="height: 100px"></section>
++				<div style="height: 100px"></div>
++				<section id="spy-four" style="height: 300px"></section>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#spy-host'), 'No host')
++		const nav = requireValue(root.querySelector<HTMLElement>('#spy-nav'), 'No navigation')
++		const section = requireValue(host.querySelector<HTMLElement>('#spy-four'), 'No section')
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		const spy = new ScrollSpy(host, { target: nav, smooth: true })
++		onTestFinished(() => spy.destroy())
++		await waitForCondition('the first link activates', () => spy.link !== undefined)
++		const four = await traverseAccessible('Four')
++		const settled = waitForEvent<readonly [Event]>((listener) => {
++			host.addEventListener('scrollend', listener, { once: true, signal: controller.signal })
++		}, 'the host settles')
++		await pressKeys('{Enter}')
++		await settled
++		expect(host.scrollTop).toBe(section.offsetTop)
++		expect(location.hash).toBe('')
++		expect(document.activeElement).toBe(four)
++		await waitForCondition('the fourth link activates', () => spy.link === four)
++		expect(document.activeElement).toBe(four)
++		const outside = await traverseAccessible('Outside')
++		await pressKeys('{Enter}')
++		await waitForCondition('the fragment navigation runs', () => location.hash === '#spy-outside')
++		expect(document.activeElement).not.toBe(outside)
++	})
++
++	// Chromium animates a smooth scroll request whatever the motion preference, and Bootstrap makes the
++	// same request, so the end state under reduced motion is a smooth scroll in both.
++	it('scrolls the host smoothly under staged reduced motion, reading no motion preference', async () => {
++		onTestFinished(() => releaseMedia())
++		await stageMedia({ motion: false })
++		expect(matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true)
++		const root = scene.mount(`
++			<nav id="spy-nav" class="nav">
++				<a class="nav-link" href="#spy-one">One</a>
++				<a class="nav-link" href="#spy-four">Four</a>
++			</nav>
++			<div id="spy-host" style="position: relative; height: 100px; overflow-y: auto">
++				<section id="spy-one" style="height: 100px"></section>
++				<div style="height: 100px"></div>
++				<section id="spy-four" style="height: 300px"></section>
++			</div>`)
++		const host = requireValue(root.querySelector<HTMLElement>('#spy-host'), 'No host')
++		const nav = requireValue(root.querySelector<HTMLElement>('#spy-nav'), 'No navigation')
++		const section = requireValue(host.querySelector<HTMLElement>('#spy-four'), 'No section')
++		const positions = createRecorder<readonly [number]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		host.addEventListener('scroll', () => positions.handler(host.scrollTop), {
++			signal: controller.signal,
++		})
++		const spy = new ScrollSpy(host, { target: nav, smooth: true })
++		onTestFinished(() => spy.destroy())
++		await waitForCondition('the first link activates', () => spy.link !== undefined)
++		const settled = waitForEvent<readonly [Event]>((listener) => {
++			host.addEventListener('scrollend', listener, { once: true, signal: controller.signal })
++		}, 'the host settles')
++		await clickAccessible('link', 'Four')
++		await settled
++		expect(host.scrollTop).toBe(section.offsetTop)
++		expect(positions.calls.some(([top]) => top > 0 && top < section.offsetTop)).toBe(true)
+ 	})
+ 
+ 	it('reads its target, smooth scroll, margin, and threshold from the host attributes, the constructor winning per key', async () => {

@@ -1,0 +1,386 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 871c99b..1ee66d6 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -61,12 +61,18 @@ publishes the color-mode controller, the engine's classes and contracts, and the
+ | `Registry`                                | class     | Records which engine owns each host, keyed weakly so a discarded host leaves no record behind.                                                                                                |
+ | `HostSnapshotCategory`                    | type      | Names the kinds of host state a snapshot records: an attribute, a class token, or an inline property.                                                                                         |
+ | `HostSnapshotTarget`                      | interface | Describes one piece of host state a snapshot records before an engine first writes it.                                                                                                        |
++| `HostChange`                              | interface | Describes one piece of host state a change wrote and the value and priority it held before the change's first write to it.                                                                    |
+ | `HostSnapshotInterface`                   | interface | Records host state before an engine writes it, and writes that state back when the last snapshot holding it restores.                                                                         |
+ | `HostSnapshotEntry`                       | interface | Describes one target a snapshot holds: the target under the name the platform resolved at its save, and the record key that save fixed.                                                       |
+ | `HostSnapshotRecord`                      | interface | Describes the one record that every snapshot holding a target shares, and whose value the target's last holder writes back.                                                                   |
+ | `HostSnapshotHolding`                     | interface | Names one presence record a snapshot holds: an element and the attribute, `class` or `style`, whose presence the record reads.                                                                |
+ | `HostSnapshotPresence`                    | interface | Describes the presence record that every snapshot saving a class token or an inline property on one element shares, which reads whether the element carried its `class` or `style` attribute. |
+ | `HostSnapshot`                            | class     | Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.                                                                   |
++| `readHostValue`                           | function  | Reads the value a piece of host state holds, as a `HostSnapshot` instance records it.                                                                                                         |
++| `readHostPriority`                        | function  | Reads the priority an inline property carries, as a `HostSnapshot` instance records it.                                                                                                       |
++| `writeHostValue`                          | function  | Writes a value to a piece of host state, in the form the `readHostValue` function reads it.                                                                                                   |
++| `recordHostChange`                        | function  | Records a target a write is about to change, returning a change's records with the target and the value and priority it reads appended.                                                       |
++| `rewindHostChanges`                       | function  | Writes each recorded target back to the value and priority it held before the change's first write to it, in reverse order of those first writes.                                             |
+ | `settleAnimations`                        | function  | Waits for every running finite animation on an element to finish, cancel, or leave with the element.                                                                                          |
+ | `reflow`                                  | function  | Forces a layout read, so a class or dimension write that follows starts its transition in the same task.                                                                                      |
+ | `matchesReducedMotion`                    | function  | Checks whether the view an element's document belongs to prefers reduced motion.                                                                                                              |
+@@ -1104,15 +1110,20 @@ own token write, each door also reads the token there, and a panel that moves it
+ change over. Until that moment no door reads the `shown` token.
+ 
+ A call the panel took over resolves `false`, dispatches nothing, and takes one further step that
+-returns what the change wrote. A show taken over removes the `transition` token and the inline size
+-while the show holds them, adds back the `host` token it removed, and gives the `collapsed` token
+-and an `aria-expanded` value of `false` to each trigger it expanded none of whose panels is shown.
+-A hide taken over removes the inline size and the `transition` token while the hide holds them,
+-adds back the `host` token it removed, and removes the `collapsed` token from and writes an
+-`aria-expanded` value of `true` on each trigger it collapsed. Each step returns only the trigger
+-writes the call made. It reads no door; before each of its writes it reads only the call's identity
+-and the collapse's lifetime, so a destruction inside one of its writes stops the step and the
+-snapshot's restoration stands, and a call a reaction starts inside one supersedes the step.
++returns what the change wrote. The step restores each target the call changed to the value that
++target held before the call's first write to it, in reverse order of those first writes: the
++panel's `transition` and `host` tokens and inline size, and each trigger's `collapsed` token and
++`aria-expanded` value. A write that changes nothing records nothing, so a trigger that was already
++expanded takes no write. The call's first changing write of a target records it, even when that
++write completes the change, so a `host` token a hide added to a panel that lacked it, and an inline
++size the call cleared after its earlier size writes changed nothing, go back as well. A target the
++call writes more than once goes back to the value it held before the first of those writes, so an
++inline size the panel carried before the show comes back with its priority. The `shown` token stays
++as the panel's host moved it. The step reads no door; before each of its writes it reads the call's
++identity, the collapse's lifetime, and the target's value and priority, and it writes nothing to a
++target that already holds the recorded value and priority.
++A destruction inside one of its writes stops the step and the snapshot's restoration stands, and
++a call a reaction starts inside one supersedes the step.
+ Destruction aborts the wait, so a call awaiting the transition resolves `false` and dispatches no
+ completed event, and restoration writes back the panel's tokens and inline size and each trigger's
+ `collapsed` token and `aria-expanded` value.
+@@ -1385,12 +1396,18 @@ lacks it, completes every other write in its order, dispatches its completed eve
+ `true`. From the moment the call finds the token on the control, right after the pre-change events
+ or at its own token write, each door also reads the token there. A control that loses the token
+ then, while no other control of the list is active, takes the swap over: the call resolves `false`,
+-dispatches nothing more, and takes one further step that writes back each value the swap wrote, in
+-its order. The sibling takes its `active` token back, its pane its `active` and `shown` tokens, and
+-each control and dropdown the swap wrote the selection, tab stop, and open state it had, so the list
+-shows the sibling again; the control's pane loses the tokens the swap added. The sibling's blur is
+-not returned. The step reads no door; before each of its writes it reads only the call's identity
+-and the tab's lifetime. Destruction aborts the wait, so a call awaiting the fade resolves `false`
++dispatches nothing more, and takes one further step that returns what the swap wrote. The step
++restores each target the swap changed to the value that target held before the swap's first write
++to it, in reverse order of those first writes: the sibling's `active` token, its pane's `active` and
++`shown` tokens, each control's `aria-selected` value and tab stop, the toggle, menu, and wrapper
++state of each dropdown that holds a control, and the control's pane tokens. A write that changes
++nothing records nothing, so a closed dropdown that holds the sibling stays closed, and a target the
++swap writes more than once, such as a dropdown that holds both controls, goes back to the value it
++held before the first of those writes. The list then shows the sibling again. The control's `active`
++token stays as the host moved it, and the sibling's blur is not returned. The step reads no door;
++before each of its writes it reads the call's identity, the tab's lifetime, and the target's
++value, and it writes nothing to a target that already holds the recorded value. Destruction
++aborts the wait, so a call awaiting the fade resolves `false`
+ and dispatches no completed event, and restoration writes back every value the tab wrote that no
+ live engine still holds: the roles and states it wrote at construction, and the tokens and states
+ of the control, its pane, the sibling it deactivated, that sibling's pane, and each dropdown. The
+@@ -1978,12 +1995,16 @@ item lacks it, completes every other write in its order, dispatches `slid.vn.car
+ resolves `true`. From the moment the slide finds the token on the incoming item, right after the
+ `slide.vn.carousel` dispatch or at its own token write, each door also reads the token there. A host
+ that takes the token off the incoming item then takes the slide over: the slide resolves `false`,
+-dispatches nothing more, and takes one further step that writes back each value the slide wrote, in
+-its order. Each indicator takes back the `active` token and the `aria-current` value it had, the
+-outgoing item takes back its `active` token and loses the direction token the slide added, and the
+-incoming item loses the order and direction tokens the slide added, so the carousel shows the
+-outgoing item again. The step reads no door; before each of its writes it reads only the carousel's
+-lifetime and the slide in flight. Destruction aborts the wait, so a slide awaiting the transition
++dispatches nothing more, and takes one further step that returns what the slide wrote. The step
++restores each target the slide changed to the value that target held before the slide's first
++write to it, in reverse order of those first writes: each indicator's `active` token and
++`aria-current` value, both items' order and direction tokens, and the outgoing item's `active`
++token. A write that changes nothing records nothing, and an order or direction token that an item
++carried before the slide and the completion removes comes back as well. The carousel then shows the
++outgoing item again, and the incoming item's `active` token stays as the host moved it. The step
++reads no door; before each of its writes it reads the carousel's lifetime, the slide in flight,
++and the target's value, and it writes nothing to a target that already holds the recorded value.
++Destruction aborts the wait, so a slide awaiting the transition
+ resolves `false` and dispatches no completed event, and a `slide` call waiting on it resolves
+ `false` as well.
+ Restoration writes back each item's tokens and each indicator's `active` token and `aria-current`
+@@ -2482,14 +2503,18 @@ the token there, and a toast that moves it back takes the change over. A hide wh
+ token, and leaves the toast accepting later calls.
+ 
+ A call the toast took over resolves `false`, dispatches nothing, and takes one further step that
+-returns what the change wrote: a show taken over removes the `transition` token while the show holds
+-it and the `fade` token when the show added it, and a hide taken over removes the `transition` token
+-while the hide holds it. The step reads no door; before each of its writes it reads only the call's
+-identity and the toast's lifetime. The timer an accepted call cleared stays cleared after the call is
+-taken over, until the pointer or focus leaves the toast with neither inside or a later show
+-completes. Destruction clears the timer and aborts the wait, so a call awaiting the transition
+-resolves `false` and dispatches no completed event, and restoration writes back the toast's `shown`,
+-`transition`, and `fade` tokens.
++returns what the change wrote. The step restores each token the call changed to the presence it had
++before the call's first write to it, in reverse order of those first writes: a show taken over
++removes the `transition` token while the show holds it and then the `fade` token when the show
++added it, and a hide taken over removes the `transition` token while the hide holds it. A write that
++changes nothing records nothing, so a `fade` token the toast carried before the show stays. The
++`shown` token stays as the host moved it. The step reads no door; before each of its writes it
++reads the call's identity, the toast's lifetime, and the token's presence, and it writes nothing to
++a token that already has the recorded presence. The timer an accepted call cleared stays cleared
++after the call is taken over, until the pointer or focus leaves the toast with neither inside or a
++later show completes. Destruction clears the timer and aborts the wait, so a call awaiting the
++transition resolves `false` and dispatches no completed event, and restoration writes back the
++toast's `shown`, `transition`, and `fade` tokens.
+ 
+ The delegate's `toast` option carries the toast's groups. A click inside a trigger the resolved
+ `dismiss` selector matches inside the root hides the toast the trigger's target attribute or `href`
+diff --git a/src/browser/HostSnapshot.ts b/src/browser/HostSnapshot.ts
+index 47a1150..1e0ac7a 100644
+--- a/src/browser/HostSnapshot.ts
++++ b/src/browser/HostSnapshot.ts
+@@ -6,6 +6,7 @@ import type {
+ 	HostSnapshotRecord,
+ 	HostSnapshotTarget,
+ } from './types.js'
++import { readHostPriority, readHostValue, writeHostValue } from './helpers.js'
+ 
+ /**
+  * Records host state before an engine first writes it, and writes that state back when the last snapshot holding it restores.
+@@ -109,18 +110,8 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		let value = record?.value
+ 		let priority = record?.priority ?? ''
+ 		if (record === undefined) {
+-			switch (category) {
+-				case 'attribute':
+-					value = element.getAttribute(name) ?? undefined
+-					break
+-				case 'token':
+-					value = element.classList.contains(name) ? name : undefined
+-					break
+-				case 'property':
+-					value = element.style.getPropertyValue(name) || undefined
+-					priority = element.style.getPropertyPriority(name)
+-					break
+-			}
++			value = readHostValue(resolved)
++			priority = readHostPriority(resolved)
+ 		}
+ 		// Joining a record a restoration owns takes the target over: the record has a holder again, so
+ 		// that restoration no longer owns its write.
+@@ -152,23 +143,14 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 		const held = this.#leaving
+ 		try {
+ 			for (const entry of targets) {
+-				const { target } = entry
+-				if (target.category !== 'token') continue
+-				HostSnapshot.#writeBack(entry, this, (value) =>
+-					target.element.classList.toggle(target.name, value !== undefined),
+-				)
++				if (entry.target.category === 'token') HostSnapshot.#writeBack(entry, this)
+ 			}
+ 			for (const { element, attribute } of held) {
+ 				if (attribute !== 'class' || !this.#absent(element, attribute)) continue
+ 				if (element.classList.length === 0) element.removeAttribute('class')
+ 			}
+ 			for (const entry of targets) {
+-				const { target } = entry
+-				if (target.category !== 'property') continue
+-				HostSnapshot.#writeBack(entry, this, (value, priority) => {
+-					if (value === undefined) target.element.style.removeProperty(target.name)
+-					else target.element.style.setProperty(target.name, value, priority)
+-				})
++				if (entry.target.category === 'property') HostSnapshot.#writeBack(entry, this)
+ 			}
+ 			for (const { element, attribute } of held) {
+ 				if (attribute !== 'style' || !this.#absent(element, attribute)) continue
+@@ -178,12 +160,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 				}
+ 			}
+ 			for (const entry of targets) {
+-				const { target } = entry
+-				if (target.category !== 'attribute') continue
+-				HostSnapshot.#writeBack(entry, this, (value) => {
+-					if (value === undefined) target.element.removeAttribute(target.name)
+-					else target.element.setAttribute(target.name, value)
+-				})
++				if (entry.target.category === 'attribute') HostSnapshot.#writeBack(entry, this)
+ 			}
+ 		} finally {
+ 			for (const { target, key } of targets) HostSnapshot.#withdraw(target.element, key, this)
+@@ -327,13 +304,10 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 	}
+ 
+ 	// Runs one write back of a target the snapshot owns and no restoration has started writing, with
+-	// the record's value, then withdraws the target. A restoration a reaction runs inside the write
+-	// finds the target written and leaves it.
+-	static #writeBack(
+-		entry: HostSnapshotEntry,
+-		owner: HostSnapshot,
+-		write: (value: string | undefined, priority: string) => void,
+-	): void {
++	// the record's value and priority through the `writeHostValue` function the engines' returning
++	// steps write with, then withdraws the target. A restoration a reaction runs inside the write finds
++	// the target written and leaves it.
++	static #writeBack(entry: HostSnapshotEntry, owner: HostSnapshot): void {
+ 		const { target, key } = entry
+ 		const { element } = target
+ 		const records = HostSnapshot.#records.get(element)
+@@ -342,7 +316,7 @@ export class HostSnapshot implements HostSnapshotInterface {
+ 			return
+ 		}
+ 		records.set(key, { ...record, written: true })
+-		write(record.value, record.priority)
++		writeHostValue(target, record.value, record.priority)
+ 		HostSnapshot.#withdraw(element, key, owner)
+ 	}
+ 
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 21d0af4..d8d72fb 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -2,6 +2,8 @@ import type {
+ 	AttributeMap,
+ 	EventHooks,
+ 	EventWire,
++	HostChange,
++	HostSnapshotTarget,
+ 	ParserMap,
+ 	SanitizerConfig,
+ 	SanitizerElementNamespace,
+@@ -865,3 +867,123 @@ export function readScrollbarWidth(document: Document): number {
+ 	const view = document.defaultView
+ 	return view === null ? 0 : Math.abs(view.innerWidth - document.documentElement.clientWidth)
+ }
++
++/**
++ * Reads the value a piece of host state holds, as a `HostSnapshot` instance records it.
++ *
++ * @param target - The attribute, class token, or inline property to read.
++ * @returns The attribute's value, the token's name when the element carries it, or the property's value; undefined when the target is absent.
++ * @remarks
++ * An empty inline property value reads as absent, as the platform reports an unset property.
++ * @example
++ * ```ts
++ * const prior = readHostValue({ category: 'token', element: panel, name: 'show' }) // 'show' or undefined
++ * ```
++ */
++export function readHostValue(target: HostSnapshotTarget): string | undefined {
++	const { category, element, name } = target
++	if (category === 'attribute') return element.getAttribute(name) ?? undefined
++	if (category === 'token') return element.classList.contains(name) ? name : undefined
++	return element.style.getPropertyValue(name) || undefined
++}
++
++/**
++ * Reads the priority an inline property carries, as a `HostSnapshot` instance records it.
++ *
++ * @param target - The attribute, class token, or inline property to read.
++ * @returns The inline property's priority, such as `important`; the empty string for a property without one, an absent property, an attribute, or a class token.
++ * @example
++ * ```ts
++ * const priority = readHostPriority({ category: 'property', element: panel, name: 'height' }) // 'important' or ''
++ * ```
++ */
++export function readHostPriority(target: HostSnapshotTarget): string {
++	const { category, element, name } = target
++	return category === 'property' ? element.style.getPropertyPriority(name) : ''
++}
++
++/**
++ * Writes a value to a piece of host state, in the form the `readHostValue` function reads it.
++ *
++ * @param target - The attribute, class token, or inline property to write.
++ * @param value - The attribute's or property's value, or any string for a token the element carries; undefined removes the target.
++ * @param priority - The inline property's priority, in the form the `readHostPriority` function reads it; an attribute or a token write ignores it. Default: the empty string, which sets the property without a priority.
++ * @remarks
++ * A token write toggles the token with an explicit force, so a token already in that state takes no
++ * write. An attribute or property write always writes.
++ * @example
++ * ```ts
++ * writeHostValue({ category: 'attribute', element: trigger, name: 'aria-expanded' }, 'true')
++ * ```
++ */
++export function writeHostValue(
++	target: HostSnapshotTarget,
++	value: string | undefined,
++	priority = '',
++): void {
++	const { category, element, name } = target
++	if (category === 'token') element.classList.toggle(name, value !== undefined)
++	else if (category === 'attribute') {
++		if (value === undefined) element.removeAttribute(name)
++		else element.setAttribute(name, value)
++	} else if (value === undefined) element.style.removeProperty(name)
++	else element.style.setProperty(name, value, priority)
++}
++
++/**
++ * Records a target a write is about to change, returning a change's records with the target and the value and priority it reads appended.
++ *
++ * @param changes - The records the change holds so far, in the order of its first writes.
++ * @param target - The attribute, class token, or inline property the write gives a value.
++ * @param next - The value the write gives the target, in the form the `readHostValue` function reads it.
++ * @returns The records unchanged when the change recorded the target already or the write leaves the target as it reads; otherwise a copy with the target and its value and priority appended.
++ * @remarks
++ * A target is recorded once, at the first write that changes it, so a later write to the same target
++ * keeps the value and priority it held before the change began writing it. The write gives no
++ * priority, so it changes an inline property that carries one even when it writes the value the
++ * property holds. The records passed in are not changed.
++ * @example
++ * ```ts
++ * changes = recordHostChange(changes, { category: 'token', element: panel, name: 'collapsing' }, 'collapsing')
++ * ```
++ */
++export function recordHostChange(
++	changes: readonly HostChange[],
++	target: HostSnapshotTarget,
++	next: string | undefined,
++): readonly HostChange[] {
++	const { category, element, name } = target
++	const recorded = changes.some(
++		(change) =>
++			change.target.category === category &&
++			change.target.element === element &&
++			change.target.name === name,
++	)
++	if (recorded) return changes
++	const prior = readHostValue(target)
++	const priority = readHostPriority(target)
++	return prior === next && priority === '' ? changes : [...changes, { target, prior, priority }]
++}
++
++/**
++ * Writes each recorded target back to the value and priority it held before the change's first write to it, in reverse order of those first writes.
++ *
++ * @param changes - The records a change holds, in the order of its first writes.
++ * @param owns - Reports whether the change still owns its host; read before each write.
++ * @remarks
++ * A target that already reads its recorded value and priority takes no write. The first read of
++ * `owns` that returns `false` ends the step, so a destruction or a later change a reaction starts
++ * inside one write stops the writes after it.
++ * @example
++ * ```ts
++ * rewindHostChanges(changes, () => !signal.aborted)
++ * ```
++ */
++export function rewindHostChanges(changes: readonly HostChange[], owns: () => boolean): void {
++	for (const { target, prior, priority } of [...changes].reverse()) {
++		if (!owns()) return
++		if (readHostValue(target) !== prior || readHostPriority(target) !== priority) {
++			writeHostValue(target, prior, priority)
++		}
++	}
++}
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 036c60d..3764347 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -339,6 +339,16 @@ export interface HostSnapshotTarget {
+ 	readonly name: string
+ }
+ 
++/** Describes one piece of host state a change wrote and the value and priority it held before the change's first write to it. */
++export interface HostChange {
++	/** Carries the attribute, class token, or inline property the change wrote. */
++	readonly target: HostSnapshotTarget
++	/** Carries the value before the change's first write: the attribute's value, the token's name, or the property's value, or undefined when the target was absent. */
++	readonly prior: string | undefined
++	/** Carries the inline property's priority the record read, and the empty string for an attribute or a class token. */
++	readonly priority: string
++}
++
+ /** Records host state before an engine writes it, and writes that state back when the last snapshot holding it restores. */
+ export interface HostSnapshotInterface {
+ 	/**

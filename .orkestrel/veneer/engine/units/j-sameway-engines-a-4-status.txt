@@ -1,0 +1,8 @@
+M	guides/veneer.md
+M	src/browser/Collapse.ts
+M	src/browser/HostSnapshot.ts
+M	src/browser/helpers.ts
+M	src/browser/types.ts
+M	tests/src/browser/Collapse.test.ts
+M	tests/src/browser/helpers.test.ts
+M	tests/src/browser/index.test.ts

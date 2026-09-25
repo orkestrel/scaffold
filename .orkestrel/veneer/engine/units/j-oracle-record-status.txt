@@ -1,0 +1,14 @@
+M	tests/conformance.test.ts
+A	tests/fixtures/oracle/alert.json
+A	tests/fixtures/oracle/carousel.json
+A	tests/fixtures/oracle/collapse.json
+A	tests/fixtures/oracle/dropdown.json
+A	tests/fixtures/oracle/modal.json
+A	tests/fixtures/oracle/offcanvas.json
+A	tests/fixtures/oracle/popover.json
+A	tests/fixtures/oracle/scrollspy.json
+A	tests/fixtures/oracle/tab.json
+A	tests/fixtures/oracle/toast.json
+A	tests/fixtures/oracle/tooltip.json
+M	tests/setupServer.test.ts
+M	tests/setupServer.ts

@@ -1,0 +1,68 @@
+{
+	"collapse.timings": {
+		"bootstrap": 6209,
+		"veneer": 5772
+	},
+	"collapse.steps": "every non-refused step changes state",
+	"collapse.departures": 0,
+	"alert.timings": {
+		"bootstrap": 2510,
+		"veneer": 2343
+	},
+	"alert.steps": "every non-refused step changes state",
+	"alert.departures": 0,
+	"tab.timings": {
+		"bootstrap": 4373,
+		"veneer": 3273
+	},
+	"tab.steps": "every non-refused step changes state",
+	"tab.departures": 0,
+	"scrollspy.timings": {
+		"bootstrap": 3650,
+		"veneer": 3731
+	},
+	"scrollspy.steps": "every non-refused step changes state",
+	"scrollspy.departures": 0,
+	"dropdown.timings": {
+		"bootstrap": 4474,
+		"veneer": 4544
+	},
+	"dropdown.steps": "every non-refused step changes state",
+	"dropdown.departures": 20,
+	"carousel.timings": {
+		"bootstrap": 10077,
+		"veneer": 9752
+	},
+	"carousel.steps": "every non-refused step changes state",
+	"carousel.departures": 12,
+	"modal.timings": {
+		"bootstrap": 11232,
+		"veneer": 10684
+	},
+	"modal.steps": "every non-refused step changes state",
+	"modal.departures": 48,
+	"offcanvas.timings": {
+		"bootstrap": 8219,
+		"veneer": 7500
+	},
+	"offcanvas.steps": "every non-refused step changes state",
+	"offcanvas.departures": 19,
+	"toast.timings": {
+		"bootstrap": 3836,
+		"veneer": 3408
+	},
+	"toast.steps": "every non-refused step changes state",
+	"toast.departures": 10,
+	"tooltip.timings": {
+		"bootstrap": 3981,
+		"veneer": 3817
+	},
+	"tooltip.steps": "every non-refused step changes state",
+	"tooltip.departures": 20,
+	"popover.timings": {
+		"bootstrap": 4683,
+		"veneer": 4642
+	},
+	"popover.steps": "every non-refused step changes state",
+	"popover.departures": 12
+}

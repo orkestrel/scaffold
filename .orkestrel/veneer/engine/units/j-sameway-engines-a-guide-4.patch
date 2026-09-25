@@ -1,0 +1,24 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index be09bda..1ee66d6 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1114,11 +1114,14 @@ returns what the change wrote. The step restores each target the call changed to
+ target held before the call's first write to it, in reverse order of those first writes: the
+ panel's `transition` and `host` tokens and inline size, and each trigger's `collapsed` token and
+ `aria-expanded` value. A write that changes nothing records nothing, so a trigger that was already
+-expanded or a panel without the `host` token takes no write, and a target the call writes more than
+-once goes back to the value it held before the first of those writes, so an inline size the panel
+-carried before the show comes back. The `shown` token stays as the panel's host moved it. The step
+-reads no door; before each of its writes it reads the call's identity, the collapse's lifetime,
+-and the target's value, and it writes nothing to a target that already holds the recorded value.
++expanded takes no write. The call's first changing write of a target records it, even when that
++write completes the change, so a `host` token a hide added to a panel that lacked it, and an inline
++size the call cleared after its earlier size writes changed nothing, go back as well. A target the
++call writes more than once goes back to the value it held before the first of those writes, so an
++inline size the panel carried before the show comes back with its priority. The `shown` token stays
++as the panel's host moved it. The step reads no door; before each of its writes it reads the call's
++identity, the collapse's lifetime, and the target's value and priority, and it writes nothing to a
++target that already holds the recorded value and priority.
+ A destruction inside one of its writes stops the step and the snapshot's restoration stands, and
+ a call a reaction starts inside one supersedes the step.
+ Destruction aborts the wait, so a call awaiting the transition resolves `false` and dispatches no
