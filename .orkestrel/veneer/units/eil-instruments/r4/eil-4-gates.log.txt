@@ -1,0 +1,10 @@
+owned exit 0
+format-check exit 0
+lint-check exit 0
+check exit 0
+test-src-styles exit 0
+test-setup exit 0
+test-conformance exit 0
+test-guides exit 0
+type-section exit 0
+exit=0

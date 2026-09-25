@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/user/veneer-eil
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  00:55:41
+   Duration  9.72s (transform 0ms, setup 434ms, import 309ms, tests 6ms, environment 0ms)
+
+exit=0

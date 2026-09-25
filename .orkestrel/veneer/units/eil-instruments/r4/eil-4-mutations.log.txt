@@ -1,0 +1,33 @@
+## restored-flex (src/styles/elements/_figure.scss)
+  summary: ['Tests  5 failed | 24 passed (29)']
+   × resolves the calibrated values in light mode 10ms
+   × resolves the calibrated values in dark mode 5ms
+   × ends the figure at the footer edge and starts the next block 16px later inside 'a bare figure' 3ms
+   × ends the figure at the footer edge and starts the next block 16px later inside 'a centered figure' 1ms
+   × ends the figure at the footer edge and starts the next block 16px later inside 'an end-aligned figure' 3ms
+     AssertionError: expected 'flex' to be 'block' // Object.is equality
+     AssertionError: expected 66 to be close to 50, received difference is 16, but expected 0.05
+  restore byte-identical: True
+## no-caption-margin (src/styles/elements/_figure.scss)
+  summary: ['Tests  4 failed | 25 passed (29)']
+   × resolves the calibrated values in light mode 5ms
+   × resolves the calibrated values in dark mode 1ms
+   × spaces the caption 8px under its image inside 'a bare figure' 2ms
+   × spaces the caption 8px under its image inside 'a figure a display utility turns to b…' 1ms
+     AssertionError: expected '0px' to be '8px 0px 0px' // Object.is equality
+     AssertionError: expected +0 to be close to 8, received difference is 8, but expected 0.05
+  restore byte-identical: True
+## no-figure-display (src/styles/components/_image.scss)
+  summary: ['Tests  3 failed | 26 passed (29)']
+   × paints the thumbnail frame and the figure caption in 'light' mode 7ms
+   × paints the thumbnail frame and the figure caption in 'dark' mode 2ms
+   × shrinks the figure to its content and spaces the caption 8px under the image 5ms
+     AssertionError: expected 'block' to be 'inline-block' // Object.is equality
+     AssertionError: expected 320 to be less than 320
+  restore byte-identical: True
+## no-caption-reset (src/styles/components/_image.scss)
+  summary: ['Tests  1 failed | 28 passed (29)']
+   × puts the classed caption on the edge of a box that carries no image class 3ms
+     AssertionError: expected 158 to be close to 150, received difference is 8, but expected 0.05
+  restore byte-identical: True
+exit=0

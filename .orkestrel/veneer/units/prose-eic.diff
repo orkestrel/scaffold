@@ -1,0 +1,66 @@
+diff --git a/tests/src/styles/elements/samp.test.ts b/tests/src/styles/elements/samp.test.ts
+index 80b689f..a9b4430 100644
+--- a/tests/src/styles/elements/samp.test.ts
++++ b/tests/src/styles/elements/samp.test.ts
+@@ -1,5 +1,5 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle, readToken } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
+ import { TEXT_SAMP_CASES } from '../../../setupStyles.js'
+@@ -9,10 +9,11 @@ afterEach(() => {
+ })
+ 
+ describe('samp text treatment', () => {
+-	// The geometry and the raised surface follow the code-family record.
++	// The geometry, the raised surface, and the corner follow the record. The `samp` element wears
++	// the chip the `code`, `kbd`, and `var` elements wear.
+ 	it.each(TEXT_SAMP_CASES)(
+ 		'resolves the samp values in $mode mode',
+-		({ mode, values, color, background, family }) => {
++		({ mode, values, color, background, family, radius }) => {
+ 			const host = scene.mount(
+ 				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><samp>Result</samp></div>`,
+ 			)
+@@ -28,6 +29,7 @@ describe('samp text treatment', () => {
+ 			)
+ 			expect(readStyle(element, 'font-family')).toBe(family)
+ 			expect(matchesColor(readStyle(element, 'background-color'), background)).toBe(true)
++			expect(readPixels(element, 'border-top-left-radius')).toBe(radius)
+ 		},
+ 	)
+ })
+diff --git a/tests/src/styles/elements/var.test.ts b/tests/src/styles/elements/var.test.ts
+index 3b0ca06..31c266c 100644
+--- a/tests/src/styles/elements/var.test.ts
++++ b/tests/src/styles/elements/var.test.ts
+@@ -1,5 +1,5 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle, readToken } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../../setupBrowser.js'
+ import { TEXT_VAR_CASES } from '../../../setupStyles.js'
+@@ -9,10 +9,11 @@ afterEach(() => {
+ })
+ 
+ describe('var text treatment', () => {
+-	// The geometry, the shorter monospace stack, and the raised surface follow the record.
++	// The geometry, the shorter monospace stack, the raised surface, and the corner follow the record.
++	// The `var` element wears the chip the `code`, `kbd`, and `samp` elements wear.
+ 	it.each(TEXT_VAR_CASES)(
+ 		'resolves the var values in $mode mode',
+-		({ mode, values, color, background, family }) => {
++		({ mode, values, color, background, family, radius }) => {
+ 			const host = scene.mount(
+ 				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><var>result</var></div>`,
+ 			)
+@@ -28,6 +29,7 @@ describe('var text treatment', () => {
+ 			)
+ 			expect(readStyle(element, 'font-family')).toBe(family)
+ 			expect(matchesColor(readStyle(element, 'background-color'), background)).toBe(true)
++			expect(readPixels(element, 'border-top-left-radius')).toBe(radius)
+ 		},
+ 	)
+ })

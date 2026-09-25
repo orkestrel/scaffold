@@ -1,0 +1,133 @@
+## attributed quotation, then a paragraph @390
+  veneer    0:figure x=0.00 y=0.00 w=390.00 h=63.14 bottom=63.14 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=17.14 bottom=47.14 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=63.14 w=390.00 h=21.00 bottom=84.14 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure x=0.00 y=0.00 w=390.00 h=51.00 bottom=51.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=21.00 bottom=51.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=67.00 w=390.00 h=24.00 bottom=91.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## attributed quotation, then a paragraph @1280
+  veneer    0:figure x=0.00 y=0.00 w=1280.00 h=63.14 bottom=63.14 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=17.14 bottom=47.14 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=63.14 w=1280.00 h=21.00 bottom=84.14 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure x=0.00 y=0.00 w=1280.00 h=51.00 bottom=51.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=21.00 bottom=51.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=67.00 w=1280.00 h=24.00 bottom=91.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## centered attributed quotation, then a paragraph @390
+  veneer    0:figure.text-center x=0.00 y=0.00 w=390.00 h=63.14 bottom=63.14 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=17.14 bottom=47.14 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=63.14 w=390.00 h=21.00 bottom=84.14 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-center x=0.00 y=0.00 w=390.00 h=51.00 bottom=51.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=21.00 bottom=51.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=67.00 w=390.00 h=24.00 bottom=91.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## centered attributed quotation, then a paragraph @1280
+  veneer    0:figure.text-center x=0.00 y=0.00 w=1280.00 h=63.14 bottom=63.14 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=17.14 bottom=47.14 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=63.14 w=1280.00 h=21.00 bottom=84.14 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-center x=0.00 y=0.00 w=1280.00 h=51.00 bottom=51.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=21.00 bottom=51.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=67.00 w=1280.00 h=24.00 bottom=91.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## end-aligned attributed quotation, then a paragraph @390
+  veneer    0:figure.text-end x=0.00 y=0.00 w=390.00 h=63.14 bottom=63.14 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=17.14 bottom=47.14 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=63.14 w=390.00 h=21.00 bottom=84.14 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-end x=0.00 y=0.00 w=390.00 h=51.00 bottom=51.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=21.00 bottom=51.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=67.00 w=390.00 h=24.00 bottom=91.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## end-aligned attributed quotation, then a paragraph @1280
+  veneer    0:figure.text-end x=0.00 y=0.00 w=1280.00 h=63.14 bottom=63.14 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=17.14 bottom=47.14 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=63.14 w=1280.00 h=21.00 bottom=84.14 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-end x=0.00 y=0.00 w=1280.00 h=51.00 bottom=51.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=21.00 bottom=51.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=67.00 w=1280.00 h=24.00 bottom=91.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## fixed-geometry attributed quotation (text 30px, footer 20px), then a paragraph @390
+  veneer    0:figure x=0.00 y=0.00 w=390.00 h=66.00 bottom=66.00 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=66.00 w=390.00 h=21.00 bottom=87.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure x=0.00 y=0.00 w=390.00 h=50.00 bottom=50.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=66.00 w=390.00 h=24.00 bottom=90.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## fixed-geometry attributed quotation (text 30px, footer 20px), then a paragraph @1280
+  veneer    0:figure x=0.00 y=0.00 w=1280.00 h=66.00 bottom=66.00 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=66.00 w=1280.00 h=21.00 bottom=87.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure x=0.00 y=0.00 w=1280.00 h=50.00 bottom=50.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=66.00 w=1280.00 h=24.00 bottom=90.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## fixed-geometry centered attributed quotation, then a paragraph @390
+  veneer    0:figure.text-center x=0.00 y=0.00 w=390.00 h=66.00 bottom=66.00 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=66.00 w=390.00 h=21.00 bottom=87.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-center x=0.00 y=0.00 w=390.00 h=50.00 bottom=50.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=66.00 w=390.00 h=24.00 bottom=90.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## fixed-geometry centered attributed quotation, then a paragraph @1280
+  veneer    0:figure.text-center x=0.00 y=0.00 w=1280.00 h=66.00 bottom=66.00 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=66.00 w=1280.00 h=21.00 bottom=87.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-center x=0.00 y=0.00 w=1280.00 h=50.00 bottom=50.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=66.00 w=1280.00 h=24.00 bottom=90.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## fixed-geometry end-aligned attributed quotation, then a paragraph @390
+  veneer    0:figure.text-end x=0.00 y=0.00 w=390.00 h=66.00 bottom=66.00 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=66.00 w=390.00 h=21.00 bottom=87.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-end x=0.00 y=0.00 w=390.00 h=50.00 bottom=50.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=390.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=390.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=66.00 w=390.00 h=24.00 bottom=90.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+## fixed-geometry end-aligned attributed quotation, then a paragraph @1280
+  veneer    0:figure.text-end x=0.00 y=0.00 w=1280.00 h=66.00 bottom=66.00 display=flex flex-direction=column gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  veneer    4:p x=0.00 y=66.00 w=1280.00 h=21.00 bottom=87.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 0:figure.text-end x=0.00 y=0.00 w=1280.00 h=50.00 bottom=50.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 1:blockquote.blockquote x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 2:p x=0.00 y=0.00 w=1280.00 h=30.00 bottom=30.00 display=block flex-direction=row gap=normal margin=0px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 3:figcaption.blockquote-footer x=0.00 y=30.00 w=1280.00 h=20.00 bottom=50.00 display=block flex-direction=row gap=normal margin=-16px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+  bootstrap 4:p x=0.00 y=66.00 w=1280.00 h=24.00 bottom=90.00 display=block flex-direction=row gap=normal margin=0px 0px 16px padding=0px border-left-width=0px font-style=normal grid-template-columns=none
+exit=0
