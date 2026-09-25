@@ -1,0 +1,561 @@
+# J-ROADMAP-0925 landing (2026-09-24): paths ROADMAP.md
+[unit/roadmap-0925 a0bee24] Point the J-ENGINE roadmap row at the engine plan instead of listing carriers
+ 1 file changed, 35 insertions(+), 35 deletions(-)
+commit exit=0
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+   0865c67..2376710  main       -> origin/main
+fetch exit=0
+Auto-merging ROADMAP.md
+CONFLICT (content): Merge conflict in ROADMAP.md
+Automatic merge failed; fix conflicts and then commit the result.
+merge exit=1
+conflicts; stopped
+# J-ROADMAP-0925 landing resumed after the Orchestrator's conflict resolution (2026-09-25)
+[unit/roadmap-0925 094a71e] Merge remote-tracking branch 'origin/main' into unit/roadmap-0925
+merge commit exit=0
+npm notice run @orkestrel/veneer@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 13206ms on 476 files using 16 threads.
+format:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/roadmap-0925
+
+·······························xxxxx·x······························································-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > skill family policy > rejects an unexported value binding in a skill fence [membership: named value imports in canonical skill fences]
+AssertionError: expected [ { rule: 'skill', …(2) } ] to deeply equal [ { rule: 'skill', …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "message": "skill fence import @orkestrel/test/browser does not export s2MissingValue",
++     "message": "skill fence import @orkestrel/test/browser has no installed package",
+      "path": ".agents/skills/sample/SKILL.md",
+      "rule": "skill",
+    },
+  ]
+
+ ❯ tests/policy.test.ts:531:42
+    529|  )) {
+    530|   it(`${control.label} [membership: ${control.membership}]`, () => {
+    531|    expect(inspectPolicyControl(control)).toEqual(control.violations)
+       |                                          ^
+    532|   })
+    533|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |policy| tests/policy.test.ts > skill family policy > rejects an unexported type binding in a skill fence [membership: named type imports in canonical skill fences]
+AssertionError: expected [ { rule: 'skill', …(2) } ] to deeply equal [ { rule: 'skill', …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "message": "skill fence import @orkestrel/test/browser does not export S2MissingType",
++     "message": "skill fence import @orkestrel/test/browser has no installed package",
+      "path": ".agents/skills/sample/SKILL.md",
+      "rule": "skill",
+    },
+  ]
+
+ ❯ tests/policy.test.ts:531:42
+    529|  )) {
+    530|   it(`${control.label} [membership: ${control.membership}]`, () => {
+    531|    expect(inspectPolicyControl(control)).toEqual(control.violations)
+       |                                          ^
+    532|   })
+    533|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |policy| tests/policy.test.ts > skill family policy > accepts exported value and type bindings from root and browser entries [membership: named value and type imports in canonical skill fences]
+AssertionError: expected [ { rule: 'skill', …(2) }, …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "skill fence import @orkestrel/test has no installed package",
++     "path": ".agents/skills/sample/SKILL.md",
++     "rule": "skill",
++   },
++   {
++     "message": "skill fence import @orkestrel/test/browser has no installed package",
++     "path": ".agents/skills/sample/SKILL.md",
++     "rule": "skill",
++   },
++   {
++     "message": "skill fence import @orkestrel/test/browser has no installed package",
++     "path": ".agents/skills/sample/SKILL.md",
++     "rule": "skill",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:531:42
+    529|  )) {
+    530|   it(`${control.label} [membership: ${control.membership}]`, () => {
+    531|    expect(inspectPolicyControl(control)).toEqual(control.violations)
+       |                                          ^
+    532|   })
+    533|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |policy| tests/policy.test.ts > skill family policy > reports one absent binding beside exported bindings in the same fence [membership: named value and type imports in canonical skill fences]
+AssertionError: expected [ { rule: 'skill', …(2) }, …(2) ] to deeply equal [ { rule: 'skill', …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "message": "skill fence import @orkestrel/test does not export s2MissingValue",
++     "message": "skill fence import @orkestrel/test has no installed package",
++     "path": ".agents/skills/sample/SKILL.md",
++     "rule": "skill",
++   },
++   {
++     "message": "skill fence import @orkestrel/test/browser has no installed package",
++     "path": ".agents/skills/sample/SKILL.md",
++     "rule": "skill",
++   },
++   {
++     "message": "skill fence import @orkestrel/test/browser has no installed package",
+      "path": ".agents/skills/sample/SKILL.md",
+      "rule": "skill",
+    },
+  ]
+
+ ❯ tests/policy.test.ts:531:42
+    529|  )) {
+    530|   it(`${control.label} [membership: ${control.membership}]`, () => {
+    531|    expect(inspectPolicyControl(control)).toEqual(control.violations)
+       |                                          ^
+    532|   })
+    533|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |policy| tests/policy.test.ts > skill family policy > accepts a fenced import of the package the inspected workspace itself publishes [membership: named imports of the workspace package in canonical skill fences]
+AssertionError: expected [ { rule: 'skill', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "skill fence import @orkestrel/scaffold has no installed package",
++     "path": ".agents/skills/sample/SKILL.md",
++     "rule": "skill",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:531:42
+    529|  )) {
+    530|   it(`${control.label} [membership: ${control.membership}]`, () => {
+    531|    expect(inspectPolicyControl(control)).toEqual(control.violations)
+       |                                          ^
+    532|   })
+    533|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |policy| tests/policy.test.ts > skill family policy > reports an unexported binding against its named reference file [membership: named imports in fences in referenced skill documents]
+AssertionError: expected [ { rule: 'skill', …(2) } ] to deeply equal [ { rule: 'skill', …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "message": "skill fence import @orkestrel/test/browser does not export s2MissingReference",
++     "message": "skill fence import @orkestrel/test/browser has no installed package",
+      "path": ".agents/skills/sample/references/example.md",
+      "rule": "skill",
+    },
+  ]
+
+ ❯ tests/policy.test.ts:531:42
+    529|  )) {
+    530|   it(`${control.label} [membership: ${control.membership}]`, () => {
+    531|    expect(inspectPolicyControl(control)).toEqual(control.violations)
+       |                                          ^
+    532|   })
+    533|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the workspace policy laws including surface ownership
+AssertionError: expected [ { rule: 'surface', …(2) }, …(47) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "surface evidence missing: catalog package abort has no hosted guide",
++     "path": "guides/abort.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package agent has no hosted guide",
++     "path": "guides/agent.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package brief has no hosted guide",
++     "path": "guides/brief.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package browser has no hosted guide",
++     "path": "guides/browser.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package budget has no hosted guide",
++     "path": "guides/budget.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package codec has no hosted guide",
++     "path": "guides/codec.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package console has no hosted guide",
++     "path": "guides/console.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package contract has no hosted guide",
++     "path": "guides/contract.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package csv has no hosted guide",
++     "path": "guides/csv.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package database has no hosted guide",
++     "path": "guides/database.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package emitter has no hosted guide",
++     "path": "guides/emitter.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package form has no hosted guide",
++     "path": "guides/form.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package html has no hosted guide",
++     "path": "guides/html.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package indexeddb has no hosted guide",
++     "path": "guides/indexeddb.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package interpret has no hosted guide",
++     "path": "guides/interpret.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package lsp has no hosted guide",
++     "path": "guides/lsp.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package markdown has no hosted guide",
++     "path": "guides/markdown.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package mcp has no hosted guide",
++     "path": "guides/mcp.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package middleware has no hosted guide",
++     "path": "guides/middleware.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package msg has no hosted guide",
++     "path": "guides/msg.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package ndjson has no hosted guide",
++     "path": "guides/ndjson.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package ollama has no hosted guide",
++     "path": "guides/ollama.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package pool has no hosted guide",
++     "path": "guides/pool.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package probe has no hosted guide",
++     "path": "guides/probe.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package process has no hosted guide",
++     "path": "guides/process.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package program has no hosted guide",
++     "path": "guides/program.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package qualifier has no hosted guide",
++     "path": "guides/qualifier.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package queue has no hosted guide",
++     "path": "guides/queue.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package rater has no hosted guide",
++     "path": "guides/rater.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package reason has no hosted guide",
++     "path": "guides/reason.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package relation has no hosted guide",
++     "path": "guides/relation.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package router has no hosted guide",
++     "path": "guides/router.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package sea has no hosted guide",
++     "path": "guides/sea.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package server has no hosted guide",
++     "path": "guides/server.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package sqlite has no hosted guide",
++     "path": "guides/sqlite.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package sse has no hosted guide",
++     "path": "guides/sse.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package supervisor has no hosted guide",
++     "path": "guides/supervisor.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package table has no hosted guide",
++     "path": "guides/table.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package template has no hosted guide",
++     "path": "guides/template.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package terminal has no hosted guide",
++     "path": "guides/terminal.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package test has no hosted guide",
++     "path": "guides/test.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package timeout has no hosted guide",
++     "path": "guides/timeout.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package tool has no hosted guide",
++     "path": "guides/tool.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package toolbox has no hosted guide",
++     "path": "guides/toolbox.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package websocket has no hosted guide",
++     "path": "guides/websocket.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package worker has no hosted guide",
++     "path": "guides/worker.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package workflow has no hosted guide",
++     "path": "guides/workflow.md",
++     "rule": "surface",
++   },
++   {
++     "message": "surface evidence missing: catalog package workspace has no hosted guide",
++     "path": "guides/workspace.md",
++     "rule": "surface",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:758:49
+    756| describe('repository policy', () => {
+    757|  it('enforces the workspace policy laws including surface ownership', …
+    758|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+       |                                                 ^
+    759|  })
+    760|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 102 passed | 1 skipped (110)
+   Start at  00:17:27
+   Duration  2.57s (transform 139ms, setup 90ms, import 308ms, tests 2.00s, environment 0ms)
+
+test:policy exit=1
+red; stopped
+# J-ROADMAP-0925 landing resumed after the Orchestrator's conflict resolution (2026-09-25)
+no merge in progress; HEAD 094a71e Merge remote-tracking branch 'origin/main' into unit/roadmap-0925
+npm ci exit=0
+npm notice run @orkestrel/veneer@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 12377ms on 476 files using 16 threads.
+format:check exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/roadmap-0925
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  00:18:32
+   Duration  2.82s (transform 142ms, setup 96ms, import 319ms, tests 2.22s, environment 0ms)
+
+test:policy exit=0
+npm notice run @orkestrel/veneer@0.0.1 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/roadmap-0925[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 00:18:36
+[2m   Duration [22m 2.81s[2m (transform 528ms, setup 125ms, import 2.20s, tests 316ms, environment 0ms)[22m
+
+test:guides exit=0
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Updating 0865c67..2376710
+Fast-forward
+ ROADMAP.md                                      |  15 +-
+ app/browser/styles/_shell.scss                  |  14 +-
+ guides/veneer.md                                | 127 +++++----
+ src/styles/_mixins.scss                         |  23 ++
+ src/styles/_tokens.scss                         |   6 +-
+ src/styles/components/_accordion.scss           |   6 +
+ src/styles/components/_carousel.scss            |  12 +
+ src/styles/components/_close.scss               |   6 +
+ src/styles/components/_dropdown.scss            |   6 +
+ src/styles/components/_list-group.scss          |   6 +
+ src/styles/components/_nav.scss                 |   6 +
+ src/styles/components/_navbar.scss              |   6 +
+ src/styles/components/_pagination.scss          |   6 +
+ src/styles/elements/_button.scss                |  23 +-
+ tests/app/browser/Showcase.test.ts              |   2 +-
+ tests/app/browser/integration.test.ts           |   2 +-
+ tests/app/browser/sections/BadgeSection.test.ts |   3 +-
+ tests/conformance.test.ts                       |   4 +-
+ tests/service/tailwind/consumer.test.ts         |  46 +++-
+ tests/setupStyles.test.ts                       |  13 +-
+ tests/setupStyles.ts                            | 193 +++++++++++++-
+ tests/src/styles/components/accordion.test.ts   |  18 +-
+ tests/src/styles/components/button.test.ts      |   4 +-
+ tests/src/styles/components/carousel.test.ts    |  18 +-
+ tests/src/styles/components/close.test.ts       |   4 +-
+ tests/src/styles/components/collapse.test.ts    |   9 +-
+ tests/src/styles/components/fade.test.ts        |  11 +-
+ tests/src/styles/components/modal.test.ts       |   9 +-
+ tests/src/styles/components/offcanvas.test.ts   |  11 +-
+ tests/src/styles/components/popover.test.ts     |  12 +-
+ tests/src/styles/components/toast.test.ts       |  11 +-
+ tests/src/styles/components/tooltip.test.ts     |  12 +-
+ tests/src/styles/elements/button.test.ts        | 325 ++++++++++++++++++------
+ tests/src/styles/mixins.test.ts                 |  41 ++-
+ 34 files changed, 793 insertions(+), 217 deletions(-)
+main ff to origin exit=0
+Updating 2376710..094a71e
+Fast-forward
+ ROADMAP.md | 72 +++++++++++++++++++++++++++++++-------------------------------
+ 1 file changed, 36 insertions(+), 36 deletions(-)
+main ff to unit/roadmap-0925 exit=0
+To https://github.com/mikesaintsg/veneer.git
+   2376710..094a71e  main -> main
+push exit=0
+worktree remove exit=0
+Deleted branch unit/roadmap-0925 (was 094a71e).
+branch delete exit=0
+094a71e Merge remote-tracking branch 'origin/main' into unit/roadmap-0925
+a0bee24 Point the J-ENGINE roadmap row at the engine plan instead of listing carriers
+2376710 Fold the CASCADE landing and the tenet audit's carriers into the roadmap

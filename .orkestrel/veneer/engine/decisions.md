@@ -295,3 +295,71 @@ E24 amended at the J-SAMEWAY-ENGINES-A audit (2026-09-25). The objective lane (t
 - The step restores in reverse order of those first writes.
 
 This is the invariant every engine's returning step follows, Modal and Offcanvas included. J-SAMEWAY-ENGINES-A round 2 applies it to Collapse, Toast, Tab, and Carousel. J-SAMEWAY-ENGINES-B's audit reads Dropdown, Tooltip, and Popover against it. J-OVERLAYS, which next owns Modal and Offcanvas, carries a claim that they conform.
+
+## E31 — the user's rulings of 2026-09-25: the toast swipe is taken, the engine session takes the Windows receipts, and the styles session is told the motion and E-VUE rulings (2026-09-25)
+
+The user ruled these in this session, on the questions this session put.
+
+- **The toast swipe is taken.** E11 widens to take a toast swipe-to-dismiss, which E29 had refused for this campaign. The user's reason: Elements and Mailbox already address it, so it should be easy to implement.
+  - The design follows the mechanism Elements and Mailbox use, read from their sources before the design round. The J-ELEMENTS planner's adoption shape (`units/j-elements-design-planner-proposal.md`) is the starting proposal: touch and pen only, a per-move `Swipe` report, a signed offset variable, and a state token.
+  - The engine writes the gesture. A cascade rule that reads its state is the styles session's, under E26's split.
+  - The unit is J-TOAST-SWIPE, after a design round with both lanes.
+- **The engine session takes the Windows receipts.** It captures the Windows Chromium and Edge receipts the styles session's E-RECEIPTS needs (`../e-receipts-design-verdict.md`), which only this host can produce, as a tracked unit, to the paths the styles session names.
+- **The styles session is told directly.** The user asked that the styles session be told E26's motion and E-VUE rulings as ruled. It was sent the same hour, with this decision's other two items.
+
+## E32 — an engine's motion proof reads the rendered motion and pins no value the cascade owns (2026-09-25)
+
+The styles session's motion ruling (`../e-id-motion-design-verdict.md` § Pending shared changes for the engine session) moves the collapse, modal, offcanvas, carousel, `.fade`, tooltip, popover, and toast transitions to Elements' motion contract. It asks this session to convert its proofs before the first motion unit lands. The engine proofs pin Bootstrap's literals, so each motion unit would turn them red.
+
+**The rule.** An engine proof runs against the shipped cascade and proves the engine's behaviour against whatever motion that cascade ships.
+- It pins no duration, easing, or transitioned property list. Those are the styles session's values, and its style proofs pin them through `sampleTransition`.
+- It reads a positive duration on each element the engine moves, so the proof still runs a real transition.
+- At each completion event, it reads no running animation on any element the engine moved. A completion that fires while a longer motion runs is a defect of the engine, not of the proof.
+- A motion-factor case asserts the ratio between two readings of the same element, never a literal product.
+- No test-local copy of a shipped rule stands in for it.
+
+**The engine follows the longest motion it moves.** Where a completion must follow the motion of more than one element, the engine settles on each of them. Modal's show settles on its dialog alone, which holds only while the dialog's transition outlasts the host's fade. The rule holds whatever the cascade ships, so Modal's show settles on both.
+
+**The units.**
+- J-MOTION-PROOFS-A converts `Modal.test.ts`, `Offcanvas.test.ts`, `Backdrop.test.ts`, and `Alert.test.ts`, and carries Modal's two-element settle.
+- J-MOTION-PROOFS-B converts `Collapse.test.ts`, `Toast.test.ts`, `Tab.test.ts`, and `Carousel.test.ts` after J-SAMEWAY-ENGINES-A lands, and carries the objective lane's Toast finding: its proof permits an animation still running at `shown`.
+- J-MOTION-PROOFS-C converts `Tooltip.test.ts` and `Popover.test.ts` after J-SAMEWAY-ENGINES-B lands.
+
+The styles session holds each motion unit's landing until the proofs for its component have landed. Whether `Dropdown` can settle on an entry animation is J-DROPDOWN-SETTLE's design question, after J-SAMEWAY-ENGINES-B lands.
+
+## E33 — the toast swipe: `Swipe` grows into the one swipe mechanism, and a release past the threshold dismisses through `hide()` (2026-09-25)
+
+The J-TOAST-SWIPE design round ran both lanes blind on `units/j-toast-swipe-design-brief.md`:
+- the subjective lane, `planner` on Opus 5.5: `units/j-toast-swipe-design-planner-proposal.md`;
+- the objective lane, `analyst` on GPT-6 Astra, thread `01a0d6bf-8bf0-7153-bbdb-4f3e26c3929a`: `units/j-toast-swipe-design-analyst-proposal.md`.
+
+**Both lanes agree, and this ruling adopts:**
+- touch and pen only, the primary button, and never the mouse, so desktop text selection stays;
+- one tracked pointer, with a second ignored;
+- an axis lock at 6 CSS px, where a vertical lock ends the gesture;
+- a commit only on the tracked pointer's release past the 80 px threshold, through the ordinary `hide()` under E24, with no fly-off and no gesture event;
+- `pointercancel` never commits;
+- the autohide timer held while the gesture runs, and the full delay armed again after a snap back unless hover or focus holds it;
+- a `touch` option that defaults to `true`;
+- the engine's writes limited to a state token and custom properties, with every rendered declaration in the styles session's cascade (E26).
+
+**Where the lanes differ, the Orchestrator rules:**
+1. **`Swipe` grows** (the planner). `AGENTS.md` requires one shared implementation and one term per concept, and a private pointer lifecycle in `Toast` would duplicate `Swipe`'s pointer tracking. The analyst's objection is that the carousel's contract changes. Under Bootstrap's `touch-action: pan-y` the browser already cancels a vertical-first touch pan, so the lock matches what the carousel receives. The unit proves every carousel swipe case green except the second-pointer case, which changes to the one-pointer rule, and J-ORACLE's census reads the carousel again.
+2. **The commit order** (the planner). Remove the swipe token, `await hide()`, then restore the gesture snapshot. The hide never writes the gesture's targets, so none of them enters its return, and the fade starts where the finger lifted. A refused hide leaves no stranded property, because the restore follows every outcome.
+3. **The feedback** (the planner). The engine writes `--vn-swipe-offset`, the signed displacement capped at the threshold, and `--vn-swipe-progress`, from 0 to 1. The opacity curve and its floor are the cascade's. The analyst's engine-computed opacity is refused as policy in the mechanism.
+4. **The vocabulary** (the planner). The option is `touch`, the attribute `data-bs-touch`, and the class keys `pointer` (`pointer-event`) and `swipe` (`swiping`). These are the carousel's terms. Veneer declares no `data-vn-*` attribute, so the analyst's `swipe` option and `data-vn-swipe` attribute are refused.
+5. **The control selector.** The key is `control` (the planner's noun). The default list is the analyst's: `a, button, input, textarea, select, label, summary, [role="button"], [tabindex], [draggable="true"], [contenteditable]:not([contenteditable="false"]), audio[controls], video[controls]`. The swipe also refuses an element whose `isContentEditable` reads true, and it matches along the composed path up to the host, so an exposed shadow descendant is protected.
+6. **Capture at the horizontal lock, with no `preventDefault` on the press** (the planner). A tap on the toast body keeps its default actions.
+7. **An accepted `show()` or `hide()` during a drag ends the gesture** (the analyst). It restores the gesture snapshot before that change's first write, and the gesture's later release does nothing. This one invariant replaces the planner's token-derived follow rule.
+8. **Terminal handling is idempotent** (the analyst). A `lostpointercapture` after the release does nothing, and a capture that fails to take undoes the partial gesture.
+9. **The threshold compares strictly**, as `Swipe` does.
+10. **Touch action is `pan-y pinch-zoom`** (the analyst), so pinch-zoom stays available.
+
+**The units.**
+- **J-TOAST-SWIPE:** `opus` on Opus 5.5, native, because its proofs drive trusted touch in Chromium.
+  - It follows J-MOTION-PROOFS-B, because `Toast.test.ts` and `Carousel.test.ts` pass from J-SAMEWAY-ENGINES-A to J-MOTION-PROOFS-B to this unit in that order.
+  - It starts with the planner's readings R1 to R5 on Chromium 153, and stops if a reading contradicts a ruling.
+  - It drives trusted input through `sendProtocol` from `@orkestrel/test`'s browser entry, the route `Carousel.test.ts` already takes. It adds a `tests/setupBrowser.ts` helper only when a second file needs one.
+- **J-TOAST-SWIPE-CASCADE:** `opus` on Opus 5.5, after J-TOAST-SWIPE and the styles session's rule land. It runs trusted drags against the shipped cascade.
+- **The styles session** receives the cascade contract when this ruling is recorded.
+- **J-ORACLE-GATE** writes the departure row: a toast carries `pointer-event`.

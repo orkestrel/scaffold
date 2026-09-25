@@ -1,0 +1,2 @@
+M	tests/src/browser/Button.test.ts
+M	tests/src/browser/ScrollSpy.test.ts

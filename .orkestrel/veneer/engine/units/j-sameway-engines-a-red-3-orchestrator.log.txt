@@ -1,0 +1,38 @@
+# The Orchestrator's red reading of J-SAMEWAY-ENGINES-A's cases on 2760f7e's sources (2026-09-25, Chromium 153.0.8010.12), tests at 5e3ae52 Read HostSnapshot's saved value through the shared readHostValue leaf, and state the prior-value return in the guide
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2087:2 > Carousel > returns a slide whose completing write a reaction answers by removing the incoming active token, restoring an order token the incoming item carried before the slide
+AssertionError: expected [ 'carousel-item' ] to deeply equal [ 'carousel-item', …(1) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2122:2 > Carousel > returns a slide whose outgoing removal a reaction answers by removing the incoming active token, restoring a direction token the outgoing item carried before the slide
+AssertionError: expected [ 'carousel-item', 'active' ] to deeply equal [ 'carousel-item', …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Carousel.test.ts:2269:2 > Carousel > returns a slide whose outgoing removal a reaction answers by removing the incoming active token, reactivating the outgoing item and its indicator
+AssertionError: expected [ [ 'first', 'class', '' ], …(4) ] to deeply equal [ [ 'one', 'class', …(1) ], …(4) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:917:2 > Collapse > returns a show whose completing token write a reaction answers by removing the shown token, clearing the transition token and the size, so a later show runs
+AssertionError: expected [ …(2) ] to deeply equal [ [ 'style', 'height: 0px;' ], …(1) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1047:2 > Collapse > returns a hide whose host-and-shown removal a reaction answers by adding the shown token back, clearing the size and the transition token and adding the host token
+AssertionError: expected [ [ 'style', 'height: 17px;' ], …(2) ] to deeply equal [ Array(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1102:2 > Collapse > returns a hide whose size clearing a reaction answers by adding the shown token, ending the transition and dispatching no hidden event
+AssertionError: expected [ Array(2) ] to deeply equal [ Array(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1168:2 > Collapse > returns a hide whose trigger write a reaction answers by adding the shown token, expanding that trigger again and writing no aria-expanded value it never wrote
+AssertionError: expected [ [ 'panel', 'style', …(1) ], …(3) ] to deeply equal [ [ 'trigger', 'class', …(1) ], …(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1400:2 > Collapse > returns a show whose listener added the shown token and whose zero-size write a reaction answers by removing it, adding back the host token and clearing the size
+AssertionError: expected [ [ 'class', 'collapsing' ], …(2) ] to deeply equal [ [ 'style', 'height: 0px;' ], …(2) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1444:2 > Collapse > returns a show whose completing token write a reaction answers by removing the shown token to the inline size and the trigger state held before the show
+AssertionError: expected '' to be '12px' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1480:2 > Collapse > returns a show whose completing token write a reaction answers by removing the shown token, leaving a trigger value the host wrote that the show never changed
+AssertionError: expected 'false' to be 'mixed' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/Collapse.test.ts:1552:2 > Collapse > returns a show whose transition removal a reaction answers by removing the shown token, clearing the size and collapsing each trigger that names no shown panel
+AssertionError: expected [ [ 'details', 'style', …(1) ], …(2) ] to deeply equal [ …(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1383:2 > Tab > returns a swap whose control-activation write a reaction answers by removing the active token, reactivating and reselecting the sibling
+AssertionError: expected [ [ 'home-tab', 'class', …(1) ], …(2) ] to deeply equal [ …(3) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1549:2 > Tab > returns a swap whose control loses its active token during the pane fade, reactivating the sibling and its pane and deactivating the control and its pane
+AssertionError: expected [ Array(4) ] to deeply equal [ Array(4) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1593:2 > Tab > returns a swap whose control loses its active token during the pane fade, reopening the dropdown that holds the sibling
+AssertionError: expected [ Array(4) ] to deeply equal [ Array(4) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1643:2 > Tab > returns a swap whose control loses its active token on the sibling hidden event, leaving the closed dropdown that holds the sibling closed
+AssertionError: expected [ 'nav-link', 'dropdown-toggle', …(1) ] to deeply equal [ 'nav-link', 'dropdown-toggle' ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Tab.test.ts:1707:2 > Tab > returns a swap between two controls of one open dropdown whose control loses its active token on the sibling hidden event, leaving that dropdown open
+AssertionError: expected [ 'nav-link', 'dropdown-toggle' ] to deeply equal [ 'nav-link', 'dropdown-toggle', …(1) ]
+ FAIL  |src:browser (chromium)| tests/src/browser/Toast.test.ts:1316:2 > Toast > returns a show whose token write a reaction answers by removing the shown token, leaving no showing token, so a later show and hide run
+AssertionError: expected [ 'toast fade showing', …(1) ] to deeply equal [ 'toast fade showing', 'toast fade' ]
+      Tests  17 failed | 188 passed (205)
+restored byte for byte (the Orchestrator's digest)

@@ -1,0 +1,96 @@
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1104,15 +1104,17 @@
+ change over. Until that moment no door reads the `shown` token.
+ 
+ A call the panel took over resolves `false`, dispatches nothing, and takes one further step that
+-returns what the change wrote. A show taken over removes the `transition` token and the inline size
+-while the show holds them, adds back the `host` token it removed, and gives the `collapsed` token
+-and an `aria-expanded` value of `false` to each trigger it expanded none of whose panels is shown.
+-A hide taken over removes the inline size and the `transition` token while the hide holds them,
+-adds back the `host` token it removed, and removes the `collapsed` token from and writes an
+-`aria-expanded` value of `true` on each trigger it collapsed. Each step returns only the trigger
+-writes the call made. It reads no door; before each of its writes it reads only the call's identity
+-and the collapse's lifetime, so a destruction inside one of its writes stops the step and the
+-snapshot's restoration stands, and a call a reaction starts inside one supersedes the step.
++returns what the change wrote. The step restores each target the call changed to the value that
++target held before the call's first write to it, in reverse order of those first writes: the
++panel's `transition` and `host` tokens and inline size, and each trigger's `collapsed` token and
++`aria-expanded` value. A write that changes nothing records nothing, so a trigger that was already
++expanded or a panel without the `host` token takes no write, and a target the call writes more than
++once goes back to the value it held before the first of those writes, so an inline size the panel
++carried before the show comes back. The `shown` token stays as the panel's host moved it. The step
++reads no door; before each of its writes it reads the call's identity, the collapse's lifetime,
++and the target's value, and it writes nothing to a target that already holds the recorded value.
++A destruction inside one of its writes stops the step and the snapshot's restoration stands, and
++a call a reaction starts inside one supersedes the step.
+ Destruction aborts the wait, so a call awaiting the transition resolves `false` and dispatches no
+ completed event, and restoration writes back the panel's tokens and inline size and each trigger's
+ `collapsed` token and `aria-expanded` value.
+@@ -1385,12 +1387,18 @@
+ `true`. From the moment the call finds the token on the control, right after the pre-change events
+ or at its own token write, each door also reads the token there. A control that loses the token
+ then, while no other control of the list is active, takes the swap over: the call resolves `false`,
+-dispatches nothing more, and takes one further step that writes back each value the swap wrote, in
+-its order. The sibling takes its `active` token back, its pane its `active` and `shown` tokens, and
+-each control and dropdown the swap wrote the selection, tab stop, and open state it had, so the list
+-shows the sibling again; the control's pane loses the tokens the swap added. The sibling's blur is
+-not returned. The step reads no door; before each of its writes it reads only the call's identity
+-and the tab's lifetime. Destruction aborts the wait, so a call awaiting the fade resolves `false`
++dispatches nothing more, and takes one further step that returns what the swap wrote. The step
++restores each target the swap changed to the value that target held before the swap's first write
++to it, in reverse order of those first writes: the sibling's `active` token, its pane's `active` and
++`shown` tokens, each control's `aria-selected` value and tab stop, the toggle, menu, and wrapper
++state of each dropdown that holds a control, and the control's pane tokens. A write that changes
++nothing records nothing, so a closed dropdown that holds the sibling stays closed, and a target the
++swap writes more than once, such as a dropdown that holds both controls, goes back to the value it
++held before the first of those writes. The list then shows the sibling again. The control's `active`
++token stays as the host moved it, and the sibling's blur is not returned. The step reads no door;
++before each of its writes it reads the call's identity, the tab's lifetime, and the target's
++value, and it writes nothing to a target that already holds the recorded value. Destruction
++aborts the wait, so a call awaiting the fade resolves `false`
+ and dispatches no completed event, and restoration writes back every value the tab wrote that no
+ live engine still holds: the roles and states it wrote at construction, and the tokens and states
+ of the control, its pane, the sibling it deactivated, that sibling's pane, and each dropdown. The
+@@ -1978,12 +1986,16 @@
+ resolves `true`. From the moment the slide finds the token on the incoming item, right after the
+ `slide.vn.carousel` dispatch or at its own token write, each door also reads the token there. A host
+ that takes the token off the incoming item then takes the slide over: the slide resolves `false`,
+-dispatches nothing more, and takes one further step that writes back each value the slide wrote, in
+-its order. Each indicator takes back the `active` token and the `aria-current` value it had, the
+-outgoing item takes back its `active` token and loses the direction token the slide added, and the
+-incoming item loses the order and direction tokens the slide added, so the carousel shows the
+-outgoing item again. The step reads no door; before each of its writes it reads only the carousel's
+-lifetime and the slide in flight. Destruction aborts the wait, so a slide awaiting the transition
++dispatches nothing more, and takes one further step that returns what the slide wrote. The step
++restores each target the slide changed to the value that target held before the slide's first
++write to it, in reverse order of those first writes: each indicator's `active` token and
++`aria-current` value, both items' order and direction tokens, and the outgoing item's `active`
++token. A write that changes nothing records nothing, and an order or direction token that an item
++carried before the slide and the completion removes comes back as well. The carousel then shows the
++outgoing item again, and the incoming item's `active` token stays as the host moved it. The step
++reads no door; before each of its writes it reads the carousel's lifetime, the slide in flight,
++and the target's value, and it writes nothing to a target that already holds the recorded value.
++Destruction aborts the wait, so a slide awaiting the transition
+ resolves `false` and dispatches no completed event, and a `slide` call waiting on it resolves
+ `false` as well.
+ Restoration writes back each item's tokens and each indicator's `active` token and `aria-current`
+@@ -2482,10 +2494,14 @@
+ token, and leaves the toast accepting later calls.
+ 
+ A call the toast took over resolves `false`, dispatches nothing, and takes one further step that
+-returns what the change wrote: a show taken over removes the `transition` token while the show holds
+-it and the `fade` token when the show added it, and a hide taken over removes the `transition` token
+-while the hide holds it. The step reads no door; before each of its writes it reads only the call's
+-identity and the toast's lifetime. The timer an accepted call cleared stays cleared after the call is
++returns what the change wrote. The step restores each token the call changed to the presence it had
++before the call's first write to it, in reverse order of those first writes: a show taken over
++removes the `transition` token while the show holds it and then the `fade` token when the show
++added it, and a hide taken over removes the `transition` token while the hide holds it. A write that
++changes nothing records nothing, so a `fade` token the toast carried before the show stays. The
++`shown` token stays as the host moved it. The step reads no door; before each of its writes it
++reads only the call's identity and the toast's lifetime. The timer an accepted call cleared stays
++cleared after the call is
+ taken over, until the pointer or focus leaves the toast with neither inside or a later show
+ completes. Destruction clears the timer and aborts the wait, so a call awaiting the transition
+ resolves `false` and dispatches no completed event, and restoration writes back the toast's `shown`,

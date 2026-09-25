@@ -1,0 +1,10 @@
+Return each target a taken-over change wrote to the value it held before the change's first write, in reverse order
+
+A taken-over change returned entries that did not describe what it wrote. Tab restored dropdown tokens it never removed, and its forward-order return re-closed a dropdown both controls share. Carousel's completion removed an order token the incoming item already carried, with no entry to restore it.
+
+Collapse, Toast, Tab, and Carousel now record each target at its first changing write, with the value it held before, and record nothing for a write that changes nothing. On a takeover they restore those values in reverse order, skipping a target already at its recorded value. The engine's own token is never recorded, as E24's amendment of 2026-09-25 rules.
+
+The three audit witnesses and five further inputs read red on 7511b82's sources. The instrument kills each through an assertion.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BY9j9qxXVLJdizDdguCY1K
