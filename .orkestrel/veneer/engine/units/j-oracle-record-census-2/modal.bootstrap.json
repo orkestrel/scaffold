@@ -1,0 +1,5125 @@
+{
+	"version": "5.3.8",
+	"plugin": "modal",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "modal.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "modal.click.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "modal-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "modal",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.click.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "modal.click.trigger.again",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "modal-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "modal",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.press.escape",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "modal.click.trigger.third",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "modal-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "modal",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.point.backdrop",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "modal.click.static",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "static-title",
+							"aria-modal": "true",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "static",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.press.static.escape",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "static-title",
+							"aria-modal": "true",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "static",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.point.static.backdrop",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "static-title",
+							"aria-modal": "true",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "static",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.click.static.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "static-trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "modal.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "modal.reduced.click.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "modal-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "modal",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.reduced.click.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "modal.reduced.click.trigger.again",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "modal-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "modal",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.reduced.press.escape",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "modal.reduced.click.trigger.third",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "modal-title",
+							"aria-modal": "true",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "modal",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.reduced.point.backdrop",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "modal.reduced.click.static",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "static-title",
+							"aria-modal": "true",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "static",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.reduced.press.static.escape",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "static-title",
+							"aria-modal": "true",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "static",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.reduced.point.static.backdrop",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [
+							"modal-open"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal",
+							"show"
+						],
+						"attributes": {
+							"aria-labelledby": "static-title",
+							"aria-modal": "true",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"role": "dialog",
+							"tabindex": "-1"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"text": "Body",
+						"parent": "static-body"
+					},
+					"+.modal-backdrop[0]": {
+						"classes": [
+							"fade",
+							"modal-backdrop",
+							"show"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					}
+				},
+				"focus": "static",
+				"locked": true
+			}
+		},
+		{
+			"name": "modal.reduced.click.static.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-primary"
+						],
+						"attributes": {
+							"data-bs-target": "#modal",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open modal",
+						"parent": "body"
+					},
+					"static-trigger": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-target": "#static",
+							"data-bs-toggle": "modal",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Open static",
+						"parent": "body"
+					},
+					"modal": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "modal-title",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"modal-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal"
+					},
+					"modal-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-dialog"
+					},
+					"modal-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Modal",
+						"parent": "modal-header"
+					},
+					"modal-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "modal-header"
+					},
+					"modal-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "modal-body"
+					},
+					"modal-footer": {
+						"classes": [
+							"modal-footer"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "modal-content"
+					},
+					"modal-cancel": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"text": "Cancel",
+						"parent": "modal-footer"
+					},
+					"static": {
+						"classes": [
+							"fade",
+							"modal"
+						],
+						"attributes": {
+							"aria-hidden": "true",
+							"aria-labelledby": "static-title",
+							"data-bs-backdrop": "static",
+							"data-bs-keyboard": "false",
+							"tabindex": "-1"
+						},
+						"visible": false,
+						"parent": "body"
+					},
+					"static-dialog": {
+						"classes": [
+							"modal-dialog"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static"
+					},
+					"static-content": {
+						"classes": [
+							"modal-content"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-dialog"
+					},
+					"static-header": {
+						"classes": [
+							"modal-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-title": {
+						"classes": [
+							"fs-5",
+							"modal-title"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Static",
+						"parent": "static-header"
+					},
+					"static-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "modal",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "static-header"
+					},
+					"static-body": {
+						"classes": [
+							"modal-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "static-content"
+					},
+					"static-text": {
+						"classes": [],
+						"attributes": {},
+						"visible": false,
+						"text": "Body",
+						"parent": "static-body"
+					}
+				},
+				"focus": "static-trigger",
+				"locked": false
+			}
+		}
+	]
+}

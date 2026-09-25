@@ -1,0 +1,5 @@
+M	guides/veneer.md
+M	src/browser/Modal.ts
+M	tests/src/browser/Alert.test.ts
+M	tests/src/browser/Backdrop.test.ts
+M	tests/src/browser/Modal.test.ts

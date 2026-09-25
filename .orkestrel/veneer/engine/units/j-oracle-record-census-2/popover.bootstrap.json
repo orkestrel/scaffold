@@ -1,0 +1,1599 @@
+{
+	"version": "5.3.8",
+	"plugin": "popover",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "popover.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.click.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-header[0]": {
+						"classes": [
+							"popover-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Title",
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Body text",
+						"parent": "+.popover[0]"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.click.trigger.again",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.press.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-header[0]": {
+						"classes": [
+							"popover-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Title",
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Body text",
+						"parent": "+.popover[0]"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.click.away",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-header[0]": {
+						"classes": [
+							"popover-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Title",
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Body text",
+						"parent": "+.popover[0]"
+					}
+				},
+				"focus": "away",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.click.body",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[1]",
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-header[0]": {
+						"classes": [
+							"popover-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Title",
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Body text",
+						"parent": "+.popover[0]"
+					},
+					"+.popover[1]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[1]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[1]"
+					},
+					"+.popover-body[1]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Only body",
+						"parent": "+.popover[1]"
+					}
+				},
+				"focus": "body-only",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.click.trigger.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Only body",
+						"parent": "+.popover[0]"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.call.hide",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.reduced.click.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-header[0]": {
+						"classes": [
+							"popover-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Title",
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Body text",
+						"parent": "+.popover[0]"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.reduced.click.trigger.again",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.reduced.press.trigger",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-header[0]": {
+						"classes": [
+							"popover-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Title",
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Body text",
+						"parent": "+.popover[0]"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.reduced.click.away",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-header[0]": {
+						"classes": [
+							"popover-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Title",
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Body text",
+						"parent": "+.popover[0]"
+					}
+				},
+				"focus": "away",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.reduced.click.body",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[1]",
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-header[0]": {
+						"classes": [
+							"popover-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Title",
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Body text",
+						"parent": "+.popover[0]"
+					},
+					"+.popover[1]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[1]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[1]"
+					},
+					"+.popover-body[1]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Only body",
+						"parent": "+.popover[1]"
+					}
+				},
+				"focus": "body-only",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.reduced.click.trigger.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"aria-describedby": "+.popover[0]",
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					},
+					"+.popover[0]": {
+						"classes": [
+							"bs-popover-auto",
+							"fade",
+							"popover",
+							"show"
+						],
+						"attributes": {
+							"data-popper-placement": "right",
+							"role": "tooltip"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"+.popover-arrow[0]": {
+						"classes": [
+							"popover-arrow"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "+.popover[0]"
+					},
+					"+.popover-body[0]": {
+						"classes": [
+							"popover-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Only body",
+						"parent": "+.popover[0]"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		},
+		{
+			"name": "popover.reduced.call.hide",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"stage": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"trigger": {
+						"classes": [
+							"btn",
+							"btn-danger"
+						],
+						"attributes": {
+							"data-bs-content": "Body text",
+							"data-bs-title": "Title",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Popover",
+						"parent": "stage"
+					},
+					"body-only": {
+						"classes": [
+							"btn",
+							"btn-secondary"
+						],
+						"attributes": {
+							"data-bs-content": "Only body",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Body only",
+						"parent": "stage"
+					},
+					"away": {
+						"classes": [
+							"btn",
+							"btn-light"
+						],
+						"attributes": {
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Away",
+						"parent": "stage"
+					}
+				},
+				"focus": "trigger",
+				"locked": false
+			}
+		}
+	]
+}

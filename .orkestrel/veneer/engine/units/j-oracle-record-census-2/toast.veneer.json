@@ -1,0 +1,1957 @@
+{
+	"version": "5.3.8",
+	"plugin": "toast",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "toast.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.call.show",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"show",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": true,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.click.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.call.show.again",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"show",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": true,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.call.hide",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.call.still",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"show",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": true,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.click.still.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.reduced.call.show",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"show",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": true,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.reduced.click.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.reduced.call.show.again",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"show",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": true,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.reduced.call.hide",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.reduced.call.still",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"show",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": true,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": true,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": true,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "toast.reduced.click.still.close",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"container": {
+						"classes": [
+							"p-3",
+							"toast-container"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"toast": {
+						"classes": [
+							"fade",
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "assertive",
+							"data-bs-autohide": "false",
+							"role": "alert"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"toast-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "toast"
+					},
+					"toast-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Notice",
+						"parent": "toast-header"
+					},
+					"toast-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "toast-header"
+					},
+					"toast-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Saved.",
+						"parent": "toast"
+					},
+					"still": {
+						"classes": [
+							"toast"
+						],
+						"attributes": {
+							"aria-atomic": "true",
+							"aria-live": "polite",
+							"data-bs-animation": "false",
+							"data-bs-autohide": "false",
+							"role": "status"
+						},
+						"visible": false,
+						"parent": "container"
+					},
+					"still-header": {
+						"classes": [
+							"toast-header"
+						],
+						"attributes": {},
+						"visible": false,
+						"parent": "still"
+					},
+					"still-title": {
+						"classes": [
+							"me-auto"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Still",
+						"parent": "still-header"
+					},
+					"still-close": {
+						"classes": [
+							"btn-close"
+						],
+						"attributes": {
+							"aria-label": "Close",
+							"data-bs-dismiss": "toast",
+							"type": "button"
+						},
+						"visible": false,
+						"parent": "still-header"
+					},
+					"still-body": {
+						"classes": [
+							"toast-body"
+						],
+						"attributes": {},
+						"visible": false,
+						"text": "Unanimated.",
+						"parent": "still"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		}
+	]
+}

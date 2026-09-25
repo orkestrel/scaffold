@@ -32,8 +32,14 @@ The executable plan of record is Veneer's `ROADMAP.md` (§ Protocol › § The e
 
 **In flight (this session).**
 - J-SAMEWAY-ENGINES-B round 3 (`units/j-sameway-engines-b-brief-3.md`, `opus` on Opus 5.5) is writing in `tmp/worktrees/engines-b`, on the merge `45aebaa` of `main` `3058570`. It carries three things: prior-value returns through `HostWrite`, a refused reopening that completes the hide, and the B4 table.
-- J-MOTION-PROOFS-A round 3 (`units/j-motion-proofs-a-brief-3.md`) is writing. The audit of rounds 1 and 2 ruled FAIL 2, 3 (`units/j-motion-proofs-a-audit-verdict.md`). Round 3 carries four things: Modal settles its live dialog; the hide proofs read the backdrop's motion; Alert reads its animations at `closed`; and the Backdrop replacement-token case keeps a transition.
-- J-ORACLE-RECORD round 2 (`units/j-oracle-record-brief-2.md`) is writing. The audit of `9ea360d` ruled FAIL 1, 3, 7, 9, 11, 14 (`units/j-oracle-record-audit-verdict.md`), and E28 is amended. Round 2 covers:
+- J-MOTION-PROOFS-A round 3 is committed as `5b98071`, with the guide integration `180d513`. Its replay reads every row killed by an assertion and the plant green (`units/j-motion-proofs-a-replay-3.log.txt`). `analyst` on Astra audits it (`units/j-motion-proofs-a-audit-claims-3.md`).
+- J-ORACLE-RECORD round 3 (`units/j-oracle-record-brief-3.md`) is writing. Round 2 is committed as `c66e317`, and its audit ruled FAIL 3, 5 (`units/j-oracle-record-audit-2-verdict.md`). E28 is amended again. Round 3 records:
+  - exact scroll offsets;
+  - each element's tag;
+  - each element's ordered content;
+  - a `never` check in `drivePluginAction`;
+  - the wording fixes.
+  The census's second reading adds one departure, ScrollSpy's smooth-scroll destination (`units/j-oracle-census-0925.md` § The second reading).
   - own-property labels;
   - one evaluation per reading;
   - text, parent, and scroll facets;

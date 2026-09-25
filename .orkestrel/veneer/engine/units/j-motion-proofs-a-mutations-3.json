@@ -1,0 +1,103 @@
+{
+	"modal-base": {
+		"file": "src/browser/Modal.ts",
+		"test": "tests/src/browser/Modal.test.ts",
+		"base": "0865c67"
+	},
+	"modal-stale-dialog": {
+		"file": "src/browser/Modal.ts",
+		"test": "tests/src/browser/Modal.test.ts",
+		"base": "beb7cd8"
+	},
+	"modal-show-dialog": {
+		"file": "src/browser/Modal.ts",
+		"test": "tests/src/browser/Modal.test.ts",
+		"old": "await this.#settle()\n\t\t\tif (!this.#holds(change, true))",
+		"new": "await settleAnimations(this.#findDialog() ?? host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, true))"
+	},
+	"modal-hide-host": {
+		"file": "src/browser/Modal.ts",
+		"test": "tests/src/browser/Modal.test.ts",
+		"old": "await this.#settle()\n\t\t\tif (!this.#holds(change, false))",
+		"new": "await settleAnimations(host, this.#controller.signal)\n\t\t\tif (!this.#holds(change, false))"
+	},
+	"modal-show-skip": {
+		"file": "src/browser/Modal.ts",
+		"test": "tests/src/browser/Modal.test.ts",
+		"old": "await this.#settle()\n\t\t\tif (!this.#holds(change, true))",
+		"new": "void this.#settle()\n\t\t\tif (!this.#holds(change, true))"
+	},
+	"modal-hide-skip": {
+		"file": "src/browser/Modal.ts",
+		"test": "tests/src/browser/Modal.test.ts",
+		"old": "await this.#settle()\n\t\t\tif (!this.#holds(change, false))",
+		"new": "void this.#settle()\n\t\t\tif (!this.#holds(change, false))"
+	},
+	"modal-backdrop-hide-skip": {
+		"file": "src/browser/Modal.ts",
+		"test": "tests/src/browser/Modal.test.ts",
+		"old": "await held.hide()",
+		"new": "void held.hide()"
+	},
+	"offcanvas-show-backdrop": {
+		"file": "src/browser/Offcanvas.ts",
+		"test": "tests/src/browser/Offcanvas.test.ts",
+		"old": "await Promise.all([settleAnimations(host, signal), appearing])",
+		"new": "await Promise.all([settleAnimations(host, signal)])"
+	},
+	"offcanvas-show-panel": {
+		"file": "src/browser/Offcanvas.ts",
+		"test": "tests/src/browser/Offcanvas.test.ts",
+		"old": "await Promise.all([settleAnimations(host, signal), appearing])",
+		"new": "await Promise.all([appearing])"
+	},
+	"offcanvas-hide-backdrop": {
+		"file": "src/browser/Offcanvas.ts",
+		"test": "tests/src/browser/Offcanvas.test.ts",
+		"old": "await Promise.all([settleAnimations(host, this.#controller.signal), vanishing])",
+		"new": "await Promise.all([settleAnimations(host, this.#controller.signal)])"
+	},
+	"offcanvas-hide-panel": {
+		"file": "src/browser/Offcanvas.ts",
+		"test": "tests/src/browser/Offcanvas.test.ts",
+		"old": "await Promise.all([settleAnimations(host, this.#controller.signal), vanishing])",
+		"new": "await Promise.all([vanishing])"
+	},
+	"backdrop-show-skip": {
+		"file": "src/browser/Backdrop.ts",
+		"test": "tests/src/browser/Backdrop.test.ts",
+		"old": "element.classList.add(shown)\n\t\tif (this.#animated) await settleAnimations",
+		"new": "element.classList.add(shown)\n\t\tif (this.#animated) void settleAnimations"
+	},
+	"backdrop-hide-skip": {
+		"file": "src/browser/Backdrop.ts",
+		"test": "tests/src/browser/Backdrop.test.ts",
+		"old": "element.classList.remove(shown)\n\t\tif (this.#animated) await settleAnimations",
+		"new": "element.classList.remove(shown)\n\t\tif (this.#animated) void settleAnimations"
+	},
+	"backdrop-literal-fade-show": {
+		"file": "src/browser/Backdrop.ts",
+		"test": "tests/src/browser/Backdrop.test.ts",
+		"old": "element.classList.add(shown)\n\t\tif (this.#animated) await settleAnimations",
+		"new": "element.classList.add(shown)\n\t\tif (element.classList.contains('fade')) await settleAnimations"
+	},
+	"backdrop-literal-fade-hide": {
+		"file": "src/browser/Backdrop.ts",
+		"test": "tests/src/browser/Backdrop.test.ts",
+		"old": "element.classList.remove(shown)\n\t\tif (this.#animated) await settleAnimations",
+		"new": "element.classList.remove(shown)\n\t\tif (element.classList.contains('fade')) await settleAnimations"
+	},
+	"alert-skip": {
+		"file": "src/browser/Alert.ts",
+		"test": "tests/src/browser/Alert.test.ts",
+		"old": "await settleAnimations(host, this.#controller.signal)",
+		"new": "void settleAnimations(host, this.#controller.signal)"
+	},
+	"reader-seconds": {
+		"file": "tests/setupBrowser.ts",
+		"test": "tests/setupBrowser.test.ts",
+		"project": "setup:browser",
+		"old": "time.endsWith('ms') ? 1 : 1000",
+		"new": "time.endsWith('ms') ? 1 : 1"
+	}
+}

@@ -1,0 +1,94 @@
+# The Orchestrator's replay of J-ORACLE-RECORD round 2 (2026-09-25, Chromium 153), worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/oracle-record at c66e317 Read text, parents, and scroll offsets in the plugin oracle, look labels up as own properties, and name the oracle's vocabulary (J-ORACLE-RECORD round 2)
+format:check exit=0
+lint:check exit=0
+check exit=0
+ Test Files  1 passed (1)
+      Tests  42 passed (42)
+test:conformance exit=0
+ Test Files  4 passed (4)
+      Tests  333 passed (333)
+test:setup exit=0
+instrument: the worktree copy equals the retained copy (517d04c0d759f50f25ed1665ad9c37ae2386baedcec3191f77597e8c67454c7f)
+--- results (the instrument's stdout)
+digest d5924fe6894e3762337da42ee219b90f8792df20868f7945900e46e62d872738 src/browser/Collapse.ts
+digest c11f5dcc78dbd6e15d4f86577045e6a6ef4a5366a190306be9448cd993fbd191 src/browser/Alert.ts
+digest c68264acba1325e7e633debdd007b06376e357563cc93323bae7b1b44c313164 src/browser/Tab.ts
+digest 8d39eba242d0eaf7a3fe8ea972eb46fcdc9d12a125eb417e84ca081336889545 src/browser/ScrollSpy.ts
+digest e8afef68897340e8d70e9c42fca7ecfb0eb8e69a0f9bcad7c384bc044053b90e src/browser/Dropdown.ts
+digest dff80b8caa7a4238c55cd3fe73011ebbb2adbd531fd6e83447321b87d2b50c53 src/browser/Carousel.ts
+digest 4d39e0fce1b42a231a27e2946b3d30e188c332a2b911a40a395bda444437c633 src/browser/Modal.ts
+digest c5deae69adf09ca83b5ea934c2db7eea62a1b59465fc92980ff11d38cfae5847 src/browser/Offcanvas.ts
+digest 67bd93c4b99a7324a39ab967f710893cfcaa094b435efc9a790f62bad4ec17d0 src/browser/Toast.ts
+digest b4f48b3d6868a20cfa67023e7c7b04aa3aae1e75d7543d695e1d0b0352db704b src/browser/Tooltip.ts
+digest cb8be8da27de842dfa24d79870d13eb914feddfdb083aaec9c47c333d0d69f11 src/browser/constants.ts
+digest 81941ebf1aac521807d7a90d602451635a0a074db95604391dbe06a5e0da23fe src/browser/helpers.ts
+plant 2ce5189a750b1decbd4f2469bdba522786c1d67ad7ecf63736cc3812cdc348c4 tmp\j-oracle\mutation.test.ts
+collapse.expanded: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'collapse', …(6) }, …(47) ] to strictly equal []
+alert.connected: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'alert', …(6) }, …(15) ] to strictly equal []
+tab.selected: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'tab', …(6) }, …(11) ] to strictly equal []
+scrollspy.active: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ Array(12) ] to strictly equal []
+dropdown.expanded: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'dropdown', …(6) }, …(5) ] to strictly equal []
+carousel.current: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'carousel', …(6) }, …(21) ] to strictly equal []
+modal.hidden: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'modal', …(6) }, …(11) ] to strictly equal []
+offcanvas.modal: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'offcanvas', …(6) }, …(7) ] to strictly equal []
+toast.showing: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'toast', …(6) }, …(15) ] to strictly equal []
+tooltip.described: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'tooltip', …(6) }, …(19) ] to strictly equal []
+popover.auto: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'popover', …(6) }, …(11) ] to strictly equal []
+tooltip.text: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'tooltip', …(6) }, …(5) ] to strictly equal []
+dropdown.parent: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'dropdown', …(6) }, …(15) ] to strictly equal []
+scrollspy.destination: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'scrollspy', …(6) }, …(1) ] to strictly equal []
+control.equivalent: HELD (expected HELD, exit 0) ok | the whole run reports success
+control.boom: REFUSED (expected REFUSED, exit 1) ok | Error: The veneer collapse page reported boom; boom; boom; boom; boom; boom; boom; boom
+control.unbound: REFUSED (expected REFUSED, exit 1) ok | [31mBuild failed with 1 error:
+control.suite: REFUSED (expected REFUSED, exit 1) ok | 1 other suite(s) failed: oracle-suite-fault.test.ts
+sources unchanged
+
+| Row | Planted difference | Expected | Reading | Exit | First failure line |
+| --- | --- | --- | --- | --- | --- |
+| collapse.expanded | Collapse writes the wrong aria-expanded value on each trigger | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'collapse', …(6) }, …(47) ] to strictly equal [] |
+| alert.connected | Alert completes its close without removing the alert | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'alert', …(6) }, …(15) ] to strictly equal [] |
+| tab.selected | Tab leaves the outgoing control aria-selected="true" | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tab', …(6) }, …(11) ] to strictly equal [] |
+| scrollspy.active | ScrollSpy leaves the old link active | KILLED | KILLED | 1 | AssertionError: expected [ Array(12) ] to strictly equal [] |
+| dropdown.expanded | Dropdown leaves the toggle aria-expanded="true" after closing | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'dropdown', …(6) }, …(5) ] to strictly equal [] |
+| carousel.current | Carousel leaves aria-current on the outgoing indicator | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'carousel', …(6) }, …(21) ] to strictly equal [] |
+| modal.hidden | Modal leaves aria-hidden="true" on the open modal | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'modal', …(6) }, …(11) ] to strictly equal [] |
+| offcanvas.modal | Offcanvas omits aria-modal="true" while open | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'offcanvas', …(6) }, …(7) ] to strictly equal [] |
+| toast.showing | Toast keeps the showing token after a completed show | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'toast', …(6) }, …(15) ] to strictly equal [] |
+| tooltip.described | Tooltip writes a description id that names no tip | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tooltip', …(6) }, …(19) ] to strictly equal [] |
+| popover.auto | Popover marks its tip with another auto token than bs-popover-auto | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'popover', …(6) }, …(11) ] to strictly equal [] |
+| tooltip.text | TEXT: Tooltip writes a wrong title into its tip | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tooltip', …(6) }, …(5) ] to strictly equal [] |
+| dropdown.parent | PARENT: Dropdown appends its menu to the body when it shows | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'dropdown', …(6) }, …(15) ] to strictly equal [] |
+| scrollspy.destination | SCROLL: ScrollSpy scrolls one section past the one the link names | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'scrollspy', …(6) }, …(1) ] to strictly equal [] |
+| control.equivalent | CONTROL: Collapse writes aria-expanded through an equivalent spelling | HELD | HELD | 0 | the whole run reports success |
+| control.boom | BOOM: Collapse throws inside its trigger write | REFUSED | REFUSED | 1 | Error: The veneer collapse page reported boom; boom; boom; boom; boom; boom; boom; boom |
+| control.unbound | UNBOUND: the row names a span Collapse.ts lacks | REFUSED | REFUSED | 1 | [31mBuild failed with 1 error: |
+| control.suite | SUITE: a killing Collapse plant beside a suite that fails to collect | REFUSED | REFUSED | 1 | 1 other suite(s) failed: oracle-suite-fault.test.ts |
+mismatches: none
+instrument exit=0
+--- killed rows whose failure line does not name an assertion
+none
+--- the instrument's rows
+| Row | Planted difference | Expected | Reading | Exit | First failure line |
+| --- | --- | --- | --- | --- | --- |
+| collapse.expanded | Collapse writes the wrong aria-expanded value on each trigger | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'collapse', â€¦(6) }, â€¦(47) ] to strictly equal [] |
+| alert.connected | Alert completes its close without removing the alert | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'alert', â€¦(6) }, â€¦(15) ] to strictly equal [] |
+| tab.selected | Tab leaves the outgoing control aria-selected="true" | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tab', â€¦(6) }, â€¦(11) ] to strictly equal [] |
+| scrollspy.active | ScrollSpy leaves the old link active | KILLED | KILLED | 1 | AssertionError: expected [ Array(12) ] to strictly equal [] |
+| dropdown.expanded | Dropdown leaves the toggle aria-expanded="true" after closing | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'dropdown', â€¦(6) }, â€¦(5) ] to strictly equal [] |
+| carousel.current | Carousel leaves aria-current on the outgoing indicator | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'carousel', â€¦(6) }, â€¦(21) ] to strictly equal [] |
+| modal.hidden | Modal leaves aria-hidden="true" on the open modal | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'modal', â€¦(6) }, â€¦(11) ] to strictly equal [] |
+| offcanvas.modal | Offcanvas omits aria-modal="true" while open | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'offcanvas', â€¦(6) }, â€¦(7) ] to strictly equal [] |
+| toast.showing | Toast keeps the showing token after a completed show | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'toast', â€¦(6) }, â€¦(15) ] to strictly equal [] |
+| tooltip.described | Tooltip writes a description id that names no tip | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tooltip', â€¦(6) }, â€¦(19) ] to strictly equal [] |
+| popover.auto | Popover marks its tip with another auto token than bs-popover-auto | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'popover', â€¦(6) }, â€¦(11) ] to strictly equal [] |
+| tooltip.text | TEXT: Tooltip writes a wrong title into its tip | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tooltip', â€¦(6) }, â€¦(5) ] to strictly equal [] |
+| dropdown.parent | PARENT: Dropdown appends its menu to the body when it shows | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'dropdown', â€¦(6) }, â€¦(15) ] to strictly equal [] |
+| scrollspy.destination | SCROLL: ScrollSpy scrolls one section past the one the link names | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'scrollspy', â€¦(6) }, â€¦(1) ] to strictly equal [] |
+| control.equivalent | CONTROL: Collapse writes aria-expanded through an equivalent spelling | HELD | HELD | 0 | the whole run reports success |
+| control.boom | BOOM: Collapse throws inside its trigger write | REFUSED | REFUSED | 1 | Error: The veneer collapse page reported boom; boom; boom; boom; boom; boom; boom; boom |
+| control.unbound | UNBOUND: the row names a span Collapse.ts lacks | REFUSED | REFUSED | 1 | [31mBuild failed with 1 error: |
+| control.suite | SUITE: a killing Collapse plant beside a suite that fails to collect | REFUSED | REFUSED | 1 | 1 other suite(s) failed: oracle-suite-fault.test.ts |
+mismatches: none
+--- the Orchestrator's restore check
+every source unchanged byte for byte
+--- status after

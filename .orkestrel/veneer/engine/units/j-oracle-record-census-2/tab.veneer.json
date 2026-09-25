@@ -1,0 +1,2551 @@
+{
+	"version": "5.3.8",
+	"plugin": "tab",
+	"browser": "153.0.8010.12",
+	"steps": [
+		{
+			"name": "tab.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "true",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.click.profile",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "true",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "profile-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.press.right",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "true",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "contact-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.press.home",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "true",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "home-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.press.end",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "true",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "contact-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.press.left",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "true",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "profile-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.initial",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "true",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "body",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.click.profile",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "true",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "profile-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.press.right",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "true",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "contact-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.press.home",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "true",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "home-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.press.end",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "false",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "true",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "contact-tab",
+				"locked": false
+			}
+		},
+		{
+			"name": "tab.reduced.press.left",
+			"state": {
+				"elements": {
+					"html": {
+						"classes": [],
+						"attributes": {
+							"lang": "en"
+						},
+						"visible": true,
+						"scroll": {
+							"top": 0,
+							"left": 0
+						}
+					},
+					"body": {
+						"classes": [],
+						"attributes": {},
+						"visible": true,
+						"parent": "html"
+					},
+					"tabs": {
+						"classes": [
+							"nav",
+							"nav-tabs"
+						],
+						"attributes": {
+							"role": "tablist"
+						},
+						"visible": true,
+						"parent": "body"
+					},
+					"home-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"home-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "home",
+							"aria-selected": "false",
+							"data-bs-target": "#home",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Home",
+						"parent": "home-item"
+					},
+					"profile-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"profile-tab": {
+						"classes": [
+							"active",
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "profile",
+							"aria-selected": "true",
+							"data-bs-target": "#profile",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Profile",
+						"parent": "profile-item"
+					},
+					"contact-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"contact-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "contact",
+							"aria-selected": "false",
+							"data-bs-target": "#contact",
+							"data-bs-toggle": "tab",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Contact",
+						"parent": "contact-item"
+					},
+					"locked-item": {
+						"classes": [
+							"nav-item"
+						],
+						"attributes": {
+							"role": "presentation"
+						},
+						"visible": true,
+						"parent": "tabs"
+					},
+					"locked-tab": {
+						"classes": [
+							"nav-link"
+						],
+						"attributes": {
+							"aria-controls": "locked",
+							"aria-selected": "false",
+							"data-bs-target": "#locked",
+							"data-bs-toggle": "tab",
+							"disabled": "",
+							"role": "tab",
+							"tabindex": "-1",
+							"type": "button"
+						},
+						"visible": true,
+						"text": "Locked",
+						"parent": "locked-item"
+					},
+					"panes": {
+						"classes": [
+							"tab-content"
+						],
+						"attributes": {},
+						"visible": true,
+						"parent": "body"
+					},
+					"home": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "home-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Home pane",
+						"parent": "panes"
+					},
+					"profile": {
+						"classes": [
+							"active",
+							"fade",
+							"show",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "profile-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": true,
+						"text": "Profile pane",
+						"parent": "panes"
+					},
+					"contact": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "contact-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Contact pane",
+						"parent": "panes"
+					},
+					"locked": {
+						"classes": [
+							"fade",
+							"tab-pane"
+						],
+						"attributes": {
+							"aria-labelledby": "locked-tab",
+							"role": "tabpanel",
+							"tabindex": "0"
+						},
+						"visible": false,
+						"text": "Locked pane",
+						"parent": "panes"
+					}
+				},
+				"focus": "profile-tab",
+				"locked": false
+			}
+		}
+	]
+}
