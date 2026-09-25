@@ -1,0 +1,39 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Dropdown.test.ts -t inside the call while a transition
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/concerns-b
+
+ ❯ |src:browser (chromium)| tests/src/browser/Dropdown.test.ts (44 tests | 1 failed | 43 skipped) 15ms
+     × dispatches shown and hidden inside the call while a transition the cascade gives the menu still runs 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Dropdown.test.ts:319:2 > Dropdown > dispatches shown and hidden inside the call while a transition the cascade gives the menu still runs
+AssertionError: expected [] to deeply equal [ [ 'shown.vn.dropdown' ] ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   [[39m
+[32m-     "shown.vn.dropdown",[39m
+[32m-   ],[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/src/browser/Dropdown.test.ts:361:22
+    359|   onTestFinished(() => dropdown.destroy())
+    360|   const showing = dropdown.show()
+    361|   expect(order.calls).toEqual([['shown.vn.dropdown']])
+       |                      ^
+    362|   expect(await showing).toBe(true)
+    363|   await waitForCondition('the entry transition ends', () => order.coun…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 43 skipped (44)
+   Start at  04:51:14
+   Duration  1.79s (transform 0ms, setup 480ms, import 276ms, tests 15ms, environment 0ms)
+

@@ -1,0 +1,35 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Popover.test.ts -t when a listener prevents the (show|hide) event
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/concerns-b
+
+ ❯ |src:browser (chromium)| tests/src/browser/Popover.test.ts (20 tests | 1 failed | 18 skipped) 550ms
+     × writes nothing and dispatches no inserted or shown event when a listener prevents the show event, and shows once the listener leaves 185ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Popover.test.ts:338:2 > Popover > writes nothing and dispatches no inserted or shown event when a listener prevents the show event, and shows once the listener leaves
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Popover.test.ts:362:31
+    360|    signal: prevention.signal,
+    361|   })
+    362|   expect(await popover.show()).toBe(false)
+       |                               ^
+    363|   expect(await popover.toggle()).toBe(false)
+    364|   expect({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 18 skipped (20)
+   Start at  04:52:21
+   Duration  2.40s (transform 0ms, setup 535ms, import 336ms, tests 550ms, environment 0ms)
+

@@ -1,0 +1,61 @@
+# J-RELEASE-CORE landing: the merge of main into unit/release-core (2026-09-24)
+0becad3 State both cases of join's foreign-signal branch (J-RELEASE-CORE round 4)
+8b4e9d6 End a joined class's membership through its own drain, not an event (J-RELEASE-CORE round 3)
+From https://github.com/mikesaintsg/veneer
+ * branch            main       -> FETCH_HEAD
+fetch exit=0
+Already up to date.
+main ff to origin exit=0
+b867c96 Merge branch 'main' into unit/motion-proofs-b
+Auto-merging guides/veneer.md
+Auto-merging src/browser/types.ts
+Merge made by the 'ort' strategy.
+ ROADMAP.md                                       |   8 +-
+ guides/veneer.md                                 | 830 +++++++++++--------
+ src/browser/Carousel.ts                          |  13 +-
+ src/browser/Dropdown.ts                          | 274 +++++--
+ src/browser/Popover.ts                           |   4 +-
+ src/browser/Toast.ts                             |  44 +-
+ src/browser/Tooltip.ts                           | 203 +++--
+ src/browser/types.ts                             |  44 +-
+ src/styles/components/_placeholder.scss          |  16 +-
+ src/styles/components/_spinner.scss              |  24 +-
+ tests/app/browser/sections/EngineSection.test.ts |  25 +-
+ tests/fixtures/tailwind/components.html          |  56 ++
+ tests/fixtures/tailwind/consumer-preflight.css   |   6 +
+ tests/service/tailwind/consumer.test.ts          | 291 +++++--
+ tests/service/tailwind/preflight.test.ts         |  35 +-
+ tests/service/tailwind/profiles.test.ts          |  43 +-
+ tests/setupBrowser.test.ts                       | 127 +++
+ tests/setupBrowser.ts                            | 394 +++++++++
+ tests/setupServer.test.ts                        | 103 +++
+ tests/setupServer.ts                             |  40 +
+ tests/setupService.test.ts                       |  62 +-
+ tests/setupService.ts                            | 131 ++-
+ tests/setupStyles.test.ts                        |  26 +-
+ tests/setupStyles.ts                             | 185 ++++-
+ tests/src/browser/Carousel.test.ts               | 341 ++++++--
+ tests/src/browser/Collapse.test.ts               | 155 ++--
+ tests/src/browser/Dropdown.test.ts               | 991 +++++++++++++++++++++--
+ tests/src/browser/Popover.test.ts                | 415 +++++++++-
+ tests/src/browser/Tab.test.ts                    | 174 +++-
+ tests/src/browser/Toast.test.ts                  | 200 +++--
+ tests/src/browser/Tooltip.test.ts                | 944 ++++++++++++++++++++-
+ tests/src/styles/components/accordion.test.ts    |  29 +-
+ tests/src/styles/components/carousel.test.ts     |  35 +-
+ tests/src/styles/components/close.test.ts        |  24 +-
+ tests/src/styles/components/dropdown.test.ts     |  24 +-
+ tests/src/styles/components/list-group.test.ts   |  24 +-
+ tests/src/styles/components/nav.test.ts          |  29 +-
+ tests/src/styles/components/navbar.test.ts       |  23 +
+ tests/src/styles/components/pagination.test.ts   |  23 +
+ tests/src/styles/components/placeholder.test.ts  |  56 +-
+ tests/src/styles/components/spinner.test.ts      |  60 +-
+ tests/src/styles/elements/button.test.ts         | 129 +--
+ tests/src/styles/mixins.test.ts                  |  28 +
+ tests/src/styles/tokens.test.ts                  | 458 ++++++++++-
+ 44 files changed, 6065 insertions(+), 1081 deletions(-)
+ create mode 100644 tests/fixtures/tailwind/components.html
+ create mode 100644 tests/fixtures/tailwind/consumer-preflight.css
+merge main into unit/release-core exit=0
+conflicts: none

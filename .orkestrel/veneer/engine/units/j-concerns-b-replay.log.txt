@@ -1,0 +1,16 @@
+# J-CONCERNS-B replay (2026-09-25) at 7ab04db
+unmutated tests/src/browser/Dropdown.test.ts: exit 0; Tests  44 passed (44)
+unmutated tests/src/browser/Popover.test.ts: exit 0; Tests  20 passed (20)
+unmutated tests/src/browser/Tooltip.test.ts: exit 0; Tests  74 passed (74)
+## d-motion-show (src/browser/Dropdown.ts -> tests/src/browser/Dropdown.test.ts): exit 1; Tests  2 failed | 42 passed (44); errors {'AssertionError': 2, 'TypeError': 0, 'ReferenceError': 0, 'SyntaxError': 0}; restored True
+  × dispatches shown and hidden inside the call while a transition the cascade gives the menu still runs 5ms
+  × promotes once and dispatches one shown event when a listener to its show event shows it again, the inner call resolving true and the outer false 2ms
+## d-motion-hide (src/browser/Dropdown.ts -> tests/src/browser/Dropdown.test.ts): exit 1; Tests  1 failed | 43 passed (44); errors {'AssertionError': 1, 'TypeError': 0, 'ReferenceError': 0, 'SyntaxError': 0}; restored True
+  × dispatches shown and hidden inside the call while a transition the cascade gives the menu still runs 118ms
+## p-cancel-show (src/browser/Tooltip.ts -> tests/src/browser/Popover.test.ts): exit 1; Tests  1 failed | 19 passed (20); errors {'AssertionError': 1, 'TypeError': 0, 'ReferenceError': 0, 'SyntaxError': 0}; restored True
+  × writes nothing and dispatches no inserted or shown event when a listener prevents the show event, and shows once the listener leaves 167ms
+## p-cancel-hide (src/browser/Tooltip.ts -> tests/src/browser/Popover.test.ts): exit 1; Tests  1 failed | 19 passed (20); errors {'AssertionError': 1, 'TypeError': 0, 'ReferenceError': 0, 'SyntaxError': 0}; restored True
+  × keeps the tip shown, open, and unchanged, dispatching no hidden event, when a listener prevents the hide event a hide call starts 369ms
+## both Tooltip mutations -> Tooltip.test.ts: exit 0; Tests  74 passed (74); restored True
+--- the tree after the replay
+

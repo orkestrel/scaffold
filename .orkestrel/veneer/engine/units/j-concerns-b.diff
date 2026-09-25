@@ -1,0 +1,199 @@
+diff --git a/tests/src/browser/Dropdown.test.ts b/tests/src/browser/Dropdown.test.ts
+index 4c1f290..bd03a6e 100644
+--- a/tests/src/browser/Dropdown.test.ts
++++ b/tests/src/browser/Dropdown.test.ts
+@@ -312,6 +312,79 @@ describe('Dropdown', () => {
+ 		expect(properties.map((name) => style.getPropertyValue(name))).toEqual(unpromoted)
+ 	})
+ 
++	// Bootstrap's dropdown dispatches `shown.bs.dropdown` and `hidden.bs.dropdown` without waiting on a
++	// transition, so a menu animation is cascade feedback the events do not wait for. The planted rule
++	// stands for any entry and exit motion a cascade gives the menu: it fades the menu in from its
++	// starting style and keeps it displayed while it fades out.
++	it('dispatches shown and hidden inside the call while a transition the cascade gives the menu still runs', async () => {
++		scene.load(dropdownCascade)
++		scene.load(`
++			.dropdown-menu { transition: opacity 100ms linear, display 100ms allow-discrete }
++			.dropdown-menu:not(.show) { opacity: 0 }
++			@starting-style { .dropdown-menu.show { opacity: 0 } }`)
++		const root = scene.mount(`
++			<div class="dropdown">
++				<button type="button" id="toggle" data-bs-toggle="dropdown">Menu</button>
++				<ul class="dropdown-menu"><li><button type="button" class="dropdown-item">One</button></li></ul>
++			</div>`)
++		const toggle = requireValue(root.querySelector<HTMLElement>('#toggle'), 'No toggle')
++		const menu = requireValue(root.querySelector<HTMLElement>('.dropdown-menu'), 'No menu')
++		// Each event records the menu's animations as it arrives, and records once more when all of them
++		// have finished, so the order shows whether the event came before the motion ended.
++		const order = createRecorder<readonly [string]>()
++		const motions = createRecorder<readonly [string, ReadonlyArray<readonly [string, number]>]>()
++		const controller = new AbortController()
++		onTestFinished(() => controller.abort())
++		for (const name of [DROPDOWN_EVENTS.shown, DROPDOWN_EVENTS.hidden]) {
++			toggle.addEventListener(
++				name,
++				(event) => {
++					order.handler(event.type)
++					const running = menu.getAnimations()
++					void Promise.all(running.map((animation) => animation.finished)).then(() =>
++						order.handler('ended'),
++					)
++					motions.handler(
++						event.type,
++						running.map((animation): readonly [string, number] => {
++							const duration = animation.effect?.getComputedTiming().duration
++							return [animation.playState, typeof duration === 'number' ? duration : 0]
++						}),
++					)
++				},
++				{ signal: controller.signal },
++			)
++		}
++		const dropdown = new Dropdown(toggle)
++		onTestFinished(() => dropdown.destroy())
++		const showing = dropdown.show()
++		expect(order.calls).toEqual([['shown.vn.dropdown']])
++		expect(await showing).toBe(true)
++		await waitForCondition('the entry transition ends', () => order.count === 2)
++		const hiding = dropdown.hide()
++		expect(order.calls).toEqual([['shown.vn.dropdown'], ['ended'], ['hidden.vn.dropdown']])
++		expect(await hiding).toBe(true)
++		await waitForCondition('the exit transition ends', () => order.count === 4)
++		expect(order.calls).toEqual([
++			['shown.vn.dropdown'],
++			['ended'],
++			['hidden.vn.dropdown'],
++			['ended'],
++		])
++		// Each event arrived while at least one animation ran on the menu, and each of them was a real
++		// motion with a positive duration.
++		expect(
++			motions.calls.map(([name, running]) => [
++				name,
++				running.length > 0 &&
++					running.every(([state, duration]) => state === 'running' && duration > 0),
++			]),
++		).toEqual([
++			['shown.vn.dropdown', true],
++			['hidden.vn.dropdown', true],
++		])
++	})
++
+ 	it('refuses to show or hide a disabled toggle, to show an open menu, and to hide a closed one, writing and dispatching nothing', async () => {
+ 		const root = scene.mount(`
+ 			<div class="dropdown">
+diff --git a/tests/src/browser/Popover.test.ts b/tests/src/browser/Popover.test.ts
+index 5e9c6f5..8b17709 100644
+--- a/tests/src/browser/Popover.test.ts
++++ b/tests/src/browser/Popover.test.ts
+@@ -333,6 +333,110 @@ describe('Popover', () => {
+ 		expect(properties.map((name) => promoted.getPropertyValue(name))).toEqual(unpromoted)
+ 	})
+ 
++	// Bootstrap's popover extends its tooltip, whose `show` returns when a listener prevents the show
++	// event, before it builds or inserts the tip.
++	it('writes nothing and dispatches no inserted or shown event when a listener prevents the show event, and shows once the listener leaves', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(popoverCascade)
++		const root = scene.mount(
++			'<button type="button" id="trigger" title="Draft" data-bs-content="Saved at noon">Save</button>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const events = createRecorder<readonly [string]>()
++		const listeners = new AbortController()
++		onTestFinished(() => listeners.abort())
++		for (const name of Object.values(POPOVER_EVENTS)) {
++			host.addEventListener(name, (event) => events.handler(event.type), {
++				signal: listeners.signal,
++			})
++		}
++		const popover = new Popover(host)
++		onTestFinished(() => popover.destroy())
++		const trigger = host.outerHTML
++		const children = Array.from(document.body.children)
++		const prevention = new AbortController()
++		host.addEventListener('show.vn.popover', (event) => event.preventDefault(), {
++			signal: prevention.signal,
++		})
++		expect(await popover.show()).toBe(false)
++		expect(await popover.toggle()).toBe(false)
++		expect({
++			events: events.calls.flat(),
++			shown: popover.shown,
++			trigger: host.outerHTML,
++			children: Array.from(document.body.children),
++			tip: document.querySelector('.popover'),
++		}).toEqual({
++			events: ['show.vn.popover', 'show.vn.popover'],
++			shown: false,
++			trigger,
++			children,
++			tip: null,
++		})
++		prevention.abort()
++		expect(await popover.show()).toBe(true)
++		expect(events.calls.flat().slice(2)).toEqual([
++			'show.vn.popover',
++			'inserted.vn.popover',
++			'shown.vn.popover',
++		])
++	})
++
++	// Bootstrap's popover extends its tooltip, whose `hide` returns when a listener prevents the hide
++	// event, before it removes the tip's `show` token.
++	it('keeps the tip shown, open, and unchanged, dispatching no hidden event, when a listener prevents the hide event a hide call starts', async () => {
++		scene.load(tokensCascade)
++		scene.load(fadeCascade)
++		scene.load(popoverCascade)
++		const root = scene.mount(
++			'<button type="button" id="trigger" title="Draft" data-bs-content="Saved at noon">Save</button>',
++		)
++		const host = requireValue(root.querySelector<HTMLElement>('#trigger'), 'No trigger')
++		const events = createRecorder<readonly [string]>()
++		const popover = new Popover(host, {
++			on: {
++				hide: (event) => events.handler(event.type),
++				hidden: (event) => events.handler(event.type),
++			},
++		})
++		onTestFinished(() => popover.destroy())
++		expect(await popover.show()).toBe(true)
++		const tip = requireValue(
++			document.getElementById(host.getAttribute('aria-describedby') ?? ''),
++			'No tip',
++		)
++		const trigger = host.outerHTML
++		const markup = tip.outerHTML
++		const prevention = new AbortController()
++		host.addEventListener('hide.vn.popover', (event) => event.preventDefault(), {
++			signal: prevention.signal,
++		})
++		expect(await popover.hide()).toBe(false)
++		expect(await popover.toggle()).toBe(false)
++		expect({
++			events: events.calls.flat(),
++			shown: popover.shown,
++			open: tip.matches(':popover-open'),
++			parent: tip.parentElement,
++			trigger: host.outerHTML,
++			markup: tip.outerHTML,
++			motion: tip.getAnimations(),
++		}).toEqual({
++			events: ['hide.vn.popover', 'hide.vn.popover'],
++			shown: true,
++			open: true,
++			parent: document.body,
++			trigger,
++			markup,
++			motion: [],
++		})
++		prevention.abort()
++		expect(await popover.hide()).toBe(true)
++		expect(events.calls.flat().slice(2)).toEqual(['hide.vn.popover', 'hidden.vn.popover'])
++		expect(tip.isConnected).toBe(false)
++	})
++
+ 	it('fills the header from the title and the body from the content, the constructor over the attributes, and removes an empty header or body', async () => {
+ 		const root = scene.mount(`
+ 			<button type="button" id="both" data-bs-title="Head" data-bs-content="Body">Both</button>

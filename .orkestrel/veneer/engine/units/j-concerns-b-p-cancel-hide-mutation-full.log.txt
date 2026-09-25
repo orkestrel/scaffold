@@ -1,0 +1,36 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Popover.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/concerns-b
+
+Port 63315 is in use, trying another one...
+ ❯ |src:browser (chromium)| tests/src/browser/Popover.test.ts (20 tests | 1 failed) 3472ms
+     × keeps the tip shown, open, and unchanged, dispatching no hidden event, when a listener prevents the hide event a hide call starts 368ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/Popover.test.ts:388:2 > Popover > keeps the tip shown, open, and unchanged, dispatching no hidden event, when a listener prevents the hide event a hide call starts
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/src/browser/Popover.test.ts:415:31
+    413|    signal: prevention.signal,
+    414|   })
+    415|   expect(await popover.hide()).toBe(false)
+       |                               ^
+    416|   expect(await popover.toggle()).toBe(false)
+    417|   expect({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  04:53:13
+   Duration  5.45s (transform 0ms, setup 531ms, import 379ms, tests 3.47s, environment 0ms)
+

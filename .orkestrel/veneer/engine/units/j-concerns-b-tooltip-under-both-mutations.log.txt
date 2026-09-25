@@ -1,0 +1,11 @@
+npm notice run @orkestrel/veneer@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --project src:browser tests/src/browser/Tooltip.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer/tmp/worktrees/concerns-b
+
+
+ Test Files  1 passed (1)
+      Tests  74 passed (74)
+   Start at  04:52:32
+   Duration  11.07s (transform 0ms, setup 510ms, import 368ms, tests 9.21s, environment 0ms)
+
