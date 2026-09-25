@@ -1,0 +1,22 @@
+Move the modal dialog and both backdrops on Elements' panel motion (E-ID-MOTION-MODAL)
+
+A fading dialog rests at scale(0.96) and grows to none over --vn-motion-panel
+on --vn-ease-panel as the show class joins, and the static bounce's
+scale(1.02) runs on the same transition. The modal host fades its opacity over
+--vn-motion-panel on --vn-ease-out from the .modal rule, which wins over the
+shared .fade rule by load order at one specificity, and the overlay-backdrop
+mixin writes the same fade on each backdrop's .fade compound, from 0 to 0.5
+with no blur, so the offcanvas backdrop takes it too. Each proof reads the
+running transition through sampleTransition, asserts a sample is present
+before reading it, and reads a doubled duration at a doubled motion factor and
+none at zero or under reduced motion. The guide records the dialog's entrance
+as a departure and the host and backdrop fades as additions, and the Offcanvas
+engine paragraph names the backdrop's timing by its token.
+
+Written by opus on Opus 5.5 (rounds 1 and 2) and builder on Sonnet (round 3);
+audited by analyst on GPT-6 Astra and reviewer on Opus 5.5 (scaffold
+.orkestrel/veneer/units/mmod-audit-verdict.md, mmod-audit-2-verdict.md, and
+mmod-audit-3-verdict.md).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
