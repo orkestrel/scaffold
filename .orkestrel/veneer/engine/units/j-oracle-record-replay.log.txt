@@ -21,3 +21,60 @@ digest c5deae69adf09ca83b5ea934c2db7eea62a1b59465fc92980ff11d38cfae5847 src/brow
 digest 67bd93c4b99a7324a39ab967f710893cfcaa094b435efc9a790f62bad4ec17d0 src/browser/Toast.ts
 digest b4f48b3d6868a20cfa67023e7c7b04aa3aae1e75d7543d695e1d0b0352db704b src/browser/Tooltip.ts
 digest cb8be8da27de842dfa24d79870d13eb914feddfdb083aaec9c47c333d0d69f11 src/browser/constants.ts
+collapse.expanded: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'collapse', …(6) }, …(47) ] to strictly equal []
+alert.connected: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'alert', …(6) }, …(15) ] to strictly equal []
+tab.selected: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'tab', …(6) }, …(11) ] to strictly equal []
+scrollspy.active: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ Array(12) ] to strictly equal []
+dropdown.expanded: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'dropdown', …(6) }, …(5) ] to strictly equal []
+carousel.current: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'carousel', …(6) }, …(21) ] to strictly equal []
+modal.hidden: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'modal', …(6) }, …(11) ] to strictly equal []
+offcanvas.modal: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'offcanvas', …(6) }, …(7) ] to strictly equal []
+toast.showing: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'toast', …(6) }, …(15) ] to strictly equal []
+tooltip.described: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'tooltip', …(6) }, …(19) ] to strictly equal []
+popover.auto: KILLED (expected KILLED, exit 1) ok | AssertionError: expected [ { plugin: 'popover', …(6) }, …(11) ] to strictly equal []
+control.equivalent: HELD (expected HELD, exit 0) ok | the whole run reports success
+control.boom: REFUSED (expected REFUSED, exit 1) ok | Error: The veneer collapse page reported boom; boom; boom; boom; boom; boom; boom; boom
+control.unbound: REFUSED (expected REFUSED, exit 1) ok | [31mBuild failed with 1 error:
+sources unchanged
+
+| Row | Planted difference | Expected | Reading | Exit | First failure line |
+| --- | --- | --- | --- | --- | --- |
+| collapse.expanded | Collapse writes the wrong aria-expanded value on each trigger | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'collapse', …(6) }, …(47) ] to strictly equal [] |
+| alert.connected | Alert completes its close without removing the alert | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'alert', …(6) }, …(15) ] to strictly equal [] |
+| tab.selected | Tab leaves the outgoing control aria-selected="true" | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tab', …(6) }, …(11) ] to strictly equal [] |
+| scrollspy.active | ScrollSpy leaves the old link active | KILLED | KILLED | 1 | AssertionError: expected [ Array(12) ] to strictly equal [] |
+| dropdown.expanded | Dropdown leaves the toggle aria-expanded="true" after closing | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'dropdown', …(6) }, …(5) ] to strictly equal [] |
+| carousel.current | Carousel leaves aria-current on the outgoing indicator | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'carousel', …(6) }, …(21) ] to strictly equal [] |
+| modal.hidden | Modal leaves aria-hidden="true" on the open modal | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'modal', …(6) }, …(11) ] to strictly equal [] |
+| offcanvas.modal | Offcanvas omits aria-modal="true" while open | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'offcanvas', …(6) }, …(7) ] to strictly equal [] |
+| toast.showing | Toast keeps the showing token after a completed show | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'toast', …(6) }, …(15) ] to strictly equal [] |
+| tooltip.described | Tooltip writes a description id that names no tip | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tooltip', …(6) }, …(19) ] to strictly equal [] |
+| popover.auto | Popover marks its tip with another auto token than bs-popover-auto | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'popover', …(6) }, …(11) ] to strictly equal [] |
+| control.equivalent | CONTROL: Collapse writes aria-expanded through an equivalent spelling | HELD | HELD | 0 | the whole run reports success |
+| control.boom | BOOM: Collapse throws inside its trigger write | REFUSED | REFUSED | 1 | Error: The veneer collapse page reported boom; boom; boom; boom; boom; boom; boom; boom |
+| control.unbound | UNBOUND: the row names a span Collapse.ts lacks | REFUSED | REFUSED | 1 | [31mBuild failed with 1 error: |
+mismatches: none
+instrument exit=0
+--- killed rows whose failure line does not name an assertion
+none
+--- the instrument's rows
+| Row | Planted difference | Expected | Reading | Exit | First failure line |
+| --- | --- | --- | --- | --- | --- |
+| collapse.expanded | Collapse writes the wrong aria-expanded value on each trigger | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'collapse', â€¦(6) }, â€¦(47) ] to strictly equal [] |
+| alert.connected | Alert completes its close without removing the alert | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'alert', â€¦(6) }, â€¦(15) ] to strictly equal [] |
+| tab.selected | Tab leaves the outgoing control aria-selected="true" | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tab', â€¦(6) }, â€¦(11) ] to strictly equal [] |
+| scrollspy.active | ScrollSpy leaves the old link active | KILLED | KILLED | 1 | AssertionError: expected [ Array(12) ] to strictly equal [] |
+| dropdown.expanded | Dropdown leaves the toggle aria-expanded="true" after closing | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'dropdown', â€¦(6) }, â€¦(5) ] to strictly equal [] |
+| carousel.current | Carousel leaves aria-current on the outgoing indicator | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'carousel', â€¦(6) }, â€¦(21) ] to strictly equal [] |
+| modal.hidden | Modal leaves aria-hidden="true" on the open modal | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'modal', â€¦(6) }, â€¦(11) ] to strictly equal [] |
+| offcanvas.modal | Offcanvas omits aria-modal="true" while open | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'offcanvas', â€¦(6) }, â€¦(7) ] to strictly equal [] |
+| toast.showing | Toast keeps the showing token after a completed show | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'toast', â€¦(6) }, â€¦(15) ] to strictly equal [] |
+| tooltip.described | Tooltip writes a description id that names no tip | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'tooltip', â€¦(6) }, â€¦(19) ] to strictly equal [] |
+| popover.auto | Popover marks its tip with another auto token than bs-popover-auto | KILLED | KILLED | 1 | AssertionError: expected [ { plugin: 'popover', â€¦(6) }, â€¦(11) ] to strictly equal [] |
+| control.equivalent | CONTROL: Collapse writes aria-expanded through an equivalent spelling | HELD | HELD | 0 | the whole run reports success |
+| control.boom | BOOM: Collapse throws inside its trigger write | REFUSED | REFUSED | 1 | Error: The veneer collapse page reported boom; boom; boom; boom; boom; boom; boom; boom |
+| control.unbound | UNBOUND: the row names a span Collapse.ts lacks | REFUSED | REFUSED | 1 | [31mBuild failed with 1 error: |
+mismatches: none
+--- the Orchestrator's restore check
+every source unchanged byte for byte
+--- status after

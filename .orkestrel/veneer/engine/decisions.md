@@ -386,3 +386,20 @@ Veneer's `ROADMAP.md` § Tenets adopts "reduced-motion gating in script". J-CONC
 - Any later engine that starts motion in script, such as J-TOAST-SWIPE's snap back if an engine writes one, follows this rule.
 
 E33 amended at J-ORACLE-RECORD's census (2026-09-25, `units/j-oracle-census-0925.md`). Bootstrap's carousel adds `pointer-event` only where `Swipe.isSupported()` reads true: `'ontouchstart' in document.documentElement || navigator.maxTouchPoints > 0`. Veneer's `Swipe` adds it whenever `touch` is true, so the census reads a departure on a device without touch. **`Swipe` marks and reads a pointer only where the platform supports touch, as Bootstrap's does,** and the toast inherits the same gate. J-TOAST-SWIPE carries the gate. Its proofs emulate touch through `Emulation.setTouchEmulationEnabled`, the route `Carousel.test.ts` already takes, and a case without touch reads no token. The departure row this ruling had named for J-ORACLE-GATE is struck. A toast carries `pointer-event` exactly where Bootstrap's carousel would.
+
+E24's wording amended at J-SAMEWAY-ENGINES-A round 4's audit (2026-09-25, `units/j-sameway-engines-a-audit-4-verdict.md`). The rule is unchanged. **The returning step writes each target the call changed back to its value and priority before the call's first changing write.** "Restore" names `HostSnapshot`'s restoration alone, so the class remarks and the guide say "writes back" for the returning step. The record type is `HostWrite`, with the fields `target`, `value`, and `priority`, and the leaves are `recordHostWrite` and `rewindHostWrites`. "Change" names the call alone.
+
+E28 amended at J-ORACLE-RECORD's audit (2026-09-25, `units/j-oracle-record-audit-verdict.md`). The objective lane (`analyst` on GPT-6 Astra, thread `01a0d6e5-3af4-73e1-96c9-9cd74f97c0fa`) named end-state facets that no reading captures. A wrong tooltip title, popover body, or toast message, a menu appended to the wrong parent, and ScrollSpy's destination each pass the comparison unseen.
+
+**The reader records three more facets.**
+- **Each element's own text:** its direct text nodes, whitespace collapsed.
+- **Each element's parent,** by label.
+- **The settled scroll offsets** of the document and of each labelled element that scrolls.
+
+**It stays out of these, and each is named in the reader's TSDoc as a limit:**
+- inline styles, dimensions, positions, and numeric opacity, which the engine proofs and the captures cover, and which differ by implementation (E9);
+- non-reflected form state;
+- shadow trees;
+- hit testing.
+
+**The settle reads its motion check and the state in one evaluation,** so no change can fall between them. A scenario whose engine work is scheduled past the settle's quiet interval, such as a tooltip `delay`, is outside the oracle's contract. `scanPluginSteps` refuses the unchanged step such a scenario would record.

@@ -51,3 +51,13 @@ The cause is the one-value `background-size` serialization the accordion row rec
 ## Two rows closed (2026-09-24, the J-HELPERS landing)
 
 The verifier's chain on Veneer `main` `afae42c` (`j-helpers-landing-verifier-report.md`) reads `npm test` green, so the accordion row (`tests/src/styles/components/accordion.test.ts:110`, the one-value `background-size` serialization) and the navbar row (`tests/src/styles/components/navbar.test.ts:63`, the same cause) no longer stand: the styles session's second batch (`9ce1a08` and its parents, merged into `afae42c`) landed the proofs that read the value by its serialized form. The preflight row stays as the one standing red: `test:service` reads `select | height | 21px` against `18px` and the four `table | border-*-color` rows absent, until the baseline's close-out lands the preflight repair. A landing verifier from this reading on treats a red accordion or navbar row as new.
+
+## Third standing row (2026-09-25, the J-CONCERNS-A landing)
+
+J-CONCERNS-A's gate chain read one red outside the earlier rows. `tools/main-red-check.sh` read the same red on a clean checkout of Veneer `origin/main` `21c821a`, whose styles the engine landing does not touch (`units/main-red-check-button.test.log.txt`). The styles session's E-ID-BUTTON-CASCADE round 5 read `test:src:styles` green in its Chromium 141 container, with 1500 tests passed (its `units/e-id-button-cascade-report-5.md`). The row is D45's class: a user-agent default that differs between the builds.
+
+| Proof | Assertion | Chromium 141 (the recorded expectation) | Chromium 153 (this host) |
+| --- | --- | --- | --- |
+| `tests/src/styles/elements/button.test.ts:198` (resolves every `.btn` form on a button as the same form resolves on an anchor at rest, and every enabled form under hover, press, and keyboard focus, apart from the button appearance and the user agent's focus offset on a link; the styles session's E-ID-BUTTON-CASCADE) | the differing longhands per form and state equal the expected list | `appearance` alone in the `pressed` state of the `filled`, `outline`, and `link` forms | `appearance` and `outline-width` in those states |
+
+The styles session is asked to apply D45's reading, so that the proof reads the resolved outline, or names the build-dependent longhand.

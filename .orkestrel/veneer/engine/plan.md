@@ -31,13 +31,23 @@ The executable plan of record is Veneer's `ROADMAP.md` (§ Protocol › § The e
 - **Struck:** § Requests to the baseline session. Every D45 row is closed on `main`, and the Proof resolver reads each `plugin` row's test file.
 
 **In flight (this session).**
-- J-SAMEWAY-ENGINES-A round 4 is committed as `bdecfa1`, with the guide integration `3f62d64`. The replay confirms the round: the four Collapse cases read red on `dc2a1a7`'s sources, and the 63 mutation rows miss none (`units/j-sameway-engines-a-red-4-orchestrator.log.txt`, `-mutations-4-orchestrator.log.txt`). The audit runs on `units/j-sameway-engines-a-audit-claims-4.md`. The checker job on Grok passed claims 4 and 7. `analyst` on Astra and `reviewer` on Opus 5.5, which audits the settled shape of rounds 2 to 4, are running.
+- J-SAMEWAY-ENGINES-A round 5 is committed as `fb179a9`, with the guide integration `63a153b`. Round 4's audit ruled FAIL 8, 10 (`units/j-sameway-engines-a-audit-4-verdict.md`). The objective lane on Astra passed every behaviour claim, and the reviewer on Opus 5.5 failed the shape. Round 5 names the record `HostWrite { target, value, priority }`, with the leaves `recordHostWrite` and `rewindHostWrites`. It also states the record leaf's condition, says the return "writes back", and pins `readHostPriority`'s branch. The replay runs (`tools/replay-engines-a-5.sh`), and then `analyst` on Astra and `reviewer` on Opus 5.5 audit the round.
 - J-SAMEWAY-ENGINES-B round 3 (`units/j-sameway-engines-b-brief-3.md`) is drafted. It dispatches after J-SAMEWAY-ENGINES-A lands, because it adopts that unit's shared leaves.
-- J-ORACLE-RECORD returned and is committed as `9ea360d` on `unit/oracle-record` (`units/j-oracle-record-report.md`). The Orchestrator's replay runs (`tools/replay-oracle-record-1.sh`). The audit follows: `analyst` on Astra and the `checker` job on Grok. Its first census is triaged in `units/j-oracle-census-0925.md`.
-- J-CONCERNS-A round 3 (`units/j-concerns-a-brief-3.md`) is writing. The audit of rounds 1 and 2 ruled FAIL 3, 7 (`units/j-concerns-a-audit-objective-verdict.md`; the checker job passed 7 and 8). Round 3 gates ScrollSpy's smooth scroll on reduced motion (E34), removes the history entry the focus case leaves, and proves a nested Button toggle.
-- J-MOTION-PROOFS-A (`units/j-motion-proofs-a-brief.md`, `opus` on Opus 5.5) writes in `tmp/worktrees/motion-proofs-a` from `0865c67` under E32.
+- J-ORACLE-RECORD round 2 (`units/j-oracle-record-brief-2.md`) is writing. The audit of `9ea360d` ruled FAIL 1, 3, 7, 9, 11, 14 (`units/j-oracle-record-audit-verdict.md`), and E28 is amended. Round 2 covers:
+  - own-property labels;
+  - one evaluation per reading;
+  - text, parent, and scroll facets;
+  - the case matrix moved to the setup module;
+  - the library, recording, and report vocabulary;
+  - a `gesture` union for `PluginAction`;
+  - one fixture reader;
+  - clean-up on a failed launch;
+  - the instrument's classifier.
+  The first census is triaged in `units/j-oracle-census-0925.md`.
+- J-CONCERNS-A passed its round-3 audit (`units/j-concerns-a-audit-3-verdict.md`) and is landing. Its gate chain read one red outside the standing rows, `tests/src/styles/elements/button.test.ts`. That file is red on clean `main` `21c821a` under Chromium 153 and green in the styles session's Chromium 141 chain, so it is recorded as the third standing row in `units/host-chromium-153-reading.md` (E5). `npm run test` stops at a red in `test:src`, so `tools/w2-land-rest.sh` runs every later project by name before the fast-forward and the push.
+- J-MOTION-PROOFS-A round 2 (`units/j-motion-proofs-a-brief-2.md`) is writing: the shared `readDuration` reader in `tests/setupBrowser.ts`, and the three sites that read a duration inline switched to it. Round 1 is committed as `88036ca`, with the guide integration `8e3e222` (`units/j-motion-proofs-a-report.md`). Its audit follows round 2.
 - J-TOAST-SWIPE's design round: the `planner` lane returned (`units/j-toast-swipe-design-planner-proposal.md`); the `analyst` lane runs on Astra (`tmp/codex/j-toast-swipe-design-analyst.jsonl`).
-- J-PLACEMENT-141-PROBE returned (`units/j-placement-141-probe-report.md`). The probe `units/j-placement-141-probe.test.ts` anchors every variant on Chromium 153 except its negative control, which reproduces Chromium 141's round-3 reading exactly. The Orchestrator's re-run on Chromium 153 runs, and the styles session is asked for the Chromium 141 run.
+- J-PLACEMENT-141: the styles session's Chromium 141 run of the probe (its `units/native141/j-placement-141-probe-141.log.txt`, scaffold `da4d6fa4`) anchors only the `display` and `noClick` variants. The failure needs a menu placed while its cascade hides it, after a trusted press. The fix renders the menu before placing it (`units/j-placement-141-diagnosis-verdict.md` § The Chromium 141 reading), and its design round runs after J-SAMEWAY-ENGINES-B lands.
 
 **Landed.**
 - 2026-09-25: the ROADMAP J-ENGINE row as `a0bee24`, merged over `2376710` as `094a71e` and pushed (`units/j-roadmap-0925-landing.log.txt`). It closes the carried finding that the row listed its carriers; the row now points at this plan. The landing's merge conflicted on the table's padding, so the Orchestrator rebuilt the table from `main` and re-applied the row (`tools/roadmap-engine-row-0925.py`, `tools/land-doc-resume.sh`).
@@ -57,6 +67,7 @@ The executable plan of record is Veneer's `ROADMAP.md` (§ Protocol › § The e
 - J-OVERLAYS, after J-SAMEWAY-ENGINES-B lands: Tab and Shift+Tab containment in a shown Modal and Offcanvas; overlays composed with each other on real engines; the Delegate stand-in fade and the Modal and Offcanvas motion-factor cases; the derived `resolveOptions` types; and a claim that Modal and Offcanvas follow E24's prior-value return.
 - J-TOAST-SWIPE (E31, E33): the design is ruled (E33). The unit follows J-MOTION-PROOFS-B, because `Toast.test.ts` and `Carousel.test.ts` pass through that unit first. It carries `Swipe`'s touch-support gate (E33's amendment, from the census).
 - J-TESTRULES, after J-SAMEWAY-ENGINES-B and J-OVERLAYS land.
+- J-THROWS, a `builder` unit on Sonnet after the engines units land: every `@throws When …` in `src` and `tests` becomes `typescript.md`'s "Thrown when …". The rule is binding, and the form it replaces runs across the repository (J-ORACLE-RECORD's audit referral).
 - J-ORACLE: RECORD landed in audit (see In flight). The Orchestrator's authoritative census follows the engines units. The fix units from the first census (`units/j-oracle-census-0925.md`):
   - J-ORACLE-FIX-OFFCANVAS, after J-MOTION-PROOFS-A lands: a backdrop press under reduced motion leaves focus on `body`, because the hide completes inside the press's `mousedown` listener. It reads Modal's backdrop path for the same order.
   - J-ORACLE-FIX-PLACEMENT, after J-SAMEWAY-ENGINES-B lands: the menu's `data-popper-placement` carries the full placement, side and alignment, as Bootstrap's does.
@@ -90,6 +101,9 @@ Every finding an audit round left open names exactly one carrier here until that
 
 | Finding | Source | Carrier | Closes with |
 | --- | --- | --- | --- |
+| `@throws When …` in every doc block across `src` and `tests`, where `typescript.md` requires "Thrown when …" | J-ORACLE-RECORD audit, reviewer referral | J-THROWS | no `@throws When` remains, and the gates are green |
+| `compileVeneerRuntime` in `tests/setupServer.ts` repeats the vendored `configs/src/vite.styles.config.ts`'s stripping of `external` and `output` from `srcBrowser()`'s build options | J-ORACLE-RECORD audit, reviewer O3 | the scaffold, which vendors the configuration: one exported factory both consume, at the closing debrief's scaffold findings | the scaffold ships the factory, or rules the repetition acceptable |
+| `tests/src/styles/elements/button.test.ts:198` reads `outline-width` among the pressed-state differences on Chromium 153, a user-agent default (the third standing row, `units/host-chromium-153-reading.md`) | the J-CONCERNS-A landing | the styles session, under D45 | the proof reads green on both builds |
 | The `fill` `@returns` sentences on `TooltipInterface` and `PopoverInterface` omit the in-flight refusal and the inline `display: none` case; the adopted sentence is in `units/j-types-audit-2-objective-verdict.md` claim 3 | J-TYPES audit round 2, objective lane | J-ROWS | the two `@returns` sentences in `src/browser/types.ts` |
 | The `DropdownOptions.placement` group summary and `static` leaf state that a `.navbar` menu with `static: false` is anchored, against R9 and `dropdown.js` `_inNavbar`; the `PlacementOptions` summary names `Placement` after the class exists | J-TYPES audit round 2, subjective lane claim 10 and a bound | J-ROWS | the two summaries in `src/browser/types.ts` and their guide Summary cells |
 | `typescript.md` names the boolean TSDoc form for a parameter and a return and not for a property | J-TYPES audit round 1, claim 11 | the user (a vendored scaffold rule file) | a scaffold rule edit, outside this campaign |

@@ -1,0 +1,54 @@
+# The Orchestrator's replay of J-CONCERNS-A round 3 (2026-09-25, Chromium 153), worktree /c/Users/mikes/WebstormProjects/veneer/tmp/worktrees/concerns-a at 90e8b60 Say that ScrollSpy's smooth scroll is instant under reduced motion (J-CONCERNS-A round 3 integration)
+format:check exit=0
+lint:check exit=0
+check exit=0
+test:guides exit=0
+--- red: the tip's ScrollSpy tests on bcea965's ScrollSpy.ts
+ FAIL  |src:browser (chromium)| tests/src/browser/ScrollSpy.test.ts:587:2 > ScrollSpy > scrolls the host to the section instantly under staged reduced motion, passing no intermediate position
+AssertionError: expected [ [ 3 ], [ 14 ], [ 50 ], …(10) ] to deeply equal [ [ 200 ] ]
+      Tests  1 failed | 31 passed (32)
+--- control: both owned files, unmutated
+ Test Files  2 passed (2)
+      Tests  79 passed (79)
+control exit=0
+--- mutations (raw log: /c/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/engine/units/j-concerns-a-mutations-orchestrator-3-raw.log.txt)
+=== scrollspy-cancel against tests/src/browser/ScrollSpy.test.ts
+      Tests  2 failed | 30 passed (32)
+exit=1
+=== scrollspy-focus-link against tests/src/browser/ScrollSpy.test.ts
+      Tests  1 failed | 31 passed (32)
+exit=1
+=== scrollspy-focus-section against tests/src/browser/ScrollSpy.test.ts
+      Tests  1 failed | 31 passed (32)
+exit=1
+=== scrollspy-navigate against tests/src/browser/ScrollSpy.test.ts
+      Tests  4 failed | 28 passed (32)
+exit=1
+=== scrollspy-instant-host against tests/src/browser/ScrollSpy.test.ts
+      Tests  1 failed | 31 passed (32)
+exit=1
+=== scrollspy-instant-view against tests/src/browser/ScrollSpy.test.ts
+      Tests  1 failed | 31 passed (32)
+exit=1
+=== scrollspy-ungated against tests/src/browser/ScrollSpy.test.ts
+      Tests  1 failed | 31 passed (32)
+exit=1
+=== button-focus against tests/src/browser/Button.test.ts
+      Tests  1 failed | 46 passed (47)
+exit=1
+=== button-blur against tests/src/browser/Button.test.ts
+      Tests  1 failed | 46 passed (47)
+exit=1
+=== button-motion against tests/src/browser/Button.test.ts
+      Tests  1 failed | 46 passed (47)
+exit=1
+=== button-stale-return against tests/src/browser/Button.test.ts
+      Tests  2 failed | 45 passed (47)
+exit=1
+--- mutation blocks with no AssertionError line
+none
+--- non-assertion errors in the raw log
+none
+--- the Orchestrator's restore check
+every source restored byte for byte
+--- status after
