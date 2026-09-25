@@ -103,11 +103,12 @@ sections it writes only the hunks named here.
   passes (`units/carousel-token-probe/run.log.txt`). CAROUSEL is held until that change is on `main`
   (`units/e-id-motion-carousel-brief.md`). Its `src/core/constants.ts` hunk, which it sends before it lands, adds
   `slide: '--vn-motion-slide'` to the `motion` group of `TOKEN_NAMES`.
-- **E-ID-MOTION-OFFCANVAS is under audit** at `73cd4f0` (`units/moff-audit-claims.md`; `analyst` on Astra and `reviewer`
-  on Opus 5.5). The panel rests transparent and fades beside its slide; a responsive panel in its in-flow range and the
-  expanded navbar's panel stay opaque. Your `Offcanvas` and `Backdrop` proofs and `npm run test:app` pass on it. It
-  changes this sentence of the `## Engine` Offcanvas paragraph, which your J-ORACLE-FIX-OFFCANVAS landing may also
-  touch; the later landing merges by hunk:
+- **E-ID-MOTION-OFFCANVAS is in a prose-and-proof fix round** (`units/moff-audit-verdict.md`, FAIL 3, 6): the responsive
+  exit gets its proof and the guide states the `250ms` the panel's tokens resolve to. The panel rests transparent and
+  fades beside its slide; a responsive panel in its in-flow range and the expanded navbar's `.offcanvas` panel stay
+  opaque. Your `Offcanvas` and `Backdrop` proofs and `npm run test:app` pass on round 1. It changes this sentence of the
+  `## Engine` Offcanvas paragraph, which your J-ORACLE-FIX-OFFCANVAS landing may also touch; the later landing merges by
+  hunk:
 
   ```diff
   -The shipped cascade slides the panel through a `transform` transition of `0.3s`, and the
@@ -115,13 +116,13 @@ sections it writes only the hunks named here.
   +`--vn-ease-panel` curve for the slide and the `--vn-ease-out` curve for the fade, and the
    `overlay-backdrop` mixin fades the backdrop over the `--vn-motion-panel` token, so each wait lasts
   ```
-- **E-ID-MOTION-COLLAPSE is under audit** at `9e1fe4e` (`units/mcol-audit-claims.md`). It changes no engine file; your
-  `Collapse` proofs and `npm run test:app` pass on it. **Offer for J-MOTION-RECORDER:** `sampleTransition` cannot read a
-  pseudo-element's transition, so the accordion chevron (`::after`) is proved through its frames. The unit's report-only
-  patch adds a `pseudo` parameter that reads `getAnimations({ subtree: true })` filtered to the target and its
-  `pseudoElement` (`units/e-id-motion-collapse-report.md` § Shared-file patch); it needs a `tests/setupBrowser.test.ts`
-  case. Take it into J-MOTION-RECORDER if that unit owns motion reading in `tests/setupBrowser.ts`, or say so and this
-  session sends it as its own unit.
+- **E-ID-MOTION-COLLAPSE is in a fix round** (`units/mcol-audit-verdict.md`, FAIL 3, 6, 7). It changes no engine file;
+  your `Collapse` proofs and `npm run test:app` pass on round 1. **Pending shared change, replacing the 10:05 offer:** the
+  design verdict's § Proof needs the accordion chevron's running `::after` transition read with its midpoint, so this
+  round gives `sampleTransition` in `tests/setupBrowser.ts` an optional `pseudo` parameter (it reads
+  `getAnimations({ subtree: true })` filtered to the target and its `pseudoElement`) and adds a `describe('sampleTransition')`
+  case in `tests/setupBrowser.test.ts`. The report returns both exact hunks, and this file names them before the landing;
+  J-MOTION-RECORDER merges them by hunk under D50.
 - **E-ID-MOTION-TOAST is writing** from `6586b11` (`units/e-id-motion-toast-brief.md`, the toast third of unit 6): the
   toast scales from `0.98` as it fades in and back as it fades out, on the `.fade` compound only, so your case "a toast
   declares a transition only through the fade token" and the factor case must pass unchanged.
@@ -135,7 +136,8 @@ sections it writes only the hunks named here.
 
 **In flight (this session), 2026-09-25 10:05 UTC.** Implementation and its audit first, the user's instruction.
 - **Writing:** E-ID-MOTION-TOAST (`opus`).
-- **Auditing:** E-ID-MOTION-OFFCANVAS and E-ID-MOTION-COLLAPSE (`analyst` on Astra, `reviewer` on Opus 5.5).
+- **Fix rounds:** E-ID-MOTION-OFFCANVAS and E-ID-MOTION-COLLAPSE round 2 (`opus`).
+- **Writing:** TOKEN-RETIRE (`opus`).
 - **Designing:** LEDGER-BOUNDARY (`planner` on Opus 5.5, `analyst` on Astra).
 
 **Next here, in order:** the landings of OFFCANVAS and COLLAPSE; LEDGER-RETUNE round 3 on the boundary ruling, then its
