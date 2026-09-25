@@ -1,5 +1,5 @@
 diff --git a/guides/veneer.md b/guides/veneer.md
-index c984662..867808c 100644
+index c984662..1def09e 100644
 --- a/guides/veneer.md
 +++ b/guides/veneer.md
 @@ -3939,7 +3939,7 @@ The `tests/src/styles/theme.test.ts` proof reads the scopes in the browser: each
@@ -34,11 +34,11 @@ index c984662..867808c 100644
 +The tables that follow state the value the cascade declares for each token. The ledger gate in the
 +`tests/conformance.test.ts` proof resolves every stated value against every declaration of its
 +token in Chromium, through the `scanCanonicalValues` function: at each mode's scope, and at every
-+other selector and condition that declares the token. Every value cell states a value: one code span for each token the row's first cell names,
++other selector and condition that declares the token, in each mode that site applies in. Every value cell states a value: one code span for each token the row's first cell names,
  `` `light`, dark `dark` `` where a table's single value column carries the light and the dark
  reading together, or `the same expression` where the dark scope repeats the light cell. The
  `collectReferenceRows` reader in the `tests/setupStyles.ts` module refuses a cell written in any
-@@ -7051,11 +7052,10 @@ column there, and a `Fill` cell stating more than one value per mode. A `Tier` r
+@@ -7051,11 +7052,13 @@ column there, and a `Fill` cell stating more than one value per mode. A `Tier` r
  over the `{role}` and `{fill}` placeholders, and it expands over every role the preceding table
  names.
  
@@ -49,12 +49,24 @@ index c984662..867808c 100644
 -that differs as text is compared again as the color each side paints.
 +A stated value and a declaration compare as the values Chromium computes for them, through the same
 +resolver the § Departures rows take their members from, so `150ms` and `0.15s` compare equal, `15%`
-+and `15.0%` compare equal, and `16%` does not. A color compares at the 8-bit precision of a legacy
-+color, whichever notation writes it.
++and `15.0%` compare equal, and `16%` does not. An `rgb()`, `rgba()`, or `color(srgb …)` color
++compares at the 8-bit precision of a legacy color, so `rgba(0, 0, 0, 0.175)` and the same black
++mixed to 17.5% compare equal. A color in any other space, such as `oklch()` or
++`color(display-p3 …)`, compares as Chromium writes it. A stated value and a declaration that both
++resolve to nothing, as an `inherit` and an `initial` do, compare as the text they write.
  
  #### Factors
  
-@@ -7533,26 +7533,45 @@ focused and checked check, the focused select and text control, and the progress
+@@ -7265,7 +7268,7 @@ cell.
+ | `--vn-shadow-1`                           | `0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.05), 0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.1875rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.09)`                                         | `elements` — the elevation table's hint pair        | `--bs-box-shadow-sm`                                                   |
+ | `--vn-shadow-2`                           | `0 calc(0.125rem * var(--vn-factor-elevation)) calc(0.25rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.06), 0 calc(0.5rem * var(--vn-factor-elevation)) calc(1rem * var(--vn-factor-elevation)) calc(-0.25rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.12)`       | `elements` — the elevation table's popover pair     | `--bs-box-shadow`                                                      |
+ | `--vn-shadow-3`                           | `0 calc(0.25rem * var(--vn-factor-elevation)) calc(0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.07), 0 calc(1.5rem * var(--vn-factor-elevation)) calc(2.75rem * var(--vn-factor-elevation)) calc(-0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.22)`       | `elements` — the elevation table's dialog pair      | `--bs-box-shadow-lg`                                                   |
+-| `--vn-shadow-inset`                       | `inset 0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075)`                                                                                                                                                                       | `bootstrap` — no Elements specimen renders an inset | `--bs-box-shadow-inset`                                                |
++| `--vn-shadow-inset`                       | `inset 0 calc(1px * var(--vn-factor-elevation)) calc(2px * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075)`                                                                                                                                                                                  | `bootstrap` — no Elements specimen renders an inset | `--bs-box-shadow-inset`                                                |
+ 
+ Each space step is its own number times `0.125rem`, so at the default density factor the scale runs
+ 2 px at `--vn-space-1`, 4 to 16 px across `--vn-space-2` through `--vn-space-8`, 24 px at
+@@ -7533,26 +7536,61 @@ focused and checked check, the focused select and text control, and the progress
  Each row names one declaration the built cascade writes differently from Bootstrap 5.3.8, keyed the
  way the official inventory is keyed: the component, the selector, the property, and the at-rule
  enclosing the declaration. One table follows per component, in the order the shipped keys sort. The
@@ -79,15 +91,27 @@ index c984662..867808c 100644
 +`rgba(0, 0, 0, 0)` or `0.875em` against `87.5%`. The member each row takes comes from the value
 +each side resolves to in Chromium instead, which the `ValueResolver` class reads. It resolves the
 +release's value against the release's stylesheet and Veneer's value against the built cascade, each
-+on elements built from the row's selector, so every variable a value reads takes the value its own
-+stylesheet gives it there. It then computes both on twin elements of one neutral page, in the row's
-+mode and at the default factors, so a relative length reads the same context on both sides. Where
-+the release writes the property more than once at the row's site, the release value is the last
-+declaration Chromium parses, as it is for the `-webkit-sticky` fallback the release writes ahead of
-+`sticky`. A custom property computes through the first typed probe both of its values parse: a
-+registered syntax such as `<length>` or `<color>`, and after every syntax, a standard property such
-+as `box-shadow` or `font-family`. The gate names every row the resolver cannot decide and expects
-+none, so no row takes the member its text alone would name.
++on elements built from the row's selector, one per compound and each matching its compound, so every
++variable a value reads takes the value its own stylesheet gives it there. It then computes both on
++twin elements of one neutral page, in the row's mode, which the target element and its ancestors
++decide, and at the default factors. The twins compute under every setting the `RESOLVER_SETTINGS`
++constant maps: the `base` setting, and one setting each that changes the `font` size, the
++containing `block`, the `color`, the `direction`, the `root` font size, or the `viewport`. A regular
++property also computes under a parent that sets the property itself, so an `inherit` reads a
++second parent value. Two sides resolve to the same value only where they compute alike under every
++setting, because a reader's page can run in any of those contexts. The `.col-form-label`
++`font-size` row is `retuned` because the release's `inherit` follows its parent and Veneer's token
++does not. The `display` and `legend` `font-size` rows are `retuned` because the release fixes each
++viewport share while Veneer's share scales with its rem token, so the two agree only at a 16px root
++font size. A pair whose value reads a context no setting varies, such as an `env()` value, is
++undecided. Where the release writes the property more than once at the row's site, the release
++value is the last declaration Chromium parses, as it is for the `-webkit-sticky` fallback the
++release writes ahead of `sticky`, and for the `pre` and `kbd` `font-size` rows, whose `1em` the
++release's second rule replaces with `0.875em`. A custom property computes through the first typed
++probe both of its values parse: a registered syntax such as `<length-percentage>+` or `<color>`,
++and after every syntax, a standard property such as `box-shadow` or `font-family`. The gate names
++every row the resolver cannot decide and expects none, so no row takes the member its text alone
++would name.
  
  A `—` cell in the `Condition` column records a declaration under no at-rule, and a `—` cell in
  either value column records a side that writes no declaration there at all. An `(empty)` cell
@@ -100,7 +124,10 @@ index c984662..867808c 100644
 -a recorded one is a `declared` row rather than a `dropped` row, because the cascade writes the
 -declaration.
 +differ. A `retuned` row resolves to a value other than the release's, whatever its text reads, and
-+a `dropped` row writes no declaration at all. Every other row resolves to the release value in
++a `dropped` row writes no declaration at all. `retuned` compares computed values, not rendered
++pixels: the `reboot` `th` `text-align` row is `retuned` because the release's `-webkit-match-parent`
++computes to `left` and Veneer's `inherit` to `start`, which align a header alike wherever the
++header's direction matches its row's. Every other row resolves to the release value in
 +different text, and its member names what the text does: a `tokenized` row routes the release value
 +through a Veneer token, an `aliased` row reads another compatibility variable in its place, a
 +`fallback` row keeps the release value behind a `var()` fallback, and a `restated` row writes the
@@ -109,13 +136,14 @@ index c984662..867808c 100644
 +differs.
 +
 +A token the § Reference map sources from `bootstrap` states that it keeps the release's own value,
-+and these rows hold that statement: the `scanWitnesses` function names each such token no row reads
-+at the release value, which is a row reading it that is neither `retuned` nor `dropped`, and the
-+gate expects none.
++and these rows hold that statement: the `scanWitnesses` function names each such token no row
++witnesses, and the gate expects none. A witness is a row that reads the token, that is neither
++`retuned` nor `dropped`, and whose release value the token alone resolves to at the row's site, so a
++row that reaches the release value through arithmetic on the token witnesses nothing.
  
  #### `accordion`
  
-@@ -7605,121 +7624,121 @@ declaration.
+@@ -7605,121 +7643,121 @@ declaration.
  | `btn`     | `.btn-check:disabled + .btn`                    | `opacity`                        | —         | `0.65`                                                                                                                      | `var(--bs-btn-disabled-opacity)`                                                                                                                                                                                                                                                                                       | aliased   |
  | `btn`     | `.btn`                                          | `--bs-btn-padding-x`             | —         | `0.75rem`                                                                                                                   | `var(--vn-space-6)`                                                                                                                                                                                                                                                                                                    | tokenized |
  | `btn`     | `.btn`                                          | `--bs-btn-padding-y`             | —         | `0.375rem`                                                                                                                  | `var(--vn-space-3)`                                                                                                                                                                                                                                                                                                    | tokenized |
@@ -305,7 +333,7 @@ index c984662..867808c 100644
  | `btn`     | `.btn-light`                                    | `--bs-btn-active-shadow`         | —         | `inset 0 3px 5px rgba(0, 0, 0, 0.125)`                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-light`                                    | `--bs-btn-disabled-color`        | —         | `#000`                                                                                                                      | `var(--vn-palette-black-base)`                                                                                                                                                                                                                                                                                         | tokenized |
  | `btn`     | `.btn-light`                                    | `--bs-btn-disabled-bg`           | —         | `#f8f9fa`                                                                                                                   | `var(--vn-color-light-base)`                                                                                                                                                                                                                                                                                           | tokenized |
-@@ -7728,99 +7747,99 @@ declaration.
+@@ -7728,99 +7766,99 @@ declaration.
  | `btn`     | `.btn-dark`                                     | `--bs-btn-bg`                    | —         | `#212529`                                                                                                                   | `var(--vn-color-dark-base)`                                                                                                                                                                                                                                                                                            | tokenized |
  | `btn`     | `.btn-dark`                                     | `--bs-btn-border-color`          | —         | `#212529`                                                                                                                   | `var(--vn-color-dark-base)`                                                                                                                                                                                                                                                                                            | tokenized |
  | `btn`     | `.btn-dark`                                     | `--bs-btn-hover-color`           | —         | `#fff`                                                                                                                      | `var(--vn-palette-white-base)`                                                                                                                                                                                                                                                                                         | tokenized |
@@ -461,7 +489,7 @@ index c984662..867808c 100644
  | `btn`     | `.btn-outline-danger`                           | `--bs-gradient`                  | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-outline-light`                            | `--bs-btn-color`                 | —         | `#f8f9fa`                                                                                                                   | `var(--vn-color-light-base)`                                                                                                                                                                                                                                                                                           | tokenized |
  | `btn`     | `.btn-outline-light`                            | `--bs-btn-border-color`          | —         | `#f8f9fa`                                                                                                                   | `var(--vn-color-light-base)`                                                                                                                                                                                                                                                                                           | tokenized |
-@@ -7829,7 +7848,7 @@ declaration.
+@@ -7829,7 +7867,7 @@ declaration.
  | `btn`     | `.btn-outline-light`                            | `--bs-btn-hover-border-color`    | —         | `#f8f9fa`                                                                                                                   | `var(--vn-color-light-base)`                                                                                                                                                                                                                                                                                           | tokenized |
  | `btn`     | `.btn-outline-light`                            | `--bs-btn-focus-shadow-rgb`      | —         | `248, 249, 250`                                                                                                             | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-outline-light`                            | `--bs-btn-active-color`          | —         | `#000`                                                                                                                      | `var(--vn-palette-black-base)`                                                                                                                                                                                                                                                                                         | tokenized |
@@ -470,7 +498,7 @@ index c984662..867808c 100644
  | `btn`     | `.btn-outline-light`                            | `--bs-btn-active-border-color`   | —         | `#f8f9fa`                                                                                                                   | `var(--vn-color-light-base)`                                                                                                                                                                                                                                                                                           | tokenized |
  | `btn`     | `.btn-outline-light`                            | `--bs-btn-active-shadow`         | —         | `inset 0 3px 5px rgba(0, 0, 0, 0.125)`                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-outline-light`                            | `--bs-btn-disabled-color`        | —         | `#f8f9fa`                                                                                                                   | `var(--vn-color-light-base)`                                                                                                                                                                                                                                                                                           | tokenized |
-@@ -7843,7 +7862,7 @@ declaration.
+@@ -7843,7 +7881,7 @@ declaration.
  | `btn`     | `.btn-outline-dark`                             | `--bs-btn-hover-border-color`    | —         | `#212529`                                                                                                                   | `var(--vn-color-dark-base)`                                                                                                                                                                                                                                                                                            | tokenized |
  | `btn`     | `.btn-outline-dark`                             | `--bs-btn-focus-shadow-rgb`      | —         | `33, 37, 41`                                                                                                                | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-outline-dark`                             | `--bs-btn-active-color`          | —         | `#fff`                                                                                                                      | `var(--vn-palette-white-base)`                                                                                                                                                                                                                                                                                         | tokenized |
@@ -479,7 +507,7 @@ index c984662..867808c 100644
  | `btn`     | `.btn-outline-dark`                             | `--bs-btn-active-border-color`   | —         | `#212529`                                                                                                                   | `var(--vn-color-dark-base)`                                                                                                                                                                                                                                                                                            | tokenized |
  | `btn`     | `.btn-outline-dark`                             | `--bs-btn-active-shadow`         | —         | `inset 0 3px 5px rgba(0, 0, 0, 0.125)`                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-outline-dark`                             | `--bs-btn-disabled-color`        | —         | `#212529`                                                                                                                   | `var(--vn-color-dark-base)`                                                                                                                                                                                                                                                                                            | tokenized |
-@@ -7851,14 +7870,14 @@ declaration.
+@@ -7851,14 +7889,14 @@ declaration.
  | `btn`     | `.btn-outline-dark`                             | `--bs-btn-disabled-border-color` | —         | `#212529`                                                                                                                   | `var(--vn-color-dark-base)`                                                                                                                                                                                                                                                                                            | tokenized |
  | `btn`     | `.btn-outline-dark`                             | `--bs-gradient`                  | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-link`                                     | `--bs-btn-font-weight`           | —         | `400`                                                                                                                       | —                                                                                                                                                                                                                                                                                                                      | dropped   |
@@ -498,7 +526,7 @@ index c984662..867808c 100644
  | `btn`     | `.btn-link`                                     | `--bs-btn-disabled-border-color` | —         | `transparent`                                                                                                               | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-link`                                     | `--bs-btn-box-shadow`            | —         | `0 0 0 #000`                                                                                                                | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-link`                                     | `--bs-btn-focus-shadow-rgb`      | —         | `49, 132, 253`                                                                                                              | —                                                                                                                                                                                                                                                                                                                      | dropped   |
-@@ -7867,21 +7886,21 @@ declaration.
+@@ -7867,21 +7905,21 @@ declaration.
  | `btn`     | `.btn-link:hover`                               | `color`                          | —         | `var(--bs-btn-hover-color)`                                                                                                 | —                                                                                                                                                                                                                                                                                                                      | dropped   |
  | `btn`     | `.btn-lg`                                       | `--bs-btn-padding-y`             | —         | `0.5rem`                                                                                                                    | `var(--vn-space-4)`                                                                                                                                                                                                                                                                                                    | tokenized |
  | `btn`     | `.btn-lg`                                       | `--bs-btn-padding-x`             | —         | `1rem`                                                                                                                      | `var(--vn-space-8)`                                                                                                                                                                                                                                                                                                    | tokenized |
@@ -524,7 +552,45 @@ index c984662..867808c 100644
  | `btn`     | `.btn-group-sm > .btn`                          | `--bs-btn-border-radius`         | —         | `var(--bs-border-radius-sm)`                                                                                                | `var(--vn-radius-small)`                                                                                                                                                                                                                                                                                               | tokenized |
  | `btn`     | `.btn-group-sm > .btn + .dropdown-toggle-split` | `padding-right`                  | —         | `0.375rem`                                                                                                                  | `calc(var(--vn-space-4) * 0.75)`                                                                                                                                                                                                                                                                                       | tokenized |
  | `btn`     | `.btn-group-sm > .btn + .dropdown-toggle-split` | `padding-left`                   | —         | `0.375rem`                                                                                                                  | `calc(var(--vn-space-4) * 0.75)`                                                                                                                                                                                                                                                                                       | tokenized |
-@@ -8101,9 +8120,9 @@ declaration.
+@@ -7937,7 +7975,7 @@ declaration.
+ | --------- | -------------------- | ---------------- | --------- | ----------------------------------------- | -------------------------------------------------- | --------- |
+ | `col`     | `.col-form-label`    | `padding-top`    | —         | `calc(0.375rem + var(--bs-border-width))` | `calc(var(--vn-space-3) + var(--bs-border-width))` | tokenized |
+ | `col`     | `.col-form-label`    | `padding-bottom` | —         | `calc(0.375rem + var(--bs-border-width))` | `calc(var(--vn-space-3) + var(--bs-border-width))` | tokenized |
+-| `col`     | `.col-form-label`    | `font-size`      | —         | `inherit`                                 | `var(--vn-size-3)`                                 | tokenized |
++| `col`     | `.col-form-label`    | `font-size`      | —         | `inherit`                                 | `var(--vn-size-3)`                                 | retuned   |
+ | `col`     | `.col-form-label`    | `line-height`    | —         | `1.5`                                     | `var(--vn-line-body)`                              | tokenized |
+ | `col`     | `.col-form-label-lg` | `padding-top`    | —         | `calc(0.5rem + var(--bs-border-width))`   | `calc(var(--vn-space-4) + var(--bs-border-width))` | tokenized |
+ | `col`     | `.col-form-label-lg` | `padding-bottom` | —         | `calc(0.5rem + var(--bs-border-width))`   | `calc(var(--vn-space-4) + var(--bs-border-width))` | tokenized |
+@@ -8067,22 +8105,22 @@ declaration.
+ | Component | Selector     | Property      | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                              | Departure |
+ | --------- | ------------ | ------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------- | --------- |
+ | `display` | `.display-1` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-1` | `font-size`   | —                          | `calc(1.625rem + 4.5vw)` | `calc(var(--vn-display-1) - max(var(--vn-display-1) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-1` | `font-size`   | —                          | `calc(1.625rem + 4.5vw)` | `calc(var(--vn-display-1) - max(var(--vn-display-1) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-1` | `font-size`   | `@media (width >= 1200px)` | `5rem`                   | `var(--vn-display-1)`                                                                               | tokenized |
+ | `display` | `.display-2` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-2` | `font-size`   | —                          | `calc(1.575rem + 3.9vw)` | `calc(var(--vn-display-2) - max(var(--vn-display-2) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-2` | `font-size`   | —                          | `calc(1.575rem + 3.9vw)` | `calc(var(--vn-display-2) - max(var(--vn-display-2) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-2` | `font-size`   | `@media (width >= 1200px)` | `4.5rem`                 | `var(--vn-display-2)`                                                                               | tokenized |
+ | `display` | `.display-3` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-3` | `font-size`   | —                          | `calc(1.525rem + 3.3vw)` | `calc(var(--vn-display-3) - max(var(--vn-display-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-3` | `font-size`   | —                          | `calc(1.525rem + 3.3vw)` | `calc(var(--vn-display-3) - max(var(--vn-display-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-3` | `font-size`   | `@media (width >= 1200px)` | `4rem`                   | `var(--vn-display-3)`                                                                               | tokenized |
+ | `display` | `.display-4` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-4` | `font-size`   | —                          | `calc(1.475rem + 2.7vw)` | `calc(var(--vn-display-4) - max(var(--vn-display-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-4` | `font-size`   | —                          | `calc(1.475rem + 2.7vw)` | `calc(var(--vn-display-4) - max(var(--vn-display-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-4` | `font-size`   | `@media (width >= 1200px)` | `3.5rem`                 | `var(--vn-display-4)`                                                                               | tokenized |
+ | `display` | `.display-5` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-5` | `font-size`   | —                          | `calc(1.425rem + 2.1vw)` | `calc(var(--vn-display-5) - max(var(--vn-display-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-5` | `font-size`   | —                          | `calc(1.425rem + 2.1vw)` | `calc(var(--vn-display-5) - max(var(--vn-display-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-5` | `font-size`   | `@media (width >= 1200px)` | `3rem`                   | `var(--vn-display-5)`                                                                               | tokenized |
+ | `display` | `.display-6` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-6` | `font-size`   | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-display-6) - max(var(--vn-display-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-6` | `font-size`   | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-display-6) - max(var(--vn-display-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-6` | `font-size`   | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-display-6)`                                                                               | tokenized |
+ 
+ #### `dropdown`
+@@ -8101,9 +8139,9 @@ declaration.
  | `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-header-color`        | —         | `#6c757d`                   | `var(--vn-gray-600)`                                                | tokenized |
  | `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-header-padding-x`    | —         | `1rem`                      | `var(--vn-space-8)`                                                 | tokenized |
  | `dropdown` | `.dropdown-menu`                      | `--bs-dropdown-header-padding-y`    | —         | `0.5rem`                    | `var(--vn-space-4)`                                                 | tokenized |
@@ -537,7 +603,7 @@ index c984662..867808c 100644
  | `dropdown` | `.dropdown-toggle-split`              | `padding-right`                     | —         | `0.5625rem`                 | `calc(var(--vn-space-6) * 0.75)`                                    | tokenized |
  | `dropdown` | `.dropdown-toggle-split`              | `padding-left`                      | —         | `0.5625rem`                 | `calc(var(--vn-space-6) * 0.75)`                                    | tokenized |
  | `dropdown` | `.btn-sm + .dropdown-toggle-split`    | `padding-right`                     | —         | `0.375rem`                  | `calc(var(--vn-space-4) * 0.75)`                                    | tokenized |
-@@ -8152,13 +8171,13 @@ declaration.
+@@ -8152,13 +8190,13 @@ declaration.
  | `form-check` | `.form-check-input`                              | `-moz-appearance`            | —         | `none`                                   | —                                                                              | dropped   |
  | `form-check` | `.form-check-input`                              | `-webkit-print-color-adjust` | —         | `exact`                                  | —                                                                              | dropped   |
  | `form-check` | `.form-check-input`                              | `color-adjust`               | —         | `exact`                                  | —                                                                              | dropped   |
@@ -554,7 +620,7 @@ index c984662..867808c 100644
  | `form-check` | `.form-check-inline`                             | `margin-right`               | —         | `1rem`                                   | `var(--vn-space-8)`                                                            | tokenized |
  
  #### `form-control`
-@@ -8171,14 +8190,14 @@ declaration.
+@@ -8171,14 +8209,14 @@ declaration.
  | `form-control` | `.form-control`                          | `line-height`        | —         | `1.5`                                                                                                                       | `var(--vn-line-body)`                                                                                                                                                                                                                                       | tokenized |
  | `form-control` | `.form-control`                          | `-webkit-appearance` | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                           | dropped   |
  | `form-control` | `.form-control`                          | `-moz-appearance`    | —         | `none`                                                                                                                      | —                                                                                                                                                                                                                                                           | dropped   |
@@ -573,7 +639,7 @@ index c984662..867808c 100644
  | `form-control` | `.form-control-plaintext`                | `padding`            | —         | `0.375rem 0`                                                                                                                | `var(--vn-space-3) 0`                                                                                                                                                                                                                                       | tokenized |
  | `form-control` | `.form-control-plaintext`                | `line-height`        | —         | `1.5`                                                                                                                       | `var(--vn-line-body)`                                                                                                                                                                                                                                       | tokenized |
  | `form-control` | `.form-control-sm`                       | `min-height`         | —         | `calc(1.5em + 0.5rem + calc(var(--bs-border-width) * 2))`                                                                   | `calc(1.5em + var(--vn-space-2) * 2 + var(--bs-border-width) * 2)`                                                                                                                                                                                          | tokenized |
-@@ -8203,8 +8222,8 @@ declaration.
+@@ -8203,8 +8241,8 @@ declaration.
  | `form-control` | `.form-control-color`                    | `padding`            | —         | `0.375rem`                                                                                                                  | `var(--vn-space-3)`                                                                                                                                                                                                                                         | tokenized |
  | `form-control` | `.form-control-color.form-control-sm`    | `height`             | —         | `calc(1.5em + 0.5rem + calc(var(--bs-border-width) * 2))`                                                                   | `calc(1.5em + var(--vn-space-2) * 2 + var(--bs-border-width) * 2)`                                                                                                                                                                                          | tokenized |
  | `form-control` | `.form-control-color.form-control-lg`    | `height`             | —         | `calc(1.5em + 1rem + calc(var(--bs-border-width) * 2))`                                                                     | `calc(1.5em + var(--vn-space-4) * 2 + var(--bs-border-width) * 2)`                                                                                                                                                                                          | tokenized |
@@ -584,7 +650,7 @@ index c984662..867808c 100644
  | `form-control` | `.input-group-lg > .form-control`        | `padding`            | —         | `0.5rem 1rem`                                                                                                               | `var(--vn-space-4) var(--vn-space-8)`                                                                                                                                                                                                                       | tokenized |
  | `form-control` | `.input-group-lg > .form-control`        | `font-size`          | —         | `1.25rem`                                                                                                                   | `var(--vn-size-5)`                                                                                                                                                                                                                                          | tokenized |
  | `form-control` | `.input-group-sm > .form-control`        | `padding`            | —         | `0.25rem 0.5rem`                                                                                                            | `var(--vn-space-2) var(--vn-space-4)`                                                                                                                                                                                                                       | tokenized |
-@@ -8250,8 +8269,8 @@ declaration.
+@@ -8250,8 +8288,8 @@ declaration.
  | `form-range` | `.form-range`                                | `height`             | —                                         | `1.5rem`                                                                                           | `var(--vn-space-12)`                                                                                                                                                                               | tokenized |
  | `form-range` | `.form-range`                                | `-webkit-appearance` | —                                         | `none`                                                                                             | —                                                                                                                                                                                                  | dropped   |
  | `form-range` | `.form-range`                                | `-moz-appearance`    | —                                         | `none`                                                                                             | —                                                                                                                                                                                                  | dropped   |
@@ -595,7 +661,7 @@ index c984662..867808c 100644
  | `form-range` | `.form-range::-webkit-slider-thumb`          | `width`              | —                                         | `1rem`                                                                                             | `var(--vn-space-8)`                                                                                                                                                                                | tokenized |
  | `form-range` | `.form-range::-webkit-slider-thumb`          | `height`             | —                                         | `1rem`                                                                                             | `var(--vn-space-8)`                                                                                                                                                                                | tokenized |
  | `form-range` | `.form-range::-webkit-slider-thumb`          | `margin-top`         | —                                         | `-0.25rem`                                                                                         | `calc(var(--vn-space-2) * -1)`                                                                                                                                                                     | tokenized |
-@@ -8259,7 +8278,7 @@ declaration.
+@@ -8259,7 +8297,7 @@ declaration.
  | `form-range` | `.form-range::-webkit-slider-thumb`          | `background-color`   | —                                         | `#0d6efd`                                                                                          | `var(--vn-palette-blue)`                                                                                                                                                                           | tokenized |
  | `form-range` | `.form-range::-webkit-slider-thumb`          | `border-radius`      | —                                         | `1rem`                                                                                             | `var(--vn-radius-xlarge)`                                                                                                                                                                          | tokenized |
  | `form-range` | `.form-range::-webkit-slider-thumb`          | `-webkit-transition` | —                                         | `background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out` | —                                                                                                                                                                                                  | dropped   |
@@ -604,7 +670,7 @@ index c984662..867808c 100644
  | `form-range` | `.form-range::-webkit-slider-thumb`          | `-webkit-transition` | `@media (prefers-reduced-motion: reduce)` | `none`                                                                                             | —                                                                                                                                                                                                  | dropped   |
  | `form-range` | `.form-range::-webkit-slider-thumb:active`   | `background-color`   | —                                         | `#b6d4fe`                                                                                          | `color-mix(in srgb, var(--vn-palette-blue) 30%, var(--vn-palette-white-base))`                                                                                                                     | tokenized |
  | `form-range` | `.form-range::-webkit-slider-runnable-track` | `height`             | —                                         | `0.5rem`                                                                                           | `var(--vn-space-4)`                                                                                                                                                                                | tokenized |
-@@ -8270,7 +8289,7 @@ declaration.
+@@ -8270,7 +8308,7 @@ declaration.
  | `form-range` | `.form-range::-moz-range-thumb`              | `background-color`   | —                                         | `#0d6efd`                                                                                          | `var(--vn-palette-blue)`                                                                                                                                                                           | tokenized |
  | `form-range` | `.form-range::-moz-range-thumb`              | `border-radius`      | —                                         | `1rem`                                                                                             | `var(--vn-radius-xlarge)`                                                                                                                                                                          | tokenized |
  | `form-range` | `.form-range::-moz-range-thumb`              | `-moz-transition`    | —                                         | `background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out` | —                                                                                                                                                                                                  | dropped   |
@@ -613,7 +679,7 @@ index c984662..867808c 100644
  | `form-range` | `.form-range::-moz-range-thumb`              | `-moz-transition`    | `@media (prefers-reduced-motion: reduce)` | `none`                                                                                             | —                                                                                                                                                                                                  | dropped   |
  | `form-range` | `.form-range::-moz-range-thumb:active`       | `background-color`   | —                                         | `#b6d4fe`                                                                                          | `color-mix(in srgb, var(--vn-palette-blue) 30%, var(--vn-palette-white-base))`                                                                                                                     | tokenized |
  | `form-range` | `.form-range::-moz-range-track`              | `height`             | —                                         | `0.5rem`                                                                                           | `var(--vn-space-4)`                                                                                                                                                                                | tokenized |
-@@ -8287,9 +8306,9 @@ declaration.
+@@ -8287,9 +8325,9 @@ declaration.
  | `form-select` | `.form-select`                       | `-webkit-appearance`  | —         | `none`                                                         | —                                                                                                                              | dropped   |
  | `form-select` | `.form-select`                       | `-moz-appearance`     | —         | `none`                                                         | —                                                                                                                              | dropped   |
  | `form-select` | `.form-select`                       | `background-position` | —         | `right 0.75rem center`                                         | `right var(--vn-space-6) center`                                                                                               | tokenized |
@@ -626,7 +692,7 @@ index c984662..867808c 100644
  | `form-select` | `.form-select[multiple]`             | `padding-right`       | —         | `0.75rem`                                                      | `var(--vn-space-6)`                                                                                                            | tokenized |
  | `form-select` | `.form-select[size]:not([size="1"])` | `padding-right`       | —         | `0.75rem`                                                      | `var(--vn-space-6)`                                                                                                            | tokenized |
  | `form-select` | `.form-select-sm`                    | `padding-top`         | —         | `0.25rem`                                                      | `var(--vn-space-2)`                                                                                                            | tokenized |
-@@ -8300,8 +8319,8 @@ declaration.
+@@ -8300,8 +8338,8 @@ declaration.
  | `form-select` | `.form-select-lg`                    | `padding-bottom`      | —         | `0.5rem`                                                       | `var(--vn-space-4)`                                                                                                            | tokenized |
  | `form-select` | `.form-select-lg`                    | `padding-left`        | —         | `1rem`                                                         | `var(--vn-space-8)`                                                                                                            | tokenized |
  | `form-select` | `.form-select-lg`                    | `font-size`           | —         | `1.25rem`                                                      | `var(--vn-size-5)`                                                                                                             | tokenized |
@@ -637,7 +703,7 @@ index c984662..867808c 100644
  | `form-select` | `.input-group-lg > .form-select`     | `padding`             | —         | `0.5rem 1rem`                                                  | `var(--vn-space-4) var(--vn-space-8)`                                                                                          | tokenized |
  | `form-select` | `.input-group-lg > .form-select`     | `font-size`           | —         | `1.25rem`                                                      | `var(--vn-size-5)`                                                                                                             | tokenized |
  | `form-select` | `.input-group-sm > .form-select`     | `padding`             | —         | `0.25rem 0.5rem`                                               | `var(--vn-space-2) var(--vn-space-4)`                                                                                          | tokenized |
-@@ -8313,15 +8332,15 @@ declaration.
+@@ -8313,15 +8351,15 @@ declaration.
  
  | Component | Selector | Property    | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                        | Departure |
  | --------- | -------- | ----------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- | --------- |
@@ -662,7 +728,7 @@ index c984662..867808c 100644
  | `fs`      | `.fs-6`  | `font-size` | —                          | `1rem`                   | `calc(var(--vn-size-3) - max(var(--vn-size-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
  
  #### `g`
-@@ -8529,56 +8548,56 @@ declaration.
+@@ -8529,56 +8567,56 @@ declaration.
  | Component | Selector | Property        | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                        | Departure |
  | --------- | -------- | --------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------- | --------- |
  | `h1`      | `.h1`    | `margin-bottom` | —                          | `0.5rem`                 | `var(--vn-space-4)`                                                                           | tokenized |
@@ -734,7 +800,7 @@ index c984662..867808c 100644
  | `h6`      | `.h6`    | `line-height`   | —         | `1.2`           | `var(--vn-line-heading)`                                                                      | tokenized |
  | `h6`      | `.h6`    | `font-size`     | —         | `1rem`          | `calc(var(--vn-size-3) - max(var(--vn-size-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
  
-@@ -8587,9 +8606,9 @@ declaration.
+@@ -8587,9 +8625,9 @@ declaration.
  | Component   | Selector           | Property                        | Condition | Bootstrap 5.3.8                                               | Veneer                                                        | Departure |
  | ----------- | ------------------ | ------------------------------- | --------- | ------------------------------------------------------------- | ------------------------------------------------------------- | --------- |
  | `icon-link` | `.icon-link`       | `-webkit-text-decoration-color` | —         | `rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 0.5))` | —                                                             | dropped   |
@@ -746,7 +812,7 @@ index c984662..867808c 100644
  
  #### `img`
  
-@@ -8629,14 +8648,14 @@ declaration.
+@@ -8629,14 +8667,14 @@ declaration.
  | Component    | Selector                             | Property     | Condition | Bootstrap 5.3.8                                  | Veneer                                                         | Departure |
  | ------------ | ------------------------------------ | ------------ | --------- | ------------------------------------------------ | -------------------------------------------------------------- | --------- |
  | `is-invalid` | `.form-control-color.is-invalid`     | `width`      | —         | `calc(3rem + calc(1.5em + 0.75rem))`             | `calc(var(--vn-space-24) + 1.5em + 0.75rem)`                   | tokenized |
@@ -763,7 +829,7 @@ index c984662..867808c 100644
  
  #### `lead`
  
-@@ -8654,60 +8673,60 @@ declaration.
+@@ -8654,60 +8692,60 @@ declaration.
  
  | Component | Selector                    | Property                        | Condition | Bootstrap 5.3.8                                                              | Veneer                                                                                                                                                  | Departure |
  | --------- | --------------------------- | ------------------------------- | --------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
@@ -860,7 +926,7 @@ index c984662..867808c 100644
  | `link`    | `.link-light`               | `color`                         | —         | `RGBA(var(--bs-light-rgb), var(--bs-link-opacity, 1))`                       | `rgba(var(--vn-color-light-rgb), var(--bs-link-opacity, 1))`                                                                                            | tokenized |
  | `link`    | `.link-light`               | `-webkit-text-decoration-color` | —         | `RGBA(var(--bs-light-rgb), var(--bs-link-underline-opacity, 1))`             | —                                                                                                                                                       | dropped   |
  | `link`    | `.link-light`               | `text-decoration-color`         | —         | `RGBA(var(--bs-light-rgb), var(--bs-link-underline-opacity, 1))`             | `rgba(var(--vn-color-light-rgb), var(--bs-link-underline-opacity, 1))`                                                                                  | tokenized |
-@@ -8720,12 +8739,12 @@ declaration.
+@@ -8720,12 +8758,12 @@ declaration.
  | `link`    | `.link-dark`                | `color`                         | —         | `RGBA(var(--bs-dark-rgb), var(--bs-link-opacity, 1))`                        | `rgba(var(--vn-color-dark-rgb), var(--bs-link-opacity, 1))`                                                                                             | tokenized |
  | `link`    | `.link-dark`                | `-webkit-text-decoration-color` | —         | `RGBA(var(--bs-dark-rgb), var(--bs-link-underline-opacity, 1))`              | —                                                                                                                                                       | dropped   |
  | `link`    | `.link-dark`                | `text-decoration-color`         | —         | `RGBA(var(--bs-dark-rgb), var(--bs-link-underline-opacity, 1))`              | `rgba(var(--vn-color-dark-rgb), var(--bs-link-underline-opacity, 1))`                                                                                   | tokenized |
@@ -877,7 +943,7 @@ index c984662..867808c 100644
  | `link`    | `.link-body-emphasis`       | `color`                         | —         | `RGBA(var(--bs-emphasis-color-rgb), var(--bs-link-opacity, 1))`              | `rgba(var(--vn-text-emphasis-rgb), var(--bs-link-opacity, 1))`                                                                                          | tokenized |
  | `link`    | `.link-body-emphasis`       | `-webkit-text-decoration-color` | —         | `RGBA(var(--bs-emphasis-color-rgb), var(--bs-link-underline-opacity, 1))`    | —                                                                                                                                                       | dropped   |
  | `link`    | `.link-body-emphasis`       | `text-decoration-color`         | —         | `RGBA(var(--bs-emphasis-color-rgb), var(--bs-link-underline-opacity, 1))`    | `rgba(var(--vn-text-emphasis-rgb), var(--bs-link-underline-opacity, 1))`                                                                                | tokenized |
-@@ -8736,23 +8755,23 @@ declaration.
+@@ -8736,23 +8774,23 @@ declaration.
  | `link`    | `.link-body-emphasis:focus` | `-webkit-text-decoration-color` | —         | `RGBA(var(--bs-emphasis-color-rgb), var(--bs-link-underline-opacity, 0.75))` | —                                                                                                                                                       | dropped   |
  | `link`    | `.link-body-emphasis:focus` | `text-decoration-color`         | —         | `RGBA(var(--bs-emphasis-color-rgb), var(--bs-link-underline-opacity, 0.75))` | `rgba(var(--vn-text-emphasis-rgb), var(--bs-link-underline-opacity, 0.75))`                                                                             | tokenized |
  | `link`    | `.link-underline-primary`   | `-webkit-text-decoration-color` | —         | `rgba(var(--bs-primary-rgb), var(--bs-link-underline-opacity))`              | —                                                                                                                                                       | dropped   |
@@ -908,7 +974,7 @@ index c984662..867808c 100644
  
  #### `list-group`
  
-@@ -8809,9 +8828,9 @@ declaration.
+@@ -8809,9 +8847,9 @@ declaration.
  
  | Component | Selector | Property           | Condition | Bootstrap 5.3.8             | Veneer                   | Departure |
  | --------- | -------- | ------------------ | --------- | --------------------------- | ------------------------ | --------- |
@@ -921,7 +987,7 @@ index c984662..867808c 100644
  
  #### `nav`
  
-@@ -9163,11 +9182,11 @@ declaration.
+@@ -9163,11 +9201,11 @@ declaration.
  
  | Component | Selector        | Property      | Condition                  | Bootstrap 5.3.8 | Veneer | Departure |
  | --------- | --------------- | ------------- | -------------------------- | --------------- | ------ | --------- |
@@ -938,7 +1004,7 @@ index c984662..867808c 100644
  
  #### `p`
  
-@@ -9304,7 +9323,7 @@ declaration.
+@@ -9304,7 +9342,7 @@ declaration.
  
  | Component  | Selector           | Property   | Condition | Bootstrap 5.3.8  | Veneer   | Departure |
  | ---------- | ------------------ | ---------- | --------- | ---------------- | -------- | --------- |
@@ -947,7 +1013,7 @@ index c984662..867808c 100644
  
  #### `progress`
  
-@@ -9521,37 +9540,37 @@ declaration.
+@@ -9521,37 +9559,37 @@ declaration.
  | Component | Selector      | Property                           | Condition                  | Bootstrap 5.3.8                                             | Veneer                                                                                        | Departure |
  | --------- | ------------- | ---------------------------------- | -------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------- |
  | `reboot`  | `body`        | `-webkit-text-size-adjust`         | —                          | `100%`                                                      | —                                                                                             | dropped   |
@@ -1003,7 +1069,7 @@ index c984662..867808c 100644
  | `reboot`  | `h6`          | `font-size`                        | —                          | `1rem`                                                      | `calc(var(--vn-size-3) - max(var(--vn-size-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
  | `reboot`  | `p`           | `margin-bottom`                    | —                          | `1rem`                                                      | `var(--vn-space-8)`                                                                           | tokenized |
  | `reboot`  | `abbr[title]` | `-webkit-text-decoration`          | —                          | `underline dotted`                                          | —                                                                                             | dropped   |
-@@ -9562,46 +9581,46 @@ declaration.
+@@ -9562,48 +9600,48 @@ declaration.
  | `reboot`  | `ol`          | `margin-bottom`                    | —                          | `1rem`                                                      | `var(--vn-space-8)`                                                                           | tokenized |
  | `reboot`  | `ul`          | `margin-bottom`                    | —                          | `1rem`                                                      | `var(--vn-space-8)`                                                                           | tokenized |
  | `reboot`  | `dl`          | `margin-bottom`                    | —                          | `1rem`                                                      | `var(--vn-space-8)`                                                                           | tokenized |
@@ -1078,9 +1144,12 @@ index c984662..867808c 100644
 +| `reboot`  | `button`      | `font-size`                        | —                          | `inherit`                                                   | `var(--vn-size-2)`                                                                            | retuned   |
 +| `reboot`  | `button`      | `line-height`                      | —                          | `inherit`                                                   | `var(--vn-line-body)`                                                                         | retuned   |
  | `reboot`  | `legend`      | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
- | `reboot`  | `legend`      | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
+-| `reboot`  | `legend`      | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `legend`      | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
  | `reboot`  | `legend`      | `font-size`                        | `@media (width >= 1200px)` | `1.5rem`                                                    | `var(--vn-size-6)`                                                                            | tokenized |
-@@ -9658,29 +9677,29 @@ declaration.
+ 
+ #### `row`
+@@ -9658,29 +9696,29 @@ declaration.
  
  | Component | Selector             | Property   | Condition                  | Bootstrap 5.3.8  | Veneer                   | Departure |
  | --------- | -------------------- | ---------- | -------------------------- | ---------------- | ------------------------ | --------- |
@@ -1122,7 +1191,7 @@ index c984662..867808c 100644
  | `sticky`  | `.sticky-xxl-bottom` | `z-index`  | `@media (width >= 1400px)` | `1020`           | `var(--vn-stack-sticky)` | tokenized |
  
  #### `table`
-@@ -9689,58 +9708,58 @@ declaration.
+@@ -9689,58 +9727,58 @@ declaration.
  | --------- | ------------------ | -------------------------- | --------- | ------------------------------------------ | ---------------------------------------------------------------------------------------- | --------- |
  | `table`   | `.table`           | `--bs-table-striped-bg`    | —         | `rgba(var(--bs-emphasis-color-rgb), 0.05)` | `rgba(var(--bs-emphasis-color-rgb), var(--vn-state-stripe))`                             | tokenized |
  | `table`   | `.table-primary`   | `--bs-table-color`         | —         | `#000`                                     | `var(--vn-palette-black-base)`                                                           | tokenized |
@@ -1211,7 +1280,7 @@ index c984662..867808c 100644
  | `table`   | `.table-danger`    | `--bs-table-hover-color`   | —         | `#000`                                     | `var(--bs-table-color)`                                                                  | aliased   |
  | `table`   | `.table-light`     | `--bs-table-color`         | —         | `#000`                                     | `var(--vn-palette-black-base)`                                                           | tokenized |
  | `table`   | `.table-light`     | `--bs-table-bg`            | —         | `#f8f9fa`                                  | `var(--vn-color-light-base)`                                                             | tokenized |
-@@ -9768,17 +9787,17 @@ declaration.
+@@ -9768,17 +9806,17 @@ declaration.
  | `text`        | `.text-bg-primary`   | `color`               | —         | `#fff`                                                  | `light-dark(var(--vn-palette-white-base), var(--vn-palette-black-base))`   | tokenized |
  | `text`        | `.text-bg-secondary` | `color`               | —         | `#fff`                                                  | `var(--vn-palette-white-base)`                                             | tokenized |
  | `text`        | `.text-bg-success`   | `color`               | —         | `#fff`                                                  | `var(--vn-palette-white-base)`                                             | tokenized |
@@ -1237,7 +1306,7 @@ index c984662..867808c 100644
  | `text`        | `.text-black-50`     | `color`               | —         | `rgba(0, 0, 0, 0.5)`                                    | `rgba(var(--vn-palette-black-rgb), 0.5)`                                   | tokenized |
  | `text`        | `.text-white-50`     | `color`               | —         | `rgba(255, 255, 255, 0.5)`                              | `rgba(var(--vn-palette-white-rgb), 0.5)`                                   | tokenized |
  | `user-select` | `.user-select-all`   | `-webkit-user-select` | —         | `all`                                                   | —                                                                          | dropped   |
-@@ -9798,8 +9817,8 @@ declaration.
+@@ -9798,8 +9836,8 @@ declaration.
  | `toast`   | `.toast`           | `--bs-toast-spacing`            | —         | `1.5rem`              | `var(--vn-gutter-x)`                  | tokenized |
  | `toast`   | `.toast`           | `--bs-toast-font-size`          | —         | `0.875rem`            | `var(--vn-size-2)`                    | tokenized |
  | `toast`   | `.toast-container` | `--bs-toast-zindex`             | —         | `1090`                | `var(--vn-stack-toast)`               | tokenized |
@@ -1248,7 +1317,7 @@ index c984662..867808c 100644
  | `modal`   | `.modal`           | `--bs-modal-zindex`             | —         | `1055`                | `var(--vn-stack-dialog-base)`         | tokenized |
  | `modal`   | `.modal`           | `--bs-modal-padding`            | —         | `1rem`                | `var(--vn-space-8)`                   | tokenized |
  | `modal`   | `.modal`           | `--bs-modal-margin`             | —         | `0.5rem`              | `var(--vn-space-4)`                   | tokenized |
-@@ -9816,7 +9835,7 @@ declaration.
+@@ -9816,7 +9854,7 @@ declaration.
  | `tooltip` | `.tooltip`         | `--bs-tooltip-font-size`        | —         | `0.875rem`            | `var(--vn-size-2)`                    | tokenized |
  | `tooltip` | `.tooltip`         | `font-weight`                   | —         | `400`                 | `var(--vn-weight-body)`               | tokenized |
  | `tooltip` | `.tooltip`         | `line-height`                   | —         | `1.5`                 | `var(--vn-line-body)`                 | tokenized |
@@ -1257,7 +1326,7 @@ index c984662..867808c 100644
  | `popover` | `.popover`         | `--bs-popover-zindex`           | —         | `1070`                | `var(--vn-stack-popover)`             | tokenized |
  | `popover` | `.popover`         | `--bs-popover-font-size`        | —         | `0.875rem`            | `var(--vn-size-2)`                    | tokenized |
  | `popover` | `.popover`         | `--bs-popover-header-padding-x` | —         | `1rem`                | `var(--vn-space-8)`                   | tokenized |
-@@ -9826,13 +9845,13 @@ declaration.
+@@ -9826,13 +9864,13 @@ declaration.
  | `popover` | `.popover`         | `--bs-popover-body-padding-y`   | —         | `1rem`                | `var(--vn-space-8)`                   | tokenized |
  | `popover` | `.popover`         | `font-weight`                   | —         | `400`                 | `var(--vn-weight-body)`               | tokenized |
  | `popover` | `.popover`         | `line-height`                   | —         | `1.5`                 | `var(--vn-line-body)`                 | tokenized |
@@ -1273,7 +1342,7 @@ index c984662..867808c 100644
  
  #### `valid-feedback`
  
-@@ -9852,14 +9871,14 @@ declaration.
+@@ -9852,14 +9890,14 @@ declaration.
  
  | Component       | Selector                                         | Property     | Condition | Bootstrap 5.3.8                                   | Veneer                                                          | Departure |
  | --------------- | ------------------------------------------------ | ------------ | --------- | ------------------------------------------------- | --------------------------------------------------------------- | --------- |
@@ -1294,7 +1363,7 @@ index c984662..867808c 100644
  
  #### `theme`
  
-@@ -9898,81 +9917,81 @@ form select, form check, navbar, and accordion partials write match the release
+@@ -9898,81 +9936,81 @@ form select, form check, navbar, and accordion partials write match the release
  | `theme`   | `:root`                 | `--bs-gray-700`                     | —         | `#495057`                                                                                                                                                                                         | `var(--vn-gray-700)`                                                                 | tokenized |
  | `theme`   | `:root`                 | `--bs-gray-800`                     | —         | `#343a40`                                                                                                                                                                                         | `var(--vn-gray-800)`                                                                 | tokenized |
  | `theme`   | `:root`                 | `--bs-gray-900`                     | —         | `#212529`                                                                                                                                                                                         | `var(--vn-gray-900)`                                                                 | tokenized |
@@ -1423,7 +1492,7 @@ index c984662..867808c 100644
  | `theme`   | `:root`                 | `--bs-border-color-translucent`     | —         | `rgba(0, 0, 0, 0.175)`                                                                                                                                                                            | `var(--vn-border-translucent)`                                                       | tokenized |
  | `theme`   | `:root`                 | `--bs-border-radius`                | —         | `0.375rem`                                                                                                                                                                                        | `var(--vn-radius-base)`                                                              | tokenized |
  | `theme`   | `:root`                 | `--bs-border-radius-sm`             | —         | `0.25rem`                                                                                                                                                                                         | `var(--vn-radius-small)`                                                             | tokenized |
-@@ -9981,17 +10000,17 @@ form select, form check, navbar, and accordion partials write match the release
+@@ -9981,17 +10019,17 @@ form select, form check, navbar, and accordion partials write match the release
  | `theme`   | `:root`                 | `--bs-border-radius-xxl`            | —         | `2rem`                                                                                                                                                                                            | `var(--vn-radius-xxlarge)`                                                           | tokenized |
  | `theme`   | `:root`                 | `--bs-border-radius-2xl`            | —         | `var(--bs-border-radius-xxl)`                                                                                                                                                                     | `var(--vn-radius-xxlarge)`                                                           | tokenized |
  | `theme`   | `:root`                 | `--bs-border-radius-pill`           | —         | `50rem`                                                                                                                                                                                           | `var(--vn-radius-pill)`                                                              | tokenized |
@@ -1451,7 +1520,7 @@ index c984662..867808c 100644
  | `theme`   | `[data-bs-theme=light]` | `--bs-blue`                         | —         | `#0d6efd`                                                                                                                                                                                         | —                                                                                    | dropped   |
  | `theme`   | `[data-bs-theme=light]` | `--bs-indigo`                       | —         | `#6610f2`                                                                                                                                                                                         | —                                                                                    | dropped   |
  | `theme`   | `[data-bs-theme=light]` | `--bs-purple`                       | —         | `#6f42c1`                                                                                                                                                                                         | —                                                                                    | dropped   |
-@@ -10015,44 +10034,44 @@ form select, form check, navbar, and accordion partials write match the release
+@@ -10015,44 +10053,44 @@ form select, form check, navbar, and accordion partials write match the release
  | `theme`   | `[data-bs-theme=light]` | `--bs-gray-700`                     | —         | `#495057`                                                                                                                                                                                         | —                                                                                    | dropped   |
  | `theme`   | `[data-bs-theme=light]` | `--bs-gray-800`                     | —         | `#343a40`                                                                                                                                                                                         | —                                                                                    | dropped   |
  | `theme`   | `[data-bs-theme=light]` | `--bs-gray-900`                     | —         | `#212529`                                                                                                                                                                                         | —                                                                                    | dropped   |
@@ -1518,7 +1587,7 @@ index c984662..867808c 100644
  | `theme`   | `[data-bs-theme=light]` | `--bs-light-border-subtle`          | —         | `#e9ecef`                                                                                                                                                                                         | `var(--vn-color-light-border)`                                                       | tokenized |
  | `theme`   | `[data-bs-theme=light]` | `--bs-dark-border-subtle`           | —         | `#adb5bd`                                                                                                                                                                                         | `var(--vn-color-dark-border)`                                                        | tokenized |
  | `theme`   | `[data-bs-theme=light]` | `--bs-white-rgb`                    | —         | `255, 255, 255`                                                                                                                                                                                   | —                                                                                    | dropped   |
-@@ -10064,32 +10083,32 @@ form select, form check, navbar, and accordion partials write match the release
+@@ -10064,32 +10102,32 @@ form select, form check, navbar, and accordion partials write match the release
  | `theme`   | `[data-bs-theme=light]` | `--bs-body-font-size`               | —         | `1rem`                                                                                                                                                                                            | —                                                                                    | dropped   |
  | `theme`   | `[data-bs-theme=light]` | `--bs-body-font-weight`             | —         | `400`                                                                                                                                                                                             | —                                                                                    | dropped   |
  | `theme`   | `[data-bs-theme=light]` | `--bs-body-line-height`             | —         | `1.5`                                                                                                                                                                                             | —                                                                                    | dropped   |
@@ -1565,7 +1634,7 @@ index c984662..867808c 100644
  | `theme`   | `[data-bs-theme=light]` | `--bs-border-color-translucent`     | —         | `rgba(0, 0, 0, 0.175)`                                                                                                                                                                            | `var(--vn-border-translucent)`                                                       | tokenized |
  | `theme`   | `[data-bs-theme=light]` | `--bs-border-radius`                | —         | `0.375rem`                                                                                                                                                                                        | —                                                                                    | dropped   |
  | `theme`   | `[data-bs-theme=light]` | `--bs-border-radius-sm`             | —         | `0.25rem`                                                                                                                                                                                         | —                                                                                    | dropped   |
-@@ -10104,63 +10123,63 @@ form select, form check, navbar, and accordion partials write match the release
+@@ -10104,63 +10142,63 @@ form select, form check, navbar, and accordion partials write match the release
  | `theme`   | `[data-bs-theme=light]` | `--bs-box-shadow-inset`             | —         | `inset 0 1px 2px rgba(0, 0, 0, 0.075)`                                                                                                                                                            | —                                                                                    | dropped   |
  | `theme`   | `[data-bs-theme=light]` | `--bs-focus-ring-width`             | —         | `0.25rem`                                                                                                                                                                                         | —                                                                                    | dropped   |
  | `theme`   | `[data-bs-theme=light]` | `--bs-focus-ring-opacity`           | —         | `0.25`                                                                                                                                                                                            | —                                                                                    | dropped   |
@@ -1673,7 +1742,7 @@ index c984662..867808c 100644
  | `theme`   | `:root`                 | `--bs-breakpoint-xs`                | —         | `0`                                                                                                                                                                                               | `var(--vn-breakpoint-xs)`                                                            | tokenized |
  | `theme`   | `:root`                 | `--bs-breakpoint-sm`                | —         | `576px`                                                                                                                                                                                           | `var(--vn-breakpoint-sm)`                                                            | tokenized |
  | `theme`   | `:root`                 | `--bs-breakpoint-md`                | —         | `768px`                                                                                                                                                                                           | `var(--vn-breakpoint-md)`                                                            | tokenized |
-@@ -10569,16 +10588,19 @@ leaving both ledgers unread.
+@@ -10569,16 +10607,20 @@ leaving both ledgers unread.
  
  ### Outside the ledger
  
@@ -1687,44 +1756,64 @@ index c984662..867808c 100644
 -`tokenized` row. § Reference map records each `--vn-*` value beside the Bootstrap name it answers to,
 -and the `collectAdditions` function treats every name the `TOKEN_NAMES` registry carries as recorded
 -there rather than as an addition. `--vn-font-sans` drops the `"Noto Sans"`, `"Liberation Sans"`, and
-+The ledger measures the shipped components' own vocabulary, and its gate holds each canonical
-+token's value. Role coverage, names this release declares nowhere, and the Elements behaviors this
-+package does not copy sit outside that measurement, and are recorded here instead.
++The ledger measures the shipped components' own vocabulary. This section records what sits outside
++its rows, in this order: the canonical token values its gate holds without a row, role coverage,
++names this release declares nowhere, and the Elements behaviors this package does not copy.
 +
 +Canonical token values sit inside the gate and outside the rows. The release records no `--vn-*`
 +name, so no row is keyed by one: the `#### theme` table in § Departures compares each `--bs-*` alias
 +the theme scopes declare with the release's value, and names an alias reading a canonical token
 +`tokenized` where the token resolves to the release's value and `retuned` where it resolves to
 +another. The `scanCanonicalValues` function resolves every declaration of a `--vn-*` token, under
-+any selector or condition, against its § Reference map cell, so a token a component rule redeclares
-+reddens the gate rather than sitting outside both tables. § Reference map records each `--vn-*`
++any selector or condition, against its § Reference map cell in each mode the declaration applies
++in, and compares the text a declaration and its cell write where both resolve to nothing, so a
++token a component rule redeclares reddens the gate rather than sitting outside both tables. § Reference map records each `--vn-*`
 +value beside the Bootstrap name it answers to, and the `collectAdditions` function treats every name
 +the `TOKEN_NAMES` registry carries as recorded there rather than as an addition. `--vn-font-sans` drops the `"Noto Sans"`, `"Liberation Sans"`, and
  `"Noto Color Emoji"` families the release lists, because no Elements specimen renders any of them.
  `--vn-line-heading` at `1.2`, `--vn-radius-base` at `0.375rem`, and `--vn-font-mono-base` agree with
  the release's own values, so a reader looking for them meets the agreement instead of an omission.
-@@ -11382,7 +11404,9 @@ moves.
+@@ -11382,7 +11424,10 @@ moves.
  The conformance proofs pin the official release and its artifact digests, reject runtime boundary
  escapes, check shipped CSS vocabulary and recorded animations, ship every component key the pinned
  inventory records, hold the departure and addition ledgers and their values against the built
 -cascade, attribute every emitted rule to a shipped component and every rule but the row-owned ones
-+cascade, name each departure's member from the value each side resolves to in Chromium, resolve
-+every declaration of a canonical token against its reference map cell, witness every
-+`bootstrap`-sourced token with a row at the release value, attribute every emitted rule to a shipped component and every rule but the row-owned ones
++cascade, name each departure's member from the value each side resolves to in Chromium under every
++setting of its context, decide every departure and every repainted difference, resolve every
++declaration of a canonical token against its reference map cell in each mode it applies in, witness
++every `bootstrap`-sourced token with a row whose release value the token itself resolves to, attribute every emitted rule to a shipped component and every rule but the row-owned ones
  by measurement, compare each declaration's priority
  at its media condition, hold the media condition and keyframes tables against the built cascade and
  the release, compare each live Button step with its fixture, and cross-check the compatibility rows;
-@@ -11390,7 +11414,9 @@ see [Bootstrap conformance](../tests/conformance.test.ts).
+@@ -11390,7 +11435,12 @@ see [Bootstrap conformance](../tests/conformance.test.ts).
  The helper proofs read compatibility, media condition, keyframes, supported host, receipt,
  departure, and addition tables, the running host, built CSS, and the pinned inventory, read the
  classes inside `:is()` and `:where()` arguments, name a planted addition value, unattributed rule,
 -and inventory key, and verify the service readiness and its stage; see
-+and inventory key, resolve planted value pairs in Chromium to classify each by its resolved value,
-+and name a pair no probe decides, a doubled canonical token, and an unwitnessed `bootstrap` token,
++and inventory key, resolve planted value pairs in Chromium to classify each by its resolved value
++under every setting of the context its terms read, build an element matching each compound of a
++selector, read the mode from a target's ancestors, keep a string's color text, and name a pair no
++probe decides, a pair whose context no setting varies, a doubled canonical token, a canonical
++declaration apart from its cell in one mode, and an unwitnessed `bootstrap` token,
 +and verify the service readiness and its stage; see
  [the Node-only readers and recorder](../tests/setupServer.test.ts) and
  [the service readiness and stage](../tests/setupService.test.ts).
  The host proofs hold the § Hosts tables against each other and against `package.json`, and when
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 51d2a6b..1d4fac1 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -442,8 +442,8 @@ $icons: (
+ 				rgba(var(--vn-palette-black-rgb), 0.07),
+ 			0 calc(1.5rem * var(--vn-factor-elevation)) calc(2.75rem * var(--vn-factor-elevation))
+ 				calc(-0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.22);
+-		--vn-shadow-inset: inset 0 calc(0.0625rem * var(--vn-factor-elevation))
+-			calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075);
++		--vn-shadow-inset: inset 0 calc(1px * var(--vn-factor-elevation))
++			calc(2px * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075);
+ 
+ 		--vn-motion-feedback: calc(150ms * var(--vn-factor-motion));
+ 		--vn-motion-panel: calc(250ms * var(--vn-factor-motion));
 diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
 index 0a093d9..3d7ba08 100644
 --- a/tests/conformance.test.ts
@@ -1944,7 +2033,7 @@ index 0a093d9..3d7ba08 100644
  
  	it('records every emitted name the official inventory lacks', () => {
 diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
-index d914b8a..3bf9620 100644
+index d914b8a..1d999ff 100644
 --- a/tests/setupServer.test.ts
 +++ b/tests/setupServer.test.ts
 @@ -10,6 +10,7 @@ import type {
@@ -2411,7 +2500,7 @@ index d914b8a..3bf9620 100644
  		expect(isAdditionCategory('property')).toBe(true)
  		expect(isAdditionCategory('keyframes')).toBe(false)
  		expect(isAdditionCategory('shape')).toBe(false)
-@@ -3566,6 +3669,680 @@ describe('collectInlineSources', () => {
+@@ -3566,6 +3669,687 @@ describe('collectInlineSources', () => {
  	})
  })
  
@@ -2651,7 +2740,6 @@ index d914b8a..3bf9620 100644
 +			'<angle>': ['0.5turn', '180deg', '180deg'],
 +			'<color>': ['#ff0000', 'red', 'rgb(255, 0, 0)'],
 +		}
-+		expect(Object.keys(inputs)).toEqual(Object.keys(PROBE_SYNTAXES))
 +		const reader = requireValue(resolver, 'No resolver launched')
 +		const read = await reader.resolve(
 +			Object.values(inputs).map(([recorded, value]) => ({
@@ -2664,6 +2752,9 @@ index d914b8a..3bf9620 100644
 +		expect(read).toEqual(
 +			Object.values(inputs).map(([, , computed]) => ({ recorded: computed, emitted: computed })),
 +		)
++		// Every syntax the table maps carries an input here, so a syntax added to the table without
++		// one reddens this case rather than going unproved.
++		expect(Object.keys(inputs)).toEqual(Object.keys(PROBE_SYNTAXES))
 +		// Each syntax's two registrations must compute apart, or a refused value would read as parsed.
 +		const controls = await reader.resolve(
 +			Object.values(PROBE_SYNTAXES).map(([initial, control]) => ({
@@ -2813,7 +2904,13 @@ index d914b8a..3bf9620 100644
 +			},
 +		])
 +		expect(collectContextElements('#sample')).toEqual([
-+			{ tag: 'div', classes: [], attributes: [['id', 'sample']], compound: '#sample', nested: true },
++			{
++				tag: 'div',
++				classes: [],
++				attributes: [['id', 'sample']],
++				compound: '#sample',
++				nested: true,
++			},
 +		])
 +		expect(collectContextElements(':where(button.page-link):hover')).toEqual([
 +			{
@@ -2839,9 +2936,7 @@ index d914b8a..3bf9620 100644
 +			':where(button.page-link)',
 +		)
 +		expect(extractMatchedCompound(':is(h1:hover, .h1)::before')).toBe(':is(h1, .h1)')
-+		expect(extractMatchedCompound('.form-range::-webkit-slider-thumb:active')).toBe(
-+			'.form-range',
-+		)
++		expect(extractMatchedCompound('.form-range::-webkit-slider-thumb:active')).toBe('.form-range')
 +		expect(extractMatchedCompound('[data-x=":hover"]:checked')).toBe('[data-x=":hover"]')
 +		expect(extractMatchedCompound(':disabled')).toBe('*')
 +	})
@@ -2990,7 +3085,8 @@ index d914b8a..3bf9620 100644
 +		const references = [
 +			{ token: '--vn-text-body-base', light: 'red', dark: 'blue', source: 'elements' },
 +		]
-+		const scoped = ':root { --vn-text-body-base: red }\n[data-bs-theme=dark] { --vn-text-body-base: blue }'
++		const scoped =
++			':root { --vn-text-body-base: red }\n[data-bs-theme=dark] { --vn-text-body-base: blue }'
 +		const reader = requireValue(tokens, 'No resolver launched')
 +		expect(
 +			await scanCanonicalValues(
@@ -3093,7 +3189,7 @@ index d914b8a..3bf9620 100644
  	const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
  	let launched: Browser | undefined
 diff --git a/tests/setupServer.ts b/tests/setupServer.ts
-index 5f6a4bf..58ef42b 100644
+index 5f6a4bf..1bc33a7 100644
 --- a/tests/setupServer.ts
 +++ b/tests/setupServer.ts
 @@ -13,8 +13,9 @@
@@ -3256,25 +3352,26 @@ index 5f6a4bf..58ef42b 100644
  	readonly additions: readonly Addition[]
  	readonly unattributed: readonly string[]
  }
-@@ -408,6 +507,17 @@ export const BOOTSTRAP_VERSION = '5.3.8'
+@@ -408,6 +507,18 @@ export const BOOTSTRAP_VERSION = '5.3.8'
  /** Sets the recorder budget from its 2550 ms contended run: twice that duration plus 5000 ms. */
  export const ORACLE_TIMEOUT = 10_100
  
 +/**
-+ * Sets the ledger's resolution budget from its 4850 ms contended run: twice that duration plus
++ * Sets the ledger's resolution budget from its 9950 ms contended run: twice that duration plus
 + * 5000 ms.
 + *
 + * @remarks
 + * The run launches the two resolvers the conformance ledger gate uses, classifies every measured
-+ * value difference and both repainted ledgers, and resolves every canonical declaration, on
-+ * Chromium 141 with four such runs sharing the host.
++ * value difference and both repainted ledgers in every setting the {@link RESOLVER_SETTINGS}
++ * constant maps, resolves every canonical declaration, and scans the witnesses, on Chromium 141
++ * with four such runs sharing a host whose load average read between 11 and 14.
 + */
-+export const LEDGER_TIMEOUT = 14_700
++export const LEDGER_TIMEOUT = 24_900
 +
  /**
   * Pins the installed Bootstrap LTR stylesheet's SHA-256 digest.
   *
-@@ -548,9 +658,11 @@ export const ELEMENT_RELATIVES: readonly string[] = Object.freeze(['details', 'l
+@@ -548,9 +659,11 @@ export const ELEMENT_RELATIVES: readonly string[] = Object.freeze(['details', 'l
   *
   * @remarks
   * This fixture, the {@link LEDGER_CASCADE} constant, the {@link LEDGER_INVENTORY} constant, and the {@link LEDGER_SHIPPED} constant are
@@ -3289,7 +3386,7 @@ index 5f6a4bf..58ef42b 100644
   */
  export const LEDGER_GUIDE = [
  	'## Tokens',
-@@ -571,8 +683,9 @@ export const LEDGER_GUIDE = [
+@@ -571,8 +684,9 @@ export const LEDGER_GUIDE = [
  ].join('\n')
  
  /**
@@ -3301,7 +3398,7 @@ index 5f6a4bf..58ef42b 100644
   */
  export const LEDGER_CASCADE = [
  	'@layer theme { :root { --bs-btn-close-filter: none } }',
-@@ -674,6 +787,164 @@ export const SHARED_LONGHANDS: Readonly<Record<string, readonly string[]>> = Obj
+@@ -674,6 +788,164 @@ export const SHARED_LONGHANDS: Readonly<Record<string, readonly string[]>> = Obj
  	'caption-top': Object.freeze([]),
  })
  
@@ -3466,7 +3563,7 @@ index 5f6a4bf..58ef42b 100644
  /**
   * Reads whether written text names a departure this ledger records.
   * @param text - The guide cell's text.
-@@ -683,8 +954,9 @@ export function isDeparture(text: string): text is Departure {
+@@ -683,8 +955,9 @@ export function isDeparture(text: string): text is Departure {
  	return (
  		text === 'tokenized' ||
  		text === 'aliased' ||
@@ -3477,7 +3574,7 @@ index 5f6a4bf..58ef42b 100644
  		text === 'dropped'
  	)
  }
-@@ -1104,9 +1376,11 @@ export function collectImportClosure(entry: string): ReadonlySet<string> {
+@@ -1104,9 +1377,11 @@ export function collectImportClosure(entry: string): ReadonlySet<string> {
   * @returns The stylesheet's text, resolved from the installed Bootstrap manifest.
   *
   * @remarks
@@ -3492,7 +3589,7 @@ index 5f6a4bf..58ef42b 100644
   */
  export function readBootstrapCascade(): string {
  	return readFileSync(resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'dist/css/bootstrap.css'), 'utf8')
-@@ -1944,27 +2218,34 @@ export function collectValueNames(value: string): readonly string[] {
+@@ -1944,27 +2219,34 @@ export function collectValueNames(value: string): readonly string[] {
   *   undefined where it writes no declaration.
   * @param emitted - The cascade's value, empty where it writes the declaration with no value, and
   *   undefined where it writes no declaration.
@@ -3536,7 +3633,7 @@ index 5f6a4bf..58ef42b 100644
  }
  
  /**
-@@ -2849,7 +3130,9 @@ export function matchesRecording(
+@@ -2849,7 +3131,9 @@ export function matchesRecording(
   *   them.
   * @param inventory - The official vocabulary by component.
   * @param shipped - The shipped component keys, as the `collectShippedComponents` helper selects them.
@@ -3547,7 +3644,7 @@ index 5f6a4bf..58ef42b 100644
   * @throws When a shipped key has no official inventory, or when two shipped keys claim one site
   *   without recording it identically.
   *
-@@ -2857,7 +3140,9 @@ export function matchesRecording(
+@@ -2857,7 +3141,9 @@ export function matchesRecording(
   * A recorded selector the cascade withholds is deferred rather than departed, so this walk skips
   * it and `scanCompatibilityPresence` judges its absence. A custom property whose every recorded
   * selector the cascade withholds is compared where the cascade declares it instead, so a variable
@@ -3558,7 +3655,7 @@ index 5f6a4bf..58ef42b 100644
   * shipped components can reach one emitted declaration that way, one through the recorded-rule
   * comparison and one through that fallback, so every row claims the site the {@link describeSite}
   * helper writes as it is written and a second component reaching a site another key holds is
-@@ -2871,17 +3156,18 @@ export function matchesRecording(
+@@ -2871,17 +3157,18 @@ export function matchesRecording(
   * pass over it writes nothing, so the ledger states the difference once.
   * The {@link matchesRecording} helper is what separates that case from two keys recording one site
   * differently. One component writing a site it already holds is a repeated recorded write, and it
@@ -3580,7 +3677,7 @@ index 5f6a4bf..58ef42b 100644
  	const claimed = new Map<string, string>()
  	const recorders = indexRecordingKeys(inventory)
  	for (const component of shipped) {
-@@ -2921,7 +3207,15 @@ export function collectValueGaps(
+@@ -2921,7 +3208,15 @@ export function collectValueGaps(
  					condition,
  					recorded,
  					emitted,
@@ -3597,7 +3694,7 @@ index 5f6a4bf..58ef42b 100644
  				})
  			}
  		}
-@@ -2955,7 +3249,7 @@ export function collectValueGaps(
+@@ -2955,7 +3250,7 @@ export function collectValueGaps(
  					condition: block.condition,
  					recorded,
  					emitted,
@@ -3606,7 +3703,7 @@ index 5f6a4bf..58ef42b 100644
  				})
  			}
  		}
-@@ -3179,14 +3473,24 @@ export function describeSite(
+@@ -3179,14 +3474,24 @@ export function describeSite(
   *   property, condition, both values, and its member in the failure it produces.
   */
  export function describeDeparture(row: DepartureRow): string {
@@ -3638,7 +3735,7 @@ index 5f6a4bf..58ef42b 100644
  	].join(' | ')
  }
  
-@@ -3269,8 +3573,10 @@ export function scanShippedDeferrals(
+@@ -3269,8 +3574,10 @@ export function scanShippedDeferrals(
   *   inventory rule and no class attributes. Default: none.
   * @param registry - The canonical token names the additions treat as recorded. Default: every
   *   name the `TOKEN_NAMES` registry carries.
@@ -3651,7 +3748,7 @@ index 5f6a4bf..58ef42b 100644
   * @throws When a shipped key has no official inventory, when two shipped keys claim one site, or
   *   when a rule's layer and the inventory disagree on its owner.
   */
-@@ -3283,7 +3589,7 @@ export function collectLedger(
+@@ -3283,7 +3590,7 @@ export function collectLedger(
  ): CascadeLedger {
  	const blocks = readCascadeBlocks(cascade)
  	return {
@@ -3660,7 +3757,7 @@ index 5f6a4bf..58ef42b 100644
  		additions: collectAdditions(
  			blocks,
  			collectKeyframeNames(cascade),
-@@ -3296,6 +3602,916 @@ export function collectLedger(
+@@ -3296,6 +3603,930 @@ export function collectLedger(
  	}
  }
  
@@ -3928,8 +4025,10 @@ index 5f6a4bf..58ef42b 100644
 + * constant's values that changes it. Two sides compute alike only where they compute alike in
 + * every one of those readings. A pair whose sides differ is undecided where either side calls a
 + * function the {@link UNVARIED_FUNCTIONS} constant names, and where a regular property's side is
-+ * `inherit`, `unset`, `revert`, or `revert-layer` and no parent value changes the property. Each
-+ * stylesheet's factors stay at the values it declares.
++ * `inherit`, `unset`, `revert`, or `revert-layer` and no parent value changes the property. Two
++ * sides that write the same text once substituted compute alike in every setting, so the resolver
++ * reads such a pair in the `base` setting alone. Each stylesheet's factors stay at the values it
++ * declares.
 + *
 + * A regular property computes as itself, from the last value each side writes that Chromium
 + * parses. A custom property computes from the last value each side writes, through the first
@@ -4094,9 +4193,7 @@ index 5f6a4bf..58ef42b 100644
 +					// Each regular property's parent value is the first candidate Chromium parses for it and
 +					// computes apart from the base host's own value, tried on children of that host.
 +					const regular = [
-+						...new Set(
-+							batch.map((item) => item.property).filter((name) => !name.startsWith('--')),
-+						),
++						...new Set(batch.map((item) => item.property).filter((name) => !name.startsWith('--'))),
 +					]
 +					const base = scopes[0]?.[0] ?? document.body
 +					const trials = (parent ? regular : []).map((name) =>
@@ -4136,11 +4233,20 @@ index 5f6a4bf..58ef42b 100644
 +									}),
 +						),
 +					)
++					// A pair whose sides write the same text computes alike in every setting, so it is read in
++					// the first pass's first setting alone.
 +					const twins = batch.map((item, index) =>
-+						[
-+							...scopes.map((pair) => (item.dark ? pair[1] : pair[0])),
-+							parent ? inheritors.get(`${item.property} ${item.dark ? 'dark' : 'light'}`) : undefined,
-+						].map((host) =>
++						(chosen[index]?.[0] === chosen[index]?.[1]
++							? parent
++								? [scopes[0]?.[item.dark ? 1 : 0]]
++								: []
++							: [
++									...scopes.map((pair) => (item.dark ? pair[1] : pair[0])),
++									parent
++										? inheritors.get(`${item.property} ${item.dark ? 'dark' : 'light'}`)
++										: undefined,
++								]
++						).map((host) =>
 +							host === undefined
 +								? undefined
 +								: (chosen[index] ?? []).map((value) => {
@@ -4168,6 +4274,7 @@ index 5f6a4bf..58ef42b 100644
 +						if (custom && (left === '' || right === ''))
 +							return { settings: hosts.map(() => [left, right] as const), parent: undefined }
 +						const differ = left !== right
++						if (!differ && !parent) return { settings: [], parent: undefined }
 +						if (differ && (calls.test(left) || calls.test(right))) return undefined
 +						if (
 +							parent &&
@@ -4191,13 +4298,13 @@ index 5f6a4bf..58ef42b 100644
 +									(candidate) => CSS.supports(candidate, left) && CSS.supports(candidate, right),
 +								))
 +						if (name === undefined) return undefined
-+						const readings = groups.map((group) =>
-+							group?.map((element) => getComputedStyle(element).getPropertyValue(name).trim()),
++						const readings = groups.map((twin) =>
++							twin?.map((element) => getComputedStyle(element).getPropertyValue(name).trim()),
 +						)
 +						const pairs = readings.flatMap((reading) =>
 +							reading === undefined ? [] : [[reading[0] ?? '', reading[1] ?? ''] as const],
 +						)
-+						if (pairs.some(([first, second]) => first === '' || second === '')) return undefined
++						if (pairs.some(([one, other]) => one === '' || other === '')) return undefined
 +						return {
 +							settings: pairs.slice(0, hosts.length),
 +							parent: pairs[hosts.length],
@@ -4227,7 +4334,9 @@ index 5f6a4bf..58ef42b 100644
 +		}
 +		return settings.map((readings, index) => {
 +			const parent = parents[index]
-+			return readings === undefined ? undefined : [...readings, ...(parent === undefined ? [] : [parent])]
++			return readings === undefined
++				? undefined
++				: [...readings, ...(parent === undefined ? [] : [parent])]
 +		})
 +	}
 +
@@ -4509,9 +4618,11 @@ index 5f6a4bf..58ef42b 100644
 +			(resolution.recorded === '' && stated.trim() !== value.trim())
 +		)
 +			lines.push(
-+				[...cells, describeValueCell(resolution.recorded), describeValueCell(resolution.emitted)].join(
-+					' | ',
-+				),
++				[
++					...cells,
++					describeValueCell(resolution.recorded),
++					describeValueCell(resolution.emitted),
++				].join(' | '),
 +			)
 +	}
 +	return lines

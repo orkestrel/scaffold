@@ -1,0 +1,12 @@
+npm run test:policy
+
+ RUN  v4.1.11 /home/user/veneer-anchor
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  09:28:08
+   Duration  3.23s (transform 332ms, setup 195ms, import 440ms, tests 2.42s, environment 0ms)
+
+exit=0

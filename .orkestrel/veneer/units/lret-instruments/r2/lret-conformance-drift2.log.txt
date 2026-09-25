@@ -1,0 +1,61 @@
+load 14.18 9.20 6.05 12/710 11424
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+·······x---------------·x·········
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger
+Error: Hook timed out in 14700ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/conformance.test.ts:218:2
+    216|  let unretained: readonly string[] | undefined
+    217|
+    218|  beforeAll(async () => {
+       |  ^
+    219|   const [departing, tokens] = await Promise.all([
+    220|    createValueResolver(readBootstrapCascade(), readBuiltCascade()),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+Error: Test timed out in 10100ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:154:2
+    152|  })
+    153|
+    154|  it(
+       |  ^
+    155|   'records official Button behavior and matches each named fixture ste…
+    156|   async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > declaration priority > emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/conformance.test.ts:425:2
+    423|   ).toEqual([])
+    424|  })
+    425|  it('emits one forced-colors block per selector, so the content a call…
+       |  ^
+    426|   // A caller's content shares the mixin's media block: the `forced-ri…
+    427|   // `forced-colors` block and writes the content after the outline in…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 17 passed | 15 skipped (34)
+   Start at  08:44:30
+   Duration  142.58s (transform 2.19s, setup 672ms, import 83.07s, tests 58.46s, environment 0ms)
+
+exit=1

@@ -1,0 +1,120 @@
+load 11.81 13.94 11.35 2/181 18802
+
+> @orkestrel/veneer@0.0.1 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+········x··xx·····················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+AssertionError: expected [ [ …(13) ], [ …(8) ] ] to deeply equal [ [ …(5) ], [] ]
+
+- Expected
++ Received
+
+  [
+    [
++     "col | .col-form-label | font-size",
++     "display | .display-1 | font-size",
++     "display | .display-2 | font-size",
++     "display | .display-3 | font-size",
++     "display | .display-4 | font-size",
++     "display | .display-5 | font-size",
++     "display | .display-6 | font-size",
++     "reboot | legend | font-size",
+      "theme | [data-bs-theme=dark] .form-select | --bs-form-select-bg-img",
+      "theme | [data-bs-theme=dark] .form-switch .form-check-input:not(:checked):not(:focus) | --bs-form-switch-bg",
+      "theme | [data-bs-theme=dark] .navbar-toggler-icon | --bs-navbar-toggler-icon-bg",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-icon",
+      "theme | [data-bs-theme=dark] .accordion-button::after | --bs-accordion-btn-active-icon",
+    ],
+-   [],
++   [
++     "col | .col-form-label | font-size",
++     "display | .display-1 | font-size",
++     "display | .display-2 | font-size",
++     "display | .display-3 | font-size",
++     "display | .display-4 | font-size",
++     "display | .display-5 | font-size",
++     "display | .display-6 | font-size",
++     "reboot | legend | font-size",
++   ],
+  ]
+
+ ❯ tests/conformance.test.ts:253:20
+    251|   // The component-owned dark images are a second record of the same r…
+    252|   expect(dark.map(([, property]) => property).sort()).toEqual([...COMP…
+    253|   expect(darkened).toEqual([
+       |                    ^
+    254|    dark.map(([selector, property]) => `theme | ${selector} | ${propert…
+    255|    [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+AssertionError: expected [ …(8) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "col | .col-form-label | font-size | — | inherit | var(--vn-size-3) | retuned",
++   "display | .display-1 | font-size | — | calc(1.625rem + 4.5vw) | calc(var(--vn-display-1) - max(var(--vn-display-1) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | retuned",
++   "display | .display-2 | font-size | — | calc(1.575rem + 3.9vw) | calc(var(--vn-display-2) - max(var(--vn-display-2) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | retuned",
++   "display | .display-3 | font-size | — | calc(1.525rem + 3.3vw) | calc(var(--vn-display-3) - max(var(--vn-display-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | retuned",
++   "display | .display-4 | font-size | — | calc(1.475rem + 2.7vw) | calc(var(--vn-display-4) - max(var(--vn-display-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | retuned",
++   "display | .display-5 | font-size | — | calc(1.425rem + 2.1vw) | calc(var(--vn-display-5) - max(var(--vn-display-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | retuned",
++   "display | .display-6 | font-size | — | calc(1.375rem + 1.5vw) | calc(var(--vn-display-6) - max(var(--vn-display-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | retuned",
++   "reboot | legend | font-size | — | calc(1.275rem + 0.3vw) | calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | retuned",
++ ]
+
+ ❯ tests/conformance.test.ts:281:5
+    279|     describeDeparture,
+    280|    ).unrecorded,
+    281|   ).toEqual([])
+       |     ^
+    282|  })
+    283|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+AssertionError: expected [ …(8) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "col | .col-form-label | font-size | — | inherit | var(--vn-size-3) | tokenized",
++   "display | .display-1 | font-size | — | calc(1.625rem + 4.5vw) | calc(var(--vn-display-1) - max(var(--vn-display-1) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | tokenized",
++   "display | .display-2 | font-size | — | calc(1.575rem + 3.9vw) | calc(var(--vn-display-2) - max(var(--vn-display-2) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | tokenized",
++   "display | .display-3 | font-size | — | calc(1.525rem + 3.3vw) | calc(var(--vn-display-3) - max(var(--vn-display-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | tokenized",
++   "display | .display-4 | font-size | — | calc(1.475rem + 2.7vw) | calc(var(--vn-display-4) - max(var(--vn-display-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | tokenized",
++   "display | .display-5 | font-size | — | calc(1.425rem + 2.1vw) | calc(var(--vn-display-5) - max(var(--vn-display-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | tokenized",
++   "display | .display-6 | font-size | — | calc(1.375rem + 1.5vw) | calc(var(--vn-display-6) - max(var(--vn-display-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | tokenized",
++   "reboot | legend | font-size | — | calc(1.275rem + 0.3vw) | calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px)) | tokenized",
++ ]
+
+ ❯ tests/conformance.test.ts:291:5
+    289|     describeDeparture,
+    290|    ).stale,
+    291|   ).toEqual([])
+       |     ^
+    292|  })
+    293|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 31 passed (34)
+   Start at  08:57:28
+   Duration  49.49s (transform 626ms, setup 204ms, import 31.18s, tests 17.92s, environment 0ms)
+
+exit=1

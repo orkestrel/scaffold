@@ -1,0 +1,103 @@
+command: npx vitest run --config vite.config.ts --no-cache --project conformance tests/conformance.test.ts -t "resolves every canonical token" --reporter=verbose
+mutation=plant-radius files=src/styles/_tokens.scss
+load 5.89 4.83 6.24 2/295 11930
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 51d2a6b..21d76ee 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -421,7 +421,7 @@ $icons: (
+ 		--vn-border-style: solid;
+ 
+ 		--vn-radius-small: calc(0.25rem * var(--vn-factor-radius));
+-		--vn-radius-base: calc(0.375rem * var(--vn-factor-radius));
++		--vn-radius-base: calc(0.75rem * var(--vn-factor-radius));
+ 		--vn-radius-large: calc(0.5rem * var(--vn-factor-radius));
+ 		--vn-radius-xlarge: calc(1rem * var(--vn-factor-radius));
+ 		--vn-radius-xxlarge: calc(2rem * var(--vn-factor-radius));
+@@ -442,8 +442,8 @@ $icons: (
+ 				rgba(var(--vn-palette-black-rgb), 0.07),
+ 			0 calc(1.5rem * var(--vn-factor-elevation)) calc(2.75rem * var(--vn-factor-elevation))
+ 				calc(-0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.22);
+-		--vn-shadow-inset: inset 0 calc(0.0625rem * var(--vn-factor-elevation))
+-			calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075);
++		--vn-shadow-inset: inset 0 calc(1px * var(--vn-factor-elevation))
++			calc(2px * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075);
+ 
+ 		--vn-motion-feedback: calc(150ms * var(--vn-factor-motion));
+ 		--vn-motion-panel: calc(250ms * var(--vn-factor-motion));
+build:src:styles exit=0
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > installs the exact Bootstrap release this package tracks
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap reference identity > pins the installed CSS and bundled JavaScript bytes
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted container navigation selector even when its fluid shell ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted link hover selector even when its resting twin ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > reports an omitted dark component rule the theme key records even when its component ships
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > carries every shipped component selector, custom property, and recorded animation in the built cascade
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > ships exactly the component keys the pinned official inventory records
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap component oracle > records official Button behavior and matches each named fixture step
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > measures the dark component rules under the theme key, and leaves them unmeasured while it is withheld
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > decides every measured value difference by the value each side resolves to in Chromium
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > decides every repainted value difference, with the theme key shipped and withheld
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every measured value difference in the guide ledger
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names no departure the compiled cascade no longer carries
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names a retuned value retuned and a routed release value tokenized, whatever the token source
+ × |conformance| tests/conformance.test.ts > cascade ledger > resolves every canonical token at every site that declares it to its reference map cell, in each mode 12ms
+   → expected [ …(2) ] to deeply equal []
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > witnesses every bootstrap-sourced token with a departure row whose release value the token itself resolves to
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > records every emitted name the official inventory lacks
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > names no addition the compiled cascade no longer emits
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > reports an unrecorded literal declaration on a shipped rule as a declaration addition
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > attributes every emitted rule to a shipped component
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > places by measurement every emitted rule but the ones a recorded selector row owns
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > defers no name the built cascade ships
+ ↓ |conformance| tests/conformance.test.ts > cascade ledger > selects in the elements layer exactly the tags the partial table names
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > compares each declaration's priority on both sheets at its selector, property, and condition
+ ↓ |conformance| tests/conformance.test.ts > declaration priority > emits one forced-colors block per selector, so the content a caller passes lands beside the forced outline
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > writes exactly the media conditions the guide table states, each in the form the release writes
+ ↓ |conformance| tests/conformance.test.ts > media conditions and keyframes > defines exactly the animations the guide table names, each under the shipped key that records it
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads every forms partial in the release order, validation last
+ ↓ |conformance| tests/conformance.test.ts > Bootstrap source order > loads the passive block and the helpers in the release order, after every forms partial, each important helper ahead of the utilities
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > declares no forbidden runtime dependency or peer
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > imports no forbidden runtime package from source, application, or tests
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps relative module imports inside the workspace
+ ↓ |conformance| tests/conformance.test.ts > runtime boundaries > keeps every published entry closure inside source
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > cascade ledger > resolves every canonical token at every site that declares it to its reference map cell, in each mode
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "--vn-radius-base | :root | — | calc(0.375rem * var(--vn-factor-radius)) | calc(0.75rem * var(--vn-factor-radius)) | 6px | 12px",
++   "--vn-radius-base | [data-bs-theme=dark] | — | calc(0.375rem * var(--vn-factor-radius)) | calc(0.75rem * var(--vn-factor-radius)) | 6px | 12px",
++ ]
+
+ ❯ tests/conformance.test.ts:307:70
+    305|
+    306|  it('resolves every canonical token at every site that declares it to …
+    307|   expect(requireValue(canonical, 'No canonical value was resolved')).t…
+       |                                                                      ^
+    308|   // The coverage floor is a membership reading rather than a total: a…
+    309|   // contributing rows for leaves its tokens in neither the map nor th…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 33 skipped (34)
+   Start at  09:16:26
+   Duration  37.70s (transform 720ms, setup 155ms, import 31.99s, tests 5.38s, environment 0ms)
+
+exit=1
+restored src/styles/_tokens.scss byte-identical
+rebuild after restore exit=0
+--- git diff --stat after restore
+ src/styles/_tokens.scss | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)

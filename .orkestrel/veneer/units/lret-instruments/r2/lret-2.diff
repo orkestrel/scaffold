@@ -1,3 +1,215 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 867808c..1def09e 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -7040,7 +7040,7 @@ multipliers, and the tier table gives each tier's expression in the row. The tab
+ The tables that follow state the value the cascade declares for each token. The ledger gate in the
+ `tests/conformance.test.ts` proof resolves every stated value against every declaration of its
+ token in Chromium, through the `scanCanonicalValues` function: at each mode's scope, and at every
+-other selector and condition that declares the token. Every value cell states a value: one code span for each token the row's first cell names,
++other selector and condition that declares the token, in each mode that site applies in. Every value cell states a value: one code span for each token the row's first cell names,
+ `` `light`, dark `dark` `` where a table's single value column carries the light and the dark
+ reading together, or `the same expression` where the dark scope repeats the light cell. The
+ `collectReferenceRows` reader in the `tests/setupStyles.ts` module refuses a cell written in any
+@@ -7054,8 +7054,11 @@ names.
+ 
+ A stated value and a declaration compare as the values Chromium computes for them, through the same
+ resolver the § Departures rows take their members from, so `150ms` and `0.15s` compare equal, `15%`
+-and `15.0%` compare equal, and `16%` does not. A color compares at the 8-bit precision of a legacy
+-color, whichever notation writes it.
++and `15.0%` compare equal, and `16%` does not. An `rgb()`, `rgba()`, or `color(srgb …)` color
++compares at the 8-bit precision of a legacy color, so `rgba(0, 0, 0, 0.175)` and the same black
++mixed to 17.5% compare equal. A color in any other space, such as `oklch()` or
++`color(display-p3 …)`, compares as Chromium writes it. A stated value and a declaration that both
++resolve to nothing, as an `inherit` and an `initial` do, compare as the text they write.
+ 
+ #### Factors
+ 
+@@ -7265,7 +7268,7 @@ cell.
+ | `--vn-shadow-1`                           | `0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.05), 0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.1875rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.09)`                                         | `elements` — the elevation table's hint pair        | `--bs-box-shadow-sm`                                                   |
+ | `--vn-shadow-2`                           | `0 calc(0.125rem * var(--vn-factor-elevation)) calc(0.25rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.06), 0 calc(0.5rem * var(--vn-factor-elevation)) calc(1rem * var(--vn-factor-elevation)) calc(-0.25rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.12)`       | `elements` — the elevation table's popover pair     | `--bs-box-shadow`                                                      |
+ | `--vn-shadow-3`                           | `0 calc(0.25rem * var(--vn-factor-elevation)) calc(0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.07), 0 calc(1.5rem * var(--vn-factor-elevation)) calc(2.75rem * var(--vn-factor-elevation)) calc(-0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.22)`       | `elements` — the elevation table's dialog pair      | `--bs-box-shadow-lg`                                                   |
+-| `--vn-shadow-inset`                       | `inset 0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075)`                                                                                                                                                                       | `bootstrap` — no Elements specimen renders an inset | `--bs-box-shadow-inset`                                                |
++| `--vn-shadow-inset`                       | `inset 0 calc(1px * var(--vn-factor-elevation)) calc(2px * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075)`                                                                                                                                                                                  | `bootstrap` — no Elements specimen renders an inset | `--bs-box-shadow-inset`                                                |
+ 
+ Each space step is its own number times `0.125rem`, so at the default density factor the scale runs
+ 2 px at `--vn-space-1`, 4 to 16 px across `--vn-space-2` through `--vn-space-8`, 24 px at
+@@ -7545,22 +7548,37 @@ record a difference in notation whose computed value matches, such as `transpare
+ `rgba(0, 0, 0, 0)` or `0.875em` against `87.5%`. The member each row takes comes from the value
+ each side resolves to in Chromium instead, which the `ValueResolver` class reads. It resolves the
+ release's value against the release's stylesheet and Veneer's value against the built cascade, each
+-on elements built from the row's selector, so every variable a value reads takes the value its own
+-stylesheet gives it there. It then computes both on twin elements of one neutral page, in the row's
+-mode and at the default factors, so a relative length reads the same context on both sides. Where
+-the release writes the property more than once at the row's site, the release value is the last
+-declaration Chromium parses, as it is for the `-webkit-sticky` fallback the release writes ahead of
+-`sticky`. A custom property computes through the first typed probe both of its values parse: a
+-registered syntax such as `<length>` or `<color>`, and after every syntax, a standard property such
+-as `box-shadow` or `font-family`. The gate names every row the resolver cannot decide and expects
+-none, so no row takes the member its text alone would name.
++on elements built from the row's selector, one per compound and each matching its compound, so every
++variable a value reads takes the value its own stylesheet gives it there. It then computes both on
++twin elements of one neutral page, in the row's mode, which the target element and its ancestors
++decide, and at the default factors. The twins compute under every setting the `RESOLVER_SETTINGS`
++constant maps: the `base` setting, and one setting each that changes the `font` size, the
++containing `block`, the `color`, the `direction`, the `root` font size, or the `viewport`. A regular
++property also computes under a parent that sets the property itself, so an `inherit` reads a
++second parent value. Two sides resolve to the same value only where they compute alike under every
++setting, because a reader's page can run in any of those contexts. The `.col-form-label`
++`font-size` row is `retuned` because the release's `inherit` follows its parent and Veneer's token
++does not. The `display` and `legend` `font-size` rows are `retuned` because the release fixes each
++viewport share while Veneer's share scales with its rem token, so the two agree only at a 16px root
++font size. A pair whose value reads a context no setting varies, such as an `env()` value, is
++undecided. Where the release writes the property more than once at the row's site, the release
++value is the last declaration Chromium parses, as it is for the `-webkit-sticky` fallback the
++release writes ahead of `sticky`, and for the `pre` and `kbd` `font-size` rows, whose `1em` the
++release's second rule replaces with `0.875em`. A custom property computes through the first typed
++probe both of its values parse: a registered syntax such as `<length-percentage>+` or `<color>`,
++and after every syntax, a standard property such as `box-shadow` or `font-family`. The gate names
++every row the resolver cannot decide and expects none, so no row takes the member its text alone
++would name.
+ 
+ A `—` cell in the `Condition` column records a declaration under no at-rule, and a `—` cell in
+ either value column records a side that writes no declaration there at all. An `(empty)` cell
+ records a side that writes the declaration with nothing after the colon, which leaves the property
+ without a value while the declaration itself stands. The `Departure` cell names why the two values
+ differ. A `retuned` row resolves to a value other than the release's, whatever its text reads, and
+-a `dropped` row writes no declaration at all. Every other row resolves to the release value in
++a `dropped` row writes no declaration at all. `retuned` compares computed values, not rendered
++pixels: the `reboot` `th` `text-align` row is `retuned` because the release's `-webkit-match-parent`
++computes to `left` and Veneer's `inherit` to `start`, which align a header alike wherever the
++header's direction matches its row's. Every other row resolves to the release value in
+ different text, and its member names what the text does: a `tokenized` row routes the release value
+ through a Veneer token, an `aliased` row reads another compatibility variable in its place, a
+ `fallback` row keeps the release value behind a `var()` fallback, and a `restated` row writes the
+@@ -7569,9 +7587,10 @@ is `(empty)` is `retuned` rather than `dropped`: the cascade writes the declarat
+ differs.
+ 
+ A token the § Reference map sources from `bootstrap` states that it keeps the release's own value,
+-and these rows hold that statement: the `scanWitnesses` function names each such token no row reads
+-at the release value, which is a row reading it that is neither `retuned` nor `dropped`, and the
+-gate expects none.
++and these rows hold that statement: the `scanWitnesses` function names each such token no row
++witnesses, and the gate expects none. A witness is a row that reads the token, that is neither
++`retuned` nor `dropped`, and whose release value the token alone resolves to at the row's site, so a
++row that reaches the release value through arithmetic on the token witnesses nothing.
+ 
+ #### `accordion`
+ 
+@@ -7956,7 +7975,7 @@ gate expects none.
+ | --------- | -------------------- | ---------------- | --------- | ----------------------------------------- | -------------------------------------------------- | --------- |
+ | `col`     | `.col-form-label`    | `padding-top`    | —         | `calc(0.375rem + var(--bs-border-width))` | `calc(var(--vn-space-3) + var(--bs-border-width))` | tokenized |
+ | `col`     | `.col-form-label`    | `padding-bottom` | —         | `calc(0.375rem + var(--bs-border-width))` | `calc(var(--vn-space-3) + var(--bs-border-width))` | tokenized |
+-| `col`     | `.col-form-label`    | `font-size`      | —         | `inherit`                                 | `var(--vn-size-3)`                                 | tokenized |
++| `col`     | `.col-form-label`    | `font-size`      | —         | `inherit`                                 | `var(--vn-size-3)`                                 | retuned   |
+ | `col`     | `.col-form-label`    | `line-height`    | —         | `1.5`                                     | `var(--vn-line-body)`                              | tokenized |
+ | `col`     | `.col-form-label-lg` | `padding-top`    | —         | `calc(0.5rem + var(--bs-border-width))`   | `calc(var(--vn-space-4) + var(--bs-border-width))` | tokenized |
+ | `col`     | `.col-form-label-lg` | `padding-bottom` | —         | `calc(0.5rem + var(--bs-border-width))`   | `calc(var(--vn-space-4) + var(--bs-border-width))` | tokenized |
+@@ -8086,22 +8105,22 @@ gate expects none.
+ | Component | Selector     | Property      | Condition                  | Bootstrap 5.3.8          | Veneer                                                                                              | Departure |
+ | --------- | ------------ | ------------- | -------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------- | --------- |
+ | `display` | `.display-1` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-1` | `font-size`   | —                          | `calc(1.625rem + 4.5vw)` | `calc(var(--vn-display-1) - max(var(--vn-display-1) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-1` | `font-size`   | —                          | `calc(1.625rem + 4.5vw)` | `calc(var(--vn-display-1) - max(var(--vn-display-1) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-1` | `font-size`   | `@media (width >= 1200px)` | `5rem`                   | `var(--vn-display-1)`                                                                               | tokenized |
+ | `display` | `.display-2` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-2` | `font-size`   | —                          | `calc(1.575rem + 3.9vw)` | `calc(var(--vn-display-2) - max(var(--vn-display-2) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-2` | `font-size`   | —                          | `calc(1.575rem + 3.9vw)` | `calc(var(--vn-display-2) - max(var(--vn-display-2) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-2` | `font-size`   | `@media (width >= 1200px)` | `4.5rem`                 | `var(--vn-display-2)`                                                                               | tokenized |
+ | `display` | `.display-3` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-3` | `font-size`   | —                          | `calc(1.525rem + 3.3vw)` | `calc(var(--vn-display-3) - max(var(--vn-display-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-3` | `font-size`   | —                          | `calc(1.525rem + 3.3vw)` | `calc(var(--vn-display-3) - max(var(--vn-display-3) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-3` | `font-size`   | `@media (width >= 1200px)` | `4rem`                   | `var(--vn-display-3)`                                                                               | tokenized |
+ | `display` | `.display-4` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-4` | `font-size`   | —                          | `calc(1.475rem + 2.7vw)` | `calc(var(--vn-display-4) - max(var(--vn-display-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-4` | `font-size`   | —                          | `calc(1.475rem + 2.7vw)` | `calc(var(--vn-display-4) - max(var(--vn-display-4) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-4` | `font-size`   | `@media (width >= 1200px)` | `3.5rem`                 | `var(--vn-display-4)`                                                                               | tokenized |
+ | `display` | `.display-5` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-5` | `font-size`   | —                          | `calc(1.425rem + 2.1vw)` | `calc(var(--vn-display-5) - max(var(--vn-display-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-5` | `font-size`   | —                          | `calc(1.425rem + 2.1vw)` | `calc(var(--vn-display-5) - max(var(--vn-display-5) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-5` | `font-size`   | `@media (width >= 1200px)` | `3rem`                   | `var(--vn-display-5)`                                                                               | tokenized |
+ | `display` | `.display-6` | `line-height` | —                          | `1.2`                    | `var(--vn-line-heading)`                                                                            | tokenized |
+-| `display` | `.display-6` | `font-size`   | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-display-6) - max(var(--vn-display-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `display` | `.display-6` | `font-size`   | —                          | `calc(1.375rem + 1.5vw)` | `calc(var(--vn-display-6) - max(var(--vn-display-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `display` | `.display-6` | `font-size`   | `@media (width >= 1200px)` | `2.5rem`                 | `var(--vn-display-6)`                                                                               | tokenized |
+ 
+ #### `dropdown`
+@@ -9622,7 +9641,7 @@ gate expects none.
+ | `reboot`  | `button`      | `font-size`                        | —                          | `inherit`                                                   | `var(--vn-size-2)`                                                                            | retuned   |
+ | `reboot`  | `button`      | `line-height`                      | —                          | `inherit`                                                   | `var(--vn-line-body)`                                                                         | retuned   |
+ | `reboot`  | `legend`      | `margin-bottom`                    | —                          | `0.5rem`                                                    | `var(--vn-space-4)`                                                                           | tokenized |
+-| `reboot`  | `legend`      | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | tokenized |
++| `reboot`  | `legend`      | `font-size`                        | —                          | `calc(1.275rem + 0.3vw)`                                    | `calc(var(--vn-size-6) - max(var(--vn-size-6) * 0.9 - 1.125rem, 0px) * (1 - 100vw / 1200px))` | retuned   |
+ | `reboot`  | `legend`      | `font-size`                        | `@media (width >= 1200px)` | `1.5rem`                                                    | `var(--vn-size-6)`                                                                            | tokenized |
+ 
+ #### `row`
+@@ -10588,17 +10607,18 @@ leaving both ledgers unread.
+ 
+ ### Outside the ledger
+ 
+-The ledger measures the shipped components' own vocabulary, and its gate holds each canonical
+-token's value. Role coverage, names this release declares nowhere, and the Elements behaviors this
+-package does not copy sit outside that measurement, and are recorded here instead.
++The ledger measures the shipped components' own vocabulary. This section records what sits outside
++its rows, in this order: the canonical token values its gate holds without a row, role coverage,
++names this release declares nowhere, and the Elements behaviors this package does not copy.
+ 
+ Canonical token values sit inside the gate and outside the rows. The release records no `--vn-*`
+ name, so no row is keyed by one: the `#### theme` table in § Departures compares each `--bs-*` alias
+ the theme scopes declare with the release's value, and names an alias reading a canonical token
+ `tokenized` where the token resolves to the release's value and `retuned` where it resolves to
+ another. The `scanCanonicalValues` function resolves every declaration of a `--vn-*` token, under
+-any selector or condition, against its § Reference map cell, so a token a component rule redeclares
+-reddens the gate rather than sitting outside both tables. § Reference map records each `--vn-*`
++any selector or condition, against its § Reference map cell in each mode the declaration applies
++in, and compares the text a declaration and its cell write where both resolve to nothing, so a
++token a component rule redeclares reddens the gate rather than sitting outside both tables. § Reference map records each `--vn-*`
+ value beside the Bootstrap name it answers to, and the `collectAdditions` function treats every name
+ the `TOKEN_NAMES` registry carries as recorded there rather than as an addition. `--vn-font-sans` drops the `"Noto Sans"`, `"Liberation Sans"`, and
+ `"Noto Color Emoji"` families the release lists, because no Elements specimen renders any of them.
+@@ -11404,9 +11424,10 @@ moves.
+ The conformance proofs pin the official release and its artifact digests, reject runtime boundary
+ escapes, check shipped CSS vocabulary and recorded animations, ship every component key the pinned
+ inventory records, hold the departure and addition ledgers and their values against the built
+-cascade, name each departure's member from the value each side resolves to in Chromium, resolve
+-every declaration of a canonical token against its reference map cell, witness every
+-`bootstrap`-sourced token with a row at the release value, attribute every emitted rule to a shipped component and every rule but the row-owned ones
++cascade, name each departure's member from the value each side resolves to in Chromium under every
++setting of its context, decide every departure and every repainted difference, resolve every
++declaration of a canonical token against its reference map cell in each mode it applies in, witness
++every `bootstrap`-sourced token with a row whose release value the token itself resolves to, attribute every emitted rule to a shipped component and every rule but the row-owned ones
+ by measurement, compare each declaration's priority
+ at its media condition, hold the media condition and keyframes tables against the built cascade and
+ the release, compare each live Button step with its fixture, and cross-check the compatibility rows;
+@@ -11414,8 +11435,11 @@ see [Bootstrap conformance](../tests/conformance.test.ts).
+ The helper proofs read compatibility, media condition, keyframes, supported host, receipt,
+ departure, and addition tables, the running host, built CSS, and the pinned inventory, read the
+ classes inside `:is()` and `:where()` arguments, name a planted addition value, unattributed rule,
+-and inventory key, resolve planted value pairs in Chromium to classify each by its resolved value,
+-and name a pair no probe decides, a doubled canonical token, and an unwitnessed `bootstrap` token,
++and inventory key, resolve planted value pairs in Chromium to classify each by its resolved value
++under every setting of the context its terms read, build an element matching each compound of a
++selector, read the mode from a target's ancestors, keep a string's color text, and name a pair no
++probe decides, a pair whose context no setting varies, a doubled canonical token, a canonical
++declaration apart from its cell in one mode, and an unwitnessed `bootstrap` token,
+ and verify the service readiness and its stage; see
+ [the Node-only readers and recorder](../tests/setupServer.test.ts) and
+ [the service readiness and stage](../tests/setupService.test.ts).
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 51d2a6b..1d4fac1 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -442,8 +442,8 @@ $icons: (
+ 				rgba(var(--vn-palette-black-rgb), 0.07),
+ 			0 calc(1.5rem * var(--vn-factor-elevation)) calc(2.75rem * var(--vn-factor-elevation))
+ 				calc(-0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.22);
+-		--vn-shadow-inset: inset 0 calc(0.0625rem * var(--vn-factor-elevation))
+-			calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075);
++		--vn-shadow-inset: inset 0 calc(1px * var(--vn-factor-elevation))
++			calc(2px * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075);
+ 
+ 		--vn-motion-feedback: calc(150ms * var(--vn-factor-motion));
+ 		--vn-motion-panel: calc(250ms * var(--vn-factor-motion));
 diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
 index 32a4955..3d7ba08 100644
 --- a/tests/conformance.test.ts
@@ -72,7 +284,7 @@ index 32a4955..3d7ba08 100644
  		])
  		expect(
 diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
-index 05fad33..3bf9620 100644
+index 05fad33..1d999ff 100644
 --- a/tests/setupServer.test.ts
 +++ b/tests/setupServer.test.ts
 @@ -46,12 +46,15 @@ import {
@@ -244,7 +456,7 @@ index 05fad33..3bf9620 100644
  			},
  			{
  				selector: ':root',
-@@ -3836,22 +3874,262 @@ describe('ValueResolver', () => {
+@@ -3836,20 +3874,266 @@ describe('ValueResolver', () => {
  		])
  	})
  
@@ -285,7 +497,6 @@ index 05fad33..3bf9620 100644
 +			'<angle>': ['0.5turn', '180deg', '180deg'],
 +			'<color>': ['#ff0000', 'red', 'rgb(255, 0, 0)'],
 +		}
-+		expect(Object.keys(inputs)).toEqual(Object.keys(PROBE_SYNTAXES))
 +		const reader = requireValue(resolver, 'No resolver launched')
 +		const read = await reader.resolve(
 +			Object.values(inputs).map(([recorded, value]) => ({
@@ -300,6 +511,9 @@ index 05fad33..3bf9620 100644
 +		expect(read).toEqual(
 +			Object.values(inputs).map(([, , computed]) => ({ recorded: computed, emitted: computed })),
 +		)
++		// Every syntax the table maps carries an input here, so a syntax added to the table without
++		// one reddens this case rather than going unproved.
++		expect(Object.keys(inputs)).toEqual(Object.keys(PROBE_SYNTAXES))
 +		// Each syntax's two registrations must compute apart, or a refused value would read as parsed.
 +		const controls = await reader.resolve(
 +			Object.values(PROBE_SYNTAXES).map(([initial, control]) => ({
@@ -308,14 +522,12 @@ index 05fad33..3bf9620 100644
 +				recorded: [initial],
 +				emitted: [control],
 +			})),
- 		)
--		expect(read.map((resolution) => resolution?.recorded === resolution?.emitted)).toEqual(
--			syntaxes.flatMap(() => [true, false]),
++		)
 +		expect(controls.map((resolution) => resolution?.recorded !== resolution?.emitted)).toEqual(
 +			Object.keys(PROBE_SYNTAXES).map(() => true),
- 		)
- 	})
- 
++		)
++	})
++
 +	it('decides a pair alike only where both sides compute alike in every context their terms read', async () => {
 +		const pairs = [
 +			['margin-left', '0.5em', 'calc(1em / 2)'],
@@ -451,7 +663,13 @@ index 05fad33..3bf9620 100644
 +			},
 +		])
 +		expect(collectContextElements('#sample')).toEqual([
-+			{ tag: 'div', classes: [], attributes: [['id', 'sample']], compound: '#sample', nested: true },
++			{
++				tag: 'div',
++				classes: [],
++				attributes: [['id', 'sample']],
++				compound: '#sample',
++				nested: true,
++			},
 +		])
 +		expect(collectContextElements(':where(button.page-link):hover')).toEqual([
 +			{
@@ -467,7 +685,9 @@ index 05fad33..3bf9620 100644
 +		])
 +		expect(() => collectContextElements('.btn[data-x~=]')).toThrow(
 +			'Context element reader reads no attribute selector: [data-x~=]',
-+		)
+ 		)
+-		expect(read.map((resolution) => resolution?.recorded === resolution?.emitted)).toEqual(
+-			syntaxes.flatMap(() => [true, false]),
 +	})
 +
 +	it('writes the part of a compound an element must match, without its state or its pseudo-elements', () => {
@@ -475,11 +695,9 @@ index 05fad33..3bf9620 100644
 +		expect(extractMatchedCompound('a:not([href]):not([class])')).toBe('a')
 +		expect(extractMatchedCompound(':where(button.page-link):focus-visible')).toBe(
 +			':where(button.page-link)',
-+		)
+ 		)
 +		expect(extractMatchedCompound(':is(h1:hover, .h1)::before')).toBe(':is(h1, .h1)')
-+		expect(extractMatchedCompound('.form-range::-webkit-slider-thumb:active')).toBe(
-+			'.form-range',
-+		)
++		expect(extractMatchedCompound('.form-range::-webkit-slider-thumb:active')).toBe('.form-range')
 +		expect(extractMatchedCompound('[data-x=":hover"]:checked')).toBe('[data-x=":hover"]')
 +		expect(extractMatchedCompound(':disabled')).toBe('*')
 +	})
@@ -512,12 +730,10 @@ index 05fad33..3bf9620 100644
 +			undefined,
 +			undefined,
 +		])
-+	})
-+
+ 	})
+ 
  	it('names a planted unrecorded departure, a planted stale row, and each planted difference it cannot decide', async () => {
- 		const scratch = createScratch()
- 		try {
-@@ -3861,10 +4139,12 @@ describe('ValueResolver', () => {
+@@ -3861,10 +4145,12 @@ describe('ValueResolver', () => {
  				requireValue(resolver, 'No resolver launched'),
  			)
  			const carried = scanLedgerDrift(measured.departures, readDepartures(path), describeDeparture)
@@ -531,7 +747,7 @@ index 05fad33..3bf9620 100644
  				'reboot | body | color | — | #000 | red | retuned',
  				'table | .caption-top | caption-side | — | top | — | dropped',
  			])
-@@ -3887,42 +4167,25 @@ describe('ValueResolver', () => {
+@@ -3887,42 +4173,25 @@ describe('ValueResolver', () => {
  		}
  	})
  
@@ -590,7 +806,7 @@ index 05fad33..3bf9620 100644
  	})
  
  	it('writes every sRGB color at the 8-bit precision a legacy color computes to, and leaves every other color alone', () => {
-@@ -3970,22 +4233,75 @@ describe('ValueResolver', () => {
+@@ -3970,22 +4239,76 @@ describe('ValueResolver', () => {
  		])
  		expect(await scanCanonicalValues(readCascadeBlocks(sited), references, reader)).toEqual([
  			'--vn-radius-base | .btn | — | calc(0.375rem * var(--vn-factor-radius)) | 1rem | 6px | 16px',
@@ -606,7 +822,8 @@ index 05fad33..3bf9620 100644
 +		const references = [
 +			{ token: '--vn-text-body-base', light: 'red', dark: 'blue', source: 'elements' },
 +		]
-+		const scoped = ':root { --vn-text-body-base: red }\n[data-bs-theme=dark] { --vn-text-body-base: blue }'
++		const scoped =
++			':root { --vn-text-body-base: red }\n[data-bs-theme=dark] { --vn-text-body-base: blue }'
 +		const reader = requireValue(tokens, 'No resolver launched')
 +		expect(
 +			await scanCanonicalValues(
@@ -667,7 +884,7 @@ index 05fad33..3bf9620 100644
  			['theme', ':root', '--bs-gray-200', '#e9ecef', 'var(--vn-gray-200)', 'retuned'],
  			[
  				'container',
-@@ -3993,13 +4309,24 @@ describe('ValueResolver', () => {
+@@ -3993,13 +4316,24 @@ describe('ValueResolver', () => {
  				'max-width',
  				'540px',
  				'calc(var(--vn-container-sm) * 1)',
@@ -694,7 +911,7 @@ index 05fad33..3bf9620 100644
  				departures.map(([component, selector, property, recorded, value, departure]) => ({
  					component,
  					selector,
-@@ -4010,8 +4337,9 @@ describe('ValueResolver', () => {
+@@ -4010,8 +4344,9 @@ describe('ValueResolver', () => {
  					departure,
  				})),
  				references,
@@ -706,7 +923,7 @@ index 05fad33..3bf9620 100644
  })
  
 diff --git a/tests/setupServer.ts b/tests/setupServer.ts
-index bd0bb59..58ef42b 100644
+index bd0bb59..1bc33a7 100644
 --- a/tests/setupServer.ts
 +++ b/tests/setupServer.ts
 @@ -42,6 +42,7 @@ import {
@@ -777,7 +994,28 @@ index bd0bb59..58ef42b 100644
  }
  
  /** Carries every departure the resolver classifies, and every difference it could not decide. */
-@@ -779,22 +803,22 @@ export const PROBE_PREFIX = '--vn-probe'
+@@ -484,15 +508,16 @@ export const BOOTSTRAP_VERSION = '5.3.8'
+ export const ORACLE_TIMEOUT = 10_100
+ 
+ /**
+- * Sets the ledger's resolution budget from its 4850 ms contended run: twice that duration plus
++ * Sets the ledger's resolution budget from its 9950 ms contended run: twice that duration plus
+  * 5000 ms.
+  *
+  * @remarks
+  * The run launches the two resolvers the conformance ledger gate uses, classifies every measured
+- * value difference and both repainted ledgers, and resolves every canonical declaration, on
+- * Chromium 141 with four such runs sharing the host.
++ * value difference and both repainted ledgers in every setting the {@link RESOLVER_SETTINGS}
++ * constant maps, resolves every canonical declaration, and scans the witnesses, on Chromium 141
++ * with four such runs sharing a host whose load average read between 11 and 14.
+  */
+-export const LEDGER_TIMEOUT = 14_700
++export const LEDGER_TIMEOUT = 24_900
+ 
+ /**
+  * Pins the installed Bootstrap LTR stylesheet's SHA-256 digest.
+@@ -779,22 +804,22 @@ export const PROBE_PREFIX = '--vn-probe'
   * initial value, and sets both probes to the value it reads. A value the syntax parses computes the
   * same on both, and a value it refuses falls back to each probe's own initial value, so the two
   * readings differ exactly where the syntax refuses the value. The resolver reads a pair through the
@@ -810,7 +1048,7 @@ index bd0bb59..58ef42b 100644
  	})
  
  /**
-@@ -816,6 +840,111 @@ export const PROBE_PROPERTIES: readonly string[] = Object.freeze([
+@@ -816,6 +841,111 @@ export const PROBE_PROPERTIES: readonly string[] = Object.freeze([
  	'transition-timing-function',
  ])
  
@@ -922,7 +1160,7 @@ index bd0bb59..58ef42b 100644
  /**
   * Reads whether written text names a departure this ledger records.
   * @param text - The guide cell's text.
-@@ -3473,12 +3602,71 @@ export function collectLedger(
+@@ -3473,12 +3603,71 @@ export function collectLedger(
  	}
  }
  
@@ -995,7 +1233,7 @@ index bd0bb59..58ef42b 100644
   * @throws When a compound carries an attribute selector this reader does not parse, or a form the
   *   {@link readCompoundTag} helper does not read, so a site the resolver cannot build reddens
   *   instead of resolving on the wrong elements.
-@@ -3487,9 +3675,14 @@ export function collectLedger(
+@@ -3487,9 +3676,14 @@ export function collectLedger(
   * A variable reaches an element by inheritance, so the {@link ValueResolver} class nests each
   * element inside the one before it and reads the last. A `+` or a `~` combinator joins a sibling
   * rather than an ancestor, so that element sits beside the one before it and inherits nothing from
@@ -1013,7 +1251,7 @@ index bd0bb59..58ef42b 100644
   *
   * @example
   * ```ts
-@@ -3505,44 +3698,90 @@ export function collectContextElements(selector: string): readonly ContextElemen
+@@ -3505,44 +3699,90 @@ export function collectContextElements(selector: string): readonly ContextElemen
  		if (start < 0) throw new Error(`Context element reader reads no compound: ${compound}`)
  		const joint = selector.slice(cursor, start)
  		cursor = start + compound.length
@@ -1128,7 +1366,7 @@ index bd0bb59..58ef42b 100644
  }
  
  /**
-@@ -3552,7 +3791,7 @@ export function matchesDarkScope(selector: string): boolean {
+@@ -3552,7 +3792,7 @@ export function matchesDarkScope(selector: string): boolean {
   * @param value - A computed value as Chromium serializes it.
   * @returns The value with every `rgb()`, `rgba()`, and `color(srgb …)` color written as `rgb()`, or
   *   as `rgba()` where it is not opaque, over channels and an alpha each rounded to the nearest of
@@ -1137,7 +1375,7 @@ index bd0bb59..58ef42b 100644
   *
   * @remarks
   * Chromium serializes a legacy color as `rgb()` over 8-bit channels and alpha, and a mixed or
-@@ -3565,7 +3804,9 @@ export function matchesDarkScope(selector: string): boolean {
+@@ -3565,7 +3805,9 @@ export function matchesDarkScope(selector: string): boolean {
   * gradient and every mix over premultiplied channels, so the release's `rgba(255, 255, 255, 0)`
   * gradient stop and a `transparent` one paint the same gradient. An alpha is written the way
   * Chromium writes a legacy one: to two places where those round back to the same step, and to three
@@ -1148,7 +1386,7 @@ index bd0bb59..58ef42b 100644
   *
   * @example
   * ```ts
-@@ -3574,9 +3815,9 @@ export function matchesDarkScope(selector: string): boolean {
+@@ -3574,9 +3816,9 @@ export function matchesDarkScope(selector: string): boolean {
   */
  export function normalizeResolvedColors(value: string): string {
  	return value.replaceAll(
@@ -1160,7 +1398,7 @@ index bd0bb59..58ef42b 100644
  			red: string | undefined,
  			green: string | undefined,
  			blue: string | undefined,
-@@ -3586,6 +3827,7 @@ export function normalizeResolvedColors(value: string): string {
+@@ -3586,6 +3828,7 @@ export function normalizeResolvedColors(value: string): string {
  			z: string | undefined,
  			alpha: string | undefined,
  		) => {
@@ -1168,7 +1406,7 @@ index bd0bb59..58ef42b 100644
  			const scale = red === undefined ? 255 : 1
  			const channels = (red === undefined ? [x, y, z] : [red, green, blue]).map((channel) =>
  				String(Math.round(Number(channel) * scale) + 0),
-@@ -3611,13 +3853,21 @@ export function normalizeResolvedColors(value: string): string {
+@@ -3611,12 +3854,22 @@ export function normalizeResolvedColors(value: string): string {
   * Each side's values are read first in its own page, on elements the
   * {@link collectContextElements} helper builds from the site's selector, so every variable a value
   * reads takes the value that stylesheet gives it at that site, and a custom property takes its
@@ -1178,7 +1416,6 @@ index bd0bb59..58ef42b 100644
 - * under the color scheme of the site's mode, at a 16px font size and a 1000px width, so a relative
 - * length, a percentage, and a `light-dark()` pair read one context on both sides and neither
 - * stylesheet's element styles take part. Each stylesheet's factors stay at the values it
-- * declares.
 + * declared value there, `inherit` included. Each element must match the part of its compound the
 + * `compound` member names, and a pair whose elements do not all match is undecided. A regular
 + * property's value that reads a variable the stylesheet never gives computes as `unset`, the way
@@ -1192,12 +1429,13 @@ index bd0bb59..58ef42b 100644
 + * constant's values that changes it. Two sides compute alike only where they compute alike in
 + * every one of those readings. A pair whose sides differ is undecided where either side calls a
 + * function the {@link UNVARIED_FUNCTIONS} constant names, and where a regular property's side is
-+ * `inherit`, `unset`, `revert`, or `revert-layer` and no parent value changes the property. Each
-+ * stylesheet's factors stay at the values it declares.
++ * `inherit`, `unset`, `revert`, or `revert-layer` and no parent value changes the property. Two
++ * sides that write the same text once substituted compute alike in every setting, so the resolver
++ * reads such a pair in the `base` setting alone. Each stylesheet's factors stay at the values it
+  * declares.
   *
   * A regular property computes as itself, from the last value each side writes that Chromium
-  * parses. A custom property computes from the last value each side writes, through the first
-@@ -3631,7 +3881,8 @@ export function normalizeResolvedColors(value: string): string {
+@@ -3631,7 +3884,8 @@ export function normalizeResolvedColors(value: string): string {
   * property's values on one side, where no syntax and no property parses both values of a custom
   * property, or where Chromium serializes the computed value as empty. The resolver keeps every
   * answer for the pair it read, so a comparison repeated over the same pairs reads each one once.
@@ -1207,7 +1445,7 @@ index bd0bb59..58ef42b 100644
   */
  export class ValueResolver {
  	readonly #browser: Browser
-@@ -3673,71 +3924,199 @@ export class ValueResolver {
+@@ -3673,71 +3927,207 @@ export class ValueResolver {
  				this.#resolved.set(key, undefined)
  			else pending.set(key, pair)
  		}
@@ -1363,9 +1601,7 @@ index bd0bb59..58ef42b 100644
 +					// Each regular property's parent value is the first candidate Chromium parses for it and
 +					// computes apart from the base host's own value, tried on children of that host.
 +					const regular = [
-+						...new Set(
-+							batch.map((item) => item.property).filter((name) => !name.startsWith('--')),
-+						),
++						...new Set(batch.map((item) => item.property).filter((name) => !name.startsWith('--'))),
 +					]
 +					const base = scopes[0]?.[0] ?? document.body
 +					const trials = (parent ? regular : []).map((name) =>
@@ -1408,11 +1644,20 @@ index bd0bb59..58ef42b 100644
 +									}),
 +						),
 +					)
++					// A pair whose sides write the same text computes alike in every setting, so it is read in
++					// the first pass's first setting alone.
 +					const twins = batch.map((item, index) =>
-+						[
-+							...scopes.map((pair) => (item.dark ? pair[1] : pair[0])),
-+							parent ? inheritors.get(`${item.property} ${item.dark ? 'dark' : 'light'}`) : undefined,
-+						].map((host) =>
++						(chosen[index]?.[0] === chosen[index]?.[1]
++							? parent
++								? [scopes[0]?.[item.dark ? 1 : 0]]
++								: []
++							: [
++									...scopes.map((pair) => (item.dark ? pair[1] : pair[0])),
++									parent
++										? inheritors.get(`${item.property} ${item.dark ? 'dark' : 'light'}`)
++										: undefined,
++								]
++						).map((host) =>
 +							host === undefined
 +								? undefined
 +								: (chosen[index] ?? []).map((value) => {
@@ -1443,6 +1688,7 @@ index bd0bb59..58ef42b 100644
 +						if (custom && (left === '' || right === ''))
 +							return { settings: hosts.map(() => [left, right] as const), parent: undefined }
 +						const differ = left !== right
++						if (!differ && !parent) return { settings: [], parent: undefined }
 +						if (differ && (calls.test(left) || calls.test(right))) return undefined
 +						if (
 +							parent &&
@@ -1457,7 +1703,7 @@ index bd0bb59..58ef42b 100644
  						const name = !custom
  							? item.property
  							: (probes.find((probe) =>
-@@ -3747,55 +4126,57 @@ export class ValueResolver {
+@@ -3747,55 +4137,59 @@ export class ValueResolver {
  									),
  								) ??
  								properties.find(
@@ -1469,13 +1715,13 @@ index bd0bb59..58ef42b 100644
 -						if (left === undefined || right === undefined || left === '' || right === '')
 -							return undefined
 -						return { recorded: left, emitted: right }
-+						const readings = groups.map((group) =>
-+							group?.map((element) => getComputedStyle(element).getPropertyValue(name).trim()),
++						const readings = groups.map((twin) =>
++							twin?.map((element) => getComputedStyle(element).getPropertyValue(name).trim()),
 +						)
 +						const pairs = readings.flatMap((reading) =>
 +							reading === undefined ? [] : [[reading[0] ?? '', reading[1] ?? ''] as const],
 +						)
-+						if (pairs.some(([first, second]) => first === '' || second === '')) return undefined
++						if (pairs.some(([one, other]) => one === '' || other === '')) return undefined
 +						return {
 +							settings: pairs.slice(0, hosts.length),
 +							parent: pairs[hosts.length],
@@ -1527,7 +1773,9 @@ index bd0bb59..58ef42b 100644
 -		await this.#browser.close()
 +		return settings.map((readings, index) => {
 +			const parent = parents[index]
-+			return readings === undefined ? undefined : [...readings, ...(parent === undefined ? [] : [parent])]
++			return readings === undefined
++				? undefined
++				: [...readings, ...(parent === undefined ? [] : [parent])]
 +		})
  	}
  
@@ -1544,7 +1792,7 @@ index bd0bb59..58ef42b 100644
  		const items = pairs.flatMap((pair, index) =>
  			(sides[index] ?? []).map((value) => ({
  				elements: contexts[index] ?? [],
-@@ -3808,24 +4189,31 @@ export class ValueResolver {
+@@ -3808,24 +4202,31 @@ export class ValueResolver {
  				document.body.replaceChildren()
  				const subjects = batch.map((item) => {
  					let subject: HTMLElement = document.body
@@ -1580,7 +1828,7 @@ index bd0bb59..58ef42b 100644
  					const style = getComputedStyle(subject)
  					if (item.property.startsWith('--')) return style.getPropertyValue(item.property).trim()
  					if (!/var\(/iu.test(item.value)) return item.value
-@@ -3839,7 +4227,9 @@ export class ValueResolver {
+@@ -3839,7 +4240,9 @@ export class ValueResolver {
  		return sides.map((values) => {
  			const slice = read.slice(offset, offset + values.length)
  			offset += values.length
@@ -1591,7 +1839,7 @@ index bd0bb59..58ef42b 100644
  		})
  	}
  }
-@@ -3961,9 +4351,10 @@ export async function classifyValueGaps(
+@@ -3961,9 +4364,10 @@ export async function classifyValueGaps(
   * @param resolver - A resolver whose two sides read one stylesheet, the built cascade, so a cell
   *   and a declaration read the same variables.
   * @returns One line per mapped token the `:root` selector does not declare, as its token, the
@@ -1605,7 +1853,7 @@ index bd0bb59..58ef42b 100644
   *
   * @remarks
   * A token resolves in each mode at that mode's scope. The light reading takes the
-@@ -3971,9 +4362,13 @@ export async function classifyValueGaps(
+@@ -3971,9 +4375,13 @@ export async function classifyValueGaps(
   * rule's otherwise. The dark reading takes the `[data-bs-theme=dark]` rule's declaration, or the
   * `:root` rule's where the dark scope declares none, and resolves it inside the dark scope, so a
   * token every mode shares still reads the dark scope's variables. Every other site that declares a
@@ -1622,7 +1870,7 @@ index bd0bb59..58ef42b 100644
   */
  export async function scanCanonicalValues(
  	blocks: readonly CascadeBlock[],
-@@ -4020,13 +4415,17 @@ export async function scanCanonicalValues(
+@@ -4020,13 +4428,17 @@ export async function scanCanonicalValues(
  			const value = block.declarations.get(row.token)
  			if (value === undefined || (block.condition === undefined && scopes.includes(block.selector)))
  				continue
@@ -1647,7 +1895,7 @@ index bd0bb59..58ef42b 100644
  		}
  		for (const site of sites) checks.set(JSON.stringify(site), site)
  	}
-@@ -4043,8 +4442,15 @@ export async function scanCanonicalValues(
+@@ -4043,8 +4455,17 @@ export async function scanCanonicalValues(
  		const resolution = resolutions[index]
  		const cells = [token, selector, condition ?? ABSENT_CELL, stated, value]
  		if (resolution === undefined) lines.push([...cells, 'undecided'].join(' | '))
@@ -1658,14 +1906,16 @@ index bd0bb59..58ef42b 100644
 +			(resolution.recorded === '' && stated.trim() !== value.trim())
 +		)
 +			lines.push(
-+				[...cells, describeValueCell(resolution.recorded), describeValueCell(resolution.emitted)].join(
-+					' | ',
-+				),
++				[
++					...cells,
++					describeValueCell(resolution.recorded),
++					describeValueCell(resolution.emitted),
++				].join(' | '),
 +			)
  	}
  	return lines
  }
-@@ -4054,29 +4460,56 @@ export async function scanCanonicalValues(
+@@ -4054,29 +4475,56 @@ export async function scanCanonicalValues(
   *
   * @param departures - The classified departures.
   * @param references - The reference map's rows, as the `collectReferenceRows` helper reads them.

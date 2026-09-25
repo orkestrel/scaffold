@@ -1,0 +1,53 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index e8d4e7e..c58f556 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -4717,12 +4717,12 @@ value while it is open, through the `:where(.dropdown-menu):popover-open` rule,
+ value while it is closed. The initial value is `anchors-visible` on Chromium 153 and `always` on
+ Chromium 141, so the open menu computes the same value on both builds. Under that value neither
+ Chromium 141 nor Chromium 153 paints an open menu whose toggle a scroll container clips entirely,
+-except Chromium 141 when a pointer press on the toggle opened the menu, because the engine does not
+-anchor that menu there. The `anchor-visibility` mixin in the `src/styles/_mixins.scss` file writes
+-the rule, and the tooltip and popover partials include the same mixin. The rule sits in the
+-`components` layer and declares nothing important, so a class of your own in a later layer, or in
+-none, that names the `position-visibility` property overrides the rule without a specificity
+-contest. § Additions records the rule and its declaration.
++except Chromium 141 when the engine showed the menu after a trusted pointer press on its toggle,
++because the engine does not anchor that menu there. The `anchor-visibility` mixin in the
++`src/styles/_mixins.scss` file writes the rule, and the tooltip and popover partials include the
++same mixin. The rule sits in the `components` layer and declares nothing important, so a class of
++your own in a later layer, or in none, that names the `position-visibility` property overrides the
++rule without a specificity contest. § Additions records the rule and its declaration.
+ 
+ Every value the partial paints is Bootstrap 5.3.8's own. A length reads the Veneer scale token that
+ already resolves to it, so the menu padding, the item and header insets, the divider margin, and the
+@@ -10488,8 +10488,8 @@ leaving both ledgers unread.
+ | `dropdown`     | `:where(button.dropdown-item) { opacity }`                                                | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `dropdown`     | `:where(button.dropdown-item) { pointer-events }`                                         | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `dropdown`     | `:where(button.dropdown-item) { transition }`                                             | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+-| `dropdown`     | `:where(.dropdown-menu):popover-open`                                                     | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | The open menu computes `anchors-visible` on Chromium 141 and 153. Neither paints it while a scroll container clips its toggle entirely, except Chromium 141 when a pointer press opened it, which the engine leaves unanchored. |
+-| `dropdown`     | `:where(.dropdown-menu):popover-open { position-visibility }`                             | —                                                | declaration | `anchors-visible`                                                                                                                                                                                                                                                                                                      | The open menu computes `anchors-visible` on Chromium 141 and 153. Neither paints it while a scroll container clips its toggle entirely, except Chromium 141 when a pointer press opened it, which the engine leaves unanchored. |
++| `dropdown`     | `:where(.dropdown-menu):popover-open`                                                     | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | The open menu computes `anchors-visible` on Chromium 141 and 153. Neither paints it while a scroll container clips its toggle entirely, except Chromium 141 when shown after a trusted pointer press on the toggle, unanchored. |
++| `dropdown`     | `:where(.dropdown-menu):popover-open { position-visibility }`                             | —                                                | declaration | `anchors-visible`                                                                                                                                                                                                                                                                                                      | The open menu computes `anchors-visible` on Chromium 141 and 153. Neither paints it while a scroll container clips its toggle entirely, except Chromium 141 when shown after a trusted pointer press on the toggle, unanchored. |
+ | `nav`          | `:where(button.nav-link)`                                                                 | —                                                | selector    | —                                                                                                                                                                                                                                                                                                                      | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `nav`          | `:where(button.nav-link) { padding }`                                                     | —                                                | declaration | `revert`                                                                                                                                                                                                                                                                                                               | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+ | `nav`          | `:where(button.nav-link) { font-family }`                                                 | —                                                | declaration | `inherit`                                                                                                                                                                                                                                                                                                              | The class writes the button reboot back on the button form at zero specificity, so the rules that follow paint the release's button rather than the `elements` surface.                                                         |
+diff --git a/src/styles/components/_dropdown.scss b/src/styles/components/_dropdown.scss
+index 6accedd..9133d13 100644
+--- a/src/styles/components/_dropdown.scss
++++ b/src/styles/components/_dropdown.scss
+@@ -272,10 +272,10 @@ $carets: (
+ 
+ 	// A menu the engine promotes to the top layer computes `position-visibility: anchors-visible`
+ 	// while it is open, on Chromium 141 and 153. Neither then paints a menu whose toggle a scroll
+-	// container clips entirely, except Chromium 141 when a pointer press on the toggle opened the
+-	// menu, because the engine does not anchor that menu there. The rule sits in the `components`
+-	// layer and declares nothing important, so a class of your own in a later layer, or in none,
+-	// overrides it without a specificity contest.
++	// container clips entirely, except Chromium 141 when the engine showed the menu after a trusted
++	// pointer press on its toggle, because the engine does not anchor that menu there. The rule sits
++	// in the `components` layer and declares nothing important, so a class of your own in a later
++	// layer, or in none, overrides it without a specificity contest.
+ 	@include anchor-visibility(dropdown-menu);
+ 
+ 	.dropdown-header {

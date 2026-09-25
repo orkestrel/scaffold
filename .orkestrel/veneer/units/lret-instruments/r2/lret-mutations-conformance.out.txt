@@ -1,0 +1,23 @@
+theme-unmeasured 1 assertion-errors exit=1
+rungs-dropped 2 assertion-errors exit=1
+ignore-resolution-ledger 2 assertion-errors exit=1
+text-compare-ledger 1 assertion-errors exit=1
+canonical-self-ledger 0 assertion-errors exit=0
+witness-row-ledger 0 assertion-errors exit=0
+category-swapped 1 assertion-errors exit=1
+unattributed-silent 1 assertion-errors exit=1
+where-classes-ignored 1 assertion-errors exit=1
+deferrals-inverted 1 assertion-errors exit=1
+tags-layer 1 assertion-errors exit=1
+Traceback (most recent call last):
+  File "/home/user/veneer-lret/tmp/units/r2/lret-mutation.py", line 28, in <module>
+    UL_ROW = next(line for line in open(GUIDE).read().split('\n') if line.startswith('| `reboot`       | `ul { list-style-type }`'))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
+addition-unrecorded 1 assertion-errors exit=1
+Traceback (most recent call last):
+  File "/home/user/veneer-lret/tmp/units/r2/lret-mutation.py", line 28, in <module>
+    UL_ROW = next(line for line in open(GUIDE).read().split('\n') if line.startswith('| `reboot`       | `ul { list-style-type }`'))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
+addition-stale apply-failed

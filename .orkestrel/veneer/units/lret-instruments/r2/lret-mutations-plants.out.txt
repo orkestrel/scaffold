@@ -1,0 +1,7 @@
+addition-unrecorded 1 assertion-errors exit=1
+addition-stale 1 assertion-errors exit=1
+plant-radius 1 assertion-errors exit=1
+plant-witness 1 assertion-errors exit=1
+plant-pill 1 assertion-errors exit=1
+plant-initial 1 assertion-errors exit=1
+plant-scoped 1 assertion-errors exit=1

@@ -1,0 +1,10 @@
+// Runs the round-2 throwaway probes under the conformance project's settings.
+import { resolve } from 'node:path'
+import { conformance } from '../../../vite.config.ts'
+
+const base = conformance()
+export default {
+	...base,
+	root: resolve(import.meta.dirname, '../../..'),
+	test: { ...base.test, include: ['tmp/units/r2/probe/**/*.probe.test.ts'], name: 'lret-r2-probe' },
+}

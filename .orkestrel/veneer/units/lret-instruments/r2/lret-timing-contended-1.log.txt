@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/user/veneer-lret
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  08:56:27
+   Duration  45.73s (transform 2.15s, setup 598ms, import 4.68s, tests 40.05s, environment 4ms)
+

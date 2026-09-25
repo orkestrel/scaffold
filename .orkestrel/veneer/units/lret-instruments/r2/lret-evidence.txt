@@ -1,0 +1,38 @@
+== HEAD
+7952712
+== setupServer.ts
+237:	readonly sibling: boolean
+495:export const LEDGER_TIMEOUT = 14_700
+785:export const PROBE_SYNTAXES: Readonly<Record<string, readonly [initial: string, control: string]>> =
+812:export const PROBE_PROPERTIES: readonly string[] = Object.freeze([
+3500:export function collectContextElements(selector: string): readonly ContextElement[] {
+3540:export function matchesDarkScope(selector: string): boolean {
+3575:export function normalizeResolvedColors(value: string): string {
+3636:export class ValueResolver {
+3815:						const host = described.sibling ? (subject.parentElement ?? document.body) : subject
+3921:export async function classifyValueGaps(
+3978:export async function scanCanonicalValues(
+4068:export function scanWitnesses(
+== conformance.test.ts
+196:		(keys) => collectLedger(repainted, inventory, keys).gaps,
+226:					scanLedgerDrift(repaint.departures, readDepartures(), describeDeparture).unrecorded.map(
+255:		expect(requireValue(classified, 'No departure was classified').undecided).toEqual([])
+== setupStyles
+706: * normalizeDeclaration('calc(150ms * var(--vn-factor-motion))') // 'calc(0.15s * var(--vn-factor-motion))'
+709:export function normalizeDeclaration(value: string): string {
+312:	normalizeDeclaration,
+638:				'normalizeDeclaration',
+3258:		expect(normalizeDeclaration('calc(150ms * var(--vn-factor-motion))')).toBe(
+3261:		expect(normalizeDeclaration('.75rem')).toBe(normalizeDeclaration('0.75rem'))
+3262:		expect(normalizeDeclaration('cubic-bezier(.32, .72, 0, 1)')).toBe(
+3263:			normalizeDeclaration('cubic-bezier(0.32,0.72,0,1)'),
+3265:		expect(normalizeDeclaration('linear-gradient(\n\t180deg,\n\t#fff,\n\ttransparent\n)')).toBe(
+3268:		expect(normalizeDeclaration('#0d6efd')).toBe('#0d6efd')
+3269:		expect(normalizeDeclaration('calc(-0.25rem * 1)')).toBe(
+3270:			normalizeDeclaration('calc(-.25rem * 1)'),
+3272:		expect(normalizeDeclaration('0.75rem')).not.toBe(normalizeDeclaration('0.8rem'))
+3607:		expect(normalizeDeclaration('15%')).toBe(normalizeDeclaration('15.0%'))
+3608:		expect(normalizeDeclaration('15%')).not.toBe(normalizeDeclaration('16%'))
+tests/setupServer.ts:1990:export function normalizeDeclarationValue(value: string): string {
+== mutations driver filter
+22:		npx vitest run --config vite.config.ts --no-cache --project setup tests/setupServer.test.ts -t "ValueResolver|names each departure member" --reporter=verbose 2>&1 | grep -E "^ +(✓|×)|Tests "
